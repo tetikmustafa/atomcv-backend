@@ -67,11 +67,19 @@ class ArchitectureTest {
             .and().resideOutsideOfPackage("..profile.repository..")
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
-    /** Rendering is deterministic by design, so it may never reach for an LLM. */
+    /**
+     * Rendering is deterministic by design, so it may never reach for an LLM.
+     *
+     * <p>The only rule still matching no classes — the rendering module lands
+     * in Adim 1.4. {@code allowEmptyShould} is granted here alone rather than
+     * globally, so every other rule fails loudly if a package rename ever
+     * empties it.
+     */
     @ArchTest
     static final ArchRule renderersAreDeterministic = noClasses()
             .that().resideInAPackage("..rendering..")
-            .should().dependOnClassesThat().resideInAPackage("..llm..");
+            .should().dependOnClassesThat().resideInAPackage("..llm..")
+            .allowEmptyShould(true);
 
     /**
      * Bolum 48.1: user content is never logged; log {@code ContentShape}
