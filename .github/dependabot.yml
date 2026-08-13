@@ -1,0 +1,18 @@
+version: 2
+
+# Dependency vulnerability coverage. The OWASP dependency-check Gradle plugin
+# named in Bolum 47.1 is deliberately not used: it needs an NVD API key and its
+# scan is slow and rate-limited without one. Dependabot alerts cover the same
+# ground with no build-time cost.
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

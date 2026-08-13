@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - uses: gradle/actions/setup-gradle@v6.3.0
+
+      - name: Compile
+        run: ./gradlew build -x test
+
+      - name: Unit and architecture tests
+        run: ./gradlew test
+
+      # Testcontainers; the ubuntu runner ships a working Docker daemon.
+      - name: Integration tests
+        run: ./gradlew integrationTest
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: build/reports/tests/
+          retention-days: 7
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+
+      - uses: github/codeql-action/autobuild@v3
+
+      - uses: github/codeql-action/analyze@v3
+
+  scan:
+    name: Misconfiguration scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Scaffolding for now: Trivy's misconfiguration checks cover Dockerfiles,
+      # Kubernetes, Terraform and CloudFormation, none of which exist yet, so
+      # this currently finds nothing to scan. It starts earning its place with
+      # the LaTeX container in Stage 1, and gains an image scan alongside it.
+      # Secrets are deliberately left to gitleaks so a single leak does not
+      # turn two jobs red.
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scanners: misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
