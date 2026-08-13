@@ -8110,7 +8110,8 @@ burada tutulur. Üç tür kayıt var:
 - **Ekleme** — doküman sessiz kaldığı için karara bağlanmış ayrıntı.
 - **Düzeltme** — dokümandaki ifade yanlış ya da eksik; doğrusu burada.
 
-**Frontend'i ilgilendiren maddeler D.5'te toplandı.** Doküman iki repoya da
+**Frontend'i ilgilendiren maddeler her zaman en sonda, D.9'da toplanır.** Yeni
+konu başlıkları araya (D.5, D.6, …) girer. Doküman iki repoya da
 kopyalandığı için (XI-B.1.3) frontend tarafının okuması gereken tek yer orası.
 
 ### D.1 — Aşama 0: iskelet
@@ -8122,7 +8123,7 @@ kopyalandığı için (XI-B.1.3) frontend tarafının okuması gereken tek yer o
 | Denormalize `profile_id` ile ebeveynin profili arasında hiçbir garanti yok | Ekleme | **Bileşik yabancı anahtar** (`UNIQUE (id, profile_id)` + `FOREIGN KEY (parent_id, profile_id)`). Uyuşmazlık aksi halde sessiz bir çapraz-kiracı sızıntısı olurdu. `atoms.entry_id IS NULL` durumunda uygulanmaz — bölüm seviyesindeki atomlar için kasıtlı. |
 | `llm_invocations.user_id` FK'siz; Bölüm 13.1'in "tek DELETE her şeyi siler" sözüyle çelişiyor | Ekleme | `user_id` ve `job_id` için **`ON DELETE SET NULL`**. Toplam maliyet geçmişi hesap silinince yaşar, kişisel bağ yaşamaz. |
 | Bölüm 51.6'nın anonim testi "hiçbir tabloda satır sayısı değişmez" diyor, ama kuyruk (`jobs.anon_session_id`) ve `llm_invocations` Postgres'te | Düzeltme | Test **kullanıcı verisi tablolarına** daralır. Anonim akışın kuyruğu hiç kullanıp kullanmayacağı Aşama 3'te karara bağlanacak. |
-| ArchUnit kuralları, modül paketleri yalnız `package-info.java` taşırken "failed to check any classes" ile düşüyor | Ekleme | `archunit.properties` içinde `archRule.failOnEmptyShould=false`. **Aşama 1'de kaldırılacak:** açıkken, bir paket adı değişirse ilgili kural hiçbir şeyle eşleşmeyip sessizce geçer. |
+| ArchUnit kuralları, modül paketleri yalnız `package-info.java` taşırken "failed to check any classes" ile düşüyor | Ekleme | Geçici olarak `archunit.properties` içinde `archRule.failOnEmptyShould=false`. **Adım 1.1 sonunda kaldırıldı:** artık yalnız `renderersAreDeterministic` kuralı boş kümede çalışıyor ve izni tek başına taşıyor (`allowEmptyShould(true)`). Global ayar açıkken bir paket adı değişirse ilgili kural hiçbir şeyle eşleşmeyip sessizce geçerdi. |
 | Bölüm 47.1'deki `--spring.flyway.migrate-only=true` | Düzeltme | **Böyle bir Spring Boot özelliği yok.** Üretimde migration'ı deploy öncesi çalıştırmanın yolu ayrıca kararlaştırılacak; şu an Flyway üretimde de uygulama açılışında çalışıyor. |
 | OWASP dependency-check (Bölüm 47.1) | Sapma | Kullanılmıyor: NVD API anahtarı istiyor, anahtarsız taraması yavaş ve oran-sınırlı. Aynı kapsamı **Dependabot** derleme maliyeti olmadan veriyor. |
 | Kaynak dosya kodlaması | Ekleme | `options.encoding = "UTF-8"`. `javac` varsayılan olarak platform charset'ini kullanır — geliştirme makinesinde `Cp1254`, CI runner'da UTF-8. Türkçe karakter içeren bir dosya aksi halde iki ortamda **iki farklı string sabitine** derlenirdi. |
@@ -8203,7 +8204,18 @@ kapsayacak şekilde genişletildi (mutlak kural 3 ikisini de söylüyor). Ayrıc
 `Repository`'ye bağımlı olamaz. Kural modül başına yazılır — Bölüm 30'daki kuyruk
 kendi paket düzenini taşıyor, şimdiden bağlanmadı.
 
-### D.5 — Frontend'i ilgilendirenler
+### D.5 — Aşama 1: profil yükleme (Bölüm 52.2)
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `assemble()` imzası | Sapma | Bölüm 52.2'deki `assemble(sections, entries, atoms, variants)` yerine **`assemble(profileId, ...)`**. Dört ayrı sorgu, yanlış kapsamı geçirmek için dört fırsat demek; fonksiyon her satırın `profile_id`'sini verilen profile karşı doğruluyor. Karışmış bir sonuç, render hatası gibi görünen bir çapraz-kiracı sızıntısı olurdu. İhlal `CrossTenantAccessException`. |
+| Yükleme çıktısının tipi | Ekleme | `ProfileTree` (`SectionNode` / `EntryNode` / `AtomNode`). Entity'lerde ilişki olmadığı için ağaç yalnız burada var; "profil nasıl yüklenir" tek yerde tek karar kalıyor. |
+| Repository katmanı | Ekleme | Her tablo için **paket-özel** bir Spring Data arayüzü + `ProfileScopedRepository` türeten **public** bir cephe. Arayüz paketin dışına çıkamadığı için kapsamsız çağrı derlenmiyor; ArchUnit kuralı da aynı şeyi bağımsızca bekliyor. |
+| Sıralama | Ekleme | Sorgular `display_order` **ve `id`** ile sıralıyor. Aynı sıra numarasını taşıyan iki satır aksi halde her çalıştırmada farklı gelebilir; determinizm testi girdisi belirsizse tutmaz. Varyantlar: önce birincil, sonra dil, sonra ton, sonra id. |
+| Kopuk referans | Ekleme | Bir atom bulunmayan bir entry'yi ya da entry'siyle çelişen bir bölümü gösteriyorsa **hata verilir**, satır sessizce düşürülmez (P4). |
+| ≤6 sorgu testi | Ekleme | Hibernate `Statistics.getPrepareStatementCount()` ile ölçülüyor ve **alt sınır da iddia ediliyor** (`isBetween(4, 6)`): istatistik kapalı kalıp sıfır dönseydi test ölçmeden geçerdi. Ayrıca profil büyütülüp sorgu sayısının değişmediği ayrıca doğrulanıyor. |
+
+### D.9 — Frontend'i ilgilendirenler
 
 Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir. Hiçbiri
 API şeklini değiştirmiyor; hepsi **içerik yapısının kuralları**.

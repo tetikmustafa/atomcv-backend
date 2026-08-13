@@ -228,7 +228,7 @@ documents. They are settled — do not re-open them without asking.
    mislead a reader, leave a one-line pointer there too — as Bölüm 41.2 and
    14.1 carry.
 6. **Say so when something changes the frontend's work.** Collect it in
-   `EK D.5`, which is the only place the other repository needs to read, and
+   `EK D.9`, which is the only place the other repository needs to read, and
    name it in the conversation as well. The document reaches that repository
    through `scripts/sync-docs.sh`.
 
@@ -240,10 +240,14 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-Carry into Stage 1:
-- Remove `archunit.properties` once the modules hold real classes.
-- Give `RichContent` a `toString()` that cannot leak content; the ArchUnit
-  logging rule only catches methods that declare a content parameter.
+**Stage 1 — Walking Skeleton: in progress.** Adım 1.1 is done: the rich
+content run model and `ContentMigrator`, the four profile entities with their
+closed vocabularies, the user- and profile-scoped repository bases with
+`ProfileRef`, the four repositories and `ProfileAssembler` with its
+six-query guard. Next: Adım 1.2 (manual profile CRUD), which needs the API
+contract settled first.
+
+Still open in Stage 1:
 - Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
   using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
   property, so Flyway currently runs at startup in prod too.
