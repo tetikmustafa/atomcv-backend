@@ -212,10 +212,18 @@ documents. They are settled — do not re-open them without asking.
 ## Current Stage
 
 <!-- Update this section as work progresses -->
-**Stage 0 — Skeleton.** Setting up project structure, Docker Compose,
-Flyway baseline, health endpoint, CI pipeline.
+**Stage 0 — Skeleton: complete.** Package tree, Gradle build, Docker Compose
+core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
+rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
+Makefile, repository documentation.
 
-Done so far: `CLAUDE.md`.
+Carry into Stage 1:
+- Remove `archunit.properties` once the modules hold real classes.
+- Give `RichContent` a `toString()` that cannot leak content; the ArchUnit
+  logging rule only catches methods that declare a content parameter.
+- Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
+  using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
+  property, so Flyway currently runs at startup in prod too.
 
 Next: Stage 1 (Walking Skeleton) — domain model, manual profile CRUD,
 LaTeX container, measurement system, selection algorithm, PDF output.
