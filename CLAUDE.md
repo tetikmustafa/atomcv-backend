@@ -162,6 +162,28 @@ Spring profiles:
 - `local,local-real` — real LLM calls, nothing saved (prompt work)
 - `prod` — production
 
+### What this machine needs you to know
+
+Facts that are true here and nowhere in the architecture documents. Each one
+cost a debugging round to find.
+
+- **Run `make` from Git Bash.** The Makefile refuses to run under `cmd.exe` or
+  PowerShell, and its recipes call `sh ./gradlew`: GNU Make runs a
+  metacharacter-free recipe line straight through `CreateProcess`, and
+  `./gradlew` is not a Windows executable.
+- **The Makefile includes and exports `.env`.** Compose reads that file by
+  itself, Spring does not — without the include, a changed `POSTGRES_PASSWORD`
+  breaks `make dev` with an authentication failure that looks like a code bug.
+- **`native.encoding` is `Cp1254` here and UTF-8 on the runner.** The source
+  encoding is pinned in `build.gradle.kts`; do not remove it.
+- **`gradlew` must stay mode 100755.** Committed as 100644 it fails every
+  Linux runner.
+- Gradle directly, when a target does not fit: `sh ./gradlew test` (fast, no
+  Docker), `sh ./gradlew integrationTest` (needs Docker Desktop running),
+  `--tests '*SomeTest'` to narrow.
+- A `pre-commit` gitleaks hook runs on every commit. It is installed and
+  configured; a commit that prints nothing about secrets did not run it.
+
 ## Testing Requirements
 
 Write these tests alongside the code they cover, not afterwards:
@@ -174,6 +196,36 @@ Write these tests alongside the code they cover, not afterwards:
 | Locks and structural constraints respected | User control guarantees |
 | Anonymous flow writes nothing to user data tables | Privacy claim |
 | Profile load uses ≤6 queries | N+1 regression |
+
+**A guard that has never failed is not known to work.** Every rule that exists
+to catch something was confirmed against a deliberate violation before being
+trusted: the ArchUnit rules against a planted dependency, schema validation
+against a renamed column, the query counter against a lower bound, gitleaks
+against a real token pattern. Do the same for the next one — and note that
+gitleaks allowlists the AWS documentation example keys, so a probe using those
+reports a false pass.
+
+Report test counts, not "the suite is green". A suite that runs zero tests
+also reports success.
+
+## How We Ship
+
+1. **One branch per slice**, named `feat/…`, `test/…` or `docs/…`. A slice is
+   what fits in one review, not one step of the build guide.
+2. **`main` is pushed before a PR is opened.** A rebase merge rewrote twelve
+   unpushed local commits once; the fix was `git reset --hard origin/main`
+   after verifying the trees matched.
+3. **Split commits by logical unit**, not by file. Conventional Commits; the
+   body says *why*, in English, and names the Bölüm it comes from.
+4. **The developer decides when to merge.** Open the PR, wait for all five
+   checks (`gh pr checks <n> --watch`), report, and ask. On approval:
+   `gh pr merge <n> --rebase --delete-branch`, then `git checkout main` and
+   `git reset --hard origin/main`. History stays linear.
+5. **Deviations go into `EK D` in the same PR as the code**, and anything the
+   frontend must act on goes into `EK D.9` and is said out loud in the
+   conversation. The document is synced to the frontend repository with
+   `scripts/sync-docs.sh` — deliberately, not automatically; the developer
+   asked for it at the end of Stage 1.
 
 ## Code Style
 
@@ -240,14 +292,70 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress.** Adım 1.1 is done: the rich
-content run model and `ContentMigrator`, the four profile entities with their
-closed vocabularies, the user- and profile-scoped repository bases with
-`ProfileRef`, the four repositories and `ProfileAssembler` with its
-six-query guard. Next: Adım 1.2 (manual profile CRUD), which needs the API
-contract settled first.
+**Stage 1 — Walking Skeleton: in progress. Adım 1.1 is complete.**
+
+### What exists
+
+| Package | Classes |
+|---|---|
+| `profile.domain.content` | `RichContent`, `Run`, `Mark`, `ContentMigrator`, `RichContentConverter` |
+| `profile.domain` | `Section`, `Entry`, `Atom`, `AtomVariant`, `ProfileTree`, and six enums (`SectionKind`, `SectionLayout`, `AtomKind`, `AtomSource`, `VariantAuthor`, `Tone`) |
+| `profile.repository` | Four package-private Spring Data interfaces, four public scoped facades |
+| `profile.service` | `ProfileAssembler` (`load(ProfileRef)` and the static, pure `assemble(...)`) |
+| `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, `UserScopedRepository`, `ProfileScopedRepository`, `CrossTenantAccessException` |
+| `shared.util` | `LowercaseEnumConverter` |
+
+70 unit tests, 20 integration tests. Every decision behind these is in `EK D`
+of the architecture document — read D.2 through D.5 before touching them.
+
+### Deliberately absent — do not "fix" without asking
+
+- **No `Profile` entity yet.** It lands with Adım 1.2, and brings `contact`
+  and `preferences` (Bölüm 14.2, 14.3) as typed records rather than maps.
+  `ProfileTree` therefore carries no profile head, and
+  `UserScopedRepository` has no subclass yet — `Profile` will be the first.
+- **`atoms.embedding` is unmapped.** Stage 2. `vector(1024)` has no Hibernate
+  type and nothing computes an embedding yet.
+- **`ProfileRef.Scope` has only `PERSISTENT`.** `EPHEMERAL` arrives with the
+  anonymous flow in Stage 3; adding the constant earlier, with no checked way
+  to produce one, would be the way around the ownership check.
+- **`tags` and `atom_tags` have no entities.** Nothing reads them before
+  Stage 2 scoring.
+- **No `api` package, no controller, no springdoc.** First endpoint is Adım
+  1.2, and the contract below comes first.
+- `UserScopedRepository` has no `findAll`: the Bölüm 41.2 snippet calls
+  `findByUserId`, which is not on `JpaRepository`. Subclasses add their own
+  narrowed finders, as the profile repositories do.
+
+### Resume here
+
+**Adım 1.2 — manual profile CRUD, but settle the contract first.** Writing the
+endpoint and deciding its shape at the same time is how the published schema
+ends up carrying only happy-path payloads. In order:
+
+1. Answer the Stage 1 half of `docs/backend-contract-response.md` — ETag
+   emission, per-atom GET, pagination, the error code catalogue, download
+   mechanics. Record the answers in `EK D` and flag frontend consequences in
+   `EK D.9`.
+2. Add springdoc-openapi with the first endpoint, carrying the
+   `resolutions[].action` enum, the error `code` enum and the ETag/pagination
+   headers.
+3. `Profile` entity + `ProfileRepository` over `UserScopedRepository`, and a
+   resolver that turns a `UserContext` into a `ProfileRef` — the only place
+   that mapping is allowed to happen.
+4. Section/entry/atom CRUD, completeness percentage, and the ≤6 query test
+   extended to the full load once the profile head is part of it.
+
+Then Adım 1.3 (LaTeX container), 1.4 (renderer), 1.5 (measurement), 1.6
+(selection), 1.7 (Faz E/F + PDF), 1.8 (general CV mode), 1.9 (golden set).
 
 Still open in Stage 1:
+- **Where does the first `UserContext` come from?** Identity is Stage 3
+  (XI-A.6), but Adım 1.2's endpoints need an acting user, and `ProfileRef`
+  cannot be produced without one. Decide the stand-in before the first
+  controller — likely a fixed user resolved under the `local` profile only,
+  wired so that it cannot exist under `prod` and disappears when identity
+  lands. Do not let it become an untyped "current user" helper.
 - Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
   using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
   property, so Flyway currently runs at startup in prod too.
