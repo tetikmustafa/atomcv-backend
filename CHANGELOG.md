@@ -6,9 +6,24 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Stage 0 — skeleton. An empty but working, tested and deployable application.
+Stage 0 — skeleton: complete. Stage 1 — walking skeleton: in progress.
 
-### Added
+### Added — Stage 1
+
+- Rich content run model: `Run`, `Mark`, `RichContent`, with the content hash
+  taken over the plain text so that re-marking a sentence invalidates neither
+  its embedding nor its measured render cost.
+- `ContentMigrator` for the versioned JSONB structure, refusing content written
+  by a newer build rather than reading it best-effort.
+- `Section`, `Entry`, `Atom` and `AtomVariant` entities, checked against the
+  Flyway baseline by schema validation and by integration tests covering the
+  enum vocabulary, the JSONB shape and the skill arrays.
+- User- and profile-scoped repository bases, with a `ProfileRef` that cannot be
+  constructed without comparing the acting user against the profile's owner.
+- `EK D` in the architecture document: every deviation, addition and correction
+  made while building, with the frontend-facing ones collected in `EK D.5`.
+
+### Added — Stage 0
 
 - Spring Boot 3.5 application on Java 21, built with Gradle 9.7 whose
   distribution checksum is pinned and verified.
