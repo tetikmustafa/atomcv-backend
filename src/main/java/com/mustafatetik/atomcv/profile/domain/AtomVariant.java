@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.profile.domain;
 
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.RichContentConverter;
+import com.mustafatetik.atomcv.shared.security.ProfileOwned;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -27,7 +28,7 @@ import org.hibernate.type.SqlTypes;
  */
 @Entity
 @Table(name = "atom_variants")
-public class AtomVariant {
+public class AtomVariant implements ProfileOwned {
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -112,6 +113,7 @@ public class AtomVariant {
         return id;
     }
 
+    @Override
     public UUID getProfileId() {
         return profileId;
     }
