@@ -240,10 +240,21 @@ Carry into Stage 1:
   endpoint, not while writing it: ETag emission, per-atom GET, pagination,
   the error code catalogue and download mechanics. See
   `docs/backend-contract-response.md`.
+- Register the LaTeX container under `profiles: [full]` in `docker-compose.yml`.
+  The `full` profile currently matches no service, so `make dev-full` starts
+  the core services and silently does nothing else.
+- The CI `scan` job finds nothing until a Dockerfile exists. When the LaTeX
+  image lands, add an image scan next to the filesystem one.
+- Decide whether to add Spotless. Bölüm 47.1 runs `spotlessCheck`, but no
+  formatter is configured, so CI has no formatting gate at all today.
 
 Carry into Stage 2:
 - Quota reset needs a time zone. `usage_counters.period` is a `DATE`, so the
   daily counter rolls over at a day boundary that nothing defines yet.
+- Create the `application-local-fake.yml`, `-local-record` and `-local-real`
+  profile files with the LLM gateway. They do not exist yet, and Spring
+  ignores an unknown profile silently — so `make dev` looks like it works
+  today while `local-fake` contributes nothing.
 
 Carry into Stage 3:
 - `CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key)` does not dedupe
@@ -251,6 +262,18 @@ Carry into Stage 3:
   distinct, so the same key creates a second job. Needs a migration keying on
   `COALESCE(user_id::text, anon_session_id)` — deferred because it presumes
   the anonymous path uses the queue at all, which is still open above.
+- The anonymous TTL slides on activity, so the user-facing copy must say
+  "two hours after your last activity", not "two hours". Bölüm 9 and the
+  product document still carry the absolute wording; both need updating, and
+  the frontend owns the string.
+
+Open, no stage assigned:
+- V1 applies `CHECK` constraints to some enum-like columns (`sections.layout`,
+  `applications.status`, `jobs.status`) and leaves others as comments
+  (`sections.kind`, `atoms.kind`, `generations.status`, `jobs.type`,
+  `llm_invocations.outcome`). This mirrors Bölüm 13 deliberately rather than
+  inventing constraints. Adding the missing ones later is a cheap migration,
+  since a `CHECK` does not rewrite the table.
 
 Next: Stage 1 (Walking Skeleton) — domain model, manual profile CRUD,
 LaTeX container, measurement system, selection algorithm, PDF output.
