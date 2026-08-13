@@ -10,6 +10,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # Bolum 5.1 specifies Spring Boot 3.x. Spring Boot 4 sits on Spring
+      # Framework 7 and is a migration project of its own, not something to
+      # take through an automated bump. Patch and minor updates still come
+      # through; revisit this deliberately when the time comes.
+      - dependency-name: org.springframework.boot
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
