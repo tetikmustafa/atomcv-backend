@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.domain;
 
+import com.mustafatetik.atomcv.shared.security.ProfileOwned;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -19,7 +20,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "sections")
-public class Section {
+public class Section implements ProfileOwned {
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -71,6 +72,7 @@ public class Section {
         return id;
     }
 
+    @Override
     public UUID getProfileId() {
         return profileId;
     }

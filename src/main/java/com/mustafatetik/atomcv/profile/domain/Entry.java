@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.domain;
 
+import com.mustafatetik.atomcv.shared.security.ProfileOwned;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -23,7 +24,7 @@ import org.hibernate.type.SqlTypes;
  */
 @Entity
 @Table(name = "entries")
-public class Entry {
+public class Entry implements ProfileOwned {
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -100,6 +101,7 @@ public class Entry {
         return id;
     }
 
+    @Override
     public UUID getProfileId() {
         return profileId;
     }
