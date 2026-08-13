@@ -1,25 +1,24 @@
-# Sırlar
+# Secrets
 .env
 .env.local
 *.pem
 *.key
 
-# Build çıktıları
-backend/build/
-backend/.gradle/
-frontend/.next/
-frontend/node_modules/
-frontend/out/
+# Build output
+build/
+.gradle/
+out/
+bin/
 
 # IDE
 .idea/
 .vscode/
 *.iml
 
-# İşletim sistemi
+# OS
 .DS_Store
 Thumbs.db
 
-# Geçici
+# Temporary
 *.log
 /tmp/
