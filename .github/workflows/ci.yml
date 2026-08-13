@@ -36,12 +36,16 @@ jobs:
       - name: Integration tests
         run: ./gradlew integrationTest
 
+      # Always, not only on failure: a suite that silently runs zero tests
+      # also reports success, and the run logs do not show the count.
       - name: Upload test reports
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: build/reports/tests/
+          path: |
+            build/reports/tests/
+            build/test-results/
           retention-days: 7
 
   codeql:
