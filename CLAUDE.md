@@ -29,6 +29,7 @@ only what the current task needs:
 | Task | Read section |
 |---|---|
 | Any task (first session) | Bölüm 4 (design principles) |
+| Any task touching code already written | **EK D** — what the implementation decided where the body is silent, wrong, or now outdated |
 | Module placement | Bölüm 10 |
 | Database work | Bölüm 13, 14, 15, 16 |
 | Pipeline phase A (job analysis) | Bölüm 18 |
@@ -220,6 +221,16 @@ documents. They are settled — do not re-open them without asking.
    early layer is expensive to remove.
 4. **Update this file** when we make a decision that future sessions need to
    know.
+5. **Record every deviation, addition and correction in `EK D` of
+   `docs/teknik-mimari-dokumani.md`**, in the same commit as the code it
+   describes. The architecture document is the source of truth and says so
+   itself; this file is session context. Where the document body would now
+   mislead a reader, leave a one-line pointer there too — as Bölüm 41.2 and
+   14.1 carry.
+6. **Say so when something changes the frontend's work.** Collect it in
+   `EK D.5`, which is the only place the other repository needs to read, and
+   name it in the conversation as well. The document reaches that repository
+   through `scripts/sync-docs.sh`.
 
 ## Current Stage
 
