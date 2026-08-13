@@ -51,6 +51,22 @@ class ArchitectureTest {
             .that().resideInAnyPackage("..api..", "..service..")
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
+    /**
+     * The other half of the same defense. Ownership is checked by the scoped
+     * bases in {@code shared.security}, so a Spring Data interface must not
+     * escape the repository package that wraps it — not into the domain, not
+     * into an assembler, not into a worker.
+     *
+     * <p>Stated per module rather than globally: a module gains this line when
+     * it gains a repository, and the queue in Bolum 30 keeps its own package
+     * layout.
+     */
+    @ArchTest
+    static final ArchRule profileDataIsReachedThroughAScopedRepository = noClasses()
+            .that().resideInAPackage("..profile..")
+            .and().resideOutsideOfPackage("..profile.repository..")
+            .should().dependOnClassesThat().areAssignableTo(Repository.class);
+
     /** Rendering is deterministic by design, so it may never reach for an LLM. */
     @ArchTest
     static final ArchRule renderersAreDeterministic = noClasses()

@@ -122,10 +122,13 @@ Modules communicate only through public interfaces. No cyclic dependencies
 1. **`spring.jpa.hibernate.ddl-auto` is always `validate`.** Never `update`,
    never `create`. Schema is owned solely by Flyway.
 2. **Never modify an applied Flyway migration.** Write a new one.
-3. **All data access goes through `UserScopedRepository`.** Never call a raw
-   `JpaRepository` from a controller or service that handles user data. This
-   is the IDOR defense and it is enforced by ArchUnit across both `..api..`
-   and `..service..` packages.
+3. **All data access goes through a scoped repository.** `UserScopedRepository`
+   for tables with `user_id`, `ProfileScopedRepository` for tables with only
+   `profile_id` — and a `ProfileRef` can only be produced by comparing the
+   acting user against the profile's owner. Never call a raw `JpaRepository`
+   from a controller or service that handles user data. This is the IDOR
+   defense and it is enforced by ArchUnit across `..api..` and `..service..`,
+   plus a per-module rule keeping raw repositories inside `..repository..`.
 4. **Never log user content.** No `RichContent`, no atom text, no job
    description, no email body. Log `ContentShape` (statistics) instead.
 5. **Never put secrets in code.** Environment variables only.
@@ -203,6 +206,8 @@ documents. They are settled — do not re-open them without asking.
 | How `GET /profile/export` selects its format (frontend gap 15) | `?format=json\|markdown`, matching the download endpoint. |
 | Is `/api/v1/warmup` part of the public API (frontend gap 16) | **No.** Operational endpoint (Bölüm 52.5), excluded from the OpenAPI schema and not routed through nginx. |
 | Does the frontend call the API during server rendering (frontend gap 14) | **No.** All authenticated fetching happens in the browser; server components render shell and static content only. Revisit deliberately if it ever changes — it needs an internal base URL and a cookie-forwarding decision. |
+| Bölüm 41.2's `UserScopedRepository` filters on `ownerId()`, but `sections`, `entries`, `atoms` and `atom_variants` carry no `user_id` | **Two bases.** `UserScopedRepository` for tables with `user_id`; `ProfileScopedRepository` for the four that hang off a profile. The ownership check happens once, when a `ProfileRef` is resolved — `ProfileRef.persistent` compares the acting user against the profile row's owner, its constructor is private, and it is not a record precisely so that no unchecked way to build one exists. Rejected: adding `user_id` to the child tables (a second denormalization to keep consistent) and a `profile_id IN (SELECT ...)` subquery on every read (hot in the measurement and selection paths). |
+| What a scoped repository does with a row belonging to someone else | **Reads return empty, writes throw.** A foreign row that read as forbidden would confirm it exists; a foreign row being *written* means the code built an object with the wrong owner, which is a defect and not a request to answer politely. |
 
 ## How We Work Together
 
