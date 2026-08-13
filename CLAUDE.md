@@ -196,6 +196,13 @@ documents. They are settled — do not re-open them without asking.
 | `llm_invocations.user_id` has no FK, contradicting the "one DELETE removes everything" promise in Bölüm 13.1 | **FK with `ON DELETE SET NULL`** on both `user_id` and `job_id`. Aggregate cost history survives account deletion; the personal link does not. |
 | Bölüm 51.6 asserts an anonymous run changes no row count in *any* table, but the queue (`jobs.anon_session_id`) and `llm_invocations` are Postgres-backed | **The test narrows to user data tables.** Open for Stage 3: decide whether the anonymous path uses the queue at all. |
 | ArchUnit rules fail with "failed to check any classes" while the module packages hold only `package-info.java` | `src/test/resources/archunit.properties` sets `archRule.failOnEmptyShould=false`. **Remove it in Stage 1** once the modules carry real classes: while it is on, renaming a package makes the affected rule match nothing and pass silently. |
+| Which resources can carry an ETag (frontend gap 6) | Only the six tables V1 gives a `version` column: `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`. **`generations` has none**, so generation resources get no optimistic locking. Emit `ETag: "7"` on single-resource GETs and a `version` field on every item in collection responses. |
+| Anonymous session TTL: absolute two hours (Bölüm 9) or sliding (frontend gap 8) | **Sliding — the TTL refreshes on activity.** Cutting off a user mid-review would destroy work they just invested effort in, which is what P8 exists to prevent. Note this widens the "deleted after 2 hours" wording in Bölüm 9 to "two hours after the last activity"; the product copy must say so. |
+| What happens when an anonymous profile is claimed by an account that already has one (frontend gap 2) | Offer **replace or keep** only. `merge` needs atom-level deduplication (Jaro-Winkler + embedding, Bölüm 7), which is Stage 4 work. Do not promise it in the API before then. |
+| `title` in error bodies: displayed or not (frontend gap 5) | **Developer-facing English, never displayed.** RFC 7807 wants it stable across occurrences, and Bölüm 35.4's own rule says the server sends translation keys rather than text. The Turkish example in that section is misleading. |
+| How `GET /profile/export` selects its format (frontend gap 15) | `?format=json\|markdown`, matching the download endpoint. |
+| Is `/api/v1/warmup` part of the public API (frontend gap 16) | **No.** Operational endpoint (Bölüm 52.5), excluded from the OpenAPI schema and not routed through nginx. |
+| Does the frontend call the API during server rendering (frontend gap 14) | **No.** All authenticated fetching happens in the browser; server components render shell and static content only. Revisit deliberately if it ever changes — it needs an internal base URL and a cookie-forwarding decision. |
 
 ## How We Work Together
 
@@ -224,6 +231,26 @@ Carry into Stage 1:
 - Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
   using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
   property, so Flyway currently runs at startup in prod too.
+- Add springdoc-openapi with the first real endpoint, and make the published
+  schema carry the `resolutions[].action` enum, the error `code` enum and the
+  ETag/pagination headers. Six of the frontend's sixteen contract gaps close
+  by themselves once that schema exists — but only if it carries more than
+  happy-path payloads.
+- Settle the Stage 1 half of the API contract before writing the first
+  endpoint, not while writing it: ETag emission, per-atom GET, pagination,
+  the error code catalogue and download mechanics. See
+  `docs/backend-contract-response.md`.
+
+Carry into Stage 2:
+- Quota reset needs a time zone. `usage_counters.period` is a `DATE`, so the
+  daily counter rolls over at a day boundary that nothing defines yet.
+
+Carry into Stage 3:
+- `CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key)` does not dedupe
+  anonymous requests: `user_id` is NULL there and Postgres treats NULLs as
+  distinct, so the same key creates a second job. Needs a migration keying on
+  `COALESCE(user_id::text, anon_session_id)` — deferred because it presumes
+  the anonymous path uses the queue at all, which is still open above.
 
 Next: Stage 1 (Walking Skeleton) — domain model, manual profile CRUD,
 LaTeX container, measurement system, selection algorithm, PDF output.
