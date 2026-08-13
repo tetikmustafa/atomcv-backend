@@ -51,6 +51,14 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// javac still defaults to the platform charset, which is windows-1254 on a
+// Turkish Windows machine and UTF-8 on the CI runner. Source files carry
+// Turkish text, so leaving this unset would make the same file compile into
+// two different string constants.
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
