@@ -1,0 +1,25 @@
+# Sırlar
+.env
+.env.local
+*.pem
+*.key
+
+# Build çıktıları
+backend/build/
+backend/.gradle/
+frontend/.next/
+frontend/node_modules/
+frontend/out/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+
+# Geçici
+*.log
+/tmp/
