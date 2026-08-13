@@ -1,0 +1,16 @@
+# Normalize to LF in the repository. The build runs on Linux in CI and in the
+# production image, where a CRLF gradlew or shell script fails to execute.
+* text=auto eol=lf
+
+# Windows-only entry points keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never touch these.
+*.jar binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.ttf binary
+*.otf binary
