@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: atomcv-backend
+
+  jpa:
+    # ABSOLUTE RULE: always `validate`. Never `update`, never `create`.
+    # The schema is owned solely by Flyway.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    validate-on-migrate: true
+
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
