@@ -58,10 +58,11 @@ public enum ErrorCode {
     GENERATION_ARTIFACT_EXPIRED(410),
     CSRF_TOKEN_INVALID(403),
 
-    // ── CRUD, added in Adim 1.2 ──
-    RESOURCE_NOT_FOUND(404, param("resource", STRING)),
-    VERSION_CONFLICT(412, param("resource", STRING)),
-    VALIDATION_FAILED(400, param("fields", STRING_ARRAY));
+    // ── CRUD and the catch-all, added in Adim 1.2 ──
+    RESOURCE_NOT_FOUND(404),
+    VERSION_CONFLICT(412),
+    VALIDATION_FAILED(400, param("fields", STRING_ARRAY)),
+    INTERNAL_ERROR(500);
 
     /** One published parameter: the key the frontend reads, and its JSON type. */
     public record Param(String name, ParamType type) {

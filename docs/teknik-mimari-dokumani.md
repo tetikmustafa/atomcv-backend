@@ -8601,14 +8601,17 @@ yalnızca yerine koyar.
 | `PROFILE_ALREADY_EXISTS` | 409 | — |
 | `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
 | `CSRF_TOKEN_INVALID` | 403 | — |
-| `RESOURCE_NOT_FOUND` | 404 | `resource: string` |
-| `VERSION_CONFLICT` | 412 | `resource: string` |
+| `RESOURCE_NOT_FOUND` | 404 | — |
+| `VERSION_CONFLICT` | 412 | — |
 | `VALIDATION_FAILED` | 400 | `fields: string[]` |
+| `INTERNAL_ERROR` | 500 | — |
 
-**Adım 1.2'de eklenen üç kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
+**Adım 1.2'de eklenen dört kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
 adlandırmadığı durumlar: bulunamayan kaynak, `If-Match` uyuşmazlığı (Bölüm 35.6
-durumu veriyor, kodu vermiyor) ve girdi doğrulama. `resource` alanı kaynak
-**türünü** taşır (`atom`, `section`), içeriğini değil.
+durumu veriyor, kodu vermiyor), girdi doğrulama, ve beklenmeyen hata için bir
+son çare. `RESOURCE_NOT_FOUND` ile `VERSION_CONFLICT` **parametresizdir**: hangi
+kaynağın kastedildiğini istemci zaten bilir (isteği o attı), ve advice
+katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
 
@@ -8631,6 +8634,19 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
 | ETag biçimi | Ekleme | Tekil kaynak GET'inde `ETag: "7"`; koleksiyon yanıtlarında **her öğede `version` alanı**. Editör N sürümü öğrenmek için N istek atmak zorunda kalmaz. |
 | Atom bazlı GET | Ekleme | **Yok.** Editör zaten tüm profili yüklüyor ve koleksiyon her öğenin `version`'ını taşıyor; alan bazlı PATCH için gereken her şey elde. `GET /profile/atoms/{id}` somut bir çağıran çıkınca eklenir — ilk aday Bölüm 37.5'teki bayatlama akışı. |
 | Sayfalama | Ekleme | `GET /profile/atoms` **sayfalanmaz**. `/generations` ve `/applications` Aşama 2'de gelirken cursor tabanlı: `{ items, nextCursor }`. Offset sayfalama, üstten büyüyen listelerde satır atlar. |
+
+**Gövdeyi üreten katman (Adım 1.2).** `ProblemDetailAdvice`, her hatayı aynı
+şekle çeviriyor:
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `type` alanı | Sapma | **Göreli**: `/errors/conflicting-preferences`. Bölüm 35.4'ün örneği üretim alan adını kullanıyor, ama ürün dokümanı ne ismin ne alan adının koda gömülmesine izin veriyor (EK C.5) — RFC 7807 göreli referansa izin verir. |
+| `title` alanı | Ekleme | Koddan **türetilir** (`CONFLICTING_PREFERENCES` → "Conflicting preferences"), ayrı bir listede tutulmaz. RFC 7807 başlığın oluşumlar arası sabit olmasını ister; bakımı ayrı bir liste, kayan bir listedir. |
+| Yanıt durumu | Ekleme | Handler'lar `ResponseEntity` döner. Çıplak bir `ProblemDetail` dönmek yanıtın durumunu belirlemiyor — gövde 409 derken yanıt 500 gidiyordu. |
+| Bilinmeyen yol | Ekleme | `NoResourceFoundException` → **404 `RESOURCE_NOT_FOUND`**, son çareye düşmez. Eski bir yer imi ya da bir tarayıcı botu, 500 üretip log'u yığınla dolduracak kadar sıradan. |
+| Çapraz kiracı yazma denemesi | Ekleme | **500 `INTERNAL_ERROR`** + kimliksiz bir log satırı. 403 dönmek satırın varlığını doğrulardı; 404 dönmek de yanlış olurdu, çünkü okumalar zaten boş dönüyor — buraya ulaşan bir istek meşru bir istemciden gelemez, koddaki bir kusurdur. |
+| Doğrulama hatası | Ekleme | Yalnız **alan adları** yayınlanır, reddedilen değer değil: değer kullanıcı içeriğidir ve log'lanan, ekran görüntüsü alınan bir gövdede yeri yoktur (mutlak kural 4). |
+| `params` sıralaması | Düzeltme | `Map.copyOf` **kullanılmaz**. JDK'nın değişmez map'leri her JVM çalışmasında farklı tuzlanan bir sırayla dolaşılır; aynı hata iki koşuda farklı serileşiyordu. `LinkedHashMap` ile ekleme sırası korunuyor. |
 
 #### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
 
@@ -8726,7 +8742,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (25 kod, tipli `params`, `ResolutionAction`). **Sırada:** springdoc + RFC 7807 advice → `Profile` entity + `UserContext`→`ProfileRef` çözücü → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-11 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`) ve RFC 7807 gövdesini üreten `ProblemDetailAdvice`. **Sırada:** `UserContext` kararı → `Profile` entity + `UserContext`→`ProfileRef` çözücü → ilk endpoint + springdoc → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-12 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8769,6 +8785,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 9 | Anonim süre metni | Kopya "iki saat sonra" değil **"son etkinliğinden iki saat sonra"** demeli; TTL kayıyor. Ürün dokümanındaki ifade düzeltildi, dizedeki karşılığı frontend'in. |
 | 10 | **Hata kataloğu tamamlandı** | D.6.1'deki tablo her kodun `params` anahtarlarını ve tiplerini veriyor; `en.json` ve `tr.json` artık yazılabilir. Üç kod yeni: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED` — ICU karşılıkları gerekiyor. |
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
+| 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 
 ---
 
