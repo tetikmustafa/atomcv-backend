@@ -39,6 +39,17 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void aResponseNamesTheMediaTypeItActuallyProduces() throws Exception {
+        // Left unset, springdoc publishes */* and a generated client has to
+        // guess what to put in Accept.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.paths['/api/v1/profile'].get.responses.200"
+                        + ".content['application/json'].schema.$ref").value("#/components/schemas/Profile"))
+                .andExpect(jsonPath("$.paths['/api/v1/profile'].get.responses.500"
+                        + ".content['application/problem+json']").exists());
+    }
+
+    @Test
     void theResolutionVocabularyIsPublishedAsAnEnum() throws Exception {
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.Resolution.properties.action.enum")
