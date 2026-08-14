@@ -334,10 +334,10 @@ lives in **`EK D.6`** of the architecture document: the two closed vocabularies,
 ETag scope and format, pagination, download, and the Stage 2/3 items. Build
 against it rather than re-deciding it. In order:
 
-1. Type the error catalogue: every code's `params` keys **and their types**,
-   derived from the `PipelineError` records in Bölüm 25.2. That is the one piece
-   `EK D.6` still lists as open, and the frontend's ICU messages cannot be
-   written without it.
+1. ~~Type the error catalogue.~~ **Done** — `shared/error` holds `ErrorCode`
+   (25 codes, HTTP status, declared `params` with types), `ResolutionAction`,
+   `Resolution` and `UserFacingError`, which validates parameters against the
+   declaration as the body is built. The full table is in `EK D.6`.
 2. Add springdoc-openapi with the first endpoint, carrying the
    `resolutions[].action` enum, the error `code` enum and the ETag/pagination
    headers.

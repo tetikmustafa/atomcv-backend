@@ -8521,25 +8521,56 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 yalnız render eder ve isterse resolution satırının dışına düz bir "kapat"
 kontrolü koyar.
 
-**Hata kodları.** Bölüm 35.5 on pipeline hatasını sayıyor. Eksik olanlar
-(Bölüm 31.10'daki ingestion durumları düzyazıyla anlatılmış, kodsuz):
+**Hata kodları — tam katalog.** Bölüm 35.5 on pipeline hatasını sayıyor,
+Bölüm 31.10'daki ingestion durumları düzyazıyla anlatılıp kodsuz bırakılmış.
+Her kodun `params` anahtarları **ve tipleri** burada: ICU mesajı bunlarsız
+yazılamaz, çünkü `{pinnedPages, number}` biçimlendirir, `{pinnedPages}`
+yalnızca yerine koyar.
 
-| Durum | Kod | `params` |
+| Kod | HTTP | `params` |
 |---|---|---|
-| Taranmış PDF, metin katmanı yok | `PDF_NOT_TEXT_BASED` | — |
-| Çıkarım sıfır atom üretti | `EXTRACTION_EMPTY` | — |
-| Şifreli PDF | `PDF_ENCRYPTED` | — |
-| Dil tespit edilemedi | `LANGUAGE_UNDETECTED` | `detectedCandidates` |
-| Çıkarım denemelerden sonra zaman aşımına uğradı | `EXTRACTION_TIMEOUT` | — |
-| Günlük profil kotası doldu | `PROFILE_QUOTA_EXCEEDED` | `limit`, `resetsAt` |
-| Anonim oturum süresi doldu | `ANONYMOUS_SESSION_EXPIRED` | — |
-| Anonim atom sınırı aşıldı | `ATOM_LIMIT_EXCEEDED` | `limit`, `current` |
+| `INSUFFICIENT_PROFILE` | 422 | `completeness: integer`, `missing: string[]` |
+| `UNPARSEABLE_JOB_DESCRIPTION` | 422 | `confidence: number`, `skillsFound: integer` |
+| `CONFLICTING_PREFERENCES` | 409 | `pinnedPages: number`, `maxPages: integer` |
+| `FEATURE_REQUIRES_ACCOUNT` | 403 | `feature: string` |
+| `QUOTA_EXCEEDED` | 429 | `metric: string`, `resetsAt: timestamp` |
+| `ALL_PROVIDERS_UNAVAILABLE` | 503 | `tried: string[]` |
+| `COMPILATION_FAILED` | 502 | `detail: string`, `rawSourceAvailable: boolean` |
+| `PAGE_LIMIT_EXCEEDED` | 422 | `actual: integer`, `limit: integer` |
+| `REWRITE_VALIDATION_FAILED` | 500 | `atomId: uuid`, `issues: string[]` |
+| `EMBEDDING_UNAVAILABLE` | 503 | — |
+| `PDF_NOT_TEXT_BASED` | 422 | — |
+| `PDF_ENCRYPTED` | 422 | — |
+| `EXTRACTION_EMPTY` | 422 | — |
+| `EXTRACTION_TIMEOUT` | 504 | — |
+| `LANGUAGE_UNDETECTED` | 422 | `detectedCandidates: string[]` |
+| `PROFILE_QUOTA_EXCEEDED` | 429 | `limit: integer`, `resetsAt: timestamp` |
+| `ANONYMOUS_SESSION_EXPIRED` | 401 | — |
+| `ATOM_LIMIT_EXCEEDED` | 422 | `limit: integer`, `current: integer` |
+| `NO_ANONYMOUS_PROFILE` | 404 | — |
+| `PROFILE_ALREADY_EXISTS` | 409 | — |
+| `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
+| `CSRF_TOKEN_INVALID` | 403 | — |
+| `RESOURCE_NOT_FOUND` | 404 | `resource: string` |
+| `VERSION_CONFLICT` | 412 | `resource: string` |
+| `VALIDATION_FAILED` | 400 | `fields: string[]` |
 
-**Açık iş (Adım 1.2):** her kodun `params` anahtarları ve **tipleri** belgelenmeli.
-ICU mesajı bunlar olmadan yazılamaz — `"Sabitlediğin içerik 2.3 sayfa tutuyor,
-sınırın 1 sayfa"` için `pinnedPages: number` ve `maxPages: number` gerekiyor.
-Pipeline kodlarının params'ı Bölüm 25.2'deki `PipelineError` record'larından
-türetilir.
+**Adım 1.2'de eklenen üç kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
+adlandırmadığı durumlar: bulunamayan kaynak, `If-Match` uyuşmazlığı (Bölüm 35.6
+durumu veriyor, kodu vermiyor) ve girdi doğrulama. `resource` alanı kaynak
+**türünü** taşır (`atom`, `section`), içeriğini değil.
+
+**`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
+
+**Katalog kodda zorlanıyor, yalnız belgelenmiyor.** `params`, hata nesnesi
+kurulurken bildirime karşı doğrulanır: eksik anahtar, fazladan anahtar ve yanlış
+tip kurulumda patlar. Eksik bir parametre küçük bir kusur değildir — frontend'in
+ICU mesajı onu yerine koyar ve kullanıcı "Sabitlediğin içerik {pinnedPages}
+sayfa tutuyor" okur. P4'ün önlemek için var olduğu şey tam olarak budur ve
+burada patlaması, ekran görüntüsünde keşfedilmesinden ucuzdur.
+
+**`params` asla kullanıcı içeriği taşımaz** (mutlak kural 4): sayı, sınır,
+tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni değil.
 
 #### D.6.2 — Hata gövdesi, ETag, sayfalama (Aşama 1)
 
@@ -8650,6 +8681,8 @@ Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir. 1-
 | 7 | **Sözleşme cevapları artık EK D.6'da** | `BACKEND-CONTRACT-GAPS.md` ve `backend-contract-response.md` silindi; on altı maddenin verdiktleri de, kabul edilen iki tablo da EK D.6'da. Frontend reposundaki kopyalar da silinebilir. |
 | 8 | `generations` **ETag taşımaz** | O tabloda `version` kolonu yok. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliği talebidir — sessizce `If-Match` göndermek işe yaramaz. |
 | 9 | Anonim süre metni | Kopya "iki saat sonra" değil **"son etkinliğinden iki saat sonra"** demeli; TTL kayıyor. Ürün dokümanındaki ifade düzeltildi, dizedeki karşılığı frontend'in. |
+| 10 | **Hata kataloğu tamamlandı** | D.6.1'deki tablo her kodun `params` anahtarlarını ve tiplerini veriyor; `en.json` ve `tr.json` artık yazılabilir. Üç kod yeni: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED` — ICU karşılıkları gerekiyor. |
+| 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 
 ---
 
