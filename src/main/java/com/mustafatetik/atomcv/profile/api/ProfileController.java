@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,7 +69,21 @@ public class ProfileController {
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProfileResponse> own() {
-        return respond(profiles.own(currentUser.require()));
+        return respond(service.readOwn(currentUser.require()));
+    }
+
+    @Operation(summary = "Delete the profile and everything under it",
+            description = """
+                    Sections, entries, atoms and wordings go with it. The account \
+                    stays: the next read gives an empty profile back. Requires \
+                    If-Match — this is the one call that cannot be undone.""")
+    @ApiResponse(responseCode = "204", description = "Deleted")
+    @DeleteMapping
+    public ResponseEntity<Void> delete(
+            @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+
+        service.delete(currentUser.require(), ifMatch);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(

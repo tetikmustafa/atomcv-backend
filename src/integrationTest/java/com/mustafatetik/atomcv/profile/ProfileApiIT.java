@@ -5,13 +5,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +36,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class ProfileApiIT extends AbstractIntegrationTest {
 
+    private static final ObjectMapper JSON = new ObjectMapper();
+
     @Autowired
     private MockMvc mvc;
 
@@ -45,10 +50,15 @@ class ProfileApiIT extends AbstractIntegrationTest {
     /**
      * Other integration tests clear {@code users} after themselves, and the
      * startup runner only ran once for the shared context.
+     *
+     * <p>The profile goes too: these tests read a figure computed from the
+     * whole profile, so one starting where another finished would assert on
+     * whatever ran before it.
      */
     @BeforeEach
-    void ensureTheStandInUserExists() {
+    void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
     }
 
     @Test
@@ -59,8 +69,6 @@ class ProfileApiIT extends AbstractIntegrationTest {
 
     @Test
     void readingTheProfileCreatesItOnFirstUseAndCarriesItsVersion() throws Exception {
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
-
         mvc.perform(get("/api/v1/profile"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("ETag", "\"0\""))
@@ -229,6 +237,71 @@ class ProfileApiIT extends AbstractIntegrationTest {
                         .content("{ \"enabledLanguages\": 7 }"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    // ─── completeness and deletion ───
+
+    @Test
+    void completenessFollowsWhatTheProfileActuallyHolds() throws Exception {
+        mvc.perform(get("/api/v1/profile")).andExpect(jsonPath("$.completeness").value(0));
+
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com" },
+                                  "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk());
+
+        // Contact alone is worth 15 (Bolum 31.9).
+        mvc.perform(get("/api/v1/profile")).andExpect(jsonPath("$.completeness").value(15));
+
+        String section = JSON.readTree(mvc.perform(post("/api/v1/profile/sections")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{ \"kind\": \"experience\", \"title\": \"Experience\" }"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("id").asText();
+        mvc.perform(post("/api/v1/profile/entries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"sectionId\": \"" + section + "\", \"title\": \"Engineer\" }"))
+                .andExpect(status().isCreated());
+
+        // Plus 20 for having any, plus 10 for the position itself.
+        mvc.perform(get("/api/v1/profile")).andExpect(jsonPath("$.completeness").value(45));
+
+        assertThat(jdbc.queryForObject("SELECT completeness FROM profiles WHERE user_id = ?",
+                Integer.class, LocalDevCurrentUser.DEV_USER_ID))
+                .as("stored for the preflight gate, not only rendered")
+                .isEqualTo(45);
+    }
+
+    @Test
+    void deletingTheProfileTakesItsContentAndLeavesTheAccount() throws Exception {
+        String section = JSON.readTree(mvc.perform(post("/api/v1/profile/sections")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{ \"kind\": \"experience\", \"title\": \"Experience\" }"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("id").asText();
+
+        mvc.perform(delete("/api/v1/profile")).andExpect(status().is(428));
+
+        mvc.perform(delete("/api/v1/profile").header(HttpHeaders.IF_MATCH, currentEtag()))
+                .andExpect(status().isNoContent());
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM sections WHERE id = ?",
+                Integer.class, java.util.UUID.fromString(section))).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE id = ?",
+                Integer.class, LocalDevCurrentUser.DEV_USER_ID))
+                .as("the account survives its profile")
+                .isEqualTo(1);
+
+        // And the next read simply starts again.
+        mvc.perform(get("/api/v1/profile"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ETAG, "\"0\""))
+                .andExpect(jsonPath("$.completeness").value(0));
     }
 
     private String minimalBody(String headline) {
