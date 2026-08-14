@@ -62,6 +62,7 @@ public final class TemplateRegistry {
             708.245,
             12.0,
             Map.of(
+                    CapacityModel.HEADER_BLOCK, 52.0,
                     CapacityModel.SECTION_HEADER, 24.0,
                     // Two lines: the title, and the organization with its
                     // dates. A hand-written probe that lost the line break

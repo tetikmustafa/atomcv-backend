@@ -136,6 +136,10 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 \\typeout{CALIB|baselineskip|\\the\\baselineskip}
                 \\null
                 \\typeout{CALIB|start|\\the\\pagetotal}
+                \\atomcvName{Probe}
+                \\atomcvContact{Probe}
+                \\atomcvContact{Probe}
+                \\typeout{CALIB|afterHeaderBlock|\\the\\pagetotal}
                 \\section*{Probe}
                 \\typeout{CALIB|afterSection|\\the\\pagetotal}
                 \\atomcvEntry{Probe}{Probe}{Probe}{Probe}

@@ -24,6 +24,13 @@ public record CapacityModel(
         double baselineSkipPt,
         Map<String, Double> fixedCosts) {
 
+    /**
+     * The name, the headline and the contact line at the top of the page.
+     * Calibrated for the shape the renderer emits: one name and two centred
+     * lines under it.
+     */
+    public static final String HEADER_BLOCK = "headerBlock";
+
     /** A section heading with its rule and the space around it. */
     public static final String SECTION_HEADER = "sectionHeader";
 
