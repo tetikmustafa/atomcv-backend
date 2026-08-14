@@ -26,4 +26,9 @@ public class AtomVariantRepository extends ProfileScopedRepository<AtomVariant> 
     public List<AtomVariant> findAll(ProfileRef profile) {
         return jpa.findByProfileIdOrderByIdAsc(profile.id());
     }
+
+    /** Demotes whatever is primary on this atom, within this profile only. */
+    public void clearPrimary(ProfileRef profile, UUID atomId) {
+        jpa.clearPrimary(profile.id(), atomId);
+    }
 }
