@@ -78,6 +78,18 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void aClearableFieldIsPublishedAsAValueNotAWrapper() throws Exception {
+        // The tri-state lives in Java, not in the contract: on the wire the
+        // field is a string that may be null. A generated client must not end
+        // up with a { present, value } object to fill in.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.EntryPatch.properties.organization.type")
+                        .value("string"))
+                .andExpect(jsonPath("$.components.schemas.EntryPatch.properties.endDate.format")
+                        .value("date"));
+    }
+
+    @Test
     void theProfileShapeIsPublishedWithoutAnIdentifier() throws Exception {
         // Bolum 35.1: no path carries a profile id, so the schema does not
         // suggest one exists to be sent back.
