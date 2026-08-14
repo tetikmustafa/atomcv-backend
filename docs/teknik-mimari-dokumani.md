@@ -3582,7 +3582,7 @@ GET    /api/v1/auth/oauth/{provider}/start
 GET    /api/v1/auth/oauth/{provider}/callback
 
 ── Profil ──────────────────────────────────────────
-GET    /api/v1/profile
+GET    /api/v1/profile                      yoksa yaratır, 404 dönmez (EK D.8)
 PUT    /api/v1/profile
 PATCH  /api/v1/profile/preferences
 DELETE /api/v1/profile
@@ -8742,7 +8742,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`) ve RFC 7807 gövdesini üreten `ProblemDetailAdvice`. **Sırada:** `UserContext` kararı → `Profile` entity + `UserContext`→`ProfileRef` çözücü → ilk endpoint + springdoc → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-12 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`. **Sırada:** ilk endpoint + springdoc → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-13 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8752,10 +8752,48 @@ burasıdır.**
 
 | Soru | Neden bekliyor |
 |---|---|
-| İlk `UserContext` nereden gelir? | Kimlik Aşama 3'te (XI-A.6), ama Adım 1.2'nin endpoint'leri bir acting user istiyor ve `ProfileRef` onsuz üretilemiyor. İlk controller'dan önce karara bağlanacak: `local` profilinde çözülen sabit bir kullanıcı, `prod` altında var olamayacak biçimde. |
+| ~~İlk `UserContext` nereden gelir?~~ | **Karara bağlandı (EK D.8):** yalnız `local` profilinde var olan sabit bir kullanıcı; üretimde yedek bean yok, endpoint kullanıcı istediği anda uygulama açılışta düşer. |
 | Üretimde migration nasıl çalışır? | Bölüm 47'nin önerdiği özellik yok (EK D.1). Şu an Flyway üretimde de açılışta çalışıyor. |
 | Kota gününün zaman dilimi | `usage_counters.period` bir `DATE`; `resetsAt` gönderilmeden önce cevaplanmalı (EK D.6.5). |
 | Anonim akış kuyruğu kullanacak mı? | `jobs` tekil indeksindeki NULL kusuru ve Bölüm 51.6'nın gizlilik testi buna bağlı. |
+
+### D.8 — Adım 1.2: profil başı ve acting user
+
+**Karar — Aşama 1'in acting user'ı.** Kimlik Aşama 3'te (XI-A.6), ama Adım
+1.2'nin endpoint'leri bir `UserContext` istiyor ve `ProfileRef` onsuz
+üretilemiyor. Üç seçenek vardı:
+
+| Seçenek | Neden seçilmedi |
+|---|---|
+| İstek başlığından kullanıcı seçmek | Üretime sızdığı anda kimlik doğrulamayı komple atlayan bir arka kapı; test kolaylığı bu riski taşımıyor |
+| Kimlik gelene kadar endpoint yazmamak | Aşama 1'in geri kalanı (ölçüm, seçim, render) profil verisine bağlı; tıkanırdı |
+| **Yalnız `local` profilinde sabit bir kullanıcı** | ✅ Seçildi |
+
+`CurrentUser` arayüzü + `LocalDevCurrentUser` (`@Profile("local")`). **Yedek bean
+yok:** üretimde bir endpoint kullanıcı istediği anda uygulama açılışta gürültüyle
+düşer — herkese aynı kullanıcının verisini sessizce servis etmektense. Bu
+davranış kasıtlı ve gerçek implementasyon geldiğinde sınıf tek parça silinir.
+`@Profile("local")` anotasyonunun varlığı testle sabitlendi.
+
+`users` satırını JDBC ile ekliyor (`ON CONFLICT DO NOTHING`), çünkü identity
+modülünün henüz entity'si yok; Flyway ile yarışmasın diye `ApplicationRunner`
+olarak çalışıyor. Sabit kimlik `00000000-…-0001` — yeniden başlatmada yerel veri
+ve seed'ler anlamını korusun diye.
+
+**Profil başı.** `contact` ve `preferences` **map değil, tipli record**
+(Bölüm 14.2, 14.3): her alan CV başlığına render ediliyor ve map, "hangi
+anahtarlar var" sorusunu hem renderer'a hem frontend'e taşırdı. `Tone` artık
+JSON'da da küçük harf — `preferences` içinde Jackson serileştiriyor, JPA
+converter'ı değil.
+
+`Contact.toString()` ve `WritingStyle.toString()` içerik basmıyor: ilki tamamen
+kişisel veri, ikincisi kullanıcının yazdığı serbest metni taşıyor.
+
+**Karar — profil ilk kullanımda oluşur.** `ProfileResolver.resolve` profili
+bulamazsa yaratır. `profiles.user_id` tekil, yani bir kullanıcının tam olarak
+bir profili var ve yokluğu bir hata değil, hesabın yeni olması demek. 404
+dönmek, her istemciyi "henüz profilin yok" durumunu aynı boş satırı yaratmaya
+giden yolda bir hata hâli olarak ele almaya zorlardı.
 
 ### D.9 — Frontend'i ilgilendirenler
 
@@ -8786,6 +8824,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 10 | **Hata kataloğu tamamlandı** | D.6.1'deki tablo her kodun `params` anahtarlarını ve tiplerini veriyor; `en.json` ve `tr.json` artık yazılabilir. Üç kod yeni: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED` — ICU karşılıkları gerekiyor. |
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
+| 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
 
 ---
 
