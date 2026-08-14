@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
@@ -26,6 +27,12 @@ public record Contact(
 
     public static final Contact EMPTY = new Contact(null, null, null, null, null, null, null);
 
+    /**
+     * Not a JSON property. Jackson would otherwise write {@code "empty": false}
+     * into the column and then refuse to read the row back, because the record
+     * has no such component.
+     */
+    @JsonIgnore
     public boolean isEmpty() {
         return name == null && email == null && phone == null
                 && linkedin == null && github == null && website == null && location == null;
