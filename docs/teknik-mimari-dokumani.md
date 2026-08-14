@@ -8822,7 +8822,8 @@ burasıdır.**
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
 | Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
 | Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
-| Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
+| Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
+| Adım 1.5 — Ölçüm | 🔜 Sırada | ATOMCOST log parse, `render_costs` kalıcılığı (punto), şablon sabit maliyetleri, `FontMetricEstimator`, geçersizleşme | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
 | Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
 
@@ -8897,6 +8898,21 @@ giden yolda bir hata hâli olarak ele almaya zorlardı.
 | Test maliyeti | Ekleme | `LatexContainerIT` `@Tag("latex")` taşıyor ve `integrationTest`'ten **dışlanıyor**: imaj birkaç GB ve dakikalar sürüyor. `gradlew latexTest` ile, `docker/latex` değiştiğinde çalıştırılır. |
 | Ne doğrulanıyor | Ekleme | xelatex'in çalışması değil, **etrafındaki çitin durması**: `\write18` denemesi log'da `runsystem(touch /tmp/pwned)...disabled` ile reddediliyor ve dosya oluşmuyor; root dosya sistemi salt-okunur; süreç uid 1000. Bunlar bayrağın kurulu olduğuna inanmakla değil, çalışan container'a sorularak doğrulanıyor. |
 | Henüz yapılmayanlar | Açık | (a) Bölüm 29.2'nin **preamble format dump**'ı: gerçek preamble Adım 1.4'te doğuyor, ondan önce uydurmak olurdu. (b) CI'da **imaj taraması**: Trivy'nin misconfig taraması Dockerfile'ı artık buluyor, ama imajın kendisini taramak her koşuda birkaç GB'lık bir derleme demek — kayıt defterine push eklendiğinde oraya bağlanacak. |
+
+### D.8.2 — Adım 1.4: klasik şablon ve renderer
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Ortak preamble | Ekleme | `renderFinal` ve `renderMeasurement` **aynı metodu** çağırıyor (`PreambleBuilder.build`). Adım 1.4'ün kritik testi ikisinin preamble'ını karşılaştırıyor; farklı bir geometriyle alınan ölçüm, kimsenin basmayacağı bir belgeyi ölçer ve sayfa garantisi tam buna dayanıyor. |
+| `FontRegistry` sınıfı yok | Sapma | Bölüm 22.5 `FontRegistry.resolve(enum)` çağırıyor. **Enum'un kendisi whitelist**: `FontFamily` LaTeX adını taşıyor, yani araya bir eşleme tablosu koymadan da hiçbir kullanıcı dizesi `\setmainfont`'a ulaşamıyor. |
+| Fontlar imajda var olmalı | Ekleme | Kurulu olmayan bir font derleme sırasında **sessizce** başkasına düşer ve ölçülmüş bütün maliyetler yanlış olur — hatasız. `FontFamily`'nin üç değeri de container imajında (TeX Gyre). |
+| `HexColor` büyük harfe çevriliyor | Ekleme | `Locale.ROOT` ile. Yalnızca harf büyüklüğüyle ayrışan iki özelleştirme aksi hâlde iki ayrı ölçüm işine yol açardı. |
+| `String.format` ve locale | Ekleme | `Locale.ROOT`. Türkçe locale altında `%.2f` "0,60" yazıyor ve belge derlenmiyor — mutlak kural 7'nin sayı tarafı. Test locale'i değiştirip doğruluyor. |
+| URL kaçışı | Ekleme | `\href` argümanında ters bölü ve süslü parantez argümanı erkenden kapatıyor; bunlar **kaçırılmıyor, atılıyor**. Bozuk bir link, derlenmeyen bir belgeden iyidir. |
+| Kaçış önce, işaretleme sonra | Ekleme | Kullanıcı metni önce escape ediliyor, sonra mark komutuna sarılıyor: aksi hâlde metnin içindeki `\textbf{...}` gerçek bir komut olurdu. Ayrı bir test bunu sabitliyor. |
+| Klasik şablon | Ekleme | Tek kolon, grafiksiz (Bölüm 33.5 "ATS-güvenli"). ATS metin çıkarır; insana hoş görünüp çıkarımda dağılan bir düzen, insana hiç ulaşmayan bir CV demektir. |
+| Ölçüm anahtarı karakter kümesi | Ekleme | `MeasurableItem.key` içinde `|`, `%`, `{`, `}`, boşluk ve TeX'in özel karakterleri yasak: anahtar log satırından `|` ile bölünerek geri okunuyor. Anahtarlar kod tarafından id'lerden üretiliyor, yani bu bir saldırıyı değil bir hatayı yakalıyor. |
+| Doğrulama | Ekleme | Renderer'ın çıktısı **gerçekten derleniyor**: `latexTest` içindeki iki test, üretilen CV'yi container'a gönderip PDF alıyor ve ölçüm belgesinden `ATOMCOST|var-1|<pt>|<pt>` satırlarını okuyor. Birim testler bunu gösteremez. |
 
 ### D.9 — Frontend'i ilgilendirenler
 
