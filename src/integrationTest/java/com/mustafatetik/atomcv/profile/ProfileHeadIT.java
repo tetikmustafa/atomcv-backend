@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile;
 
+import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.profile.domain.Contact;
@@ -15,26 +16,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 /**
  * The profile head: its mapping against the real schema, and the one place a
  * user becomes a {@code ProfileRef}.
  */
-@SpringBootTest
-@Testcontainers
-class ProfileHeadIT {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
-            DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"));
+class ProfileHeadIT extends AbstractIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;

@@ -1,16 +1,11 @@
 package com.mustafatetik.atomcv.db;
 
+import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.UUID;
 
@@ -25,14 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * and the parent row would be a silent cross-tenant leak, so it is asserted
  * here rather than trusted.
  */
-@SpringBootTest
-@Testcontainers
-class SchemaMigrationIT {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
-            DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"));
+class SchemaMigrationIT extends AbstractIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;
