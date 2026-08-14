@@ -297,7 +297,7 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress. Adım 1.1 and 1.2 are complete.**
+**Stage 1 — Walking Skeleton: in progress. Adım 1.1, 1.2 and 1.3 are complete.**
 
 ### What exists
 
@@ -356,8 +356,12 @@ against it rather than re-deciding it. In order:
    complete. The ≤6 query test still covers the assembler only; extend it if
    the profile head ever joins that load.
 
-Then Adım 1.3 (LaTeX container), 1.4 (renderer), 1.5 (measurement), 1.6
-(selection), 1.7 (Faz E/F + PDF), 1.8 (general CV mode), 1.9 (golden set).
+Then Adım 1.4 (renderer), 1.5 (measurement), 1.6 (selection), 1.7 (Faz E/F +
+PDF), 1.8 (general CV mode), 1.9 (golden set).
+
+**`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
+excluded from `integrationTest` because the image takes minutes; run it when
+`docker/latex` changes. Two things it already caught are in `EK D.8.1`.
 
 Still open in Stage 1:
 - **Where does the first `UserContext` come from?** Identity is Stage 3
@@ -374,11 +378,9 @@ Still open in Stage 1:
   ETag/pagination headers. Six of the frontend's sixteen contract gaps close
   by themselves once that schema exists — but only if it carries more than
   happy-path payloads.
-- Register the LaTeX container under `profiles: [full]` in `docker-compose.yml`.
-  The `full` profile currently matches no service, so `make dev-full` starts
-  the core services and silently does nothing else.
-- The CI `scan` job finds nothing until a Dockerfile exists. When the LaTeX
-  image lands, add an image scan next to the filesystem one.
+- Add an image scan to CI. The Dockerfile now exists, so Trivy's misconfig
+  scan covers it, but the built image is not scanned — that needs a build in
+  CI (a few GB) and belongs with the registry push.
 - Decide whether to add Spotless. Bölüm 47.1 runs `spotlessCheck`, but no
   formatter is configured, so CI has no formatting gate at all today.
 

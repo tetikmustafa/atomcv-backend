@@ -8820,8 +8820,8 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). **Adım 1.2 tamamlandı.** **Sırada:** Adım 1.3 — LaTeX container | D.9 · 7-20 |
-| Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
+| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
+| Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
 | Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
@@ -8882,6 +8882,21 @@ bulamazsa yaratır. `profiles.user_id` tekil, yani bir kullanıcının tam olara
 bir profili var ve yokluğu bir hata değil, hesabın yeni olması demek. 404
 dönmek, her istemciyi "henüz profilin yok" durumunu aynı boş satırı yaratmaya
 giden yolda bir hata hâli olarak ele almaya zorlardı.
+
+### D.8.1 — Adım 1.3: LaTeX container
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `ulimit`'lerin yeri | Düzeltme | Bölüm 29.4 onları container entrypoint'ine koyuyor. Orada **JVM'e de** uygulanıyorlar: `ulimit -v 512m` ile sunucu heap'ini ayıramadan ölüyor, ve `ulimit -t 20` ilk yirmi saniyeden sonra sunucunun kendisini öldürürdü. Limitler her derlemeye ait; `run-xelatex.sh` onları kurup `exec xelatex` yapıyor. |
+| Bölüm 22.4'ün `\newsavebox{\mbox}`'u | Düzeltme | `\mbox` LaTeX'te zaten tanımlı: doküman `! LaTeX Error: Command \mbox already defined.` ile durur. Ölçüm dokümanı başka bir ad kullanmalı (`\measurebox`). Adım 1.5 bunu ilk denemede yaşayacaktı. |
+| HTTP sarmalayıcı | Ekleme | Tek dosyalık, bağımlılıksız bir Java sunucusu (JDK'nın kendi `HttpServer`'ı). İmaj, yamalanması gerekebilecek hiçbir kütüphane taşımıyor ve sarmalayıcının tamamı bir oturumda okunuyor. |
+| İki uç | Ekleme | `/compile` → PDF; `/measure` → **TeX log'u**. Ölçüm (Bölüm 26) PDF'i değil, `\typeout{ATOMCOST\|…}` satırlarını istiyor; ikisini ayırmak, ölçümün PDF üretmeye zorlanmamasını sağlıyor. Başarısız derleme **422** döner (belge hatalı, servis değil) ve gövdesi log'dur. |
+| `javac -encoding UTF-8` | Ekleme | `build.gradle.kts` ile aynı sebep: container'ın platform charset'i US-ASCII, ve bir yorumdaki tire derlemeyi düşürüyor. |
+| Healthcheck kabuğu | Düzeltme | `/dev/tcp` bir **bash** özelliği; `sh` (dash) "Directory nonexistent" diyor ve container bozuk gibi görünüyor. `curl`/`wget` bilerek kurulmuyor — buradan ağa uzanabilen ne kadar az araç varsa o kadar iyi. |
+| Geliştirmede ağ izolasyonu | Sapma | Üretimde container `internal: true` ağında, dışarı yolu ve yayınlanmış portu yok. **Geliştirmede olamıyor:** `make dev` backend'i host'ta çalıştırıyor ve Docker, yalnız internal ağa bağlı bir container için port yayınlamıyor — host'un içeri girecek yolu kalmıyor. Yerel içerik geliştiricinin kendi içeriği; fark `docker-compose.yml`'de yazılı, keşfedilmiyor. |
+| Test maliyeti | Ekleme | `LatexContainerIT` `@Tag("latex")` taşıyor ve `integrationTest`'ten **dışlanıyor**: imaj birkaç GB ve dakikalar sürüyor. `gradlew latexTest` ile, `docker/latex` değiştiğinde çalıştırılır. |
+| Ne doğrulanıyor | Ekleme | xelatex'in çalışması değil, **etrafındaki çitin durması**: `\write18` denemesi log'da `runsystem(touch /tmp/pwned)...disabled` ile reddediliyor ve dosya oluşmuyor; root dosya sistemi salt-okunur; süreç uid 1000. Bunlar bayrağın kurulu olduğuna inanmakla değil, çalışan container'a sorularak doğrulanıyor. |
+| Henüz yapılmayanlar | Açık | (a) Bölüm 29.2'nin **preamble format dump**'ı: gerçek preamble Adım 1.4'te doğuyor, ondan önce uydurmak olurdu. (b) CI'da **imaj taraması**: Trivy'nin misconfig taraması Dockerfile'ı artık buluyor, ama imajın kendisini taramak her koşuda birkaç GB'lık bir derleme demek — kayıt defterine push eklendiğinde oraya bağlanacak. |
 
 ### D.9 — Frontend'i ilgilendirenler
 

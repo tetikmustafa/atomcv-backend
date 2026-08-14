@@ -1,3 +1,5 @@
+import java.time.Duration
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.16"
@@ -80,4 +82,18 @@ tasks.register<Test>("integrationTest") {
     testClassesDirs = sourceSets["integrationTest"].output.classesDirs
     classpath = sourceSets["integrationTest"].runtimeClasspath
     shouldRunAfter(tasks.test)
+    // The LaTeX image is a couple of gigabytes and takes minutes to build.
+    // Paying that on every run would push the suite from half a minute to
+    // several, and the thing it guards changes rarely.
+    useJUnitPlatform { excludeTags("latex") }
+}
+
+tasks.register<Test>("latexTest") {
+    group = "verification"
+    description = "Builds the LaTeX image and compiles through it. Slow; run it when "
+        .plus("docker/latex changes.")
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform { includeTags("latex") }
+    timeout.set(Duration.ofMinutes(20))
 }
