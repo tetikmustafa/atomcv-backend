@@ -349,9 +349,11 @@ against it rather than re-deciding it. In order:
 3. ~~`Profile` entity, `ProfileRepository`, `ProfileResolver`.~~ **Done** —
    the resolver is the only place a `UserContext` becomes a `ProfileRef`, and
    it creates the profile on first use.
-4. Profile update with `If-Match`, then section/entry/atom CRUD, completeness
-   percentage, and the ≤6 query test extended to the full load once the
-   profile head is part of it.
+4. ~~Profile update with `If-Match`.~~ **Done** — `PUT /profile` and
+   `PUT /profile/preferences`, both requiring the header (428 without it,
+   412 when stale).
+5. Section/entry/atom CRUD, completeness percentage, and the ≤6 query test
+   extended to the full load once the profile head is part of it.
 
 Then Adım 1.3 (LaTeX container), 1.4 (renderer), 1.5 (measurement), 1.6
 (selection), 1.7 (Faz E/F + PDF), 1.8 (general CV mode), 1.9 (golden set).

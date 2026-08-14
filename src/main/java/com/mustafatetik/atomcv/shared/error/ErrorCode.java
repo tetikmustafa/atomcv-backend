@@ -61,6 +61,7 @@ public enum ErrorCode {
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),
+    PRECONDITION_REQUIRED(428),
     VALIDATION_FAILED(400, param("fields", STRING_ARRAY)),
     INTERNAL_ERROR(500);
 

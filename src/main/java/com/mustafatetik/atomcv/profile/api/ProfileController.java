@@ -1,20 +1,31 @@
 package com.mustafatetik.atomcv.profile.api;
 
+import com.mustafatetik.atomcv.profile.api.dto.PreferencesUpdateRequest;
 import com.mustafatetik.atomcv.profile.api.dto.ProfileResponse;
+import com.mustafatetik.atomcv.profile.api.dto.ProfileUpdateRequest;
 import com.mustafatetik.atomcv.profile.domain.Profile;
+import com.mustafatetik.atomcv.profile.service.ProfileHeadUpdate;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.service.ProfileService;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
+import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,10 +37,12 @@ public class ProfileController {
 
     private final CurrentUser currentUser;
     private final ProfileResolver profiles;
+    private final ProfileService service;
 
-    ProfileController(CurrentUser currentUser, ProfileResolver profiles) {
+    ProfileController(CurrentUser currentUser, ProfileResolver profiles, ProfileService service) {
         this.currentUser = currentUser;
         this.profiles = profiles;
+        this.service = service;
     }
 
     @Operation(
@@ -55,9 +68,72 @@ public class ProfileController {
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProfileResponse> own() {
-        Profile profile = profiles.own(currentUser.require());
+        return respond(profiles.own(currentUser.require()));
+    }
+
+    @Operation(
+            summary = "Replace the profile head",
+            description = """
+                    Requires `If-Match`. A field left out is cleared — this replaces \
+                    the head rather than patching it. Preferences are not part of it \
+                    and have their own endpoint.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The head as it now stands",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProfileResponse.class)),
+                    headers = @Header(name = "ETag", description = "The new version",
+                            schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "412", description = "VERSION_CONFLICT — someone saved first",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "428", description = "PRECONDITION_REQUIRED — no If-Match",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ProfileResponse> replace(
+            @Parameter(description = "The version last read, quoted", example = "\"7\"")
+            @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
+            @Valid @RequestBody ProfileUpdateRequest request) {
+
+        return respond(service.replace(currentUser.require(), ifMatch, new ProfileHeadUpdate(
+                request.headline(),
+                request.contactOrEmpty(),
+                request.selfDescription(),
+                request.sourceLanguage(),
+                request.enabledLanguages())));
+    }
+
+    @Operation(summary = "Replace the generation preferences", description = """
+            Requires `If-Match`. Separate from the head so that editing a headline \
+            cannot reset someone's writing style by omission.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The head as it now stands",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProfileResponse.class)),
+                    headers = @Header(name = "ETag", description = "The new version",
+                            schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "412", description = "VERSION_CONFLICT",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PutMapping(path = "/preferences", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ProfileResponse> replacePreferences(
+            @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
+            @Valid @RequestBody PreferencesUpdateRequest request) {
+
+        return respond(service.replacePreferences(
+                currentUser.require(), ifMatch, request.toPreferences()));
+    }
+
+    private static ResponseEntity<ProfileResponse> respond(Profile profile) {
         return ResponseEntity.ok()
-                .eTag("\"" + profile.getVersion() + "\"")
+                .eTag(EntityTags.of(profile.getVersion() == null ? 0L : profile.getVersion()))
                 .body(ProfileResponse.of(profile));
     }
 }

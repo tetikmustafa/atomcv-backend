@@ -1,7 +1,10 @@
 package com.mustafatetik.atomcv.shared.error;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mustafatetik.atomcv.shared.security.CrossTenantAccessException;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ProblemDetail;
@@ -65,6 +68,28 @@ public class ProblemDetailAdvice {
                 .distinct()
                 .sorted()
                 .toList();
+        return respond(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                .param("fields", fields)
+                .build());
+    }
+
+    /**
+     * A body the parser could not turn into the request type — a malformed
+     * document, a number where a string belongs, or a value a record's
+     * constructor refuses. All of those are the client's mistake, and without
+     * this they would reach the catch-all and answer 500.
+     *
+     * <p>Jackson knows which field it choked on; the value it choked on stays
+     * out of the response for the same reason validation errors do.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ProblemDetail> handle(HttpMessageNotReadableException exception) {
+        List<String> fields = exception.getCause() instanceof JsonMappingException mapping
+                ? mapping.getPath().stream()
+                        .map(JsonMappingException.Reference::getFieldName)
+                        .filter(Objects::nonNull)
+                        .toList()
+                : List.of();
         return respond(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
                 .param("fields", fields)
                 .build());
