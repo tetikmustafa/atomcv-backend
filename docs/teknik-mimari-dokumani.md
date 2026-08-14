@@ -3584,7 +3584,7 @@ GET    /api/v1/auth/oauth/{provider}/callback
 ── Profil ──────────────────────────────────────────
 GET    /api/v1/profile                      yoksa yaratır, 404 dönmez (EK D.8)
 PUT    /api/v1/profile
-PATCH  /api/v1/profile/preferences
+PUT    /api/v1/profile/preferences       PATCH değil — tamamını değiştirir (EK D.6.2)
 DELETE /api/v1/profile
 GET    /api/v1/profile/export               JSON + Markdown
 
@@ -3740,7 +3740,12 @@ Gönderilmeyen alanlar dokunulmaz. Versiyon uyuşmazsa **412 Precondition Failed
 
 JPA `@Version` → ETag.
 
-> **Frontend (EK D.9 · 8).** ETag yalnız `version` kolonu olan altı tabloda:
+> **Frontend (EK D.9 · 8, 15).** **`If-Match` yazma işlemlerinde zorunludur**;
+> başlıksız istek `428 PRECONDITION_REQUIRED` alır, bayat etiket `412
+> VERSION_CONFLICT` + `retry`. Gerekçe P8: önkoşulsuz yazma, kullanıcının kendi
+> işini sessizce ezmenin adıdır.
+>
+> ETag yalnız `version` kolonu olan altı tabloda:
 > `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`.
 > **`generations` bunlardan biri değil** — üretim kaynaklarına `If-Match`
 > göndermek işe yaramaz, sonuç ekranı iyimser kilit istiyorsa bu bir şema
@@ -8605,6 +8610,7 @@ yalnızca yerine koyar.
 | `CSRF_TOKEN_INVALID` | 403 | — |
 | `RESOURCE_NOT_FOUND` | 404 | — |
 | `VERSION_CONFLICT` | 412 | — |
+| `PRECONDITION_REQUIRED` | 428 | — |
 | `VALIDATION_FAILED` | 400 | `fields: string[]` |
 | `INTERNAL_ERROR` | 500 | — |
 
@@ -8649,6 +8655,18 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
 | Çapraz kiracı yazma denemesi | Ekleme | **500 `INTERNAL_ERROR`** + kimliksiz bir log satırı. 403 dönmek satırın varlığını doğrulardı; 404 dönmek de yanlış olurdu, çünkü okumalar zaten boş dönüyor — buraya ulaşan bir istek meşru bir istemciden gelemez, koddaki bir kusurdur. |
 | Doğrulama hatası | Ekleme | Yalnız **alan adları** yayınlanır, reddedilen değer değil: değer kullanıcı içeriğidir ve log'lanan, ekran görüntüsü alınan bir gövdede yeri yoktur (mutlak kural 4). |
 | `params` sıralaması | Düzeltme | `Map.copyOf` **kullanılmaz**. JDK'nın değişmez map'leri her JVM çalışmasında farklı tuzlanan bir sırayla dolaşılır; aynı hata iki koşuda farklı serileşiyordu. `LinkedHashMap` ile ekleme sırası korunuyor. |
+
+**Yazma işlemleri (Adım 1.2).**
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `If-Match` zorunlu | Ekleme | Bölüm 35.6 başlığı gösteriyor ama zorunlu olduğunu söylemiyor. **Zorunlu.** Önkoşulsuz bir yazma, P8'in yasakladığı şeyin ta kendisi: iki sekme açık, ikinci kayıt kazanıyor, ilk düzenleme kimseye söylenmeden gidiyor. İstemcide sürüm zaten var (tekilde ETag, koleksiyonda öğe başına `version`), yani istemek bedava. Başlık yoksa **428 `PRECONDITION_REQUIRED`**. |
+| Önkoşulun kontrol yeri | Ekleme | Yazan transaction'ın **içinde**. Kontrolle kayıt arasına bir şey giremiyor; girerse de `version` kolonu yakalıyor. |
+| Zayıf etiket | Ekleme | `W/"7"` kabul edilir — bir vekil sunucu etiketi yolda zayıflatabilir, satırı tanımlayan içindeki sürümdür. Tırnaksız `7` kabul edilmez. |
+| `PUT /profile` semantiği | Ekleme | **Değiştirir, yamalamaz**: gönderilmeyen alan temizlenir. `preferences` bu gövdenin parçası değil — başlığını düzenleyen biri, unutarak yazım tercihlerini sıfırlamasın diye. |
+| `PATCH /profile/preferences` yerine `PUT` | Sapma | Bölüm 35.2 `PATCH` diyor. Uygulanan **`PUT /api/v1/profile/preferences`**: tercihler bir ayar formudur, istemci her zaman tüm nesneyi taşır, ve nested bir merge-patch'in belirsizliğini (bir alanı silmekle göndermemek arasındaki fark) taşımaya değmez. |
+| Ayrıştırılamayan gövde | Ekleme | `HttpMessageNotReadableException` → **400 `VALIDATION_FAILED`**, alan adıyla. Bu olmadan bozuk bir JSON ya da record constructor'ının reddettiği bir değer son çareye düşüp 500 dönerdi. |
+| Doğrulama sınırları | Ekleme | Uzunluklar API katmanında (`headline` 200, `selfDescription` 4000, `customInstructions` 1000, `maxPages` 1-10). Kolonlar `TEXT` kalıyor — Türkçe bir başlık İngilizcesinden uzun ve kimse sınırı cümlenin ortasında keşfetmemeli — ama sınırsız alan, sınırsız satır, sınırsız render ve sınırsız prompt demek. |
 
 #### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
 
@@ -8744,7 +8762,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **Sırada:** profil güncelleme (`If-Match`) → bölüm/entry/atom CRUD → tamamlanma yüzdesi | D.9 · 7-14 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile` ve `PUT /profile/preferences`** (`If-Match` zorunlu). **Sırada:** bölüm/entry/atom CRUD → tamamlanma yüzdesi | D.9 · 7-15 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8837,6 +8855,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 15 | **Yazmalarda `If-Match` zorunlu, ve `preferences` `PUT` ile** | Başlıksız istek `428 PRECONDITION_REQUIRED` (yeni kod, ICU karşılığı gerekiyor), bayat etiket `412 VERSION_CONFLICT` + `retry`. `PUT /profile` **değiştirir**: gönderilmeyen alan temizlenir, yani formun tüm alanları gönderilmeli. Tercihler ayrı endpoint'te ve **`PATCH` değil `PUT`** — Bölüm 35.2'nin listesi bu satırda güncellendi. |
 | 14 | **`npm run gen:api` artık çalışabilir** | Şema `/v3/api-docs` üzerinde yayınlanıyor (üretimde kapalı, lokalde ve CI'da açık). İçinde: `ResolutionAction` ve `ErrorCode` enum olarak, `ApiError` gövdesi, ve `GET /api/v1/profile` yanıtında **`ETag` başlığı**. `Profile` şemasında **`id` ve `version` alanı yok** — sahiplik oturumdan gelir, sürüm ETag'dedir. |
 
 ---

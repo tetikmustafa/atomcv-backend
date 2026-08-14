@@ -2,7 +2,12 @@ package com.mustafatetik.atomcv.profile;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -87,5 +94,149 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"))
                 .andExpect(jsonPath("$.type").value("/errors/resource-not-found"));
+    }
+
+    // ─── writes carry a precondition (Bolum 35.6, P8) ───
+
+    @Test
+    void replacingTheHeadStoresItAndMovesTheVersionOn() throws Exception {
+        String etag = currentEtag();
+
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, etag)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com",
+                                               "location": "İstanbul, Türkiye" },
+                                  "selfDescription": "Builds things that stay built",
+                                  "sourceLanguage": "en",
+                                  "enabledLanguages": ["en", "tr"]
+                                }"""))
+                .andExpect(status().isOk())
+                .andExpect(header().string("ETag", not(etag)))
+                .andExpect(jsonPath("$.headline").value("Backend Engineer"))
+                .andExpect(jsonPath("$.contact.name").value("Mustafa Tetik"))
+                .andExpect(jsonPath("$.contact.location").value("İstanbul, Türkiye"))
+                .andExpect(jsonPath("$.enabledLanguages").value(contains("en", "tr")));
+
+        mvc.perform(get("/api/v1/profile"))
+                .andExpect(jsonPath("$.headline").value("Backend Engineer"))
+                .andExpect(jsonPath("$.selfDescription").value("Builds things that stay built"));
+    }
+
+    @Test
+    void aWriteWithoutAPreconditionIsRefused() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("No precondition")))
+                .andExpect(status().is(428))
+                .andExpect(jsonPath("$.code").value("PRECONDITION_REQUIRED"));
+
+        mvc.perform(get("/api/v1/profile"))
+                .andExpect(jsonPath("$.headline").value(not("No precondition")));
+    }
+
+    @Test
+    void aStalePreconditionIsRefusedAndOffersARetry() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, "\"9999\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("Someone else was first")))
+                .andExpect(status().isPreconditionFailed())
+                .andExpect(jsonPath("$.code").value("VERSION_CONFLICT"))
+                .andExpect(jsonPath("$.resolutions[0].action").value("retry"));
+    }
+
+    @Test
+    void replacingTheHeadClearsWhatWasLeftOut() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("Only a headline")))
+                .andExpect(status().isOk())
+                // PUT replaces: the previous self-description is gone, not kept.
+                .andExpect(jsonPath("$.selfDescription").doesNotExist())
+                .andExpect(jsonPath("$.contact").isEmpty());
+    }
+
+    @Test
+    void replacingTheHeadLeavesPreferencesAlone() throws Exception {
+        mvc.perform(put("/api/v1/profile/preferences")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "writingStyle": { "emphasizeMetrics": false, "tone": "casual",
+                                                    "conciseSentences": true },
+                                  "defaults": { "maxPages": 2, "templateId": "modern",
+                                                "cvLanguage": "tr", "coverLetterLanguage": "tr" } }"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.preferences.defaults.maxPages").value(2));
+
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("Still two pages")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.preferences.defaults.maxPages").value(2))
+                .andExpect(jsonPath("$.preferences.writingStyle.tone").value("casual"));
+    }
+
+    // ─── invalid input is the client's problem, and says which field ───
+
+    @Test
+    void anInvalidFieldIsNamedButItsValueIsNot() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "email": "not-an-address" },
+                                  "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(contains("contact.email")))
+                .andExpect(content().string(not(containsString("not-an-address"))));
+    }
+
+    @Test
+    void anEmptyLanguageListIsRefused() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"headline\": \"x\", \"enabledLanguages\": [] }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields").value(contains("enabledLanguages")));
+    }
+
+    @Test
+    void aPageCountBelowOneIsRefused() throws Exception {
+        mvc.perform(put("/api/v1/profile/preferences")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"defaults\": { \"maxPages\": 0 } }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void aBodyThatCannotBeParsedIsNotAServerFailure() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"enabledLanguages\": 7 }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    private String minimalBody(String headline) {
+        return "{ \"headline\": \"" + headline + "\", \"enabledLanguages\": [\"en\"] }";
+    }
+
+    private String currentEtag() throws Exception {
+        return mvc.perform(get("/api/v1/profile"))
+                .andReturn().getResponse().getHeader(HttpHeaders.ETAG);
     }
 }
