@@ -58,6 +58,14 @@ public class LocalDevCurrentUser implements CurrentUser, ApplicationRunner {
      */
     @Override
     public void run(ApplicationArguments args) {
+        ensureUserExists();
+    }
+
+    /**
+     * Idempotent, and public so that a test which clears {@code users} can put
+     * the row back without repeating the statement.
+     */
+    public void ensureUserExists() {
         int inserted = jdbc.update("""
                 INSERT INTO users (id, email, display_name, role, email_verified)
                 VALUES (?, ?, 'Local developer', 'USER', true)

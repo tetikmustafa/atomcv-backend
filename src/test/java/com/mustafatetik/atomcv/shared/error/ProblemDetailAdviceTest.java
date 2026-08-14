@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Every failure leaves as the body of Bolum 35.4. The controller here exists
  * only to throw; the advice under test is production code.
  */
-@WebMvcTest
+// `controllers` narrows the slice to this test's own controller, so the real
+// ones stay out of it; `@Import` is what actually registers it, since a nested
+// test class is never component-scanned.
+@WebMvcTest(controllers = ProblemDetailAdviceTest.ThrowingController.class)
 @Import({ProblemDetailAdvice.class, ProblemDetailAdviceTest.ThrowingController.class})
 class ProblemDetailAdviceTest {
 

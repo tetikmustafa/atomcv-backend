@@ -7,6 +7,15 @@ spring:
   jpa:
     show-sql: false
 
+# The schema is a build-time artefact for the frontend's type generation
+# (Bölüm XI-B.9.1), not something production has to serve. Serving it publishes
+# every endpoint and payload shape to anyone who asks.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 logging:
   level:
     root: info

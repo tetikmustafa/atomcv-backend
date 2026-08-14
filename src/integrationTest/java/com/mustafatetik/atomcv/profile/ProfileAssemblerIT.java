@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile;
 
+import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.profile.domain.Atom;
@@ -22,28 +23,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 /**
  * Bolum 52.2: a profile load must stay inside six queries no matter how large
  * the profile is. The failure this guards against is not slow — it is invisible
  * until production, because the code that causes it looks ordinary.
  */
-@SpringBootTest(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
-@Testcontainers
-class ProfileAssemblerIT {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
-            DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"));
+class ProfileAssemblerIT extends AbstractIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;

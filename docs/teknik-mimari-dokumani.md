@@ -8444,6 +8444,8 @@ kopyalandığı için (XI-B.1.3) frontend tarafının okuması gereken tek yer o
 | OWASP dependency-check (Bölüm 47.1) | Sapma | Kullanılmıyor: NVD API anahtarı istiyor, anahtarsız taraması yavaş ve oran-sınırlı. Aynı kapsamı **Dependabot** derleme maliyeti olmadan veriyor. |
 | Lombok (XI-A.2 Adım 0.1'in bağımlılık listesinde var, örnek `build.gradle.kts`'te yok) | Düzeltme | **Kullanılmıyor.** Değer nesneleri record, gerisi düz constructor. |
 | Satır sonları ve dosya izinleri | Ekleme | `.gitattributes` (`* text=auto eol=lf`, `.bat`/`.cmd` için CRLF) ve `gradlew`'in 100755 kalması. Windows'ta geliştirilip Linux runner'da çalışan bir repo, bu ikisi olmadan sessizce kırılır: CRLF'li ya da 100644 modlu `gradlew` her CI koşusunu düşürür. |
+| Entegrasyon testlerinin veritabanı | Ekleme | Tek bir Postgres container'ı, ortak bir taban sınıfta **statik başlatılıp hiç durdurulmuyor** (Testcontainers'ın singleton deseni). `@Testcontainers` + `@Container` ilk test sınıfından sonra container'ı durdurur, ama Spring'in önbelleklediği context hâlâ o portu gösterir ve sonraki her sınıf "connection refused" ile düşer. Ryuk, JVM kapanınca temizliyor. |
+| Hibernate istatistikleri | Ekleme | Tüm entegrasyon suite'inde açık. Bölüm 52.2'nin altı sorgu bütçesi bununla ölçülüyor; özelliği tek bir sınıfın üstünde tutmak, o sınıf yeniden düzenlendiği anda sayacın sıfır okumasına ve **testin yine geçmesine** yol açtı. Alt sınır iddiası (`isBetween(4, 6)`) yakaladı. |
 | Gradle dağıtımının doğrulanması | Ekleme | `gradle-wrapper.properties` içinde `distributionSha256Sum`, yayınlanan toplama karşı doğrulanmış. Wrapper, indirdiği arşivi aksi halde denetlemez. |
 | Entegrasyon testlerinin yeri | Ekleme | Ayrı `integrationTest` source set'i, `check`'e **bağlanmadan**. `gradlew test` Docker'sız ve hızlı kalır; `gradlew build` Docker Desktop kapalıyken de çalışır. CI ikisini ayrı adım olarak çalıştırır. |
 | Commit kancası (XI-A.1.4 elle `.git/hooks/pre-commit` yazıyor) | Sapma | **pre-commit framework** + `.pre-commit-config.yaml`. `.git/hooks/` versiyonlanmaz; elle yazılan kanca ikinci makinede yoktur ve kimse fark etmez. İlk üç commit kancasız geçtikten sonra fark edildi. |
@@ -8742,7 +8744,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`. **Sırada:** ilk endpoint + springdoc → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-13 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **Sırada:** profil güncelleme (`If-Match`) → bölüm/entry/atom CRUD → tamamlanma yüzdesi | D.9 · 7-14 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8789,6 +8791,16 @@ converter'ı değil.
 `Contact.toString()` ve `WritingStyle.toString()` içerik basmıyor: ilki tamamen
 kişisel veri, ikincisi kullanıcının yazdığı serbest metni taşıyor.
 
+**İlk endpoint ve yayınlanan şema.** `GET /api/v1/profile`, springdoc ile
+birlikte geldi.
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Şema üretimi | Ekleme | springdoc-openapi; `/v3/api-docs`. **Üretimde kapalı** (`springdoc.api-docs.enabled: false`): şema, frontend'in tip üretimi için bir derleme zamanı çıktısıdır (XI-B.9.1), üretimin servis etmesi gereken bir şey değil — servis etmek her endpoint'i ve gövde şeklini isteyene açar. |
+| Hata gövdesinin şemaya girmesi | Ekleme | Yanıtları `ProblemDetailAdvice` üretiyor, ama bir advice şemaya görünmez. Bu yüzden `ApiErrorResponse` adında **yalnız dokümantasyon için** bir record var; iki kapalı sözlük şemaya onun üzerinden giriyor. Advice'in ürettiği gerçek gövdeyle alan alan karşılaştıran bir test, ikisinin sessizce ayrışmasını engelliyor. |
+| Profil yanıtında `id` yok | Ekleme | Hiçbir endpoint profil id'si kabul etmiyor; sahiplik oturumdan geliyor (Bölüm 35.1). Şemada bir `id` alanı, geri gönderilebilecek bir şey varmış izlenimi verirdi. |
+| Profil yanıtında `version` yok | Ekleme | Tekil kaynakta sürüm **ETag'de**. Gövdede de olsaydı ikisi çelişebilirdi. Koleksiyonlarda öğe başına `version` alanı kalıyor (D.6.2). |
+
 **Karar — profil ilk kullanımda oluşur.** `ProfileResolver.resolve` profili
 bulamazsa yaratır. `profiles.user_id` tekil, yani bir kullanıcının tam olarak
 bir profili var ve yokluğu bir hata değil, hesabın yeni olması demek. 404
@@ -8825,6 +8837,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 14 | **`npm run gen:api` artık çalışabilir** | Şema `/v3/api-docs` üzerinde yayınlanıyor (üretimde kapalı, lokalde ve CI'da açık). İçinde: `ResolutionAction` ve `ErrorCode` enum olarak, `ApiError` gövdesi, ve `GET /api/v1/profile` yanıtında **`ETag` başlığı**. `Profile` şemasında **`id` ve `version` alanı yok** — sahiplik oturumdan gelir, sürüm ETag'dedir. |
 
 ---
 

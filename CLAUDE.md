@@ -343,14 +343,15 @@ against it rather than re-deciding it. In order:
    (25 codes, HTTP status, declared `params` with types), `ResolutionAction`,
    `Resolution` and `UserFacingError`, which validates parameters against the
    declaration as the body is built. The full table is in `EK D.6`.
-2. Add springdoc-openapi with the first endpoint, carrying the
-   `resolutions[].action` enum, the error `code` enum and the ETag/pagination
-   headers.
-3. `Profile` entity + `ProfileRepository` over `UserScopedRepository`, and a
-   resolver that turns a `UserContext` into a `ProfileRef` — the only place
-   that mapping is allowed to happen.
-4. Section/entry/atom CRUD, completeness percentage, and the ≤6 query test
-   extended to the full load once the profile head is part of it.
+2. ~~springdoc with the first endpoint.~~ **Done** — `GET /api/v1/profile`
+   publishes an `ETag`, and the schema carries both closed vocabularies as
+   enums plus the `ApiError` body. Disabled under `prod`.
+3. ~~`Profile` entity, `ProfileRepository`, `ProfileResolver`.~~ **Done** —
+   the resolver is the only place a `UserContext` becomes a `ProfileRef`, and
+   it creates the profile on first use.
+4. Profile update with `If-Match`, then section/entry/atom CRUD, completeness
+   percentage, and the ≤6 query test extended to the full load once the
+   profile head is part of it.
 
 Then Adım 1.3 (LaTeX container), 1.4 (renderer), 1.5 (measurement), 1.6
 (selection), 1.7 (Faz E/F + PDF), 1.8 (general CV mode), 1.9 (golden set).
