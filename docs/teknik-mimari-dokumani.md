@@ -8668,6 +8668,19 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
 | Ayrıştırılamayan gövde | Ekleme | `HttpMessageNotReadableException` → **400 `VALIDATION_FAILED`**, alan adıyla. Bu olmadan bozuk bir JSON ya da record constructor'ının reddettiği bir değer son çareye düşüp 500 dönerdi. |
 | Doğrulama sınırları | Ekleme | Uzunluklar API katmanında (`headline` 200, `selfDescription` 4000, `customInstructions` 1000, `maxPages` 1-10). Kolonlar `TEXT` kalıyor — Türkçe bir başlık İngilizcesinden uzun ve kimse sınırı cümlenin ortasında keşfetmemeli — ama sınırsız alan, sınırsız satır, sınırsız render ve sınırsız prompt demek. |
 
+**Koleksiyon kaynakları — bölümler (Adım 1.2).**
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `PATCH` yalnız adlandırılanı değiştirir | Ekleme | Bölüm 35.6'nın kuralı. Bölümlerin **her kolonu `NOT NULL`**, yani "gönderilmedi" ile "null yapıldı" ayrımına burada hiç gerek yok. Entry'lerde tarih ya da kurum meşru biçimde temizlenebildiği için orada bir null kontrolünden fazlası gerekecek. |
+| `displayOrder` yamalanamaz | Ekleme | Bir bölümü taşımak komşularını da numaralandırır; bu tek satırdaki bir alan değil, listenin tamamı üzerinde bir işlemdir. `POST /sections/reorder` yapar. |
+| Sıralama isteği **tam liste** ister | Ekleme | Eksik liste, geri kalanın yerini sunucunun tahmin etmesi demek; iki istemci farklı tahmin ederse iki satır aynı pozisyonu iddia eder. Tam liste ayrıca çağrıyı idempotent yapıyor. |
+| Sıralamada `If-Match` yok | Ekleme | İstek zaten çağıranın sıraya dair **tüm görüşünü** taşıyor; "bunları şu sıraya koy" demenin anlamı budur. Bayat bir sıralama pozisyon kaybettirir, içerik değil. |
+| Oluşturma sona ekler | Ekleme | Yeni bölümün nereye ait olduğu listenin tamamına dair bir karar; istemci bunu reorder ile verir, başka bir sekmenin çoktan aldığı bir indeksi tahmin ederek değil. `201` + `ETag`. |
+| Silme `If-Match` ister ve **cascade eder** | Ekleme | Bölümle birlikte entry'leri, atomları ve varyantları gider (veritabanı cascade'i). Yumuşatılmadı: açık bir silme kullanıcının kararıdır, sonucu gizlemek asıl sürpriz olurdu. |
+| Bölüm yanıtında `version` **alanı var** | Sapma | Profil başında yoktu (D.6.2). Bölümler hem tek başına hem koleksiyon içinde dönüyor; alanın hangi endpoint'in döndürdüğüne göre kaybolması, `ETag`'in yanında küçük bir tekrardan daha kötü olurdu. |
+| Sözlükler artık JSON'da da küçük harf | Düzeltme | `SectionKind`, `SectionLayout`, `AtomKind`, `AtomSource`, `VariantAuthor` yalnız JPA converter'ı taşıyordu; API gövdesinde `EXPERIENCE` gidiyordu. Hepsine `@JsonValue`/`@JsonCreator` eklendi (D.9 · 6'nın sözü). |
+
 #### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
 
 - Baytlar doğrudan API'den, `Content-Disposition: attachment` ile. Dosya adı,
@@ -8762,7 +8775,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile` ve `PUT /profile/preferences`** (`If-Match` zorunlu). **Sırada:** bölüm/entry/atom CRUD → tamamlanma yüzdesi | D.9 · 7-15 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm CRUD + sıralama**. **Sırada:** entry ve atom CRUD → tamamlanma yüzdesi | D.9 · 7-16 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8855,6 +8868,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 16 | **Bölüm uçları hazır** | `GET/POST /profile/sections`, `PATCH/DELETE /{id}`, `POST /reorder`. `PATCH` yalnız gönderilen alanı değiştirir; `displayOrder` yamalanamaz, sıra `reorder` ile ve **tam liste** göndererek değişir (eksik liste 400). Silme `If-Match` ister ve **içeriğiyle birlikte** siler. Koleksiyonun her öğesi `version` taşır, yani düzenlemeden önce ikinci bir okuma gerekmez. |
 | 15 | **Yazmalarda `If-Match` zorunlu, ve `preferences` `PUT` ile** | Başlıksız istek `428 PRECONDITION_REQUIRED` (yeni kod, ICU karşılığı gerekiyor), bayat etiket `412 VERSION_CONFLICT` + `retry`. `PUT /profile` **değiştirir**: gönderilmeyen alan temizlenir, yani formun tüm alanları gönderilmeli. Tercihler ayrı endpoint'te ve **`PATCH` değil `PUT`** — Bölüm 35.2'nin listesi bu satırda güncellendi. |
 | 14 | **`npm run gen:api` artık çalışabilir** | Şema `/v3/api-docs` üzerinde yayınlanıyor (üretimde kapalı, lokalde ve CI'da açık). İçinde: `ResolutionAction` ve `ErrorCode` enum olarak, `ApiError` gövdesi, ve `GET /api/v1/profile` yanıtında **`ETag` başlığı**. `Profile` şemasında **`id` ve `version` alanı yok** — sahiplik oturumdan gelir, sürüm ETag'dedir. |
 
