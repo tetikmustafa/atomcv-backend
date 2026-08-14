@@ -1,13 +1,18 @@
 package com.mustafatetik.atomcv.profile.api;
 
 import com.mustafatetik.atomcv.profile.api.dto.PreferencesUpdateRequest;
+import com.mustafatetik.atomcv.profile.api.dto.ProfileExport;
 import com.mustafatetik.atomcv.profile.api.dto.ProfileResponse;
 import com.mustafatetik.atomcv.profile.api.dto.ProfileUpdateRequest;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.service.ProfileHeadUpdate;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.service.ProfileExporter;
 import com.mustafatetik.atomcv.profile.service.ProfileService;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
+import com.mustafatetik.atomcv.shared.error.ApiException;
+import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +24,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Locale;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +36,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The Master Profile head (Bolum 35.2). */
@@ -39,11 +48,14 @@ public class ProfileController {
     private final CurrentUser currentUser;
     private final ProfileResolver profiles;
     private final ProfileService service;
+    private final ProfileExporter exporter;
 
-    ProfileController(CurrentUser currentUser, ProfileResolver profiles, ProfileService service) {
+    ProfileController(CurrentUser currentUser, ProfileResolver profiles, ProfileService service,
+            ProfileExporter exporter) {
         this.currentUser = currentUser;
         this.profiles = profiles;
         this.service = service;
+        this.exporter = exporter;
     }
 
     @Operation(
@@ -70,6 +82,50 @@ public class ProfileController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProfileResponse> own() {
         return respond(service.readOwn(currentUser.require()));
+    }
+
+    @Operation(summary = "Export the whole profile",
+            description = """
+                    `?format=json` gives a nested copy in the shapes this API already \
+                    publishes; `?format=markdown` gives the same content to read. \
+                    Both are served as a download.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The profile as a file",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProfileExport.class))),
+            @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED — unknown format",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping(path = "/export", produces = {MediaType.APPLICATION_JSON_VALUE, "text/markdown"})
+    public ResponseEntity<?> export(
+            @Parameter(description = "json or markdown", example = "json")
+            @RequestParam(defaultValue = "json") String format) {
+
+        var user = currentUser.require();
+        return switch (format.toLowerCase(Locale.ROOT)) {
+            case "json" -> attachment("json", MediaType.APPLICATION_JSON)
+                    .body(exporter.export(user));
+            // The charset is stated, not left to be guessed: without it a
+            // client falls back to ISO-8859-1 and "İstanbul" arrives broken.
+            case "markdown" -> attachment("md", MediaType.valueOf("text/markdown;charset=UTF-8"))
+                    .body(exporter.exportAsMarkdown(user));
+            default -> throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("format"))
+                    .build());
+        };
+    }
+
+    /**
+     * The filename carries a date and nothing else. A name in it would put
+     * personal data into download folders, proxy logs and screenshots for no
+     * gain (absolute rule 4).
+     */
+    private static ResponseEntity.BodyBuilder attachment(String extension, MediaType type) {
+        String filename = "atomcv-profile-" + LocalDate.now() + "." + extension;
+        return ResponseEntity.ok()
+                .contentType(type)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
     }
 
     @Operation(summary = "Delete the profile and everything under it",

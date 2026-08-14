@@ -304,6 +304,100 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.completeness").value(0));
     }
 
+    // ─── export (Bolum 13.1: leaving has to be possible) ───
+
+    @Test
+    void theProfileCanBeTakenAwayAsJsonOrAsMarkdown() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com",
+                                               "location": "İstanbul" },
+                                  "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk());
+
+        String section = JSON.readTree(mvc.perform(post("/api/v1/profile/sections")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{ \"kind\": \"experience\", \"title\": \"Experience\" }"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("id").asText();
+        String entry = JSON.readTree(mvc.perform(post("/api/v1/profile/entries")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        { "sectionId": "%s", "title": "Backend Engineer",
+                                          "organization": "Acme", "startDate": "2023-03-01" }"""
+                                        .formatted(section)))
+                        .andReturn().getResponse().getContentAsString())
+                .get("id").asText();
+        mvc.perform(post("/api/v1/profile/atoms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "sectionId": "%s", "entryId": "%s", "kind": "bullet",
+                                  "content": { "runs": [ { "t": "Built " },
+                                                         { "t": "ETL", "m": ["technology"] },
+                                                         { "t": " pipelines" } ] } }"""
+                                .formatted(section, entry)))
+                .andExpect(status().isCreated());
+
+        mvc.perform(get("/api/v1/profile/export"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        containsString("attachment; filename=\"atomcv-profile-")))
+                .andExpect(jsonPath("$.exportedAt").exists())
+                .andExpect(jsonPath("$.profile.headline").value("Backend Engineer"))
+                .andExpect(jsonPath("$.sections[0].section.title").value("Experience"))
+                .andExpect(jsonPath("$.sections[0].entries[0].entry.organization").value("Acme"))
+                .andExpect(jsonPath("$.sections[0].entries[0].atoms[0].variants[0].plainText")
+                        .value("Built ETL pipelines"));
+
+        String markdown = mvc.perform(get("/api/v1/profile/export").param("format", "markdown"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        containsString(".md")))
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(markdown)
+                .contains("# Mustafa Tetik")
+                .contains("mustafa@example.com")
+                // Turkish text survives the round trip, which it only does
+                // because the response names its charset.
+                .contains("İstanbul")
+                .contains("## Experience")
+                .contains("Acme")
+                .contains("2023-03 – present")
+                .contains("- Built ETL pipelines");
+    }
+
+    @Test
+    void markdownDoesNotTurnUserTextIntoFormatting() throws Exception {
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "C++ and *not* italics",
+                                  "contact": { "name": "Mustafa Tetik" },
+                                  "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk());
+
+        String markdown = mvc.perform(get("/api/v1/profile/export").param("format", "markdown"))
+                .andReturn().getResponse().getContentAsString();
+
+        // The asterisks are escaped; the plus signs are left alone, because a
+        // file people read should not be littered with backslashes.
+        assertThat(markdown).contains("C++ and \\*not\\* italics");
+    }
+
+    @Test
+    void anUnknownExportFormatIsRefused() throws Exception {
+        mvc.perform(get("/api/v1/profile/export").param("format", "pdf"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(contains("format")));
+    }
+
     private String minimalBody(String headline) {
         return "{ \"headline\": \"" + headline + "\", \"enabledLanguages\": [\"en\"] }";
     }
