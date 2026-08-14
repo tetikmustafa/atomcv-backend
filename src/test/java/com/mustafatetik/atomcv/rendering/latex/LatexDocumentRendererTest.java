@@ -61,11 +61,12 @@ class LatexDocumentRendererTest {
                         TemplateCustomization.CLASSIC)).value();
 
         assertThat(measurement)
-                .contains("\\setlength{\\measurewidth}{\\textwidth}")
-                .contains("\\parbox{\\measurewidth}")
-                // Inside the same environment the final document uses, so the
-                // indent and the label are part of what is measured.
-                .contains("\\begin{itemize}");
+                // Inside the same environment the final document uses, at the
+                // width a bullet actually gets — \linewidth inside an itemize
+                // is already reduced by the indent.
+                .contains("\\begin{itemize}")
+                .contains("\\item\\savebox")
+                .contains("\\parbox{\\linewidth}");
     }
 
     @Test

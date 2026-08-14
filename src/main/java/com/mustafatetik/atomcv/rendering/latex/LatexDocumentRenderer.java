@@ -100,10 +100,14 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 .append("\\newsavebox{").append(BOX).append("}\n");
 
         for (MeasurementRequest.MeasurableItem item : request.items()) {
+            // An \item, and the box set at \linewidth. Bolum 22.4 opens an
+            // itemize with neither: LaTeX stops at "perhaps a missing \item",
+            // and \textwidth would measure content at a width no bullet ever
+            // gets (EK D.8.3).
             out.append("\\begin{itemize}\n")
-                    .append("\\savebox{").append(BOX).append("}{\\parbox{\\measurewidth}{")
+                    .append("\\item\\savebox{").append(BOX).append("}{\\parbox{\\linewidth}{")
                     .append(LatexInlineRenderer.render(item.content()))
-                    .append("}}\n")
+                    .append("}}\\usebox{").append(BOX).append("}\n")
                     .append("\\typeout{ATOMCOST|").append(item.key())
                     .append("|\\the\\ht").append(BOX)
                     .append("|\\the\\dp").append(BOX).append("}\n")
