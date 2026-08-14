@@ -2,6 +2,13 @@ package com.mustafatetik.atomcv.compilation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.profile.domain.content.Mark;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.profile.domain.content.Run;
+import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
+import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
+import com.mustafatetik.atomcv.rendering.model.RenderRequest;
+import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,6 +17,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -116,6 +124,53 @@ class LatexContainerIT {
         assertThat(response.statusCode()).as("422, not 500: the document is at fault")
                 .isEqualTo(422);
         assertThat(text(response)).contains("Undefined control sequence");
+    }
+
+    // ─── what the renderer produces has to compile ───
+
+    @Test
+    void theRenderedCvCompiles() throws Exception {
+        var renderer = new LatexDocumentRenderer();
+        var document = renderer.renderFinal(new RenderRequest(
+                new RenderRequest.ProfileHeader("Mustafa Tetik", "Backend Engineer",
+                        List.of("mustafa@example.com", "İstanbul, Türkiye")),
+                List.of(new RenderRequest.RenderableSection("Experience",
+                        List.of(new RenderRequest.RenderableEntry(
+                                "Backend Engineer", "Acme", "İstanbul", "2023-03 – present",
+                                List.of(RichContent.of(
+                                        Run.of("Built "),
+                                        Run.of("ETL", Mark.TECHNOLOGY),
+                                        Run.of(" pipelines processing "),
+                                        Run.of("300K+ rows", Mark.METRIC),
+                                        Run.of(" — 50% faster, see "),
+                                        Run.link("the write-up", "https://example.com/a?b=1&c=2"))))),
+                        List.of())),
+                TemplateCustomization.CLASSIC,
+                java.util.Locale.ENGLISH));
+
+        HttpResponse<byte[]> response = post("/compile", document.value());
+
+        assertThat(response.statusCode())
+                .as("the renderer's output has to be a document TeX accepts: %s",
+                        response.statusCode() == 200 ? "" : text(response))
+                .isEqualTo(200);
+        assertThat(new String(response.body(), 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+    }
+
+    @Test
+    void theMeasurementDocumentReportsRealPointValues() throws Exception {
+        var renderer = new LatexDocumentRenderer();
+        var document = renderer.renderMeasurement(new MeasurementRequest(
+                List.of(new MeasurementRequest.MeasurableItem("var-1", RichContent.of(
+                        Run.of("Built "),
+                        Run.of("ETL", Mark.TECHNOLOGY),
+                        Run.of(" pipelines processing 300K+ rows")))),
+                TemplateCustomization.CLASSIC));
+
+        String log = text(post("/measure", document.value()));
+
+        // Bolum 26: measured in points, and a real number of them.
+        assertThat(log).containsPattern("ATOMCOST\\|var-1\\|[0-9]+\\.[0-9]+pt\\|[0-9]+\\.[0-9]+pt");
     }
 
     @Test

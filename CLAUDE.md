@@ -297,7 +297,7 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress. Adım 1.1, 1.2 and 1.3 are complete.**
+**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.4 are complete.**
 
 ### What exists
 
@@ -356,8 +356,8 @@ against it rather than re-deciding it. In order:
    complete. The ≤6 query test still covers the assembler only; extend it if
    the profile head ever joins that load.
 
-Then Adım 1.4 (renderer), 1.5 (measurement), 1.6 (selection), 1.7 (Faz E/F +
-PDF), 1.8 (general CV mode), 1.9 (golden set).
+Then Adım 1.5 (measurement), 1.6 (selection), 1.7 (Faz E/F + PDF), 1.8 (general
+CV mode), 1.9 (golden set).
 
 **`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
 excluded from `integrationTest` because the image takes minutes; run it when
