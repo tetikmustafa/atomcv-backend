@@ -644,9 +644,10 @@ src/main/java/com/mustafatetik/atomcv/
 │   └── repository/
 ├── profile/                     # Master Profil
 │   ├── api/
-│   ├── domain/                  #   Profile, Section, Entry, Atom, AtomVariant, RichContent
-│   ├── service/
-│   └── repository/
+│   ├── domain/                  #   Profile, Section, Entry, Atom, AtomVariant,
+│   │                            #   ProfileTree, content/{RichContent, Run, Mark}
+│   ├── service/                 #   ProfileAssembler
+│   └── repository/              #   kapsamlı cepheler + paket-özel Spring Data arayüzleri
 ├── ingestion/                   # Profil oluşturma
 │   ├── extraction/              #   PDF/DOCX/TEX metin çıkarımı
 │   ├── structuring/             #   LLM ile yapılandırma
@@ -723,7 +724,8 @@ services:
     depends_on: [frontend, backend]
 
   frontend:
-    image: ghcr.io/tetikmustafa/atomcv-frontend:${GIT_SHA}
+    # İki repo bağımsız deploy edilir, tek bir GIT_SHA yoktur (bkz. 47.3)
+    image: ghcr.io/tetikmustafa/atomcv-frontend:${FRONTEND_SHA}
     environment:
       - NEXT_PUBLIC_API_URL=/api
     deploy:
@@ -731,7 +733,7 @@ services:
         limits: { cpus: '0.5', memory: 512M }
 
   backend:
-    image: ghcr.io/tetikmustafa/atomcv-backend:${GIT_SHA}
+    image: ghcr.io/tetikmustafa/atomcv-backend:${BACKEND_SHA}
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=70 -Duser.language=en -Duser.country=US
@@ -921,6 +923,12 @@ Bu tasarım, alternatif metin özelliğini "özel durum" olmaktan çıkarıp mod
 ---
 
 ## 13. Tam Veritabanı Şeması
+
+> **Uygulanan `V1__initial_schema.sql` bunun birebir kopyası değil — bkz. EK D.1.**
+> İki ekleme var: denormalize `profile_id`'yi ebeveyne bağlayan bileşik yabancı
+> anahtarlar, ve `llm_invocations` üzerinde `ON DELETE SET NULL` taşıyan iki FK.
+> Migration uygulandığı için artık değiştirilemez; farkı buradan değil EK D'den
+> oku.
 
 ```sql
 -- ══════════════════════════════════════════════════════════
@@ -4143,6 +4151,13 @@ public record ProfileRef(UUID id, Scope scope) {
 
 Tip taşıdığı için yanlış store'a gitme hatası **derleme zamanında** yakalanır.
 
+> **Uygulanan tip record değil, `final class` — bkz. EK D.4.** Record'un
+> canonical constructor'ı record'un kendisinden daha kısıtlı olamaz, yani
+> `public record` denetimsiz bir üretim yolu dağıtırdı. `ProfileRef` yalnız
+> `persistent(user, profileId, profileOwnerId)` ile üretilir ve o çağrı ikisini
+> karşılaştırır. `EPHEMERAL` sabiti, denetimli bir üretim yolu doğana kadar
+> (Aşama 3) bilerek yoktur.
+
 ### 41.4 RBAC
 
 Rol yapısı basit: `USER`, `ADMIN`. Asıl mesele rol değil, **kaynak sahipliği** — o da repository katmanında çözülüyor.
@@ -4407,7 +4422,9 @@ fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /
 certbot certonly --standalone -d atomcv.mustafatetik.com
 
 # 7. Uygulama
-git clone <repo> /opt/atomcv && cd /opt/atomcv
+# Sunucuda yalnız dağıtım dosyaları bulunur: compose, .env, scripts/.
+# İkisi de backend reposundadır (bkz. 47.3); imajlar GHCR'den gelir.
+git clone https://github.com/tetikmustafa/atomcv-backend.git /opt/atomcv && cd /opt/atomcv
 cp .env.example .env && chmod 600 .env    # sırları doldur
 docker compose -f docker-compose.prod.yml up -d
 ```
@@ -4451,69 +4468,162 @@ DAILY_BUDGET_USD=40
 
 > **İki repo, iki hat.** `atomcv-backend` ve `atomcv-frontend` bağımsız CI/CD hatlarına sahiptir; her biri kendi Docker imajını üretip GHCR'a push eder. Sunucudaki `docker-compose.prod.yml` (backend reposunda yaşar) her iki imajı da çeker. Detaylı koordinasyon: Bölüm XI-B.9.
 
-### 47.1 Akış (her repo için ayrı ayrı)
+### 47.1 İki bağımsız workflow
+
+> **Kritik:** Bunlar **iki ayrı dosyadır, iki ayrı repoda.** Tek bir workflow'da `needs: [backend, frontend]` yazılamaz — repolar arası job bağımlılığı GitHub Actions'ta mümkün değildir. Her repo kendi testini çalıştırır, kendi imajını üretir, kendi bileşenini deploy eder.
+
+#### `atomcv-backend/.github/workflows/ci-cd.yml`
 
 ```yaml
 name: CI/CD
-on: [push, pull_request]
+on:
+  push: { branches: [main] }
+  pull_request:
 
 jobs:
-  backend:
+  build-and-test:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { java-version: '21', distribution: 'temurin', cache: gradle }
-      - run: ./gradlew build -x test
-      - run: ./gradlew test                 # unit + ArchUnit
-      - run: ./gradlew integrationTest      # Testcontainers
-      - run: ./gradlew spotlessCheck
+      - run: sh ./gradlew build -x test
+      - run: sh ./gradlew test                # unit + ArchUnit
+      - run: sh ./gradlew integrationTest     # Testcontainers
+      # - run: sh ./gradlew spotlessCheck     # formatter yapılandırılınca aç
 
-  frontend:
+  security:
+    runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@0.28.0      # sürüm sabit, @master değil
+        with: { scan-type: 'fs', severity: 'HIGH,CRITICAL' }
+      - uses: github/codeql-action/init@v3
+        with: { languages: java }
+      - uses: github/codeql-action/analyze@v3
+
+  llm-eval:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: changed
+        run: |
+          if git diff --name-only origin/main...HEAD | grep -q '^src/main/resources/prompts/'; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.changed.outputs.run == 'true'
+        run: sh ./gradlew llmEval
+      # rapor PR'a yorum olarak yazılır
+
+  publish-schema:
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - run: sh ./gradlew generateOpenApiDocs
+      - uses: actions/upload-artifact@v4       # frontend'in tüketmesi için
+        with: { name: openapi-schema, path: build/openapi.json }
+
+  deploy:
+    needs: [build-and-test, security]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push backend image
+        run: |
+          docker build -t ghcr.io/tetikmustafa/atomcv-backend:${{ github.sha }} .
+          docker push ghcr.io/tetikmustafa/atomcv-backend:${{ github.sha }}
+      - uses: webfactory/ssh-agent@v0.9.0
+        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: Deploy backend only
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd /opt/atomcv && ./scripts/deploy.sh backend ${{ github.sha }}"
+```
+
+> **Bugünkü hâli (Aşama 1).** Repoda `ci.yml` var, `ci-cd.yml` yok: sunucu
+> olmadığı için `deploy` ve `publish-schema` işleri henüz yazılmadı, `llm-eval`
+> ise Aşama 2'de prompt'larla gelir. Çalışan işler `build` (derleme + test +
+> integrationTest + her koşulda rapor yükleme), `codeql` ve `scan`; sırlar ayrı
+> bir `secrets-scan.yml` dosyasında, tüm geçmişi tarayacak şekilde
+> (`fetch-depth: 0`). Action sürümleri yukarıdakilerden yeni — Dependabot
+> yükseltiyor, elle sabitlenmiş bir liste tutulmuyor. CodeQL dili
+> `java-kotlin`'dir; `java` artık geçerli bir tanımlayıcı değil.
+
+#### `atomcv-frontend/.github/workflows/ci-cd.yml`
+
+```yaml
+name: CI/CD
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm }
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm run test
+      - run: npm test
       - run: npm run build
       - run: npx bundlesize
-
-  security:
-    steps:
-      - uses: aquasecurity/trivy-action@master
-      - uses: github/codeql-action/analyze@v3
-      - run: ./gradlew dependencyCheckAnalyze
       - run: npm audit --audit-level=high
 
-  llm-eval:
-    if: contains(github.event.pull_request.changed_files, 'prompts/')
+  contract-check:
+    runs-on: ubuntu-latest
+    continue-on-error: true          # uyarı, bloker değil
     steps:
-      - run: ./gradlew llmEval
-      - uses: actions/github-script@v7    # raporu PR'a yorum olarak yaz
+      - uses: actions/checkout@v4
+      - name: Fetch backend OpenAPI schema
+        run: |
+          curl -sfL -o openapi.json \
+            "https://raw.githubusercontent.com/tetikmustafa/atomcv-backend/main/build/openapi.json" \
+            || echo "schema fetch failed, skipping"
+      - run: npm ci && npm run gen:api:ci
+      - name: Detect drift
+        run: |
+          git diff --exit-code src/types/api.d.ts \
+            || echo "::warning::Backend API şeması değişmiş — 'npm run gen:api' çalıştırıp commit et"
 
   deploy:
-    needs: [backend, frontend, security]
+    needs: [build-and-test]
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
     steps:
-      - name: Build & push images
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push frontend image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ./backend
-          docker build -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ./frontend
-          docker push ...
-      - name: Run migrations
-        run: ssh deploy@server "cd /opt/atomcv && ./migrate.sh ${{ github.sha }}"
-      - name: Deploy
-        run: ssh deploy@server "cd /opt/atomcv && GIT_SHA=${{ github.sha }} docker compose up -d"
-      - name: Health check + rollback
+          docker build -t ghcr.io/tetikmustafa/atomcv-frontend:${{ github.sha }} .
+          docker push ghcr.io/tetikmustafa/atomcv-frontend:${{ github.sha }}
+      - uses: webfactory/ssh-agent@v0.9.0
+        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: Deploy frontend only
         run: |
-          for i in {1..30}; do
-            if curl -sf https://atomcv.mustafatetik.com/actuator/health; then exit 0; fi
-            sleep 2
-          done
-          ssh deploy@server "cd /opt/atomcv && GIT_SHA=$PREV_SHA docker compose up -d"
-          exit 1
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd /opt/atomcv && ./scripts/deploy.sh frontend ${{ github.sha }}"
 ```
+
+**Her iki repoda da aynı GitHub Secrets tanımlanır:** `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_USER`. Aynı deploy anahtarı kullanılabilir; `deploy.sh` hangi bileşenin güncelleneceğini ilk argümandan alır.
+
+> **Migration'ın yeri — açık karar.** Yukarıdaki backend deploy job'ında ayrı bir migration adımı yoktur; Flyway şu an üretimde de uygulama açılışında çalışır (EK D.1). Bu, tek uygulama örneğiyle güvenlidir. Yatay ölçeklemeye geçilirse iki örnek aynı anda migration çalıştırmaya kalkabilir — o noktada Flyway CLI imajıyla ayrı bir deploy adımı gerekir. Karar o zamana ertelenmiştir.
 
 ### 47.2 Kritik kurallar
 
@@ -4732,6 +4842,792 @@ Pipeline yavaşladı
 
 ---
 
+# BÖLÜM X — KALİTE GÜVENCE
+
+## 51. Test Stratejisi
+
+### 51.1 Test piramidi
+
+| Katman | Araç | Kapsam hedefi | Süre | Maliyet |
+|---|---|---|---|---|
+| Unit | JUnit 5 + Mockito | %80+ (iş mantığı) | ~30sn | $0 |
+| Mimari | ArchUnit | Kural bazlı | ~5sn | $0 |
+| Entegrasyon | Testcontainers | Repository, migration | ~2dk | $0 |
+| Pipeline (deterministik) | Golden fixtures | Faz B/C/E/F | ~30sn | $0 |
+| Contract | WireMock | LLM adaptörleri | ~20sn | $0 |
+| Frontend | Vitest + Testing Library | Bileşenler | ~1dk | $0 |
+| E2E | Playwright | Kritik akışlar | ~3dk | $0 |
+| LLM eval | Gerçek çağrı | Prompt kalitesi | ~5dk | ~$0.30 |
+
+**Toplam CI süresi (LLM eval hariç): ~7 dakika, sıfır maliyet.**
+
+### 51.2 En değerli testler
+
+Bu dört test, ürünün temel garantilerini koruyor:
+
+**1. Sayfa sınırı ihlali yok**
+```java
+@Test
+void selectionNeverExceedsBudget() {
+    for (var profile : goldenProfiles())
+        for (var analysis : recordedAnalyses())
+            for (var lang : List.of("en", "tr"))
+                for (var pages : List.of(1, 2)) {
+                    var sel = runSelection(profile, analysis, lang, pages);
+                    assertThat(sel.budget().usedPt())
+                        .isLessThanOrEqualTo(sel.budget().totalPt());
+                }
+}
+```
+
+**2. Determinizm**
+```java
+@Test
+void scoringAndSelectionAreDeterministic() {
+    var first = runPipeline(fixedInput);
+    for (int i = 0; i < 50; i++)
+        assertThat(runPipeline(fixedInput)).isEqualTo(first);
+}
+```
+
+**3. Çok-kiracılı izolasyon**
+```java
+@ParameterizedTest
+@MethodSource("allProtectedEndpoints")
+void userCannotAccessOthersData(String method, String path) {
+    var userA = createUserWithProfile();
+    var userB = createUserWithProfile();
+    var response = request(method, path.replace("{id}", userB.resourceId()), userA.session());
+    assertThat(response.status()).isIn(403, 404);
+}
+```
+
+**4. Kilitler ve yapısal kısıtlar**
+```java
+@Test
+void locksAndStructuralConstraintsRespected() {
+    var sel = runSelection(profileWithLocks, analysis);
+    assertThat(sel.selected()).containsAll(profileWithLocks.alwaysIncludeAtoms());
+    assertThat(sel.selected()).doesNotContainAnyOf(profileWithLocks.inactiveAtoms());
+    for (var entry : visibleEntries(profileWithLocks))
+        assertThat(countSelectedIn(sel, entry)).isGreaterThanOrEqualTo(entry.minAtoms());
+}
+```
+
+### 51.3 Golden test set
+
+```
+src/test/resources/golden/
+├── profiles/
+│   ├── senior_backend_tr.json       # TR, 3 deneyim, 8 proje
+│   ├── junior_frontend_en.json      # zayıf, 2 okul projesi
+│   ├── career_changer.json          # alakasız geçmiş
+│   ├── academic_long.json           # 15 yıl, 20+ yayın
+│   ├── minimal_edge.json            # sınırda: 1 deneyim, 3 beceri
+│   └── *.costs.json                 # önceden ölçülmüş render_costs
+├── jobs/
+│   ├── backend_go_k8s_en.txt
+│   ├── data_engineer_tr.txt         # Türkçe ilan
+│   ├── vague_short.txt              # "backend developer lazım"
+│   ├── very_long_corporate.txt      # 15.000 karakter
+│   ├── anonymous_company.txt
+│   ├── injection_attempt.txt        # gizli talimat
+│   ├── mixed_language.txt
+│   ├── no_requirements_section.txt
+│   └── unrelated_marketing.txt
+├── analyses/                        # Faz A çıktıları (fixture)
+└── content-formats/                 # her JSONB sürümü için örnek
+```
+
+**Aynı profiller lokal geliştirmede seed data olarak kullanılır** — tek kaynak, iki fayda.
+
+### 51.4 Mimari kurallar (ArchUnit)
+
+> **Uygulanan kural kümesi buradakinden geniş — bkz. EK D.4.** Ham repository
+> yasağı `..api..` yanında `..service..`'i de kapsar (mutlak kural 3 ikisini de
+> söylüyor) ve `..profile..` için repository paketinin dışına çıkma yasağı
+> eklenmiştir.
+
+```java
+@ArchTest static final ArchRule noCycles = slices()
+    .matching("com.mustafatetik.atomcv.(*)..").should().beFreeOfCycles();
+
+@ArchTest static final ArchRule sharedIsIndependent = noClasses()
+    .that().resideInAPackage("..shared..")
+    .should().dependOnClassesThat().resideInAnyPackage("..profile..","..generation..");
+
+@ArchTest static final ArchRule noRawRepositoryInApi = noClasses()
+    .that().resideInAPackage("..api..")
+    .should().dependOnClassesThat().areAssignableTo(JpaRepository.class);
+
+@ArchTest static final ArchRule noPiiInLogs = /* Bölüm 48.1 */;
+
+@ArchTest static final ArchRule noLocaleSensitiveCase = /* Bölüm 38.4 */;
+
+@ArchTest static final ArchRule renderersAreDeterministic = noClasses()
+    .that().resideInAPackage("..rendering..")
+    .should().dependOnClassesThat().resideInAPackage("..llm..");
+```
+
+Son kural önemli: **renderer'ın LLM'e bağımlı olması derleme zamanında engelleniyor.**
+
+### 51.5 Dev endpoint güvenliği
+
+```java
+@Test
+void devEndpointsAbsentInProductionProfile() {
+    var ctx = new SpringApplicationBuilder(App.class).profiles("prod")
+        .web(WebApplicationType.NONE).run();
+    assertThat(ctx.containsBean("devController")).isFalse();
+    assertThat(ctx.containsBean("devSeeder")).isFalse();
+}
+```
+
+### 51.6 Anonim mod gizlilik testi
+
+> **Test "hiçbir tabloda" değil, "kullanıcı verisi tablolarında" satır sayısını
+> denetler — bkz. EK D.1.** Kuyruk (`jobs.anon_session_id`) ve `llm_invocations`
+> Postgres'te durur; anonim bir üretim oralara yazarsa bu beklenen davranıştır.
+
+```java
+@Test
+void anonymousGenerationWritesNothingToDatabase() {
+    var before = dbSnapshot.rowCountsAllTables();
+    anonymousClient.createProfile(sampleData);
+    anonymousClient.generate(sampleJobDescription);
+    assertThat(dbSnapshot.rowCountsAllTables()).isEqualTo(before);
+}
+```
+
+Gizlilik vaadi, dokümanda yazan bir cümle değil, **CI'da zorlanan bir kural.**
+
+---
+
+## 52. Performans Bütçeleri
+
+### 52.1 Backend
+
+| İşlem | p50 | p95 |
+|---|---|---|
+| Profil okuma (200 atom) | 80ms | 200ms |
+| Atom PATCH | 30ms | 80ms |
+| Faz B (skorlama) | 30ms | 60ms |
+| Faz C (seçim) | 15ms | 40ms |
+| Faz E (render) | 150ms | 300ms |
+| LaTeX derleme (XeLaTeX) | 4s | 7s |
+| Ölçüm derlemesi | 12s | 20s |
+| **Pipeline toplam** | **8s** | **14s** |
+
+### 52.2 ⚠️ N+1 problemi — en olası performans hatası
+
+```java
+// ❌ 1 + 200 + 400 + 200 = 801 sorgu
+profile.getSections().forEach(s -> s.getAtoms().forEach(a -> {
+    a.getVariants().size(); a.getTags().size();
+}));
+
+// ✅ 4 düz sorgu + bellekte birleştirme
+var sections = sectionRepo.findByProfileId(id);
+var entries  = entryRepo.findByProfileId(id);
+var atoms    = atomRepo.findByProfileId(id);
+var variants = variantRepo.findByProfileId(id);    // profile_id denormalize kolonu
+return ProfileAssembler.assemble(sections, entries, atoms, variants);
+```
+
+> **Uygulanan imza `assemble(profileId, sections, entries, atoms, variants)` —
+> bkz. EK D.5.** Dört ayrı sorgu, yanlış kapsamı geçirmek için dört fırsattır;
+> fonksiyon her satırın profilini doğrular.
+
+Karmaşık `JOIN FETCH` zincirleri kartezyen çarpım üretir ve daha da yavaşlar.
+
+```java
+@Test
+void profileLoadUsesLimitedQueries() {
+    var counter = QueryCountInspector.start();
+    profileService.load(seedProfileId);
+    assertThat(counter.count()).isLessThanOrEqualTo(6);
+}
+```
+
+### 52.3 Frontend
+
+| Metrik | Hedef |
+|---|---|
+| LCP (landing) | < 2.0s |
+| LCP (editör) | < 2.5s |
+| INP | < 200ms |
+| CLS | < 0.1 |
+| İlk JS paketi | < 200 KB gzip |
+
+### 52.4 LaTeX optimizasyonu
+
+```dockerfile
+RUN fc-cache -fv                                    # font cache build zamanında
+RUN xelatex -ini -jobname="cvfmt" "&xelatex preamble.tex\dump"   # 1-2sn kazanç
+```
+
++ Container warm-up (Bölüm 29.6)
+
+### 52.5 Soğuk başlangıç
+
+```bash
+# Deploy sonrası, trafiği yönlendirmeden önce
+curl -sf localhost:8080/actuator/health
+curl -sf localhost:8080/api/v1/warmup      # tipik sorguları çalıştırır
+```
+
+JVM CDS (`-XX:ArchiveClassesAtExit`) ile başlangıç ~%30 düşer.
+
+### 52.6 Bütçe dosyası
+
+```yaml
+# performance-budgets.yaml
+backend:
+  profile_load:     { p50: 80ms,  p95: 200ms }
+  phase_scoring:    { p50: 30ms,  p95: 60ms }
+  phase_selection:  { p50: 15ms,  p95: 40ms }
+  pipeline_total:   { p50: 8s,    p95: 14s }
+frontend:
+  lcp_editor: 2500ms
+  inp: 200ms
+  bundle_initial_kb: 200
+```
+
+Testler bu dosyayı okur. Bütçe değiştirmek bilinçli bir karar olur (PR'da görünür).
+
+CI makineleri değişken hızda olduğu için eşiği **2-3 kat cömert** tut — amaç mikro-optimizasyon değil, "biri O(n²) döngü ekledi" durumunu yakalamak.
+
+---
+
+## 53. Prompt Yönetimi ve Değerlendirme
+
+### 53.1 Promptlar versiyonlanmış dosyalarda
+
+```
+src/main/resources/prompts/
+├── job_analysis/       { v1.md, v2.md, schema.json }
+├── profile_extraction/ { v1.md, schema.json }
+├── atom_rewrite/       { v1.md }
+├── about_synthesis/    { v1.md }
+├── cover_letter/       { v1.md }
+├── edit_intent/        { v1.md }
+└── translation/        { v1.md }
+```
+
+**Neden DB değil:** Prompt ile onu tüketen kod (şema, parse mantığı, doğrulayıcı) birlikte değişir. DB'de tutarsan ayrışırlar.
+
+### 53.2 Aktif sürüm konfigürasyondan
+
+```yaml
+prompts:
+  active:
+    job_analysis: v2
+    atom_rewrite: v1
+  experiments:
+    atom_rewrite: { enabled: true, variant: v2, trafficPct: 10 }
+```
+
+Deploy etmeden geri alma imkânı verir.
+
+### 53.3 A/B testi
+
+```java
+String selectVersion(String promptId, String bucketKey) {
+    var exp = config.experiment(promptId);
+    if (exp == null || !exp.enabled()) return config.activeVersion(promptId);
+    int bucket = Math.abs(Hashing.murmur3_32()
+        .hashString(promptId + ":" + bucketKey, UTF_8).asInt()) % 100;
+    return bucket < exp.trafficPct() ? exp.variant() : config.activeVersion(promptId);
+}
+```
+
+`bucketKey` = **userId** (requestId değil) — aynı kullanıcı hep aynı varyantı görsün.
+
+### 53.4 LLM eval — sadece prompt değişikliğinde
+
+**Kritik:** Metin karşılaştırması yapılmaz (LLM her seferinde farklı kelime seçer). **Özellikler (properties) ölçülür.**
+
+```java
+@Test @Tag("llm-eval")
+void rewritePreservesFactualContent() {
+    var results = new EvalReport();
+    for (var atom : goldenAtoms()) {              // 30-50 iyi seçilmiş vaka
+        var rewritten = rewritePhase.rewriteSingle(atom, jobAnalysis);
+        results.record("numbers_preserved",  containsAll(rewritten, atom.metrics()));
+        results.record("entities_preserved", containsAll(rewritten, atom.properNouns()));
+        results.record("no_new_technologies", extractTech(rewritten).isSubsetOf(atom.skills()));
+        results.record("length_within_bounds", lengthRatio(rewritten, atom) < 1.25);
+    }
+    assertThat(results.rate("numbers_preserved")).isGreaterThanOrEqualTo(0.98);
+    assertThat(results.rate("no_new_technologies")).isEqualTo(1.00);   // ← SIFIR TOLERANS
+}
+```
+
+### 53.5 Eşikler
+
+| Metrik | Faz | Eşik |
+|---|---|---|
+| Şema uyumu | A | %99+ |
+| Zorunlu beceri yakalama | A | %90+ |
+| Anlamsız ilan tespiti | A | %95+ |
+| Sayı korunumu | D | %98+ |
+| Özel isim korunumu | D | %98+ |
+| **Yeni teknoloji uydurma** | D | **%0** |
+| Uzunluk artışı | D | <%25 |
+| Doğrulama red oranı | D | <%5 |
+| Sayfa sapma oranı | F | <%2 |
+
+### 53.6 Karşılaştırma raporu
+
+```
+PROMPT EVAL — atom_rewrite: v1 → v2
+════════════════════════════════════════════
+Örneklem: 40 atom × 5 ilan = 200 çağrı
+
+Metrik                    v1      v2      Δ
+────────────────────────────────────────────
+Sayı korunumu           99.2%   99.5%   +0.3  ✓
+Özel isim korunumu      98.1%   97.2%   -0.9  ⚠
+Yeni teknoloji            0.0%    0.3%   +0.3  ✗ BLOKER
+Uzunluk artışı          +14%    +19%    +5    ⚠
+Ort. uygunluk skoru      78.4    81.2   +2.8  ✓
+────────────────────────────────────────────
+Maliyet/çağrı         $0.0012 $0.0019  +58%
+Gecikme (p50)           840ms  1120ms   +33%
+
+SONUÇ: ✗ Birleştirilemez — uydurma tespit edildi
+```
+
+Bu rapor, "uygunluk skoru arttı ama uydurma da arttı" gibi gizli takasları görünür kılıyor.
+
+### 53.7 Maliyet kontrolü
+
+| Teknik | Etki |
+|---|---|
+| Örneklem küçük (30-50 vaka) | Ana kaldıraç |
+| Sadece değişen prompt'u test et | Gereksiz çağrı yok |
+| Faz A çıktılarını fixture olarak dondur | Zincirleme çağrı yok |
+| Batch API | %50 |
+
+**Prompt PR'ı başına ~$0.30. Aylık $2-5.**
+
+**Nightly yapma** — üretim telemetrisi (`llm_invocations`) aynı bilgiyi bedava veriyor.
+
+### 53.8 Üretim–test tutarlılığı
+
+Aynı doğrulayıcı sınıfları hem testte hem üretimde çalışır:
+
+```java
+@Component
+public class RewriteValidator {
+    public ValidationResult validate(RichContent original, String rewritten, Atom atom) { ... }
+}
+// Faz D bunu üretimde kullanır; eval suite aynı sınıfı test için kullanır
+```
+
+Ayrı implementasyonlar "testte geçiyor, canlıda bozuk" durumu doğurur.
+
+---
+
+# BÖLÜM XI — GELİŞTİRME
+
+## 54. Geliştirme Ortamı
+
+> **İki repo:** Docker Compose backend reposunda yaşar. Frontend lokalde yalnızca `npm run dev` ile çalışır ve `http://localhost:8080` üzerinden backend'e bağlanır. Klasör yapıları ve repo ayrımının sonuçları: Bölüm XI-B.
+
+### 54.1 Compose profilleri (backend reposunda)
+
+```yaml
+services:
+  postgres:   { profiles: [core], ports: ["5432:5432"] }
+  redis:      { profiles: [core] }
+  mailpit:    { profiles: [core], ports: ["8025:8025"] }   # e-posta yakalayıcı
+  latex:      { profiles: [full] }
+  embeddings: { profiles: [full] }
+```
+
+```bash
+make dev        # core (~700 MB) — günlük çalışma
+make dev-full   # core + full   — renderer/pipeline üzerinde çalışırken
+```
+
+**Backend ve frontend container'da değil, IDE'den çalışır** — hot reload, debugger, breakpoint doğal çalışsın.
+
+### 54.2 Sahte sağlayıcılar
+
+```java
+@Component @Profile("local-fake")
+public class FakeLlmProvider implements LlmProvider {
+    public <T> Result<LlmResponse<T>> callStructured(StructuredRequest<T> req) {
+        var key = req.promptId() + ":" + hash(req.userPrompt());
+        if (fixtures.containsKey(key)) return parse(fixtures.get(key));
+        return Result.ok(SyntheticGenerator.fromSchema(req.outputSchema()));
+    }
+}
+```
+
+| Mod | Davranış | Ne zaman |
+|---|---|---|
+| `local-fake` | Fixture / sentetik | UI, pipeline mantığı, hata yolları |
+| `local-record` | Gerçek çağrı + kaydet | Yeni fixture üretmek |
+| `local-real` | Gerçek çağrı | Prompt üzerinde çalışırken |
+
+**Kayıt modu kritik:** Bir kez `local-record` ile çalıştır, fixture'lar `src/test/resources/fixtures/llm/` altına düşsün. Bu fixture'lar aynı zamanda golden test set'in girdisi olur.
+
+Diğer sahte sağlayıcılar:
+- `FakeEmbeddingProvider` — metin hash'inden deterministik vektör
+- `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)
+
+### 54.3 Seed data
+
+```java
+@Component @Profile("local")
+public class DevSeeder implements ApplicationRunner {
+    public void run(ApplicationArguments args) {
+        if (userRepo.count() > 0) return;              // idempotent
+        seedFromJson("seeds/senior_backend_tr.json");
+        seedFromJson("seeds/junior_frontend_en.json");
+        seedFromJson("seeds/career_changer.json");
+        seedFromJson("seeds/minimal_edge.json");
+    }
+}
+```
+
+**Ölçüm önbelleği repoya commit edilir** (`*.costs.json`) — `--profile full` olmadan Faz C üzerinde çalışılabilir.
+
+```java
+@Profile("local")
+@PostMapping("/dev/login-as/{email}")
+public void devLogin(@PathVariable String email) { ... }
+```
+
+### 54.4 Makefile
+
+```make
+dev:        docker compose --profile core up -d && ./gradlew bootRun --args='--spring.profiles.active=local,local-fake'
+dev-full:   docker compose --profile core --profile full up -d
+db-reset:   docker compose --profile core down -v && docker compose --profile core up -d postgres && $(GRADLE) bootRun ...
+record:     ./gradlew bootRun --args='--spring.profiles.active=local,local-record'
+test:       ./gradlew test
+test-int:   ./gradlew integrationTest
+test-llm:   ./gradlew llmEval
+lint:       ./gradlew spotlessApply
+```
+
+`front`, `e2e` ve `npm` hedefleri frontend reposunun Makefile'ındadır.
+`db-reset` Flyway'i uygulamayı açarak çalıştırır: Flyway Gradle eklentisi
+kurulmaz, yoksa migration'ların iki ayrı yapılandırması olur (EK D.1).
+
+Yeni makinede kurulum: `make dev`
+
+### 54.5 Üretimle farkı kontrol altında tutmak
+
+1. **Entegrasyon testleri Testcontainers ile gerçek Postgres+pgvector kullanır** — fake DB yok
+2. **CI'da smoke test:** gerçek LaTeX container'ıyla bir CV derle, PDF çıktığını doğrula
+
+---
+
+## 55. Aşama Aşama Yol Haritası
+
+> **Repo etiketleri:** Her kalem hangi repoda yapılacağını gösterir.
+> **[B]** = `atomcv-backend` · **[F]** = `atomcv-frontend` · **[B+F]** = her ikisinde ayrı ayrı
+>
+> Adım adım komutlar ve doğrulama kontrolleri: Bölüm XI-A. Repo kurulumu, klasör yapıları ve Claude Code promptları: Bölüm XI-B.
+
+### AŞAMA 0 — İskelet (1-2 hafta)
+
+**Amaç:** Deploy hattını en başta kurmak — sonradan kurmaktan çok daha ucuz.
+
+> **Not:** VPS bu aşamada henüz alınmaz. Aşağıdaki "Deployment" kalemleri Aşama 1 bittikten sonra, VPS kiralandığında yapılır (bkz. XI-A.0 ve XI-A.4). Aşama 0'da yalnızca CI (test) hattı kurulur, CD (deploy) hattı sonra eklenir.
+
+```
+[B] Backend iskeleti
+├── Spring Boot + actuator health
+├── Docker Compose (core profil): Postgres+pgvector, Redis, Mailpit
+├── Flyway + V1 şema (users, profiles, sections, entries, atoms, atom_variants, tags)
+├── Makefile
+├── ArchUnit temel kuralları
+└── CLAUDE.md
+
+[F] Frontend iskeleti
+├── Next.js + Tailwind + shadcn/ui
+├── Klasör yapısı (XI-B.3)
+├── i18n iskeleti (next-intl, en + tr)
+├── MSW mock altyapısı
+└── CLAUDE.md
+
+[B+F] CI (her repoda ayrı)
+├── build + test
+├── gitleaks
+└── (CD hattı VPS alındıktan sonra eklenir)
+
+[B] Deployment — VPS alındıktan sonra (Aşama 1 sonu)
+├── Hetzner VPS kurulumu (ufw, fail2ban, SSH sertleştirme, swap)
+├── Cloudflare DNS (atomcv alt alanı) + TLS
+├── Nginx + docker-compose.prod.yml
+├── scripts/deploy.sh (bileşen argümanlı)
+└── Health check + rollback
+```
+
+**Çıktı:** İki repo da lokalde çalışıyor, CI yeşil.
+
+---
+
+### AŞAMA 1 — Yürüyen İskelet (3-4 hafta)
+
+**Amaç:** LLM olmadan uçtan uca çalışan ürün. En riskli parça (ölçüm + optimizasyon + render) LLM belirsizliği olmadan doğrulanır.
+
+```
+[B] Veri modeli
+├── Atom + AtomVariant + run modeli
+├── ContentMigrator iskeleti ("v" damgası)
+├── RichContent value object
+└── User-scoped repository base
+
+[B] Profil API
+├── Bölüm/entry/atom CRUD (tek dil: EN)
+├── Tamamlanma hesabı
+├── Profil okuma optimizasyonu (4 düz sorgu)
+└── OpenAPI şeması yayınlama
+
+[F] Profil UI
+├── Manuel form (adım adım)
+├── gen:api ile tip üretimi → gerçek API'ye bağlanma
+└── Tamamlanma göstergesi
+
+[B] Render
+├── LaTeX container (XeLaTeX, izole, semafor, warm-up)
+├── Klasik şablon
+├── InlineRenderer + merkezi escape
+├── DocumentRenderer: final + ölçüm modları
+└── Font metrik tahmini (FontBox)
+
+[B] Ölçüm
+├── \savebox ölçüm dokümanı
+├── Log parse
+├── render_costs kalıcılığı (punto)
+└── Geçersizleşme mantığı
+
+[B] Pipeline
+├── PipelineContext, Result, PipelineError
+├── Faz C: bin-packing seçim (3 aşama)
+├── Faz E: render
+├── Faz F: sayfa doğrulama + bütçe geri besleme
+├── Genel CV modu (ikincil kriterler)
+└── PDF indirme
+
+[B] Test
+├── Sayfa sınırı testi
+├── Determinizm testi
+├── Kilit/kısıt testleri
+├── Multi-tenant izolasyon testi
+└── Golden profiller + seed data
+```
+
+**Çıktı:** Kullanıcı profil girer, garantili tek sayfa CV alır. **Bu bile kullanılabilir bir üründür.**
+
+---
+
+### AŞAMA 2 — İlana Özel Üretim (3-4 hafta)
+
+```
+[B] LLM altyapısı
+├── LlmProvider arayüzü + Strategy
+├── 5 sağlayıcı adaptörü (OpenRouter, Gemini, OpenAI, Anthropic, DeepSeek)
+├── Fallback zinciri (env-driven)
+├── PromptRegistry (versiyonlu dosyalar)
+├── llm_invocations telemetrisi
+└── FakeLlmProvider (local-fake/record/real)
+
+[B] Faz A
+├── Ön kontroller (uzunluk, entropi, sinyal kelime)
+├── LLM çağrısı + şema
+├── Makullük kapısı
+├── Prompt injection savunması (3 katman)
+├── Redis cache (7 gün)
+└── embeddingTarget sentezi
+
+[B] Embedding
+├── BGE-M3 container (text-embeddings-inference)
+├── EmbeddingProvider arayüzü + fallback
+├── content_hash bazlı invalidation
+└── pgvector entegrasyonu
+
+[B] Faz B
+├── Hibrit skorlama (embedding + etiket + beceri + keyword)
+├── Önem çarpanı
+├── İkincil kriterler
+└── Determinizm (tie-break)
+
+[B] Asenkron
+├── jobs tablosu + SKIP LOCKED
+├── Worker + heartbeat + zombi toplayıcı
+├── Retry politikası (hata tipine göre)
+├── SSE + Nginx buffering off
+├── Idempotency key
+└── Graceful shutdown
+
+[B] Kota ve maliyet
+├── usage_counters
+├── Kill switch (feature flag)
+├── Anomali tespiti
+└── Axiom entegrasyonu (OpenTelemetry)
+
+[B] Faz F
+└── Uygunluk raporu (kapsama sayıları)
+```
+
+**Çıktı:** İlana göre doğru içerik seçimi, uydurma riski **sıfır** (yeniden yazım yok).
+
+---
+
+### AŞAMA 3 — Hesap ve Zenginleştirme (3-4 hafta) → **HALKA AÇIK MVP**
+
+```
+[B] Kimlik
+├── OAuth (Google, GitHub, LinkedIn)   ← magic link'ten ÖNCE
+├── Session cookie + Redis + CSRF
+├── Magic link (selector/verifier, POST doğrulama)
+├── Account enumeration koruması
+├── Rate limiting (3 katman)
+└── Turnstile
+
+[B] E-posta
+├── Resend entegrasyonu
+├── SPF/DKIM/DMARC (alt domain: mail.atomcv.mustafatetik.com)
+├── Thymeleaf şablonları (HTML + plain text)
+├── Suppression list + webhook (imza doğrulamalı)
+└── Mailpit (lokal)
+
+[B] Ingestion
+├── Dosya doğrulama (magic byte, boyut)
+├── PDFBox / POI / TEX çıkarımı
+├── Karışık metin tespiti
+├── LLM yapılandırma (EN + kaynak dil tek çağrıda)
+├── Normalizasyon (beceri, tarih, run, Locale.ROOT)
+├── Gözden geçirme ekranı (zorunlu)
+└── Arka plan işleri (embedding, ölçüm) paralel
+
+[B] Çok dillilik
+├── İki dilli atomlar
+├── Staleness takibi (derived_from, source_hash, is_stale)
+├── is_user_edited koruması
+├── Pivot çeviri
+└── Dil-farkındalıklı Faz C (TR uzunluk farkı)
+
+[B] Anonim mod
+├── EphemeralProfileStore (Redis, 2sa kayan TTL — etkinlikte tazelenir)
+├── SessionCapabilities
+├── Kota (2 ayrı sayaç, IP bazlı)
+├── Yükseltme akışı (geçici → kalıcı)
+└── Gizlilik testi (DB'ye yazmaz)
+
+[F] Profil editörü
+├── Alan bazlı autosave + debounce
+├── Optimistic update + ETag/412
+├── Sürükle-bırak (dnd-kit, klavye)
+├── Etiket / önem / kilit / alternatif metin
+├── Bayat varyant uyarısı
+└── Arka plan iş göstergesi
+
+[B] Faz D
+├── Alternatiflerden seçim (LLM'siz)
+├── Üç kademeli eşik
+├── Paralel yürütme (StructuredTaskScope)
+├── Doğrulama katmanı (5 kontrol)
+└── About sentezi
+
+[B] Cover letter
+├── Atomlardan türetme
+├── Bölümlü yapı
+├── Klişe filtresi
+├── Süre iddiası kontrolü
+└── Yeniden üretim
+
+[F] i18n + a11y
+├── next-intl (3 eksen)
+├── ICU MessageFormat
+├── CV içi tarih formatı
+├── Radix bileşenleri
+└── aria-live bölgeleri
+
+[B+F] Hukuki
+├── Gizlilik Politikası + Kullanım Şartları
+├── Hesap silme (kaskad)
+├── Veri export (JSON + Markdown)
+└── Sorumluluk reddi
+
+[B+F] Geri bildirim
+├── 👍/👎 + kategori + yorum
+├── support_grants (48sa, denetim kaydı)
+└── Örtük sinyal takibi
+```
+
+**Çıktı: Halka açık MVP.**
+
+> Bu aşamada iki repo yoğun şekilde birlikte ilerler. Backend her endpoint grubunu bitirdiğinde OpenAPI şeması güncellenir; frontend `npm run gen:api` ile tipleri tazeler. Sıralama önerisi: Bölüm XI-B.9.2.
+
+---
+
+### AŞAMA 4 — Olgunlaşma (sürekli)
+
+```
+[B] Şablon ve format
+├── Modern + Kompakt şablonlar
+├── Özelleştirme (Katman A + B)
+├── Şablon sürümleme + ölçüm geçersizleştirme
+├── DOCX renderer
+└── Ham kaynak indirme
+
+[B+F] Pipeline
+├── Faz G: doğal dil düzenleme
+├── Manuel toggle
+└── Selection state üzerinden iterasyon
+
+[B+F] Ürün
+├── Başvuru takibi + PDF arşivleme (14 gün / süresiz)
+├── GitHub entegrasyonu
+├── ATS uyumluluk doğrulaması
+├── Sürüm iletişimi + changelog
+└── Yaşam döngüsü e-postaları
+
+[B+F] Kalite
+├── Golden test set genişletme
+├── LLM eval altyapısı
+├── Performans bütçeleri CI'da
+├── axe-core a11y denetimi
+└── Playwright E2E genişletme
+
+[F] Büyüme
+├── Analitik (Umami) + huni ölçümü
+├── SEO landing + blog
+└── Diğer diller (pivot)
+
+[B+F] Açık kaynak hazırlığı
+├── Mimari dokümanlarının İngilizceye çevrilmesi
+├── README (İngilizce, mimari özet + kurulum)
+├── CONTRIBUTING.md + SECURITY.md
+└── Örnek .env.example doğrulaması
+
+Gelecek
+├── İlan URL'den çekme (SSRF korumalı)
+├── Toplu (batch) mod
+├── Kullanıcı tanımlı şablonlar
+└── LinkedIn About / bio çıktıları
+```
+
+### 55.1 Zaman tahmini
+
+| Aşama | Süre (part-time) | Kümülatif |
+|---|---|---|
+| 0 — İskelet | 1-2 hafta | 2 hafta |
+| 1 — Yürüyen iskelet | 3-4 hafta | 6 hafta |
+| 2 — İlana özel | 3-4 hafta | 10 hafta |
+| 3 — Hesap + MVP | 3-4 hafta | **14 hafta (~3.5 ay)** |
+| 4 — Olgunlaşma | Sürekli | — |
+
+---
+
 # BÖLÜM XI-A — SIFIRDAN BAŞLAMA: ADIM ADIM GELİŞTİRME REHBERİ
 
 Bu bölüm, boş bir klasörden canlı bir uygulamaya kadar her adımı sırayla anlatır. **Geliştirme tamamen kendi bilgisayarında başlar**; VPS ancak Aşama 1 tamamlandıktan sonra devreye girer.
@@ -4805,15 +5701,18 @@ git --version
 
 ### Adım 1.3 — Depo (repository) oluşturma
 
+**İki ayrı repo** (XI-B.1). Aşağıdaki her şey `atomcv-backend` içindir; frontend
+kendi reposunda aynı adımların Next.js karşılığını yürütür.
+
 ```bash
-mkdir atomcv && cd atomcv
+mkdir atomcv-backend && cd atomcv-backend
 git init
 
-# Klasör yapısı
-mkdir -p backend frontend docker/latex docs scripts .github/workflows
+# Klasör yapısı — src/ kökte, backend/ alt klasörü yok
+mkdir -p src docker/latex docs scripts .github/workflows
 ```
 
-**Kök `.gitignore`:**
+**`.gitignore`:**
 ```gitignore
 # Sırlar
 .env
@@ -4822,11 +5721,10 @@ mkdir -p backend frontend docker/latex docs scripts .github/workflows
 *.key
 
 # Build çıktıları
-backend/build/
-backend/.gradle/
-frontend/.next/
-frontend/node_modules/
-frontend/out/
+build/
+.gradle/
+out/
+bin/
 
 # IDE
 .idea/
@@ -4841,6 +5739,18 @@ Thumbs.db
 *.log
 /tmp/
 ```
+
+**`.gitattributes`** — dokümanın gövdesinde yoktu, gerekli (EK D.1):
+```gitattributes
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.jar binary
+*.pdf binary
+```
+
+Windows'ta çalışılıyorsa bu dosya olmadan `gradlew` CRLF ile commit edilir ve
+Linux runner'da çalışmaz.
 
 **`.env.example`** (gerçek değerler ASLA commit edilmez):
 ```bash
@@ -4864,7 +5774,7 @@ LLM_CHAIN_MID=
 # ── Güvenlik (Aşama 3'te) ──
 SESSION_SECRET=
 TURNSTILE_SECRET_KEY=
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+# NEXT_PUBLIC_* anahtarları frontend reposuna aittir; burada yeri yok.
 
 # ── Servisler (Aşama 3'te) ──
 RESEND_API_KEY=
@@ -4878,8 +5788,8 @@ DAILY_BUDGET_USD=40
 ### Adım 1.4 — GitHub deposu
 
 ```bash
-gh repo create atomcv --public --source=. --remote=origin
-# veya github.com'dan elle oluştur
+gh repo create atomcv-backend --public --source=. --remote=origin
+# frontend için ayrıca: gh repo create atomcv-frontend --public
 
 git add .
 git commit -m "chore: initial repository structure"
@@ -4888,18 +5798,28 @@ git push -u origin main
 
 **Public seçmenin faydası:** GitHub Actions dakikaları sınırsız, GHCR imajları ücretsiz.
 
-**Sır sızıntısı koruması (hemen kur):**
-```bash
-# .github/workflows/secrets-scan.yml içine gitleaks ekle
-# ve pre-commit hook:
-cat > .git/hooks/pre-commit <<'EOF'
-#!/bin/sh
-if command -v gitleaks >/dev/null; then
-  gitleaks protect --staged --no-banner || exit 1
-fi
-EOF
-chmod +x .git/hooks/pre-commit
+**Sır sızıntısı koruması (hemen kur):** `.github/workflows/secrets-scan.yml`
+içine gitleaks, artı yerel bir commit kancası. Kancayı elle `.git/hooks/` altına
+yazmak yerine **pre-commit framework'ü** kullanılır — `.git/hooks/` versiyonlanmaz,
+yani elle yazılan kanca ikinci bir makinede yoktur ve kimse fark etmez:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
 ```
+
+```bash
+pre-commit install
+```
+
+> **Kancanın çalıştığını doğrula.** Kurulu değilse commit sessizce geçer. Gerçek
+> bir token deseniyle dene — AWS'nin dokümantasyon örnek anahtarları
+> (`AKIAIOSFODNN7EXAMPLE`) gitleaks'in izin listesindedir ve **yanlış bir "temiz"
+> raporu** verir.
 
 ---
 
@@ -4909,12 +5829,13 @@ chmod +x .git/hooks/pre-commit
 
 ### Adım 0.1 — Backend iskeleti
 
+Repo'nun kökünde; `backend/` alt klasörü yok (XI-B.2).
+
 ```bash
-cd backend
-# Spring Initializr ile veya elle:
-# start.spring.io → Gradle-Kotlin, Java 21, Spring Boot 3.x
+# start.spring.io → Gradle-Kotlin, Java 21, Spring Boot 3.5.x
 # Bağımlılıklar: Web, Data JPA, PostgreSQL Driver, Validation,
-#                Actuator, Flyway, Testcontainers, Lombok
+#                Actuator, Flyway, Testcontainers
+# Lombok KULLANILMIYOR — record'lar ve düz constructor'lar (EK D.1)
 ```
 
 **`build.gradle.kts` — temel bağımlılıklar:**
@@ -4929,9 +5850,25 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
+// Kaynak kodlaması sabitlenir: javac platform charset'ini kullanır ve bu
+// Türkçe Windows'ta Cp1254, runner'da UTF-8'dir (EK D.1).
+tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
+```
+
+**Entegrasyon testleri ayrı bir source set'te.** `gradlew test` Docker'sız ve
+hızlı kalır; `gradlew integrationTest` Testcontainers'ı çalıştırır. `check`'e
+bilerek bağlanmaz — `gradlew build` Docker olmadan da çalışabilmelidir.
+
+```kotlin
+sourceSets { create("integrationTest") { /* main output'u classpath'e ekle */ } }
+tasks.register<Test>("integrationTest") { /* shouldRunAfter(tasks.test) */ }
 ```
 
 **Paket yapısını baştan doğru kur** (Bölüm 10.1):
@@ -4966,15 +5903,26 @@ services:
     image: redis:7-alpine
     profiles: [core]
     ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
 
   mailpit:
     image: axllent/mailpit
     profiles: [core]
     ports: ["1025:1025", "8025:8025"]
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
 
 volumes:
   pgdata:
 ```
+
+**Üçünde de healthcheck var.** Yalnız Postgres'te olsaydı `docker compose ps`
+diğer ikisi için "healthy" yerine boş durum gösterirdi ve Aşama 0'ın
+tamamlanma kontrolü ("üçü de healthy") doğrulanamazdı. `version:` anahtarı
+kullanılmaz — Compose v2'de kaldırıldı, yazılırsa uyarı verir.
 
 ```bash
 docker compose --profile core up -d
@@ -4985,7 +5933,10 @@ Mailpit arayüzü: `http://localhost:8025`
 
 ### Adım 0.3 — İlk Flyway migration
 
-**`backend/src/main/resources/db/migration/V1__initial_schema.sql`** — Bölüm 13'teki şemanın **kimlik + profil çekirdeği** kısmı (jobs, llm_invocations gibi sonraki aşama tabloları henüz eklenmez).
+**`src/main/resources/db/migration/V1__initial_schema.sql`** — Bölüm 13'ün
+**tamamı** (EK D.1). Boş tablo maliyetsizdir; şemayı bölmek, uygulanmış bir
+migration'ı değiştirme yasağı altında aynı tabloları V2/V3'te yeniden açmak
+demek olurdu.
 
 ```yaml
 # application-local.yml
@@ -5012,8 +5963,10 @@ docker compose exec postgres psql -U atomcv -d atomcv -c "\dt"
 
 ### Adım 0.4 — Frontend iskeleti
 
+**Bu adım `atomcv-frontend` reposunda yürütülür**, backend reposunda değil.
+
 ```bash
-cd frontend
+# atomcv-frontend/ içinde
 npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias "@/*"
 npx shadcn@latest init
 npm i @tanstack/react-query zustand react-hook-form zod next-intl
@@ -5023,77 +5976,112 @@ npm i @tanstack/react-query zustand react-hook-form zod next-intl
 
 ### Adım 0.5 — Makefile
 
+Backend reposundadır ve yalnız backend'i çalıştırır; `front` hedefi frontend
+reposuna aittir.
+
 ```make
-.PHONY: dev dev-full front db-reset test
+# Windows: Git Bash zorunlu. cmd.exe altında SHELL=sh.exe olur ve tarifler çalışmaz.
+ifeq ($(SHELL),sh.exe)
+$(error Run make from Git Bash. cmd.exe and PowerShell cannot execute these recipes)
+endif
+
+# Compose .env'i kendisi okur, Spring okumaz. Bu include olmadan değişmiş bir
+# POSTGRES_PASSWORD, kod hatası gibi görünen bir kimlik doğrulama hatası verir.
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
+# GNU Make, metakarakter içermeyen bir tarif satırını doğrudan CreateProcess ile
+# çalıştırır ve ./gradlew bir Windows çalıştırılabiliri değildir.
+GRADLE := sh ./gradlew
+
+.PHONY: dev dev-full db-reset record test test-int
 
 dev:
 	docker compose --profile core up -d
-	cd backend && ./gradlew bootRun --args='--spring.profiles.active=local,local-fake'
+	$(GRADLE) bootRun --args='--spring.profiles.active=local,local-fake'
 
 dev-full:
 	docker compose --profile core --profile full up -d
 
-front:
-	cd frontend && npm run dev
-
 db-reset:
-	docker compose down -v postgres
+	docker compose --profile core down -v
 	docker compose --profile core up -d postgres
-	sleep 4
-	cd backend && ./gradlew flywayMigrate
+	$(GRADLE) bootRun --args='--spring.profiles.active=local,local-fake'
+
+record:
+	$(GRADLE) bootRun --args='--spring.profiles.active=local,local-record'
 
 test:
-	cd backend && ./gradlew test
-	cd frontend && npm test
+	$(GRADLE) test
+
+test-int:
+	$(GRADLE) integrationTest
 ```
+
+**Flyway Gradle eklentisi eklenmez.** Migration'lar uygulama açılışında çalışır;
+ikinci bir yol, iki farklı yapılandırmanın sessizce ayrışması demektir.
 
 ### Adım 0.6 — ArchUnit temel kuralları
 
-`backend/src/test/java/.../ArchitectureTest.java` — Bölüm 51.4'teki kuralları **hemen** ekle. Sonradan eklemek çok daha zor olur (biriken ihlalleri temizlemek gerekir).
+`src/test/java/.../ArchitectureTest.java` — Bölüm 51.4'teki kuralları **hemen**
+ekle. Sonradan eklemek çok daha zor olur (biriken ihlalleri temizlemek gerekir).
+
+> **Her kuralın ihlalde patladığını doğrula.** Hiç düşmemiş bir kural, çalıştığı
+> bilinmeyen bir kuraldır. Modül paketleri henüz boşken kurallar "failed to check
+> any classes" ile düşer; muafiyeti global vermek yerine yalnız ilgili kurala ver
+> (EK D.1).
 
 ### Adım 0.7 — CI hattı (deploy henüz yok)
 
-**`.github/workflows/ci.yml`:**
+Her repo kendi hattını taşır; backend reposunda frontend işi yoktur.
+
+**`.github/workflows/ci.yml`** (backend):
 ```yaml
 name: CI
-on: [push, pull_request]
+on:
+  push: { branches: [main] }
+  pull_request:
 
 jobs:
-  backend:
-    runs-on: ubuntu-latest
+  build:                       # derleme + test + integrationTest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { java-version: '21', distribution: 'temurin', cache: gradle }
-      - run: cd backend && ./gradlew build
+      - run: ./gradlew build -x test
+      - run: ./gradlew test
+      - run: ./gradlew integrationTest
+      - uses: actions/upload-artifact@v7      # if: always()
+        with: { path: "build/reports/tests/\nbuild/test-results/" }
 
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm, cache-dependency-path: frontend/package-lock.json }
-      - run: cd frontend && npm ci && npm run build
-
-  secrets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: gitleaks/gitleaks-action@v2
+  codeql:                      # languages: java-kotlin, autobuild
+  scan:                        # trivy, scanners: misconfig
 ```
+
+Sırlar ayrı bir workflow'dadır (`secrets-scan.yml`, `fetch-depth: 0` ile tüm
+geçmiş taranır) — tek bir sızıntı iki işi birden kırmasın diye.
+
+> **Test raporlarını her koşulda yükle.** Sıfır test çalıştıran bir suite de
+> "başarılı" raporlar; sayıyı görebilmenin tek yolu rapordur.
+>
+> **CI yalnız `main` push'unda ve PR'da çalışır.** Bir dalı push etmek hattı
+> tetiklemez; kontrolleri görmek için PR açmak gerekir.
+
+Deploy job'ı bu aşamada yoktur — VPS henüz alınmadı. Hattın tam hali (her iki
+repo için ayrı ayrı, deploy adımlarıyla birlikte) Bölüm 47.1'dedir; VPS
+kurulduktan sonra (XI-A.4, Adım V.7) buradaki `ci.yml` genişletilir.
 
 ### ✅ Aşama 0 tamamlanma kontrolü
 
 ```
 □ `make dev` tek komutla çalışıyor
 □ Backend health endpoint yanıt veriyor
-□ Frontend açılıyor
 □ Flyway migration uygulandı, tablolar var
-□ ArchUnit testleri geçiyor
-□ CI yeşil
+□ ArchUnit testleri geçiyor — ve her biri ihlalde düştüğü görülmüş
+□ CI yeşil, test raporları indirilip sayılar görülmüş
 □ .env git'te değil, .env.example var
 □ Mailpit arayüzü açılıyor
+□ gitleaks kancası gerçek bir token deseniyle denenmiş
+□ (frontend reposu) Frontend açılıyor
 ```
 
 ---
@@ -5113,15 +6101,21 @@ jobs:
    └── plainText() ve contentHash() metodları
 2. ContentMigrator ("v" damgası okuma — şimdilik tek sürüm)
 3. Atom, AtomVariant, Entry, Section entity'leri
-4. UserScopedRepository base sınıfı        ← güvenlik temeli
-5. ProfileAssembler (4 düz sorgu + bellekte birleştirme)
+4. UserScopedRepository + ProfileScopedRepository + ProfileRef  ← güvenlik temeli
+5. Dört repository cephesi (paket-özel Spring Data arayüzleri üstünde)
+6. ProfileAssembler (4 düz sorgu + bellekte birleştirme)
 ```
+
+İki temel sınıfın neden bir tane olmadığı EK D.4'te; birleştirmenin ayrıntıları
+EK D.5'te.
 
 **Test yaz:** `contentHash` yalnızca `plainText` değişince değişmeli (Bölüm 16.2).
 
 ### Adım 1.2 — Manuel profil formu
 
-Frontend + backend CRUD. Tek dil (EN), tek şablon varsayımıyla.
+Backend CRUD burada, form `atomcv-frontend`'de. Tek dil (EN), tek şablon
+varsayımıyla. **API sözleşmesi EK D.6'da hazır** — endpoint yazarken yeniden
+karar verilmez.
 
 ```
 □ Bölüm ekleme/silme/sıralama
@@ -5410,7 +6404,9 @@ ssh atomcv    # deploy kullanıcısı
 sudo mkdir -p /opt/atomcv && sudo chown deploy:deploy /opt/atomcv
 cd /opt/atomcv
 
-git clone https://github.com/tetikmustafa/atomcv.git .
+# Sunucuda yalnız dağıtım dosyaları durur (compose, .env, scripts/) ve
+# bunlar backend reposundadır. Frontend imajı GHCR'den gelir, kodu değil.
+git clone https://github.com/tetikmustafa/atomcv-backend.git .
 cp .env.example .env
 nano .env         # gerçek değerleri doldur
 chmod 600 .env
@@ -5457,12 +6453,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Her repo yalnız kendi imajını üretir. Frontend'in kendi deploy
+      # workflow'u aynı şeyi atomcv-frontend imajı için yapar.
       - name: Build & push
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/atomcv-backend:${{ github.sha }} ./backend
-          docker build -t ghcr.io/${{ github.repository }}/atomcv-frontend:${{ github.sha }} ./frontend
-          docker push ghcr.io/${{ github.repository }}/atomcv-backend:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository }}/atomcv-frontend:${{ github.sha }}
+          docker build -t ghcr.io/tetikmustafa/atomcv-backend:${{ github.sha }} .
+          docker push ghcr.io/tetikmustafa/atomcv-backend:${{ github.sha }}
 
       - uses: webfactory/ssh-agent@v0.9.0
         with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
@@ -5471,38 +6467,49 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
             "cd /opt/atomcv && \
-             echo GIT_SHA=${{ github.sha }} > .env.deploy && \
-             ./scripts/deploy.sh ${{ github.sha }}"
+             ./scripts/deploy.sh backend ${{ github.sha }}"
 ```
 
-**`scripts/deploy.sh` (sunucuda):**
+**`scripts/deploy.sh` (sunucuda):** İki bileşen ayrı ayrı dağıtıldığı için
+hangisinin SHA'sının güncelleneceğini ilk argüman söyler.
+
 ```bash
 #!/bin/bash
 set -euo pipefail
-NEW_SHA=$1
-PREV_SHA=$(cat .current_sha 2>/dev/null || echo "")
+COMPONENT=$1          # backend | frontend
+NEW_SHA=$2
+VAR="${COMPONENT^^}_SHA"                     # BACKEND_SHA | FRONTEND_SHA
 
-docker compose -f docker-compose.prod.yml pull
+# İki SHA .env.deploy'da yaşar (XI-B.9.3); compose onu okur.
+touch .env.deploy
+PREV_SHA=$(grep "^$VAR=" .env.deploy | cut -d= -f2 || echo "")
+sed -i "/^$VAR=/d" .env.deploy && echo "$VAR=$NEW_SHA" >> .env.deploy
+
+docker compose --env-file .env.deploy -f docker-compose.prod.yml pull
 
 # Migration (deploy'dan ÖNCE)
-docker compose -f docker-compose.prod.yml run --rm backend \
-  java -jar app.jar --spring.flyway.migrate-only=true
+# ⚠️ AÇIK KARAR: `--spring.flyway.migrate-only=true` diye bir Spring Boot
+# özelliği yoktur (EK D.1). İki gerçek seçenek: (a) Flyway CLI imajı ile
+# migration'ı ayrı bir adımda çalıştırmak, (b) migration'ı uygulama
+# açılışında bırakıp tek örnekle deploy etmek. Şu an (b) geçerli.
 
-GIT_SHA=$NEW_SHA docker compose -f docker-compose.prod.yml up -d
+docker compose --env-file .env.deploy -f docker-compose.prod.yml up -d
 
 # Health check
 for i in $(seq 1 30); do
   if curl -sf http://localhost:8080/actuator/health >/dev/null; then
-    echo "$NEW_SHA" > .current_sha
     docker image prune -f
     exit 0
   fi
   sleep 2
 done
 
-# Rollback
+# Rollback — yalnız bu bileşen geri alınır, diğeri yerinde kalır
 echo "Health check başarısız — geri alınıyor"
-[ -n "$PREV_SHA" ] && GIT_SHA=$PREV_SHA docker compose -f docker-compose.prod.yml up -d
+if [ -n "$PREV_SHA" ]; then
+  sed -i "/^$VAR=/d" .env.deploy && echo "$VAR=$PREV_SHA" >> .env.deploy
+  docker compose --env-file .env.deploy -f docker-compose.prod.yml up -d
+fi
 exit 1
 ```
 
@@ -5745,7 +6752,7 @@ Nokta ile başlayan domain (`.mustafatetik.com`) çerezi portfolyo sitesine de g
 ### Adım 3.6 — Anonim mod
 
 ```
-1. EphemeralProfileStore (Redis, 2sa TTL)
+1. EphemeralProfileStore (Redis, 2sa kayan TTL — etkinlikte tazelenir)
 2. ProfileRef tipi (PERSISTENT | EPHEMERAL)
 3. SessionCapabilities
 4. IP bazlı kota (2 sayaç)
@@ -6050,7 +7057,9 @@ atomcv-backend/
 │   │   │   ├── email/                       #   ResendClient, EmailTemplateRenderer, Suppression
 │   │   │   │
 │   │   │   └── shared/
-│   │   │       ├── security/                #   UserScopedRepository, CurrentUser, CsrfConfig
+│   │   │       ├── security/                #   UserContext, UserRole, UserOwned, ProfileOwned,
+│   │   │       │                            #   ProfileRef, UserScopedRepository,
+│   │   │       │                            #   ProfileScopedRepository, CsrfConfig
 │   │   │       ├── error/                   #   ErrorPresenter, ProblemDetailAdvice
 │   │   │       ├── config/
 │   │   │       └── util/
@@ -6241,6 +7250,12 @@ atomcv-frontend/
 ## XI-B.4 — Backend `CLAUDE.md`
 
 > Bu dosya `atomcv-backend/CLAUDE.md` olarak kaydedilir. Claude Code her oturumda otomatik okur.
+>
+> **Aşağıdaki metin yalnızca ilk halidir.** Yaşayan sürüm repodaki `CLAUDE.md`
+> dosyasıdır ve o gün itibarıyla çözülmüş kararları, makineye özgü notları,
+> aşama durumunu ve çalışma düzenini taşır. İkisi ayrıştığında repodaki
+> dosya geçerlidir; burayı her değişiklikte güncellemek iki kopyayı da
+> güvenilmez yapar.
 
 ````markdown
 # AtomCV Backend — Working Context
@@ -6959,755 +7974,6 @@ Sunucuda `.env.deploy` dosyasında iki SHA saklanır; rollback her biri için ba
 
 > **Önemli:** Her iki oturumda da ilk turda **kod yazdırma**. Önce anlama teyidi, sonra plan, sonra kod. Yanlış varsayımlar erken katmanlara gömülürse çıkarması pahalıdır.
 
----
-
-# BÖLÜM X — KALİTE GÜVENCE
-
-## 51. Test Stratejisi
-
-### 51.1 Test piramidi
-
-| Katman | Araç | Kapsam hedefi | Süre | Maliyet |
-|---|---|---|---|---|
-| Unit | JUnit 5 + Mockito | %80+ (iş mantığı) | ~30sn | $0 |
-| Mimari | ArchUnit | Kural bazlı | ~5sn | $0 |
-| Entegrasyon | Testcontainers | Repository, migration | ~2dk | $0 |
-| Pipeline (deterministik) | Golden fixtures | Faz B/C/E/F | ~30sn | $0 |
-| Contract | WireMock | LLM adaptörleri | ~20sn | $0 |
-| Frontend | Vitest + Testing Library | Bileşenler | ~1dk | $0 |
-| E2E | Playwright | Kritik akışlar | ~3dk | $0 |
-| LLM eval | Gerçek çağrı | Prompt kalitesi | ~5dk | ~$0.30 |
-
-**Toplam CI süresi (LLM eval hariç): ~7 dakika, sıfır maliyet.**
-
-### 51.2 En değerli testler
-
-Bu dört test, ürünün temel garantilerini koruyor:
-
-**1. Sayfa sınırı ihlali yok**
-```java
-@Test
-void selectionNeverExceedsBudget() {
-    for (var profile : goldenProfiles())
-        for (var analysis : recordedAnalyses())
-            for (var lang : List.of("en", "tr"))
-                for (var pages : List.of(1, 2)) {
-                    var sel = runSelection(profile, analysis, lang, pages);
-                    assertThat(sel.budget().usedPt())
-                        .isLessThanOrEqualTo(sel.budget().totalPt());
-                }
-}
-```
-
-**2. Determinizm**
-```java
-@Test
-void scoringAndSelectionAreDeterministic() {
-    var first = runPipeline(fixedInput);
-    for (int i = 0; i < 50; i++)
-        assertThat(runPipeline(fixedInput)).isEqualTo(first);
-}
-```
-
-**3. Çok-kiracılı izolasyon**
-```java
-@ParameterizedTest
-@MethodSource("allProtectedEndpoints")
-void userCannotAccessOthersData(String method, String path) {
-    var userA = createUserWithProfile();
-    var userB = createUserWithProfile();
-    var response = request(method, path.replace("{id}", userB.resourceId()), userA.session());
-    assertThat(response.status()).isIn(403, 404);
-}
-```
-
-**4. Kilitler ve yapısal kısıtlar**
-```java
-@Test
-void locksAndStructuralConstraintsRespected() {
-    var sel = runSelection(profileWithLocks, analysis);
-    assertThat(sel.selected()).containsAll(profileWithLocks.alwaysIncludeAtoms());
-    assertThat(sel.selected()).doesNotContainAnyOf(profileWithLocks.inactiveAtoms());
-    for (var entry : visibleEntries(profileWithLocks))
-        assertThat(countSelectedIn(sel, entry)).isGreaterThanOrEqualTo(entry.minAtoms());
-}
-```
-
-### 51.3 Golden test set
-
-```
-src/test/resources/golden/
-├── profiles/
-│   ├── senior_backend_tr.json       # TR, 3 deneyim, 8 proje
-│   ├── junior_frontend_en.json      # zayıf, 2 okul projesi
-│   ├── career_changer.json          # alakasız geçmiş
-│   ├── academic_long.json           # 15 yıl, 20+ yayın
-│   ├── minimal_edge.json            # sınırda: 1 deneyim, 3 beceri
-│   └── *.costs.json                 # önceden ölçülmüş render_costs
-├── jobs/
-│   ├── backend_go_k8s_en.txt
-│   ├── data_engineer_tr.txt         # Türkçe ilan
-│   ├── vague_short.txt              # "backend developer lazım"
-│   ├── very_long_corporate.txt      # 15.000 karakter
-│   ├── anonymous_company.txt
-│   ├── injection_attempt.txt        # gizli talimat
-│   ├── mixed_language.txt
-│   ├── no_requirements_section.txt
-│   └── unrelated_marketing.txt
-├── analyses/                        # Faz A çıktıları (fixture)
-└── content-formats/                 # her JSONB sürümü için örnek
-```
-
-**Aynı profiller lokal geliştirmede seed data olarak kullanılır** — tek kaynak, iki fayda.
-
-### 51.4 Mimari kurallar (ArchUnit)
-
-```java
-@ArchTest static final ArchRule noCycles = slices()
-    .matching("com.mustafatetik.atomcv.(*)..").should().beFreeOfCycles();
-
-@ArchTest static final ArchRule sharedIsIndependent = noClasses()
-    .that().resideInAPackage("..shared..")
-    .should().dependOnClassesThat().resideInAnyPackage("..profile..","..generation..");
-
-@ArchTest static final ArchRule noRawRepositoryInApi = noClasses()
-    .that().resideInAPackage("..api..")
-    .should().dependOnClassesThat().areAssignableTo(JpaRepository.class);
-
-@ArchTest static final ArchRule noPiiInLogs = /* Bölüm 48.1 */;
-
-@ArchTest static final ArchRule noLocaleSensitiveCase = /* Bölüm 38.4 */;
-
-@ArchTest static final ArchRule renderersAreDeterministic = noClasses()
-    .that().resideInAPackage("..rendering..")
-    .should().dependOnClassesThat().resideInAPackage("..llm..");
-```
-
-Son kural önemli: **renderer'ın LLM'e bağımlı olması derleme zamanında engelleniyor.**
-
-### 51.5 Dev endpoint güvenliği
-
-```java
-@Test
-void devEndpointsAbsentInProductionProfile() {
-    var ctx = new SpringApplicationBuilder(App.class).profiles("prod")
-        .web(WebApplicationType.NONE).run();
-    assertThat(ctx.containsBean("devController")).isFalse();
-    assertThat(ctx.containsBean("devSeeder")).isFalse();
-}
-```
-
-### 51.6 Anonim mod gizlilik testi
-
-```java
-@Test
-void anonymousGenerationWritesNothingToDatabase() {
-    var before = dbSnapshot.rowCountsAllTables();
-    anonymousClient.createProfile(sampleData);
-    anonymousClient.generate(sampleJobDescription);
-    assertThat(dbSnapshot.rowCountsAllTables()).isEqualTo(before);
-}
-```
-
-Gizlilik vaadi, dokümanda yazan bir cümle değil, **CI'da zorlanan bir kural.**
-
----
-
-## 52. Performans Bütçeleri
-
-### 52.1 Backend
-
-| İşlem | p50 | p95 |
-|---|---|---|
-| Profil okuma (200 atom) | 80ms | 200ms |
-| Atom PATCH | 30ms | 80ms |
-| Faz B (skorlama) | 30ms | 60ms |
-| Faz C (seçim) | 15ms | 40ms |
-| Faz E (render) | 150ms | 300ms |
-| LaTeX derleme (XeLaTeX) | 4s | 7s |
-| Ölçüm derlemesi | 12s | 20s |
-| **Pipeline toplam** | **8s** | **14s** |
-
-### 52.2 ⚠️ N+1 problemi — en olası performans hatası
-
-```java
-// ❌ 1 + 200 + 400 + 200 = 801 sorgu
-profile.getSections().forEach(s -> s.getAtoms().forEach(a -> {
-    a.getVariants().size(); a.getTags().size();
-}));
-
-// ✅ 4 düz sorgu + bellekte birleştirme
-var sections = sectionRepo.findByProfileId(id);
-var entries  = entryRepo.findByProfileId(id);
-var atoms    = atomRepo.findByProfileId(id);
-var variants = variantRepo.findByProfileId(id);    // profile_id denormalize kolonu
-return ProfileAssembler.assemble(sections, entries, atoms, variants);
-```
-
-Karmaşık `JOIN FETCH` zincirleri kartezyen çarpım üretir ve daha da yavaşlar.
-
-```java
-@Test
-void profileLoadUsesLimitedQueries() {
-    var counter = QueryCountInspector.start();
-    profileService.load(seedProfileId);
-    assertThat(counter.count()).isLessThanOrEqualTo(6);
-}
-```
-
-### 52.3 Frontend
-
-| Metrik | Hedef |
-|---|---|
-| LCP (landing) | < 2.0s |
-| LCP (editör) | < 2.5s |
-| INP | < 200ms |
-| CLS | < 0.1 |
-| İlk JS paketi | < 200 KB gzip |
-
-### 52.4 LaTeX optimizasyonu
-
-```dockerfile
-RUN fc-cache -fv                                    # font cache build zamanında
-RUN xelatex -ini -jobname="cvfmt" "&xelatex preamble.tex\dump"   # 1-2sn kazanç
-```
-
-+ Container warm-up (Bölüm 29.6)
-
-### 52.5 Soğuk başlangıç
-
-```bash
-# Deploy sonrası, trafiği yönlendirmeden önce
-curl -sf localhost:8080/actuator/health
-curl -sf localhost:8080/api/v1/warmup      # tipik sorguları çalıştırır
-```
-
-JVM CDS (`-XX:ArchiveClassesAtExit`) ile başlangıç ~%30 düşer.
-
-### 52.6 Bütçe dosyası
-
-```yaml
-# performance-budgets.yaml
-backend:
-  profile_load:     { p50: 80ms,  p95: 200ms }
-  phase_scoring:    { p50: 30ms,  p95: 60ms }
-  phase_selection:  { p50: 15ms,  p95: 40ms }
-  pipeline_total:   { p50: 8s,    p95: 14s }
-frontend:
-  lcp_editor: 2500ms
-  inp: 200ms
-  bundle_initial_kb: 200
-```
-
-Testler bu dosyayı okur. Bütçe değiştirmek bilinçli bir karar olur (PR'da görünür).
-
-CI makineleri değişken hızda olduğu için eşiği **2-3 kat cömert** tut — amaç mikro-optimizasyon değil, "biri O(n²) döngü ekledi" durumunu yakalamak.
-
----
-
-## 53. Prompt Yönetimi ve Değerlendirme
-
-### 53.1 Promptlar versiyonlanmış dosyalarda
-
-```
-src/main/resources/prompts/
-├── job_analysis/       { v1.md, v2.md, schema.json }
-├── profile_extraction/ { v1.md, schema.json }
-├── atom_rewrite/       { v1.md }
-├── about_synthesis/    { v1.md }
-├── cover_letter/       { v1.md }
-├── edit_intent/        { v1.md }
-└── translation/        { v1.md }
-```
-
-**Neden DB değil:** Prompt ile onu tüketen kod (şema, parse mantığı, doğrulayıcı) birlikte değişir. DB'de tutarsan ayrışırlar.
-
-### 53.2 Aktif sürüm konfigürasyondan
-
-```yaml
-prompts:
-  active:
-    job_analysis: v2
-    atom_rewrite: v1
-  experiments:
-    atom_rewrite: { enabled: true, variant: v2, trafficPct: 10 }
-```
-
-Deploy etmeden geri alma imkânı verir.
-
-### 53.3 A/B testi
-
-```java
-String selectVersion(String promptId, String bucketKey) {
-    var exp = config.experiment(promptId);
-    if (exp == null || !exp.enabled()) return config.activeVersion(promptId);
-    int bucket = Math.abs(Hashing.murmur3_32()
-        .hashString(promptId + ":" + bucketKey, UTF_8).asInt()) % 100;
-    return bucket < exp.trafficPct() ? exp.variant() : config.activeVersion(promptId);
-}
-```
-
-`bucketKey` = **userId** (requestId değil) — aynı kullanıcı hep aynı varyantı görsün.
-
-### 53.4 LLM eval — sadece prompt değişikliğinde
-
-**Kritik:** Metin karşılaştırması yapılmaz (LLM her seferinde farklı kelime seçer). **Özellikler (properties) ölçülür.**
-
-```java
-@Test @Tag("llm-eval")
-void rewritePreservesFactualContent() {
-    var results = new EvalReport();
-    for (var atom : goldenAtoms()) {              // 30-50 iyi seçilmiş vaka
-        var rewritten = rewritePhase.rewriteSingle(atom, jobAnalysis);
-        results.record("numbers_preserved",  containsAll(rewritten, atom.metrics()));
-        results.record("entities_preserved", containsAll(rewritten, atom.properNouns()));
-        results.record("no_new_technologies", extractTech(rewritten).isSubsetOf(atom.skills()));
-        results.record("length_within_bounds", lengthRatio(rewritten, atom) < 1.25);
-    }
-    assertThat(results.rate("numbers_preserved")).isGreaterThanOrEqualTo(0.98);
-    assertThat(results.rate("no_new_technologies")).isEqualTo(1.00);   // ← SIFIR TOLERANS
-}
-```
-
-### 53.5 Eşikler
-
-| Metrik | Faz | Eşik |
-|---|---|---|
-| Şema uyumu | A | %99+ |
-| Zorunlu beceri yakalama | A | %90+ |
-| Anlamsız ilan tespiti | A | %95+ |
-| Sayı korunumu | D | %98+ |
-| Özel isim korunumu | D | %98+ |
-| **Yeni teknoloji uydurma** | D | **%0** |
-| Uzunluk artışı | D | <%25 |
-| Doğrulama red oranı | D | <%5 |
-| Sayfa sapma oranı | F | <%2 |
-
-### 53.6 Karşılaştırma raporu
-
-```
-PROMPT EVAL — atom_rewrite: v1 → v2
-════════════════════════════════════════════
-Örneklem: 40 atom × 5 ilan = 200 çağrı
-
-Metrik                    v1      v2      Δ
-────────────────────────────────────────────
-Sayı korunumu           99.2%   99.5%   +0.3  ✓
-Özel isim korunumu      98.1%   97.2%   -0.9  ⚠
-Yeni teknoloji            0.0%    0.3%   +0.3  ✗ BLOKER
-Uzunluk artışı          +14%    +19%    +5    ⚠
-Ort. uygunluk skoru      78.4    81.2   +2.8  ✓
-────────────────────────────────────────────
-Maliyet/çağrı         $0.0012 $0.0019  +58%
-Gecikme (p50)           840ms  1120ms   +33%
-
-SONUÇ: ✗ Birleştirilemez — uydurma tespit edildi
-```
-
-Bu rapor, "uygunluk skoru arttı ama uydurma da arttı" gibi gizli takasları görünür kılıyor.
-
-### 53.7 Maliyet kontrolü
-
-| Teknik | Etki |
-|---|---|
-| Örneklem küçük (30-50 vaka) | Ana kaldıraç |
-| Sadece değişen prompt'u test et | Gereksiz çağrı yok |
-| Faz A çıktılarını fixture olarak dondur | Zincirleme çağrı yok |
-| Batch API | %50 |
-
-**Prompt PR'ı başına ~$0.30. Aylık $2-5.**
-
-**Nightly yapma** — üretim telemetrisi (`llm_invocations`) aynı bilgiyi bedava veriyor.
-
-### 53.8 Üretim–test tutarlılığı
-
-Aynı doğrulayıcı sınıfları hem testte hem üretimde çalışır:
-
-```java
-@Component
-public class RewriteValidator {
-    public ValidationResult validate(RichContent original, String rewritten, Atom atom) { ... }
-}
-// Faz D bunu üretimde kullanır; eval suite aynı sınıfı test için kullanır
-```
-
-Ayrı implementasyonlar "testte geçiyor, canlıda bozuk" durumu doğurur.
-
----
-
-# BÖLÜM XI — GELİŞTİRME
-
-## 54. Geliştirme Ortamı
-
-> **İki repo:** Docker Compose backend reposunda yaşar. Frontend lokalde yalnızca `npm run dev` ile çalışır ve `http://localhost:8080` üzerinden backend'e bağlanır. Klasör yapıları ve repo ayrımının sonuçları: Bölüm XI-B.
-
-### 54.1 Compose profilleri (backend reposunda)
-
-```yaml
-services:
-  postgres:   { profiles: [core], ports: ["5432:5432"] }
-  redis:      { profiles: [core] }
-  mailpit:    { profiles: [core], ports: ["8025:8025"] }   # e-posta yakalayıcı
-  latex:      { profiles: [full] }
-  embeddings: { profiles: [full] }
-```
-
-```bash
-make dev        # core (~700 MB) — günlük çalışma
-make dev-full   # core + full   — renderer/pipeline üzerinde çalışırken
-```
-
-**Backend ve frontend container'da değil, IDE'den çalışır** — hot reload, debugger, breakpoint doğal çalışsın.
-
-### 54.2 Sahte sağlayıcılar
-
-```java
-@Component @Profile("local-fake")
-public class FakeLlmProvider implements LlmProvider {
-    public <T> Result<LlmResponse<T>> callStructured(StructuredRequest<T> req) {
-        var key = req.promptId() + ":" + hash(req.userPrompt());
-        if (fixtures.containsKey(key)) return parse(fixtures.get(key));
-        return Result.ok(SyntheticGenerator.fromSchema(req.outputSchema()));
-    }
-}
-```
-
-| Mod | Davranış | Ne zaman |
-|---|---|---|
-| `local-fake` | Fixture / sentetik | UI, pipeline mantığı, hata yolları |
-| `local-record` | Gerçek çağrı + kaydet | Yeni fixture üretmek |
-| `local-real` | Gerçek çağrı | Prompt üzerinde çalışırken |
-
-**Kayıt modu kritik:** Bir kez `local-record` ile çalıştır, fixture'lar `src/test/resources/fixtures/llm/` altına düşsün. Bu fixture'lar aynı zamanda golden test set'in girdisi olur.
-
-Diğer sahte sağlayıcılar:
-- `FakeEmbeddingProvider` — metin hash'inden deterministik vektör
-- `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)
-
-### 54.3 Seed data
-
-```java
-@Component @Profile("local")
-public class DevSeeder implements ApplicationRunner {
-    public void run(ApplicationArguments args) {
-        if (userRepo.count() > 0) return;              // idempotent
-        seedFromJson("seeds/senior_backend_tr.json");
-        seedFromJson("seeds/junior_frontend_en.json");
-        seedFromJson("seeds/career_changer.json");
-        seedFromJson("seeds/minimal_edge.json");
-    }
-}
-```
-
-**Ölçüm önbelleği repoya commit edilir** (`*.costs.json`) — `--profile full` olmadan Faz C üzerinde çalışılabilir.
-
-```java
-@Profile("local")
-@PostMapping("/dev/login-as/{email}")
-public void devLogin(@PathVariable String email) { ... }
-```
-
-### 54.4 Makefile
-
-```make
-dev:        docker compose --profile core up -d && ./gradlew bootRun --args='--spring.profiles.active=local,local-fake'
-dev-full:   docker compose --profile core --profile full up -d
-front:      cd frontend && npm run dev
-db-reset:   docker compose down -v postgres && docker compose up -d postgres && sleep 3 && ./gradlew flywayMigrate
-record:     ./gradlew bootRun --args='--spring.profiles.active=local,local-record'
-test:       ./gradlew test
-test-int:   ./gradlew integrationTest
-test-llm:   ./gradlew llmEval
-e2e:        npx playwright test
-lint:       ./gradlew spotlessApply && cd frontend && npm run lint:fix
-```
-
-Yeni makinede kurulum: `make dev`
-
-### 54.5 Üretimle farkı kontrol altında tutmak
-
-1. **Entegrasyon testleri Testcontainers ile gerçek Postgres+pgvector kullanır** — fake DB yok
-2. **CI'da smoke test:** gerçek LaTeX container'ıyla bir CV derle, PDF çıktığını doğrula
-
----
-
-## 55. Aşama Aşama Yol Haritası
-
-### AŞAMA 0 — İskelet (1-2 hafta)
-
-**Amaç:** Deploy hattını en başta kurmak — sonradan kurmaktan çok daha ucuz.
-
-```
-Altyapı
-├── Docker Compose (core profil): Postgres+pgvector, Redis, Mailpit
-├── Spring Boot iskeleti + actuator health
-├── Next.js iskeleti
-├── Flyway + V1 şema (users, profiles, sections, entries, atoms, atom_variants, tags)
-├── Makefile + geliştirme ortamı
-└── ArchUnit temel kuralları
-
-Deployment
-├── Hetzner VPS kurulumu (ufw, fail2ban, SSH sertleştirme, swap)
-├── Nginx + certbot (TLS)
-├── docker-compose.prod.yml
-├── GitHub Actions: build → test → GHCR push → SSH deploy
-└── Health check + rollback
-
-Doğrulama
-└── "Hello World" canlıda, HTTPS çalışıyor
-```
-
-**Çıktı:** Boş ama deploy edilebilir bir uygulama.
-
----
-
-### AŞAMA 1 — Yürüyen İskelet (3-4 hafta)
-
-**Amaç:** LLM olmadan uçtan uca çalışan ürün. En riskli parça (ölçüm + optimizasyon + render) LLM belirsizliği olmadan doğrulanır.
-
-```
-Veri modeli
-├── Atom + AtomVariant + run modeli
-├── ContentMigrator iskeleti ("v" damgası)
-├── RichContent value object
-└── User-scoped repository base
-
-Profil
-├── Manuel form ile profil oluşturma (tek dil: EN)
-├── Bölüm/entry/atom CRUD
-├── Tamamlanma hesabı
-└── Profil okuma optimizasyonu (4 düz sorgu)
-
-Render
-├── LaTeX container (XeLaTeX, izole, semafor, warm-up)
-├── Klasik şablon
-├── InlineRenderer + merkezi escape
-├── DocumentRenderer: final + ölçüm modları
-└── Font metrik tahmini (FontBox)
-
-Ölçüm
-├── \savebox ölçüm dokümanı
-├── Log parse
-├── render_costs kalıcılığı (punto)
-└── Geçersizleşme mantığı
-
-Pipeline
-├── PipelineContext, Result, PipelineError
-├── Faz C: bin-packing seçim (3 aşama)
-├── Faz E: render
-├── Faz F: sayfa doğrulama + bütçe geri besleme
-├── Genel CV modu (ikincil kriterler)
-└── PDF indirme
-
-Test
-├── Sayfa sınırı testi
-├── Determinizm testi
-├── Kilit/kısıt testleri
-├── Multi-tenant izolasyon testi
-└── Golden profiller + seed data
-```
-
-**Çıktı:** Kullanıcı profil girer, garantili tek sayfa CV alır. **Bu bile kullanılabilir bir üründür.**
-
----
-
-### AŞAMA 2 — İlana Özel Üretim (3-4 hafta)
-
-```
-LLM altyapısı
-├── LlmProvider arayüzü + Strategy
-├── 5 sağlayıcı adaptörü (OpenRouter, Gemini, OpenAI, Anthropic, DeepSeek)
-├── Fallback zinciri (env-driven)
-├── PromptRegistry (versiyonlu dosyalar)
-├── llm_invocations telemetrisi
-└── FakeLlmProvider (local-fake/record/real)
-
-Faz A
-├── Ön kontroller (uzunluk, entropi, sinyal kelime)
-├── LLM çağrısı + şema
-├── Makullük kapısı
-├── Prompt injection savunması (3 katman)
-├── Redis cache (7 gün)
-└── embeddingTarget sentezi
-
-Embedding
-├── BGE-M3 container (text-embeddings-inference)
-├── EmbeddingProvider arayüzü + fallback
-├── content_hash bazlı invalidation
-└── pgvector entegrasyonu
-
-Faz B
-├── Hibrit skorlama (embedding + etiket + beceri + keyword)
-├── Önem çarpanı
-├── İkincil kriterler
-└── Determinizm (tie-break)
-
-Asenkron
-├── jobs tablosu + SKIP LOCKED
-├── Worker + heartbeat + zombi toplayıcı
-├── Retry politikası (hata tipine göre)
-├── SSE + Nginx buffering off
-├── Idempotency key
-└── Graceful shutdown
-
-Kota ve maliyet
-├── usage_counters
-├── Kill switch (feature flag)
-├── Anomali tespiti
-└── Axiom entegrasyonu (OpenTelemetry)
-
-Faz F
-└── Uygunluk raporu (kapsama sayıları)
-```
-
-**Çıktı:** İlana göre doğru içerik seçimi, uydurma riski **sıfır** (yeniden yazım yok).
-
----
-
-### AŞAMA 3 — Hesap ve Zenginleştirme (3-4 hafta) → **HALKA AÇIK MVP**
-
-```
-Kimlik
-├── OAuth (Google, GitHub, LinkedIn)   ← magic link'ten ÖNCE
-├── Session cookie + Redis + CSRF
-├── Magic link (selector/verifier, POST doğrulama)
-├── Account enumeration koruması
-├── Rate limiting (3 katman)
-└── Turnstile
-
-E-posta
-├── Resend entegrasyonu
-├── SPF/DKIM/DMARC (alt domain: mail.atomcv.mustafatetik.com)
-├── Thymeleaf şablonları (HTML + plain text)
-├── Suppression list + webhook (imza doğrulamalı)
-└── Mailpit (lokal)
-
-Ingestion
-├── Dosya doğrulama (magic byte, boyut)
-├── PDFBox / POI / TEX çıkarımı
-├── Karışık metin tespiti
-├── LLM yapılandırma (EN + kaynak dil tek çağrıda)
-├── Normalizasyon (beceri, tarih, run, Locale.ROOT)
-├── Gözden geçirme ekranı (zorunlu)
-└── Arka plan işleri (embedding, ölçüm) paralel
-
-Çok dillilik
-├── İki dilli atomlar
-├── Staleness takibi (derived_from, source_hash, is_stale)
-├── is_user_edited koruması
-├── Pivot çeviri
-└── Dil-farkındalıklı Faz C (TR uzunluk farkı)
-
-Anonim mod
-├── EphemeralProfileStore (Redis, 2sa TTL)
-├── SessionCapabilities
-├── Kota (2 ayrı sayaç, IP bazlı)
-├── Yükseltme akışı (geçici → kalıcı)
-└── Gizlilik testi (DB'ye yazmaz)
-
-Profil editörü
-├── Alan bazlı autosave + debounce
-├── Optimistic update + ETag/412
-├── Sürükle-bırak (dnd-kit, klavye)
-├── Etiket / önem / kilit / alternatif metin
-├── Bayat varyant uyarısı
-└── Arka plan iş göstergesi
-
-Faz D
-├── Alternatiflerden seçim (LLM'siz)
-├── Üç kademeli eşik
-├── Paralel yürütme (StructuredTaskScope)
-├── Doğrulama katmanı (5 kontrol)
-└── About sentezi
-
-Cover letter
-├── Atomlardan türetme
-├── Bölümlü yapı
-├── Klişe filtresi
-├── Süre iddiası kontrolü
-└── Yeniden üretim
-
-i18n + a11y
-├── next-intl (3 eksen)
-├── ICU MessageFormat
-├── CV içi tarih formatı
-├── Radix bileşenleri
-└── aria-live bölgeleri
-
-Hukuki
-├── Gizlilik Politikası + Kullanım Şartları
-├── Hesap silme (kaskad)
-├── Veri export (JSON + Markdown)
-└── Sorumluluk reddi
-
-Geri bildirim
-├── 👍/👎 + kategori + yorum
-├── support_grants (48sa, denetim kaydı)
-└── Örtük sinyal takibi
-```
-
-**Çıktı: Halka açık MVP.**
-
----
-
-### AŞAMA 4 — Olgunlaşma (sürekli)
-
-```
-Şablon ve format
-├── Modern + Kompakt şablonlar
-├── Özelleştirme (Katman A + B)
-├── Şablon sürümleme + ölçüm geçersizleştirme
-├── DOCX renderer
-└── Ham kaynak indirme
-
-Pipeline
-├── Faz G: doğal dil düzenleme
-├── Manuel toggle
-└── Selection state üzerinden iterasyon
-
-Ürün
-├── Başvuru takibi + PDF arşivleme (14 gün / süresiz)
-├── GitHub entegrasyonu
-├── ATS uyumluluk doğrulaması
-├── Sürüm iletişimi + changelog
-└── Yaşam döngüsü e-postaları
-
-Kalite
-├── Golden test set genişletme
-├── LLM eval altyapısı
-├── Performans bütçeleri CI'da
-├── axe-core a11y denetimi
-└── Playwright E2E genişletme
-
-Büyüme
-├── Analitik (Umami) + huni ölçümü
-├── SEO landing + blog
-└── Diğer diller (pivot)
-
-Açık kaynak hazırlığı
-├── Mimari dokümanlarının İngilizceye çevrilmesi
-├── README (İngilizce, mimari özet + kurulum)
-├── CONTRIBUTING.md + SECURITY.md
-└── Örnek .env.example doğrulaması
-
-Gelecek
-├── İlan URL'den çekme (SSRF korumalı)
-├── Toplu (batch) mod
-├── Kullanıcı tanımlı şablonlar
-└── LinkedIn About / bio çıktıları
-```
-
-### 55.1 Zaman tahmini
-
-| Aşama | Süre (part-time) | Kümülatif |
-|---|---|---|
-| 0 — İskelet | 1-2 hafta | 2 hafta |
-| 1 — Yürüyen iskelet | 3-4 hafta | 6 hafta |
-| 2 — İlana özel | 3-4 hafta | 10 hafta |
-| 3 — Hesap + MVP | 3-4 hafta | **14 hafta (~3.5 ay)** |
-| 4 — Olgunlaşma | Sürekli | — |
-
----
 
 # BÖLÜM XII — MALİYET
 
@@ -7813,7 +8079,7 @@ Aşama 4:       sürekli
    • Depolama: Cloudflare R2
 
 4. NE KADAR SAKLIYORUZ
-   Hesap aktif olduğu sürece; anonim mod 2 saat;
+   Hesap aktif olduğu sürece; anonim mod son etkinlikten 2 saat sonra;
    PDF 14 gün (arşivlenirse süresiz); loglar 30 gün
 
 5. HAKLAR
@@ -8126,6 +8392,13 @@ kopyalandığı için (XI-B.1.3) frontend tarafının okuması gereken tek yer o
 | ArchUnit kuralları, modül paketleri yalnız `package-info.java` taşırken "failed to check any classes" ile düşüyor | Ekleme | Geçici olarak `archunit.properties` içinde `archRule.failOnEmptyShould=false`. **Adım 1.1 sonunda kaldırıldı:** artık yalnız `renderersAreDeterministic` kuralı boş kümede çalışıyor ve izni tek başına taşıyor (`allowEmptyShould(true)`). Global ayar açıkken bir paket adı değişirse ilgili kural hiçbir şeyle eşleşmeyip sessizce geçerdi. |
 | Bölüm 47.1'deki `--spring.flyway.migrate-only=true` | Düzeltme | **Böyle bir Spring Boot özelliği yok.** Üretimde migration'ı deploy öncesi çalıştırmanın yolu ayrıca kararlaştırılacak; şu an Flyway üretimde de uygulama açılışında çalışıyor. |
 | OWASP dependency-check (Bölüm 47.1) | Sapma | Kullanılmıyor: NVD API anahtarı istiyor, anahtarsız taraması yavaş ve oran-sınırlı. Aynı kapsamı **Dependabot** derleme maliyeti olmadan veriyor. |
+| Lombok (XI-A.2 Adım 0.1'in bağımlılık listesinde var, örnek `build.gradle.kts`'te yok) | Düzeltme | **Kullanılmıyor.** Değer nesneleri record, gerisi düz constructor. |
+| Satır sonları ve dosya izinleri | Ekleme | `.gitattributes` (`* text=auto eol=lf`, `.bat`/`.cmd` için CRLF) ve `gradlew`'in 100755 kalması. Windows'ta geliştirilip Linux runner'da çalışan bir repo, bu ikisi olmadan sessizce kırılır: CRLF'li ya da 100644 modlu `gradlew` her CI koşusunu düşürür. |
+| Gradle dağıtımının doğrulanması | Ekleme | `gradle-wrapper.properties` içinde `distributionSha256Sum`, yayınlanan toplama karşı doğrulanmış. Wrapper, indirdiği arşivi aksi halde denetlemez. |
+| Entegrasyon testlerinin yeri | Ekleme | Ayrı `integrationTest` source set'i, `check`'e **bağlanmadan**. `gradlew test` Docker'sız ve hızlı kalır; `gradlew build` Docker Desktop kapalıyken de çalışır. CI ikisini ayrı adım olarak çalıştırır. |
+| Commit kancası (XI-A.1.4 elle `.git/hooks/pre-commit` yazıyor) | Sapma | **pre-commit framework** + `.pre-commit-config.yaml`. `.git/hooks/` versiyonlanmaz; elle yazılan kanca ikinci makinede yoktur ve kimse fark etmez. İlk üç commit kancasız geçtikten sonra fark edildi. |
+| Formatlama kapısı (Bölüm 47.1 `spotlessCheck` çalıştırıyor) | Düzeltme | **Yapılandırılmış formatter yok**, dolayısıyla CI'da formatlama kapısı da yok. Spotless eklensin mi, açık karar. |
+| CI tetikleyicileri | Ekleme | Yalnız `main` push'u ve `pull_request`. Bir dalı push etmek hattı çalıştırmaz — kontrolleri görmek için PR açmak gerekir. Test raporları `if: always()` ile yüklenir: sıfır test çalıştıran suite de "başarılı" der. |
 | Kaynak dosya kodlaması | Ekleme | `options.encoding = "UTF-8"`. `javac` varsayılan olarak platform charset'ini kullanır — geliştirme makinesinde `Cp1254`, CI runner'da UTF-8. Türkçe karakter içeren bir dosya aksi halde iki ortamda **iki farklı string sabitine** derlenirdi. |
 
 ### D.2 — Aşama 1: içerik modeli (Bölüm 12, 14.1, 16.2)
@@ -8215,10 +8488,156 @@ kendi paket düzenini taşıyor, şimdiden bağlanmadı.
 | Kopuk referans | Ekleme | Bir atom bulunmayan bir entry'yi ya da entry'siyle çelişen bir bölümü gösteriyorsa **hata verilir**, satır sessizce düşürülmez (P4). |
 | ≤6 sorgu testi | Ekleme | Hibernate `Statistics.getPrepareStatementCount()` ile ölçülüyor ve **alt sınır da iddia ediliyor** (`isBetween(4, 6)`): istatistik kapalı kalıp sıfır dönseydi test ölçmeden geçerdi. Ayrıca profil büyütülüp sorgu sayısının değişmediği ayrıca doğrulanıyor. |
 
+### D.6 — API sözleşmesi (Bölüm 35)
+
+Frontend, Aşama 0'ın sonunda on altı sözleşme boşluğu çıkardı: dokümanın
+adlandırmadığı enum'lar, tanımlamadığı başlıklar, örneklemediği yanıt şekilleri.
+Sorular ve cevaplar iki ayrı dosyada duruyordu (`BACKEND-CONTRACT-GAPS.md`,
+`docs/backend-contract-response.md`); ikisi de buraya taşınıp silindi. **Tek
+kaynak burasıdır.**
+
+Aşağıdaki kararların altısı ilk endpoint'ten önce, springdoc şeması yazılırken
+uygulanır; gerisi ait olduğu aşamada. **Otorite yayınlanan OpenAPI şemasıdır**,
+buradaki düzyazı değil — bu yüzden enum'lar ve başlıklar şemaya girer, yalnız
+mutlu yol gövdelerine değil.
+
+#### D.6.1 — Kapalı sözlükler
+
+**`resolutions[].action`** — Bölüm 35.4 üçünü, 35.5 bir tanesini adlandırıyor,
+Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
+
+| action | Anlamı | İstemci davranışı |
+|---|---|---|
+| `increase_page_limit` | `maxPages`'i `params.maxPages`'e yükselt | Yeni seçenekle yeniden gönder |
+| `review_pins` | Sabitlenmiş içerik incelemesini aç | Profile git, sabitlere filtrele |
+| `keep_top_pinned` | En iyi `params.keep` sabiti tut | Daraltılmış kümeyle yeniden gönder |
+| `sign_up` | Özellik hesap gerektiriyor | Kayda git, durumu koru |
+| `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
+| `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |
+| `switch_to_manual_form` | Çıkarım başarısız | Manuel profil formuna git |
+| `retry` | Geçici hata | Değiştirmeden yeniden gönder |
+
+**Frontend kendi resolution'ını uydurmaz.** Listeyi sunucu sahiplenir; istemci
+yalnız render eder ve isterse resolution satırının dışına düz bir "kapat"
+kontrolü koyar.
+
+**Hata kodları.** Bölüm 35.5 on pipeline hatasını sayıyor. Eksik olanlar
+(Bölüm 31.10'daki ingestion durumları düzyazıyla anlatılmış, kodsuz):
+
+| Durum | Kod | `params` |
+|---|---|---|
+| Taranmış PDF, metin katmanı yok | `PDF_NOT_TEXT_BASED` | — |
+| Çıkarım sıfır atom üretti | `EXTRACTION_EMPTY` | — |
+| Şifreli PDF | `PDF_ENCRYPTED` | — |
+| Dil tespit edilemedi | `LANGUAGE_UNDETECTED` | `detectedCandidates` |
+| Çıkarım denemelerden sonra zaman aşımına uğradı | `EXTRACTION_TIMEOUT` | — |
+| Günlük profil kotası doldu | `PROFILE_QUOTA_EXCEEDED` | `limit`, `resetsAt` |
+| Anonim oturum süresi doldu | `ANONYMOUS_SESSION_EXPIRED` | — |
+| Anonim atom sınırı aşıldı | `ATOM_LIMIT_EXCEEDED` | `limit`, `current` |
+
+**Açık iş (Adım 1.2):** her kodun `params` anahtarları ve **tipleri** belgelenmeli.
+ICU mesajı bunlar olmadan yazılamaz — `"Sabitlediğin içerik 2.3 sayfa tutuyor,
+sınırın 1 sayfa"` için `pinnedPages: number` ve `maxPages: number` gerekiyor.
+Pipeline kodlarının params'ı Bölüm 25.2'deki `PipelineError` record'larından
+türetilir.
+
+#### D.6.2 — Hata gövdesi, ETag, sayfalama (Aşama 1)
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Hata gövdesindeki `title` (Bölüm 35.4'ün Türkçe örneği yanıltıyor) | Düzeltme | **Geliştiriciye yöneliktir, sabit İngilizcedir, kullanıcıya hiç gösterilmez.** RFC 7807 `title`'ın oluşumlar arası sabit olmasını ister; Bölüm 35.4'ün kendi kuralı da sunucunun metin değil çeviri anahtarı gönderdiğini söylüyor. Frontend'in `title`'ı yalnız log'a yazması doğru davranıştır. |
+| ETag kapsamı | Ekleme | Yalnız V1'in `version` kolonu verdiği altı tablo: `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`. **`generations`'ın `version`'ı yok**, dolayısıyla üretim kaynakları ETag ve `If-Match` taşımaz. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliğidir, geç fark edilen bir eksik değil. |
+| ETag biçimi | Ekleme | Tekil kaynak GET'inde `ETag: "7"`; koleksiyon yanıtlarında **her öğede `version` alanı**. Editör N sürümü öğrenmek için N istek atmak zorunda kalmaz. |
+| Atom bazlı GET | Ekleme | **Yok.** Editör zaten tüm profili yüklüyor ve koleksiyon her öğenin `version`'ını taşıyor; alan bazlı PATCH için gereken her şey elde. `GET /profile/atoms/{id}` somut bir çağıran çıkınca eklenir — ilk aday Bölüm 37.5'teki bayatlama akışı. |
+| Sayfalama | Ekleme | `GET /profile/atoms` **sayfalanmaz**. `/generations` ve `/applications` Aşama 2'de gelirken cursor tabanlı: `{ items, nextCursor }`. Offset sayfalama, üstten büyüyen listelerde satır atlar. |
+
+#### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
+
+- Baytlar doğrudan API'den, `Content-Disposition: attachment` ile. Dosya adı,
+  biliniyorsa şirket ve pozisyonu taşır.
+- 14 günlük saklama dolduğunda `410 Gone` + `GENERATION_ARTIFACT_EXPIRED` +
+  `retry` resolution'ı. Bunu vermek ucuz: `generations.selection_state`
+  `pdf_expires_at`'ten bağımsız kalıcı bir anlık görüntüdür, yani PDF her zaman
+  yeniden üretilebilir — süre dolması kullanıcıya emeğine mal olmaz.
+- `GET /profile/export` biçimi `?format=json|markdown` ile seçer; indirme
+  endpoint'iyle aynı desen.
+
+#### D.6.4 — İş durumu ve SSE (Aşama 2)
+
+Her SSE olayı bir `id` taşır ve yeniden bağlanmada `Last-Event-ID` onurlandırılır
+(o noktadan itibaren tekrar oynatma, en azından güncel durumu yeniden gönderme).
+Bunsuz ilerleme ekranının tek bir hata modu olur: iş çoktan bitmişken spinner
+sonsuza kadar döner — P4'ün yasakladığı sessiz kötü sonuç.
+
+```json
+// GET /api/v1/jobs/{id}
+{
+  "jobId": "...",
+  "status": "queued | running | completed | failed",
+  "phase": "C",
+  "pct": 60,
+  "generationId": "...",
+  "error": { "code": "...", "params": {}, "resolutions": [] }
+}
+```
+
+`generationId` yalnız `completed`'da, `error` yalnız `failed`'da bulunur; bu
+ikisi terminal durumlardır. Akış terminal olay olmadan kapanırsa bu endpoint'i
+yoklamak (polling) kabul edilebilir bir geri düşüştür.
+
+#### D.6.5 — Idempotency ve kota (Aşama 2)
+
+`Idempotency-Key`, para harcayan veya iş başlatan her POST'ta onurlandırılır:
+`/generations`, `/generations/{id}/edits`,
+`/generations/{id}/cover-letter/regenerate`, `/ingestion/cv`. Anahtarlar 24 saat
+saklanır.
+
+> **Kayda geçirilmiş kusur.** V1'deki
+> `CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key) WHERE idempotency_key IS NOT NULL`
+> anonim istekleri tekilleştirmez: orada `user_id` NULL'dır ve Postgres NULL'ları
+> birbirinden farklı sayar, yani aynı anahtar ikinci bir iş açar.
+> `COALESCE(user_id::text, anon_session_id)` üzerinden bir migration gerekir.
+> Hemen düzeltilmedi, çünkü anonim akışın kuyruğu kullanıp kullanmayacağı hâlâ
+> açık.
+
+Kota: `429` ile birlikte `Retry-After` başlığı ve `params` içinde `resetsAt`.
+Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
+`capabilities` içinde de yayınlanır — sınır, çarpılmadan önce görünür olur.
+
+> **Açık:** `usage_counters.period` bir `DATE`; günlük sayaç hiçbir yerde
+> tanımlanmayan bir gün sınırında dönüyor. UTC mi, Europe/Istanbul mu?
+> `resetsAt` gönderilmeden önce cevaplanmalı ve kullanıcıya görünür: UTC dönüşü
+> Türkiye'de saat 03:00'e denk gelir.
+
+#### D.6.6 — Anonim oturum, CSRF, profil devralma (Aşama 3)
+
+| Konu | Karar |
+|---|---|
+| Anonim oturum çerezi | Hesaplı oturumla **aynı `sid` çerezi**. Kimlik doğrulama, istemci tarafında bir `capabilities` sorusu olarak kalır. |
+| Süre bilgisi | `capabilities` içinde `anonymousExpiresAt` (ISO 8601). |
+| Süre dolduğunda | `401` + `ANONYMOUS_SESSION_EXPIRED` + `sign_up` resolution'ı. |
+| TTL davranışı (Bölüm 9 "2 saat sonra silinir" diyor) | **TTL kayar: etkinlikte tazelenir.** Mutlak iki saat, inceleme ekranında çalışmakta olan kullanıcıyı keserdi — P8'in önlemek için var olduğu emek kaybı. Kullanıcıya gösterilen metin "son etkinliğinden iki saat sonra" demeli. |
+| CSRF (Bölüm 40.1 adını koyup tanımlamıyor) | Spring Security'nin double-submit varsayılanı: sunucu okunabilir (HttpOnly olmayan) `XSRF-TOKEN` çerezi verir, istemci güvensiz metotlarda (POST/PUT/PATCH/DELETE) `X-XSRF-TOKEN` başlığında yankılar, uyuşmazlıkta `403` + `CSRF_TOKEN_INVALID`. Oturum çerezi zaten `SameSite=Strict` olduğu için asıl vektör kapalı; bu derinlemesine savunmadır, o yüzden kimlikle birlikte gelir, öne çekilmez. |
+| Profil devralma | `POST /api/v1/profile/claim` → `200`, `404 NO_ANONYMOUS_PROFILE`, `409 PROFILE_ALREADY_EXISTS`. 409 yalnız **değiştir veya koru** sunar, **birleştir sunmaz**: birleştirme atom düzeyinde tekilleştirme demek (Bölüm 7, Jaro-Winkler + embedding) ve o Aşama 4 işi. Erken sunmak ya endpoint'i alakasız bir işe bağlar ya da içeriği sessizce çoğaltan bir birleştirme gönderir — P8 ikincisini yasaklar. API, yerine getiremeyeceği bir resolution'ı adlandırmamalı. |
+
+#### D.6.7 — Kapsam dışı bırakılanlar
+
+- **Sunucu tarafı render API çağırmaz.** Kimlik doğrulamalı her fetch tarayıcıda
+  kalır; server component'ler yalnız kabuk ve statik içerik render eder.
+  Frontend'in `client.ts` dosyasındaki açıklayıcı `throw` doğru davranıştır,
+  yer tutucu değil. Bu değişirse iç ağ adresi ve çerez taşıma kararı gerekir.
+- **`/api/v1/warmup` public API değildir** (Bölüm 52.5). OpenAPI şemasının
+  dışında tutulur, nginx üzerinden yönlendirilmez, üretilen tiplerde
+  görünmemelidir.
+
+**Etkinleştirici.** springdoc-openapi ilk endpoint'le birlikte gelir. On altı
+maddenin altısı, `npm run gen:api` çalışabilir olduğu anda kendiliğinden kapanır
+— ama yalnız şema enum'ları ve başlıkları taşıyorsa.
+
 ### D.9 — Frontend'i ilgilendirenler
 
-Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir. Hiçbiri
-API şeklini değiştirmiyor; hepsi **içerik yapısının kuralları**.
+Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir. 1-6
+**içerik yapısının kuralları**, 7-9 dosya düzeniyle ilgili.
 
 | # | Konu | Frontend'in yapması gereken |
 |---|---|---|
@@ -8228,6 +8647,9 @@ API şeklini değiştirmiyor; hepsi **içerik yapısının kuralları**.
 | 4 | `m` her zaman dizidir | Yanıtlarda mark'sız run bile `"m": []` taşır; `undefined` kontrolü gereksiz. |
 | 5 | `content_hash` **düz metnin** hash'i | Yalnız işaretleme değişince hash değişmez. "Değişti, yeniden ölçülmeli" türü bir gösterge run yapısına değil hash'e bakmalı. |
 | 6 | Sözlükler küçük harf | `kind`, `layout`, `source`, `created_by`, `tone` API'de küçük harf gider/gelir (`bullet_list`, `about_paragraph`). |
+| 7 | **Sözleşme cevapları artık EK D.6'da** | `BACKEND-CONTRACT-GAPS.md` ve `backend-contract-response.md` silindi; on altı maddenin verdiktleri de, kabul edilen iki tablo da EK D.6'da. Frontend reposundaki kopyalar da silinebilir. |
+| 8 | `generations` **ETag taşımaz** | O tabloda `version` kolonu yok. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliği talebidir — sessizce `If-Match` göndermek işe yaramaz. |
+| 9 | Anonim süre metni | Kopya "iki saat sonra" değil **"son etkinliğinden iki saat sonra"** demeli; TTL kayıyor. Ürün dokümanındaki ifade düzeltildi, dizedeki karşılığı frontend'in. |
 
 ---
 

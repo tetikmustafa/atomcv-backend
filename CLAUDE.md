@@ -329,14 +329,15 @@ of the architecture document — read D.2 through D.5 before touching them.
 
 ### Resume here
 
-**Adım 1.2 — manual profile CRUD, but settle the contract first.** Writing the
-endpoint and deciding its shape at the same time is how the published schema
-ends up carrying only happy-path payloads. In order:
+**Adım 1.2 — manual profile CRUD.** The API contract is already settled and
+lives in **`EK D.6`** of the architecture document: the two closed vocabularies,
+ETag scope and format, pagination, download, and the Stage 2/3 items. Build
+against it rather than re-deciding it. In order:
 
-1. Answer the Stage 1 half of `docs/backend-contract-response.md` — ETag
-   emission, per-atom GET, pagination, the error code catalogue, download
-   mechanics. Record the answers in `EK D` and flag frontend consequences in
-   `EK D.9`.
+1. Type the error catalogue: every code's `params` keys **and their types**,
+   derived from the `PipelineError` records in Bölüm 25.2. That is the one piece
+   `EK D.6` still lists as open, and the frontend's ICU messages cannot be
+   written without it.
 2. Add springdoc-openapi with the first endpoint, carrying the
    `resolutions[].action` enum, the error `code` enum and the ETag/pagination
    headers.
@@ -364,10 +365,6 @@ Still open in Stage 1:
   ETag/pagination headers. Six of the frontend's sixteen contract gaps close
   by themselves once that schema exists — but only if it carries more than
   happy-path payloads.
-- Settle the Stage 1 half of the API contract before writing the first
-  endpoint, not while writing it: ETag emission, per-atom GET, pagination,
-  the error code catalogue and download mechanics. See
-  `docs/backend-contract-response.md`.
 - Register the LaTeX container under `profiles: [full]` in `docker-compose.yml`.
   The `full` profile currently matches no service, so `make dev-full` starts
   the core services and silently does nothing else.

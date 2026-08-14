@@ -111,7 +111,7 @@ Modern işe alımda CV'ler önce **ATS (Applicant Tracking System)** yazılımla
 ## 4. Ticari Konum
 
 - **Ücretsiz.** Gelir modeli yok.
-- **MIT lisanslı açık kaynak.** Portfolyo ve marka değeri hedefli.
+- **MIT lisanslı açık kaynak.** Portfolyo ve marka değeri hedefli. İki repo: `atomcv-backend`, `atomcv-frontend`.
 - **SLA yok.** Kişisel proje olarak konumlandırılır; hizmet sonlandırılırsa 30 gün önce bildirilir.
 
 Bu karar iki sonuç doğurur: maliyet koruması normalden kritik hale gelir, ve sürdürülebilirlik planı (veri export, kapatma prosedürü) gerekir.
@@ -262,7 +262,7 @@ Kullanıcı düzenlemesi, render edilmiş metne değil **seçim durumuna** uygul
 Kullanıcı hesap açmadan tam işlevsel deneyebilir:
 - Geçici profil oluşturur (CV yükleme veya manuel form)
 - İlan girip CV üretir
-- **Hiçbir veri saklanmaz** — 2 saat sonra otomatik silinir
+- **Hiçbir veri saklanmaz** — **son etkinlikten** 2 saat sonra otomatik silinir
 
 **Kısıtlar (kalite düşürülmez, kapsam daraltılır):**
 
@@ -645,7 +645,7 @@ Veritabanı, embedding'ler, R2'deki PDF'ler, oturumlar, OAuth bağlantıları �
 
 **MVP'ye toplam: ~14 hafta part-time (~3.5 ay)**
 
-### 18.2 Geliştirme ortamı stratejisi
+### 18.1 Geliştirme ortamı stratejisi
 
 ```
 Hafta 1-6    → SADECE kendi bilgisayarında          Maliyet: €0
@@ -659,7 +659,18 @@ Hafta 7-14   → Canlı üzerinde geliştirme            Maliyet: ~€15/ay
 
 Adım adım kurulum rehberi: teknik doküman Bölüm XI-A.
 
-### 18.1 Aşamalandırma mantığı
+### 18.2 Repo yapısı
+
+Proje **iki ayrı GitHub reposundan** oluşur:
+
+| Repo | İçerik | IDE |
+|---|---|---|
+| `atomcv-backend` | Java + Spring Boot, veritabanı şeması, LaTeX container, Docker Compose, Nginx, deploy script'leri | IntelliJ IDEA |
+| `atomcv-frontend` | Next.js + TypeScript, UI | VS Code |
+
+Her repo bağımsız CI/CD hattına ve kendi Docker imajına sahiptir; sunucudaki compose dosyası (backend reposunda yaşar) her iki imajı da çeker. Ayrımın tüm sonuçları, klasör yapıları ve Claude Code ile çalışma düzeni: teknik doküman Bölüm XI-B.
+
+### 18.3 Aşamalandırma mantığı
 
 **Aşama 1'de LLM yok** — ürünün en riskli parçası (ölçüm + optimizasyon + render) LLM belirsizliği olmadan doğrulanır. Bu aşamanın sonunda bile kullanılabilir bir ürün vardır.
 
