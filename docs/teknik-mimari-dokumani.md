@@ -8823,7 +8823,7 @@ burasıdır.**
 | Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
 | Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
 | Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
-| Adım 1.5 — Ölçüm | 🔜 Sırada | ATOMCOST log parse, `render_costs` kalıcılığı (punto), şablon sabit maliyetleri, `FontMetricEstimator`, geçersizleşme | — |
+| Adım 1.5 — Ölçüm | 🔄 Sürüyor | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **Sırada:** ölçüm işinin `render_costs`a yazılması, `FontMetricEstimator`, tahmin + %8 payı | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
 | Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
 
@@ -8913,6 +8913,17 @@ giden yolda bir hata hâli olarak ele almaya zorlardı.
 | Klasik şablon | Ekleme | Tek kolon, grafiksiz (Bölüm 33.5 "ATS-güvenli"). ATS metin çıkarır; insana hoş görünüp çıkarımda dağılan bir düzen, insana hiç ulaşmayan bir CV demektir. |
 | Ölçüm anahtarı karakter kümesi | Ekleme | `MeasurableItem.key` içinde `|`, `%`, `{`, `}`, boşluk ve TeX'in özel karakterleri yasak: anahtar log satırından `|` ile bölünerek geri okunuyor. Anahtarlar kod tarafından id'lerden üretiliyor, yani bu bir saldırıyı değil bir hatayı yakalıyor. |
 | Doğrulama | Ekleme | Renderer'ın çıktısı **gerçekten derleniyor**: `latexTest` içindeki iki test, üretilen CV'yi container'a gönderip PDF alıyor ve ölçüm belgesinden `ATOMCOST|var-1|<pt>|<pt>` satırlarını okuyor. Birim testler bunu gösteremez. |
+
+### D.8.3 — Adım 1.5: ölçüm sistemi (ilk yarı)
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Sabit maliyetler **ölçüldü** | Ekleme | Bölüm 26.4'ün sayıları örnek; klasik şablonun kendi değerleri derleyiciden alındı. Varsayılan özelleştirmede: `pageTextHeight` **708.245pt**, `baselineSkip` **12.0pt**, bölüm başlığı **24.0pt**, entry başlığı **22.76pt**, madde listesi ek yükü **7.0pt**, madde satırı **13.0pt**. |
+| Nasıl ölçüldü | Ekleme | Renderer bir **kalibrasyon belgesi** üretiyor: sonda `\the\pagetotal` yazan probe'lar; iki konum arasındaki fark, o mobilyanın maliyeti. Aynı preamble, aynı sebep. |
+| Kalibrasyon bir test | Ekleme | `LatexCalibrationIT` her çalıştığında sayıları yeniden türetip saklananlarla karşılaştırıyor (0.01pt tolerans). Preamble değiştiğinde bu test düşer — şablon sürümünü yükseltme anı budur (Bölüm 16.3), saklanmış maliyetlerin sessizce yalan söylemeye başladığı an değil. |
+| İlk çalıştırmada bir yanlış sabit yakalandı | Düzeltme | Entry başlığını elle ölçtüğüm belgede satır sonu (`\\`) kaybolmuştu; **10.87pt** okundu ve tamamen makul göründü. Gerçek değer **22.76pt** — iki satır. Bir sayfada altı entry'de bu 71 punto, yani neredeyse altı satırlık sessiz taşma demekti. |
+| `capacity()` `Optional` döner | Sapma | Bölüm 22.2 koşulsuz bir model döndürüyor. Döndüremez: **ölçülmemiş bir özelleştirmenin kapasitesi yoktur**, ve uydurmak sayfa garantisini sessizce bozar — sistemin var olma sebebi olan tek hata. Boş optional "önce ölç" demek. Bölüm 33.1'in B katmanı (font, boyut, margin, aralık) bu yüzden ölçüm gerektiriyor. |
+| Log ayrıştırma | Ekleme | `ATOMCOST\|key\|<pt>\|<pt>` deseni; yarım yazılmış bir satır (TeX log'u 79 karakterde sarar) **yok sayılır**, yarım okunmaz. Maliyet = yükseklik + derinlik + `baselineSkip`: aradaki boşluğu saymamak, on altı atomun kâğıtta teoride sığıp pratikte taşması demek. |
 
 ### D.9 — Frontend'i ilgilendirenler
 

@@ -45,7 +45,49 @@ public final class TemplateRegistry {
               {\\small\\itshape #2}\\hfill{\\small #4}\\par}
             """;
 
+    /**
+     * Classic at its default customization, measured against the compiler
+     * rather than estimated (Bolum 26.4).
+     *
+     * <p>These hold for {@link TemplateCustomization#CLASSIC} only. Font size,
+     * family, margin and line spacing all move them, which is exactly why
+     * Bolum 33.1 calls those "layer B": changing one costs a measurement.
+     *
+     * <p>{@code LatexCalibrationIT} re-derives every number here from a real
+     * compilation. When the template's geometry changes, that test fails —
+     * which is the moment the version above has to be raised, before a stored
+     * cost becomes a quiet lie.
+     */
+    private static final CapacityModel CLASSIC_CAPACITY = new CapacityModel(
+            708.245,
+            12.0,
+            Map.of(
+                    CapacityModel.SECTION_HEADER, 24.0,
+                    // Two lines: the title, and the organization with its
+                    // dates. A hand-written probe that lost the line break
+                    // measured 10.87 and looked entirely plausible — the
+                    // calibration test is what caught it (EK D.8.3).
+                    CapacityModel.ENTRY_HEADER, 22.76,
+                    CapacityModel.ITEMIZE_OVERHEAD, 7.0,
+                    CapacityModel.ITEM_LINE, 13.0));
+
     private TemplateRegistry() {
+    }
+
+    /**
+     * The capacity model for a customization, if one has been measured.
+     *
+     * <p>Bolum 22.2 returns a model unconditionally. It cannot: a customization
+     * nobody has measured has no capacity, and inventing one would break the
+     * page guarantee silently — which is the one failure this whole system
+     * exists to prevent. Empty means "measure first" (EK D.8.3).
+     */
+    public static java.util.Optional<CapacityModel> capacityOf(
+            TemplateCustomization customization) {
+
+        return TemplateCustomization.CLASSIC.equals(customization)
+                ? java.util.Optional.of(CLASSIC_CAPACITY)
+                : java.util.Optional.empty();
     }
 
     public static Set<String> ids() {

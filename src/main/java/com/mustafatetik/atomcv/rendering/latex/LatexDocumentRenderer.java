@@ -5,8 +5,11 @@ import com.mustafatetik.atomcv.rendering.DocumentRenderer;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.model.RenderedSource;
+import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
@@ -35,6 +38,11 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     @Override
     public java.util.Set<String> supportedTemplates() {
         return TemplateRegistry.ids();
+    }
+
+    @Override
+    public Optional<CapacityModel> capacity(TemplateCustomization customization) {
+        return TemplateRegistry.capacityOf(customization);
     }
 
     @Override
@@ -104,6 +112,36 @@ public class LatexDocumentRenderer implements DocumentRenderer {
 
         out.append("\\end{document}\n");
         return new RenderedSource(out.toString());
+    }
+
+    /**
+     * A document that reports the template's own geometry (Bolum 26.4).
+     *
+     * <p>It prints probes and asks TeX where it is on the page after each one:
+     * the difference between two positions is what that piece of furniture
+     * costs. Running it is how the numbers in {@code TemplateRegistry} came to
+     * exist, and re-running it is how a change to the template is noticed.
+     *
+     * <p>Same preamble as everything else, for the same reason.
+     */
+    public RenderedSource renderCalibration(TemplateCustomization customization) {
+        return new RenderedSource(PreambleBuilder.build(customization) + """
+                \\begin{document}
+                \\typeout{CALIB|textheight|\\the\\textheight}
+                \\typeout{CALIB|textwidth|\\the\\textwidth}
+                \\typeout{CALIB|baselineskip|\\the\\baselineskip}
+                \\null
+                \\typeout{CALIB|start|\\the\\pagetotal}
+                \\section*{Probe}
+                \\typeout{CALIB|afterSection|\\the\\pagetotal}
+                \\atomcvEntry{Probe}{Probe}{Probe}{Probe}
+                \\typeout{CALIB|afterEntry|\\the\\pagetotal}
+                \\begin{itemize}\\item Probe\\end{itemize}
+                \\typeout{CALIB|afterOneItem|\\the\\pagetotal}
+                \\begin{itemize}\\item Probe\\item Probe\\item Probe\\end{itemize}
+                \\typeout{CALIB|afterThreeItems|\\the\\pagetotal}
+                \\end{document}
+                """);
     }
 
     private static void bullets(StringBuilder out, List<RichContent> atoms) {
