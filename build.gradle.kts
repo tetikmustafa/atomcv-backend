@@ -39,6 +39,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // JSON merge-patch needs three states — absent, null, value — and Java has
+    // no tri-state Optional: Jackson deserializes an absent Optional field as
+    // Optional.empty(), the same as an explicit null. This library owns that
+    // distinction, and springdoc renders it as a nullable field.
+    implementation("org.openapitools:jackson-databind-nullable:0.2.6")
+
     // The published schema is the API contract: the frontend generates its
     // types from it, so enums and headers have to reach it, not only payloads.
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")

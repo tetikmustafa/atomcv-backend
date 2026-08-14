@@ -3594,9 +3594,11 @@ PATCH  /api/v1/profile/sections/{id}
 DELETE /api/v1/profile/sections/{id}
 POST   /api/v1/profile/sections/reorder
 
+GET    /api/v1/profile/entries             ?sectionId= ile süzülür (EK D.6.2)
 POST   /api/v1/profile/entries
 PATCH  /api/v1/profile/entries/{id}
 DELETE /api/v1/profile/entries/{id}
+POST   /api/v1/profile/entries/reorder     bir bölümün tamamı
 
 GET    /api/v1/profile/atoms
 POST   /api/v1/profile/atoms
@@ -8681,6 +8683,17 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
 | Bölüm yanıtında `version` **alanı var** | Sapma | Profil başında yoktu (D.6.2). Bölümler hem tek başına hem koleksiyon içinde dönüyor; alanın hangi endpoint'in döndürdüğüne göre kaybolması, `ETag`'in yanında küçük bir tekrardan daha kötü olurdu. |
 | Sözlükler artık JSON'da da küçük harf | Düzeltme | `SectionKind`, `SectionLayout`, `AtomKind`, `AtomSource`, `VariantAuthor` yalnız JPA converter'ı taşıyordu; API gövdesinde `EXPERIENCE` gidiyordu. Hepsine `@JsonValue`/`@JsonCreator` eklendi (D.9 · 6'nın sözü). |
 
+**Koleksiyon kaynakları — entry'ler (Adım 1.2).**
+
+| Konu | Tür | Karar |
+|---|---|---|
+| `GET /profile/entries` | Ekleme | Bölüm 35.2 entry'ler için **hiç `GET` listelemiyor**. Onsuz editör bir deneyim listesini render edemez. Eklendi, isteğe bağlı `?sectionId=` süzgeciyle. |
+| `POST /profile/entries/reorder` | Ekleme | Aynı boşluk sıralamada da vardı. İstek **bir bölüme** kapsanır (`sectionId` + o bölümün tam id listesi); iki bölüme yayılan bir liste, sıralama kılığında bir taşıma olurdu. |
+| "Dokunma" ile "temizle" ayrımı | Ekleme | Entry'nin kolonları nullable: iş sürerken bitiş tarihi yoktur, yanlış yazılmış bir kurum boşaltılabilmelidir. Java'nın üç durumlu bir `Optional`'ı yok — Jackson **eksik** bir `Optional` alanını da `Optional.empty()` okur, yani açık `null`'dan ayırt edilemez. `JsonNullable` (`jackson-databind-nullable`) bu ayrımı taşıyor: tanımsız → dokunma, tanımlı-null → temizle, tanımlı-değer → ata. |
+| Şemada sarmalayıcı görünmüyor | Ekleme | Üç durum **Java'nın meselesi**, sözleşmenin değil: telde alan yalnızca null olabilen bir değerdir. `@Schema(implementation = …, nullable = true)` ile öyle yayınlanıyor; aksi hâlde üretilen istemci doldurulacak bir `{ present, value }` nesnesiyle kalırdı. Bir test bunu sabitliyor. |
+| Entry `PATCH`'inde `sectionId` yok | Ekleme | Bir entry'yi başka bölüme taşımak iki listeyi birden numaralandırır; bu bir alan düzenlemesi değil, sıralama işlemidir. Taşıma ucu gerektiğinde ayrıca eklenecek. |
+| Başka profilin bölümüne entry | Ekleme | `sectionId` kapsamlı repository üzerinden çözülüyor, yani başkasının bölüm id'sini göndermek 400 `VALIDATION_FAILED` verir — satırın varlığını doğrulamayan bir cevap. |
+
 #### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
 
 - Baytlar doğrudan API'den, `Content-Disposition: attachment` ile. Dosya adı,
@@ -8775,7 +8788,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm CRUD + sıralama**. **Sırada:** entry ve atom CRUD → tamamlanma yüzdesi | D.9 · 7-16 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm ve entry CRUD + sıralama**. **Sırada:** atom ve varyant CRUD → tamamlanma yüzdesi | D.9 · 7-17 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8868,6 +8881,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 17 | **Entry uçları hazır, ve `PATCH`'te "temizle" mümkün** | `GET /profile/entries` (`?sectionId=` ile süzülür) ve `POST /entries/reorder` **dokümanda yoktu**, eklendi. `PATCH`'te bir alanı **göndermemek** onu korur, **`null` göndermek** temizler — bitiş tarihini silip işi "devam ediyor" yapmanın yolu budur. Şemada bu alanlar `nullable` bir değer olarak görünür, sarmalayıcı nesne olarak değil. Entry'yi başka bölüme taşımak `PATCH` ile yapılamaz. |
 | 16 | **Bölüm uçları hazır** | `GET/POST /profile/sections`, `PATCH/DELETE /{id}`, `POST /reorder`. `PATCH` yalnız gönderilen alanı değiştirir; `displayOrder` yamalanamaz, sıra `reorder` ile ve **tam liste** göndererek değişir (eksik liste 400). Silme `If-Match` ister ve **içeriğiyle birlikte** siler. Koleksiyonun her öğesi `version` taşır, yani düzenlemeden önce ikinci bir okuma gerekmez. |
 | 15 | **Yazmalarda `If-Match` zorunlu, ve `preferences` `PUT` ile** | Başlıksız istek `428 PRECONDITION_REQUIRED` (yeni kod, ICU karşılığı gerekiyor), bayat etiket `412 VERSION_CONFLICT` + `retry`. `PUT /profile` **değiştirir**: gönderilmeyen alan temizlenir, yani formun tüm alanları gönderilmeli. Tercihler ayrı endpoint'te ve **`PATCH` değil `PUT`** — Bölüm 35.2'nin listesi bu satırda güncellendi. |
 | 14 | **`npm run gen:api` artık çalışabilir** | Şema `/v3/api-docs` üzerinde yayınlanıyor (üretimde kapalı, lokalde ve CI'da açık). İçinde: `ResolutionAction` ve `ErrorCode` enum olarak, `ApiError` gövdesi, ve `GET /api/v1/profile` yanıtında **`ETag` başlığı**. `Profile` şemasında **`id` ve `version` alanı yok** — sahiplik oturumdan gelir, sürüm ETag'dedir. |

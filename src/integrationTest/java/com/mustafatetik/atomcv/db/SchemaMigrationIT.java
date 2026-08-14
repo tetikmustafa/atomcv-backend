@@ -117,11 +117,20 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
 
         jdbc.update("DELETE FROM users WHERE id = ?", user);
 
-        assertThat(countAll("profiles")).isZero();
-        assertThat(countAll("sections")).isZero();
-        assertThat(countAll("entries")).isZero();
-        assertThat(countAll("atoms")).isZero();
-        assertThat(countAll("atom_variants")).isZero();
+        // Scoped to this profile rather than to the whole table: the suite
+        // shares one database, and an assertion that nothing at all remains
+        // fails as soon as another test leaves its own row behind.
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE id = ?",
+                Integer.class, profile)).isZero();
+        assertThat(countFor("sections", profile)).isZero();
+        assertThat(countFor("entries", profile)).isZero();
+        assertThat(countFor("atoms", profile)).isZero();
+        assertThat(countFor("atom_variants", profile)).isZero();
+    }
+
+    private int countFor(String table, java.util.UUID profileId) {
+        return jdbc.queryForObject(
+                "SELECT count(*) FROM " + table + " WHERE profile_id = ?", Integer.class, profileId);
     }
 
     @Test
