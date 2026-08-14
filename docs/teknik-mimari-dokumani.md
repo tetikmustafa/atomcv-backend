@@ -8725,7 +8725,17 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
   `pdf_expires_at`'ten bağımsız kalıcı bir anlık görüntüdür, yani PDF her zaman
   yeniden üretilebilir — süre dolması kullanıcıya emeğine mal olmaz.
 - `GET /profile/export` biçimi `?format=json|markdown` ile seçer; indirme
-  endpoint'iyle aynı desen.
+  endpoint'iyle aynı desen. Bilinmeyen biçim 400 `VALIDATION_FAILED`
+  (`fields: ["format"]`).
+
+| Konu | Tür | Karar |
+|---|---|---|
+| JSON dışa aktarımın şekli | Ekleme | **İç içe** (bölüm → entry → atom → varyant), düzenleme uçlarının aksine. Bir export ya bir insan tarafından okunur ya bütün olarak geri beslenir; ikisi de yapıyı görmek ister. Öğe şekilleri API'nin **zaten yayınladığı** şekillerdir, yani export'tan çıkan şey şemada tarif edilmiş olan şeydir. |
+| Markdown, CV render'ı değildir | Ekleme | Sayfa bütçesi, şablon ve ölçüm yok — bu veri kopyasıdır, ve profil hiçbir CV'ye sığmayacak kadar uzun olsa da okunabilir kalır. Bu yüzden `rendering` modülünde değil, `profile` içinde. |
+| Mark'lar Markdown'a çevrilmez | Ekleme | Atom metni **düz metin** olarak yazılır. Mark'lar semantiktir; onları yıldıza çevirmek, verinin bilerek taşımadığı bir sunum uydurmak olurdu (P1). |
+| Markdown kaçışı | Ekleme | Yalnız **satır içinde** anlam değiştiren karakterler kaçırılır (`` \ ` * _ [ ] < > | ``). `.` `-` `#` `+` yalnız satır başında anlamlıdır ve her satırın başını bu kod yazıyor; hepsini kaçırmak `name@example\.com` gibi, insanların okuduğu bir dosyayı ters bölü çöplüğüne çevirirdi. |
+| Yanıt karakter kümesi | Düzeltme | `text/markdown;charset=UTF-8`. Charset belirtilmezse istemci ISO-8859-1'e düşüyor ve "İstanbul" bozuk geliyor — test bunu yakaladı. |
+| Dosya adı | Ekleme | `atomcv-profile-<tarih>.md`. İsim konmuyor: indirme klasörlerine, vekil sunucu loglarına ve ekran görüntülerine kişisel veri taşımanın karşılığı yok (mutlak kural 4). |
 
 #### D.6.4 — İş durumu ve SSE (Aşama 2)
 
@@ -8810,7 +8820,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **Sırada:** `GET /profile/export` (JSON + Markdown), sonra Adım 1.3 (LaTeX container) | D.9 · 7-19 |
+| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). **Adım 1.2 tamamlandı.** **Sırada:** Adım 1.3 — LaTeX container | D.9 · 7-20 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8903,6 +8913,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 20 | **`GET /profile/export` hazır** | `?format=json` iç içe bir kopya verir (öğe şekilleri API ile aynı), `?format=markdown` okunacak hâlini. İkisi de `Content-Disposition: attachment` ile iner; dosya adında isim yok. Bilinmeyen biçim 400. Markdown `charset=UTF-8` bildirir. |
 | 19 | **`completeness` gerçek bir sayı, ve `DELETE /profile` var** | `GET /profile` her okumada tamamlanmayı yeniden hesaplıyor (Bölüm 31.9); göstergeyi ayrıca hesaplamaya gerek yok. `DELETE /profile` profili ve altındaki her şeyi siler, **hesabı silmez** — sonraki okuma boş bir profil döndürür. `If-Match` zorunlu. |
 | 18 | **Atom ve varyant uçları hazır** | Atom **içeriğiyle** yaratılır (`content` zorunlu). `PATCH /atoms/{id}` yalnız kontrolleri değiştirir; **metin `PATCH /atoms/{id}/variants/{vid}`'de** ve içeriğin tamamı gönderilir. Yanıt her atomun tüm varyantlarını **birincil önce** verir. Aynı dil+ton ikinci kez eklenemez, son varyant ve birincil silinemez (400). `href`siz bir `link` run'ı da 400 — 500 değil. |
 | 17 | **Entry uçları hazır, ve `PATCH`'te "temizle" mümkün** | `GET /profile/entries` (`?sectionId=` ile süzülür) ve `POST /entries/reorder` **dokümanda yoktu**, eklendi. `PATCH`'te bir alanı **göndermemek** onu korur, **`null` göndermek** temizler — bitiş tarihini silip işi "devam ediyor" yapmanın yolu budur. Şemada bu alanlar `nullable` bir değer olarak görünür, sarmalayıcı nesne olarak değil. Entry'yi başka bölüme taşımak `PATCH` ile yapılamaz. |
