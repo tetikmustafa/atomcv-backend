@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.profile.domain.content.Mark;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
+import com.mustafatetik.atomcv.rendering.measurement.TexLogParser;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
@@ -171,6 +172,29 @@ class LatexContainerIT {
 
         // Bolum 26: measured in points, and a real number of them.
         assertThat(log).containsPattern("ATOMCOST\\|var-1\\|[0-9]+\\.[0-9]+pt\\|[0-9]+\\.[0-9]+pt");
+        // And the document has to be valid, not merely produce a line before
+        // failing: an earlier version of this test passed while TeX was
+        // stopping at "perhaps a missing \item" (EK D.8.3).
+        assertThat(log).doesNotContain("! LaTeX Error").doesNotContain("! Undefined");
+    }
+
+    @Test
+    void aMeasurementDocumentOfManyItemsReportsEveryOneOfThem() throws Exception {
+        var renderer = new LatexDocumentRenderer();
+        var items = new java.util.ArrayList<MeasurementRequest.MeasurableItem>();
+        for (int index = 0; index < 12; index++) {
+            items.add(new MeasurementRequest.MeasurableItem("var-" + index,
+                    RichContent.plain("Bullet number " + index
+                            + ", long enough to wrap onto a second line when the margins are "
+                            + "what the classic template says they are.")));
+        }
+
+        String log = text(post("/measure",
+                renderer.renderMeasurement(new MeasurementRequest(
+                        items, TemplateCustomization.CLASSIC)).value()));
+
+        // One compilation, every atom (Bolum 26.2) — and none of them lost.
+        assertThat(TexLogParser.parseCosts(log)).hasSize(12);
     }
 
     @Test
