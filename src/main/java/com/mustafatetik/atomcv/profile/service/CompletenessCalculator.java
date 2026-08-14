@@ -30,9 +30,11 @@ public final class CompletenessCalculator {
         int score = 0;
         score += hasContact(profile) ? 15 : 0;
         score += entriesIn(tree, EDUCATION_OR_EXPERIENCE) > 0 ? 20 : 0;
-        score += Math.min(entriesIn(tree, EXPERIENCE) * 10, 20);
-        score += Math.min(entriesIn(tree, PROJECTS) * 5, 15);
-        score += Math.min(skills(tree), 10);
+        // Capped first, then narrowed: the counts are long, and adding one to
+        // an int score would narrow implicitly and silently.
+        score += (int) Math.min(entriesIn(tree, EXPERIENCE) * 10, 20);
+        score += (int) Math.min(entriesIn(tree, PROJECTS) * 5, 15);
+        score += (int) Math.min(skills(tree), 10);
         score += hasText(profile.getSelfDescription()) ? 10 : 0;
         score += atomsWithMetrics(tree) >= 3 ? 10 : 0;
         return (short) Math.min(score, 100);
