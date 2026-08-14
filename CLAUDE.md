@@ -279,10 +279,15 @@ documents. They are settled — do not re-open them without asking.
    itself; this file is session context. Where the document body would now
    mislead a reader, leave a one-line pointer there too — as Bölüm 41.2 and
    14.1 carry.
-6. **Say so when something changes the frontend's work.** Collect it in
-   `EK D.9`, which is the only place the other repository needs to read, and
-   name it in the conversation as well. The document reaches that repository
-   through `scripts/sync-docs.sh`.
+6. **Say so when something changes the frontend's work.** List it in `EK D.9`
+   *and* leave the note in the section it belongs to — someone reading Bölüm
+   35.6 for ETags must see it there, not only in an appendix. Name it in the
+   conversation as well. The document reaches that repository through
+   `scripts/sync-docs.sh`.
+7. **Update `EK D.7` at the end of every slice**: what was produced, what is
+   next, what is still open. `CLAUDE.md` carries the same state for this
+   session, but it is not synced — `EK D.7` is the only place the frontend can
+   read it.
 
 ## Current Stage
 

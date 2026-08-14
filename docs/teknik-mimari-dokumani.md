@@ -1309,6 +1309,16 @@ CREATE TABLE feature_flags (
 > **Kurallar — bkz. EK D.2:** `href` yalnız `link` mark'ı olan run'da bulunur ve
 > orada zorunludur. Mark listesi kapalı değildir: bilinmeyen bir mark okunur,
 > korunur ve düz metin olarak render edilir.
+>
+> **Frontend (EK D.9 · 1-4).** Editörün uyması gereken dört kural:
+> 1. `link` run'ında `href` zorunlu, diğer run'larda yasak — backend aksini
+>    reddeder. `richContent.ts` invariant'ı olmalı.
+> 2. **Bilinmeyen mark'lar korunmalı.** Backend düşürmüyor; editör düşürürse
+>    daha yeni bir sürümün yazdığı işaretler, kullanıcı o cümleyi kaydettiği an
+>    sessizce silinir.
+> 3. `v` sunucuya aittir. Frontend yalnız `runs` gönderir; gönderirse mevcut
+>    sürümden büyük olamaz.
+> 4. `m` her zaman dizidir — mark'sız run bile `"m": []` taşır.
 
 ### 14.2 `profiles.contact`
 
@@ -1484,6 +1494,11 @@ public class ContentMigrator {
 ```
 
 **Kritik:** `content_hash` **`plain_text` üzerinden** hesaplanır, JSONB yapısı üzerinden değil. Aksi halde format değişimi, metin aynı kalsa bile tüm embedding ve ölçümleri geçersiz kılar.
+
+> **Frontend (EK D.9 · 5).** Yalnız işaretleme değişince hash değişmez.
+> "Değişti, yeniden ölçülmeli" türü bir gösterge run yapısına değil `contentHash`
+> alanına bakmalı; aksi halde bir kelimeyi kalınlaştırmak, hiçbir şey
+> gerektirmediği hâlde yeniden ölçüm uyarısı çıkarır.
 
 **İleri uyumluluk:** Renderer bilinmeyen mark tiplerini sessizce yok sayar:
 ```java
@@ -3548,6 +3563,13 @@ Cover letter render edilmiyor (düz metin kopyalanıyor) → punto ölçümü ge
 - **Hiçbir yolda `userId` yok** — kaynak sahipliği oturumdan gelir (IDOR koruması)
 - **Versiyonlama baştan** — `/api/v1/...`
 
+> **Frontend (EK D.9 · 6).** Kapalı sözlükler API'de **küçük harf** gider ve
+> gelir: `kind`, `layout`, `source`, `created_by`, `tone`, ve
+> `resolutions[].action`. Değerler şemada enum olarak yayınlanır
+> (`bullet_list`, `about_paragraph`, `cv_upload`, `increase_page_limit`).
+> Hata `code` alanı bunun tersine **büyük harf**tir — çeviri anahtarı olduğu
+> için: `errors.CONFLICTING_PREFERENCES`.
+
 ### 35.2 Kaynak haritası
 
 ```
@@ -3670,6 +3692,19 @@ Location: /api/v1/jobs/9b1c4e7a-...
 
 **Sunucu çeviri anahtarı gönderir, metin değil.** Frontend `errors.CONFLICTING_PREFERENCES` anahtarını kendi dilinde çözer. `resolutions` dizisinden butonlar otomatik üretilir.
 
+> **Frontend (EK D.9 · 7, 10-11).** Tam katalog **EK D.6.1'de**: 25 kod, HTTP
+> durumları ve her kodun `params` anahtarları **tipleriyle**. `en.json` ve
+> `tr.json` artık buradan yazılabilir. Üç kod dokümanın gövdesinde yoktur ve
+> Adım 1.2'de eklendi: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`,
+> `VALIDATION_FAILED`.
+>
+> Sunucu **bildirilmemiş bir `params` alanı göndermez** — gövde kurulurken
+> katalog doğrulanıyor, eksik ya da fazla anahtar orada patlıyor. Bir alan
+> eksik görünüyorsa çözüm katalogda, gövdede değil.
+>
+> `title` alanı **geliştiriciye yöneliktir, gösterilmez** (EK D.6.2); yalnız
+> log'a yazılır.
+
 ### 35.5 HTTP durum eşlemesi
 
 ```java
@@ -3705,7 +3740,22 @@ Gönderilmeyen alanlar dokunulmaz. Versiyon uyuşmazsa **412 Precondition Failed
 
 JPA `@Version` → ETag.
 
+> **Frontend (EK D.9 · 8).** ETag yalnız `version` kolonu olan altı tabloda:
+> `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`.
+> **`generations` bunlardan biri değil** — üretim kaynaklarına `If-Match`
+> göndermek işe yaramaz, sonuç ekranı iyimser kilit istiyorsa bu bir şema
+> değişikliği talebidir. Koleksiyon yanıtları her öğede `version` taşır, yani
+> N sürüm için N istek gerekmez. 412'nin kodu `VERSION_CONFLICT`.
+
 ### 35.7 Yetenekler istemciye
+
+> **Frontend (EK D.9 · 9).** Anonim oturumda `capabilities`,
+> `anonymousExpiresAt` (ISO 8601) taşır ve **bu değer etkinlikte tazelenir** —
+> TTL kayar. Kullanıcıya gösterilen metin "iki saat sonra" değil **"son
+> etkinliğinden iki saat sonra"** demeli. Süre dolduğunda sunucu `401` +
+> `ANONYMOUS_SESSION_EXPIRED` + `sign_up` resolution'ı döner; oturum çerezi
+> hesaplı oturumla aynı `sid`'dir, yani kimlik doğrulama istemci tarafında bir
+> `capabilities` sorusudur.
 
 ```json
 GET /api/v1/auth/session
@@ -8665,10 +8715,46 @@ Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
 maddenin altısı, `npm run gen:api` çalışabilir olduğu anda kendiliğinden kapanır
 — ama yalnız şema enum'ları ve başlıkları taşıyorsa.
 
+### D.7 — İlerleme kaydı
+
+Her dilim bittiğinde güncellenir: ne üretildi, sırada ne var, frontend'i ne
+ilgilendiriyor. Backend deposundaki `CLAUDE.md` aynı bilgiyi oturum bağlamı
+olarak taşır, ama o dosya senkronize edilmez — **frontend için tek adres
+burasıdır.**
+
+| Adım | Durum | Üretilen | Frontend'e etkisi |
+|---|---|---|---|
+| Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
+| Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (25 kod, tipli `params`, `ResolutionAction`). **Sırada:** springdoc + RFC 7807 advice → `Profile` entity + `UserContext`→`ProfileRef` çözücü → bölüm/entry/atom CRUD + tamamlanma yüzdesi | D.9 · 7-11 |
+| Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
+| Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
+| Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
+| Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
+
+**Aşama 1'de hâlâ açık olan kararlar:**
+
+| Soru | Neden bekliyor |
+|---|---|
+| İlk `UserContext` nereden gelir? | Kimlik Aşama 3'te (XI-A.6), ama Adım 1.2'nin endpoint'leri bir acting user istiyor ve `ProfileRef` onsuz üretilemiyor. İlk controller'dan önce karara bağlanacak: `local` profilinde çözülen sabit bir kullanıcı, `prod` altında var olamayacak biçimde. |
+| Üretimde migration nasıl çalışır? | Bölüm 47'nin önerdiği özellik yok (EK D.1). Şu an Flyway üretimde de açılışta çalışıyor. |
+| Kota gününün zaman dilimi | `usage_counters.period` bir `DATE`; `resetsAt` gönderilmeden önce cevaplanmalı (EK D.6.5). |
+| Anonim akış kuyruğu kullanacak mı? | `jobs` tekil indeksindeki NULL kusuru ve Bölüm 51.6'nın gizlilik testi buna bağlı. |
+
 ### D.9 — Frontend'i ilgilendirenler
 
-Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir. 1-6
-**içerik yapısının kuralları**, 7-9 dosya düzeniyle ilgili.
+Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir — burası
+toplu liste, **her madde ait olduğu bölümde de not olarak duruyor**, çünkü
+dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
+
+| # | Madde | Bölümdeki notu |
+|---|---|---|
+| 1-4 | Run/mark kuralları | Bölüm 14.1 |
+| 5 | `content_hash` düz metnin hash'i | Bölüm 16.2 |
+| 6 | Sözlükler küçük harf, hata kodu büyük harf | Bölüm 35.1 |
+| 7, 10, 11 | Hata kataloğu ve `params` disiplini | Bölüm 35.4 |
+| 8 | ETag kapsamı | Bölüm 35.6 |
+| 9 | Anonim oturum ve kayan TTL | Bölüm 35.7 |
 
 | # | Konu | Frontend'in yapması gereken |
 |---|---|---|
