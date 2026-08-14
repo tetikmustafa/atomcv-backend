@@ -40,14 +40,20 @@ public class ProfileController {
                     has no "not created yet" state to carry.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The profile head",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProfileResponse.class)),
                     headers = @Header(name = "ETag",
-                            description = "Current version, for If-Match on writes",
-                            schema = @Schema(type = "string", example = "\"7\""))),
+                            // Swagger parses `example` as JSON where it can, so a
+                            // quoted value there loses its quotes. The header is
+                            // an RFC 9110 entity tag: the quotes are part of it.
+                            description = "Current version as a quoted number, "
+                                    + "for If-Match on writes. Sent as: \"7\"",
+                            schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Unexpected failure",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProfileResponse> own() {
         Profile profile = profiles.own(currentUser.require());
         return ResponseEntity.ok()
