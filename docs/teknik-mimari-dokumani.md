@@ -8824,7 +8824,8 @@ burasıdır.**
 | Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
 | Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
 | Adım 1.5 — Ölçüm | ✅ Bitti (tahmin katmanı hariç) | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). **Sırada:** `FontMetricEstimator` ve ölçümsüz üretim yolu — tüketicisi olduğunda. | — |
-| Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
+| Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
+| Adım 1.7 — Faz E/F + PDF | 🔜 Sırada | Seçimden render'a, derleme, sayfa doğrulaması, indirme ucu | D.6.3 (indirme, 410) |
 | Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
 
 **Aşama 1'de hâlâ açık olan kararlar:**
@@ -8937,6 +8938,18 @@ giden yolda bir hata hâli olarak ele almaya zorlardı.
 | Ölçüm anahtarı | Sapma | Bölüm 22.4 `{variantId}:{customizationId}:{templateVersion}` diyor. Uygulanan: **yalnız `variantId`**. Özelleştirme entity'si henüz yok, ve anahtarın tek işi log satırından geri okunmak; sürüm bilgisi zaten `render_costs` anahtarında (`classic:v1`). Özelleştirmeler geldiğinde genişler. |
 | Eksik ölçüm | Ekleme | Bir varyantın maliyeti log'da yoksa **diğerleri yine yazılır**. Tek bir eksik ölçüm için tüm profili ölçümsüz bırakmak, seçimin tahmine düşeceği tek atom yerine hepsini tahmine düşürürdü (Bölüm 26.5). |
 | `FontMetricEstimator` ertelendi | Açık | Bölüm 26.2'nin 1. katmanı font dosyalarını **backend tarafında** okumayı gerektiriyor; fontlar container imajında. Tahminin tek tüketicisi henüz olmayan bir arayüz önizlemesi (Bölüm 33.3) ve ölçümsüz üretim yolu. Fontları ikinci bir yere kopyalamadan önce tüketicisi olsun. |
+
+### D.8.5 — Adım 1.6: Faz C, seçim
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Başlık bloğu ölçüldü | Ekleme | Bölüm 20.1 bütçeye `capacity.fixedCost("heading")` koyuyor ama kalibrasyonda yoktu. Ölçüldü: ad + iki ortalanmış satır = **52.0pt**. Onsuz her CV yarım satır fazla sığıyor sanılırdı. |
+| `minAtoms` her entry için zorlanmıyor | Sapma | Bölüm 20.3'ün 1. aşaması **her görünür entry** için minimumu zorluyor. Bu, uzun bir profili "sığmıyor" hatasına düşürürdü — oysa doğru davranış zayıf entry'leri bırakmak. Uygulanan: minimum yalnız **kilitli bir atomun zaten açtığı** entry'lerde zorlanır; diğerlerinde greedy'den sonra **ya hepsi ya hiçbiri** olarak uygulanır (yeni red sebebi: `ENTRY_BELOW_MINIMUM`). |
+| Öncelik kuyruğu yerine her turda yeniden hesap | Sapma | Bölüm 20.3 bir `PriorityQueue` kuruyor. Bir atomu almak kardeşlerinin **hem maliyetini** (entry başlığı artık ödendi) **hem değerini** (aynı entry'den beşinci madde daha az değerli) değiştiriyor; önceden sıralanmış bir kuyruk bayat sayıları sıralar. 200 atom için her turda yeniden taramak birkaç milisaniye, ve tamamen deterministik. |
+| Swap tek-için-tek | Sapma | Bölüm 20.3 bir **küme** çıkarıp bir aday koymayı öneriyor. Bu boyutta kazanç küçük, alt küme araması pahalı, ve her ek serbestlik derecesi iki koşunun ayrışması için bir yol daha. |
+| Etkin maliyet | Ekleme | Bir atom, açtığı mobilyayı da ödüyor: bölüm başlığı, entry başlığı ve madde listesi ek yükü. Kısıt (5) bu; problemin saf knapsack olmamasının sebebi de. |
+| Model tutarlılığı kodda | Düzeltme | `EntryPlan` altındaki bir atomun `entryId`'si o entry'yi göstermek **zorunda**. Test yazarken tam bu hatayı yaptım: entry içindeki atom `entryId = null` taşıyınca seçim entry başlığını hiç ödemedi ve bütçe entry başına **22.76 punto** kazandı — görünür sebebi olmayan bir taşma. Artık kurulumda patlıyor. |
+| `Result` ve `PipelineError` | Ekleme | Bölüm 25.1/25.2'nin biçimiyle, ama **yalnız bugün üretilebilen hata** ile: `ConflictingPreferences`. Sealed arayüz, hata sunumunu exhaustive switch yapıyor — yeni bir hata türü, kullanıcıya ne söyleneceği kararlaştırılmadan derlenmiyor (P4, dille zorlanmış). Diğer durumlar kendi fazlarıyla gelecek; erken eklemek parametrelerini tahmin etmek olurdu, ve frontend'in mesajlarının ihtiyacı tam olarak o parametreler. |
 
 ### D.9 — Frontend'i ilgilendirenler
 

@@ -83,8 +83,14 @@ class LatexCalibrationIT {
     }
 
     @Test
+    void theHeaderBlockCostsWhatWasMeasured() {
+        assertThat(delta("start", "afterHeaderBlock"))
+                .isCloseTo(capacity().fixedCost(CapacityModel.HEADER_BLOCK), offset());
+    }
+
+    @Test
     void aSectionHeadingCostsWhatWasMeasured() {
-        assertThat(delta("start", "afterSection"))
+        assertThat(delta("afterHeaderBlock", "afterSection"))
                 .isCloseTo(capacity().fixedCost(CapacityModel.SECTION_HEADER), offset());
     }
 
