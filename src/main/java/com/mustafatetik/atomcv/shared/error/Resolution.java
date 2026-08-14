@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.shared.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -24,7 +25,11 @@ public record Resolution(
 
     public Resolution {
         Objects.requireNonNull(action, "action");
-        params = params == null ? Map.of() : Map.copyOf(params);
+        // Insertion order is kept for the same reason as in UserFacingError:
+        // the JDK's immutable maps iterate in a per-run salted order.
+        params = params == null
+                ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(params));
     }
 
     public static Resolution of(ResolutionAction action) {

@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.shared.error;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,12 @@ public record UserFacingError(
 
     public UserFacingError {
         Objects.requireNonNull(code, "code");
-        params = params == null ? Map.of() : Map.copyOf(params);
+        // LinkedHashMap, not Map.copyOf: the immutable maps of the JDK iterate
+        // in an order that is salted per JVM run, so the same error would
+        // serialise differently between runs. Nothing may vary run to run here.
+        params = params == null
+                ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(params));
         resolutions = resolutions == null ? List.of() : List.copyOf(resolutions);
         validate(code, params);
     }
