@@ -8694,6 +8694,19 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
 | Entry `PATCH`'inde `sectionId` yok | Ekleme | Bir entry'yi başka bölüme taşımak iki listeyi birden numaralandırır; bu bir alan düzenlemesi değil, sıralama işlemidir. Taşıma ucu gerektiğinde ayrıca eklenecek. |
 | Başka profilin bölümüne entry | Ekleme | `sectionId` kapsamlı repository üzerinden çözülüyor, yani başkasının bölüm id'sini göndermek 400 `VALIDATION_FAILED` verir — satırın varlığını doğrulamayan bir cevap. |
 
+**Koleksiyon kaynakları — atomlar ve varyantlar (Adım 1.2).**
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Atom **içeriğiyle birlikte** yaratılır | Ekleme | `POST /atoms` içerik ister ve birincil varyantı aynı transaction'da yazar. Varyantsız bir atom, kimsenin okuyamadığı bir olgudur: renderer basacak, ölçüm ölçecek bir şey bulamaz. O durumun hiç var olmaması, sonradan temizlenmesinden ucuz. |
+| Kontroller ve metin ayrı uçlarda | Ekleme | Bölüm 35.2 `PATCH /atoms/{id}` için zaten "kontroller" diyor. Metin varyantın; ikisi ayrı satır, ayrı sürüm. Cümleyi atom üzerinden düzenlemek, iki satırın tek bir önkoşulu paylaşması olurdu. |
+| Varyant `PATCH`'i içeriğin **tamamını** alır | Ekleme | Cümle run run değil, cümle olarak düzenlenir. Sunucu düz metni ve hash'i tek yetkili değerden türetiyor; hash değişince ölçülmüş maliyetler de düşüyor (EK D.3). |
+| Dil+ton çakışması | Ekleme | `(atom, language, tone)` tekil indeksi var. İkinci bir aynı çift, kısıt ihlalinin 500 olarak yüzeye çıkması yerine **400 `VALIDATION_FAILED`** ile reddediliyor. |
+| Birincil varyant terfisi | Ekleme | Atom başına tek birincil (kısmi tekil indeks). Terfi, eskisini **ayrı bir toplu güncellemeyle** düşürüyor: iki yazımı persistence context'e bırakmak, Hibernate'in sırayı ters kurup indekse takılmasına açık kapı bırakırdı. |
+| Son varyant ve birincil silinemez | Ekleme | Bir atom bir varyantını korumak zorunda, ve aralarında bir varsayılan. İkisi de 400 döner; istemcinin yapacağı bir şey kalır (başkasını terfi ettir, ya da atomu sil), okunamaz bir atom kalmaz. |
+| İçerik kuralları istemcinin hatasıdır | Düzeltme | `href`siz `link` run'ı ya da gelecekten bir `v` damgası, model constructor'ında `IllegalArgumentException` üretiyordu ve son çareye düşüp **500** dönüyordu. İstek gövdesinden gelen bir ihlal istemcinin hatasıdır: artık 400 `VALIDATION_FAILED` (`fields: ["content"]`). |
+| Varyantların yüklenmesi | Ekleme | Liste ucu tüm varyantları **tek sorguda** çekip atoma göre grupluyor; atom başına sorgu, Bölüm 52.2'nin yasakladığı desenin ta kendisi olurdu. |
+
 #### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
 
 - Baytlar doğrudan API'den, `Content-Disposition: attachment` ile. Dosya adı,
@@ -8788,7 +8801,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm ve entry CRUD + sıralama**. **Sırada:** atom ve varyant CRUD → tamamlanma yüzdesi | D.9 · 7-17 |
+| Adım 1.2 — Profil CRUD | 🔄 Sürüyor | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **Sırada:** tamamlanma yüzdesi ve profil silme/dışa aktarma | D.9 · 7-18 |
 | Adım 1.3 — LaTeX container | ⏳ Sırada | İzole container, `/compile` | — |
 | Adım 1.4-1.5 — Renderer + ölçüm | ⏳ Sırada | Klasik şablon, `\savebox` ölçümü, `render_costs` | — |
 | Adım 1.6-1.7 — Seçim + PDF | ⏳ Sırada | Faz C, Faz E/F, indirme endpoint'i | D.6.3 (indirme, 410) |
@@ -8881,6 +8894,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 18 | **Atom ve varyant uçları hazır** | Atom **içeriğiyle** yaratılır (`content` zorunlu). `PATCH /atoms/{id}` yalnız kontrolleri değiştirir; **metin `PATCH /atoms/{id}/variants/{vid}`'de** ve içeriğin tamamı gönderilir. Yanıt her atomun tüm varyantlarını **birincil önce** verir. Aynı dil+ton ikinci kez eklenemez, son varyant ve birincil silinemez (400). `href`siz bir `link` run'ı da 400 — 500 değil. |
 | 17 | **Entry uçları hazır, ve `PATCH`'te "temizle" mümkün** | `GET /profile/entries` (`?sectionId=` ile süzülür) ve `POST /entries/reorder` **dokümanda yoktu**, eklendi. `PATCH`'te bir alanı **göndermemek** onu korur, **`null` göndermek** temizler — bitiş tarihini silip işi "devam ediyor" yapmanın yolu budur. Şemada bu alanlar `nullable` bir değer olarak görünür, sarmalayıcı nesne olarak değil. Entry'yi başka bölüme taşımak `PATCH` ile yapılamaz. |
 | 16 | **Bölüm uçları hazır** | `GET/POST /profile/sections`, `PATCH/DELETE /{id}`, `POST /reorder`. `PATCH` yalnız gönderilen alanı değiştirir; `displayOrder` yamalanamaz, sıra `reorder` ile ve **tam liste** göndererek değişir (eksik liste 400). Silme `If-Match` ister ve **içeriğiyle birlikte** siler. Koleksiyonun her öğesi `version` taşır, yani düzenlemeden önce ikinci bir okuma gerekmez. |
 | 15 | **Yazmalarda `If-Match` zorunlu, ve `preferences` `PUT` ile** | Başlıksız istek `428 PRECONDITION_REQUIRED` (yeni kod, ICU karşılığı gerekiyor), bayat etiket `412 VERSION_CONFLICT` + `retry`. `PUT /profile` **değiştirir**: gönderilmeyen alan temizlenir, yani formun tüm alanları gönderilmeli. Tercihler ayrı endpoint'te ve **`PATCH` değil `PUT`** — Bölüm 35.2'nin listesi bu satırda güncellendi. |
