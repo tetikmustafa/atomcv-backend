@@ -28,7 +28,7 @@ public class LatexCompilerClient {
     private final HttpClient http;
     private final CompilationProperties properties;
 
-    LatexCompilerClient(CompilationProperties properties) {
+    public LatexCompilerClient(CompilationProperties properties) {
         this.properties = properties;
         this.http = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
@@ -36,8 +36,19 @@ public class LatexCompilerClient {
     }
 
     /** The PDF, or an exception carrying the log that explains its absence. */
-    public byte[] compile(String source) {
-        return send("/compile", source).body();
+    public CompiledDocument compile(String source) {
+        HttpResponse<byte[]> response = send("/compile", source);
+        int pages = response.headers().firstValue("X-Page-Count")
+                .map(LatexCompilerClient::parsePageCount)
+                .orElse(0);
+        if (pages < 1) {
+            // Faz F cannot promise a page limit it was unable to read, so a
+            // compiler that does not report one is treated as the wrong
+            // compiler rather than as a document with an unknown length (P4).
+            throw failure(CompilationException.Kind.UNAVAILABLE,
+                    "the compiler reported no page count", "", null);
+        }
+        return new CompiledDocument(response.body(), pages);
     }
 
     /**
@@ -87,6 +98,14 @@ public class LatexCompilerClient {
         // The kind, never the log: it is built from the user's own content.
         log.warn("Compilation failed: {}", kind);
         return new CompilationException(kind, message, texLog, cause);
+    }
+
+    private static int parsePageCount(String header) {
+        try {
+            return Integer.parseInt(header.trim());
+        } catch (NumberFormatException malformed) {
+            return 0;
+        }
     }
 
     private static String body(HttpResponse<byte[]> response) {

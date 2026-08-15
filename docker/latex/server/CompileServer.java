@@ -33,6 +33,15 @@ public final class CompileServer {
     private static final int QUEUE_TIMEOUT_SECONDS = intEnv("LATEX_QUEUE_TIMEOUT_SECONDS", 30);
     private static final long MAX_SOURCE_BYTES = intEnv("LATEX_MAX_SOURCE_BYTES", 2_000_000);
 
+    /**
+     * What xelatex says at the end of a successful run. The compiler is the
+     * only thing that knows how many pages it made, and reporting it here
+     * saves the caller from parsing a PDF page tree it cannot read anyway
+     * once the output uses object streams (EK D.8.6).
+     */
+    private static final java.util.regex.Pattern PAGES =
+            java.util.regex.Pattern.compile("Output written on [^(]*\\((\\d+) pages?");
+
     private static final String MINIMAL_DOCUMENT =
             "\\documentclass{article}\\begin{document}warm\\end{document}";
 
@@ -76,6 +85,8 @@ public final class CompileServer {
             if (output == Output.LOG) {
                 respond(exchange, 200, "text/plain; charset=utf-8", bytes(result.log()));
             } else if (result.pdf() != null) {
+                exchange.getResponseHeaders().set("X-Page-Count",
+                        String.valueOf(pageCount(result.log())));
                 respond(exchange, 200, "application/pdf", result.pdf());
             } else {
                 // 422: the document is the problem, not the service. The log is
@@ -184,6 +195,12 @@ public final class CompileServer {
         } catch (Exception failure) {
             log("warm-up failed: " + failure);
         }
+    }
+
+    /** Zero when the log does not say — the caller decides what to do about it. */
+    private static int pageCount(String texLog) {
+        var matcher = PAGES.matcher(texLog);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 0;
     }
 
     private static byte[] readAtMost(InputStream input, long limit) throws IOException {
