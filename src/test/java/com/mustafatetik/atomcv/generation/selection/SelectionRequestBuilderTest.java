@@ -1,0 +1,289 @@
+package com.mustafatetik.atomcv.generation.selection;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.mustafatetik.atomcv.generation.selection.SelectionRequest.AtomCandidate;
+import com.mustafatetik.atomcv.profile.domain.Atom;
+import com.mustafatetik.atomcv.profile.domain.AtomKind;
+import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.domain.Entry;
+import com.mustafatetik.atomcv.profile.domain.ProfileTree;
+import com.mustafatetik.atomcv.profile.domain.Section;
+import com.mustafatetik.atomcv.profile.domain.SectionKind;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
+import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
+/**
+ * The piece that reads a profile the way its owner marked it (Bolum 20.2).
+ *
+ * <p>Most of these are about a control the user set: an inactive row, a lock,
+ * a minimum. Getting one of them wrong does not break a build — it quietly
+ * produces a CV the user did not ask for, which is why each has its own test.
+ */
+class SelectionRequestBuilderTest {
+
+    private static final UUID PROFILE = UUID.randomUUID();
+    private static final LocalDate TODAY = LocalDate.of(2026, 8, 15);
+    private static final CapacityModel CAPACITY =
+            TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
+
+    // ── what the user switched off ────────────────────────────────────────
+
+    @Test
+    void anInactiveSectionIsNotPartOfTheCvAtAll() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        section.setActive(false);
+        profile.looseAtom(section, "Go");
+
+        assertThat(build(profile).request().sections()).isEmpty();
+    }
+
+    @Test
+    void anInactiveEntryTakesItsBulletsWithIt() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        var entry = profile.entry(section, 0);
+        entry.setActive(false);
+        profile.bullet(section, entry, "Built ETL pipelines");
+
+        assertThat(build(profile).request().sections()).isEmpty();
+    }
+
+    @Test
+    void anInactiveAtomStaysACandidateSoItCanBeExplained() {
+        // Bolum 19.5: it is not scored away, it is rejected with a reason.
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        var atom = profile.looseAtom(section, "Go");
+        atom.setActive(false);
+
+        var candidates = build(profile).request().sections().get(0).atoms();
+
+        assertThat(candidates).hasSize(1);
+        assertThat(candidates.get(0).active()).isFalse();
+    }
+
+    // ── the user's locks ──────────────────────────────────────────────────
+
+    @Test
+    void anAtomLockTravelsThrough() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        var atom = profile.looseAtom(section, "Go");
+        atom.setAlwaysInclude(true);
+
+        assertThat(build(profile).request().sections().get(0).atoms().get(0).alwaysInclude())
+                .isTrue();
+    }
+
+    /** A locked entry means the heading plus the minimum it is worth printing at. */
+    @Test
+    void aLockedEntryPinsAsManyBulletsAsItsMinimum() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        var entry = profile.entry(section, 0);
+        entry.setAlwaysInclude(true);
+        entry.setMinAtoms((short) 2);
+        for (int index = 0; index < 5; index++) {
+            profile.bullet(section, entry, "Bullet " + index).setImportance(0.1f * index);
+        }
+
+        var plan = build(profile).request().sections().get(0).entries().get(0);
+
+        assertThat(plan.atoms()).filteredOn(AtomCandidate::alwaysInclude).hasSize(2);
+        // And it pins the best ones, not the first ones.
+        double pinnedLowest = plan.atoms().stream()
+                .filter(AtomCandidate::alwaysInclude)
+                .mapToDouble(AtomCandidate::score).min().orElseThrow();
+        double looseHighest = plan.atoms().stream()
+                .filter(candidate -> !candidate.alwaysInclude())
+                .mapToDouble(AtomCandidate::score).max().orElseThrow();
+        assertThat(pinnedLowest).isGreaterThanOrEqualTo(looseHighest);
+    }
+
+    @Test
+    void aLockedSectionKeepsAtLeastOneOfItsAtoms() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setAlwaysInclude(true);
+        profile.looseAtom(section, "Go");
+        profile.looseAtom(section, "Kubernetes");
+
+        var plan = build(profile).request().sections().get(0);
+
+        assertThat(plan.alwaysInclude()).isTrue();
+        assertThat(plan.atoms()).filteredOn(AtomCandidate::alwaysInclude).hasSize(1);
+    }
+
+    @Test
+    void aLockedSectionOfEntriesPinsInsideItsFirstEntry() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        section.setAlwaysInclude(true);
+        var entry = profile.entry(section, 0);
+        profile.bullet(section, entry, "Built ETL pipelines");
+
+        var plan = build(profile).request().sections().get(0);
+
+        assertThat(plan.entries().get(0).atoms())
+                .filteredOn(AtomCandidate::alwaysInclude).hasSize(1);
+    }
+
+    // ── costs ─────────────────────────────────────────────────────────────
+
+    @Test
+    void aMeasuredWordingIsChargedWhatItMeasured() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        profile.looseAtom(section, "Go");
+        profile.variants.get(0).recordRenderCost(
+                TemplateCustomization.CLASSIC.costKey(), 41.5, java.time.Instant.now());
+
+        var built = build(profile);
+
+        assertThat(built.request().sections().get(0).atoms().get(0).renderCostPt())
+                .isEqualTo(41.5);
+        assertThat(built.estimatedAtoms()).isZero();
+    }
+
+    @Test
+    void anUnmeasuredWordingIsEstimatedAndCounted() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        profile.looseAtom(section, "Go");
+
+        var built = build(profile);
+
+        assertThat(built.estimatedAtoms()).isEqualTo(1);
+        assertThat(built.request().sections().get(0).atoms().get(0).renderCostPt())
+                .isPositive();
+    }
+
+    @Test
+    void anAtomWithNoWordingIsCountedRatherThanCharged() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        profile.atoms.add(new Atom(PROFILE, section.getId(), null, AtomKind.SKILL, (short) 0));
+
+        var built = build(profile);
+
+        assertThat(built.withoutWording()).isEqualTo(1);
+        assertThat(built.request().sections()).isEmpty();
+    }
+
+    @Test
+    void theWordingInTheAskedForLanguageWins() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        var atom = profile.looseAtom(section, "Built ETL pipelines");
+        var turkish = new AtomVariant(PROFILE, atom.getId(), "tr",
+                RichContent.plain("ETL hatlari kurdum"));
+        profile.variants.add(turkish);
+
+        var built = SelectionRequestBuilder.build(profile.tree(),
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", TODAY);
+
+        assertThat(built.request().sections().get(0).atoms().get(0).variantId())
+                .isEqualTo(turkish.getId());
+    }
+
+    // ── shape ─────────────────────────────────────────────────────────────
+
+    @Test
+    void anEmptySectionDoesNotReachSelection() {
+        var profile = new Fixture();
+        profile.section(SectionKind.EXPERIENCE, 0);
+
+        assertThat(build(profile).request().sections()).isEmpty();
+    }
+
+    @Test
+    void everyBulletCarriesItsEntry() {
+        // The invariant SelectionRequest enforces: an atom under an entry has
+        // to name it, or the entry heading is never charged (EK D.8.5).
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        var entry = profile.entry(section, 0);
+        profile.bullet(section, entry, "Built ETL pipelines");
+
+        var plan = build(profile).request().sections().get(0).entries().get(0);
+
+        assertThat(plan.atoms()).allSatisfy(candidate ->
+                assertThat(candidate.entryId()).isEqualTo(entry.getId()));
+    }
+
+    @Test
+    void theSameProfileBuildsTheSameRequest() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        var entry = profile.entry(section, 0);
+        for (int index = 0; index < 10; index++) {
+            profile.bullet(section, entry, "Bullet " + index);
+        }
+
+        var first = build(profile).request();
+        for (int run = 0; run < 20; run++) {
+            assertThat(build(profile).request()).isEqualTo(first);
+        }
+    }
+
+    // ── fixtures ──────────────────────────────────────────────────────────
+
+    private static SelectionRequestBuilder.BuiltRequest build(Fixture fixture) {
+        return SelectionRequestBuilder.build(fixture.tree(),
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "en", TODAY);
+    }
+
+    /** A profile under construction, flat, the way the repositories return it. */
+    private static final class Fixture {
+
+        private final List<Section> sections = new ArrayList<>();
+        private final List<Entry> entries = new ArrayList<>();
+        private final List<Atom> atoms = new ArrayList<>();
+        private final List<AtomVariant> variants = new ArrayList<>();
+
+        Section section(SectionKind kind, int order) {
+            var section = new Section(PROFILE, kind, kind.name(), (short) order);
+            sections.add(section);
+            return section;
+        }
+
+        Entry entry(Section section, int order) {
+            var entry = new Entry(PROFILE, section.getId(), "Engineer", (short) order);
+            entry.setStartDate(LocalDate.of(2020, 1, 1));
+            entries.add(entry);
+            return entry;
+        }
+
+        Atom bullet(Section section, Entry entry, String text) {
+            return atom(section, entry, AtomKind.BULLET, text);
+        }
+
+        Atom looseAtom(Section section, String text) {
+            return atom(section, null, AtomKind.SKILL, text);
+        }
+
+        private Atom atom(Section section, Entry entry, AtomKind kind, String text) {
+            var atom = new Atom(PROFILE, section.getId(),
+                    entry == null ? null : entry.getId(), kind, (short) atoms.size());
+            var variant = new AtomVariant(PROFILE, atom.getId(), "en", RichContent.plain(text));
+            variant.setPrimary(true);
+            atoms.add(atom);
+            variants.add(variant);
+            return atom;
+        }
+
+        ProfileTree tree() {
+            return ProfileAssembler.assemble(PROFILE, sections, entries, atoms, variants);
+        }
+    }
+}
