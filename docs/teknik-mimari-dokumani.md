@@ -8579,6 +8579,7 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 | `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
 | `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |
 | `switch_to_manual_form` | Çıkarım başarısız | Manuel profil formuna git |
+| `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
 | `retry` | Geçici hata | Değiştirmeden yeniden gönder |
 
 **Frontend kendi resolution'ını uydurmaz.** Listeyi sunucu sahiplenir; istemci
@@ -8831,7 +8832,7 @@ burasıdır.**
 | Adım 1.5 — Ölçüm | ✅ Bitti (tahmin katmanı hariç) | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). **Sırada:** `FontMetricEstimator` ve ölçümsüz üretim yolu — tüketicisi olduğunda. | — |
 | Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
 | Adım 1.7 — Faz E/F | ✅ Bitti (indirme ucu hariç) | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
-| Adım 1.8 — Genel mod | 🔄 Yarısı bitti | **Bitti:** `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt`. Ayrıntılar: **EK D.8.7**. **Sırada:** üretim servisi + PDF ucu + hata sunumu. | sırada |
+| Adım 1.8 — Genel mod | ✅ Bitti | `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt` (EK D.8.7). `CvGenerationService` + **`POST /api/v1/generations/general`** + `ErrorPresenter` (Bölüm 25.3, dört durumun tamamı) (EK D.8.8). Veritabanındaki profil gerçek derleyiciden **tek sayfalık PDF** olarak çıkıyor. | D.9 · 22, 23 |
 | Adım 1.9 — Golden set | ⏳ Sırada | 5 golden profil, `DevSeeder`, dört kritik test | — |
 
 **Aşama 1'de hâlâ açık olan kararlar:**
@@ -8994,6 +8995,30 @@ aksini söylüyor, sonuç sessiz bir üç sayfalık CV değil bir hata oluyor.
 | Pasif bölüm/entry hiç aday olmuyor | Karar | Pasif **atom** aday listesinde kalıyor ve `INACTIVE` sebebiyle reddediliyor (Bölüm 19.5), ama pasif bir bölüm ya da entry CV'nin parçası değil: altındaki atomlar için "neden yok" sorusu da doğmuyor. |
 | Sözü olmayan atom sayılıyor | Ekleme | Hiçbir dilde varyantı olmayan atom render edilemez; sessizce düşürmek yerine `withoutWording` sayacına yazılıyor — yukarıda bir kusur olduğunun işareti. |
 
+### D.8.8 — Adım 1.8: üretim servisi ve PDF ucu
+
+| Konu | Tür | Karar |
+|---|---|---|
+| **`POST /api/v1/generations/general`** | Ekleme | Bölüm 35.3'ün `POST /generations`'ı 202 + iş döndürüyor, çünkü içinde LLM var. Genel modda LLM de kuyruk da yok: bu uç belgeyi **doğrudan** döndürüyor (`application/pdf`, `Content-Disposition: attachment`, `Cache-Control: no-store`). Aşama 1'e özgü ve öyle işaretli; kuyruklu sözleşme üretim kaydıyla birlikte Aşama 2'de gelecek. Gövde **isteğe bağlı**; `maxPages` ve `language` verilmezse profilin kendi varsayılanları geçerli. |
+| Hiçbir şey saklanmıyor | Kapsam | `generations` tablosuna satır yazılmıyor, `selection_state` saklanmıyor, indirme bağlantısı yok. Saklama, saklama süresi (`EK D.6.3`'teki 14 gün ve 410) ve düzenleme döngüsü (Faz G) hep aynı kaydı gerektiriyor; biri olmadan diğerini yazmak yarım bir sözleşme olurdu. Bir test `generations`'ın boş kaldığını doğruluyor. |
+| Ön kontrol **yapısal**, yüzde değil | Karar | Bölüm 25.2 `INSUFFICIENT_PROFILE(completeness, missing)` diyor, eşik vermiyor. Yüzde eşiği gayet iyi render edilecek profilleri reddederdi; üretimi durduran şey **basılacak bir şeyin olmaması**. Tamamlanma yüzdesi mesajda taşınıyor, kararı vermiyor. |
+| `complete_profile` sözlüğe eklendi | Ekleme | Bölüm 25.3'ün örneği bu adı kullanıyor ama D.6.1'in sekiz eylemlik kümesinde yoktu. Dokuzuncu eylem; frontend'in buton davranışı yazması gerekiyor (D.9 · 22). |
+| `ErrorPresenter` | Uygulama | Bölüm 25.3'ün biçimiyle, dört durumun **tamamı** için. `UserFacingError` parametreleri katalogla doğruladığı için her sunum aynı zamanda "ICU mesajının beklediği alanları yayınlıyor mu" testi. |
+| `PAGE_LIMIT_EXCEEDED`'in çözümü | Karar | `increase_page_limit`, `maxPages` = **derleyicinin gerçekten ürettiği sayfa sayısı**. Yeterli olduğu bilinen tek sayı o. |
+| `COMPILATION_FAILED.detail` **log değil** | Karar | Katalog `detail: string` istiyor ve bu dize ICU mesajına giriyor. TeX logu kullanıcının kendi içeriğinden türüyor, oraya konamaz: `detail` yalnız hatanın türü (`invalid_document`, `busy`, `timeout`, `unavailable`). `retry` çözümü TeX'in reddettiği belge dışında sunuluyor — o belge tekrar denenince yine reddedilir. |
+| `PipelineError.Resolution` silindi | Düzeltme | Aynı kavramın iki tipi vardı; `generation` artık `shared.error.Resolution`'ı kullanıyor. Eylem adı artık `String` değil enum: yazım hatası derlenmiyor. |
+| `Clock` bean'i | Ekleme | Skorlama bugünün tarihini parametre olarak alıyor (Bölüm 19.6); onu üreten yer bir bean, UTC. Kotanın gün sınırı ayrı bir karar olarak duruyor. |
+| `ProfileResolver.owned()` | Ekleme | Üretim hem profilin kendi alanlarını (başlık, tercihler) hem de altındaki kapsamı istiyor. `ProfileRef`'in tek üretim yeri kuralını bozmamak için ikisini birlikte döndüren bir metot eklendi — satırı iki kez okumak yerine. |
+
+**Doğrulama.** `GenerationApiIT` yedi test: PDF eki, isteğe bağlı gövde ve
+`maxPages` geçersiz kılma, boş profilin **derleyiciye hiç gitmeden** reddi,
+sayfa aşımının çözümüyle birlikte sunumu, derleyici çöküşünün 502'si,
+`maxPages: 99`'un 400'ü, ve `generations` tablosunun boş kalması.
+`GeneralCvIT` (latex etiketli) aynı ucu gerçek container'a karşı çalıştırıyor:
+veritabanındaki bir profil ölçülüyor, seçiliyor, derleniyor ve **gerçekten tek
+sayfalık** bir PDF olarak dönüyor — XI-A.3'ün Aşama 1 kontrol listesindeki
+madde budur.
+
 ### D.9 — Frontend'i ilgilendirenler
 
 Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir — burası
@@ -9024,6 +9049,8 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 23 | **Yeni resolution: `complete_profile`** | Sözlük dokuz eyleme çıktı. Davranışı: profil düzenleyiciyi aç. `INSUFFICIENT_PROFILE` ile birlikte geliyor ve `params.missing` hangi parçanın eksik olduğunu söylüyor (`atoms`, `sections`). Şema (`/v3/api-docs`) güncel; `npm run gen:api` yeniden çalıştırılmalı. |
+| 22 | **PDF veren ilk uç: `POST /api/v1/generations/general`** | **Senkron** ve **Aşama 1'e özgü**. Gövde isteğe bağlı: `{ "maxPages": 1..10, "language": "en" }`; verilmeyen alan profilin varsayılanını kullanır. Yanıt `application/pdf` + `Content-Disposition: attachment`; **hiçbir yere kaydedilmiyor**, yani indirme bağlantısı, geçmiş listesi ya da düzenleme döngüsü henüz yok. Aşama 2'de Bölüm 35.3'ün `POST /generations` + 202 + iş akışı gelecek; **bu uca kalıcı bir ekran bağlamayın**. Hata durumları: 422 `INSUFFICIENT_PROFILE`, 422 `PAGE_LIMIT_EXCEEDED`, 409 `CONFLICTING_PREFERENCES`, 502 `COMPILATION_FAILED`, 400 `VALIDATION_FAILED`. |
 | 21 | **`PAGE_LIMIT_EXCEEDED` artık gerçekten dönebilir** | Üretim isteği bir belge yerine bu hatayı döndürebilir: `actual` (çıkan sayfa) ve `limit` (istenen) parametreleriyle, 422. Sunucu içeriği kendi kısaltmayı iki kez dener; bu hataya ulaşıldıysa denemeler bitmiştir, yani "tekrar dene" düğmesi **yanlış** çözümdür — kullanıcıya sayfa sınırını artırmak veya içerik çıkarmak önerilmeli. `COMPILATION_FAILED` (502) de aynı akışta görünebilir. |
 | 20 | **`GET /profile/export` hazır** | `?format=json` iç içe bir kopya verir (öğe şekilleri API ile aynı), `?format=markdown` okunacak hâlini. İkisi de `Content-Disposition: attachment` ile iner; dosya adında isim yok. Bilinmeyen biçim 400. Markdown `charset=UTF-8` bildirir. |
 | 19 | **`completeness` gerçek bir sayı, ve `DELETE /profile` var** | `GET /profile` her okumada tamamlanmayı yeniden hesaplıyor (Bölüm 31.9); göstergeyi ayrıca hesaplamaya gerek yok. `DELETE /profile` profili ve altındaki her şeyi siler, **hesabı silmez** — sonraki okuma boş bir profil döndürür. `If-Match` zorunlu. |
