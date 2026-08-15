@@ -321,8 +321,8 @@ three open items below.
 | `generation` | `pipeline` (`Result`, `PipelineError`, `ErrorPresenter`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`, `SelectionRequestBuilder`), `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
 | `profile.seed` | `GoldenProfileDocument`, `GoldenProfileReader`, `GoldenProfile`, `DevSeeder`; five fixtures + their measured costs under `src/main/resources/golden/profiles` |
 
-305 unit tests, 122 integration tests, 32 latex-tagged. Every decision behind
-these is in `EK D` — read D.2 through D.8.9 before touching them.
+306 unit tests, 122 integration tests, 44 latex-tagged. Every decision behind
+these is in `EK D` — read D.2 through D.8.10 before touching them.
 
 ### Deliberately absent — do not "fix" without asking
 
