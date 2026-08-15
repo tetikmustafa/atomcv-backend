@@ -362,7 +362,7 @@ Kullanıcı bir metni elle düzenlediyse (`is_user_edited`), sistem onu otomatik
 
 | Teknoloji | Ne için | Neden seçildi |
 |---|---|---|
-| **Next.js 15 (App Router)** | Framework | Landing/SEO için SSG, uygulama için client-side. Mevcut deneyim. |
+| **Next.js 16 (App Router)** | Framework | Landing/SEO için SSG, uygulama için client-side. Mevcut deneyim. Turbopack varsayılan bundler; 15.x backport dalına geçtiği için 16'dan başlandı (EK D.10 · 1). |
 | **React 19 + TypeScript** | UI | Tip güvenliği; karmaşık editör durumu için gerekli |
 | **Tailwind CSS** | Stil | Hızlı iterasyon, tutarlı tasarım sistemi |
 | **shadcn/ui (Radix)** | Bileşen kütüphanesi | Erişilebilirlik (focus trap, ARIA, klavye) bedava geliyor |
@@ -474,7 +474,7 @@ Model adları **env değişkeni**dir, koda gömülmez — model isimlendirmeleri
 | **Trivy** | Container imaj taraması |
 | **OWASP Dependency-Check / Dependabot** | Bağımlılık açıkları |
 | **CodeQL** | Statik kod analizi |
-| **bundlesize** | Frontend bundle bütçesi |
+| **`scripts/check-bundle-size.mjs`** | Frontend bundle bütçesi — hazır araçlar Next'in içerik-hash'li chunk'larını rota rota ölçemiyor (EK D.10 · 13) |
 
 ---
 
@@ -3904,11 +3904,17 @@ app/
 │       ├── generations/[id]/       sonuç ekranı
 │       ├── applications/           başvuru takibi
 │       └── settings/
-├── legal/
-│   ├── privacy/
-│   └── terms/
-└── api/                            ⚠️ SADECE proxy, iş mantığı YOK
+│       └── legal/
+│           ├── privacy/
+│           └── terms/
 ```
+
+> **Not (Frontend Aşama 0).** İki düzeltme. `legal/` **`[locale]` altında**:
+> segment dışında çevrilemiyor, ve Türk kullanıcının okuyamadığı bir gizlilik
+> politikası gizlilik politikası değildir. **`app/api/` yok ve olmayacak** —
+> lokalde aynı-origin görüntüsü `next.config.ts` rewrite'ıyla korunuyor;
+> rewrite bizim kodumuzu çalıştırmadığı için "iş mantığı yok" kuralı zaten
+> ihlal edilmiyor (EK D.10 · 19, 20).
 
 ### 36.2 Durum yönetimi ayrımı
 
@@ -4699,7 +4705,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - run: npx bundlesize
+      - run: npm run check:bundle-size
       - run: npm audit --audit-level=high
 
   contract-check:
@@ -5190,7 +5196,27 @@ void profileLoadUsesLimitedQueries() {
 | LCP (editör) | < 2.5s |
 | INP | < 200ms |
 | CLS | < 0.1 |
-| İlk JS paketi | < 200 KB gzip |
+| İlk JS — paylaşılan taban | < 175 KB gzip |
+| İlk JS — pazarlama rotaları (landing, legal) | < 200 KB gzip |
+| İlk JS — uygulama rotaları (editör, üretim) | < 280 KB gzip; rotanın kendi payı < 105 KB |
+
+**Tek sayı yerine üç sayı, ve rota sınıfına göre iki tavan.** Karar Frontend
+Aşama 0'da alındı, ölçüme dayanıyor: React + Next runtime'ının **paylaşılan
+tabanı tek başına 168.1 KB**, pazarlama rotalarının kendi payı **0 KB** (hepsi
+server component). Kalan ~30 KB'a dnd-kit + React Hook Form + Zod sığmıyor —
+daha tek bileşen yazılmadan. Bu bölüm **LCP'de zaten aynı ayrımı yapıyor**
+(landing 2.0s, editör 2.5s) ve gerekçe birebir taşınıyor: landing ilk temas ve
+anonim huninin en ince yeri; editöre kararlı bir kullanıcı bilinçli bir eylemle
+geliyor.
+
+Üç sayının işi farklı: **taban** yalnız bağımlılık değişiminde oynar ve
+oynadığı gün fark edilmelidir; **rotanın kendi payı** özellik işinin kontrol
+ettiği şeydir; **toplam** bu bölümün tavanıdır. Tek eşik kötü bir tel kapandır —
+taban bütçenin çoğunu yer, alarm sıradan işte öter, yükseltilir, sonra kimse
+inanmaz.
+
+Zorlayan kopya frontend reposundaki `bundle-budget.json`; buradaki sayılar
+tavandır ve **karar olmadan yükseltilmez** (EK D.10 · 13, 14).
 
 ### 52.4 LaTeX optimizasyonu
 
@@ -5482,7 +5508,7 @@ Yeni makinede kurulum: `make dev`
 ├── ArchUnit temel kuralları
 └── CLAUDE.md
 
-[F] Frontend iskeleti
+[F] Frontend iskeleti                     ✅ tamamlandı (EK D.7, EK D.10)
 ├── Next.js + Tailwind + shadcn/ui
 ├── Klasör yapısı (XI-B.3)
 ├── i18n iskeleti (next-intl, en + tr)
@@ -7258,12 +7284,18 @@ atomcv-backend/
 
 ## XI-B.3 — Frontend Repo Klasör Yapısı
 
+> **Not (Frontend Aşama 0).** Aşağıdaki ağaç kurulmuş hâliyle güncellendi;
+> yaşayan sürüm frontend reposundaki dizinin kendisidir. Sapmaların gerekçeleri
+> **EK D.10**'da: `middleware.ts` yerine `proxy.ts` (Next 16), Tailwind v4'te
+> `tailwind.config.ts` olmaması, `src/app/api/`'nin hiç oluşturulmaması,
+> `legal/`'in `[locale]` altına taşınması ve bundle bütçesi için kendi
+> script'imiz.
+
 ```
 atomcv-frontend/
 ├── .github/workflows/
-│   ├── ci.yml                               # typecheck + lint + test + build + bundlesize
-│   ├── deploy.yml                           # main'e merge → GHCR
-│   └── secrets-scan.yml
+│   ├── ci.yml                               # typecheck + lint + test + build + bundle butcesi
+│   └── secrets-scan.yml                     # deploy.yml Asama 1 sonrasina ertelendi (Bolum 55)
 │
 ├── docs/                                    # backend'den senkronize (salt-okunur kopya)
 │   ├── urun-konsept-dokumani-v2.md
@@ -7298,17 +7330,19 @@ atomcv-frontend/
 │   │   │       │   ├── page.tsx             # geçmiş
 │   │   │       │   └── [id]/page.tsx        # sonuç ekranı
 │   │   │       ├── applications/page.tsx    # başvuru takibi
-│   │   │       └── account/page.tsx
+│   │   │       ├── account/page.tsx
+│   │   │       └── dev/mocks/page.tsx       # dev-only dogrulama; uretimde notFound()
 │   │   │
-│   │   ├── legal/
-│   │   │   ├── privacy/page.tsx
-│   │   │   └── terms/page.tsx
+│   │   │   └── legal/                       # [locale] ALTINDA: cevrilebilir olmali
+│   │   │       ├── privacy/page.tsx
+│   │   │       └── terms/page.tsx
 │   │   │
-│   │   └── api/                             # ⚠️ SADECE proxy — iş mantığı YASAK
+│   │   │   # app/api/ YOK ve olmayacak — rewrite ile ayni-origin (EK D.10 · 20)
 │   │
 │   ├── components/
-│   │   ├── ui/                              # shadcn/ui (üretilen)
-│   │   ├── layout/                          # AppShell, Nav, Footer
+│   │   ├── ui/                              # shadcn/ui (uretilen, --base radix)
+│   │   ├── providers/                       # AppProviders, MockProvider
+│   │   ├── layout/                          # SkipLink, Announcer, AppShell, SiteFooter, LegalDocument
 │   │   ├── profile/
 │   │   │   ├── AtomEditor.tsx               # memo'lu, granüler query
 │   │   │   ├── SectionList.tsx              # dnd-kit sıralama
@@ -7340,7 +7374,10 @@ atomcv-frontend/
 │   │   ├── useCapabilities.ts               # anonim/hesaplı yetenekler
 │   │   └── useGeneration.ts
 │   │
+│   ├── proxy.ts                             # locale yonlendirmesi (Next 16'da middleware.ts yerine)
+│   │
 │   ├── lib/
+│   │   ├── i18n/                            # routing.ts, request.ts, navigation.ts, locales.ts
 │   │   ├── api/
 │   │   │   ├── client.ts                    # fetch wrapper + credentials + CSRF
 │   │   │   ├── errors.ts                    # ProblemDetail parse + resolution mapping
@@ -7348,7 +7385,7 @@ atomcv-frontend/
 │   │   ├── content/
 │   │   │   ├── richContent.ts               # Run/Mark tipleri + yardımcılar
 │   │   │   └── plainText.ts
-│   │   └── utils/
+│   │   └── utils.ts                         # klasor degil dosya: shadcn o yolu bekliyor
 │   │
 │   ├── stores/                              # Zustand — SADECE geçici UI durumu
 │   │   ├── editorUiStore.ts                 # açık bölümler, seçili atom
@@ -7364,23 +7401,32 @@ atomcv-frontend/
 │   │
 │   ├── mocks/                               # MSW — backend hazır olmadan geliştirme
 │   │   ├── handlers.ts
-│   │   └── browser.ts
+│   │   ├── browser.ts
+│   │   ├── node.ts                          # Vitest icin ayni handler'lar
+│   │   └── contracts.ts                     # ISKELE — gen:api calisinca silinir
 │   │
 │   └── styles/globals.css
 │
+├── scripts/check-bundle-size.mjs            # prerender edilen her rotanin script etiketlerini okur
+├── bundle-budget.json                       # sharedKb / perRouteOwnKb / totalKb
+│
 ├── tests/
+│   ├── setup.ts
 │   ├── unit/
-│   └── e2e/                                 # Playwright
+│   └── e2e/                                 # Playwright, `next dev`'e karsi, port 3100
 │
 ├── .env.example
 ├── .env.local                               # git'te DEĞİL
 ├── .gitignore
+├── .gitattributes
+├── .dockerignore
+├── vitest.config.mts
+├── AGENTS.md                                # `next dev` uretiyor, o yuzden commit'li
 ├── CLAUDE.md                                # ← Claude Code kalıcı bağlamı
 ├── README.md
 ├── LICENSE                                  # MIT
-├── next.config.mjs
-├── tailwind.config.ts
-├── tsconfig.json
+├── next.config.ts                           # create-next-app tipli config uretiyor
+├── tsconfig.json                            # tailwind.config.ts YOK: Tailwind v4 CSS-first
 ├── package.json
 ├── playwright.config.ts
 └── Dockerfile
@@ -7641,15 +7687,15 @@ synced from the backend repository — never edit them here.
 
 ## Critical Architecture Rule
 
-**No BFF. No business logic in `src/app/api/`.**
+**No BFF, and no `src/app/api/` at all.**
 
-Next.js is a presentation layer only. If you think you need an API route,
-ask first. The only acceptable use is a thin proxy, and even that should be
-justified.
+Next.js is a presentation layer only. The same-origin illusion is a rewrite in
+`next.config.ts`, which runs none of our code — so the rule cannot be broken by
+accident (EK D.10 · 20). If you think you need an API route, ask first.
 
 ## Tech Stack
 
-- Next.js 15 (App Router), React 19, TypeScript (strict)
+- Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict)
 - Tailwind CSS + shadcn/ui (Radix primitives — accessibility comes free)
 - TanStack Query — **server state**
 - Zustand — **transient UI state only** (open sections, selected atom)
@@ -7719,7 +7765,7 @@ npm run lint
 npm test             # Vitest
 npm run test:e2e     # Playwright
 npm run build
-npx bundlesize       # bundle budget check
+npm run check:bundle-size   # rota rota bundle butcesi
 ```
 
 ## Code Style
@@ -8517,9 +8563,10 @@ burada tutulur. Üç tür kayıt var:
 - **Ekleme** — doküman sessiz kaldığı için karara bağlanmış ayrıntı.
 - **Düzeltme** — dokümandaki ifade yanlış ya da eksik; doğrusu burada.
 
-**Frontend'i ilgilendiren maddeler her zaman en sonda, D.9'da toplanır.** Yeni
-konu başlıkları araya (D.5, D.6, …) girer. Doküman iki repoya da
-kopyalandığı için (XI-B.1.3) frontend tarafının okuması gereken tek yer orası.
+**Frontend'i ilgilendiren maddeler D.9'da toplanır**, frontend'in kendi inşa
+kararları **D.10**'da; ikisi de sonda durur ve yeni konu başlıkları araya
+girer. Doküman iki repoya da kopyalandığı için (XI-B.1.3) frontend tarafının
+okuması gereken yerler bunlar ve D.7'deki ilerleme kaydıdır.
 
 ### D.1 — Aşama 0: iskelet
 
@@ -8914,6 +8961,15 @@ burasıdır.**
 | Adım 1.8 — Genel mod | ✅ Bitti | `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt` (EK D.8.7). `CvGenerationService` + **`POST /api/v1/generations/general`** + `ErrorPresenter` (Bölüm 25.3, dört durumun tamamı) (EK D.8.8). Veritabanındaki profil gerçek derleyiciden **tek sayfalık PDF** olarak çıkıyor. | D.9 · 22, 23 |
 | Adım 1.9 — Golden set | ✅ Bitti | Beş golden profil (Bölüm 51.3) + ölçülmüş maliyetleri, `GoldenProfileReader`, `DevSeeder`, ve **dört kritik testin tamamı** (EK D.8.9). İzolasyon testi kasıtlı bir IDOR'a karşı doğrulandı. Ayrıca **ölçüm/sayfa sapması testi** — kontrol listesinin son maddesi — yazıldı ve üç ölçüm hatası buldurdu (EK D.8.10). | — |
 
+**Frontend.** Bu kayıt iki yönlü: aşağıdaki tablo `atomcv-frontend`'in
+durumunu taşır ve son sütunu backend'den ne beklendiğidir. Frontend'in inşa
+kararları **EK D.10**'da.
+
+| Adım | Durum | Üretilen | Backend'den beklenen |
+|---|---|---|---|
+| Frontend Aşama 0 — İskelet | ✅ Bitti | Next 16 + Tailwind v4 + shadcn (Radix); XI-B.3 klasör yapısı; i18n iskeleti (next-intl, ICU, en+tr, locale yönlendirmesi); MSW mock altyapısı (dev, Vitest, Playwright); RFC 7807 hata zarfı ve fetch istemcisi; app shell ve erişilebilirlik tabanı; landing ve legal sayfaları; 17 birim + 9 uçtan uca test; rota başına bundle bütçesi; Docker imajı; CI (build + test + gitleaks) yeşil. CD Aşama 1 sonrasına ertelendi (Bölüm 55). | `/v3/api-docs` yayında (✅), `npm run gen:api` çalışabilir durumda (✅). `src/mocks/contracts.ts` üretilen tiplerle değiştirilecek. |
+| Frontend Aşama 1 — Profil editörü | ⏳ Sırada | — | Bölüm/entry/atom/varyant uçları (✅ hazır, D.9 · 16-19), ETag disiplini (✅ D.9 · 15), `POST /generations/general` (✅ D.9 · 22), `complete_profile` (✅ D.9 · 23) |
+
 **Aşama 1 tamamlanma kontrolü (XI-A.3), madde madde:**
 
 | Madde | Durum | Nerede kanıtlanıyor |
@@ -9202,7 +9258,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 4 | `m` her zaman dizidir | Yanıtlarda mark'sız run bile `"m": []` taşır; `undefined` kontrolü gereksiz. |
 | 5 | `content_hash` **düz metnin** hash'i | Yalnız işaretleme değişince hash değişmez. "Değişti, yeniden ölçülmeli" türü bir gösterge run yapısına değil hash'e bakmalı. |
 | 6 | Sözlükler küçük harf | `kind`, `layout`, `source`, `created_by`, `tone` API'de küçük harf gider/gelir (`bullet_list`, `about_paragraph`). |
-| 7 | **Sözleşme cevapları artık EK D.6'da** | `BACKEND-CONTRACT-GAPS.md` ve `backend-contract-response.md` silindi; on altı maddenin verdiktleri de, kabul edilen iki tablo da EK D.6'da. Frontend reposundaki kopyalar da silinebilir. |
+| 7 | **Sözleşme cevapları artık EK D.6'da** | `BACKEND-CONTRACT-GAPS.md` ve `backend-contract-response.md` silindi; on altı maddenin verdiktleri de, kabul edilen iki tablo da EK D.6'da. Frontend reposundaki kopyalar da silindi. Aynı desen artık iki yönlü: frontend tarafı bir doküman değişikliği gerektirdiğinde `DOC-SYNC-REQUEST.md` yazıyor, burada uygulanıyor ve dosya siliniyor (EK D.10). |
 | 8 | `generations` **ETag taşımaz** | O tabloda `version` kolonu yok. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliği talebidir — sessizce `If-Match` göndermek işe yaramaz. |
 | 9 | Anonim süre metni | Kopya "iki saat sonra" değil **"son etkinliğinden iki saat sonra"** demeli; TTL kayıyor. Ürün dokümanındaki ifade düzeltildi, dizedeki karşılığı frontend'in. |
 | 10 | **Hata kataloğu tamamlandı** | D.6.1'deki tablo her kodun `params` anahtarlarını ve tiplerini veriyor; `en.json` ve `tr.json` artık yazılabilir. Üç kod yeni: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED` — ICU karşılıkları gerekiyor. |
@@ -9219,6 +9275,40 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 16 | **Bölüm uçları hazır** | `GET/POST /profile/sections`, `PATCH/DELETE /{id}`, `POST /reorder`. `PATCH` yalnız gönderilen alanı değiştirir; `displayOrder` yamalanamaz, sıra `reorder` ile ve **tam liste** göndererek değişir (eksik liste 400). Silme `If-Match` ister ve **içeriğiyle birlikte** siler. Koleksiyonun her öğesi `version` taşır, yani düzenlemeden önce ikinci bir okuma gerekmez. |
 | 15 | **Yazmalarda `If-Match` zorunlu, ve `preferences` `PUT` ile** | Başlıksız istek `428 PRECONDITION_REQUIRED` (yeni kod, ICU karşılığı gerekiyor), bayat etiket `412 VERSION_CONFLICT` + `retry`. `PUT /profile` **değiştirir**: gönderilmeyen alan temizlenir, yani formun tüm alanları gönderilmeli. Tercihler ayrı endpoint'te ve **`PATCH` değil `PUT`** — Bölüm 35.2'nin listesi bu satırda güncellendi. |
 | 14 | **`npm run gen:api` artık çalışabilir** | Şema `/v3/api-docs` üzerinde yayınlanıyor (üretimde kapalı, lokalde ve CI'da açık). İçinde: `ResolutionAction` ve `ErrorCode` enum olarak, `ApiError` gövdesi, ve `GET /api/v1/profile` yanıtında **`ETag` başlığı**. `Profile` şemasında **`id` ve `version` alanı yok** — sahiplik oturumdan gelir, sürüm ETag'dedir. |
+
+### D.10 — Frontend inşa notları
+
+`atomcv-frontend`'in inşa kararları. Backend'inkiler D.1-D.8'de; bu bölüm
+onun karşılığıdır ve **frontend reposunda yazılıp buraya taşınır** — `docs/`
+orada salt-okunur bir kopyadır (Bölüm XI-B.1.3), dolayısıyla kaynak burasıdır.
+
+| # | Konu | Tür | Karar |
+|---|---|---|---|
+| 1 | Next.js sürümü (Bölüm 5.2 "15" diyordu) | Sapma | **16.** 15.x backport dalına geçti; oradan başlamak ilk gün migration borcu demekti. `next-intl` 16'yı destekliyor. Turbopack varsayılan bundler, öyle bırakıldı. Bölüm 5.2 güncellendi. |
+| 2 | `tailwind.config.ts` (XI-B.3 bekliyordu) | Düzeltme | **Yok.** Tailwind v4 CSS-first; tema token'ları `src/styles/globals.css` içinde `@theme` ile. |
+| 3 | `next.config.mjs` (XI-B.3) | Düzeltme | **`next.config.ts`** — `create-next-app` tipli config üretiyor. |
+| 4 | Locale yönlendirmesi | Ekleme | `src/proxy.ts`. Next 16'da `middleware.ts` **`proxy.ts` olarak yeniden adlandırıldı**. Matcher `/api`'yi dışlar: dışlamazsa her API çağrısı `/en/api/v1/...`'e yönlendirilip kırılır. |
+| 5 | Client provider'ların yeri | Ekleme | Root layout'ta değil, **`[locale]/(app)/layout.tsx`** içinde. Landing ve legal hiçbir şey fetch etmiyor; app shell'in çektiği her kilobayt aksi hâlde ürünle ilk temasta ödeniyor (Bölüm 12). Ölçüldü: yalnız TanStack Query'yi taşımak **7 KB gzip** kazandırdı. |
+| 6 | `NextIntlClientProvider` | Ekleme | O da `(app)` içinde: **tüm mesaj kataloğunu HTML'e serialize ediyor**, root'ta her landing ziyaretçisine legal metnin tamamını gönderiyordu. Bedeli: next-intl'in `Link`'i ve `useTranslations` çağıran client bileşenler yalnız `(app)` altında çalışıyor; dışarıda düz `<a>` + açık `/${locale}` öneki. |
+| 7 | `setRequestLocale` | Ekleme | **Her sayfa ve layout'ta ayrı ayrı** çağrılmalı, yalnız parent layout'ta değil. Next layout ve page'i paralel render ediyor, parent'ın çağrısının önce koştuğu garanti değil; eksikse next-intl rotayı dinamik işaretliyor. Legal sayfalar bu yakalanana kadar on-demand render ediliyordu. |
+| 8 | Typecheck | Ekleme | `tsc` tek başına yetmiyor. `PageProps`/`LayoutProps` `.next/types`'a **üretiliyor**; `npm run typecheck` önce `next typegen` çalıştırıyor. Temiz checkout'ta düz `tsc` olmayan hatalar uyduruyor, olanları kaçırıyor. |
+| 9 | MSW'nin üretime sızması | Düzeltme | Bayrak `NODE_ENV`'e de bakmalı. `next build` `.env.local`'ı da okuyor, yani mock'u lokalde açık bırakan biri MSW runtime'ını kullanıcılara gönderiyor. **İki kez oldu:** ikincisinde dinamik `import()` guard'ın dışına, modül seviyesine taşınmıştı — bundler onu modül grafiğinde erişilebilir görüp chunk'ı korudu, hiçbir şey çağırmasa bile. |
+| 10 | MSW worker başlatma | Ekleme | **Idempotent olmalı.** React Strict Mode effect'leri iki kez çalıştırıyor: ilk `start()` başarılı oluyor ama `setReady`'si cleanup'ta iptal ediliyor, ikincisi "cannot configure an already enabled network" ile patlıyor. Kapı hiç açılmıyor ve **tüm uygulama boş render ediliyordu.** |
+| 11 | `[locale]/(app)/dev/mocks` | Ekleme | Dev-only doğrulama sayfası; üretim build'inde `notFound()` (Bölüm 51.5'in backend dev uçlarına uyguladığı kuralın aynısı). `(app)` altında başka rota olmadığı için shell, provider'lar ve worker başka türlü hiç mount olmuyordu. |
+| 12 | SSE tüketimi (Bölüm 36.4) | Doğrulama | **`EventSource` MSW'nin service worker'ı üzerinden gerçek tarayıcıda doğrulandı**, frame'ler tamponlanmadan tek tek geliyor. Bölüm 36.4 olduğu gibi geçerli; `fetch` + `ReadableStream` yedeğine gerek yok. |
+| 13 | Bundle bütçesi aracı (XI-B.3 `bundlesize` diyordu) | Sapma | Ne `bundlesize` ne `size-limit`: ikisi de **isim verebildiğiniz dosyaları** ölçüyor, Next ise içerik-hash'li chunk'lar üretiyor ve hangi rotanın hangisini çektiğini söylemiyor. `scripts/check-bundle-size.mjs` prerender edilmiş her rotanın script etiketlerini okuyor. |
+| 14 | Bütçe eşiği (Bölüm 52.3 tek sayı veriyordu) | Karar | `bundle-budget.json`'da **üç sayı**: `sharedKb` (her rotanın ödediği taban, yalnız bağımlılık değişiminde oynar), `perRouteOwnKb` (özellik işinin kontrol ettiği pay), `totalKb` (52.3'ün tavanı). Ölçüm: taban tek başına 168.1 KB, pazarlama rotalarının kendi payı 0 KB. **Bölüm 52.3 rota sınıfına göre iki tavana ayrıldı** — gerekçe orada. |
+| 15 | npm sürümü | Ekleme | **npm 11 zorunlu**, CI'da ve Dockerfile'da sabitli. Lock dosyası opsiyonel native paketleri npm 11'in çözdüğü şekilde kaydediyor; `node:22`'nin getirdiği npm 10 aynı dosyayı eksik okuyup `npm ci`'ı düşürüyor. Windows'ta `npm ci` her iki durumda da geçtiği için yalnız Linux'ta görünüyor. |
+| 16 | `exactOptionalPropertyTypes` | Sapma | **Kapalı.** Her opsiyonel React prop'una sürtünme ekliyor, karşılığında tek gerçek tehlikeyi kapatıyor — o da merge-patch katmanında. Onun yerine `buildPatch()`: `undefined` anahtarları atıyor, geriye bir şey kalmazsa `null` dönüp çağıranı isteği atlamaya zorluyor. Boş bir merge-patch başarılı oluyor, hiçbir şeyi değiştirmiyor ve kaydetme göstergesini yine "saved"a çeviriyor (Bölüm 37.3) — editörün kullanıcıya yalan söylemesi. |
+| 17 | e2e ortamı | Ekleme | Playwright **`next dev`'e** karşı koşuyor, **3100** portunda. MSW üretim build'inde tasarım gereği kapalı, yani backend var olana kadar üretim build'inin hiç API'si yok. Ayrı port, 3000'de asılı kalmış bir sunucunun test edilenle karışmasını engelliyor — bir kez yanlış ölçüme yol açtı. |
+| 18 | shadcn primitive tabanı | Ekleme | **Radix açıkça sabitlendi** (`--base radix`). shadcn CLI'ın varsayılanı artık Base UI; Bölüm 5.2 ve 39.1 Radix diyor ve erişilebilirlik gerekçesi ona dayanıyor. |
+| 19 | Legal sayfaların yeri (XI-B.3 ve 36.1 `[locale]` dışında gösteriyordu) | Düzeltme | **`[locale]` altında.** Segment dışında çevrilemiyorlar; Türk kullanıcının okuyamadığı bir gizlilik politikası gizlilik politikası değildir. İki bölüm de güncellendi. |
+| 20 | `src/app/api/` (XI-B.3 ve Bölüm 36.1 gösteriyordu) | Düzeltme | **Oluşturulmadı ve oluşturulmayacak.** Lokalde aynı-origin görüntüsü `next.config.ts` rewrite'ıyla korunuyor; rewrite bizim kodumuzu çalıştırmadığı için "proxy'de iş mantığı yok" kuralı zaten ihlal edilemiyor. İki bölüm de güncellendi. |
+
+**Bu bölüm nasıl güncellenir.** Frontend deposundaki `docs/` salt-okunur bir
+kopyadır; oradaki oturum bir değişiklik gerektiğinde `DOC-SYNC-REQUEST.md`
+yazar, backend deposunda uygulanır ve dosya silinir. Aynı desen sözleşme
+boşluklarında da kullanıldı (D.6, D.9 · 7).
 
 ---
 
