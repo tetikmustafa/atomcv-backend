@@ -9062,6 +9062,12 @@ giden yolda bir hata hâli olarak ele almaya zorlardı.
 | Ne doğrulanıyor | Ekleme | xelatex'in çalışması değil, **etrafındaki çitin durması**: `\write18` denemesi log'da `runsystem(touch /tmp/pwned)...disabled` ile reddediliyor ve dosya oluşmuyor; root dosya sistemi salt-okunur; süreç uid 1000. Bunlar bayrağın kurulu olduğuna inanmakla değil, çalışan container'a sorularak doğrulanıyor. |
 | Henüz yapılmayanlar | Açık | (a) Bölüm 29.2'nin **preamble format dump**'ı: gerçek preamble Adım 1.4'te doğuyor, ondan önce uydurmak olurdu. (b) CI'da **imaj taraması**: Trivy'nin misconfig taraması Dockerfile'ı artık buluyor, ama imajın kendisini taramak her koşuda birkaç GB'lık bir derleme demek — kayıt defterine push eklendiğinde oraya bağlanacak. |
 
+**`make dev-full` imajı yeniden inşa eder (`--build`).** Aksi hâlde Compose en
+son inşa ettiği imajı kullanıyor; bayat bir imaj `X-Page-Count` başlığı
+göndermiyor ve istemci bunu haklı olarak `UNAVAILABLE` sayıyor — container
+ayakta ve sağlıklıyken başarısız olan bir üretim. Yerel kurulumda bir kez
+yaşandı; hedef artık her seferinde inşa ediyor.
+
 ### D.8.2 — Adım 1.4: klasik şablon ve renderer
 
 | Konu | Tür | Karar |

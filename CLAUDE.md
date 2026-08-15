@@ -182,6 +182,12 @@ cost a debugging round to find.
 - Gradle directly, when a target does not fit: `sh ./gradlew test` (fast, no
   Docker), `sh ./gradlew integrationTest` (needs Docker Desktop running),
   `--tests '*SomeTest'` to narrow.
+- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`).** Compose
+  reuses the image it built last time otherwise, and a stale one answers
+  without `X-Page-Count`, which the client refuses as `UNAVAILABLE` — a
+  generation that fails with the container running and healthy.
+- **`make dev-full` does not run the backend**, only the containers. Run it
+  first, then `make dev`.
 - A `pre-commit` gitleaks hook runs on every commit. It is installed and
   configured; a commit that prints nothing about secrets did not run it.
 

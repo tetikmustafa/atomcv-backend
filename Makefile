@@ -27,9 +27,14 @@ dev:
 	docker compose --profile core up -d
 	$(GRADLE) bootRun --args='--spring.profiles.active=local,local-fake'
 
-## also starts the heavier containers (latex, embeddings) once they exist
+## also starts the heavier containers (latex, embeddings) once they exist.
+## Run this first, then `make dev` in another shell: this target only starts
+## containers, it does not run the backend.
+## --build is not optional: without it Compose reuses whatever image it built
+## last time, and a stale LaTeX image answers without the page count header,
+## which the backend correctly refuses as UNAVAILABLE.
 dev-full:
-	docker compose --profile core --profile full up -d
+	docker compose --profile core --profile full up -d --build
 
 ## wipe the database volume; LOCAL ONLY
 db-reset:
