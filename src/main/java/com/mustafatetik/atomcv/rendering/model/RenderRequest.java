@@ -55,6 +55,12 @@ public record RenderRequest(
             entries = entries == null ? List.of() : List.copyOf(entries);
             atoms = atoms == null ? List.of() : List.copyOf(atoms);
         }
+
+        /** Shape only: a section title is the user's own wording. */
+        @Override
+        public String toString() {
+            return "RenderableSection[entries=" + entries.size() + ", atoms=" + atoms.size() + "]";
+        }
     }
 
     /** One position, degree or project, with the bullets that were selected. */
