@@ -73,6 +73,11 @@ public record UserFacingError(
             return resolution(Resolution.of(action));
         }
 
+        public Builder resolutions(List<Resolution> offered) {
+            offered.forEach(this::resolution);
+            return this;
+        }
+
         public UserFacingError build() {
             return new UserFacingError(code, params, resolutions);
         }

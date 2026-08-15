@@ -56,7 +56,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         .value(Matchers.containsInAnyOrder(
                                 "increase_page_limit", "review_pins", "keep_top_pinned", "sign_up",
                                 "paste_full_posting", "continue_as_general_cv",
-                                "switch_to_manual_form", "retry")));
+                                "switch_to_manual_form", "complete_profile", "retry")));
     }
 
     @Test

@@ -36,6 +36,9 @@ public enum ResolutionAction {
     /** Extraction failed; go to the manual profile form. */
     SWITCH_TO_MANUAL_FORM,
 
+    /** There is too little profile to generate from; open the profile editor. */
+    COMPLETE_PROFILE,
+
     /** Transient failure; submit again unchanged. */
     RETRY;
 

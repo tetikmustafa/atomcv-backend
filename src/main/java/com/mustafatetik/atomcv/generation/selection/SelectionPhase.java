@@ -10,6 +10,8 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectedAtom;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectionReason;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -403,10 +405,10 @@ public final class SelectionPhase {
                 }
             }
             return new PipelineError.ConflictingPreferences(pinnedPt, totalBudgetPt, List.of(
-                    new PipelineError.Resolution("increase_page_limit",
-                            Map.of("maxPages", request.maxPages() + 1)),
-                    new PipelineError.Resolution("review_pins", Map.of()),
-                    new PipelineError.Resolution("keep_top_pinned", Map.of("keep", fitting))));
+                    Resolution.of(ResolutionAction.INCREASE_PAGE_LIMIT,
+                            "maxPages", request.maxPages() + 1),
+                    Resolution.of(ResolutionAction.REVIEW_PINS),
+                    Resolution.of(ResolutionAction.KEEP_TOP_PINNED, "keep", fitting)));
         }
 
         private List<AtomCandidate> allAtoms() {
