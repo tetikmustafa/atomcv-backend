@@ -63,8 +63,13 @@ public final class TemplateRegistry {
             527.571,
             12.0,
             Map.of(
-                    CapacityModel.HEADER_BLOCK, 52.0,
+                    // Name, headline and contact line, as the first thing on
+                    // the page. An earlier 52.0 was measured after a \null,
+                    // which bought the header a baseline gap no real document
+                    // has (EK D.8.10).
+                    CapacityModel.HEADER_BLOCK, 45.68127,
                     CapacityModel.SECTION_HEADER, 24.0,
+                    CapacityModel.ENTRY_HEADER_AFTER_LIST, 32.0,
                     // Two lines: the title, and the organization with its
                     // dates. A hand-written probe that lost the line break
                     // measured 10.87 and looked entirely plausible — the

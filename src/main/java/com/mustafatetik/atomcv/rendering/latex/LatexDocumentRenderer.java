@@ -134,7 +134,6 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 \\typeout{CALIB|textheight|\\the\\textheight}
                 \\typeout{CALIB|textwidth|\\the\\textwidth}
                 \\typeout{CALIB|baselineskip|\\the\\baselineskip}
-                \\null
                 \\typeout{CALIB|start|\\the\\pagetotal}
                 \\atomcvName{Probe}
                 \\atomcvContact{Probe}
@@ -148,6 +147,14 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 \\typeout{CALIB|afterOneItem|\\the\\pagetotal}
                 \\begin{itemize}\\item Probe\\item Probe\\item Probe\\end{itemize}
                 \\typeout{CALIB|afterThreeItems|\\the\\pagetotal}
+                \\section*{Probe}
+                \\typeout{CALIB|afterSecondSection|\\the\\pagetotal}
+                \\atomcvEntry{Probe}{Probe}{Probe}{Probe}
+                \\typeout{CALIB|afterSecondEntry|\\the\\pagetotal}
+                \\begin{itemize}\\item Probe\\end{itemize}
+                \\typeout{CALIB|afterSecondList|\\the\\pagetotal}
+                \\atomcvEntry{Probe}{Probe}{Probe}{Probe}
+                \\typeout{CALIB|afterEntryFollowingAList|\\the\\pagetotal}
                 \\end{document}
                 """);
     }

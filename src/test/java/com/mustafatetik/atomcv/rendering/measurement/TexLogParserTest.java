@@ -34,10 +34,20 @@ class TexLogParserTest {
     }
 
     @Test
-    void aCostIsTheBoxPlusTheGapToWhatFollowsIt() {
-        // Bolum 26.2: height + depth + baselineSkip. Leaving the skip out is
-        // how a column fits on paper in theory and overflows in practice.
-        assertThat(new RenderCost(10.5, 3.25).totalPt(12.0)).isEqualTo(25.75);
+    void aCostIsTheLinesItTakesPlusWhatTheListAddsBetweenItems() {
+        // 13.75pt of box is two lines at a twelve point baseline, and the list
+        // adds one point between items: 24 + 1 (EK D.8.10).
+        assertThat(new RenderCost(10.5, 3.25).totalPt(12.0, 1.0)).isEqualTo(25.0);
+        assertThat(new RenderCost(10.5, 3.25).lines(12.0)).isEqualTo(2);
+    }
+
+    @Test
+    void aSingleLineCostsOneBaselineHoweverShortItIs() {
+        // The failure this replaced charged height + depth + a whole baseline,
+        // which is about eight points more than TeX advances the page by —
+        // a third of a page of bullets left blank for nothing.
+        assertThat(new RenderCost(6.8, 0.0).totalPt(12.0, 1.0)).isEqualTo(13.0);
+        assertThat(new RenderCost(0.0, 0.0).lines(12.0)).isEqualTo(1);
     }
 
     @Test

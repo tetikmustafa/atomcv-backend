@@ -79,7 +79,9 @@ public class RenderCostService {
                 // says so, rather than the whole profile going unmeasured.
                 continue;
             }
-            variant.recordRenderCost(costKey, cost.totalPt(capacity.baselineSkipPt()), measuredAt);
+            variant.recordRenderCost(costKey,
+                    cost.totalPt(capacity.baselineSkipPt(), capacity.itemSpacingPt()),
+                    measuredAt);
             variants.save(profile, variant);
             stored++;
         }
