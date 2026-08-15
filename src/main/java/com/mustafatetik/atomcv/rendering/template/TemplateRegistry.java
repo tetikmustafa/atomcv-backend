@@ -60,6 +60,7 @@ public final class TemplateRegistry {
      */
     private static final CapacityModel CLASSIC_CAPACITY = new CapacityModel(
             708.245,
+            527.571,
             12.0,
             Map.of(
                     CapacityModel.HEADER_BLOCK, 52.0,

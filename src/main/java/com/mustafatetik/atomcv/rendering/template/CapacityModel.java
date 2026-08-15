@@ -15,12 +15,14 @@ import java.util.Objects;
  * is the moment its version has to be raised (Bolum 16.3).
  *
  * @param pageTextHeightPt the height of the text block, {@code \textheight}
+ * @param textWidthPt      the width a line is set at, {@code \textwidth}
  * @param baselineSkipPt   the distance between consecutive baselines
  * @param fixedCosts       what the furniture costs: a section heading, an
  *                         entry heading, the overhead of a bullet list
  */
 public record CapacityModel(
         double pageTextHeightPt,
+        double textWidthPt,
         double baselineSkipPt,
         Map<String, Double> fixedCosts) {
 
@@ -45,8 +47,8 @@ public record CapacityModel(
 
     public CapacityModel {
         fixedCosts = Map.copyOf(Objects.requireNonNull(fixedCosts, "fixedCosts"));
-        if (pageTextHeightPt <= 0 || baselineSkipPt <= 0) {
-            throw new IllegalArgumentException("A page has a height and a baseline");
+        if (pageTextHeightPt <= 0 || textWidthPt <= 0 || baselineSkipPt <= 0) {
+            throw new IllegalArgumentException("A page has a height, a width and a baseline");
         }
     }
 

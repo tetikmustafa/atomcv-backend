@@ -77,6 +77,14 @@ class LatexCalibrationIT {
     }
 
     @Test
+    void theLineIsAsWideAsTheStoredCapacitySays() {
+        // The width an estimate divides by. Wrong here, and every unmeasured
+        // atom is charged for the wrong number of lines (EK D.8.7).
+        assertThat(probes.get("textwidth"))
+                .isCloseTo(capacity().textWidthPt(), offset());
+    }
+
+    @Test
     void theBaselineSkipMatches() {
         assertThat(probes.get("baselineskip"))
                 .isCloseTo(capacity().baselineSkipPt(), offset());

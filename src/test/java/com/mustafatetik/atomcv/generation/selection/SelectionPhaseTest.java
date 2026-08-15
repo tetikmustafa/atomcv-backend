@@ -280,6 +280,7 @@ class SelectionPhaseTest {
 
     /** A page with room for a handful of bullets, to force the hard choices. */
     private static CapacityModel smallCapacity() {
-        return new CapacityModel(220.0, CAPACITY.baselineSkipPt(), CAPACITY.fixedCosts());
+        return new CapacityModel(220.0, CAPACITY.textWidthPt(), CAPACITY.baselineSkipPt(),
+                CAPACITY.fixedCosts());
     }
 }

@@ -148,6 +148,46 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
         assertThat(cost(variantId)).isGreaterThan(before);
     }
 
+    /**
+     * The estimator's one promise: it never charges less than TeX does
+     * (Bolum 26.5, EK D.8.7).
+     *
+     * <p>An underestimate is a page limit broken quietly, which is the one
+     * failure the whole measurement layer exists to prevent — so this is
+     * checked against the compiler on content of every length, not reasoned
+     * about.
+     */
+    @Test
+    void theEstimateIsNeverBelowTheMeasurement() {
+        var wordings = java.util.List.of(
+                RichContent.plain("Go"),
+                RichContent.plain("Built ETL pipelines"),
+                RichContent.plain("Built ETL pipelines processing 300K+ rows a day"),
+                RichContent.plain("Built ETL pipelines processing 300K+ rows a day into a "
+                        + "secure lakehouse, replacing a nightly batch that took four hours"),
+                RichContent.plain("Led the migration of a four-service monolith to a set of "
+                        + "independently deployable services, cutting deploy time from fifty "
+                        + "minutes to four and taking the team's on-call load with it, while "
+                        + "keeping every published API stable for the six months it took."),
+                RichContent.of(Run.of("Built "), Run.of("ETL", Mark.TECHNOLOGY),
+                        Run.of(" pipelines processing "), Run.of("300K+ rows", Mark.METRIC)));
+
+        var ids = new java.util.ArrayList<UUID>();
+        wordings.forEach(content -> ids.add(seedVariant(content)));
+        renderCosts.measureMissing(profile, TemplateCustomization.CLASSIC);
+
+        var capacity = com.mustafatetik.atomcv.rendering.template.TemplateRegistry
+                .capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
+        for (int index = 0; index < wordings.size(); index++) {
+            double estimated = com.mustafatetik.atomcv.rendering.measurement.RenderCostEstimator
+                    .estimateBulletPt(wordings.get(index), TemplateCustomization.CLASSIC, capacity);
+            assertThat(estimated)
+                    .as("wording %d of %d characters", index,
+                            wordings.get(index).plainText().length())
+                    .isGreaterThanOrEqualTo(cost(ids.get(index)));
+        }
+    }
+
     private double cost(UUID variantId) {
         return variants.findById(profile, variantId).orElseThrow()
                 .getRenderCosts().get("classic:v1");
