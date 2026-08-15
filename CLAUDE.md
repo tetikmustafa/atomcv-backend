@@ -297,9 +297,9 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.7 are complete**, bar the
-font-metric estimator (it waits for a consumer) and the download endpoint (it
-moved to 1.8, where scoring turns a profile into a `SelectionRequest`).
+**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.8 are complete.** A
+profile in the database comes back as a one-page PDF through the real
+compiler, which is the checklist item Stage 1 exists for.
 
 ### What exists
 
@@ -315,10 +315,10 @@ moved to 1.8, where scoring turns a profile into a `SelectionRequest`).
 | `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
 | `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
 | `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
-| `generation` | `pipeline` (`Result`, `PipelineError`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`), `render` (`RenderPhase`) |
+| `generation` | `pipeline` (`Result`, `PipelineError`, `ErrorPresenter`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`, `SelectionRequestBuilder`), `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
 
-180 unit tests, 93 integration tests, 22 latex-tagged. Every decision behind
-these is in `EK D` — read D.2 through D.8.6 before touching them.
+215 unit tests, 100 integration tests, 27 latex-tagged. Every decision behind
+these is in `EK D` — read D.2 through D.8.8 before touching them.
 
 ### Deliberately absent — do not "fix" without asking
 
@@ -343,30 +343,26 @@ these is in `EK D` — read D.2 through D.8.6 before touching them.
 
 ### Resume here
 
-**Adım 1.8 — general CV mode, and the endpoint that finally hands over a PDF.**
-Everything under it exists: `RenderCostService` measures a profile,
-`SelectionPhase` chooses, `GenerationPipeline` renders, compiles, counts pages
-and shrinks the budget when the compiler disagrees. What is missing is the
-scorer that turns a profile into a `SelectionRequest`, and the endpoint on top.
-In order:
+**Adım 1.9 — the golden set, the seeder, and the four critical tests.** The
+last slice of Stage 1 (XI-A.3, Bölüm 51.2, 51.3). In order:
 
-1. General-mode scoring (XI-A.3 Adım 1.8): `0.35*recency + 0.30*importance +
-   0.20*impact + 0.15*(verified ? 1 : 0)`. Deterministic, no LLM.
-2. A `SelectionRequestBuilder`: profile tree + measured costs + scores → a
-   request. It is the piece that knows `minAtoms`, locks and inactive rows.
-   Atoms with no measured cost need an answer — measure on demand, or the
-   font-metric estimator that has been waiting for a consumer.
-3. The endpoint. Stage 1 needs "a PDF comes out and it is really one page"
-   (XI-A.3's completion checklist), not the persisted generation resource —
-   that one is Stage 2 with the queue. Serve the bytes directly with
-   `Content-Disposition: attachment`; the 410/`retry` retention rules in
-   `EK D.6.3` belong to the stored resource, so they arrive with it.
-4. `PAGE_LIMIT_EXCEEDED` and `COMPILATION_FAILED` need presenting through
-   `ProblemDetailAdvice` — the pipeline already returns them, nothing maps
-   them to a response yet.
+1. **Five golden profiles as JSON** (Bölüm 51.3): a junior with one job, a
+   senior with eight, a career changer, a profile of skills with no entries,
+   and one with locks and inactive rows set. They are fixtures, so they belong
+   under `src/test/resources` — and the shape has to be the one
+   `ProfileExporter` already emits, or two formats will drift apart.
+2. **`DevSeeder`**, idempotent, `@Profile("local")` only, loading those same
+   profiles so `make dev` has something to look at.
+3. **The four critical tests over the golden set** (Bölüm 51.2): the page
+   limit is never exceeded, 50 runs give the same answer, locks and structural
+   constraints hold, and every protected endpoint is isolated per user. The
+   first three exist for hand-built fixtures; what is missing is running them
+   across the golden profiles, and the multi-tenant one needs a second user.
+4. Bölüm 51.3 also asks for measured costs committed as `*.costs.json`, so the
+   golden tests do not need Docker. `RenderCostService` writes them today;
+   capturing them is a `latexTest`-tagged job that regenerates the file.
 
-Then Adım 1.9 (golden set + `DevSeeder` + the four critical tests), and
-Stage 1 closes with a doc sync to the frontend repository.
+Then Stage 1 closes with `scripts/sync-docs.sh` to the frontend repository.
 
 **`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
 excluded from `integrationTest` because the image takes minutes; run it when
