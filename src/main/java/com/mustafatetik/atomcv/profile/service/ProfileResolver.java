@@ -40,7 +40,22 @@ public class ProfileResolver {
     /** The same profile, as the scope everything below it is read within. */
     @Transactional
     public ProfileRef resolve(UserContext user) {
+        return owned(user).ref();
+    }
+
+    /**
+     * Both at once, for a caller that needs the profile's own fields as well
+     * as the scope below it — a generation needs the header and the
+     * preferences, and reading the row twice to get them would be waste.
+     */
+    @Transactional
+    public OwnedProfile owned(UserContext user) {
         Profile profile = own(user);
-        return ProfileRef.persistent(user, profile.getId(), profile.getOwnerId());
+        return new OwnedProfile(profile,
+                ProfileRef.persistent(user, profile.getId(), profile.getOwnerId()));
+    }
+
+    /** A profile and the scope it is read within, resolved together. */
+    public record OwnedProfile(Profile profile, ProfileRef ref) {
     }
 }
