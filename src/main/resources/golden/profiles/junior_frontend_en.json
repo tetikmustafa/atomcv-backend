@@ -1,0 +1,88 @@
+{
+  "name": "junior_frontend_en",
+  "description": "Thin: two school projects and no job. The page has room to spare, which is the opposite failure mode from the senior profile.",
+  "headline": "Frontend Developer",
+  "sourceLanguage": "en",
+  "maxPages": 1,
+  "contact": {
+    "name": "Sam Okonkwo",
+    "email": "sam.okonkwo@example.com",
+    "github": "github.com/sokonkwo",
+    "location": "Manchester, UK"
+  },
+  "sections": [
+    {
+      "kind": "projects",
+      "title": "Projects",
+      "entries": [
+        {
+          "title": "Course scheduler",
+          "organization": "University coursework",
+          "startDate": "2025-02-01",
+          "endDate": "2025-05-01",
+          "importance": 0.6,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "Built a timetable planner in React that resolves clashes between 40 modules",
+              "importance": 0.6,
+              "skills": ["react", "typescript"],
+              "metrics": ["40 modules"]
+            },
+            {
+              "text": "Wrote the accessibility tests that took the app to a full keyboard-only flow",
+              "importance": 0.5,
+              "skills": ["accessibility"]
+            }
+          ]
+        },
+        {
+          "title": "Weather dashboard",
+          "organization": "Personal project",
+          "startDate": "2024-10-01",
+          "endDate": "2024-12-01",
+          "importance": 0.35,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "A small dashboard over a public forecast API, deployed on a free tier",
+              "importance": 0.35,
+              "skills": ["javascript"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Skills",
+      "atoms": [
+        {"text": "TypeScript, React", "importance": 0.7, "skills": ["typescript", "react"]},
+        {"text": "HTML, CSS, Tailwind", "importance": 0.6, "skills": ["css"]},
+        {"text": "Git, GitHub Actions", "importance": 0.4, "skills": ["git"]}
+      ]
+    },
+    {
+      "kind": "education",
+      "title": "Education",
+      "entries": [
+        {
+          "title": "BSc Computer Science",
+          "organization": "University of Manchester",
+          "location": "Manchester",
+          "startDate": "2022-09-01",
+          "endDate": "2025-06-01",
+          "importance": 0.7,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "First class honours; final year project on accessible interface design",
+              "importance": 0.6,
+              "verified": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

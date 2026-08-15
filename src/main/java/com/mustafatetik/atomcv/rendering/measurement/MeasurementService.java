@@ -21,7 +21,7 @@ public class MeasurementService {
     private final LatexDocumentRenderer renderer;
     private final LatexCompilerClient compiler;
 
-    MeasurementService(LatexDocumentRenderer renderer, LatexCompilerClient compiler) {
+    public MeasurementService(LatexDocumentRenderer renderer, LatexCompilerClient compiler) {
         this.renderer = renderer;
         this.compiler = compiler;
     }

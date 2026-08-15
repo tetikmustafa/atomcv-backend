@@ -1,0 +1,146 @@
+{
+  "name": "academic_long",
+  "description": "Fifteen years and twenty publications. Far more content than two pages hold, and the section that would swamp a page if diversity decay did not exist.",
+  "headline": "Associate Professor of Computational Biology",
+  "sourceLanguage": "en",
+  "maxPages": 2,
+  "contact": {
+    "name": "Dr. Anneke de Vries",
+    "email": "a.devries@example.edu",
+    "website": "devries-lab.example.edu",
+    "location": "Utrecht, Netherlands"
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Academic Appointments",
+      "entries": [
+        {
+          "title": "Associate Professor",
+          "organization": "Utrecht University",
+          "location": "Utrecht",
+          "startDate": "2019-09-01",
+          "endDate": null,
+          "importance": 0.9,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Lead a group of eleven on structural prediction of membrane proteins",
+              "importance": 0.9,
+              "verified": true,
+              "metrics": ["eleven"]
+            },
+            {
+              "text": "Principal investigator on two NWO grants totalling 2.4 million euro",
+              "importance": 0.85,
+              "verified": true,
+              "metrics": ["2.4 million euro"]
+            },
+            {
+              "text": "Teach the graduate course on statistical learning for the life sciences",
+              "importance": 0.5
+            }
+          ]
+        },
+        {
+          "title": "Assistant Professor",
+          "organization": "Radboud University",
+          "location": "Nijmegen",
+          "startDate": "2014-01-01",
+          "endDate": "2019-08-01",
+          "importance": 0.6,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Established the lab's pipeline for cryo-EM density interpretation",
+              "importance": 0.7
+            },
+            {
+              "text": "Supervised six PhD candidates to completion",
+              "importance": 0.6,
+              "metrics": ["six"]
+            }
+          ]
+        },
+        {
+          "title": "Postdoctoral Researcher",
+          "organization": "EMBL Heidelberg",
+          "location": "Heidelberg",
+          "startDate": "2011-02-01",
+          "endDate": "2013-12-01",
+          "importance": 0.4,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "Developed a coarse-grained model of lipid–protein interaction still in use by the group",
+              "importance": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "custom",
+      "title": "Selected Publications",
+      "atoms": [
+        {"text": "de Vries A. et al. Structural determinants of transporter selectivity. Nature Structural Biology, 2025", "importance": 0.9, "verified": true},
+        {"text": "de Vries A., Bakker J. Learning membrane curvature from sparse density maps. Cell Systems, 2024", "importance": 0.85},
+        {"text": "Yilmaz K., de Vries A. Benchmarking folding predictors on membrane proteins. Bioinformatics, 2024", "importance": 0.8},
+        {"text": "de Vries A. et al. A coarse-grained force field revisited. JCTC, 2023", "importance": 0.75},
+        {"text": "Novak P., de Vries A. Uncertainty in cryo-EM model building. Structure, 2023", "importance": 0.7},
+        {"text": "de Vries A. Reproducibility in computational structural biology. PLOS Comp Bio, 2022", "importance": 0.7},
+        {"text": "Bakker J., de Vries A. Transfer learning across protein families. NAR, 2022", "importance": 0.65},
+        {"text": "de Vries A. et al. Lipid ordering near transmembrane helices. Biophysical Journal, 2021", "importance": 0.6},
+        {"text": "Smit R., de Vries A. Fast contact prediction with limited alignments. Bioinformatics, 2021", "importance": 0.6},
+        {"text": "de Vries A. et al. Automated density segmentation. Journal of Structural Biology, 2020", "importance": 0.55},
+        {"text": "de Vries A. Teaching statistics to biologists. Nature Careers, 2020", "importance": 0.3},
+        {"text": "Yilmaz K. et al. An open benchmark for docking. JCIM, 2019", "importance": 0.5},
+        {"text": "de Vries A., Novak P. Simulating gated channels at scale. PNAS, 2018", "importance": 0.6},
+        {"text": "de Vries A. et al. Sampling strategies for rare conformations. JCTC, 2018", "importance": 0.5},
+        {"text": "Bakker J. et al. A database of curated membrane structures. NAR, 2017", "importance": 0.45},
+        {"text": "de Vries A. Coarse-graining without losing the interface. Soft Matter, 2016", "importance": 0.45},
+        {"text": "de Vries A. et al. Free energy landscapes of transporters. Biophysical Journal, 2015", "importance": 0.4},
+        {"text": "Smit R., de Vries A. On the limits of homology modelling. Proteins, 2014", "importance": 0.35},
+        {"text": "de Vries A. Notes on force field parameterisation. JCTC, 2013", "importance": 0.3},
+        {"text": "de Vries A. et al. Early work on lipid–protein coupling. FEBS Letters, 2012", "importance": 0.25}
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Technical",
+      "atoms": [
+        {"text": "Python, R, C++", "importance": 0.7, "skills": ["python", "r", "c++"]},
+        {"text": "GROMACS, Rosetta, AlphaFold", "importance": 0.8, "skills": ["gromacs", "rosetta"]},
+        {"text": "Slurm, Snakemake, Nextflow", "importance": 0.5, "skills": ["snakemake"]}
+      ]
+    },
+    {
+      "kind": "education",
+      "title": "Education",
+      "entries": [
+        {
+          "title": "PhD, Biophysics",
+          "organization": "Leiden University",
+          "startDate": "2006-09-01",
+          "endDate": "2010-12-01",
+          "importance": 0.6,
+          "minAtoms": 1,
+          "atoms": [
+            {"text": "Thesis on coarse-grained models of membrane transport", "importance": 0.4}
+          ]
+        },
+        {
+          "title": "MSc, Physics",
+          "organization": "Leiden University",
+          "startDate": "2004-09-01",
+          "endDate": "2006-08-01",
+          "importance": 0.3,
+          "minAtoms": 1,
+          "atoms": [
+            {"text": "Cum laude", "importance": 0.25}
+          ]
+        }
+      ]
+    }
+  ]
+}

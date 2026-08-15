@@ -1,0 +1,90 @@
+{
+  "name": "minimal_edge",
+  "description": "The edge: one job, three skills, and every control set to something awkward — a locked atom in an inactive entry's neighbour, a section switched off, an entry whose minimum is higher than its bullets.",
+  "headline": "Systems Administrator",
+  "sourceLanguage": "en",
+  "maxPages": 1,
+  "contact": {
+    "name": "Ken Adachi",
+    "email": "ken@example.com",
+    "location": "Osaka, Japan"
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Experience",
+      "entries": [
+        {
+          "title": "Systems Administrator",
+          "organization": "Kansai Logistics",
+          "location": "Osaka",
+          "startDate": "2018-04-01",
+          "endDate": null,
+          "importance": 0.8,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Keep forty Linux servers and the warehouse network running across three sites",
+              "importance": 0.8,
+              "alwaysInclude": true,
+              "verified": true,
+              "skills": ["linux"],
+              "metrics": ["forty"]
+            },
+            {
+              "text": "Moved backups to an offsite target and tested the restore path quarterly",
+              "importance": 0.6,
+              "skills": ["backup"]
+            },
+            {
+              "text": "Wrote the runbooks the night shift follows",
+              "importance": 0.4,
+              "active": false
+            }
+          ]
+        },
+        {
+          "title": "IT Support",
+          "organization": "Kansai Logistics",
+          "location": "Osaka",
+          "startDate": "2015-04-01",
+          "endDate": "2018-03-01",
+          "importance": 0.3,
+          "minAtoms": 3,
+          "active": true,
+          "atoms": [
+            {
+              "text": "First-line support for two hundred staff",
+              "importance": 0.3,
+              "metrics": ["two hundred"]
+            },
+            {
+              "text": "Managed the hardware inventory",
+              "importance": 0.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Skills",
+      "atoms": [
+        {"text": "Linux (RHEL, Debian)", "importance": 0.8, "skills": ["linux"], "alwaysInclude": true},
+        {"text": "Ansible, Bash", "importance": 0.6, "skills": ["ansible", "bash"]},
+        {"text": "Networking (VLANs, VPN)", "importance": 0.5, "skills": ["networking"]}
+      ]
+    },
+    {
+      "kind": "about",
+      "title": "About",
+      "active": false,
+      "atoms": [
+        {
+          "text": "Twenty years of keeping other people's systems quietly running.",
+          "importance": 0.9
+        }
+      ]
+    }
+  ]
+}

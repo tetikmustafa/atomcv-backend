@@ -1,0 +1,181 @@
+{
+  "name": "senior_backend_tr",
+  "description": "Turkish, three jobs and eight projects: more content than one page holds, so selection has to choose.",
+  "headline": "Kıdemli Backend Mühendisi",
+  "sourceLanguage": "tr",
+  "maxPages": 1,
+  "contact": {
+    "name": "Elif Yıldırım",
+    "email": "elif@example.com",
+    "phone": "+90 532 000 00 00",
+    "linkedin": "linkedin.com/in/elifyildirim",
+    "github": "github.com/elifyildirim",
+    "location": "İstanbul, Türkiye"
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Deneyim",
+      "entries": [
+        {
+          "title": "Kıdemli Backend Mühendisi",
+          "organization": "Trendyol",
+          "location": "İstanbul",
+          "startDate": "2022-04-01",
+          "endDate": null,
+          "importance": 0.9,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Sipariş servisini tek parçadan altı servise ayırdım; dağıtım süresi elli dakikadan dört dakikaya indi",
+              "importance": 0.9,
+              "verified": true,
+              "skills": ["mikroservis", "go"],
+              "metrics": ["elli dakikadan dört dakikaya"]
+            },
+            {
+              "text": "Kampanya günlerinde saniyede 40 bin isteği karşılayan bir önbellek katmanı kurdum",
+              "importance": 0.85,
+              "verified": true,
+              "skills": ["redis", "go"],
+              "metrics": ["saniyede 40 bin istek"]
+            },
+            {
+              "text": "PostgreSQL sorgularını yeniden yazarak p99 gecikmeyi 800 ms'den 90 ms'ye çektim",
+              "importance": 0.8,
+              "skills": ["postgresql"],
+              "metrics": ["800 ms'den 90 ms'ye"]
+            },
+            {
+              "text": "Altı kişilik ekibe teknik mentorluk yaptım, işe alım sürecinde teknik mülakatları yürüttüm",
+              "importance": 0.5,
+              "skills": ["mentorluk"]
+            },
+            {
+              "text": "Kubernetes üzerinde mavi-yeşil dağıtım akışını kurdum ve geri alma süresini iki dakikaya indirdim",
+              "importance": 0.7,
+              "skills": ["kubernetes"],
+              "metrics": ["iki dakika"]
+            }
+          ]
+        },
+        {
+          "title": "Backend Mühendisi",
+          "organization": "Getir",
+          "location": "İstanbul",
+          "startDate": "2019-08-01",
+          "endDate": "2022-03-01",
+          "importance": 0.7,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Kurye atama algoritmasını yeniden yazdım; ortalama teslim süresi yüzde on iki kısaldı",
+              "importance": 0.8,
+              "verified": true,
+              "skills": ["node.js"],
+              "metrics": ["yüzde on iki"]
+            },
+            {
+              "text": "Günde 2 milyon olayı işleyen Kafka tüketici hattını kurdum",
+              "importance": 0.75,
+              "skills": ["kafka"],
+              "metrics": ["günde 2 milyon olay"]
+            },
+            {
+              "text": "Ödeme sağlayıcısı entegrasyonunu idempotent hale getirdim, çift çekim şikâyetleri sıfırlandı",
+              "importance": 0.7,
+              "skills": ["ödeme sistemleri"]
+            }
+          ]
+        },
+        {
+          "title": "Yazılım Mühendisi",
+          "organization": "Sistem A.Ş.",
+          "location": "Ankara",
+          "startDate": "2016-09-01",
+          "endDate": "2019-07-01",
+          "importance": 0.4,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Kurumsal müşteriler için SOAP tabanlı entegrasyonları REST'e taşıdım",
+              "importance": 0.5,
+              "skills": ["java", "spring"]
+            },
+            {
+              "text": "Gece çalışan toplu iş akışlarını izlemek için bir gösterge paneli yazdım",
+              "importance": 0.35
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "projects",
+      "title": "Projeler",
+      "entries": [
+        {
+          "title": "pgwatch-lite",
+          "organization": "Açık kaynak",
+          "startDate": "2023-01-01",
+          "endDate": null,
+          "importance": 0.6,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "PostgreSQL sorgu istatistiklerini toplayan, 900 yıldız alan bir izleme aracı",
+              "importance": 0.6,
+              "metrics": ["900 yıldız"]
+            }
+          ]
+        },
+        {
+          "title": "kviz",
+          "organization": "Açık kaynak",
+          "startDate": "2021-05-01",
+          "endDate": "2022-02-01",
+          "importance": 0.4,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "Kubernetes kaynaklarını terminalde görselleştiren küçük bir araç",
+              "importance": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Beceriler",
+      "atoms": [
+        {"text": "Go", "importance": 0.9, "skills": ["go"], "verified": true},
+        {"text": "Java, Spring Boot", "importance": 0.7, "skills": ["java", "spring"]},
+        {"text": "PostgreSQL, Redis, Kafka", "importance": 0.8, "skills": ["postgresql", "redis", "kafka"]},
+        {"text": "Kubernetes, Docker, Terraform", "importance": 0.75, "skills": ["kubernetes", "docker", "terraform"]},
+        {"text": "gRPC, REST, OpenAPI", "importance": 0.6, "skills": ["grpc", "rest"]}
+      ]
+    },
+    {
+      "kind": "education",
+      "title": "Eğitim",
+      "entries": [
+        {
+          "title": "Bilgisayar Mühendisliği, Lisans",
+          "organization": "Orta Doğu Teknik Üniversitesi",
+          "location": "Ankara",
+          "startDate": "2012-09-01",
+          "endDate": "2016-06-01",
+          "importance": 0.5,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "Bitirme projesi: dağıtık dosya sistemlerinde tutarlılık modelleri",
+              "importance": 0.3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
