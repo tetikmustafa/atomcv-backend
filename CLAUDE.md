@@ -297,29 +297,31 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.6 are complete** (bar the
-font-metric estimator, which waits for a consumer).
+**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.7 are complete**, bar the
+font-metric estimator (it waits for a consumer) and the download endpoint (it
+moved to 1.8, where scoring turns a profile into a `SelectionRequest`).
 
 ### What exists
 
 | Package | Classes |
 |---|---|
 | `profile.domain.content` | `RichContent`, `Run`, `Mark`, `ContentMigrator`, `RichContentConverter` |
-| `profile.domain` | `Section`, `Entry`, `Atom`, `AtomVariant`, `ProfileTree`, and six enums (`SectionKind`, `SectionLayout`, `AtomKind`, `AtomSource`, `VariantAuthor`, `Tone`) |
-| `profile.repository` | Four package-private Spring Data interfaces, four public scoped facades |
-| `profile.service` | `ProfileAssembler` (`load(ProfileRef)` and the static, pure `assemble(...)`) |
-| `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, `UserScopedRepository`, `ProfileScopedRepository`, `CrossTenantAccessException` |
-| `shared.util` | `LowercaseEnumConverter` |
+| `profile.domain` | `Profile` (+ `Contact`, `Preferences`), `Section`, `Entry`, `Atom`, `AtomVariant`, `ProfileTree`, six enums |
+| `profile.repository` | Package-private Spring Data interfaces behind public scoped facades |
+| `profile.service` | `ProfileResolver`, `ProfileService`, `SectionService`, `EntryService`, `AtomService`, `CompletenessCalculator`, `ProfileExporter`, `ProfileAssembler` |
+| `profile.api` | `ProfileController`, `SectionController`, `EntryController`, `AtomController` + DTOs |
+| `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, the two scoped bases, `CurrentUser`, `LocalDevCurrentUser` |
+| `shared.error` | `ErrorCode` (26 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
+| `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
+| `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
+| `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
+| `generation` | `pipeline` (`Result`, `PipelineError`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`), `render` (`RenderPhase`) |
 
-70 unit tests, 20 integration tests. Every decision behind these is in `EK D`
-of the architecture document — read D.2 through D.5 before touching them.
+180 unit tests, 93 integration tests, 22 latex-tagged. Every decision behind
+these is in `EK D` — read D.2 through D.8.6 before touching them.
 
 ### Deliberately absent — do not "fix" without asking
 
-- **No `Profile` entity yet.** It lands with Adım 1.2, and brings `contact`
-  and `preferences` (Bölüm 14.2, 14.3) as typed records rather than maps.
-  `ProfileTree` therefore carries no profile head, and
-  `UserScopedRepository` has no subclass yet — `Profile` will be the first.
 - **`atoms.embedding` is unmapped.** Stage 2. `vector(1024)` has no Hibernate
   type and nothing computes an embedding yet.
 - **`ProfileRef.Scope` has only `PERSISTENT`.** `EPHEMERAL` arrives with the
@@ -327,57 +329,53 @@ of the architecture document — read D.2 through D.5 before touching them.
   to produce one, would be the way around the ownership check.
 - **`tags` and `atom_tags` have no entities.** Nothing reads them before
   Stage 2 scoring.
-- **No `api` package, no controller, no springdoc.** First endpoint is Adım
-  1.2, and the contract below comes first.
+- **Nothing writes to `generations`.** The pipeline returns a
+  `GeneratedDocument`; persisting it, the job queue and
+  `GET /generations/{id}/download` are Stage 2 (`EK D.6.3`).
+- **`PipelineError` holds only the three cases the pipeline can produce.**
+  Adding the rest early would mean guessing at the params the frontend's
+  messages need.
+- **No ATS report, no `FitReport`** (Bölüm 23.2, 23.3). Both are Stage 2; one
+  needs PDF text extraction, the other needs Faz A.
 - `UserScopedRepository` has no `findAll`: the Bölüm 41.2 snippet calls
   `findByUserId`, which is not on `JpaRepository`. Subclasses add their own
   narrowed finders, as the profile repositories do.
 
 ### Resume here
 
-**Adım 1.2 — manual profile CRUD.** The API contract is already settled and
-lives in **`EK D.6`** of the architecture document: the two closed vocabularies,
-ETag scope and format, pagination, download, and the Stage 2/3 items. Build
-against it rather than re-deciding it. In order:
+**Adım 1.8 — general CV mode, and the endpoint that finally hands over a PDF.**
+Everything under it exists: `RenderCostService` measures a profile,
+`SelectionPhase` chooses, `GenerationPipeline` renders, compiles, counts pages
+and shrinks the budget when the compiler disagrees. What is missing is the
+scorer that turns a profile into a `SelectionRequest`, and the endpoint on top.
+In order:
 
-1. ~~Type the error catalogue.~~ **Done** — `shared/error` holds `ErrorCode`
-   (25 codes, HTTP status, declared `params` with types), `ResolutionAction`,
-   `Resolution` and `UserFacingError`, which validates parameters against the
-   declaration as the body is built. The full table is in `EK D.6`.
-2. ~~springdoc with the first endpoint.~~ **Done** — `GET /api/v1/profile`
-   publishes an `ETag`, and the schema carries both closed vocabularies as
-   enums plus the `ApiError` body. Disabled under `prod`.
-3. ~~`Profile` entity, `ProfileRepository`, `ProfileResolver`.~~ **Done** —
-   the resolver is the only place a `UserContext` becomes a `ProfileRef`, and
-   it creates the profile on first use.
-4. ~~Profile update with `If-Match`.~~ **Done** — `PUT /profile` and
-   `PUT /profile/preferences`, both requiring the header (428 without it,
-   412 when stale).
-5. ~~Section/entry/atom CRUD, completeness, export.~~ **Done** — Adım 1.2 is
-   complete. The ≤6 query test still covers the assembler only; extend it if
-   the profile head ever joins that load.
+1. General-mode scoring (XI-A.3 Adım 1.8): `0.35*recency + 0.30*importance +
+   0.20*impact + 0.15*(verified ? 1 : 0)`. Deterministic, no LLM.
+2. A `SelectionRequestBuilder`: profile tree + measured costs + scores → a
+   request. It is the piece that knows `minAtoms`, locks and inactive rows.
+   Atoms with no measured cost need an answer — measure on demand, or the
+   font-metric estimator that has been waiting for a consumer.
+3. The endpoint. Stage 1 needs "a PDF comes out and it is really one page"
+   (XI-A.3's completion checklist), not the persisted generation resource —
+   that one is Stage 2 with the queue. Serve the bytes directly with
+   `Content-Disposition: attachment`; the 410/`retry` retention rules in
+   `EK D.6.3` belong to the stored resource, so they arrive with it.
+4. `PAGE_LIMIT_EXCEEDED` and `COMPILATION_FAILED` need presenting through
+   `ProblemDetailAdvice` — the pipeline already returns them, nothing maps
+   them to a response yet.
 
-Then Adım 1.7 (Faz E/F + PDF), 1.8 (general CV mode), 1.9 (golden set).
+Then Adım 1.9 (golden set + `DevSeeder` + the four critical tests), and
+Stage 1 closes with a doc sync to the frontend repository.
 
 **`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
 excluded from `integrationTest` because the image takes minutes; run it when
 `docker/latex` changes. Two things it already caught are in `EK D.8.1`.
 
 Still open in Stage 1:
-- **Where does the first `UserContext` come from?** Identity is Stage 3
-  (XI-A.6), but Adım 1.2's endpoints need an acting user, and `ProfileRef`
-  cannot be produced without one. Decide the stand-in before the first
-  controller — likely a fixed user resolved under the `local` profile only,
-  wired so that it cannot exist under `prod` and disappears when identity
-  lands. Do not let it become an untyped "current user" helper.
 - Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
   using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
   property, so Flyway currently runs at startup in prod too.
-- Add springdoc-openapi with the first real endpoint, and make the published
-  schema carry the `resolutions[].action` enum, the error `code` enum and the
-  ETag/pagination headers. Six of the frontend's sixteen contract gaps close
-  by themselves once that schema exists — but only if it carries more than
-  happy-path payloads.
 - Add an image scan to CI. The Dockerfile now exists, so Trivy's misconfig
   scan covers it, but the built image is not scanned — that needs a build in
   CI (a few GB) and belongs with the registry push.

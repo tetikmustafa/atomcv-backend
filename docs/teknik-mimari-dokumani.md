@@ -2239,6 +2239,11 @@ DOCX'te sayfa garantisi **yaklaşıktır** — kullanıcıya belirtilir.
 
 ## 23. Faz F — Doğrulama
 
+> **Not (Adım 1.7).** Aşağıdaki `pdfAnalyzer` diye bir bileşen yok: sayfa sayısı
+> derleyiciden **`X-Page-Count` başlığıyla** geliyor ve gelmezse belge
+> reddediliyor. 23.2 (ATS metin çıkarma) ve 23.3 (`FitReport`) Aşama 2'de.
+> Uygulanan hali ve gerekçeleri: **EK D.8.6**.
+
 ### 23.1 Sayfa doğrulaması
 
 ```java
@@ -8825,7 +8830,7 @@ burasıdır.**
 | Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
 | Adım 1.5 — Ölçüm | ✅ Bitti (tahmin katmanı hariç) | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). **Sırada:** `FontMetricEstimator` ve ölçümsüz üretim yolu — tüketicisi olduğunda. | — |
 | Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
-| Adım 1.7 — Faz E/F + PDF | 🔜 Sırada | Seçimden render'a, derleme, sayfa doğrulaması, indirme ucu | D.6.3 (indirme, 410) |
+| Adım 1.7 — Faz E/F | ✅ Bitti (indirme ucu hariç) | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
 | Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
 
 **Aşama 1'de hâlâ açık olan kararlar:**
@@ -8951,6 +8956,29 @@ giden yolda bir hata hâli olarak ele almaya zorlardı.
 | Model tutarlılığı kodda | Düzeltme | `EntryPlan` altındaki bir atomun `entryId`'si o entry'yi göstermek **zorunda**. Test yazarken tam bu hatayı yaptım: entry içindeki atom `entryId = null` taşıyınca seçim entry başlığını hiç ödemedi ve bütçe entry başına **22.76 punto** kazandı — görünür sebebi olmayan bir taşma. Artık kurulumda patlıyor. |
 | `Result` ve `PipelineError` | Ekleme | Bölüm 25.1/25.2'nin biçimiyle, ama **yalnız bugün üretilebilen hata** ile: `ConflictingPreferences`. Sealed arayüz, hata sunumunu exhaustive switch yapıyor — yeni bir hata türü, kullanıcıya ne söyleneceği kararlaştırılmadan derlenmiyor (P4, dille zorlanmış). Diğer durumlar kendi fazlarıyla gelecek; erken eklemek parametrelerini tahmin etmek olurdu, ve frontend'in mesajlarının ihtiyacı tam olarak o parametreler. |
 
+### D.8.6 — Adım 1.7: Faz E ve Faz F
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Sayfa sayısını **derleyici bildiriyor** | Ekleme | Bölüm 23.1 `pdfAnalyzer.pageCount(pdf)` diyor ama böyle bir bileşen tanımlı değil. PDF baytlarında `/Type /Page` saymak modern xelatex çıktısında güvenilir değil (sayfa ağacı object stream içinde sıkıştırılıyor) ve bunun için bir PDF kütüphanesi eklemek, container'ın "bağımlılıksız" olma gerekçesiyle çelişirdi. Container `/compile` yanıtına **`X-Page-Count`** başlığı koyuyor; değeri TeX'in kendi `Output written on ... (N pages)` satırından. |
+| Sayfa sayısı **gelmezse belge reddedilir** | Ekleme | Başlıksız bir 200, "uzunluğu bilinmeyen bir CV" demek. Faz F ölçemediği bir sınırı garanti edemez, o yüzden `LatexCompilerClient` bunu belge hatası değil **`UNAVAILABLE`** (yanlış derleyici) sayar. P4'ün doğrudan uygulaması; testi var. |
+| `SelectionRequest.withBudgetFactor` | Ekleme | Bölüm 23.1'in `input.withBudgetFactor(0.95)` çağrısının karşılığı. Faktör bileşen olarak eklendi (0 < f ≤ 1; **büyütülemez**), üç argümanlı kurucu 1.0 ile delege ediyor. |
+| Geri besleme döngüsü | Uygulama | Seç → render et → derle → say. Sığmıyorsa bütçe %5 kısılır ve **Faz C tekrar koşar**; en çok iki tekrar, sonra `PageLimitExceeded`. LLM'e dönülmüyor — Faz F asla yeni metin istemez. `generation.budget.overshoot` sayacı Bölüm 23.1'in istediği oranı besliyor. |
+| `PipelineError` iki yeni durum | Ekleme | `PageLimitExceeded(actualPages, maxPages)` — kataloğun `PAGE_LIMIT_EXCEEDED` (422) koduyla birebir. `CompilationFailed(kind, texLog)` — derleyici istisnası hattın dışına **fırlamıyor**, `Result.err` olarak taşınıyor; sunum yine exhaustive switch. |
+| Sıra profilden gelir, seçimden değil | Uygulama | Seçim skora göre sıralar. Madde işaretleri profil sırasında basılıyor; aksi halde CV karıştırılmış gibi okunurdu. |
+| Boş başlık basılmaz | Uygulama | Altında seçilmiş içeriği kalmayan bölüm ve entry render edilmez. Seçim yalnız **açtığı** mobilyayı ödediği için, boş bir başlık bütçede karşılığı olmayan punto harcardı. |
+| "Halen" / "Present" | Sapma (geçici) | Bitiş tarihi olmayan entry için dilde bir kelime gerekiyor. Bölüm 32 çok dilli render'a kendi sözlüğünü getirene kadar iki dil `RenderPhase` içinde sabit; bilinmeyen dil İngilizce'ye düşer. Tarih biçimi `MMM yyyy`, içerik diliyle. |
+| İndirme ucu Adım 1.8'e taşındı | Kapsam | XI-A.3 Adım 1.7'nin beşinci maddesi. Hattın girdisi **skorlanmış ve maliyeti bilinen** bir `SelectionRequest`; bir profili ona çeviren şey genel mod skorlaması, o da Adım 1.8. Uç orada tek parça yazılacak (`generations` tablosuna yazan kalıcı üretim kaydı ve `GET /generations/{id}/download` ise Aşama 2, D.6.3). Aşama 1 kontrol listesindeki "PDF indiriliyor ve gerçekten 1 sayfa" maddesi 1.8'de kapanır. |
+| `ATS` raporu ve `FitReport` yok | Kapsam | Bölüm 23.2/23.3 metin çıkarma (PDF → text) ve ilan analizi istiyor; ikincisi Faz A'ya, birincisi bir PDF kütüphanesine bağlı. Aşama 1'in dört kritik testinde ikisi de yok, Aşama 2'ye bırakıldı. |
+| `RenderableSection.toString` | Düzeltme | Kardeş record'lar (`ProfileHeader`, `RenderableEntry`) içerik basmıyordu, bu basıyordu — bölüm başlığı kullanıcının kendi metni (mutlak kural 4). |
+
+**Doğrulama.** Birim testler döngünün aritmetiğini sahte derleyiciyle kanıtlıyor
+(bir denemede sığar, iki denemede sığar, üç denemede sığmazsa reddedilir, kilitli
+içerik derleyiciye **hiç ulaşmaz** — P5). Gerçek container'a karşı iki test:
+üç bölümlük bir kariyer gerçekten tek sayfalık bir PDF oluyor, ve **her atomun
+maliyeti bilerek beşte bir bildirildiğinde** seçim sığdığını sanıyor, derleyici
+aksini söylüyor, sonuç sessiz bir üç sayfalık CV değil bir hata oluyor.
+
 ### D.9 — Frontend'i ilgilendirenler
 
 Aşağıdakiler `atomcv-frontend` tarafında karşılığı olan maddelerdir — burası
@@ -8981,6 +9009,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
+| 21 | **`PAGE_LIMIT_EXCEEDED` artık gerçekten dönebilir** | Üretim isteği bir belge yerine bu hatayı döndürebilir: `actual` (çıkan sayfa) ve `limit` (istenen) parametreleriyle, 422. Sunucu içeriği kendi kısaltmayı iki kez dener; bu hataya ulaşıldıysa denemeler bitmiştir, yani "tekrar dene" düğmesi **yanlış** çözümdür — kullanıcıya sayfa sınırını artırmak veya içerik çıkarmak önerilmeli. `COMPILATION_FAILED` (502) de aynı akışta görünebilir. |
 | 20 | **`GET /profile/export` hazır** | `?format=json` iç içe bir kopya verir (öğe şekilleri API ile aynı), `?format=markdown` okunacak hâlini. İkisi de `Content-Disposition: attachment` ile iner; dosya adında isim yok. Bilinmeyen biçim 400. Markdown `charset=UTF-8` bildirir. |
 | 19 | **`completeness` gerçek bir sayı, ve `DELETE /profile` var** | `GET /profile` her okumada tamamlanmayı yeniden hesaplıyor (Bölüm 31.9); göstergeyi ayrıca hesaplamaya gerek yok. `DELETE /profile` profili ve altındaki her şeyi siler, **hesabı silmez** — sonraki okuma boş bir profil döndürür. `If-Match` zorunlu. |
 | 18 | **Atom ve varyant uçları hazır** | Atom **içeriğiyle** yaratılır (`content` zorunlu). `PATCH /atoms/{id}` yalnız kontrolleri değiştirir; **metin `PATCH /atoms/{id}/variants/{vid}`'de** ve içeriğin tamamı gönderilir. Yanıt her atomun tüm varyantlarını **birincil önce** verir. Aynı dil+ton ikinci kez eklenemez, son varyant ve birincil silinemez (400). `href`siz bir `link` run'ı da 400 — 500 değil. |
