@@ -125,8 +125,12 @@ class SelectionPhaseTest {
         var error = (PipelineError.ConflictingPreferences)
                 ((Result.Err<SelectionState>) result).error();
         assertThat(error.pinnedPt()).isGreaterThan(error.budgetPt());
-        assertThat(error.options()).extracting(PipelineError.Resolution::action)
-                .containsExactly("increase_page_limit", "review_pins", "keep_top_pinned");
+        assertThat(error.options())
+                .extracting(com.mustafatetik.atomcv.shared.error.Resolution::action)
+                .containsExactly(
+                        com.mustafatetik.atomcv.shared.error.ResolutionAction.INCREASE_PAGE_LIMIT,
+                        com.mustafatetik.atomcv.shared.error.ResolutionAction.REVIEW_PINS,
+                        com.mustafatetik.atomcv.shared.error.ResolutionAction.KEEP_TOP_PINNED);
     }
 
     // ── structure ─────────────────────────────────────────────────────────

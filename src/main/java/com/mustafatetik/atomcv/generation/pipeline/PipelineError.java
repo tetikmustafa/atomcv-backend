@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.pipeline;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
+import com.mustafatetik.atomcv.shared.error.Resolution;
 import java.util.List;
 
 /**
@@ -16,6 +17,24 @@ import java.util.List;
  * parameters, and the parameters are the part the frontend's messages need.
  */
 public sealed interface PipelineError {
+
+    /**
+     * There is not enough profile to make a CV out of (Bolum 25.2).
+     *
+     * <p>Raised before anything is measured, rendered or compiled: the first
+     * of the preflight checks design principle 5 asks for.
+     *
+     * @param completeness what the profile scores today, for the message
+     * @param missing      which parts are absent, as field names — never the
+     *                     user's own text (absolute rule 4)
+     */
+    record InsufficientProfile(int completeness, List<String> missing)
+            implements PipelineError {
+
+        public InsufficientProfile {
+            missing = List.copyOf(missing);
+        }
+    }
 
     /**
      * Pinned content does not fit the page limit (Bolum 20.3, stage 1).
@@ -69,11 +88,4 @@ public sealed interface PipelineError {
         }
     }
 
-    /** One offered way out, in the vocabulary of Bolum 35.4. */
-    record Resolution(String action, java.util.Map<String, Object> params) {
-
-        public Resolution {
-            params = java.util.Map.copyOf(params);
-        }
-    }
 }
