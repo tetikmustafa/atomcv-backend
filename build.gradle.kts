@@ -96,4 +96,7 @@ tasks.register<Test>("latexTest") {
     classpath = sourceSets["integrationTest"].runtimeClasspath
     useJUnitPlatform { includeTags("latex") }
     timeout.set(Duration.ofMinutes(20))
+    // Lets `-Dgolden.record=true` reach the test JVM, which is how the golden
+    // set's measured costs are re-recorded after a fixture changes.
+    systemProperty("golden.record", System.getProperty("golden.record", "false"))
 }

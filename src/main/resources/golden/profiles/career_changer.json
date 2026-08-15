@@ -1,0 +1,115 @@
+{
+  "name": "career_changer",
+  "description": "A decade of unrelated history and one recent switch. Recency decides almost everything here, and locks are set on the old work the user still wants seen.",
+  "headline": "Data Analyst, formerly restaurant management",
+  "sourceLanguage": "en",
+  "maxPages": 1,
+  "contact": {
+    "name": "Marta Alvarez",
+    "email": "marta@example.com",
+    "linkedin": "linkedin.com/in/martaalvarez",
+    "location": "Valencia, Spain"
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Experience",
+      "entries": [
+        {
+          "title": "Junior Data Analyst",
+          "organization": "Mercadona",
+          "location": "Valencia",
+          "startDate": "2025-01-01",
+          "endDate": null,
+          "importance": 0.9,
+          "minAtoms": 2,
+          "alwaysInclude": true,
+          "atoms": [
+            {
+              "text": "Rebuilt the weekly stock report in SQL and dbt, cutting three hours of manual work to twenty minutes",
+              "importance": 0.9,
+              "verified": true,
+              "skills": ["sql", "dbt"],
+              "metrics": ["three hours to twenty minutes"]
+            },
+            {
+              "text": "Modelled waste across 60 stores and found the two categories behind 40% of it",
+              "importance": 0.85,
+              "skills": ["python", "pandas"],
+              "metrics": ["60 stores", "40%"]
+            },
+            {
+              "text": "Built the dashboards the regional managers now use every Monday",
+              "importance": 0.6,
+              "skills": ["power bi"]
+            }
+          ]
+        },
+        {
+          "title": "Restaurant Manager",
+          "organization": "Casa Pepe",
+          "location": "Valencia",
+          "startDate": "2016-03-01",
+          "endDate": "2024-11-01",
+          "importance": 0.5,
+          "minAtoms": 2,
+          "atoms": [
+            {
+              "text": "Ran a team of eighteen across two sites and cut staff turnover by a third",
+              "importance": 0.7,
+              "alwaysInclude": true,
+              "verified": true,
+              "skills": ["team leadership"],
+              "metrics": ["eighteen", "a third"]
+            },
+            {
+              "text": "Renegotiated supplier contracts, saving 9% on food costs in the first year",
+              "importance": 0.6,
+              "metrics": ["9%"]
+            },
+            {
+              "text": "Introduced a booking system that removed double-bookings entirely",
+              "importance": 0.4
+            },
+            {
+              "text": "Handled licensing, health inspections and payroll for both sites",
+              "importance": 0.3,
+              "active": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Skills",
+      "alwaysInclude": true,
+      "atoms": [
+        {"text": "SQL, dbt, Python", "importance": 0.8, "skills": ["sql", "python", "dbt"]},
+        {"text": "Power BI, Looker Studio", "importance": 0.6, "skills": ["power bi"]},
+        {"text": "Spanish (native), English (C1), Catalan", "importance": 0.5, "kind": "language"}
+      ]
+    },
+    {
+      "kind": "custom",
+      "title": "Certifications",
+      "entries": [
+        {
+          "title": "Data Analytics Professional Certificate",
+          "organization": "Google",
+          "startDate": "2024-06-01",
+          "endDate": "2024-12-01",
+          "importance": 0.7,
+          "minAtoms": 1,
+          "atoms": [
+            {
+              "text": "Eight-course programme covering SQL, R and dashboard design",
+              "importance": 0.5,
+              "verified": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

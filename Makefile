@@ -20,7 +20,7 @@ endif
 # fails. Naming sh keeps one spelling that works on Windows and on Linux.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int
+.PHONY: dev dev-full db-reset record test test-int golden-costs
 
 ## core services (postgres, redis, mailpit) + backend with the fake LLM
 dev:
@@ -48,3 +48,7 @@ test:
 ## integration tests (Testcontainers, needs Docker)
 test-int:
 	$(GRADLE) integrationTest
+
+## re-measure the golden set's render costs (needs Docker; builds the LaTeX image)
+golden-costs:
+	$(GRADLE) latexTest --tests '*GoldenCostsIT' -Dgolden.record=true

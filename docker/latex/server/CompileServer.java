@@ -155,6 +155,10 @@ public final class CompileServer {
             builder.environment().put("PATH", "/usr/bin:/bin");
             builder.environment().put("HOME", jobDir.toString());
             builder.environment().put("TEXMFVAR", jobDir.toString());
+            // TeX wraps its log at 79 columns, and a wrapped line is a
+            // measurement the parser cannot read back. kpathsea takes this
+            // from the environment (EK D.8.9).
+            builder.environment().put("max_print_line", "10000");
             builder.redirectErrorStream(true);
 
             Process process = builder.start();
