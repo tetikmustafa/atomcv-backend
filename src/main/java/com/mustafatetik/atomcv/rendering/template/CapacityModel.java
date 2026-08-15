@@ -36,8 +36,21 @@ public record CapacityModel(
     /** A section heading with its rule and the space around it. */
     public static final String SECTION_HEADER = "sectionHeader";
 
-    /** The two lines of an entry heading: title, organization, dates. */
+    /**
+     * The two lines of an entry heading — title, organization, dates — where
+     * it follows a section heading.
+     */
     public static final String ENTRY_HEADER = "entryHeader";
+
+    /**
+     * The same heading where a bullet list came before it.
+     *
+     * <p>Nine points more, because the paragraph skip between two blocks
+     * applies and the section heading's own spacing does not. A CV of four
+     * jobs pays it three times; charging every entry the cheaper number is how
+     * a page overflows by half a bullet for no visible reason (EK D.8.10).
+     */
+    public static final String ENTRY_HEADER_AFTER_LIST = "entryHeaderAfterList";
 
     /** What a bullet list costs before its first bullet. */
     public static final String ITEMIZE_OVERHEAD = "itemizeOverhead";
@@ -58,6 +71,17 @@ public record CapacityModel(
             throw new IllegalArgumentException("Nothing measured for " + name);
         }
         return cost;
+    }
+
+    /**
+     * What a bullet list adds between two items.
+     *
+     * <p>Derived rather than measured separately: a one-line item was measured
+     * in place, and one line of it is a baseline, so whatever is left is the
+     * separation. Keeping it derived means the two can never disagree.
+     */
+    public double itemSpacingPt() {
+        return fixedCost(ITEM_LINE) - baselineSkipPt;
     }
 
     /** What is left for content once the page's furniture is paid for. */

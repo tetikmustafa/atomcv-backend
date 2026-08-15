@@ -16,13 +16,37 @@ public record RenderCost(double heightPt, double depthPt) {
     }
 
     /**
-     * The vertical space the piece actually occupies (Bolum 26.2).
+     * The vertical space the piece occupies inside a bullet list (Bolum 26.2).
      *
-     * <p>Height plus depth is the box; the baseline skip is the gap to
-     * whatever follows it. Leaving that out is how a column of sixteen atoms
-     * fits on paper in theory and overflows in practice.
+     * <p>A box of n lines advances the page by n baselines and the list's own
+     * item separation — not by the box's own height plus a baseline. The
+     * difference is about eight points per bullet, which on a full page of
+     * twenty bullets is a third of the page left blank for no reason
+     * (EK D.8.10).
+     *
+     * <p>Rounding to whole lines here is not the rounding Bolum 26.3 warns
+     * against. That warning is about turning a measurement into lines and
+     * losing the remainder; this is TeX's own arithmetic — consecutive
+     * baselines are exactly {@code \baselineskip} apart, so the height of n
+     * lines is exactly n baselines. The sum stays in points.
+     *
+     * @param baselineSkipPt the distance between consecutive baselines
+     * @param itemSpacingPt  what the list adds between two items, which is the
+     *                       measured cost of a one-line item less one baseline
      */
-    public double totalPt(double baselineSkipPt) {
-        return heightPt + depthPt + baselineSkipPt;
+    public double totalPt(double baselineSkipPt, double itemSpacingPt) {
+        return lines(baselineSkipPt) * baselineSkipPt + itemSpacingPt;
+    }
+
+    /**
+     * How many lines the content wrapped onto.
+     *
+     * <p>A box of n lines measures {@code (n-1)} baselines plus one line's own
+     * ascent and descent, and that last part is always less than a baseline
+     * for a font at a sane size — so dividing and rounding up gives n back
+     * exactly rather than approximately.
+     */
+    public int lines(double baselineSkipPt) {
+        return Math.max(1, (int) Math.ceil((heightPt + depthPt) / baselineSkipPt));
     }
 }

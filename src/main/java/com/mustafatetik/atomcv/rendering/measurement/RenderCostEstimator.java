@@ -61,10 +61,11 @@ public final class RenderCostEstimator {
         int characters = content.plainText().length();
         int lines = Math.max(1, (int) Math.ceil(characters / charactersPerLine));
 
-        // The measured cost of a box is its height plus its depth plus one
-        // baseline (see RenderCost). A box of n lines is about n baselines
-        // tall, so n + 1 is the shape a measurement has, not n.
-        return (lines + 1) * capacity.baselineSkipPt() * SAFETY_MARGIN;
+        // The same shape a measurement has: n baselines and the list's own
+        // separation (see RenderCost), with a line's worth of headroom on top
+        // because a guessed line count can be one short.
+        return ((lines + 1) * capacity.baselineSkipPt() + capacity.itemSpacingPt())
+                * SAFETY_MARGIN;
     }
 
     /** The same, at the width a bullet actually gets. */

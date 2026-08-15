@@ -72,6 +72,9 @@ public final class SelectionPhase {
         private final Set<UUID> openSectionLists = new HashSet<>();
         private final Map<UUID, Integer> takenFromEntry = new HashMap<>();
 
+        /** What each open entry's heading and list were charged when opened. */
+        private final Map<UUID, Double> entryFurniturePt = new HashMap<>();
+
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
@@ -274,10 +277,32 @@ public final class SelectionPhase {
                     cost += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
                 }
             } else if (!openEntries.contains(atom.entryId())) {
-                cost += capacity.fixedCost(CapacityModel.ENTRY_HEADER)
+                cost += entryHeaderCost(sectionId)
                         + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
             }
             return cost;
+        }
+
+        /**
+         * An entry heading costs more when a list came before it (EK D.8.10).
+         *
+         * <p>The first entry of a section follows its heading and pays
+         * {@code ENTRY_HEADER}; every later one follows the bullets of the
+         * entry above it and pays the paragraph skip as well.
+         */
+        private double entryHeaderCost(UUID sectionId) {
+            return capacity.fixedCost(anythingPrintedIn(sectionId)
+                    ? CapacityModel.ENTRY_HEADER_AFTER_LIST
+                    : CapacityModel.ENTRY_HEADER);
+        }
+
+        private boolean anythingPrintedIn(UUID sectionId) {
+            if (sectionId == null) {
+                return false;
+            }
+            return openSectionLists.contains(sectionId)
+                    || openEntries.stream()
+                            .anyMatch(entryId -> sectionId.equals(sectionOfEntry.get(entryId)));
         }
 
         private double adjustedScoreOf(AtomCandidate atom) {
@@ -291,10 +316,20 @@ public final class SelectionPhase {
             UUID sectionId = sectionOfAtom.get(atom.atomId());
             double furniture = effectiveCostOf(atom) - atom.renderCostPt();
 
+            if (atom.entryId() != null && !openEntries.contains(atom.entryId())) {
+                entryFurniturePt.put(atom.entryId(), entryHeaderCost(sectionId)
+                        + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
+            }
+
             if (sectionId != null) {
                 openSections.add(sectionId);
                 if (atom.entryId() == null) {
-                    openSectionLists.add(sectionId);
+                    // The renderer prints a section's own atoms above its
+                    // entries, so a list opening here pushes the section's
+                    // first entry down into the more expensive position.
+                    if (openSectionLists.add(sectionId)) {
+                        structurePt += upgradeFirstEntryOf(sectionId);
+                    }
                 }
             }
             if (atom.entryId() != null) {
@@ -310,6 +345,26 @@ public final class SelectionPhase {
             pool.remove(atom.atomId());
         }
 
+        /**
+         * A section list opened above entries that were already charged as if
+         * they followed a heading. Only the first of them moves.
+         */
+        private double upgradeFirstEntryOf(UUID sectionId) {
+            double difference = capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST)
+                    - capacity.fixedCost(CapacityModel.ENTRY_HEADER);
+            for (UUID entryId : openEntries) {
+                if (sectionId.equals(sectionOfEntry.get(entryId))
+                        && entryFurniturePt.get(entryId) != null
+                        && entryFurniturePt.get(entryId)
+                                < capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST)
+                                        + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD)) {
+                    entryFurniturePt.merge(entryId, difference, Double::sum);
+                    return difference;
+                }
+            }
+            return 0.0;
+        }
+
         private void remove(SelectedAtom atom) {
             selected.remove(atom.atomId());
             contentPt -= atom.renderCostPt();
@@ -318,8 +373,9 @@ public final class SelectionPhase {
                 int left = takenFromEntry.merge(original.entryId(), -1, Integer::sum);
                 if (left == 0) {
                     openEntries.remove(original.entryId());
-                    structurePt -= capacity.fixedCost(CapacityModel.ENTRY_HEADER)
-                            + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
+                    // Exactly what it was charged, which is not always the
+                    // same number (EK D.8.10).
+                    structurePt -= entryFurniturePt.remove(original.entryId());
                 }
             }
             pool.put(original.atomId(), original);
