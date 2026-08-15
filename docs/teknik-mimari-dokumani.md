@@ -1764,6 +1764,12 @@ Bu sayede **"hiçbir alakalı atom bulunamadı" durumu hiç oluşmaz.** Alakası
 
 ### 19.4 İkincil sıralama kriterleri
 
+> **Not (Adım 1.8).** `recencyScore`'un azalma hızı burada verilmiyor: **yarılanma
+> beş yıl** seçildi, ve entry'si olmayan atom (beceri, sertifika) tarihsiz
+> olduğu için cezalandırılmıyor — recency'si 1.0. Bugünün tarihi parametre,
+> çünkü saati okuyan bir skorlayıcı Bölüm 51.2'nin determinizm testini
+> geçemez (EK D.8.7).
+
 Yakın skorlu atomlar arasında ve **Genel CV modunda**:
 
 ```java
@@ -1802,6 +1808,14 @@ Bu satır olmadan aynı girdi farklı çıktı üretebilir.
 ---
 
 ## 20. Faz C — Seçim ve Optimizasyon
+
+> **Not (Adım 1.6, 1.9).** Uygulanan algoritma üç yerde bu bölümden ayrılıyor:
+> `min_atoms` her görünür entry için zorlanmıyor (uzun profili hataya
+> düşürürdü), öncelik kuyruğu yerine her turda yeniden hesap yapılıyor (bir
+> atomu almak kardeşlerinin maliyetini de değerini de değiştiriyor), ve swap
+> tek-için-tek. Ayrıca **entry başlığı tek bir sabit değil**: bölüm
+> başlığından sonra gelen ile bir listeden sonra gelen farklı maliyetli.
+> Gerekçeler: **EK D.8.5** ve **EK D.8.10**.
 
 ### 20.1 Bütçe hesabı
 
@@ -2162,6 +2176,12 @@ public class LatexInlineRenderer implements InlineRenderer {
 
 ### 22.4 Ölçüm dokümanı
 
+> **Not (Adım 1.4-1.5).** Aşağıdaki parçacık olduğu gibi derlenmiyor:
+> `\mbox` zaten bir LaTeX komutu (kutunun adı `\measurebox` oldu), `itemize`
+> içinde `\item` yok ("perhaps a missing \item" ile duruyor), ve kutu
+> `\textwidth` yerine **`\linewidth`** genişliğinde ölçülmeli — madde işareti
+> hiçbir zaman o genişliği görmez. Üçü de EK D.8.1 ve **EK D.8.3**'te.
+
 ```java
 public RenderedSource renderMeasurement(MeasurementRequest req) {
     var sb = new StringBuilder();
@@ -2423,6 +2443,12 @@ Kütüphaneye (Vavr) gerek yok — dilin kendisi yeterli.
 
 ### 25.2 Hata hiyerarşisi
 
+> **Not (Aşama 1).** `PipelineError` yalnız hattın bugün üretebildiği dört
+> durumu taşıyor: `InsufficientProfile`, `ConflictingPreferences`,
+> `PageLimitExceeded`, `CompilationFailed`. Gerisi kendi fazlarıyla gelecek —
+> erken eklemek `params` alanlarını tahmin etmek olurdu, ve frontend'in
+> mesajlarının ihtiyacı tam olarak o alanlar (EK D.8.6, D.8.8).
+
 ```java
 public sealed interface PipelineError {
 
@@ -2660,6 +2686,11 @@ public Map<String, Double> parse(String texLog, CapacityModel capacity) {
 
 ### 26.5 Geçersizleşme (invalidation)
 
+> **Not (Adım 1.8).** "Font-metrik tahmini" katmanı **FontBox'sız** yazıldı:
+> bağımlılık eklemek yerine kasten daha kötümser bir tahmin var ve tek sözü
+> gerçek derleyiciden **asla az yazmaması** (EK D.8.7). %8 güvenlik payı
+> aynen uygulanıyor.
+
 ```
 Metin değişti
   → plain_text değişti → content_hash değişti
@@ -2871,6 +2902,13 @@ Kalite düşer ama sistem çalışır. Kullanıcıya bilgi verilmez (iç detay),
 ---
 
 ## 29. LaTeX Container
+
+> **Not (Aşama 1).** Çalışan container bu bölümden üç noktada ayrılıyor:
+> rlimit'ler servise değil **derleme başına** uygulanıyor (servise
+> uygulandığında JVM kendi heap'ini ayıramıyordu), `/compile` yanıtı
+> **`X-Page-Count`** başlığı taşıyor (Faz F'nin saydığı sayfa oradan geliyor),
+> ve xelatex'e `max_print_line=10000` veriliyor — TeX logu 79 sütunda
+> katlanınca ölçüm satırları okunamıyordu. EK D.8.1, D.8.6, D.8.9.
 
 ### 29.1 Güvenlik gerekçesi
 
@@ -3334,6 +3372,11 @@ int completeness(Profile p) {
 
 **Üretim eşiği:** iletişim + (1 eğitim VEYA 1 deneyim/proje) + 3 beceri ≈ %45
 
+> **Not (Adım 1.2).** Formülün yüklemleri (`hasContact`, `skillCount`,
+> `atomsWithMetrics`) burada tanımsız; karara bağlanan halleri **EK D.6.2**'de.
+> Yukarıdaki %45 tahmini de tam değil: hesap eğitimle **38**, deneyimle **48**
+> veriyor, ve ikisi de testle sabitlendi. Sayı **okumada** hesaplanıyor.
+
 ### 31.10 Hata durumları
 
 | Durum | Davranış |
@@ -3715,7 +3758,7 @@ Location: /api/v1/jobs/9b1c4e7a-...
 
 **Sunucu çeviri anahtarı gönderir, metin değil.** Frontend `errors.CONFLICTING_PREFERENCES` anahtarını kendi dilinde çözer. `resolutions` dizisinden butonlar otomatik üretilir.
 
-> **Frontend (EK D.9 · 7, 10-11).** Tam katalog **EK D.6.1'de**: 25 kod, HTTP
+> **Frontend (EK D.9 · 7, 10-11).** Tam katalog **EK D.6.1'de**: 27 kod, HTTP
 > durumları ve her kodun `params` anahtarları **tipleriyle**. `en.json` ve
 > `tr.json` artık buradan yazılabilir. Üç kod dokümanın gövdesinde yoktur ve
 > Adım 1.2'de eklendi: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`,
@@ -4941,6 +4984,11 @@ Pipeline yavaşladı
 
 ### 51.2 En değerli testler
 
+> **Not (Adım 1.9).** Dördü de yazıldı. Hangisinin nerede olduğu ve neyi
+> kapsadığı **EK D.8.9**'da; izolasyon testi kasıtlı bir IDOR'a karşı
+> doğrulandı. Aşağıdaki parçacıklardaki `recordedAnalyses()` Faz A ile
+> geleceği için genel mod skorlamasıyla koşuluyorlar.
+
 Bu dört test, ürünün temel garantilerini koruyor:
 
 **1. Sayfa sınırı ihlali yok**
@@ -4993,6 +5041,13 @@ void locksAndStructuralConstraintsRespected() {
 ```
 
 ### 51.3 Golden test set
+
+> **Not (Adım 1.9).** Profiller yazıldı; `jobs/`, `analyses/` ve
+> `content-formats/` Faz A ile birlikte Aşama 2'de gelecek. Dosyalar
+> `src/test/resources` değil **`src/main/resources/golden/profiles`** altında
+> (seeder üretim kodu ve aynı dosyaları okuyor), ve fixture formatı export
+> formatı değil. `*.costs.json` **içerik hash'iyle** anahtarlı ve gerçek
+> derleyiciye karşı doğrulanıyor: **EK D.8.9**.
 
 ```
 src/test/resources/golden/
@@ -6074,7 +6129,7 @@ endif
 # çalıştırır ve ./gradlew bir Windows çalıştırılabiliri değildir.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int
+.PHONY: dev dev-full db-reset record test test-int golden-costs
 
 dev:
 	docker compose --profile core up -d
@@ -6096,7 +6151,15 @@ test:
 
 test-int:
 	$(GRADLE) integrationTest
+
+# Golden set'in render maliyetlerini gercek derleyiciden yeniden olcer (Adim 1.9)
+golden-costs:
+	$(GRADLE) latexTest --tests '*GoldenCostsIT' -Dgolden.record=true
 ```
+
+**`gradlew latexTest` Makefile'da bir hedef değil.** LaTeX imajını kurup ondan
+derleyen testler dakikalar sürüyor; `docker/latex` değiştiğinde elle
+çalıştırılıyor ve CI'da koşmuyor (EK D.8.1).
 
 **Flyway Gradle eklentisi eklenmez.** Migration'lar uygulama açılışında çalışır;
 ikinci bir yol, iki farklı yapılandırmanın sessizce ayrışması demektir.
@@ -8842,7 +8905,7 @@ burasıdır.**
 |---|---|---|---|
 | Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
 | Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
+| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (27 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
 | Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
 | Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
 | Adım 1.5 — Ölçüm | ✅ Bitti | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). Tahmin katmanı Adım 1.8'de geldi (`RenderCostEstimator`, EK D.8.7); atom maliyeti formülü Adım 1.9'da düzeltildi (EK D.8.10). | — |
@@ -8875,6 +8938,10 @@ burasıdır.**
 | Üretimde migration nasıl çalışır? | Bölüm 47'nin önerdiği özellik yok (EK D.1). Şu an Flyway üretimde de açılışta çalışıyor. |
 | Kota gününün zaman dilimi | `usage_counters.period` bir `DATE`; `resetsAt` gönderilmeden önce cevaplanmalı (EK D.6.5). |
 | Anonim akış kuyruğu kullanacak mı? | `jobs` tekil indeksindeki NULL kusuru ve Bölüm 51.6'nın gizlilik testi buna bağlı. |
+| CI imaj taraması | Trivy şu an yalnız yapılandırmayı tarıyor; üretilen imajı taramak CI'da bir build (birkaç GB) gerektiriyor ve registry push'uyla birlikte gelmeli (Bölüm 47). |
+| Spotless | Bölüm 47.1 `spotlessCheck` çalıştırıyor ama yapılandırılmış bir biçimlendirici yok — bugün CI'da biçim kapısı hiç yok. |
+| Atomsuz entry seçilemiyor | Seçim atom üzerinden çalışıyor; yalnız derece satırı olan bir eğitim kaydı aday bile olmuyor (EK D.8.9). Çözümü Bölüm 20.2'nin modelini değiştiriyor. |
+| Beraberlik id ile çözülüyor | Aynı puan **ve** aynı maliyetteki iki atom, içerik yeniden içe aktarıldığında yer değiştirebiliyor — Aşama 3'ün profil devralması bunu yapacak (EK D.8.9). |
 
 ### D.8 — Adım 1.2: profil başı ve acting user
 
@@ -9034,7 +9101,7 @@ aksini söylüyor, sonuç sessiz bir üç sayfalık CV değil bir hata oluyor.
 | **`POST /api/v1/generations/general`** | Ekleme | Bölüm 35.3'ün `POST /generations`'ı 202 + iş döndürüyor, çünkü içinde LLM var. Genel modda LLM de kuyruk da yok: bu uç belgeyi **doğrudan** döndürüyor (`application/pdf`, `Content-Disposition: attachment`, `Cache-Control: no-store`). Aşama 1'e özgü ve öyle işaretli; kuyruklu sözleşme üretim kaydıyla birlikte Aşama 2'de gelecek. Gövde **isteğe bağlı**; `maxPages` ve `language` verilmezse profilin kendi varsayılanları geçerli. |
 | Hiçbir şey saklanmıyor | Kapsam | `generations` tablosuna satır yazılmıyor, `selection_state` saklanmıyor, indirme bağlantısı yok. Saklama, saklama süresi (`EK D.6.3`'teki 14 gün ve 410) ve düzenleme döngüsü (Faz G) hep aynı kaydı gerektiriyor; biri olmadan diğerini yazmak yarım bir sözleşme olurdu. Bir test `generations`'ın boş kaldığını doğruluyor. |
 | Ön kontrol **yapısal**, yüzde değil | Karar | Bölüm 25.2 `INSUFFICIENT_PROFILE(completeness, missing)` diyor, eşik vermiyor. Yüzde eşiği gayet iyi render edilecek profilleri reddederdi; üretimi durduran şey **basılacak bir şeyin olmaması**. Tamamlanma yüzdesi mesajda taşınıyor, kararı vermiyor. |
-| `complete_profile` sözlüğe eklendi | Ekleme | Bölüm 25.3'ün örneği bu adı kullanıyor ama D.6.1'in sekiz eylemlik kümesinde yoktu. Dokuzuncu eylem; frontend'in buton davranışı yazması gerekiyor (D.9 · 22). |
+| `complete_profile` sözlüğe eklendi | Ekleme | Bölüm 25.3'ün örneği bu adı kullanıyor ama D.6.1'in sekiz eylemlik kümesinde yoktu. Dokuzuncu eylem; frontend'in buton davranışı yazması gerekiyor (D.9 · 23). |
 | `ErrorPresenter` | Uygulama | Bölüm 25.3'ün biçimiyle, dört durumun **tamamı** için. `UserFacingError` parametreleri katalogla doğruladığı için her sunum aynı zamanda "ICU mesajının beklediği alanları yayınlıyor mu" testi. |
 | `PAGE_LIMIT_EXCEEDED`'in çözümü | Karar | `increase_page_limit`, `maxPages` = **derleyicinin gerçekten ürettiği sayfa sayısı**. Yeterli olduğu bilinen tek sayı o. |
 | `COMPILATION_FAILED.detail` **log değil** | Karar | Katalog `detail: string` istiyor ve bu dize ICU mesajına giriyor. TeX logu kullanıcının kendi içeriğinden türüyor, oraya konamaz: `detail` yalnız hatanın türü (`invalid_document`, `busy`, `timeout`, `unavailable`). `retry` çözümü TeX'in reddettiği belge dışında sunuluyor — o belge tekrar denenince yine reddedilir. |

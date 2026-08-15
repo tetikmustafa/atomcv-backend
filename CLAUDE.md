@@ -314,7 +314,7 @@ three open items below.
 | `profile.service` | `ProfileResolver`, `ProfileService`, `SectionService`, `EntryService`, `AtomService`, `CompletenessCalculator`, `ProfileExporter`, `ProfileAssembler` |
 | `profile.api` | `ProfileController`, `SectionController`, `EntryController`, `AtomController` + DTOs |
 | `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, the two scoped bases, `CurrentUser`, `LocalDevCurrentUser` |
-| `shared.error` | `ErrorCode` (26 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
+| `shared.error` | `ErrorCode` (27 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
 | `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
 | `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
 | `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
