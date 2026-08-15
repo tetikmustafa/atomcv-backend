@@ -197,6 +197,29 @@ class LatexContainerIT {
         assertThat(TexLogParser.parseCosts(log)).hasSize(12);
     }
 
+    /**
+     * Faz F counts pages it did not compile, so the count has to come back
+     * with the document and it has to be right (Bolum 23.1, EK D.8.6).
+     */
+    @Test
+    void reportsHowManyPagesItProduced() throws Exception {
+        HttpResponse<byte[]> one = post("/compile", """
+                \\documentclass{article}
+                \\begin{document}
+                One page.
+                \\end{document}
+                """);
+        assertThat(one.headers().firstValue("X-Page-Count")).contains("1");
+
+        HttpResponse<byte[]> three = post("/compile", """
+                \\documentclass{article}
+                \\begin{document}
+                First.\\newpage Second.\\newpage Third.
+                \\end{document}
+                """);
+        assertThat(three.headers().firstValue("X-Page-Count")).contains("3");
+    }
+
     @Test
     void runsAsAnUnprivilegedUserOnAReadOnlyFilesystem() throws Exception {
         assertThat(LATEX.execInContainer("id", "-u").getStdout().trim()).isEqualTo("1000");

@@ -39,12 +39,28 @@ class LatexCompilerClientTest {
 
     @Test
     void sendsTheSourceAndReturnsTheDocument() {
+        respondWith("/compile", 200, "%PDF-1.7 pretend", 2);
+
+        CompiledDocument document = client.compile("\\documentclass{article}...");
+
+        assertThat(new String(document.pdf(), StandardCharsets.UTF_8)).startsWith("%PDF-");
+        assertThat(document.pageCount()).isEqualTo(2);
+        assertThat(received.get()).isEqualTo("\\documentclass{article}...");
+    }
+
+    /**
+     * Faz F checks a page count it did not compute itself. A compiler that
+     * does not report one is the wrong compiler, and answering with a document
+     * of unknown length would break the one promise the product makes (P4).
+     */
+    @Test
+    void aDocumentWithNoPageCountIsRefusedRatherThanGuessed() {
         respondWith("/compile", 200, "%PDF-1.7 pretend");
 
-        byte[] pdf = client.compile("\\documentclass{article}...");
-
-        assertThat(new String(pdf, StandardCharsets.UTF_8)).startsWith("%PDF-");
-        assertThat(received.get()).isEqualTo("\\documentclass{article}...");
+        assertThatThrownBy(() -> client.compile("x"))
+                .isInstanceOf(CompilationException.class)
+                .extracting(failure -> ((CompilationException) failure).kind())
+                .isEqualTo(CompilationException.Kind.UNAVAILABLE);
     }
 
     @Test
@@ -120,9 +136,16 @@ class LatexCompilerClientTest {
     }
 
     private void respondWith(String path, int status, String body) {
+        respondWith(path, status, body, 0);
+    }
+
+    private void respondWith(String path, int status, String body, int pages) {
         stub.createContext(path, exchange -> {
             received.set(new String(exchange.getRequestBody().readAllBytes(),
                     StandardCharsets.UTF_8));
+            if (pages > 0) {
+                exchange.getResponseHeaders().set("X-Page-Count", String.valueOf(pages));
+            }
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(status, bytes.length);
             try (OutputStream out = exchange.getResponseBody()) {
