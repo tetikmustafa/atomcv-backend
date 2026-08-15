@@ -154,6 +154,7 @@ make db-reset   # wipe database and re-run migrations (LOCAL ONLY)
 make record     # run with local-record profile to capture LLM fixtures
 make test       # unit + architecture tests
 make test-int   # integration tests (Testcontainers)
+make golden-costs # re-measure the golden set's render costs (after a fixture changes)
 ```
 
 Spring profiles:
@@ -297,9 +298,11 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: in progress. Adım 1.1-1.8 are complete.** A
-profile in the database comes back as a one-page PDF through the real
-compiler, which is the checklist item Stage 1 exists for.
+**Stage 1 — Walking Skeleton: complete (Adım 1.1-1.9).** A profile in the
+database comes back as a one-page PDF through the real compiler, and the four
+tests Bölüm 51.2 calls the most valuable ones run across a golden set of five
+profiles. What remains is the doc sync to the frontend repository and the
+three open items below.
 
 ### What exists
 
@@ -316,9 +319,10 @@ compiler, which is the checklist item Stage 1 exists for.
 | `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
 | `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
 | `generation` | `pipeline` (`Result`, `PipelineError`, `ErrorPresenter`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`, `SelectionRequestBuilder`), `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
+| `profile.seed` | `GoldenProfileDocument`, `GoldenProfileReader`, `GoldenProfile`, `DevSeeder`; five fixtures + their measured costs under `src/main/resources/golden/profiles` |
 
-215 unit tests, 100 integration tests, 27 latex-tagged. Every decision behind
-these is in `EK D` — read D.2 through D.8.8 before touching them.
+305 unit tests, 122 integration tests, 32 latex-tagged. Every decision behind
+these is in `EK D` — read D.2 through D.8.9 before touching them.
 
 ### Deliberately absent — do not "fix" without asking
 
@@ -343,26 +347,28 @@ these is in `EK D` — read D.2 through D.8.8 before touching them.
 
 ### Resume here
 
-**Adım 1.9 — the golden set, the seeder, and the four critical tests.** The
-last slice of Stage 1 (XI-A.3, Bölüm 51.2, 51.3). In order:
+**Stage 1 is done. Close it, then start Stage 2.**
 
-1. **Five golden profiles as JSON** (Bölüm 51.3): a junior with one job, a
-   senior with eight, a career changer, a profile of skills with no entries,
-   and one with locks and inactive rows set. They are fixtures, so they belong
-   under `src/test/resources` — and the shape has to be the one
-   `ProfileExporter` already emits, or two formats will drift apart.
-2. **`DevSeeder`**, idempotent, `@Profile("local")` only, loading those same
-   profiles so `make dev` has something to look at.
-3. **The four critical tests over the golden set** (Bölüm 51.2): the page
-   limit is never exceeded, 50 runs give the same answer, locks and structural
-   constraints hold, and every protected endpoint is isolated per user. The
-   first three exist for hand-built fixtures; what is missing is running them
-   across the golden profiles, and the multi-tenant one needs a second user.
-4. Bölüm 51.3 also asks for measured costs committed as `*.costs.json`, so the
-   golden tests do not need Docker. `RenderCostService` writes them today;
-   capturing them is a `latexTest`-tagged job that regenerates the file.
+1. **Sync the docs** to the frontend repository with `scripts/sync-docs.sh`,
+   and say out loud what `EK D.9` items 22 and 23 mean for that side: the
+   general-CV endpoint is Stage-1-only, and `complete_profile` is a new
+   resolution action.
+2. Then **Stage 2** (XI-A.4): the LLM gateway with its three local profiles,
+   Faz A (job analysis), Faz B (relevance scoring with embeddings), Faz D
+   (rewriting with the anti-fabrication validators), the job queue and SSE,
+   and the generation record that finally persists a result.
 
-Then Stage 1 closes with `scripts/sync-docs.sh` to the frontend repository.
+The Stage 2 carry-overs below are the first things it will need.
+
+**Findings worth acting on before they bite:**
+- **An entry with no atoms never reaches the page.** Selection works atom by
+  atom, so a degree line with no bullet under it is not a candidate at all.
+  The golden fixtures give every education entry an atom to work around it;
+  the real fix changes Bölüm 20.2's model and belongs in Stage 2.
+- **Ties are broken by atom id, and ids are minted per import.** Two atoms
+  with the same score *and* the same cost swap places when the same content is
+  imported again — which the anonymous-profile claim in Stage 3 will do. A
+  content-derived tie-break would fix it; decide deliberately.
 
 **`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
 excluded from `integrationTest` because the image takes minutes; run it when

@@ -8833,7 +8833,7 @@ burasıdır.**
 | Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
 | Adım 1.7 — Faz E/F | ✅ Bitti (indirme ucu hariç) | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
 | Adım 1.8 — Genel mod | ✅ Bitti | `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt` (EK D.8.7). `CvGenerationService` + **`POST /api/v1/generations/general`** + `ErrorPresenter` (Bölüm 25.3, dört durumun tamamı) (EK D.8.8). Veritabanındaki profil gerçek derleyiciden **tek sayfalık PDF** olarak çıkıyor. | D.9 · 22, 23 |
-| Adım 1.9 — Golden set | ⏳ Sırada | 5 golden profil, `DevSeeder`, dört kritik test | — |
+| Adım 1.9 — Golden set | ✅ Bitti | Beş golden profil (Bölüm 51.3) + ölçülmüş maliyetleri, `GoldenProfileReader`, `DevSeeder`, ve **dört kritik testin tamamı** (EK D.8.9). İzolasyon testi kasıtlı bir IDOR'a karşı doğrulandı. | — |
 
 **Aşama 1'de hâlâ açık olan kararlar:**
 
@@ -9018,6 +9018,32 @@ sayfa aşımının çözümüyle birlikte sunumu, derleyici çöküşünün 502'
 veritabanındaki bir profil ölçülüyor, seçiliyor, derleniyor ve **gerçekten tek
 sayfalık** bir PDF olarak dönüyor — XI-A.3'ün Aşama 1 kontrol listesindeki
 madde budur.
+
+### D.8.9 — Adım 1.9: golden set, seeder ve dört kritik test
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Fixture formatı **export formatı değil** | Sapma | Bölüm 51.3 dosyaları adlandırıyor, biçimini vermiyor. Export biçimi her satır için `id` ve `version` taşıyor; elle yazılan bir fixture'da bunlar altmış kez uydurulurdu ve ikinci bir veritabanına yüklendiğinde yanlış olurdu. `GoldenProfileDocument`'te kimlik **ağaçtaki yer**; id'leri okuyucu üretiyor. Metinden başka her alan isteğe bağlı, yani bir fixture yalnız ilginç olan şeyi söylüyor. |
+| Fixture'lar `src/main/resources` altında | Sapma | Bölüm 51.3 `src/test/resources` diyor. `DevSeeder` üretim kodu ve aynı dosyaları okuyor; test kaynakları onun sınıf yolunda değil. Kopyalamak iki formatın zamanla ayrışması demekti. Dosyalar jar'a giriyor (birkaç KB) ama onları okuyan tek şey `local` profiline bağlı seeder. |
+| Maliyetler **içerik hash'iyle** anahtarlanıyor | Ekleme | `*.costs.json` Bölüm 51.3'ün istediği dosya. Varyant id'si her okumada değişiyor, içerik hash'i içeriğin kendisi — metin değişince anahtar da değişiyor, yani bayat bir maliyet sessizce eşleşemiyor. |
+| `-Dgolden.record=true` | Ekleme | `GoldenCostsIT` normalde **doğruluyor**: saklanan her sayıyı gerçek derleyiciden yeniden ölçüyor ve 0.01 punto sapmada düşüyor. Kayıt modunda aynı test dosyaları yazıyor. Bir fixture'ın metni ya da şablonun geometrisi değişince yeniden kaydedilir. |
+| **`max_print_line`** | Düzeltme | TeX logunu 79 sütunda katlıyor. Ölçüm anahtarı 64 karakterlik bir hash olunca `ATOMCOST` satırı ikiye bölündü ve parser hiçbir şey bulamadı — beş profilin **hepsi sıfır ölçümle** döndü. Container artık xelatex'e `max_print_line=10000` veriyor. Varyant id'siyle (36 karakter) hiç görünmeyecek, ama sınıra iki karakter kalmıştı. |
+| Beraberlikler id ile çözülüyor, ve id kalıcı değil | Bulgu | Aynı puanı **ve** aynı maliyeti taşıyan iki atom arasında Bölüm 19.6'nın tie-break'i id'ye bakıyor. Veritabanındaki bir profil için id sabit, dolayısıyla çıktı sabit; ama aynı içerik yeniden içe aktarılırsa (Aşama 3'ün anonim profil devralması) ikisinden diğeri seçilebilir. Golden test bu yüzden "aynı atomlar" değil **"aynı sayıda atom ve aynı punto"** diyor. İçerikten türeyen bir tie-break Aşama 2'de bilinçli olarak kararlaştırılmalı. |
+| Atomsuz entry hiç görünmüyor | Bulgu | Seçim atom üzerinden çalışıyor; hiç atomu olmayan bir entry (yalnız derece satırı olan bir eğitim kaydı) aday bile olmuyor. Fixture'larda her eğitim kaydına bir atom verildi. Gerçek çözüm — entry'nin kendisinin aday olması — Bölüm 20.2'nin modelini değiştirir ve Aşama 2'ye ait. |
+| `DevSeeder` var olan profile dokunmuyor | Karar | `local` profiline bağlı, `@Order(100)` ile kullanıcı satırından sonra çalışıyor, ve profil zaten varsa **hiçbir şey yapmıyor**: yerel olarak denemek için girilen bir CV'nin üzerine yazmak tam olarak P8'in engellediği şey. Hangi fixture'ın ekileceği `atomcv.dev.seed-profile` ile seçiliyor. |
+
+**Dört kritik test (Bölüm 51.2), nerede.**
+
+| # | Test | Nerede | Kapsam |
+|---|---|---|---|
+| 1 | Sayfa sınırı aşılmıyor | `GoldenSelectionTest` | 5 profil × 2 dil × {1,2} sayfa |
+| 2 | Determinizm | `GoldenSelectionTest` | Her profil için 50 koşu |
+| 3 | Çok-kiracılı izolasyon | `MultiTenantIsolationIT` | Kimlik taşıyan **sekiz** uç + reorder + listeler + üretim ucu |
+| 4 | Kilitler ve yapısal kısıtlar | `GoldenSelectionTest` | Kilitli atom seçiliyor, pasif olan seçilmiyor, entry ya minimumuna ulaşıyor ya da bütün olarak düşüyor |
+
+Üçü Docker'sız koşuyor — maliyetler dosyada olduğu için. İzolasyon testi
+kasıtlı bir ihlale karşı doğrulandı: `ProfileScopedRepository.findById`'nin
+profil filtresi kaldırıldığında sekiz ucun hepsi düştü, geri konunca geçti.
 
 ### D.9 — Frontend'i ilgilendirenler
 
