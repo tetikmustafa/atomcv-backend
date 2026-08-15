@@ -114,7 +114,8 @@ class GoldenCostsIT {
         for (AtomVariant variant : golden.variants()) {
             RenderCost cost = costs.get(variant.getContentHash());
             if (cost != null) {
-                byHash.put(variant.getContentHash(), cost.totalPt(capacity.baselineSkipPt()));
+                byHash.put(variant.getContentHash(),
+                        cost.totalPt(capacity.baselineSkipPt(), capacity.itemSpacingPt()));
             }
         }
         return byHash;

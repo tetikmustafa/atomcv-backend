@@ -98,9 +98,9 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
         assertThat(measured).isEqualTo(1);
         var stored = variants.findById(profile, variantId).orElseThrow();
         assertThat(stored.getRenderCosts()).containsKey("classic:v1");
-        // One line of ten-point text with its baseline: tens of points, not
-        // hundreds, and certainly not zero.
-        assertThat(stored.getRenderCosts().get("classic:v1")).isBetween(15.0, 60.0);
+        // One line of ten-point text: a baseline and the list's own item
+        // separation, so thirteen points here — not hundreds, and not zero.
+        assertThat(stored.getRenderCosts().get("classic:v1")).isBetween(12.0, 60.0);
         assertThat(stored.getCostMeasuredAt()).isNotNull();
     }
 
@@ -136,8 +136,12 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
 
         tx.executeWithoutResult(status -> {
             var variant = em.find(AtomVariant.class, variantId);
+            // Long enough to wrap: the page is 527pt wide, which is about a
+            // hundred and ten characters of ten-point Termes.
             variant.setContent(RichContent.plain(
-                    "Built ETL pipelines processing 300K+ rows into a secure lakehouse"));
+                    "Built ETL pipelines processing 300K+ rows a day into a secure "
+                            + "lakehouse, replacing a nightly batch that took four hours "
+                            + "and failed most weeks"));
         });
 
         var reloaded = variants.findById(profile, variantId).orElseThrow();

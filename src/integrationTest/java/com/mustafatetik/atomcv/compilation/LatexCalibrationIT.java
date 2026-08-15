@@ -124,6 +124,43 @@ class LatexCalibrationIT {
                 .isCloseTo(capacity().fixedCost(CapacityModel.ITEMIZE_OVERHEAD), offset());
     }
 
+    /**
+     * The furniture has to cost the same the second time (EK D.8.10).
+     *
+     * <p>The stored constants were measured from one section, one entry and
+     * one list. A document has several of each, and a per-repetition
+     * difference would show up as drift no single measurement could explain —
+     * which is exactly what {@code MeasurementDriftIT} found.
+     */
+    @Test
+    void aSecondSectionEntryAndListCostWhatTheFirstOnesDid() {
+        assertThat(delta("afterThreeItems", "afterSecondSection"))
+                .as("a section heading further down the page")
+                .isCloseTo(capacity().fixedCost(CapacityModel.SECTION_HEADER), offset());
+        assertThat(delta("afterSecondSection", "afterSecondEntry"))
+                .as("an entry heading further down the page")
+                .isCloseTo(capacity().fixedCost(CapacityModel.ENTRY_HEADER), offset());
+        assertThat(delta("afterSecondEntry", "afterSecondList"))
+                .as("a one-item list further down the page")
+                .isCloseTo(capacity().fixedCost(CapacityModel.ITEMIZE_OVERHEAD)
+                        + capacity().fixedCost(CapacityModel.ITEM_LINE), offset());
+    }
+
+    /**
+     * The second job of a career, and every one after it (EK D.8.10).
+     *
+     * <p>An entry heading is not one number. After a section heading it costs
+     * what {@code ENTRY_HEADER} says; after the bullet list of the job above
+     * it, the paragraph skip applies and it costs nine points more.
+     */
+    @Test
+    void anEntryFollowingAListCostsMoreThanOneFollowingAHeading() {
+        assertThat(delta("afterSecondList", "afterEntryFollowingAList"))
+                .isCloseTo(capacity().fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST), offset());
+        assertThat(capacity().fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST))
+                .isGreaterThan(capacity().fixedCost(CapacityModel.ENTRY_HEADER));
+    }
+
     @Test
     void anUncalibratedCustomizationHasNoCapacityAtAll() {
         // Bolum 33.1's layer B: font size, family, margin and spacing all move
