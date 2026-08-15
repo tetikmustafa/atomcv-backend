@@ -8831,7 +8831,8 @@ burasıdır.**
 | Adım 1.5 — Ölçüm | ✅ Bitti (tahmin katmanı hariç) | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). **Sırada:** `FontMetricEstimator` ve ölçümsüz üretim yolu — tüketicisi olduğunda. | — |
 | Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
 | Adım 1.7 — Faz E/F | ✅ Bitti (indirme ucu hariç) | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
-| Adım 1.8-1.9 — Genel mod + golden set | ⏳ Sırada | İkincil skorlama, 5 golden profil, dört kritik test | — |
+| Adım 1.8 — Genel mod | 🔄 Yarısı bitti | **Bitti:** `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt`. Ayrıntılar: **EK D.8.7**. **Sırada:** üretim servisi + PDF ucu + hata sunumu. | sırada |
+| Adım 1.9 — Golden set | ⏳ Sırada | 5 golden profil, `DevSeeder`, dört kritik test | — |
 
 **Aşama 1'de hâlâ açık olan kararlar:**
 
@@ -8978,6 +8979,20 @@ içerik derleyiciye **hiç ulaşmaz** — P5). Gerçek container'a karşı iki t
 üç bölümlük bir kariyer gerçekten tek sayfalık bir PDF oluyor, ve **her atomun
 maliyeti bilerek beşte bir bildirildiğinde** seçim sığdığını sanıyor, derleyici
 aksini söylüyor, sonuç sessiz bir üç sayfalık CV değil bir hata oluyor.
+
+### D.8.7 — Adım 1.8: genel mod skorlaması ve seçim isteği
+
+| Konu | Tür | Karar |
+|---|---|---|
+| Yarılanma süresi **5 yıl** | Ekleme | Bölüm 19.4 "üstel azalma" diyor, hızını vermiyor. On yıl önceki bir iş güncelin dörtte biri ediyor; **sıfır etmiyor**, çünkü içinde metrik olan on yıllık bir madde hâlâ sayfanın en iyi şeyi olabilir. |
+| Tarihsiz atom cezalandırılmıyor | Ekleme | Entry'si olmayan atom (beceri, sertifika) için recency **1.0**. Bölüm 19.4 bu durumdan söz etmiyor; 0 vermek her beceriyi CV'nin dışına iterdi. |
+| Skor sonda kırpılıyor | Düzeltme | Ağırlıklar bire tamamlanıyor ama dört double `1.0000000000000002` edebiliyor ve `AtomCandidate` birden büyük skoru reddediyor — yalnız kusursuz bir atomda ortaya çıkacak bir kusur. |
+| Bugünün tarihi **parametre** | Ekleme | Saati okuyan bir skorlayıcı Bölüm 51.2'nin "aynı girdi → aynı çıktı" testini geçemez. |
+| Ölçümsüz atom: `RenderCostEstimator` | Sapma | Bölüm 26.5 ölçüm yoksa **font-metrik tahmini + %8 pay** istiyor; Bölüm 26.2 bunu FontBox ile gerçek font metriklerinden kuruyor. Burada PDF kütüphanesi eklemek yerine bağımlılıksız ve **daha kötümser** bir tahmin var: ortalama karakter genişliği (0.46em, Termes'in gerçek ortalamasının altında — kasten), satır doluluğu %92, ve ölçümün biçimini taklit eden `(satır + 1) × baselineSkip`, üstüne %8. Tek sözü: **asla TeX'ten az yazmaz**, ve bu gerçek derleyiciye karşı altı farklı uzunlukta test ediliyor. |
+| `CapacityModel.textWidthPt` | Ekleme | Kalibrasyon `\textwidth`'i zaten ölçüyordu ve atıyordu. Tahmin bu genişliğe bölüyor; yanlışsa her ölçümsüz atom yanlış sayıda satır ödüyor. Ölçülen değer **527.571pt** ve kalibrasyon testi artık onu da doğruluyor. |
+| Entry kilidi atom kilidine çevriliyor | Ekleme | `entries.always_include` "bu iş CV'de kalsın" demek; `SelectionPhase` yalnız atom kilidi biliyor. Bütçedeki karşılıkları aynı: entry başlığı + `min_atoms` kadar madde. Kurucu, kilitli entry'nin **en yüksek skorlu** `min_atoms` atomunu kilitliyor (eşitlikte id ile, Bölüm 19.6). Kilitli bölüm için aynısı bir atomla. Bunu yapmamak, kullanıcının koyduğu kilidi sessizce yok saymak olurdu. |
+| Pasif bölüm/entry hiç aday olmuyor | Karar | Pasif **atom** aday listesinde kalıyor ve `INACTIVE` sebebiyle reddediliyor (Bölüm 19.5), ama pasif bir bölüm ya da entry CV'nin parçası değil: altındaki atomlar için "neden yok" sorusu da doğmuyor. |
+| Sözü olmayan atom sayılıyor | Ekleme | Hiçbir dilde varyantı olmayan atom render edilemez; sessizce düşürmek yerine `withoutWording` sayacına yazılıyor — yukarıda bir kusur olduğunun işareti. |
 
 ### D.9 — Frontend'i ilgilendirenler
 
