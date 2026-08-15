@@ -12,7 +12,11 @@ import java.util.UUID;
  * scores, and both of those are already here. Selection works on numbers,
  * which is what makes it deterministic and testable without a database.
  */
-public record SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity) {
+public record SelectionRequest(
+        List<SectionPlan> sections,
+        int maxPages,
+        CapacityModel capacity,
+        double budgetFactor) {
 
     public SelectionRequest {
         sections = List.copyOf(Objects.requireNonNull(sections, "sections"));
@@ -20,6 +24,26 @@ public record SelectionRequest(List<SectionPlan> sections, int maxPages, Capacit
         if (maxPages < 1) {
             throw new IllegalArgumentException("A CV has at least one page");
         }
+        if (budgetFactor <= 0 || budgetFactor > 1) {
+            throw new IllegalArgumentException(
+                    "The budget is shrunk, never grown, was " + budgetFactor);
+        }
+    }
+
+    /** The ordinary case: the whole page is available. */
+    public SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity) {
+        this(sections, maxPages, capacity, 1.0);
+    }
+
+    /**
+     * The same request with less room (Bolum 23.1).
+     *
+     * <p>Faz F asks for this when the compiled document came out longer than
+     * the limit: the measurement was optimistic somewhere, so selection runs
+     * again against a budget shrunk by that much rather than the same one.
+     */
+    public SelectionRequest withBudgetFactor(double factor) {
+        return new SelectionRequest(sections, maxPages, capacity, factor);
     }
 
     /** A heading, its entries, and any atoms hanging straight off it. */

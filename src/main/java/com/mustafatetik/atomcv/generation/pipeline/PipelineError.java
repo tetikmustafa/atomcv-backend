@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.pipeline;
 
+import com.mustafatetik.atomcv.compilation.CompilationException;
 import java.util.List;
 
 /**
@@ -37,6 +38,34 @@ public sealed interface PipelineError {
         /** How many pages the pinned content would need, for the message. */
         public double pinnedPages(double pageHeightPt) {
             return pinnedPt / pageHeightPt;
+        }
+    }
+
+    /**
+     * The compiled document came out longer than the limit and shrinking the
+     * budget did not save it (Bolum 23.1).
+     *
+     * <p>Reaching this means the measurement layer was optimistic by more than
+     * the retries could absorb. It is a defect signal as much as a user
+     * message, which is why the metric next to it is watched.
+     *
+     * @param actualPages what the compiler produced on the last attempt
+     * @param maxPages    what the user asked for
+     */
+    record PageLimitExceeded(int actualPages, int maxPages) implements PipelineError {
+    }
+
+    /**
+     * The document did not compile, or the compiler was not there (Bolum 29).
+     *
+     * @param kind   which of the four, so the caller knows whether to retry
+     * @param texLog what TeX said — user content, never logged (absolute rule 4)
+     */
+    record CompilationFailed(CompilationException.Kind kind, String texLog)
+            implements PipelineError {
+
+        public CompilationFailed {
+            texLog = texLog == null ? "" : texLog;
         }
     }
 
