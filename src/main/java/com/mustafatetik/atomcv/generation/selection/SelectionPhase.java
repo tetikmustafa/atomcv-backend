@@ -80,7 +80,8 @@ public final class SelectionPhase {
         Run(SelectionRequest request) {
             this.request = request;
             this.capacity = request.capacity();
-            this.totalBudgetPt = capacity.pageTextHeightPt() * request.maxPages();
+            this.totalBudgetPt =
+                    capacity.pageTextHeightPt() * request.maxPages() * request.budgetFactor();
 
             for (SectionPlan section : request.sections()) {
                 for (AtomCandidate atom : section.atoms()) {
