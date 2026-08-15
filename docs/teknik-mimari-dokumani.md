@@ -2609,6 +2609,11 @@ public Map<String, Double> parse(String texLog, CapacityModel capacity) {
 
 **Süre:** ~200 atom / 12-20 saniye (XeLaTeX). Arka planda.
 
+> **Not (Adım 1.9).** Yukarıdaki `height + depth + baselineSkip` formülü bir
+> madde listesi içindeki içerik için **yanlış**: kutu sayfayı kendi yüksekliği
+> kadar değil, satır sayısı kadar baseline ilerletiyor. Madde başına ~8 punto
+> fazla sayıyordu. Uygulanan formül ve onu bulan test: **EK D.8.10**.
+
 ### 26.3 Kritik: punto ile çalış, satır değil
 
 ```
@@ -2625,6 +2630,11 @@ public Map<String, Double> parse(String texLog, CapacityModel capacity) {
 ```json
 { "classic:v2": 27.7, "modern:v3": 25.1, "compact:v1": 21.4 }
 ```
+
+> **Not (Adım 1.9).** Bu uyarı ölçümü satıra çevirip artığı kaybetmek için
+> geçerli. Bir madde listesinde n satırın yüksekliği **tam olarak** n
+> baseline'dır — orada satıra yuvarlamak yaklaşım değil, TeX'in aritmetiği
+> (EK D.8.10). Toplama yine puntoyla yapılıyor.
 
 ### 26.4 Sabit maliyetler
 
@@ -3630,6 +3640,7 @@ PATCH  /api/v1/customizations/{id}
 DELETE /api/v1/customizations/{id}
 
 ── Üretim ──────────────────────────────────────────
+POST   /api/v1/generations/general          → 200 + PDF  (Aşama 1, senkron)
 POST   /api/v1/generations                  → 202 + job
 GET    /api/v1/generations
 GET    /api/v1/generations/{id}
@@ -3678,6 +3689,11 @@ Location: /api/v1/jobs/9b1c4e7a-...
 ```
 
 **Ön kontroller senkron** — profil yetersizliği, çelişki, kota doğrudan 4xx döner, iş kuyruğa girmez.
+
+> **Not (Adım 1.8).** `POST /generations/general` bu akışın dışında: ilan da
+> LLM de kuyruk da yok, belge doğrudan `application/pdf` olarak dönüyor ve
+> hiçbir yere kaydedilmiyor. **Aşama 1'e özgüdür**; Aşama 2'de üretim kaydı ve
+> kuyruk gelince yerini yukarıdaki akışa bırakır (EK D.8.8, D.9 · 22).
 
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 
@@ -8829,11 +8845,27 @@ burasıdır.**
 | Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (26 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
 | Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
 | Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
-| Adım 1.5 — Ölçüm | ✅ Bitti (tahmin katmanı hariç) | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). **Sırada:** `FontMetricEstimator` ve ölçümsüz üretim yolu — tüketicisi olduğunda. | — |
+| Adım 1.5 — Ölçüm | ✅ Bitti | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). Tahmin katmanı Adım 1.8'de geldi (`RenderCostEstimator`, EK D.8.7); atom maliyeti formülü Adım 1.9'da düzeltildi (EK D.8.10). | — |
 | Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
-| Adım 1.7 — Faz E/F | ✅ Bitti (indirme ucu hariç) | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
+| Adım 1.7 — Faz E/F | ✅ Bitti | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
 | Adım 1.8 — Genel mod | ✅ Bitti | `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt` (EK D.8.7). `CvGenerationService` + **`POST /api/v1/generations/general`** + `ErrorPresenter` (Bölüm 25.3, dört durumun tamamı) (EK D.8.8). Veritabanındaki profil gerçek derleyiciden **tek sayfalık PDF** olarak çıkıyor. | D.9 · 22, 23 |
-| Adım 1.9 — Golden set | ✅ Bitti | Beş golden profil (Bölüm 51.3) + ölçülmüş maliyetleri, `GoldenProfileReader`, `DevSeeder`, ve **dört kritik testin tamamı** (EK D.8.9). İzolasyon testi kasıtlı bir IDOR'a karşı doğrulandı. | — |
+| Adım 1.9 — Golden set | ✅ Bitti | Beş golden profil (Bölüm 51.3) + ölçülmüş maliyetleri, `GoldenProfileReader`, `DevSeeder`, ve **dört kritik testin tamamı** (EK D.8.9). İzolasyon testi kasıtlı bir IDOR'a karşı doğrulandı. Ayrıca **ölçüm/sayfa sapması testi** — kontrol listesinin son maddesi — yazıldı ve üç ölçüm hatası buldurdu (EK D.8.10). | — |
+
+**Aşama 1 tamamlanma kontrolü (XI-A.3), madde madde:**
+
+| Madde | Durum | Nerede kanıtlanıyor |
+|---|---|---|
+| Manuel form ile profil oluşturulabiliyor | ✅ (backend) | Bölüm/entry/atom/varyant CRUD + sıralama; form `atomcv-frontend`'de |
+| PDF indiriliyor ve gerçekten 1 sayfa | ✅ | `GeneralCvIT` — veritabanındaki profil, gerçek container, tek sayfa |
+| 5 golden profilde sayfa sınırı aşılmıyor | ✅ | `GoldenSelectionTest` (5 profil × 2 dil × {1,2} sayfa) |
+| Determinizm (50 tekrar) | ✅ | `GoldenSelectionTest` |
+| Kilitler ve yapısal kısıtlar | ✅ | `GoldenSelectionTest` |
+| Multi-tenant izolasyon | ✅ | `MultiTenantIsolationIT`, kasıtlı IDOR'a karşı doğrulanmış |
+| Türkçe karakterli doküman derleniyor | ✅ | `LatexContainerIT`; ayrıca golden set'in Türkçe profili uçtan uca |
+| Profil okuma ≤6 sorgu | ✅ | `ProfileAssemblerIT` (Hibernate sorgu sayacı, alt sınırı da var) |
+| Ölçüm ile gerçek sayfa arasında sapma <%3 | ✅ | `MeasurementDriftIT` — beş profilde %0.65-2.4, hepsi güvenli yönde (EK D.8.10) |
+
+**Test sayıları:** 306 birim, 122 entegrasyon, 44 latex-etiketli.
 
 **Aşama 1'de hâlâ açık olan kararlar:**
 
@@ -9044,6 +9076,41 @@ madde budur.
 Üçü Docker'sız koşuyor — maliyetler dosyada olduğu için. İzolasyon testi
 kasıtlı bir ihlale karşı doğrulandı: `ProfileScopedRepository.findById`'nin
 profil filtresi kaldırıldığında sekiz ucun hepsi düştü, geri konunca geçti.
+
+### D.8.10 — Aşama 1'in son maddesi: ölçüm ile gerçek sayfa arasındaki sapma
+
+XI-A.3'ün tamamlanma kontrolü "**ölçüm ile gerçek sayfa arasında sapma
+<%3**" diyor. Bu maddeyi kapatan test (`MeasurementDriftIT`) yazıldığında sapma
+**%15-32** çıktı — beş golden profilin hepsinde, hep aynı yönde: model sayfayı
+gerçekte olduğundan **dolu** sanıyordu. Yönü güvenliydi (sayfa taşmıyor) ama
+sonucu değildi: kullanıcının içeriğinin üçte biri sebepsiz yere dışarıda
+kalıyordu.
+
+Test, render edilen **gerçek belgeye** `\typeout{...\the\pagetotal}` ekleyip
+TeX'e "bu sayfada ne kadar yer kapladın" diye soruyor ve seçimin harcadığını
+sandığı puntoyla karşılaştırıyor. Üç ayrı hata buldu:
+
+| Hata | Neydi | Ne oldu |
+|---|---|---|
+| **Atom maliyeti** | `height + depth + baselineSkip` (Bölüm 26.2'nin formülü) | Bir madde listesindeki kutu, sayfayı kendi yüksekliği kadar değil **satır sayısı kadar baseline** ilerletiyor. Doğrusu `satır × baselineSkip + itemsep`. Madde başına ~8 punto, yirmi maddelik bir sayfada üçte bir sayfa. |
+| **Başlık bloğu** | 52.0pt | Kalibrasyon belgesi ölçümden önce `\null` koyuyordu; o boş kutu, gerçek belgede olmayan bir baseline boşluğu satın alıyordu. `\null` kaldırıldı: **45.68pt**. |
+| **Entry başlığı tek sayı değil** | Her entry 22.76pt | Bölüm başlığından sonra gelen entry 22.76pt, **üstündeki işin madde listesinden sonra gelen** entry 32.0pt — arada paragraf boşluğu var. Dört işlik bir CV bunu üç kez ödüyor. Yeni sabit: `ENTRY_HEADER_AFTER_LIST`. Seçim, entry'yi açarken hangisinin geçerli olduğunu biliyor ve **ne ödediğini kaydediyor**, çünkü swap turunda geri alırken aynı sayıyı düşmesi gerekiyor. |
+
+**Bölüm 26.3'e düzeltme.** O bölüm "satıra yuvarlama, puntoyla topla" diyor ve
+gerekçesi doğru — ama satıra yuvarlamak burada bir yaklaşım değil, TeX'in
+kendi aritmetiği: ardışık baseline'lar tam olarak `\baselineskip` uzaklıkta,
+dolayısıyla n satırın yüksekliği tam olarak n baseline. Uyarı, *ölçümü satıra
+çevirip artığı kaybetmek* için geçerli; toplama hâlâ puntoyla yapılıyor.
+
+**Sonuç.** Sapma beş profilde de **%3'ün altında** ve hepsinde **fazla tahmin**
+yönünde (senior %0.65, minimal_edge %2.4) — yani sayfa hâlâ taşmıyor, ama artık
+neredeyse dolu. Kalan pay çoğunlukla başlık bloğunun sabit sayılmasından
+geliyor: iletişim satırı kısa olan bir profil kalibre edilenden az yer kaplıyor.
+
+**Kalıcı guard'lar:** `MeasurementDriftIT` (beş profil, %3), ve
+`LatexCalibrationIT` artık ikinci bir bölümü, ikinci bir entry'yi, ikinci bir
+listeyi **ve** listeden sonra gelen bir entry'yi de ölçüyor — tekrarlanan
+mobilyanın maliyeti değişirse test düşer.
 
 ### D.9 — Frontend'i ilgilendirenler
 
