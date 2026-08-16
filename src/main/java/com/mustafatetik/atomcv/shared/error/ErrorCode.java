@@ -63,7 +63,14 @@ public enum ErrorCode {
     VERSION_CONFLICT(412),
     PRECONDITION_REQUIRED(428),
     VALIDATION_FAILED(400, param("fields", STRING_ARRAY)),
-    INTERNAL_ERROR(500);
+    INTERNAL_ERROR(500),
+
+    // ── Protocol-level rejections (EK D.6.4). A correct client never sees
+    // these; they exist so that a malformed request is answered as the
+    // client's mistake rather than as a server failure.
+    METHOD_NOT_ALLOWED(405),
+    NOT_ACCEPTABLE(406),
+    UNSUPPORTED_MEDIA_TYPE(415);
 
     /** One published parameter: the key the frontend reads, and its JSON type. */
     public record Param(String name, ParamType type) {

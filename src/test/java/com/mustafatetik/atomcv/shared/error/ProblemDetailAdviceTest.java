@@ -3,12 +3,14 @@ package com.mustafatetik.atomcv.shared.error;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mustafatetik.atomcv.shared.security.CrossTenantAccessException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -111,6 +114,54 @@ class ProblemDetailAdviceTest {
                 .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 
+    // ── Protocol-level rejections. Every one of these answered 500 before,
+    // and told the user the server had broken (EK D.6.4). ──────────────────
+
+    @Test
+    void aMediaTypeNothingConsumesIsTheClientsMistake() throws Exception {
+        // The exact request Bolum 35.6 documented for the profile patches.
+        mvc.perform(post("/test/validated")
+                        .contentType(MediaType.valueOf("application/merge-patch+json"))
+                        .content("{\"title\":\"x\"}"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+    }
+
+    @Test
+    void anAcceptHeaderNothingCanSatisfyIsAlsoTheClientsMistake() throws Exception {
+        mvc.perform(get("/test/json-only").accept(MediaType.TEXT_PLAIN))
+                .andExpect(status().isNotAcceptable())
+                .andExpect(jsonPath("$.code").value("NOT_ACCEPTABLE"));
+    }
+
+    @Test
+    void theWrongVerbAnswers405AndSaysWhichVerbsWork() throws Exception {
+        mvc.perform(get("/test/validated"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"))
+                // RFC 9110 requires it, and it is what tells a client whether
+                // it used the wrong verb or the wrong URL.
+                .andExpect(header().string("Allow", Matchers.containsString("POST")));
+    }
+
+    @Test
+    void aParameterThatWillNotConvertNamesTheParameterAndNotItsValue() throws Exception {
+        mvc.perform(get("/test/json-only").param("id", "not-a-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(Matchers.contains("id")))
+                // The value came from the user (absolute rule 4).
+                .andExpect(content().string(Matchers.not(Matchers.containsString("not-a-uuid"))));
+    }
+
+    @Test
+    void aMissingRequiredParameterIsNamedTheSameWay() throws Exception {
+        mvc.perform(get("/test/needs-a-parameter"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(Matchers.contains("format")));
+    }
+
     record ProfileForm(@NotBlank String title, @Size(max = 10) String headline) {
     }
 
@@ -149,8 +200,17 @@ class ProblemDetailAdviceTest {
             throw new IllegalStateException("the database went away");
         }
 
-        @PostMapping("/test/validated")
+        @PostMapping(path = "/test/validated", consumes = MediaType.APPLICATION_JSON_VALUE)
         void validated(@jakarta.validation.Valid @RequestBody ProfileForm form) {
+        }
+
+        @GetMapping(path = "/test/json-only", produces = MediaType.APPLICATION_JSON_VALUE)
+        String jsonOnly(@RequestParam(required = false) UUID id) {
+            return "{}";
+        }
+
+        @GetMapping("/test/needs-a-parameter")
+        void needsAParameter(@RequestParam String format) {
         }
     }
 }
