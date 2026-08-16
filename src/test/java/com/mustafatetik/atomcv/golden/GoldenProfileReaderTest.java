@@ -58,7 +58,7 @@ class GoldenProfileReaderTest {
     void oneAtomCarriesASecondWordingSoTheEditorHasSomethingToShow() {
         // Until this existed, no atom anywhere had more than one wording, so
         // the tabs, the promotion and the staleness badge had no data on
-        // either side of the contract — only mocks (EK D.6.4).
+        // either side of the contract — only mocks (EK D.6.8).
         var senior = GoldenProfileReader.read("senior_backend_tr", OWNER);
 
         assertThat(senior.profile().getEnabledLanguages()).contains("tr", "en");

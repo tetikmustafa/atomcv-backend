@@ -12,7 +12,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
  * can read — while a patch may be about anything else. Making one wording the
  * default is the case that matters: it is not a text edit, and requiring the
  * whole sentence back for it means a client has to be holding content it has
- * no other reason to hold (EK D.6.4).
+ * no other reason to hold (EK D.6.8).
  *
  * <p>Null means "leave it alone". {@code tone} is the one nullable column, so
  * it carries a JsonNullable: undefined leaves the tone, a defined null returns

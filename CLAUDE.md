@@ -304,11 +304,13 @@ core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
 rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
 Makefile, repository documentation.
 
-**Stage 1 — Walking Skeleton: complete (Adım 1.1-1.9).** A profile in the
-database comes back as a one-page PDF through the real compiler, and the four
-tests Bölüm 51.2 calls the most valuable ones run across a golden set of five
-profiles. What remains is the doc sync to the frontend repository and the
-three open items below.
+**Stage 1 — Walking Skeleton: complete (Adım 1.1-1.9), plus its closing
+slice.** A profile in the database comes back as a one-page PDF through the
+real compiler, and the four tests Bölüm 51.2 calls the most valuable ones run
+across a golden set of five profiles. The frontend's second
+`DOC-SYNC-REQUEST` was then applied (`EK D.6.8`): three server defects fixed,
+six schema gaps closed, three doc sections corrected. What remains is the doc
+sync to the frontend repository and the open items below.
 
 ### What exists
 
@@ -320,15 +322,16 @@ three open items below.
 | `profile.service` | `ProfileResolver`, `ProfileService`, `SectionService`, `EntryService`, `AtomService`, `CompletenessCalculator`, `ProfileExporter`, `ProfileAssembler` |
 | `profile.api` | `ProfileController`, `SectionController`, `EntryController`, `AtomController` + DTOs |
 | `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, the two scoped bases, `CurrentUser`, `LocalDevCurrentUser` |
-| `shared.error` | `ErrorCode` (27 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
+| `shared.error` | `ErrorCode` (30 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
 | `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
 | `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
 | `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
 | `generation` | `pipeline` (`Result`, `PipelineError`, `ErrorPresenter`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`, `SelectionRequestBuilder`), `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
 | `profile.seed` | `GoldenProfileDocument`, `GoldenProfileReader`, `GoldenProfile`, `DevSeeder`; five fixtures + their measured costs under `src/main/resources/golden/profiles` |
 
-306 unit tests, 122 integration tests, 44 latex-tagged. Every decision behind
-these is in `EK D` — read D.2 through D.8.10 before touching them.
+312 unit tests, 132 integration tests, 44 latex-tagged. Every decision behind
+these is in `EK D` — read D.2 through D.8.10, then D.6.8, before touching
+them.
 
 ### Deliberately absent — do not "fix" without asking
 
@@ -353,12 +356,15 @@ these is in `EK D` — read D.2 through D.8.10 before touching them.
 
 ### Resume here
 
-**Stage 1 is done. Close it, then start Stage 2.**
+**Stage 1 is done, and so is the closing slice. Sync, then start Stage 2.**
 
 1. **Sync the docs** to the frontend repository with `scripts/sync-docs.sh`,
-   and say out loud what `EK D.9` items 22 and 23 mean for that side: the
-   general-CV endpoint is Stage-1-only, and `complete_profile` is a new
-   resolution action.
+   and say out loud what `EK D.9` items 24-32 mean for that side. The ones
+   that change their code today: the variant PATCH no longer needs `content`
+   and no longer eats `tone` (28), the schema now carries the `200`s, the
+   `ETag`s and the 3.1 nullability so their local widenings can go (29),
+   operation ids were renamed so anything bound by name breaks (30), and the
+   seeded profile finally has an atom with two wordings (32).
 2. Then **Stage 2** (XI-A.4): the LLM gateway with its three local profiles,
    Faz A (job analysis), Faz B (relevance scoring with embeddings), Faz D
    (rewriting with the anti-fabrication validators), the job queue and SSE,

@@ -92,7 +92,7 @@ public class ProfileController {
     @ApiResponses({
             // Both media types, because the endpoint really answers with both.
             // Declaring only the first makes a generated client parse markdown
-            // as JSON and throw on the first character (EK D.6.4).
+            // as JSON and throw on the first character (EK D.6.8).
             @ApiResponse(responseCode = "200", description = "The profile as a file",
                     content = {
                             @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,

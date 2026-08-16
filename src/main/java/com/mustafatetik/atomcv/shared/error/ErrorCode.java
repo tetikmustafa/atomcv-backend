@@ -65,7 +65,7 @@ public enum ErrorCode {
     VALIDATION_FAILED(400, param("fields", STRING_ARRAY)),
     INTERNAL_ERROR(500),
 
-    // ── Protocol-level rejections (EK D.6.4). A correct client never sees
+    // ── Protocol-level rejections (EK D.6.8). A correct client never sees
     // these; they exist so that a malformed request is answered as the
     // client's mistake rather than as a server failure.
     METHOD_NOT_ALLOWED(405),
