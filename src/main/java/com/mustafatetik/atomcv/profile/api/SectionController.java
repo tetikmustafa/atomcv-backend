@@ -14,6 +14,8 @@ import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -67,15 +69,21 @@ public class SectionController {
         this.sections = sections;
     }
 
-    @Operation(summary = "List the sections in display order",
+    @Operation(operationId = "listSections", summary = "List the sections in display order",
             description = "Every item carries its own version, so editing one needs no extra read.")
+    @ApiResponse(responseCode = "200", description = "Every section, primary order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = SectionResponse.class))))
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SectionResponse> list() {
         return sections.list(profile()).stream().map(SectionResponse::of).toList();
     }
 
-    @Operation(summary = "Add a section at the end")
-    @ApiResponse(responseCode = "201", description = "Created")
+    @Operation(operationId = "createSection", summary = "Add a section at the end")
+    @ApiResponse(responseCode = "201", description = "Created",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION, schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = SectionResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SectionResponse> create(@Valid @RequestBody SectionCreateRequest request) {
@@ -91,8 +99,13 @@ public class SectionController {
                 .body(SectionResponse.of(created));
     }
 
-    @Operation(summary = "Change part of a section",
+    @Operation(operationId = "patchSection", summary = "Change part of a section",
             description = "A field left out is left alone. Requires If-Match.")
+    @ApiResponse(responseCode = "200", description = "The section as it now stands",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = SectionResponse.class)))
     @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SectionResponse> patch(
@@ -113,7 +126,7 @@ public class SectionController {
                 .body(SectionResponse.of(patched));
     }
 
-    @Operation(summary = "Delete a section",
+    @Operation(operationId = "deleteSection", summary = "Delete a section",
             description = """
                     Takes its entries, atoms and variants with it. Requires If-Match, \
                     so a section someone else has changed since you read it is not \
@@ -128,11 +141,14 @@ public class SectionController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Put the sections in this order",
+    @Operation(operationId = "reorderSections", summary = "Put the sections in this order",
             description = """
                     The list must name every section. A partial one would leave the \
                     rest to be guessed; sending all of them also makes the call \
                     idempotent.""")
+    @ApiResponse(responseCode = "200", description = "Every section, in the new order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = SectionResponse.class))))
     @PostMapping(path = "/reorder", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SectionResponse> reorder(@Valid @RequestBody ReorderRequest request) {

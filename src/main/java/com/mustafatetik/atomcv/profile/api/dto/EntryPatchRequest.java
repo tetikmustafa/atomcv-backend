@@ -35,20 +35,27 @@ public record EntryPatchRequest(
         // The tri-state is a Java concern; on the wire these are plain nullable
         // fields, and the schema has to say so or a generated client ends up
         // filling in a { present, value } wrapper.
-        @Schema(implementation = String.class, nullable = true, description = "Send null to clear")
+        //
+        // `types` rather than `nullable`: this document is OpenAPI 3.1, where
+        // null is a type and not a flag. `nullable = true` was silently dropped
+        // on the way out, so the schema published `"type": "string"` for a
+        // field whose whole purpose is to accept null — a generated client
+        // rejected the exact body that clears an end date (EK D.6.4).
+        @Schema(implementation = String.class, types = {"string", "null"},
+                description = "Send null to clear")
         JsonNullable<@Size(max = 200) String> organization,
 
-        @Schema(implementation = String.class, nullable = true)
+        @Schema(implementation = String.class, types = {"string", "null"})
         JsonNullable<@Size(max = 120) String> location,
 
-        @Schema(implementation = LocalDate.class, nullable = true)
+        @Schema(implementation = LocalDate.class, types = {"string", "null"})
         JsonNullable<LocalDate> startDate,
 
-        @Schema(implementation = LocalDate.class, nullable = true,
+        @Schema(implementation = LocalDate.class, types = {"string", "null"},
                 description = "Send null when the job becomes ongoing again")
         JsonNullable<LocalDate> endDate,
 
-        @Schema(implementation = String.class, nullable = true)
+        @Schema(implementation = String.class, types = {"string", "null"})
         JsonNullable<@Size(max = 300) String> url,
 
         @DecimalMin("0.0") @DecimalMax("1.0") Float importance,

@@ -18,6 +18,17 @@ import com.mustafatetik.atomcv.shared.error.ResolutionAction;
  */
 public final class EntityTags {
 
+    /**
+     * What the published schema says about the header, in one place so that
+     * every endpoint that sends one describes it identically.
+     *
+     * <p>Swagger parses an {@code example} as JSON where it can, so a quoted
+     * value there loses its quotes. The header is an RFC 9110 entity tag: the
+     * quotes are part of it, which is why the shape is spelled out in prose.
+     */
+    public static final String HEADER_DESCRIPTION =
+            "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"";
+
     private EntityTags() {
     }
 

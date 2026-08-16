@@ -90,9 +90,15 @@ public class ProfileController {
                     publishes; `?format=markdown` gives the same content to read. \
                     Both are served as a download.""")
     @ApiResponses({
+            // Both media types, because the endpoint really answers with both.
+            // Declaring only the first makes a generated client parse markdown
+            // as JSON and throw on the first character (EK D.6.4).
             @ApiResponse(responseCode = "200", description = "The profile as a file",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ProfileExport.class))),
+                    content = {
+                            @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = ProfileExport.class)),
+                            @Content(mediaType = "text/markdown",
+                                    schema = @Schema(type = "string"))}),
             @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED — unknown format",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
