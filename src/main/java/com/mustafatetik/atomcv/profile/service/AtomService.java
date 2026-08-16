@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.profile.service;
 
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.repository.AtomRepository;
 import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
 import com.mustafatetik.atomcv.profile.repository.EntryRepository;
@@ -178,7 +179,7 @@ public class AtomService {
     public AtomVariant addVariant(ProfileRef profile, UUID atomId, VariantDraft draft) {
         requireAtom(profile, atomId);
         String language = draft.language() == null ? "en" : draft.language();
-        requireFreeSlot(profile, atomId, language, draft, null);
+        requireFreeSlot(profile, atomId, language, draft.tone(), null);
 
         var variant = new AtomVariant(profile.id(), atomId, language, draft.content());
         variant.setTone(draft.tone());
@@ -189,23 +190,36 @@ public class AtomService {
         return variants.save(profile, variant);
     }
 
+    /**
+     * Changes only what the patch carries. An omitted field is left alone —
+     * including {@code content}, so making a wording the default costs one
+     * boolean rather than the whole sentence.
+     */
     @Transactional
     public AtomVariant patchVariant(ProfileRef profile, UUID atomId, UUID variantId,
-            String ifMatch, VariantDraft draft) {
+            String ifMatch, VariantPatch patch) {
 
         AtomVariant variant = requireVariant(profile, atomId, variantId);
         EntityTags.requireMatch(ifMatch, variant.getVersion());
 
-        String language = draft.language() == null ? variant.getLanguage() : draft.language();
-        requireFreeSlot(profile, atomId, language, draft, variantId);
+        String language = patch.language() == null ? variant.getLanguage() : patch.language();
+        Tone tone = patch.tone() == null || !patch.tone().isPresent()
+                ? variant.getTone()
+                : patch.tone().get();
+        requireFreeSlot(profile, atomId, language, tone, variantId);
 
-        // setContent re-derives the plain text and the hash, and drops the
-        // measured render costs when the words actually changed.
-        variant.setContent(draft.content());
+        if (patch.content() != null) {
+            // setContent re-derives the plain text and the hash, and drops the
+            // measured render costs when the words actually changed.
+            variant.setContent(patch.content());
+            // Only a write that carries words makes a wording the user's own.
+            // Setting this on a promote would tell Stage 2's translation job
+            // that a human wrote a sentence nobody touched (P8).
+            variant.setUserEdited(true);
+        }
         variant.setLanguage(language);
-        variant.setTone(draft.tone());
-        variant.setUserEdited(true);
-        if (Boolean.TRUE.equals(draft.primary()) && !variant.isPrimary()) {
+        variant.setTone(tone);
+        if (Boolean.TRUE.equals(patch.primary()) && !variant.isPrimary()) {
             variants.clearPrimary(profile, atomId);
             variant.setPrimary(true);
         }
@@ -233,13 +247,13 @@ public class AtomService {
     }
 
     private void requireFreeSlot(ProfileRef profile, UUID atomId, String language,
-            VariantDraft draft, UUID selfId) {
+            Tone tone, UUID selfId) {
         // A unique index allows one wording per (atom, language, tone).
         // Answering here beats letting the constraint surface as a 500.
         boolean taken = variantsOf(profile, atomId).stream()
                 .filter(existing -> !existing.getId().equals(selfId))
                 .anyMatch(existing -> existing.getLanguage().equals(language)
-                        && Objects.equals(existing.getTone(), draft.tone()));
+                        && Objects.equals(existing.getTone(), tone));
         if (taken) {
             throw invalid("language");
         }
