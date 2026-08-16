@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.profile.domain.Preferences;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Section;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,6 +96,9 @@ public final class GoldenProfileReader {
         profile.setHeadline(document.headline());
         if (document.sourceLanguage() != null) {
             profile.setSourceLanguage(document.sourceLanguage());
+        }
+        if (document.enabledLanguages() != null) {
+            profile.setEnabledLanguages(document.enabledLanguages());
         }
         if (document.contact() != null) {
             var contact = document.contact();
@@ -194,13 +198,37 @@ public final class GoldenProfileReader {
         atom.setProperNouns(orEmpty(source.properNouns()));
         atoms.add(atom);
 
-        var variant = new AtomVariant(profileId, atom.getId(),
-                source.language() == null ? profileLanguage : source.language(),
+        String primaryLanguage = source.language() == null ? profileLanguage : source.language();
+        var variant = new AtomVariant(profileId, atom.getId(), primaryLanguage,
                 RichContent.plain(source.text()));
         variant.setPrimary(true);
         variants.add(variant);
 
+        // A slot is one language-and-tone pair, and the database allows one
+        // wording per slot. Catching a clash here names the fixture that has
+        // it; letting it through means the seeder dies on a constraint at
+        // startup, which says nothing about which file is wrong.
+        var taken = new java.util.HashSet<String>();
+        taken.add(slot(primaryLanguage, null));
+        for (GoldenProfileDocument.Wording alternative : orEmpty(source.alternatives())) {
+            String language = alternative.language() == null
+                    ? primaryLanguage
+                    : alternative.language();
+            if (!taken.add(slot(language, alternative.tone()))) {
+                throw new IllegalStateException(
+                        "Two wordings of the same atom claim " + slot(language, alternative.tone()));
+            }
+            var other = new AtomVariant(profileId, atom.getId(), language,
+                    RichContent.plain(alternative.text()));
+            other.setTone(alternative.tone());
+            variants.add(other);
+        }
+
         return (short) (displayOrder + 1);
+    }
+
+    private static String slot(String language, Tone tone) {
+        return language + "/" + (tone == null ? "neutral" : tone.name());
     }
 
     private static <T> T load(String path, Class<T> type) {

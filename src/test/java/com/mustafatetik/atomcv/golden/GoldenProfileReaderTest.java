@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.golden;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
 import java.util.UUID;
@@ -34,7 +35,15 @@ class GoldenProfileReaderTest {
         assertThat(golden.description()).as("a fixture says what it is for").isNotBlank();
         assertThat(golden.sections()).isNotEmpty();
         assertThat(golden.atoms()).isNotEmpty();
-        assertThat(golden.variants()).hasSameSizeAs(golden.atoms());
+        // At least one wording each, and exactly one of them primary: an atom
+        // with no default has nothing to render.
+        assertThat(golden.variants()).hasSizeGreaterThanOrEqualTo(golden.atoms().size());
+        assertThat(golden.atoms()).allSatisfy(atom ->
+                assertThat(golden.variants().stream()
+                        .filter(variant -> variant.getAtomId().equals(atom.getId()))
+                        .filter(AtomVariant::isPrimary))
+                        .as("one default wording per atom")
+                        .hasSize(1));
         assertThat(golden.tree().atomCount()).isEqualTo(golden.atoms().size());
 
         // The invariant the composite foreign keys enforce in the database.
@@ -43,6 +52,21 @@ class GoldenProfileReaderTest {
                 assertThat(section.getProfileId()).isEqualTo(profileId));
         assertThat(golden.atoms()).allSatisfy(atom ->
                 assertThat(atom.getProfileId()).isEqualTo(profileId));
+    }
+
+    @Test
+    void oneAtomCarriesASecondWordingSoTheEditorHasSomethingToShow() {
+        // Until this existed, no atom anywhere had more than one wording, so
+        // the tabs, the promotion and the staleness badge had no data on
+        // either side of the contract — only mocks (EK D.6.4).
+        var senior = GoldenProfileReader.read("senior_backend_tr", OWNER);
+
+        assertThat(senior.profile().getEnabledLanguages()).contains("tr", "en");
+        assertThat(senior.variants().stream().filter(variant -> !variant.isPrimary()))
+                .as("at least one alternative wording")
+                .isNotEmpty()
+                .allSatisfy(alternative ->
+                        assertThat(alternative.getLanguage()).isEqualTo("en"));
     }
 
     @Test
