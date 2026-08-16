@@ -296,7 +296,7 @@ class AtomApiIT extends AbstractIntegrationTest {
                   "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
 
         // No content, no language, no tone: this write is about one boolean,
-        // and it used to demand the whole sentence back (EK D.6.4).
+        // and it used to demand the whole sentence back (EK D.6.8).
         mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
                         + turkish.get("id").asText())
                         .header(HttpHeaders.IF_MATCH, "\"0\"")

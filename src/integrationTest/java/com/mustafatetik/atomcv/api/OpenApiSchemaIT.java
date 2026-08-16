@@ -86,7 +86,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // "may be null" is half the point and used to be missing: this asserted
         // the type alone, so the schema published a plain string for a field
         // whose documented purpose is to accept null, and a generated client
-        // rejected the body that clears an end date (EK D.6.4). In OpenAPI 3.1
+        // rejected the body that clears an end date (EK D.6.8). In OpenAPI 3.1
         // null is a type, so it belongs in the list.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.EntryPatch.properties.organization.type")
@@ -132,7 +132,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // Ten operations declared only their failures. Between them that is
         // every collection read and every partial write — the two things the
         // profile editor does constantly — so a generated client had no
-        // response type for any of them (EK D.6.4).
+        // response type for any of them (EK D.6.8).
         for (String path : new String[] {
                 "/api/v1/profile/sections", "/api/v1/profile/entries", "/api/v1/profile/atoms"}) {
             mvc.perform(get("/v3/api-docs"))

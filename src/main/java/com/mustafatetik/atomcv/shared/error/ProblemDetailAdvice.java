@@ -138,7 +138,7 @@ public class ProblemDetailAdvice {
      * and it mattered in practice: Bolum 35.6 documented
      * {@code application/merge-patch+json} for the profile patches, which no
      * controller declares, so every client following the specification was told
-     * the server had failed (EK D.6.4).
+     * the server had failed (EK D.6.8).
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ProblemDetail> handle(HttpMediaTypeNotSupportedException exception) {
