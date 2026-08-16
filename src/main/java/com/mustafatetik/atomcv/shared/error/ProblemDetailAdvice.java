@@ -4,15 +4,22 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mustafatetik.atomcv.shared.security.CrossTenantAccessException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -103,6 +110,61 @@ public class ProblemDetailAdvice {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ProblemDetail> handle(NoResourceFoundException exception) {
         return respond(UserFacingError.of(ErrorCode.RESOURCE_NOT_FOUND));
+    }
+
+    /**
+     * A path parameter or query parameter that could not be converted, or one
+     * the handler needs and the request left out. Both are malformed requests
+     * and belong with the other 400s; without these two they reach the
+     * catch-all, which answers 500 and tells the user the server broke.
+     *
+     * <p>Only the parameter's name travels. Its value is user input
+     * (absolute rule 4) and is neither logged nor returned.
+     */
+    @ExceptionHandler({
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class})
+    public ResponseEntity<ProblemDetail> handleBadParameter(Exception exception) {
+        String field = exception instanceof MethodArgumentTypeMismatchException mismatch
+                ? mismatch.getName()
+                : ((MissingServletRequestParameterException) exception).getParameterName();
+        return respond(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                .param("fields", List.of(field))
+                .build());
+    }
+
+    /**
+     * A body sent as a media type no handler consumes. RFC 9110 calls this 415,
+     * and it mattered in practice: Bolum 35.6 documented
+     * {@code application/merge-patch+json} for the profile patches, which no
+     * controller declares, so every client following the specification was told
+     * the server had failed (EK D.6.4).
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handle(HttpMediaTypeNotSupportedException exception) {
+        return respond(UserFacingError.of(ErrorCode.UNSUPPORTED_MEDIA_TYPE));
+    }
+
+    /** An {@code Accept} header no handler can satisfy. */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ProblemDetail> handle(HttpMediaTypeNotAcceptableException exception) {
+        return respond(UserFacingError.of(ErrorCode.NOT_ACCEPTABLE));
+    }
+
+    /**
+     * A known path with an unsupported method. The {@code Allow} header is not
+     * decoration: RFC 9110 requires it on a 405, and it is what tells a client
+     * whether it used the wrong verb or the wrong URL.
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handle(HttpRequestMethodNotSupportedException exception) {
+        UserFacingError error = UserFacingError.of(ErrorCode.METHOD_NOT_ALLOWED);
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(error.httpStatus());
+        Set<HttpMethod> allowed = exception.getSupportedHttpMethods();
+        if (allowed != null && !allowed.isEmpty()) {
+            response.allow(allowed.toArray(HttpMethod[]::new));
+        }
+        return response.body(ProblemDetails.from(error));
     }
 
     /**
