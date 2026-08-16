@@ -20,6 +20,8 @@ import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -77,9 +79,12 @@ public class AtomController {
         this.atoms = atoms;
     }
 
-    @Operation(summary = "List atoms with their wordings",
+    @Operation(operationId = "listAtoms", summary = "List atoms with their wordings",
             description = "Unpaginated: a profile holds tens to a few hundred atoms "
                     + "and the editor loads all of them (EK D.6.2).")
+    @ApiResponse(responseCode = "200", description = "Every matching atom, in display order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = AtomResponse.class))))
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AtomResponse> list(
             @RequestParam(required = false) UUID sectionId,
@@ -92,10 +97,14 @@ public class AtomController {
                 .toList();
     }
 
-    @Operation(summary = "Add an atom and its first wording",
+    @Operation(operationId = "createAtom", summary = "Add an atom and its first wording",
             description = "Content is required: an atom with no wording is a fact nobody "
                     + "can read, and nothing downstream can render or measure it.")
-    @ApiResponse(responseCode = "201", description = "Created")
+    @ApiResponse(responseCode = "201", description = "Created",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = AtomResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AtomResponse> create(@Valid @RequestBody AtomCreateRequest request) {
@@ -118,9 +127,14 @@ public class AtomController {
                 .body(AtomResponse.of(created, variantsOf(profile, created.getId())));
     }
 
-    @Operation(summary = "Change an atom's controls",
+    @Operation(operationId = "patchAtom", summary = "Change an atom's controls",
             description = "Importance, locks, verification and the scoring inputs. Text lives "
                     + "on a wording. Requires If-Match.")
+    @ApiResponse(responseCode = "200", description = "The atom as it now stands",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = AtomResponse.class)))
     @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AtomResponse> patch(
@@ -145,7 +159,8 @@ public class AtomController {
                 .body(AtomResponse.of(patched, variantsOf(profile, patched.getId())));
     }
 
-    @Operation(summary = "Delete an atom", description = "Takes its wordings with it.")
+    @Operation(operationId = "deleteAtom", summary = "Delete an atom",
+            description = "Takes its wordings with it.")
     @ApiResponse(responseCode = "204", description = "Deleted")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
@@ -156,8 +171,11 @@ public class AtomController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Put one group of atoms in this order",
+    @Operation(operationId = "reorderAtoms", summary = "Put one group of atoms in this order",
             description = "The atoms of an entry, or the ones hanging straight off a section.")
+    @ApiResponse(responseCode = "200", description = "That group's atoms, in the new order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = AtomResponse.class))))
     @PostMapping(path = "/reorder", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<AtomResponse> reorder(@Valid @RequestBody AtomReorderRequest request) {
@@ -170,10 +188,14 @@ public class AtomController {
 
     // ── wordings ──────────────────────────────────────────────────────────
 
-    @Operation(summary = "Add a wording",
+    @Operation(operationId = "addVariant", summary = "Add a wording",
             description = "One wording per language and tone; a second one for the same pair "
                     + "is refused rather than left to a database constraint.")
-    @ApiResponse(responseCode = "201", description = "Created")
+    @ApiResponse(responseCode = "201", description = "Created",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = VariantResponse.class)))
     @PostMapping(path = "/{id}/variants", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VariantResponse> addVariant(
@@ -185,12 +207,17 @@ public class AtomController {
                 .body(VariantResponse.of(created));
     }
 
-    @Operation(summary = "Change a wording",
+    @Operation(operationId = "patchVariant", summary = "Change a wording",
             description = "Content is optional: making a wording the default is not a text "
                     + "edit and does not need the sentence back. When content is sent it is "
                     + "the whole of it, not a run at a time, and changing the words clears the "
                     + "measured render costs — the same sentence is what made them true. "
                     + "Requires If-Match.")
+    @ApiResponse(responseCode = "200", description = "The wording as it now stands",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = VariantResponse.class)))
     @PatchMapping(path = "/{id}/variants/{variantId}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VariantResponse> patchVariant(
@@ -211,7 +238,7 @@ public class AtomController {
                 .body(VariantResponse.of(patched));
     }
 
-    @Operation(summary = "Delete a wording",
+    @Operation(operationId = "deleteVariant", summary = "Delete a wording",
             description = "Not the last one, and not the primary one while others remain: "
                     + "an atom has to keep a wording, and a default among them.")
     @ApiResponse(responseCode = "204", description = "Deleted")

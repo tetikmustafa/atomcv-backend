@@ -44,7 +44,9 @@ dependencies {
     // JSON merge-patch needs three states — absent, null, value — and Java has
     // no tri-state Optional: Jackson deserializes an absent Optional field as
     // Optional.empty(), the same as an explicit null. This library owns that
-    // distinction, and springdoc renders it as a nullable field.
+    // distinction. Springdoc does not render it as a nullable field on its own:
+    // each field needs @Schema(implementation = ..., types = {..., "null"}) or
+    // the wrapper leaks into the published schema. OpenApiSchemaIT holds it.
     implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 
     // The published schema is the API contract: the frontend generates its

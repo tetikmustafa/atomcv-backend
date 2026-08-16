@@ -14,6 +14,8 @@ import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -68,14 +70,21 @@ public class EntryController {
         this.entries = entries;
     }
 
-    @Operation(summary = "List entries, optionally within one section")
+    @Operation(operationId = "listEntries", summary = "List entries, optionally within one section")
+    @ApiResponse(responseCode = "200", description = "Every matching entry, in display order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = EntryResponse.class))))
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EntryResponse> list(@RequestParam(required = false) UUID sectionId) {
         return entries.list(profile(), sectionId).stream().map(EntryResponse::of).toList();
     }
 
-    @Operation(summary = "Add an entry at the end of its section")
-    @ApiResponse(responseCode = "201", description = "Created")
+    @Operation(operationId = "createEntry", summary = "Add an entry at the end of its section")
+    @ApiResponse(responseCode = "201", description = "Created",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = EntryResponse.class)))
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntryResponse> create(@Valid @RequestBody EntryCreateRequest request) {
@@ -97,9 +106,14 @@ public class EntryController {
                 .body(EntryResponse.of(created));
     }
 
-    @Operation(summary = "Change part of an entry", description = """
+    @Operation(operationId = "patchEntry", summary = "Change part of an entry", description = """
             A field left out is left alone; a nullable field sent as null is \
             cleared. Requires If-Match.""")
+    @ApiResponse(responseCode = "200", description = "The entry as it now stands",
+            headers = @Header(name = "ETag", description = EntityTags.HEADER_DESCRIPTION,
+                    schema = @Schema(type = "string")),
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = EntryResponse.class)))
     @PatchMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntryResponse> patch(
@@ -125,7 +139,7 @@ public class EntryController {
                 .body(EntryResponse.of(patched));
     }
 
-    @Operation(summary = "Delete an entry",
+    @Operation(operationId = "deleteEntry", summary = "Delete an entry",
             description = "Takes its atoms and their variants with it. Requires If-Match.")
     @ApiResponse(responseCode = "204", description = "Deleted")
     @DeleteMapping("/{id}")
@@ -137,8 +151,11 @@ public class EntryController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Put one section's entries in this order",
+    @Operation(operationId = "reorderEntries", summary = "Put one section's entries in this order",
             description = "The list must name every entry of that section.")
+    @ApiResponse(responseCode = "200", description = "That section's entries, in the new order",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    array = @ArraySchema(schema = @Schema(implementation = EntryResponse.class))))
     @PostMapping(path = "/reorder", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EntryResponse> reorder(@Valid @RequestBody EntryReorderRequest request) {

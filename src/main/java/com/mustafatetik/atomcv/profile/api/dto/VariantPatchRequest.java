@@ -31,7 +31,7 @@ public record VariantPatchRequest(
         // The tri-state is a Java concern; on the wire this is a plain nullable
         // field, and the schema has to say so or a generated client ends up
         // filling in a { present, value } wrapper.
-        @Schema(implementation = Tone.class, nullable = true,
+        @Schema(implementation = Tone.class, types = {"string", "null"},
                 description = "Send null to return the wording to the neutral register")
         JsonNullable<Tone> tone,
 
