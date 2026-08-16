@@ -3,6 +3,7 @@
   "description": "Turkish, three jobs and eight projects: more content than one page holds, so selection has to choose.",
   "headline": "Kıdemli Backend Mühendisi",
   "sourceLanguage": "tr",
+  "enabledLanguages": ["tr", "en"],
   "maxPages": 1,
   "contact": {
     "name": "Elif Yıldırım",
@@ -31,7 +32,13 @@
               "importance": 0.9,
               "verified": true,
               "skills": ["mikroservis", "go"],
-              "metrics": ["elli dakikadan dört dakikaya"]
+              "metrics": ["elli dakikadan dört dakikaya"],
+              "alternatives": [
+                {
+                  "text": "Split the order service from one deployable into six; deploy time fell from fifty minutes to four",
+                  "language": "en"
+                }
+              ]
             },
             {
               "text": "Kampanya günlerinde saniyede 40 bin isteği karşılayan bir önbellek katmanı kurdum",
