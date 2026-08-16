@@ -288,6 +288,48 @@ class AtomApiIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void promotingAWordingCostsOneBooleanAndLeavesEverythingElseAlone() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+        JsonNode turkish = created("/api/v1/profile/atoms/" + atomId + "/variants", """
+                { "language": "tr", "tone": "technical",
+                  "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
+
+        // No content, no language, no tone: this write is about one boolean,
+        // and it used to demand the whole sentence back (EK D.6.4).
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
+                        + turkish.get("id").asText())
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"primary\": true }"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.primary").value(true))
+                // The tone was the user's choice. Writing it unconditionally
+                // wiped it on every promote (P8).
+                .andExpect(jsonPath("$.tone").value("technical"))
+                .andExpect(jsonPath("$.plainText").value("Veri hatları"));
+    }
+
+    @Test
+    void aDefinedNullToneReturnsTheWordingToTheNeutralRegister() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+        JsonNode turkish = created("/api/v1/profile/atoms/" + atomId + "/variants", """
+                { "language": "tr", "tone": "formal",
+                  "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
+
+        // Leaving the field out means "leave it alone"; sending null means
+        // "clear it". Without the difference there is no way back to neutral.
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
+                        + turkish.get("id").asText())
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"tone\": null }"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tone").doesNotExist());
+    }
+
+    @Test
     void anAtomKeepsAWordingAndADefaultAmongThem() throws Exception {
         JsonNode atom = createAtom(ETL_CONTENT);
         String atomId = atom.get("id").asText();

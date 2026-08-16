@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.profile.api.dto.AtomCreateRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomReorderRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomResponse;
+import com.mustafatetik.atomcv.profile.api.dto.VariantPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.VariantRequest;
 import com.mustafatetik.atomcv.profile.api.dto.VariantResponse;
 import com.mustafatetik.atomcv.profile.domain.Atom;
@@ -13,6 +14,7 @@ import com.mustafatetik.atomcv.profile.service.AtomPatch;
 import com.mustafatetik.atomcv.profile.service.AtomService;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.profile.service.VariantDraft;
+import com.mustafatetik.atomcv.profile.service.VariantPatch;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -183,19 +185,27 @@ public class AtomController {
                 .body(VariantResponse.of(created));
     }
 
-    @Operation(summary = "Replace a wording's text",
-            description = "The whole content, not a run at a time. Changing the words clears "
-                    + "the measured render costs, because the same sentence is what made them "
-                    + "true. Requires If-Match.")
+    @Operation(summary = "Change a wording",
+            description = "Content is optional: making a wording the default is not a text "
+                    + "edit and does not need the sentence back. When content is sent it is "
+                    + "the whole of it, not a run at a time, and changing the words clears the "
+                    + "measured render costs — the same sentence is what made them true. "
+                    + "Requires If-Match.")
     @PatchMapping(path = "/{id}/variants/{variantId}", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VariantResponse> patchVariant(
             @PathVariable UUID id,
             @PathVariable UUID variantId,
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
-            @Valid @RequestBody VariantRequest request) {
+            @Valid @RequestBody VariantPatchRequest request) {
 
-        AtomVariant patched = atoms.patchVariant(profile(), id, variantId, ifMatch, draftOf(request));
+        AtomVariant patched = atoms.patchVariant(profile(), id, variantId, ifMatch,
+                new VariantPatch(
+                        request.content() == null ? null : request.content().toRichContent(),
+                        request.language(),
+                        request.tone(),
+                        request.primary()));
+
         return ResponseEntity.ok()
                 .eTag(EntityTags.of(patched.getVersion()))
                 .body(VariantResponse.of(patched));
