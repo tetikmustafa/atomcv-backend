@@ -14,54 +14,77 @@ from that data.
 This repository contains **only the backend**. The frontend lives in a
 separate repository (`atomcv-frontend`, Next.js). Never add frontend code here.
 
-## Architecture Documents
+## Documentation Layout
 
-Full specifications live in `docs/`. They are written in Turkish.
+Documentation is split by **access pattern**, not by topic. Read accordingly.
 
-| Document | Contents |
+### Read every session (~600 lines total)
+
+| File | What |
 |---|---|
-| `docs/urun-konsept-dokumani-v2.md` | Product concept, user journeys, scenarios |
-| `docs/teknik-mimari-dokumani.md` | All technical decisions, schema, algorithms |
+| `docs/INDEX.md` | Task → spec file routing map |
+| `docs/STATUS.md` | Where both repos are |
+| `docs/handoff/to-backend.md` | Open items from frontend — **handle these first** |
+| `docs/notes/current.md` | Active-stage build notes for this repo |
 
-**Do not read both documents in full every session.** Use this map to read
-only what the current task needs:
+### Read on demand — never in full
 
-| Task | Read section |
-|---|---|
-| Any task (first session) | Bölüm 4 (design principles) |
-| Any task touching code already written | **EK D** — what the implementation decided where the body is silent, wrong, or now outdated |
-| Module placement | Bölüm 10 |
-| Database work | Bölüm 13, 14, 15, 16 |
-| Pipeline phase A (job analysis) | Bölüm 18 |
-| Pipeline phase B (scoring) | Bölüm 19 |
-| Pipeline phase C (selection) | Bölüm 20 |
-| Pipeline phase D (rewriting) | Bölüm 21 |
-| Pipeline phase E (rendering) | Bölüm 22 |
-| Pipeline phase F (verification) | Bölüm 23 |
-| Pipeline phase G (editing loop) | Bölüm 24 |
-| Result type / error hierarchy | Bölüm 25 |
-| Render cost measurement | Bölüm 26 |
-| LLM gateway | Bölüm 27 |
-| Embeddings | Bölüm 28 |
-| LaTeX container | Bölüm 29 |
-| Job queue / SSE | Bölüm 30 |
-| CV upload / profile extraction | Bölüm 31 |
-| Multilingual atoms | Bölüm 32 |
-| Templates / customization | Bölüm 33 |
-| Cover letter | Bölüm 34 |
-| API contract | Bölüm 35 |
-| Auth / session | Bölüm 40 |
-| Multi-tenant isolation | Bölüm 41 |
-| Input security / injection | Bölüm 42, 43 |
-| Quota / cost control | Bölüm 44 |
-| Deployment / server | Bölüm 46 |
-| CI/CD | Bölüm 47 |
-| Observability | Bölüm 48 |
-| Testing | Bölüm 51 |
-| Performance budgets | Bölüm 52 |
-| Prompt management | Bölüm 53 |
-| Step-by-step build guide | Bölüm XI-A |
-| Repo structure / prompts | Bölüm XI-B |
+`docs/spec/**` holds the full specification, split into 18 files.
+**Never read a spec file end to end.** Consult `docs/INDEX.md` for the right file,
+then search before reading:
+
+```bash
+rg -n "<term>" docs/spec/<file>.md      # locate
+# then read only the matching range
+```
+
+Full spec is ~8,500 lines. The right file is 200-1,100. Reading everything wastes
+15-40× the tokens and buries the relevant part.
+
+### Never read routinely
+
+- `docs/notes/archive/**` — closed stages, archaeology only
+- `docs/handoff/resolved/**` — settled cross-repo items
+
+### Ownership
+
+| Path | Owner | Synced |
+|---|---|---|
+| `docs/spec/**`, `docs/INDEX.md` | **this repo** | → frontend via `scripts/sync-spec.sh` |
+| `docs/STATUS.md` | shared | both ways |
+| `docs/handoff/**` | shared | both ways — the real channel |
+| `docs/notes/**` | this repo | never synced |
+
+## Recording Deviations
+
+When implementation departs from the spec, record it in `docs/notes/current.md`:
+
+- **Sapma** — spec says X, we do Y, with reason
+- **Ekleme** — spec was silent, we decided
+- **Düzeltme** — spec is wrong, here is the correct statement
+
+Rules:
+- `notes/current.md` **must stay under 200 lines.** When a stage closes, move it to
+  `notes/archive/stage-<n>.md` and start empty.
+- If a deviation is **permanent**, write it into the relevant `docs/spec/` file and
+  delete it from notes. Notes are a rolling log, not a second specification.
+- If it affects the frontend, also add an item to `docs/handoff/to-frontend.md`.
+
+## Cross-Repo Communication
+
+`docs/handoff/to-frontend.md` is the channel. Each item:
+
+```markdown
+### B-nnn · Short title
+**Since:** commit <sha> · Step <n> · **Spec:** spec/<file>.md § <section>
+**Action:** what the frontend must do
+```
+
+- IDs are never reused.
+- Move items to `## ACK` when the other side confirms; archive to `handoff/resolved/`
+  when the file approaches 100 lines.
+- **OpenAPI schema is authoritative for API shape.** The handoff file carries *why it
+  changed and what to do*, not the shape itself.
 
 ## The Eight Design Principles
 
@@ -228,11 +251,11 @@ also reports success.
    checks (`gh pr checks <n> --watch`), report, and ask. On approval:
    `gh pr merge <n> --rebase --delete-branch`, then `git checkout main` and
    `git reset --hard origin/main`. History stays linear.
-5. **Deviations go into `EK D` in the same PR as the code**, and anything the
-   frontend must act on goes into `EK D.9` and is said out loud in the
-   conversation. The document is synced to the frontend repository with
-   `scripts/sync-docs.sh` — deliberately, not automatically; the developer
-   asked for it at the end of Stage 1.
+5. **Deviations go into `docs/notes/current.md` in the same PR as the code**,
+   and anything the frontend must act on becomes a `B-nnn` item in
+   `docs/handoff/to-frontend.md` and is said out loud in the conversation.
+   Both reach the other repository through `scripts/sync-handoff.sh push` —
+   deliberately, not automatically.
 
 ## Code Style
 
@@ -280,21 +303,16 @@ documents. They are settled — do not re-open them without asking.
    early layer is expensive to remove.
 4. **Update this file** when we make a decision that future sessions need to
    know.
-5. **Record every deviation, addition and correction in `EK D` of
-   `docs/teknik-mimari-dokumani.md`**, in the same commit as the code it
-   describes. The architecture document is the source of truth and says so
-   itself; this file is session context. Where the document body would now
-   mislead a reader, leave a one-line pointer there too — as Bölüm 41.2 and
-   14.1 carry.
-6. **Say so when something changes the frontend's work.** List it in `EK D.9`
-   *and* leave the note in the section it belongs to — someone reading Bölüm
-   35.6 for ETags must see it there, not only in an appendix. Name it in the
-   conversation as well. The document reaches that repository through
-   `scripts/sync-docs.sh`.
-7. **Update `EK D.7` at the end of every slice**: what was produced, what is
-   next, what is still open. `CLAUDE.md` carries the same state for this
-   session, but it is not synced — `EK D.7` is the only place the frontend can
-   read it.
+5. **Record deviations, additions and corrections in `docs/notes/current.md`**,
+   in the same commit as the code they describe — see *Recording Deviations*
+   above for the three record types and the promotion rule. `docs/spec/**` is
+   the source of truth; notes are the rolling log in front of it.
+6. **Say so when something changes the frontend's work.** Write the `B-nnn`
+   item in `docs/handoff/to-frontend.md` as *Cross-Repo Communication* above
+   describes, and name it in the conversation as well.
+7. **Update `docs/STATUS.md` at the end of every slice**: mark the step, adjust
+   the test counts, keep the open decisions current. It is the only place the
+   frontend can read this repo's state — `CLAUDE.md` is not synced.
 
 ## Current Stage
 
@@ -358,13 +376,12 @@ them.
 
 **Stage 1 is done, and so is the closing slice. Sync, then start Stage 2.**
 
-1. **Sync the docs** to the frontend repository with `scripts/sync-docs.sh`,
-   and say out loud what `EK D.9` items 24-32 mean for that side. The ones
-   that change their code today: the variant PATCH no longer needs `content`
-   and no longer eats `tone` (28), the schema now carries the `200`s, the
-   `ETag`s and the 3.1 nullability so their local widenings can go (29),
-   operation ids were renamed so anything bound by name breaks (30), and the
-   seeded profile finally has an atom with two wordings (32).
+1. **Push the split docs to the frontend** with `scripts/sync-spec.sh` and
+   `scripts/sync-handoff.sh push`, and say out loud what the open `B-` items in
+   `docs/handoff/to-frontend.md` mean for that side. The ones that change their
+   code today: operation ids were renamed so anything bound by name breaks
+   (B-030), and the seeded profile finally has an atom with two wordings
+   (B-032).
 2. Then **Stage 2** (XI-A.4): the LLM gateway with its three local profiles,
    Faz A (job analysis), Faz B (relevance scoring with embeddings), Faz D
    (rewriting with the anti-fabrication validators), the job queue and SSE,
