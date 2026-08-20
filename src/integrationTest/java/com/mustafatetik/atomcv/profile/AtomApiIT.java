@@ -368,6 +368,62 @@ class AtomApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void demotingAWordingIsAVersionChangeLikeAnyOther() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+        String englishId = atom.get("variants").get(0).get("id").asText();
+        assertThat(atom.get("variants").get(0).get("version").asLong()).isZero();
+
+        JsonNode turkish = created("/api/v1/profile/atoms/" + atomId + "/variants", """
+                { "language": "tr", "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
+
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
+                        + turkish.get("id").asText())
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"primary\": true }"))
+                .andExpect(status().isOk());
+
+        // The demote is a bulk update, and a bulk update walks past @Version
+        // unless it is asked not to. The row changed, so its etag has to
+        // change with it (F-001).
+        assertThat(jdbc.queryForObject("SELECT version FROM atom_variants WHERE id = ?",
+                Long.class, UUID.fromString(englishId))).isEqualTo(1L);
+
+        // Which is the whole point: a client still holding "0" for the demoted
+        // wording used to write straight over a change it never read.
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/" + englishId)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"tone\": \"formal\" }"))
+                .andExpect(status().isPreconditionFailed());
+    }
+
+    @Test
+    void aPromoteLeavesTheWordingsItDidNotTouchAtTheirVersion() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+
+        JsonNode turkish = created("/api/v1/profile/atoms/" + atomId + "/variants", """
+                { "language": "tr", "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
+        JsonNode german = created("/api/v1/profile/atoms/" + atomId + "/variants", """
+                { "language": "de", "content": { "runs": [ { "t": "Datenpipelines" } ] } }""");
+
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
+                        + turkish.get("id").asText())
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"primary\": true }"))
+                .andExpect(status().isOk());
+
+        // German was never primary and never changed. Bumping every wording of
+        // the atom would invalidate etags no write earned, and would make
+        // every promote look like a conflict to a client reading the list.
+        assertThat(jdbc.queryForObject("SELECT version FROM atom_variants WHERE id = ?",
+                Long.class, UUID.fromString(german.get("id").asText()))).isZero();
+    }
+
     private JsonNode createAtom(String content) throws Exception {
         return created("/api/v1/profile/atoms", """
                 { "sectionId": "%s", "entryId": "%s", "kind": "bullet", "content": %s }"""
