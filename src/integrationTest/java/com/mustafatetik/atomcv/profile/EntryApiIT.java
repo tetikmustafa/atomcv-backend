@@ -235,6 +235,66 @@ class EntryApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void anEntryCannotEndBeforeItStarts() throws Exception {
+        // This was a 201 before F-002. Nothing downstream refuses the range:
+        // it renders as "Jan 2022 - Jan 2019" and reaches generation that way,
+        // and a date line that looks plausible is not read twice.
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/v1/profile/entries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "sectionId": "%s", "title": "Backwards",
+                                  "startDate": "2022-01-01", "endDate": "2019-01-01" }"""
+                                .formatted(sectionId)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
+    }
+
+    @Test
+    void aPatchCannotReverseTheRangeByMovingOneEnd() throws Exception {
+        JsonNode entry = post("/api/v1/profile/entries", """
+                { "sectionId": "%s", "title": "Backend Engineer",
+                  "startDate": "2023-03-01", "endDate": "2025-01-31" }"""
+                .formatted(sectionId));
+        String path = "/api/v1/profile/entries/" + entry.get("id").asText();
+
+        // Only endDate is sent, so the start it has to clear is the stored one.
+        mvc.perform(patch(path)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"endDate\": \"2020-01-01\" }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
+
+        // And the mirror case: the start moves past the stored end.
+        mvc.perform(patch(path)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"startDate\": \"2026-01-01\" }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
+
+        // Clearing the end date is still how a job becomes ongoing: there is
+        // no longer a second date, so there is nothing left to order.
+        mvc.perform(patch(path)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"endDate\": null }"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.endDate").doesNotExist());
+    }
+
+    @Test
+    void anEntryThatBeginsAndEndsOnOneDayIsAccepted() throws Exception {
+        // The rule is endDate >= startDate. A one-day certificate or hackathon
+        // is a real entry and an exclusive comparison would refuse it.
+        post("/api/v1/profile/entries", """
+                { "sectionId": "%s", "title": "Hackathon",
+                  "startDate": "2024-05-04", "endDate": "2024-05-04" }"""
+                .formatted(sectionId));
+    }
+
     private JsonNode createEntry(String title) throws Exception {
         return post("/api/v1/profile/entries",
                 "{ \"sectionId\": \"" + sectionId + "\", \"title\": \"" + title + "\" }");
