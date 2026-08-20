@@ -8,6 +8,7 @@ import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,7 @@ public class EntryService {
         // cannot be hung off another profile's section by sending its id.
         sections.findById(profile, draft.sectionId())
                 .orElseThrow(() -> invalid("sectionId"));
+        requireOrderedDates(draft.startDate(), draft.endDate());
 
         short next = (short) list(profile, draft.sectionId()).stream()
                 .mapToInt(Entry::getDisplayOrder)
@@ -67,6 +69,13 @@ public class EntryService {
     public Entry patch(ProfileRef profile, UUID id, String ifMatch, EntryPatch patch) {
         Entry entry = require(profile, id);
         EntityTags.requireMatch(ifMatch, entry.getVersion());
+
+        // Checked against what the entry will hold, not against what the body
+        // carries: a patch that moves only one of the two dates is still able
+        // to reverse the range, and it is the pair that has to stay ordered.
+        requireOrderedDates(
+                isDefined(patch.startDate()) ? patch.startDate().get() : entry.getStartDate(),
+                isDefined(patch.endDate()) ? patch.endDate().get() : entry.getEndDate());
 
         if (patch.title() != null) {
             entry.setTitle(patch.title());
@@ -131,6 +140,20 @@ public class EntryService {
             entries.save(profile, entry);
         }
         return list(profile, sectionId);
+    }
+
+    /**
+     * An entry that ends before it starts is accepted by everything
+     * downstream: it renders as "Jan 2022 - Jan 2019" and reaches generation
+     * that way. Nobody re-reads a date line that looks plausible, so the range
+     * has to be refused at the door (F-002). Equal dates are a same-day entry
+     * and stay legal; an absent end date means ongoing and has nothing to
+     * compare against.
+     */
+    private static void requireOrderedDates(LocalDate start, LocalDate end) {
+        if (start != null && end != null && end.isBefore(start)) {
+            throw invalid("endDate");
+        }
     }
 
     /** Undefined means "leave it alone"; defined — even holding null — is an edit. */
