@@ -25,11 +25,24 @@ interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
      * has to demote the other before the new flag reaches the database.
      * Leaving both writes to the persistence context would let Hibernate order
      * them the other way round and trip the index.
+     *
+     * <p>{@code update versioned} because a bulk update otherwise walks past
+     * {@code @Version}, and the demoted row would keep the etag it had before
+     * it changed — a client holding that etag could then overwrite a demotion
+     * it never saw, which is the one thing the optimistic lock exists to
+     * prevent (F-001).
+     *
+     * <p>The {@code isPrimary = true} filter narrows the statement to the row
+     * that actually changes. Without it every wording of the atom takes a
+     * version bump for a write that did not touch it, including the one being
+     * promoted — whose merge would then fail on a version it did not know it
+     * had.
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-            update AtomVariant variant set variant.isPrimary = false
+            update versioned AtomVariant variant set variant.isPrimary = false
             where variant.atomId = :atomId and variant.profileId = :profileId
+              and variant.isPrimary = true
             """)
     int clearPrimary(UUID profileId, UUID atomId);
 }
