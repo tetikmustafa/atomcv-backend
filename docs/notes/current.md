@@ -5,7 +5,10 @@
 >
 > Bir sapma kalıcıysa `spec/`'e işlenir ve buradan silinir.
 
-**Aktif aşama:** Aşama 2 — ilana özel üretim (`spec/14-build-guide.md` § XI-A.4).
+**Aktif aşama:** Aşama 2 — ilana özel üretim.
+**Plan:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7 (LLM sağlayıcı hesapları →
+gateway → Faz A → embedding → Faz B → kuyruk ve SSE → kota ve maliyet); aynı aşamanın
+gerekçesi `spec/13-development.md` § 55, kapanış kontrol listesi § XI-A.5 sonunda.
 Aşama 1'in kayıtları `archive/stage-1.md`'de, Aşama 0 ve öncesi `archive/stage-0-1.md`'de.
 
 ---

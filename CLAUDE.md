@@ -244,12 +244,33 @@ also reports success.
    the test counts, keep the open decisions current. It is the only place the
    frontend can read this repo's state — `CLAUDE.md` is not synced.
 
-## Current Stage
+## Current Stage — and How to Resume
 
 **Stage 2 — job-specific generation.** Stage 0 and Stage 1 are closed.
 
-Read `docs/STATUS.md` for where both repos stand and `docs/notes/current.md`
-for the constraints Stage 1 handed over — including the deliberate gaps that
-must not be "fixed" without asking. Neither is summarised here; this file is
-not synced to the frontend and a second copy of the state would drift from the
-one that is.
+A session that opens with "let's continue with Stage 2" starts here, in this
+order. Nothing below is summarised in this file: it is not synced to the
+frontend, and a second copy of the state would drift from the one that is.
+
+1. **`docs/STATUS.md`** — which step both repos are on, the open decisions,
+   and the next cross-repo sync point.
+2. **`docs/handoff/to-backend.md`** — open `F-nnn` items from the frontend.
+   **Handle these before starting new work.**
+3. **`docs/notes/current.md`** — what the previous stage handed over: the
+   deliberate gaps that must not be "fixed" without asking, the findings worth
+   acting on, and the per-stage carry-overs. Clear the carry-overs the step
+   depends on before writing code that assumes them away.
+4. **The step's plan** — `docs/INDEX.md` routes it. Stage 2 is
+   `spec/14-build-guide.md` § XI-A.5, steps 2.1-2.7; the reasoning behind the
+   stage is `spec/13-development.md` § 55. Search the file, read the range.
+
+Then work the step, and close it the way *Recording Deviations*, *Cross-Repo
+Communication* and *How We Ship* above describe: a record in
+`docs/notes/current.md`, a `B-nnn` item if the frontend must act, `STATUS.md`
+marked, all in the same PR as the code.
+
+**When a stage closes:** move `docs/notes/current.md` to
+`docs/notes/archive/stage-<n>.md`, open a fresh one carrying only what the
+next stage still needs, and write the permanent decisions into the
+`docs/spec/` files they belong to. `scripts/check-doc-sizes.sh` says when a
+rolling file has outgrown its limit.

@@ -245,3 +245,32 @@ geliyor: iletişim satırı kısa olan bir profil kalibre edilenden az yer kapl�
 `LatexCalibrationIT` artık ikinci bir bölümü, ikinci bir entry'yi, ikinci bir
 listeyi **ve** listeden sonra gelen bir entry'yi de ölçüyor — tekrarlanan
 mobilyanın maliyeti değişirse test düşer.
+
+---
+
+## Aşama 1 ne bıraktı
+
+Kapanış envanteri. Kod değişince bayatlar — **otorite repodur**, burası
+Aşama 2'ye başlayan birinin haritasıdır.
+
+| Paket | Sınıflar |
+|---|---|
+| `profile.domain.content` | `RichContent`, `Run`, `Mark`, `ContentMigrator`, `RichContentConverter` |
+| `profile.domain` | `Profile` (+ `Contact`, `Preferences`), `Section`, `Entry`, `Atom`, `AtomVariant`, `ProfileTree`, altı enum |
+| `profile.repository` | Paket-özel Spring Data arayüzleri, public kapsamlı cepheler arkasında |
+| `profile.service` | `ProfileResolver`, `ProfileService`, `SectionService`, `EntryService`, `AtomService`, `CompletenessCalculator`, `ProfileExporter`, `ProfileAssembler` |
+| `profile.api` | `ProfileController`, `SectionController`, `EntryController`, `AtomController` + DTO'lar |
+| `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, iki kapsam bazı, `CurrentUser`, `LocalDevCurrentUser` |
+| `shared.error` | `ErrorCode` (30 kod, tipli params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
+| `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
+| `rendering` | `DocumentRenderer`, `latex/*` (escaper, satır içi renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
+| `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
+| `generation` | `pipeline`, `selection`, `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
+| `profile.seed` | `GoldenProfileDocument`, `GoldenProfileReader`, `GoldenProfile`, `DevSeeder`; beş fixture ve ölçülmüş render maliyetleri |
+
+**Testler:** 312 birim · 132 entegrasyon · 44 latex-etiketli.
+`gradlew latexTest` `integrationTest`'ten hariç — imaj dakikalar alıyor.
+
+Aşama 1'in dokuz adımının hepsi ✅ (`STATUS.md`). Bu dosyadaki D.8-D.8.10
+kayıtları her adımın *neden* öyle yapıldığını taşır; sınıf listesi yalnız *ne*
+olduğunu söyler.

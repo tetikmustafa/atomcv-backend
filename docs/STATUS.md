@@ -23,6 +23,9 @@
 | 1.9 Golden set + kritik testler | ✅ |
 | **Aşama 2 — İlana özel üretim** | ⬜ Sırada |
 
+**Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
+**Aşama 1'in devrettikleri:** `notes/current.md` — kapanmadan Aşama 2'ye girilmez.
+
 **Aşama 1 kontrol listesi:** 9/9 ✅ (kanıtlar: `notes/current.md`)
 **Test:** 312 birim · 132 entegrasyon · 44 latex
 

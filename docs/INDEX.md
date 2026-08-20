@@ -114,6 +114,12 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | Geliştirme ortamı, fake sağlayıcılar | `spec/13-development.md` § 54 |
 | Yol haritası, aşama içerikleri | `spec/13-development.md` § 55 |
 | **Adım adım inşa (Aşama 0-4)** | `spec/14-build-guide.md` |
+| Aşama 0 — İskelet (adımlar) | `spec/14-build-guide.md` § XI-A.2 |
+| Aşama 1 — Yürüyen iskelet (adımlar) | `spec/14-build-guide.md` § XI-A.3 |
+| **Aşama 2 — İlana özel üretim (adımlar)** | `spec/14-build-guide.md` § XI-A.5 |
+| Aşama 3 — Hesap ve MVP (adımlar) | `spec/14-build-guide.md` § XI-A.6 |
+| Aşama içerikleri, süre tahmini, gerekçe | `spec/13-development.md` § 55 |
+| Günlük geliştirme akışı | `spec/14-build-guide.md` § XI-A.8 |
 | VPS kurulumu | `spec/14-build-guide.md` § XI-A.4 |
 | Sık karşılaşılan sorunlar | `spec/14-build-guide.md` § XI-A.9 |
 | Repo yapısı, klasör ağacı | `spec/15-repos-and-claude.md` § XI-B.2, XI-B.3 |
