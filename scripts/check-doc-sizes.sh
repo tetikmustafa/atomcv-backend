@@ -18,6 +18,6 @@ check docs/notes/current.md        200
 check docs/handoff/to-frontend.md  100
 check docs/handoff/to-backend.md   100
 check docs/STATUS.md                60
-check CLAUDE.md                    160
+check CLAUDE.md                    280
 
 exit $fail

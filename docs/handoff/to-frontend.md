@@ -11,6 +11,33 @@
 
 ## OPEN
 
+### B-033 · Doküman yapısı bölündü — aynısını sizde de kurun
+**Since:** commit `221a7c1`, `02441b3`, `4f890fe` · **Spec:** `docs/INDEX.md`
+Tek dosyalık `teknik-mimari-dokumani.md` erişim desenine göre bölündü: `spec/` (18 dosya,
+salt-okunur kopya sizde), `notes/` (repo-yerel), `handoff/` (bu kanal), `INDEX.md`, `STATUS.md`.
+Eski dosya backend'de `_archive-monolith.md` olarak duruyor — **okunmaz**, yalnız yedek.
+**Aksiyon:** Kurulum `_PLACEMENT.md`'de. Sizde `sync-spec.sh` **olmayacak** (spec'i alırsınız,
+senkronlamazsınız); `sync-handoff.sh` ve `check-doc-sizes.sh` olacak.
+
+CLAUDE.md'de yaptığımız ve sizde de gereken beş şey — backend'de 445 → 276 satır:
+1. **"Architecture Documents" bölümü** `_CLAUDE-md-replacement.md`'nin frontend bloğuyla
+   değişir. Görev→bölüm tablosu silinir; artık `INDEX.md`'de.
+2. **Spec'i tekrar eden bölümler işaretçiye iner** (tasarım prensipleri, tech stack, modül
+   haritası, test stratejisi). İki kopya kaçınılmaz olarak ayrışıyor.
+3. **"Current Stage" bir devralma reçetesine dönüşür**: `STATUS.md` → `handoff/to-frontend.md`
+   → `notes/current.md` → adımın planı. Yeni bir oturum "Aşama 2'ye devam" dendiğinde tek yol
+   izler. Bizde en çok işe yarayan değişiklik buydu.
+4. **Bayat atıfları tarayın:** `teknik-mimari-dokumani.md`, `EK D`, `sync-docs.sh` geçen her
+   yer. Bölünme `D.x` numaralandırmasını korudu, yani `EK D.6.3` → `spec/08b-api-contract.md`
+   § D.6.3 gibi çözülüyor; sadece dosya adı eklenir.
+5. **`check-doc-sizes.sh`'teki CLAUDE.md sınırı 160 gerçekçi değil.** Makineye özgü bilgiler
+   ve mutlak kurallar spec'e gidemiyor (spec makineden bağımsız ve senkronlanıyor). Backend
+   280'e çekti; sizinki daha ince olabilir, ölçüp karar verin.
+
+İki tuzak: **`rsync` Git Bash'te yok** — betiklerinizde varsa `rm -rf` + `cp -r` yapın.
+**`core.filemode=false`** olduğu için `chmod +x` commit'e yansımıyor;
+`git update-index --chmod=+x scripts/*.sh` gerekiyor, yoksa Linux runner'da "Permission denied".
+
 ### B-022 · `POST /generations/general` geçicidir
 **Since:** Adım 1.8 · **Spec:** `spec/08-api.md` § 35.3
 Senkron, Aşama 1'e özgü. Gövde opsiyonel (`maxPages` 1-10, `language`). Yanıt `application/pdf`, **hiçbir yere kaydedilmiyor** — indirme bağlantısı, geçmiş, düzenleme döngüsü yok.
@@ -35,31 +62,6 @@ Sunucu içeriği kendi iki kez kısaltmayı deniyor; bu hata geldiyse denemeler 
 ### B-032 · Seed profilinde iki sözcüklemeli atom var
 `senior_backend_tr` artık `enabledLanguages: ["tr","en"]`; Deneyim'in ilk maddesi Türkçe birincilin yanında İngilizce alternatif taşıyor.
 **Aksiyon:** Sekmeler, promote ve birincil-önce sıralama mock'suz test edilebilir. `make db-reset && make dev` gerekiyor — seeder mevcut profile dokunmuyor (P8).
-
----
-
-## ACK — frontend tamamladı, backend arşivleyebilir
-
-### B-025 · Media type `application/json`, `If-Match: "7"`
-§ 35.6'nın `application/merge-patch+json` yazması hataydı; öyle gönderen istek artık **415**. ETag'de `v` öneki yok. 405/406/400 doğru kodla geliyor.
-**Yeni ICU anahtarları:** `METHOD_NOT_ALLOWED`, `NOT_ACCEPTABLE`, `UNSUPPORTED_MEDIA_TYPE`
-
-### B-026 · Değişiklik yapmayan yazma sürümü artırmaz
-Aynı değerlerle `PATCH` → 200 + **aynı** sürüm. Autosave için taşıyıcı.
-
-### B-027 · Atom ve varyant sürümleri bağımsız
-`PATCH /atoms/{id}` atomun `version`'ını artırır, varyantlarınkine dokunmaz. Editör atom başına **iki** sürüm tutar.
-
-### B-028 · Promote için metni geri gönderme
-`PATCH …/variants/{id}` artık `content` istemiyor; `{"primary": true}` yeterli.
-**Hata düzeltmesiydi:** metni geri gönderen istek `tone`'u siliyordu. `tone` üç durumlu: atlanırsa korunur, `null` gönderilirse nötr.
-
-### B-029 · Şema artık `200`'leri ve `ETag`'i söylüyor
-On operasyon başarı yanıtını, her tekil kaynak yazması `ETag`'i ilan ediyor.
-`endpoints/profile.ts`'teki elle beyanlar ve `EntryPatch` null genişletmesi **geri alınabilir**. `ApiError.code`/`.status` zorunlu.
-
-### B-031 · `?format=markdown` şemada
-`/profile/export` iki media type ilan ediyor.
 
 ---
 
