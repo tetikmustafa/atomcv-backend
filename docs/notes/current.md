@@ -95,4 +95,18 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
 
 ## Aşama 2 kayıtları
 
-*(henüz yok)*
+**Düzeltme — toplu JPQL `update` `@Version`'ı atlıyor.** Frontend'in F-001'i
+`atom_variants`'ta yakaladı: promote'ta demote edilen satır değişiyor ama `version`'ı
+sabit kalıyordu, çünkü demote tek satırlık bir `@Modifying` sorgu. `update versioned`
+oldu. Kuralın kendisi `spec/08-api.md` § 35.6'ya yazıldı; buraya not düşülmesinin
+nedeni **tekrar edecek olması** — Aşama 2'de kota sayaçları ve `generations` durum
+geçişleri de toplu update isteyecek ve aynı sessizlikle etag üretecek.
+
+Yanına iki şey: sorgu artık `and variant.isPrimary = true` taşıyor, çünkü hepsini
+sürümlemek promote'u **tamamen kırıyor** (promote edilen satırın merge'ü kendi
+bilmediği bir sürüme çarpıyor). Bu kasıtlı olarak denendi ve dört test düştü —
+`spec/12-quality.md` § 51.4'ün istediği doğrulama.
+
+**Ekleme — entry tarih aralığı sıralı olmak zorunda.** F-002; `endDate >= startDate`,
+`PATCH`'te yamanın sonucuna karşı ölçülüyor. `spec/08-api.md` § 35.2'ye yazıldı.
+Doküman sessizdi ve altındaki hiçbir katman ters aralığı reddetmiyordu.

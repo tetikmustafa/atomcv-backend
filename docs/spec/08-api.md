@@ -107,6 +107,20 @@ DELETE /api/v1/account                      unutulma hakkı
 POST   /webhooks/resend                     imza doğrulamalı
 ```
 
+> **Entry tarih aralığı sıralı olmak zorunda (F-002).** `startDate` ve `endDate`
+> ikisi de doluysa `endDate >= startDate`; ihlal **400 `VALIDATION_FAILED`** +
+> `params.fields: ["endDate"]` döner. Eşit tarihler tek günlük bir entry'dir ve
+> geçerlidir; `endDate` yokluğu "sürüyor" demektir, karşılaştıracak ikinci tarih
+> yoktur.
+>
+> `PATCH` aynı kuralı **yamanın sonucuna** uygular, gövdesine değil: tek uç
+> güncellendiğinde diğerinin saklı değeriyle karşılaştırılır, yoksa aralık tek
+> alanlık bir yamayla ters çevrilebilir.
+>
+> Kural sunucuda durmak zorunda, çünkü ters aralığı aşağıdaki hiçbir katman
+> reddetmiyor: "Oca 2022 – Oca 2019" diye render ediliyor ve üretime o hâliyle
+> giriyor. Makul görünen bir tarih satırı ikinci kez okunmaz.
+
 ### 35.3 Uzun süren işler: 202 + job
 
 ```http
@@ -228,6 +242,17 @@ JPA `@Version` → ETag.
 > değişikliği talebidir. Koleksiyon yanıtları her öğede `version` taşır, yani
 > N sürüm için N istek gerekmez. 412'nin kodu `VERSION_CONFLICT`.
 >
+> **Birincil değişimi karşı satırı da sürümler (F-001).** Bir sözcüklemeyi
+> birincil yapmak, o atomun eski birincilini demote eder — ve demote edilen
+> satırın `version`'ı da artar. Bunu ayrıca söylemek gerekiyor, çünkü demote
+> tek satırlık bir toplu `update` ve toplu update JPA'da `@Version`'ın yanından
+> geçer: düzeltmeden önce satır değişiyor ama etag'i sabit kalıyordu, yani
+> `If-Match: "0"` tutan bir istemci hiç okumadığı bir değişikliğin üzerine
+> yazabiliyordu. İyimser kilidin engellediği şey tam olarak budur.
+>
+> Yalnız gerçekten birincil olan satır sürümlenir. Atomun diğer sözcüklemeleri
+> promote'tan etkilenmez ve etag'leri geçerli kalır.
+
 > **Yazma yanıtları da ETag taşır** ve artık şemada da öyle yazıyor
 > (EK D.6.4): `PATCH` hem `ETag` başlığını hem gövdede `version` alanını
 > döndürür, yani otomatik kaydetme iki yazma arasında okuma yapmak zorunda
