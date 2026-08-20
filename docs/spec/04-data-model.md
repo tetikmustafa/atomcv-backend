@@ -432,6 +432,7 @@ CREATE TABLE feature_flags (
 | `render_costs` JSONB (punto cinsinden) | Şablon başına ayrı satır yerine tek kolon; anahtar `template:version` |
 | `embedding` atomda, varyantta değil | Varyantlar aynı anlamın farklı ifadeleri; "hangi atom alakalı?" anlam sorusu |
 | `version` kolonları | JPA `@Version` → optimistic locking → ETag desteği |
+| Ebeveynlerde `UNIQUE (id, profile_id)` + kompozit FK | Denormalize edilen `profile_id`'nin ebeveyn satırınkiyle aynı olduğunu hiçbir şey garanti etmiyordu; uyuşmazlık sessiz bir kiracılar-arası sızıntı olurdu. `atoms.entry_id IS NULL` durumunda uygulanmaz — bölüm düzeyi atomlar kasıtlı olarak öyle |
 
 ---
 

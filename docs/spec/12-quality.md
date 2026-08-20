@@ -122,6 +122,13 @@ src/test/resources/golden/
 > söylüyor) ve `..profile..` için repository paketinin dışına çıkma yasağı
 > eklenmiştir.
 
+> **Boş kural sessizce geçer.** `src/test/resources/archunit.properties`
+> `archRule.failOnEmptyShould=false` taşıyordu, çünkü modül paketlerinde yalnız
+> `package-info.java` varken kurallar "failed to check any classes" ile
+> düşüyordu. Ayar açıkken bir paketi yeniden adlandırmak, o kuralın hiçbir şeyle
+> eşleşmeyip **geçmesine** yol açar. Modüller gerçek sınıf taşımaya başladığında
+> kaldırılır.
+
 ```java
 @ArchTest static final ArchRule noCycles = slices()
     .matching("com.mustafatetik.atomcv.(*)..").should().beFreeOfCycles();
