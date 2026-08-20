@@ -86,60 +86,21 @@ Rules:
 - **OpenAPI schema is authoritative for API shape.** The handoff file carries *why it
   changed and what to do*, not the shape itself.
 
-## The Eight Design Principles
+## Where the Standing Answers Live
 
-Every decision in this codebase traces back to one of these. When facing a
-design question, consult these first.
+These are specified, not summarised here — a second copy would drift.
 
-1. **Separate content from presentation.** No format-specific markup in the
-   data model. Emphasis is semantic (`technology`, `metric`), converted to
-   `\textbf{}` / `<strong>` / bold-run only at render time.
-2. **Do not use an LLM where determinism is possible.** Scoring, selection,
-   rendering and validation are pure code. LLMs only handle language
-   understanding and language generation.
-3. **Prevent fabrication structurally, not by asking.** Scope limit + task
-   limit + automated validation.
-4. **Never produce a silently bad result.** Explain the problem, state the
-   cause, offer concrete options, let the user decide.
-5. **Run checks before incurring cost.** All validation happens before any
-   LLM call.
-6. **Edits apply to selection state, never to rendered output.**
-7. **Transparency.** Every selection decision is explainable to the user.
-8. **Never silently overwrite user's own work.** Ask instead.
+| Question | File |
+|---|---|
+| The eight design principles every decision traces back to | `spec/01-foundations.md` § 4 |
+| Why this technology and not that one | `spec/02-tech-stack.md` |
+| Module layout, package boundaries | `spec/03-architecture.md` § 10 |
+| Test strategy, the tests that matter most | `spec/12-quality.md` § 51 |
+| Anything else | `docs/INDEX.md` routes it |
 
-## Tech Stack
-
-- Java 21 (virtual threads, sealed interfaces, records, pattern matching)
-- Spring Boot 3.x (Web MVC, Data JPA, Security, Actuator)
-- PostgreSQL 17 + pgvector
-- Flyway (schema migrations)
-- Redis (session, cache, ephemeral profiles, rate limit counters)
-- XeLaTeX in an isolated container (PDF rendering)
-- BGE-M3 self-hosted (embeddings, via text-embeddings-inference)
-- Testcontainers, JUnit 5, ArchUnit
-
-No Lombok. Use records for value objects and plain constructors elsewhere.
-
-## Module Map
-
-```
-identity/    auth, session, account
-profile/     Master Profile: Section > Entry > Atom > AtomVariant
-ingestion/   CV upload, extraction, structuring, GitHub import
-generation/  pipeline (phases A-G), scoring, selection, validation
-rendering/   LaTeX/HTML/DOCX renderers, measurement, templates
-llm/         provider gateway, prompt registry, telemetry
-embedding/   embedding provider abstraction
-compilation/ LaTeX compiler client
-jobs/        queue, workers, SSE
-tracking/    application tracking
-billing/     quota, cost tracking, anomaly detection, kill switch
-email/       Resend client, templates, suppression list
-shared/      user-scoped repository base, error presentation, config
-```
-
-Modules communicate only through public interfaces. No cyclic dependencies
-(enforced by ArchUnit). `shared/` must not depend on any business module.
+Java 21, Spring Boot 3.x, PostgreSQL 17 + pgvector, Flyway, Redis, XeLaTeX in
+an isolated container, BGE-M3 self-hosted. **No Lombok** — records for value
+objects, plain constructors elsewhere.
 
 ## Absolute Rules — Never Violate
 
@@ -211,31 +172,27 @@ cost a debugging round to find.
   generation that fails with the container running and healthy.
 - **`make dev-full` does not run the backend**, only the containers. Run it
   first, then `make dev`.
+- **`gradlew latexTest` builds the LaTeX image and compiles through it.** It is
+  excluded from `integrationTest` because the image takes minutes; run it when
+  `docker/latex` changes. Two things it already caught are in
+  `docs/notes/archive/stage-1.md` § D.8.1.
 - A `pre-commit` gitleaks hook runs on every commit. It is installed and
   configured; a commit that prints nothing about secrets did not run it.
 
 ## Testing Requirements
 
-Write these tests alongside the code they cover, not afterwards:
-
-| Test | Guards |
-|---|---|
-| Page limit never exceeded | The product's core promise |
-| Determinism (same input → same output, 50 runs) | Phase B and C purity |
-| Multi-tenant isolation (every protected endpoint) | Data leakage |
-| Locks and structural constraints respected | User control guarantees |
-| Anonymous flow writes nothing to user data tables | Privacy claim |
-| Profile load uses ≤6 queries | N+1 regression |
+`spec/12-quality.md` § 51 lists what to write and Bölüm 51.2 names the four
+tests worth the most. Two rules live here because no spec file enforces them:
 
 **A guard that has never failed is not known to work.** Every rule that exists
 to catch something was confirmed against a deliberate violation before being
-trusted: the ArchUnit rules against a planted dependency, schema validation
+trusted — the ArchUnit rules against a planted dependency, schema validation
 against a renamed column, the query counter against a lower bound, gitleaks
-against a real token pattern. Do the same for the next one — and note that
-gitleaks allowlists the AWS documentation example keys, so a probe using those
-reports a false pass.
+against a real token pattern. Do the same for the next one. Note that gitleaks
+allowlists the AWS documentation example keys, so a probe using those reports
+a false pass.
 
-Report test counts, not "the suite is green". A suite that runs zero tests
+**Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
 
 ## How We Ship
@@ -265,33 +222,6 @@ also reports success.
 - Prefer records for value objects, sealed interfaces for closed hierarchies
 - Prefer `Result<T>` over exceptions for expected failure paths
 
-## Resolved Decisions
-
-These resolve ambiguities or contradictions found in the architecture
-documents. They are settled — do not re-open them without asking.
-
-| Question | Decision |
-|---|---|
-| Repo layout: XI-A.1 shows one monorepo, XI-B.2 shows two repos | **XI-B.2 wins.** This repo is backend-only with `src/` at the root. Wherever XI-A.2 assumes a `backend/` subfolder or a frontend job, adapt it to this layout. |
-| Scope of the first Flyway migration (XI-A.2 Adım 0.3 says "identity + profile core", Bölüm 13 gives one full file) | **`V1__initial_schema.sql` contains all of Bölüm 13.** Empty tables cost nothing; splitting would mean revisiting the same tables in V2/V3 under a rule that forbids editing applied migrations. |
-| ArchUnit `noRawRepositoryInApi` covers only `..api..`, but absolute rule 3 says "controller or service" | **Widen the rule to cover `..service..` as well.** IDOR is rated a very high impact risk. |
-| Lombok listed in Adım 0.1 but absent from the sample `build.gradle.kts` | **Not used.** |
-| Makefile vs. scripts on Windows | **Makefile**, as documented. `make record` and `make test-int` are part of it even though Adım 0.5 omits them. |
-| CI scope: Adım 0.7 shows build + gitleaks, XI-B.2 says "build + test + security" | **Widest version from the start** — build, test, gitleaks, Trivy, CodeQL, dependency scanning. |
-| Nothing guarantees the denormalized `profile_id` on entries/atoms/atom_variants agrees with the parent row's profile | **Composite foreign keys added in V1** (`UNIQUE (id, profile_id)` on parents). A mismatch would otherwise be a silent cross-tenant leak. Not enforced when `atoms.entry_id IS NULL`, which is the intended case for section-level atoms. |
-| `llm_invocations.user_id` has no FK, contradicting the "one DELETE removes everything" promise in Bölüm 13.1 | **FK with `ON DELETE SET NULL`** on both `user_id` and `job_id`. Aggregate cost history survives account deletion; the personal link does not. |
-| Bölüm 51.6 asserts an anonymous run changes no row count in *any* table, but the queue (`jobs.anon_session_id`) and `llm_invocations` are Postgres-backed | **The test narrows to user data tables.** Open for Stage 3: decide whether the anonymous path uses the queue at all. |
-| ArchUnit rules fail with "failed to check any classes" while the module packages hold only `package-info.java` | `src/test/resources/archunit.properties` sets `archRule.failOnEmptyShould=false`. **Remove it in Stage 1** once the modules carry real classes: while it is on, renaming a package makes the affected rule match nothing and pass silently. |
-| Which resources can carry an ETag (frontend gap 6) | Only the six tables V1 gives a `version` column: `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`. **`generations` has none**, so generation resources get no optimistic locking. Emit `ETag: "7"` on single-resource GETs and a `version` field on every item in collection responses. |
-| Anonymous session TTL: absolute two hours (Bölüm 9) or sliding (frontend gap 8) | **Sliding — the TTL refreshes on activity.** Cutting off a user mid-review would destroy work they just invested effort in, which is what P8 exists to prevent. Note this widens the "deleted after 2 hours" wording in Bölüm 9 to "two hours after the last activity"; the product copy must say so. |
-| What happens when an anonymous profile is claimed by an account that already has one (frontend gap 2) | Offer **replace or keep** only. `merge` needs atom-level deduplication (Jaro-Winkler + embedding, Bölüm 7), which is Stage 4 work. Do not promise it in the API before then. |
-| `title` in error bodies: displayed or not (frontend gap 5) | **Developer-facing English, never displayed.** RFC 7807 wants it stable across occurrences, and Bölüm 35.4's own rule says the server sends translation keys rather than text. The Turkish example in that section is misleading. |
-| How `GET /profile/export` selects its format (frontend gap 15) | `?format=json\|markdown`, matching the download endpoint. |
-| Is `/api/v1/warmup` part of the public API (frontend gap 16) | **No.** Operational endpoint (Bölüm 52.5), excluded from the OpenAPI schema and not routed through nginx. |
-| Does the frontend call the API during server rendering (frontend gap 14) | **No.** All authenticated fetching happens in the browser; server components render shell and static content only. Revisit deliberately if it ever changes — it needs an internal base URL and a cookie-forwarding decision. |
-| Bölüm 41.2's `UserScopedRepository` filters on `ownerId()`, but `sections`, `entries`, `atoms` and `atom_variants` carry no `user_id` | **Two bases.** `UserScopedRepository` for tables with `user_id`; `ProfileScopedRepository` for the four that hang off a profile. The ownership check happens once, when a `ProfileRef` is resolved — `ProfileRef.persistent` compares the acting user against the profile row's owner, its constructor is private, and it is not a record precisely so that no unchecked way to build one exists. Rejected: adding `user_id` to the child tables (a second denormalization to keep consistent) and a `profile_id IN (SELECT ...)` subquery on every read (hot in the measurement and selection paths). |
-| What a scoped repository does with a row belonging to someone else | **Reads return empty, writes throw.** A foreign row that read as forbidden would confirm it exists; a foreign row being *written* means the code built an object with the wrong owner, which is a defect and not a request to answer politely. |
-
 ## How We Work Together
 
 1. **Apply the documented decisions as written.** If you disagree with a
@@ -316,130 +246,10 @@ documents. They are settled — do not re-open them without asking.
 
 ## Current Stage
 
-<!-- Update this section as work progresses -->
-**Stage 0 — Skeleton: complete.** Package tree, Gradle build, Docker Compose
-core profile, Flyway baseline (all of Bölüm 13), health endpoint, ArchUnit
-rules, Testcontainers integration tests, CI with CodeQL/Trivy/gitleaks,
-Makefile, repository documentation.
+**Stage 2 — job-specific generation.** Stage 0 and Stage 1 are closed.
 
-**Stage 1 — Walking Skeleton: complete (Adım 1.1-1.9), plus its closing
-slice.** A profile in the database comes back as a one-page PDF through the
-real compiler, and the four tests Bölüm 51.2 calls the most valuable ones run
-across a golden set of five profiles. The frontend's second
-`DOC-SYNC-REQUEST` was then applied (`EK D.6.8`): three server defects fixed,
-six schema gaps closed, three doc sections corrected. What remains is the doc
-sync to the frontend repository and the open items below.
-
-### What exists
-
-| Package | Classes |
-|---|---|
-| `profile.domain.content` | `RichContent`, `Run`, `Mark`, `ContentMigrator`, `RichContentConverter` |
-| `profile.domain` | `Profile` (+ `Contact`, `Preferences`), `Section`, `Entry`, `Atom`, `AtomVariant`, `ProfileTree`, six enums |
-| `profile.repository` | Package-private Spring Data interfaces behind public scoped facades |
-| `profile.service` | `ProfileResolver`, `ProfileService`, `SectionService`, `EntryService`, `AtomService`, `CompletenessCalculator`, `ProfileExporter`, `ProfileAssembler` |
-| `profile.api` | `ProfileController`, `SectionController`, `EntryController`, `AtomController` + DTOs |
-| `shared.security` | `UserContext`, `UserRole`, `UserOwned`, `ProfileOwned`, `ProfileRef`, the two scoped bases, `CurrentUser`, `LocalDevCurrentUser` |
-| `shared.error` | `ErrorCode` (30 codes, typed params), `ResolutionAction`, `Resolution`, `UserFacingError`, `ApiException`, `ProblemDetailAdvice` |
-| `shared.util` | `LowercaseEnumConverter`, `EntityTags` |
-| `rendering` | `DocumentRenderer`, `latex/*` (escaper, inline renderer, preamble, `LatexDocumentRenderer`), `model/*`, `template/*`, `measurement/*` |
-| `compilation` | `LatexCompilerClient`, `CompiledDocument`, `CompilationException`, `CompilationProperties` |
-| `generation` | `pipeline` (`Result`, `PipelineError`, `ErrorPresenter`, `GenerationPipeline`, `GeneratedDocument`), `selection` (`SelectionRequest/State/Phase`, `SelectionRequestBuilder`), `scoring` (`GeneralModeScorer`), `render` (`RenderPhase`), `service` (`CvGenerationService`, `GenerationOptions`), `api` (`GenerationController`) |
-| `profile.seed` | `GoldenProfileDocument`, `GoldenProfileReader`, `GoldenProfile`, `DevSeeder`; five fixtures + their measured costs under `src/main/resources/golden/profiles` |
-
-312 unit tests, 132 integration tests, 44 latex-tagged. Every decision behind
-these is in `EK D` — read D.2 through D.8.10, then D.6.8, before touching
-them.
-
-### Deliberately absent — do not "fix" without asking
-
-- **`atoms.embedding` is unmapped.** Stage 2. `vector(1024)` has no Hibernate
-  type and nothing computes an embedding yet.
-- **`ProfileRef.Scope` has only `PERSISTENT`.** `EPHEMERAL` arrives with the
-  anonymous flow in Stage 3; adding the constant earlier, with no checked way
-  to produce one, would be the way around the ownership check.
-- **`tags` and `atom_tags` have no entities.** Nothing reads them before
-  Stage 2 scoring.
-- **Nothing writes to `generations`.** The pipeline returns a
-  `GeneratedDocument`; persisting it, the job queue and
-  `GET /generations/{id}/download` are Stage 2 (`EK D.6.3`).
-- **`PipelineError` holds only the three cases the pipeline can produce.**
-  Adding the rest early would mean guessing at the params the frontend's
-  messages need.
-- **No ATS report, no `FitReport`** (Bölüm 23.2, 23.3). Both are Stage 2; one
-  needs PDF text extraction, the other needs Faz A.
-- `UserScopedRepository` has no `findAll`: the Bölüm 41.2 snippet calls
-  `findByUserId`, which is not on `JpaRepository`. Subclasses add their own
-  narrowed finders, as the profile repositories do.
-
-### Resume here
-
-**Stage 1 is done, and so is the closing slice. Sync, then start Stage 2.**
-
-1. **Push the split docs to the frontend** with `scripts/sync-spec.sh` and
-   `scripts/sync-handoff.sh push`, and say out loud what the open `B-` items in
-   `docs/handoff/to-frontend.md` mean for that side. The ones that change their
-   code today: operation ids were renamed so anything bound by name breaks
-   (B-030), and the seeded profile finally has an atom with two wordings
-   (B-032).
-2. Then **Stage 2** (XI-A.4): the LLM gateway with its three local profiles,
-   Faz A (job analysis), Faz B (relevance scoring with embeddings), Faz D
-   (rewriting with the anti-fabrication validators), the job queue and SSE,
-   and the generation record that finally persists a result.
-
-The Stage 2 carry-overs below are the first things it will need.
-
-**Findings worth acting on before they bite:**
-- **An entry with no atoms never reaches the page.** Selection works atom by
-  atom, so a degree line with no bullet under it is not a candidate at all.
-  The golden fixtures give every education entry an atom to work around it;
-  the real fix changes Bölüm 20.2's model and belongs in Stage 2.
-- **Ties are broken by atom id, and ids are minted per import.** Two atoms
-  with the same score *and* the same cost swap places when the same content is
-  imported again — which the anonymous-profile claim in Stage 3 will do. A
-  content-derived tie-break would fix it; decide deliberately.
-
-**`gradlew latexTest`** builds the LaTeX image and compiles through it. It is
-excluded from `integrationTest` because the image takes minutes; run it when
-`docker/latex` changes. Two things it already caught are in `EK D.8.1`.
-
-Still open in Stage 1:
-- Decide how production runs migrations. Bölüm 47 shows a pre-deploy step
-  using `--spring.flyway.migrate-only=true`, which is not a real Spring Boot
-  property, so Flyway currently runs at startup in prod too.
-- Add an image scan to CI. The Dockerfile now exists, so Trivy's misconfig
-  scan covers it, but the built image is not scanned — that needs a build in
-  CI (a few GB) and belongs with the registry push.
-- Decide whether to add Spotless. Bölüm 47.1 runs `spotlessCheck`, but no
-  formatter is configured, so CI has no formatting gate at all today.
-
-Carry into Stage 2:
-- Quota reset needs a time zone. `usage_counters.period` is a `DATE`, so the
-  daily counter rolls over at a day boundary that nothing defines yet.
-- Create the `application-local-fake.yml`, `-local-record` and `-local-real`
-  profile files with the LLM gateway. They do not exist yet, and Spring
-  ignores an unknown profile silently — so `make dev` looks like it works
-  today while `local-fake` contributes nothing.
-
-Carry into Stage 3:
-- `CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key)` does not dedupe
-  anonymous requests: `user_id` is NULL there and Postgres treats NULLs as
-  distinct, so the same key creates a second job. Needs a migration keying on
-  `COALESCE(user_id::text, anon_session_id)` — deferred because it presumes
-  the anonymous path uses the queue at all, which is still open above.
-- The anonymous TTL slides on activity, so the user-facing copy must say
-  "two hours after your last activity", not "two hours". Bölüm 9 and the
-  product document still carry the absolute wording; both need updating, and
-  the frontend owns the string.
-
-Open, no stage assigned:
-- V1 applies `CHECK` constraints to some enum-like columns (`sections.layout`,
-  `applications.status`, `jobs.status`) and leaves others as comments
-  (`sections.kind`, `atoms.kind`, `generations.status`, `jobs.type`,
-  `llm_invocations.outcome`). This mirrors Bölüm 13 deliberately rather than
-  inventing constraints. Adding the missing ones later is a cheap migration,
-  since a `CHECK` does not rewrite the table.
-
-Next: Stage 1 (Walking Skeleton) — domain model, manual profile CRUD,
-LaTeX container, measurement system, selection algorithm, PDF output.
-No LLM in Stage 1.
+Read `docs/STATUS.md` for where both repos stand and `docs/notes/current.md`
+for the constraints Stage 1 handed over — including the deliberate gaps that
+must not be "fixed" without asking. Neither is summarised here; this file is
+not synced to the frontend and a second copy of the state would drift from the
+one that is.
