@@ -51,7 +51,7 @@ dependencies {
 
     // The published schema is the API contract: the frontend generates its
     // types from it, so enums and headers have to reach it, not only payloads.
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
