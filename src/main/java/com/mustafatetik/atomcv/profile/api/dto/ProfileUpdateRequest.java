@@ -39,10 +39,14 @@ public record ProfileUpdateRequest(
         // NOT NULL column behind it: there is nothing to clear it to, and
         // quietly keeping the stored value would make the same request a
         // replace for the rest of the head and a merge for this field (F-004).
+        // `required` in the schema is derived from this annotation, the way it
+        // is for enabledLanguages below. Saying it a second time with
+        // `requiredMode` would let the published contract and the constraint
+        // that enforces it drift apart, and the schema is what the frontend
+        // generates its type from.
         @NotBlank
         @Size(min = 2, max = 16)
-        @Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-                description = "The language the profile is authored in", example = "en")
+        @Schema(description = "The language the profile is authored in", example = "en")
         String sourceLanguage,
 
         @NotEmpty
