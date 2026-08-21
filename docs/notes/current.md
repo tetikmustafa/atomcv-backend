@@ -74,12 +74,8 @@ verilmeli.
   `spec/12-quality.md` § 51.4'ün istediği doğrulama yapıldı: `..llm..`'e bakan
   bir render sınıfı kasıtlı olarak eklendi, kural düştü.
 
-  **Yanlış-geçen bir sonda:** ilk denemede planted bağımlılık
-  `private static final String PROBE = Probe.ID` idi ve kural **geçti**. `ID`
-  derleme zamanı sabiti; javac onu inline ediyor ve bytecode'da `Probe`'a hiç
-  referans kalmıyor, ArchUnit de bytecode okuyor. Sonda bir **metot çağrısına**
-  çevrilince düştü. `gitleaks`'in AWS örnek anahtarlarını allowlist'lemesiyle
-  aynı tuzak: sondanın kendisi de doğrulanmak zorunda.
+  İlk sonda **yanlış geçti** (derleme zamanı sabiti inline oluyor); ders
+  `CLAUDE.md` · Testing Requirements'a yazıldı.
 
 ## Aşama 3'e taşınanlar
 
@@ -174,3 +170,10 @@ birlikte düşüyor — ikincisi taşımanın gerekçesini birebir gösteriyor.
 
 Şimdi taşındı çünkü **ucuzdu**: iki tipin 11 çağrı dosyası vardı ve hepsi
 `generation` ile `compilation` içindeydi. Faz A yazıldıktan sonra değil.
+
+**Sapma — `LlmProvider` `Result` değil `LlmOutcome` döndürüyor; `JsonSchema`
+eklendi.** Kalıcı olduğu için `spec/07-subsystems.md` § 27.1 ve § 27.3'e
+yazıldı, buradan silindi. Özeti: hata kataloğunda tek sağlayıcının
+başarısızlığı için kod yok, dolayısıyla o `PipelineError` olamaz.
+`PipelineError` bu adımda tek durum kazandı — `AllProvidersUnavailable(tried)`,
+§ 25.2 ve katalogda birebir yazılı.

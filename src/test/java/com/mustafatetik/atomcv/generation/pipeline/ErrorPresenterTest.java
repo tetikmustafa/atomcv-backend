@@ -85,6 +85,33 @@ class ErrorPresenterTest {
         assertThat(broken.resolutions()).isEmpty();
     }
 
+    /**
+     * Bolum 27.3: a chain runs out only for reasons that were transient at
+     * every stop, so the answer is always "ask again".
+     */
+    @Test
+    void anExhaustedProviderChainNamesWhoWasAskedAndOffersARetry() {
+        var presented = presenter.present(new PipelineError.AllProvidersUnavailable(
+                List.of("gemini", "deepseek")), PAGE_HEIGHT_PT);
+
+        assertThat(presented.httpStatus()).isEqualTo(503);
+        assertThat(presented.params()).containsEntry("tried", List.of("gemini", "deepseek"));
+        assertThat(presented.resolutions()).extracting(Resolution::action)
+                .containsExactly(ResolutionAction.RETRY);
+    }
+
+    /**
+     * Bolum 27.3 skips a provider with no key silently. Reporting it as tried
+     * would tell the user a vendor this deployment never configured is down.
+     */
+    @Test
+    void aChainThatFoundNothingConfiguredReportsAnEmptyList() {
+        var presented = presenter.present(
+                new PipelineError.AllProvidersUnavailable(List.of()), PAGE_HEIGHT_PT);
+
+        assertThat(presented.params()).containsEntry("tried", List.of());
+    }
+
     /** Absolute rule 4: the log is the user's own content and never a parameter. */
     @Test
     void theTexLogNeverReachesTheBody() {

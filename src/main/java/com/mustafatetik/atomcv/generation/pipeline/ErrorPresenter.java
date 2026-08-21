@@ -50,6 +50,18 @@ public class ErrorPresenter {
                             "maxPages", overflow.actualPages()))
                     .build();
 
+            case PipelineError.AllProvidersUnavailable outage -> UserFacingError
+                    .with(ErrorCode.ALL_PROVIDERS_UNAVAILABLE)
+                    // Vendor ids, not content: EK D.6 publishes the list, and
+                    // it is what makes the message say "we could not reach the
+                    // model" rather than "something went wrong".
+                    .param("tried", outage.tried())
+                    // Every reason a chain runs out is transient by
+                    // construction — the failures that are not transient stop
+                    // the walk before it reaches here (Bolum 27.3).
+                    .resolution(ResolutionAction.RETRY)
+                    .build();
+
             case PipelineError.CompilationFailed failed -> {
                 var presented = UserFacingError.with(ErrorCode.COMPILATION_FAILED)
                         // The kind, never the log: the log is built from the
