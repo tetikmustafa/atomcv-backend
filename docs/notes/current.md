@@ -20,7 +20,6 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
-| `atoms.embedding` eşlenmemiş | 2.4 sonrası | Sağlayıcı indi; kalan yalnız `vector(1024)`'ün Hibernate eşlemesi. Kolon `V1`'de var, migration gerekmiyor |
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
 | `tags` / `atom_tags` entity'siz | Aşama 2 | Aşama 2 skorlamasından önce okuyan yok |
 | `generations`'a yazan yok | Aşama 2 | Hat `GeneratedDocument` döndürüyor; kalıcı kayıt, kuyruk ve `GET /generations/{id}/download` birlikte gelir (`spec/08b-api-contract.md` § D.6.3) |
@@ -111,17 +110,6 @@ edeceği için duruyor:**
   okumayla kendini onaran yüzeyler olacak — etag'i **önceki yazmanın
   yanıtından** al.
 
-
-**Sapma — `Result` ve `PipelineError` `shared/error/`'a taşındı.** Bölüm 27.1
-`LlmProvider.callStructured`'ı `Result<LlmResponse<T>>` döndürüyor; `generation`
-de Faz A/B ile `llm`'e bağımlı olacak, yani ikisi birlikte `noCycles`'ı düşüren
-bir döngü. Tahmin değil: § 25.2 `AllProvidersUnavailable` ve
-`EmbeddingUnavailable`'ı zaten `PipelineError` durumu sayıyor, yani iki modül de
-tipi görmek zorunda. Bölüm 10.1 `PipelineError`'ı **zaten** `shared/error/`'da
-gösteriyordu; taşımayı engelleyen tek şey Aşama 1'de eklenen
-`CompilationFailed(CompilationException.Kind, …)` imzasıydı — `shared` hiçbir iş
-modülüne bakamaz (Bölüm 10.2, kural 4).
-
 Enum `shared/error/CompilationFailureKind`'a çıkarıldı; `CompilationException`
 onu import ediyor (`compilation → shared` serbest). § 25.2'nin kendi imzası
 `(String detail, boolean rawSourceAvailable)` — o yola gitmek retry kararının
@@ -133,13 +121,6 @@ birlikte düşüyor — ikincisi taşımanın gerekçesini birebir gösteriyor.
 Şimdi taşındı çünkü **ucuzdu**: iki tipin 11 çağrı dosyası vardı ve hepsi
 `generation` ile `compilation` içindeydi. Faz A yazıldıktan sonra değil.
 
-**Sapma — `LlmProvider` `Result` değil `LlmOutcome` döndürüyor; `JsonSchema`
-eklendi.** Kalıcı olduğu için `spec/07-subsystems.md` § 27.1 ve § 27.3'e
-yazıldı, buradan silindi. Özeti: hata kataloğunda tek sağlayıcının
-başarısızlığı için kod yok, dolayısıyla o `PipelineError` olamaz.
-`PipelineError` bu adımda tek durum kazandı — `AllProvidersUnavailable(tried)`,
-§ 25.2 ve katalogda birebir yazılı.
-
 **Düzeltme — § 18.1'in üç çıkış yolundan birinin adı yoktu.** Sözlük
 `continue_anyway` ile onuncu değerini kazandı; kural EK D.6.1 ve § 18.1'e
 yazıldı, frontend maddesi `B-037`. Buraya not düşülmesinin nedeni **sondanın
@@ -149,12 +130,6 @@ düştü:** birim testi enum'u, `OpenApiSchemaIT` ise *yayımlanan şemayı* öl
 ikincisi değerin frontend'in üretilen tipine gerçekten girdiğini kanıtlıyor,
 birincisi yalnız enum'da olduğunu. Bir sonraki sözlük genişletmesinde ikisi de
 düşecek ve `B-nnn` yazmayı hatırlatacak.
-
-**Ekleme — ön kontrolün dört ret sebebi telde ayrışmıyor.** Katalog tek kod
-yayımlıyor, ayrım `Verdict` enum'uyla içeride kalıyor: "ilan reddedildi"
-metriği hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın
-gözden geçirilmesi gerektiğini söyler. Kural ve sıralama (uzunluk entropiden
-önce) § 18.1'e, enum toleransı § 18.2'ye yazıldı.
 
 **Ekleme — eksik nesneler boş nesne olarak okunuyor.** `role`, `company` ve
 `experienceYears` yoksa `null` değil boş karşılıkları oluyor; listeler zaten
@@ -195,6 +170,24 @@ duruyorlar; burada yalnız nerede oldukları:
 | Cache anahtarının prompt sürümü taşıması, fail-open, sıra | `05-pipeline-a-c.md` § 18.6 |
 | Fake embedding'in tohumu ve birim uzunluk, profil ayrımı | `13-development.md` § 54.2 |
 | Sağlık kontrolünün `/health` olması, kısmi cevabın reddi | `07-subsystems.md` § 28.4 |
+| `LlmProvider`'ın `LlmOutcome` döndürmesi, `JsonSchema` | `07-subsystems.md` § 27.1 |
+| Ön kontrolün dört ret sebebinin telde ayrışmaması, sıralama | `05-pipeline-a-c.md` § 18.1 |
+| `Result`/`PipelineError`'ın `shared/error`'da olması | `03-architecture.md` § 10.1 |
 
 **Aşama 2.5'e taşınan:** § 28.4'ün ağırlık yeniden dağıtımı — `ScoringWeights`
 henüz yok. `isHealthy()` bu dilimde indi, onu okuyan taraf Faz B ile geliyor.
+
+**Ekleme — `atoms.embedding` eşlendi; devredilen kısıt kapandı.**
+`hibernate-vector` (sürümü `hibernate-core`'unkine sabitlendi — Spring Boot'un
+BOM'u core'u yönetiyor, bu modülü yönetmiyor ve sabitlenmemiş koordinat
+çözülmüyor) + `@JdbcTypeCode(SqlTypes.VECTOR)`. Migration yok, kolon `V1`'de.
+
+**Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor.** `@Array(length)`
+yalnız DDL üretimini besliyor: 512 yazıp `vector(1024)` kolonuna karşı
+çalıştırdım, **validation temiz geçti**. Yani boyut garantisi Hibernate'te
+değil; `setEmbedding`'in kendi kontrolünde ve gerçek veritabanına karşı bir
+gidiş dönüşte. Ders `CLAUDE.md` · Testing Requirements'a yazıldı çünkü aynı
+tuzak `vector` kullanan her kolonda tekrar edecek.
+
+`AtomEmbeddingMappingIT` bu yüzden var ve kasıtlı ihlalle doğrulandı:
+`@JdbcTypeCode` kaldırıldığında altı testi birden düşüyor.

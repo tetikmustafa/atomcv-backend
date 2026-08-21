@@ -93,7 +93,7 @@ src/main/java/com/mustafatetik/atomcv/
 │   ├── normalization/           #   Beceri, tarih, run dönüşümü
 │   └── github/                  #   GitHub entegrasyonu
 ├── generation/                  # Üretim hattı
-│   ├── pipeline/                #   Orkestratör, PipelineContext, Result
+│   ├── pipeline/                #   Orkestratör, PipelineContext, ErrorPresenter
 │   ├── phases/                  #   A, B, C, D, F, G
 │   ├── scoring/                 #   Skorlama algoritması
 │   ├── selection/               #   Bin-packing optimizasyon
@@ -120,7 +120,7 @@ src/main/java/com/mustafatetik/atomcv/
 ├── billing/                     # Kota, maliyet, anomali
 └── shared/                      # Ortak
     ├── security/                #   User-scoped repository base, CSRF
-    ├── error/                   #   PipelineError, ErrorPresenter
+    ├── error/                   #   Result, PipelineError, ErrorCode, Resolution
     ├── config/
     └── util/
 ```

@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.hibernate.annotations.Array;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -29,6 +30,9 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "atoms")
 public class Atom implements ProfileOwned {
+
+    /** BGE-M3's dense output, and what {@code vector(1024)} declares. */
+    public static final int EMBEDDING_DIMENSIONS = 1024;
 
     @Id
     private UUID id = UUID.randomUUID();
@@ -80,8 +84,23 @@ public class Atom implements ProfileOwned {
     @Column(nullable = false)
     private String[] properNouns = new String[0];
 
-    // The atoms.embedding column is deliberately unmapped: nothing computes an
-    // embedding before Stage 2, and vector(1024) has no Hibernate type yet.
+    /**
+     * BGE-M3's dense vector for the English variant (Bolum 28).
+     *
+     * <p>Null until something has embedded it, which is not the same as an
+     * atom with no content: Bolum 28.2 computes these on a queue after the
+     * fact, so a freshly written atom is scoreable before it is embeddable.
+     *
+     * <p>{@code SqlTypes.VECTOR} comes from {@code hibernate-vector}.
+     * {@code @Array(length)} feeds DDL generation only — schema validation
+     * does <em>not</em> compare it against {@code vector(1024)}, which was
+     * measured by setting it to 512 and watching validation pass. The
+     * dimension is therefore held by {@link #setEmbedding} and by a round trip
+     * against a real database, not by Hibernate.
+     */
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    @Array(length = EMBEDDING_DIMENSIONS)
+    private float[] embedding;
 
     /** {@code content_hash} of the English variant the embedding was built from. */
     private String embeddingHash;
@@ -217,6 +236,46 @@ public class Atom implements ProfileOwned {
 
     public void setProperNouns(List<String> properNouns) {
         this.properNouns = toArray(properNouns, "properNouns");
+    }
+
+    /**
+     * The stored vector, or null when nothing has embedded this atom yet.
+     *
+     * <p>Copied on the way out: the array is mutable and Hibernate hands back
+     * the field itself, so a caller that reordered it would rewrite the row on
+     * the next flush without ever meaning to.
+     */
+    public float[] getEmbedding() {
+        return embedding == null ? null : embedding.clone();
+    }
+
+    /**
+     * @param embedding the vector, or null to mark the atom unembedded again
+     * @param sourceContentHash the {@code content_hash} it was computed from,
+     *                          which is what Bolum 28.2 compares to decide
+     *                          whether this is still current
+     */
+    public void setEmbedding(float[] embedding, String sourceContentHash) {
+        if (embedding != null && embedding.length != EMBEDDING_DIMENSIONS) {
+            throw new IllegalArgumentException(
+                    "The column is vector(" + EMBEDDING_DIMENSIONS + "), got "
+                            + embedding.length);
+        }
+        this.embedding = embedding == null ? null : embedding.clone();
+        this.embeddingHash = embedding == null ? null : sourceContentHash;
+    }
+
+    /**
+     * Whether the stored vector still describes the given English variant
+     * (Bolum 28.2).
+     *
+     * <p>Compared by content hash rather than by timestamp: an edit that put
+     * the text back the way it was leaves the hash unchanged, and re-embedding
+     * that is work bought for nothing.
+     */
+    public boolean needsEmbedding(String englishContentHash) {
+        return englishContentHash != null
+                && (embedding == null || !englishContentHash.equals(embeddingHash));
     }
 
     public String getEmbeddingHash() {

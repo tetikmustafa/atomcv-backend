@@ -45,6 +45,13 @@ dependencies {
     // starter brings: the cache is consulted on the hot path and a blocking
     // client there would hold a request thread through a network round trip.
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // Bolum 28: atoms.embedding is vector(1024) and Hibernate has no type for
+    // it on its own. This module adds SqlTypes.VECTOR with a pgvector dialect
+    // contribution, so the column is mapped rather than read through a
+    // hand-written converter that ddl-auto=validate could not check.
+    // Version pinned to hibernate-core's: Spring Boot's BOM manages the
+    // core but not this module, so an unpinned coordinate does not resolve.
+    implementation("org.hibernate.orm:hibernate-vector:6.6.53.Final")
     // JSON merge-patch needs three states — absent, null, value — and Java has
     // no tri-state Optional: Jackson deserializes an absent Optional field as
     // Optional.empty(), the same as an explicit null. This library owns that

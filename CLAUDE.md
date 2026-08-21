@@ -191,7 +191,10 @@ against a renamed column, the query counter against a lower bound, gitleaks
 against a real token pattern. Do the same for the next one. Two probes that report a **false pass**: one
 built from the AWS documentation example keys (gitleaks allowlists them), and
 an ArchUnit probe reading a compile-time constant — javac inlines it, so no
-reference survives into the bytecode. Plant a method call instead.
+reference survives into the bytecode. Plant a method call instead. And
+`ddl-auto=validate` does **not** check a vector's dimension: `@Array(length)`
+feeds DDL generation only, so 512 against a `vector(1024)` column validates
+clean. That shape needs a round trip against a real database.
 
 **Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
