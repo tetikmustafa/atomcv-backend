@@ -61,23 +61,13 @@ verilmeli.
   `spec/04-data-model.md`'de. Sayacı yazan kod bunu **`LocalDate.now(ZoneOffset.UTC)`**
   ile okumak zorunda: `LocalDate.now()` bu makinede UTC+3 döner ve testler
   günün 21:00'inden sonra geçmeye başlar — bir sonraki adımın tuzağı bu.
-- ~~**`application-local-fake.yml`, `-local-record`, `-local-real` yok.**~~
-  **Kapandı.** Üçü de yazıldı. Sessiz yutulma bir testle bağlandı
-  (`LocalProfileConfigTest`): dosyanın taşıyabileceği bir değere assert ediyor
-  ve negatif kontrolü içinde — var olmayan bir profil adıyla aynı özellik
-  varsayılana düşüyor. Kasıtlı ihlalle doğrulandı: dosya geçici olarak
-  kaldırıldığında test düşüyor.
-
-- ~~**`archunit.properties` içindeki `failOnEmptyShould=false` kaldırılmalı.**~~
-  **Kapandı — ve maddenin kendisi yanlıştı:** öyle bir dosya hiç olmadı. Ayar
-  global değil, `ArchitectureTest`'te tek kurala verilmiş bir
-  `allowEmptyShould(true)`'ydu (`renderersAreDeterministic`), gerekçesi de
-  "`rendering` modülü henüz boş". Adım 1.4 modülü doldurdu, grant kaldırıldı.
-  `spec/12-quality.md` § 51.4'ün istediği doğrulama yapıldı: `..llm..`'e bakan
-  bir render sınıfı kasıtlı olarak eklendi, kural düştü.
-
-  İlk sonda **yanlış geçti** (derleme zamanı sabiti inline oluyor); ders
-  `CLAUDE.md` · Testing Requirements'a yazıldı.
+- ~~Üç `local-*` profil dosyası yok.~~ **Kapandı** (Adım 2.2). Davranış
+  `spec/13-development.md` § 54.2'de, sessiz yutulmaya karşı koruma
+  `LocalProfileConfigTest`'te — negatif kontrolü içinde.
+- ~~`archunit.properties`'teki `failOnEmptyShould`.~~ **Kapandı, ve madde
+  yanlıştı:** öyle bir dosya yoktu, tek kurala verilmiş bir
+  `allowEmptyShould(true)` vardı; gerekçesi Adım 1.4'te doldu, kaldırıldı.
+  İlk sondanın yanlış geçmesi `CLAUDE.md` · Testing Requirements'a yazıldı.
 
 ## Aşama 3'e taşınanlar
 
@@ -192,3 +182,19 @@ zincirdeki bilinmeyen id'nin ölümcül olmaması ve zincirin env-driven olması
 `spec/07-subsystems.md` § 27.3'te; `structured-output`'un tespit değil
 yapılandırma olması § 27.2'de; `local-fake`'in zinciri override etmek zorunda
 olması `spec/13-development.md` § 54.2'de.
+
+**Düzeltme — § 18.1'in üç çıkış yolundan birinin adı yoktu.** Sözlük
+`continue_anyway` ile onuncu değerini kazandı; kural EK D.6.1 ve § 18.1'e
+yazıldı, frontend maddesi `B-037`. Buraya not düşülmesinin nedeni **sondanın
+kendiliğinden çalışması**: eklemeden önce `theActionVocabularyIsTheAgreedEight`
+düştü, yani kapalı sözlüğün kapalılığı gerçekten korunuyor. **İki ayrı yerde
+düştü:** birim testi enum'u, `OpenApiSchemaIT` ise *yayımlanan şemayı* ölçüyor —
+ikincisi değerin frontend'in üretilen tipine gerçekten girdiğini kanıtlıyor,
+birincisi yalnız enum'da olduğunu. Bir sonraki sözlük genişletmesinde ikisi de
+düşecek ve `B-nnn` yazmayı hatırlatacak.
+
+**Ekleme — ön kontrolün dört ret sebebi telde ayrışmıyor.** Katalog tek kod
+yayımlıyor, ayrım `Verdict` enum'uyla içeride kalıyor: "ilan reddedildi"
+metriği hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın
+gözden geçirilmesi gerektiğini söyler. Kural ve sıralama (uzunluk entropiden
+önce) § 18.1'e, enum toleransı § 18.2'ye yazıldı.

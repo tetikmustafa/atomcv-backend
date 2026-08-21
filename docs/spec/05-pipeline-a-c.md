@@ -83,11 +83,17 @@ EN: responsibilities, requirements, qualifications, experience, role,
     team, apply, skills, duties, preferred, seeking, position
 ```
 
-En az 2 sinyal aranır. **Engelleme değil, sorma:**
+En az 2 sinyal aranır, ve **ayrı** sinyaller sayılır: "deneyim"i dokuz kez yazan bir ilan bir şey söylemiştir, dokuz değil. **Engelleme değil, sorma:**
 ```
 Girdiğin metin bir iş ilanına benzemiyor.
 [ Yine de devam et ] [ Metni düzenle ] [ Genel CV oluştur ]
 ```
+
+Üçünün karşılığı sırasıyla `continue_anyway`, `paste_full_posting`, `continue_as_general_cv` (EK D.6.1). Üçü de tek kodla gelir: `UNPARSEABLE_JOB_DESCRIPTION`, `confidence: 0` ve `skillsFound: 0` ile — ön kontrol hiçbir şeyi analiz etmemiştir ve sıfır bunu dürüstçe söyler.
+
+**Redde götüren kontrol telde ayrışmaz**, çünkü katalog tek kod yayımlıyor. Kod içinde ayrışır (`TOO_SHORT`, `TOO_LONG`, `LOW_ENTROPY`, `NOT_JOB_LIKE`): metrik ve log için ayrım gerekiyor — "ilan reddedildi" hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın gözden geçirilmesi gerektiğini söyler.
+
+Sıra önemlidir: uzunluk entropiden **önce** bakılır, yoksa 40.000 karakterlik tekrarlı bir yapıştırma "tekrarlı olduğu için" reddedilir, gerçekte olduğu şey için değil.
 
 ### 18.2 LLM çağrısı — çıktı şeması
 
@@ -117,6 +123,8 @@ Girdiğin metin bir iş ilanına benzemiyor.
   "extractionNotes": []
 }
 ```
+
+**Kapalı sözlük dışı bir değer parse'ı düşürmez, `null` olur.** `strict: true` ile sağlayıcı sözlüğü zaten zorlar (§ 27.2), dolayısıyla bu ancak zayıf `json_object` modunda olur — ve "staff" yanıtlayan bir model için tüm cevabı düşürmek, § 18.4'ün kapısının hiç okumadığı bir alan uğruna tam bir retry ödemek olurdu. Beklenmeyen **alanlar** da yok sayılır: modelin fazladan bir alan yazması başarısızlık değildir, kapı önemli alanlara bakar.
 
 **Kritik:** `responsibilities`, `keywords`, `canonical` alanları **her zaman İngilizce** — ilan hangi dilde olursa olsun. Sebep: atomların embedding'i İngilizce varyanttan hesaplanıyor, karşılaştırma aynı dilde olmalı. `jdLanguage` yine de saklanır (cover letter dili önerisi için).
 

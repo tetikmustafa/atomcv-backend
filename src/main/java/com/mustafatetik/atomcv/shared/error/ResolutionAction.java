@@ -33,6 +33,17 @@ public enum ResolutionAction {
     /** Proceed with no posting at all — general CV mode. */
     CONTINUE_AS_GENERAL_CV,
 
+    /**
+     * Send the same text again, this time past the preflight (Bolum 18.1).
+     *
+     * <p>Bolum 18.1 is explicit that a posting which does not look like one is
+     * a question, not a refusal — the user may know better than the heuristic.
+     * Distinct from {@link #RETRY}, which means a transient failure is worth
+     * repeating unchanged: preflight would refuse the identical text
+     * identically, so the resubmission has to carry an acknowledgement.
+     */
+    CONTINUE_ANYWAY,
+
     /** Extraction failed; go to the manual profile form. */
     SWITCH_TO_MANUAL_FORM,
 
