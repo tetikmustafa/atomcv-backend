@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-20 · Aşama 2 girişi, `F-001`/`F-002` kapandı
+**Son güncelleme:** 2026-08-20 · `F-001`/`F-002` kapandı, `B-034` frontend'de uygulandı
 
 ---
 
@@ -37,8 +37,8 @@
 | Aşama 1 — Profil editörü | 🔨 Sürüyor |
 | Aşama 2 — Üretim akışı + SSE | ⬜ |
 
-**Açık:** `B-034` (demote artık sürüm artırıyor). **Test:** 270 birim · 13 e2e.
-**Aşama 1'in devrettikleri:** 4/4 kapandı — `F-001`'in beklediği karar verildi.
+**Açık `B-nnn` yok.** Backend'e beş madde açıldı: `F-003`…`F-007`. **Test:** 291 birim · 15 e2e.
+**Aşama 1'in devrettikleri:** 3/4 — kalan madde kota sıfırlanma saati, gün dönümü aşağıda açık.
 
 ---
 

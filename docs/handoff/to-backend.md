@@ -11,7 +11,63 @@
 
 ## OPEN
 
-*(şu an açık madde yok)*
+### F-003 · `PUT /profile` yazma **öncesindeki** `completeness`'i döndürüyor
+**Since:** frontend commit `1baa295` · **Spec:** `spec/08-api.md` § 35.6
+Yanıttaki `completeness` isteğin uyguladığı değişiklikten önceki durumu taşıyor.
+Ölçüldü — aynı `PUT`, tek fark `selfDescription`:
+
+```
+                         GET öncesi   PUT dedi   GET sonrası
+selfDescription eklendi      80          80          90   ← PUT eski değeri verdi
+silindi                      90          90          80   ← yine eski değer
+değişim olmayan iki tur      =           =           =    ← uyuşuyor; hatayı gizleyen bu
+```
+
+**Bizde görünür:** `CompletenessBar` tam bu sayıyı çiziyor, yani çubuk her baş
+düzenlemesinden sonra bir önceki yüzdeyi gösteriyordu.
+**İstenen:** yazmadan **sonraki** değer. `PUT` zaten kaydın tamamını dönüyor; tutarsız
+tek alan bu.
+**Frontend:** geçici olarak baş `PUT` sonrası yeniden okunuyor. Kapandığında kaldırılacak
+— kodda ve mock'ta `F-003` diye işaretli, testi var.
+
+### F-004 · `PUT /profile` omitted alanları tekdüze temizlemiyor
+**Since:** frontend commit `1baa295` · **Spec:** `spec/08-api.md` § 35.6
+Yalnız `headline` + `enabledLanguages` gönderen bir gövdede `contact` `{}`,
+`selfDescription` `null` oluyor — ama **`sourceLanguage` olduğu gibi kalıyor**, aynı
+istekte. (`preferences` de kalıyor; kendi ucu olduğu için beklenen.)
+**İstenen:** ya `sourceLanguage` da temizlensin, ya da hangi alanların temizlendiği
+`spec/08-api.md`'ye yazılsın. Şema "replace" diyor, davranış kısmen "merge".
+**Bizi kırmıyor:** baş formu dokuz alanı da her seferinde gönderiyor. Kural yazılı
+olmadığı için buna güvenmiyoruz.
+
+### F-005 · Entry `PATCH`'te `params.fields` hep `endDate` diyor
+**Since:** frontend commit `1baa295` · **Spec:** `spec/08b-api-contract.md`
+`F-002`'nin tarih kuralı doğru çalışıyor, ama ihlali hangi alan tetiklerse tetiklesin:
+
+```
+PATCH {"endDate":   "1990-01-01"} → 400 fields: ["endDate"]   ← doğru
+PATCH {"startDate": "2099-01-01"} → 400 fields: ["endDate"]   ← kullanıcı startDate yazdı
+```
+
+**İstenen:** yamanan alan neyse `params.fields` onu adlandırsın.
+**Bugün kırmıyor:** entry düzenleme formu yok, create formunda iki alan da ekranda.
+Tek alanlı bir `PATCH` yüzeyinde `params.fields`'ı input'a çevirmek yanlış alanı işaretler.
+
+### F-006 · "Birincil sözcükleme silinemez" kuralı `spec/`'te yok
+**Since:** frontend commit `1baa295` · **Spec:** `spec/08-api.md` § 35
+`DELETE …/variants/{vid}` birincili reddediyor — tek sözcüklemeyken de, ikincisi
+varken de; ikisi de `400` + `params.fields: ["variantId"]`. Davranış makul, kayıtlı değil.
+**İstenen:** kural `spec/`'e yazılsın. Bir de teyit: bu tek kural mı ("birincil
+silinemez"), yoksa "son kalan" + "birincil" iki ayrı kural mı? Ölçüm ikisini de
+kapsıyor, ayırt edemiyor.
+**Frontend:** sözcükleme silme kontrolü kısmen bu yüzden çizilmedi.
+
+### F-007 · Kota gün dönümü — karar hâlâ bekliyor
+**Since:** Adım 1 · karar `STATUS.md` · açık kararlar tablosunda, tek kopya orada.
+Aşama 1'in devrettiği dört maddeden kapanmayan tek madde.
+**İstenen:** `resetsAt` gönderilmeye başlamadan **önce** karar. Tercihimiz mutlak bir an
+(ISO-8601, offset'li): istemci kullanıcının yerelinde biçimlendirir ve soru kapanır.
+Gün sınırı sunucu yerelinde kalıp yalnız saat gelirse istemci onu doğru gösteremez.
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -25,37 +81,4 @@
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
 
-### F-002 · Ters tarih aralığı — kapandı
-`endDate >= startDate` artık `EntryService`'te, hem `POST /profile/entries` hem
-`PATCH /profile/entries/{id}` için. İhlal **400 `VALIDATION_FAILED`** +
-`params.fields: ["endDate"]` — istediğiniz şekil.
-
-`PATCH` karşılaştırmayı **yamanın sonucu** üzerinde yapıyor, gövdesi üzerinde değil:
-`{"endDate": "2020-01-01"}` saklı `startDate`'e karşı, `{"startDate": "2026-01-01"}`
-saklı `endDate`'e karşı ölçülüyor. İkisi de reddediliyor. `{"endDate": null}` hâlâ
-geçiyor — "sürüyor"da karşılaştıracak ikinci tarih yok — ve eşit tarihler geçerli
-(tek günlük sertifika/hackathon gerçek bir entry, `>` değil `>=`).
-
-Kural `spec/08-api.md` § 35.2'ye yazıldı, yani sözleşmenin parçası.
-**Sizde bir şey değişmiyor:** istemci kontrolünüz kalsın, artık tek savunma değil.
-Üç entegrasyon testi: yaratmada ters aralık, yamayla iki uçtan ters çevirme, aynı gün.
-
-### F-001 · Demote'ta sürüm artışı — kapandı, davranış değişti
-Sürüm artıyor tarafını seçtik. Diğer seçenek `spec`'e "iyimser kilit bu satırda
-çalışmıyor" istisnası yazmaktı; tarif ettiğiniz kayıp-yazma penceresi gerçekti.
-
-Kök neden bulduğunuz yerdeydi: demote tek satırlık bir toplu JPQL `update` ve toplu
-update `@Version`'ın yanından geçiyor. `update versioned` oldu, ayrıca yalnız
-**gerçekten birincil olan satırı** hedefliyor.
-
-```
-başlangıç   tr primary=true  v=0   |  en primary=false v=2
-{"primary":true} → en          tr primary=false v=1   |  en primary=true  v=3
-```
-
-**Aksiyonunuz var — `B-034` olarak açıldı.** Kendi cümlenizle: yerel demote'un
-sürümü de artmalı, yoksa `usePatchVariant` sunucuyla artık hizalı değil.
-
-Atomun promote'a karışmayan diğer sözcüklemeleri **sürümlenmiyor**; etag'leri
-geçerli kalıyor. Bunu ayrıca test ettik, çünkü "hepsini artır" düzeltmesi promote'u
-tamamen kırıyor. Kural `spec/08-api.md` § 35.6'da.
+*(boş — `F-001` ve `F-002` `resolved/to-backend-2026-08.md`'de)*
