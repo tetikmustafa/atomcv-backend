@@ -66,11 +66,20 @@ verilmeli.
   sayıyor, yani `make dev` bugün çalışıyor gibi görünürken `local-fake` hiçbir
   şey katmıyor.
 
-- **`archunit.properties` içindeki `failOnEmptyShould=false` kaldırılmalı.**
-  Modüller artık gerçek sınıf taşıyor, yani gerekçesi doldu; ayar açık kaldığı
-  sürece bir paketi yeniden adlandırmak ilgili kuralı hiçbir şeyle eşleştirmeyip
-  sessizce geçirir. Kaldırıldığında kuralların hâlâ sınıf gördüğü, kasıtlı bir
-  ihlalle doğrulanmalı (`spec/12-quality.md` § 51.4).
+- ~~**`archunit.properties` içindeki `failOnEmptyShould=false` kaldırılmalı.**~~
+  **Kapandı — ve maddenin kendisi yanlıştı:** öyle bir dosya hiç olmadı. Ayar
+  global değil, `ArchitectureTest`'te tek kurala verilmiş bir
+  `allowEmptyShould(true)`'ydu (`renderersAreDeterministic`), gerekçesi de
+  "`rendering` modülü henüz boş". Adım 1.4 modülü doldurdu, grant kaldırıldı.
+  `spec/12-quality.md` § 51.4'ün istediği doğrulama yapıldı: `..llm..`'e bakan
+  bir render sınıfı kasıtlı olarak eklendi, kural düştü.
+
+  **Yanlış-geçen bir sonda:** ilk denemede planted bağımlılık
+  `private static final String PROBE = Probe.ID` idi ve kural **geçti**. `ID`
+  derleme zamanı sabiti; javac onu inline ediyor ve bytecode'da `Probe`'a hiç
+  referans kalmıyor, ArchUnit de bytecode okuyor. Sonda bir **metot çağrısına**
+  çevrilince düştü. `gitleaks`'in AWS örnek anahtarlarını allowlist'lemesiyle
+  aynı tuzak: sondanın kendisi de doğrulanmak zorunda.
 
 ## Aşama 3'e taşınanlar
 
