@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["title", "seniority", "skills", "confidence", "remote"],
+  "properties": {
+    "title":      { "type": "string" },
+    "seniority":  { "type": "string", "enum": ["junior", "mid", "senior"] },
+    "skills":     { "type": "array", "items": { "type": "string" } },
+    "confidence": { "type": "number" },
+    "remote":     { "type": "boolean" },
+    "headcount":  { "type": "integer" }
+  }
+}

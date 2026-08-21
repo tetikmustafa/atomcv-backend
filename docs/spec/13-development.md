@@ -49,6 +49,14 @@ public class FakeLlmProvider implements LlmProvider {
 
 **Kayıt modu kritik:** Bir kez `local-record` ile çalıştır, fixture'lar `src/test/resources/fixtures/llm/` altına düşsün. Bu fixture'lar aynı zamanda golden test set'in girdisi olur.
 
+**Fixture'lar classpath'te değil, dosya sisteminde.** `local-record` uygulamayı `bootRun` ile çalıştırıp fixture *yazıyor* ve paketlenmiş bir kaynağa yazılamaz; okuma ile yazma aynı yeri göstermezse kaydedilen fixture hiç oynatılmaz. Yol `atomcv.llm.fake.fixture-dir` ile verilir, yalnız `local-*` profillerinde etkindir, üretim jar'ına girmez.
+
+Dosya adı `{promptId}/{version}-{sha256[0:12]}.json` — girdinin **hash'i**, metni değil. Değişen bir ilan ıskalar: alakasız bir kaydı oynatmak fixture'ın hiç olmamasından kötüdür, çünkü hat başka bir işin analizi üzerinde çalışır.
+
+**`synthesize` bayrağı.** `local-fake`'te açık: hiçbir fixture'ın karşılamadığı çağrı şema biçiminde bir yer tutucuyla cevaplanır, yoksa temiz bir klon hiç üretim yapamazdı. `local-record` ve `local-real`'de **kapalı** — sentetik bir cevabın fixture olarak kaydedilmesi onu gerçek bir kayıttan ayırt edilemez yapardı.
+
+`FakeLlmProvider` iki kademeye birden cevap verir; tek tier'a bağlansa `local-fake` altında diğer zincir hiç çalışmazdı.
+
 Diğer sahte sağlayıcılar:
 - `FakeEmbeddingProvider` — metin hash'inden deterministik vektör
 - `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)

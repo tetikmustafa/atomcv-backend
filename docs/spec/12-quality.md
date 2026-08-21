@@ -342,7 +342,9 @@ String selectVersion(String promptId, String bucketKey) {
 }
 ```
 
-`bucketKey` = **userId** (requestId değil) — aynı kullanıcı hep aynı varyantı görsün.
+`bucketKey` = **userId** (requestId değil) — aynı kullanıcı hep aynı varyantı görsün. Anahtarı olmayan çağıran (anonim) aktif sürümü alır: rastgele bir değerle kovalamak kullanıcıyı oturum ortasında varyantlar arasında gezdirirdi.
+
+**Hash murmur3 değil `java.util.zip.CRC32`.** Tek bir hash için Guava bağımlılığı alınmadı (§ 5.4'ün "SDK yok" gerekçesi). CRC32 JDK'da, spesifikasyonu belirlenmiş ve yüz kovaya bölmek için yeterince dağılıyor. Yukarıdaki parçacığın tuzağından da kaçınıyor: `Math.abs(Integer.MIN_VALUE)` hâlâ negatiftir ve negatif int'in modülü de negatiftir — CRC32 işaretsiz bir `long` döndürür.
 
 ### 53.4 LLM eval — sadece prompt değişikliğinde
 
