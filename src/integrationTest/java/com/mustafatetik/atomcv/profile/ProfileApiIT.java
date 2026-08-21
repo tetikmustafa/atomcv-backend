@@ -171,6 +171,126 @@ class ProfileApiIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void replacingTheHeadReplacesTheSourceLanguageToo() throws Exception {
+        // The round trip F-004 was about: a language written in, and a later
+        // replacement writing it back out. What used to break this was not the
+        // value being ignored — it never was — but the field being optional,
+        // so an omission kept the stored one. That half is guarded by the test
+        // below; this one holds the plain replace behaviour still true.
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Yazılım Mühendisi", "sourceLanguage": "tr",
+                                  "enabledLanguages": ["tr", "en"] }"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sourceLanguage").value("tr"));
+
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("Backend Engineer")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sourceLanguage").value("en"));
+    }
+
+    @Test
+    void aReplacementWithoutASourceLanguageIsRefusedRatherThanMerged() throws Exception {
+        // The column is NOT NULL, so there is no value to clear it to. Falling
+        // back to the default would turn a Turkish-authored profile into an
+        // English one on any head edit that forgot the field, and keeping the
+        // stored value is the merge F-004 asked us to stop doing. Asking for
+        // it is the only answer that leaves no silent case.
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"headline\": \"x\", \"enabledLanguages\": [\"en\"] }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(contains("sourceLanguage")));
+    }
+
+    @Test
+    void aWriteAnswersWithTheCompletenessItJustProduced() throws Exception {
+        // F-003: the response carried the figure from before the request.
+        // Two of the seven terms live on the head, so a write that touches
+        // either moves it — and the bar drawn from this number showed the
+        // previous edit. Measured the way the frontend measured it: the same
+        // PUT twice, differing only in selfDescription.
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com" },
+                                  "sourceLanguage": "en", "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk())
+                // Contact is worth 15 and it was written by this very request.
+                .andExpect(jsonPath("$.completeness").value(15));
+
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com" },
+                                  "selfDescription": "Builds things that stay built",
+                                  "sourceLanguage": "en", "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk())
+                // Plus 10 for the self-description. Before the fix this still
+                // said 15, and the read after it said 25.
+                .andExpect(jsonPath("$.completeness").value(25));
+
+        mvc.perform(get("/api/v1/profile"))
+                .andExpect(jsonPath("$.completeness").value(25));
+
+        // And back down, which is the direction that proves it is recomputed
+        // rather than only ever climbing.
+        mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(minimalBody("Backend Engineer")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completeness").value(0));
+    }
+
+    @Test
+    void aPreferencesWriteAlsoAnswersWithACurrentCompleteness() throws Exception {
+        // Preferences are not a term in the formula, but the response carries
+        // the head — so the invariant is that a body holding `completeness`
+        // holds a current one, whatever moved it.
+        //
+        // The second write reuses the ETag the first one answered with rather
+        // than reading for it. That matters: `currentEtag()` performs a GET,
+        // and a GET refreshes the stored figure — so a read between the two
+        // writes repairs exactly the staleness this is here to catch. It is
+        // the same accident that hid F-003 from the frontend for a while.
+        String etag = mvc.perform(put("/api/v1/profile")
+                        .header(HttpHeaders.IF_MATCH, currentEtag())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "headline": "Backend Engineer",
+                                  "contact": { "name": "Mustafa Tetik",
+                                               "email": "mustafa@example.com" },
+                                  "sourceLanguage": "en", "enabledLanguages": ["en"] }"""))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getHeader(HttpHeaders.ETAG);
+
+        mvc.perform(put("/api/v1/profile/preferences")
+                        .header(HttpHeaders.IF_MATCH, etag)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "writingStyle": { "emphasizeMetrics": false, "tone": "casual",
+                                                    "conciseSentences": true },
+                                  "defaults": { "maxPages": 2, "templateId": "modern",
+                                                "cvLanguage": "tr", "coverLetterLanguage": "tr" } }"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completeness").value(15));
+    }
+
+    @Test
     void replacingTheHeadLeavesPreferencesAlone() throws Exception {
         mvc.perform(put("/api/v1/profile/preferences")
                         .header(HttpHeaders.IF_MATCH, currentEtag())
@@ -202,6 +322,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                         .content("""
                                 { "headline": "Backend Engineer",
                                   "contact": { "email": "not-an-address" },
+                                  "sourceLanguage": "en",
                                   "enabledLanguages": ["en"] }"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
@@ -214,7 +335,8 @@ class ProfileApiIT extends AbstractIntegrationTest {
         mvc.perform(put("/api/v1/profile")
                         .header(HttpHeaders.IF_MATCH, currentEtag())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"headline\": \"x\", \"enabledLanguages\": [] }"))
+                        .content("{ \"headline\": \"x\", \"sourceLanguage\": \"en\","
+                                + " \"enabledLanguages\": [] }"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.params.fields").value(contains("enabledLanguages")));
     }
@@ -252,6 +374,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                                 { "headline": "Backend Engineer",
                                   "contact": { "name": "Mustafa Tetik",
                                                "email": "mustafa@example.com" },
+                                  "sourceLanguage": "en",
                                   "enabledLanguages": ["en"] }"""))
                 .andExpect(status().isOk());
 
@@ -316,6 +439,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                                   "contact": { "name": "Mustafa Tetik",
                                                "email": "mustafa@example.com",
                                                "location": "İstanbul" },
+                                  "sourceLanguage": "en",
                                   "enabledLanguages": ["en"] }"""))
                 .andExpect(status().isOk());
 
@@ -379,6 +503,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                         .content("""
                                 { "headline": "C++ and *not* italics",
                                   "contact": { "name": "Mustafa Tetik" },
+                                  "sourceLanguage": "en",
                                   "enabledLanguages": ["en"] }"""))
                 .andExpect(status().isOk());
 
@@ -398,8 +523,10 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.params.fields").value(contains("format")));
     }
 
+    /** The two required fields plus a headline: the smallest legal replacement. */
     private String minimalBody(String headline) {
-        return "{ \"headline\": \"" + headline + "\", \"enabledLanguages\": [\"en\"] }";
+        return "{ \"headline\": \"" + headline + "\", \"sourceLanguage\": \"en\","
+                + " \"enabledLanguages\": [\"en\"] }";
     }
 
     private String currentEtag() throws Exception {
