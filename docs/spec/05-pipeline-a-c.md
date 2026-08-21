@@ -260,6 +260,14 @@ double skillOverlap(Atom atom, JobAnalysis jd) {
 }
 ```
 
+**Benzerlik pgvector sorgusuyla değil, Java'da hesaplanır.** Faz B çalıştığında profil ağacı zaten bellektedir (Faz C onu istiyor): sorgu, yüklü olanı getirmek için bir gidiş dönüş ekler ve sıralamayı § 51.2'nin determinizm testinin ulaşamayacağı yere, SQL'e taşır. Skorlayıcı saf bir fonksiyondur.
+
+**Kosinüs [0,1]'e ölçeklenir**, ham [-1,1] kullanılmaz: negatif bir bileşen ağırlıklı toplamdan *çıkarır* ve alakasız bir madde boş bir maddenin altına düşerdi. Ölçekten sonra "alakasız" 0.5, "zıt" 0'dır ve ağırlıklar buna göre seçilmiştir.
+
+**Vektörü olmayan atom 0.5 alır, 0 değil.** § 28.2 embedding'i sonradan kuyrukta hesaplar, yani az önce yazılmış bir atomun vektörü yoktur; onu "azami alakasız" saymak kullanıcının az önce önemli bulduğu içeriği gömerdi. Farklı boyuttaki iki vektör de aynı yolu izler — başka bir modelin çıktısı karşılaştırılabilir değildir.
+
+**`skillOverlap`'in paydası zorunlu listedir, birleşim değil.** İki zorunlu ve on iki tercih edilen beceri sayan bir ilanda, ikisini de karşılayan bir atom tam puan almalıdır. Tercih edilenler üstüne eklenir ve toplam clamp'lenir: bir zorunluyu kaçıran atomu yukarı çekebilirler ama onun yerine geçemezler.
+
 ### 19.3 Kritik prensip: eleme yok, sıralama var
 
 Sistem **mutlak eşik uygulamaz**. "Bu atom yeterince alakalı mı?" diye sormaz; "en alakalıdan aza doğru sırala" der.

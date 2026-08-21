@@ -131,17 +131,6 @@ ikincisi değerin frontend'in üretilen tipine gerçekten girdiğini kanıtlıyo
 birincisi yalnız enum'da olduğunu. Bir sonraki sözlük genişletmesinde ikisi de
 düşecek ve `B-nnn` yazmayı hatırlatacak.
 
-**Ekleme — eksik nesneler boş nesne olarak okunuyor.** `role`, `company` ve
-`experienceYears` yoksa `null` değil boş karşılıkları oluyor; listeler zaten
-öyleydi. Sebebi `embeddingTarget()`: `role.title()`'a bakıyor ve modelin
-`role`'ü hiç yazmadığı bir cevap onu `NullPointerException` ile düşürürdü.
-Kapı zaten başlıksız bir analizi kendi ölçütleriyle reddediyor, yani ayrıca
-null kontrolü yapmanın kimseye faydası yok.
-
-**Ekleme — boş ilanla `JobAnalysisPhase.analyse` çağırmak programlama hatası.**
-Genel CV modu buraya hiç gelmez; `Result.err` yerine `IllegalArgumentException`
-çünkü bu kullanıcının yapabileceği bir şey değil, çağıranın yanlış dallanması.
-
 **Ekleme — Redis cache'in dört kararı § 18.6'ya yazıldı:** anahtarın prompt
 sürümünü taşıması, yalnız kapıdan geçenin yazılması, arızanın ıskalamaya
 dönüşmesi ve sıranın ön kontrol → cache → çağrı olması. Buraya not düşülen tek
@@ -168,6 +157,7 @@ duruyorlar; burada yalnız nerede oldukları:
 | `local-fake`'in zinciri override etmesi | `13-development.md` § 54.2 |
 | Prompt/fence bölünmesi, sağlayıcı arızasının çevrilmemesi, kapı sırası | `05-pipeline-a-c.md` § 18.3-18.4 |
 | Cache anahtarının prompt sürümü taşıması, fail-open, sıra | `05-pipeline-a-c.md` § 18.6 |
+| Faz B'nin benzerlik, ölçekleme ve `skillOverlap` kararları | `05-pipeline-a-c.md` § 19.2 |
 | Fake embedding'in tohumu ve birim uzunluk, profil ayrımı | `13-development.md` § 54.2 |
 | Sağlık kontrolünün `/health` olması, kısmi cevabın reddi | `07-subsystems.md` § 28.4 |
 | `LlmProvider`'ın `LlmOutcome` döndürmesi, `JsonSchema` | `07-subsystems.md` § 27.1 |
@@ -191,3 +181,13 @@ tuzak `vector` kullanan her kolonda tekrar edecek.
 
 `AtomEmbeddingMappingIT` bu yüzden var ve kasıtlı ihlalle doğrulandı:
 `@JdbcTypeCode` kaldırıldığında altı testi birden düşüyor.
+
+**§ 19.6'nın doğrulanması.** Faz B'nin dört kararı § 19.2'ye yazıldı (tabloda);
+buraya not düşülen tek şey şu: eşitlik
+bozucusu kaldırıldığında determinizm testi düştü — `List.sorted()` kararlı
+olduğu için giriş sırası çıkışa sızıyor ve karıştırılmış girdi farklı CV
+üretiyor. Kural "zorunlu" diye yazılmış, artık ölçülmüş de.
+
+**Kalan (Adım 2.5):** `tags`/`atom_tags` entity'leri (`ScorableAtom.tags` bugün
+çağıranın verdiği bir küme), Faz B'yi hatta bağlayan servis, ve `isHealthy()`'yi
+okuyup `WITHOUT_EMBEDDING`'e düşen yer.
