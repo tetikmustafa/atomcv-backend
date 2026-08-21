@@ -175,9 +175,42 @@ public interface LlmProvider {
     boolean isAvailable();      // API anahtarı var mı
     ModelTier tier();
 
-    <T> Result<LlmResponse<T>> callStructured(StructuredRequest<T> req);
+    <T> LlmOutcome<T> callStructured(StructuredRequest<T> req);
 }
 
+public sealed interface LlmOutcome<T> {
+    record Answered<T>(LlmResponse<T> response) implements LlmOutcome<T> {}
+    record Failed<T>(LlmFailure failure)        implements LlmOutcome<T> {}
+}
+
+public record LlmFailure(Kind kind, String provider, String detail) {
+    public enum Kind {
+        RATE_LIMITED(true), SERVER_ERROR(true), TIMEOUT(true), UNREACHABLE(true),
+        SCHEMA_MISMATCH(false), REQUEST_REJECTED(false);
+        // true → zincirdeki sonraki sağlayıcı; false → aynı sağlayıcıda retry (27.3)
+        public boolean tryNextProvider() { ... }
+    }
+}
+
+// Prompt'un yanındaki schema.json'ın (53.1) üstünde bir value object.
+// name gerekli: OpenAI/OpenRouter response_format'ta şema adı istiyor,
+// Anthropic adaptörü onu zorlanan tool'un adı olarak kullanıyor (27.2).
+public record JsonSchema(String name, JsonNode node) {}
+```
+
+**Sağlayıcı `Result` değil `LlmOutcome` döndürür.** Ayrım hata tipinde: tek bir
+sağlayıcının 429'u ya da şema uyumsuzluğu **kullanıcıya çıkmaz**, çünkü hata
+kataloğunda (EK D.6) LLM için yalnız iki kod var —
+`ALL_PROVIDERS_UNAVAILABLE (503, tried[])` ve `EMBEDDING_UNAVAILABLE (503)`.
+`PipelineError` kullanıcının gördüğü hiyerarşidir; sağlayıcı seviyesindeki
+başarısızlık `llm` modülünün içinde kalır ve dışarı yalnız zincirin sonucu çıkar.
+
+Bunun kabul edilen sonucu: ısrarlı bir şema uyumsuzluğu da kullanıcıya
+`ALL_PROVIDERS_UNAVAILABLE` görünür. Kullanıcı için ayrım yok — ikisi de "model
+cevap vermedi" — ama telemetride var: `llm_invocations.outcome` `schema_error`
+olarak ayrı duruyor.
+
+```java
 public record StructuredRequest<T>(
     String promptId,
     String promptVersion,
@@ -249,7 +282,11 @@ public <T> Result<LlmResponse<T>> call(StructuredRequest<T> req) {
 }
 ```
 
-**Önemli ayrım:** 429/5xx/timeout → sonraki sağlayıcı. Şema uyumsuzluğu → aynı sağlayıcıda retry (farklı sağlayıcı da aynı hatayı verecek).
+**Önemli ayrım:** 429/5xx/timeout → sonraki sağlayıcı. Şema uyumsuzluğu → aynı sağlayıcıda retry (farklı sağlayıcı da aynı hatayı verecek). Ayrımı `LlmFailure.Kind.tryNextProvider()` taşır (27.1).
+
+**`tried` boş olabilir ve bu normaldir.** Anahtarı olmayan sağlayıcı *sessizce* atlanır ve `tried`'a yazılmaz: beş vendor listeleyen bir zincir, tek anahtarlı bir kurulumda eksik değil olağan durumdur. Boş liste "hiçbir şey yapılandırılmamış" demek, "hepsi çöktü" değil.
+
+`ProviderChain.call` `Result<LlmResponse<T>>` döndürür — hata tipi `PipelineError` ve bugün üretebildiği tek durum `AllProvidersUnavailable(tried)`. Sağlayıcıdan zincire dönüşüm burada olur.
 
 ### 27.4 Maliyet optimizasyonları
 

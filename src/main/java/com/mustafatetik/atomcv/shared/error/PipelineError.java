@@ -80,6 +80,27 @@ public sealed interface PipelineError {
     }
 
     /**
+     * Every provider in the chain was tried and none of them answered
+     * (Bolum 25.2, Bolum 27.3).
+     *
+     * <p>The only LLM failure a user is ever shown. A single provider's 429 or
+     * schema mismatch has no code in the catalogue and stays inside the llm
+     * module as an {@code LlmFailure}; this is what the chain reports once it
+     * has run out of places to ask.
+     *
+     * @param tried the providers that were actually called, in order. One that
+     *              was skipped for having no key is not in the list — Bolum
+     *              27.3 skips it silently, and naming it would report an
+     *              outage for a vendor this deployment never configured.
+     */
+    record AllProvidersUnavailable(List<String> tried) implements PipelineError {
+
+        public AllProvidersUnavailable {
+            tried = List.copyOf(tried);
+        }
+    }
+
+    /**
      * The document did not compile, or the compiler was not there (Bolum 29).
      *
      * @param kind   which of the four, so the caller knows whether to retry

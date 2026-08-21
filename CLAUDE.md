@@ -188,9 +188,10 @@ tests worth the most. Two rules live here because no spec file enforces them:
 to catch something was confirmed against a deliberate violation before being
 trusted — the ArchUnit rules against a planted dependency, schema validation
 against a renamed column, the query counter against a lower bound, gitleaks
-against a real token pattern. Do the same for the next one. Note that gitleaks
-allowlists the AWS documentation example keys, so a probe using those reports
-a false pass.
+against a real token pattern. Do the same for the next one. Two probes that report a **false pass**: one
+built from the AWS documentation example keys (gitleaks allowlists them), and
+an ArchUnit probe reading a compile-time constant — javac inlines it, so no
+reference survives into the bytecode. Plant a method call instead.
 
 **Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
