@@ -55,9 +55,12 @@ verilmeli.
 
 ## Aşama 2'ye taşınanlar
 
-- **Kota sıfırlaması bir zaman dilimi istiyor.** `usage_counters.period` bir
-  `DATE`; günlük sayaç henüz hiçbir yerde tanımlı olmayan bir gün sınırında
-  dönüyor. `resetsAt` frontend'e gönderilmeden önce kapanmalı.
+- ~~**Kota sıfırlaması bir zaman dilimi istiyor.**~~ **Kapandı (F-007):** gün
+  sınırı **UTC**, `resetsAt` telde offset'li mutlak bir ISO-8601 anı. Karar
+  `spec/08b-api-contract.md` EK D.6.5'e yazıldı, `period` kolonunun yorumu da
+  `spec/04-data-model.md`'de. Sayacı yazan kod bunu **`LocalDate.now(ZoneOffset.UTC)`**
+  ile okumak zorunda: `LocalDate.now()` bu makinede UTC+3 döner ve testler
+  günün 21:00'inden sonra geçmeye başlar — bir sonraki adımın tuzağı bu.
 - **`application-local-fake.yml`, `-local-record`, `-local-real` yok.** LLM
   gateway'le birlikte yazılacaklar. Spring bilinmeyen profili sessizce yok
   sayıyor, yani `make dev` bugün çalışıyor gibi görünürken `local-fake` hiçbir
@@ -110,3 +113,34 @@ bilmediği bir sürüme çarpıyor). Bu kasıtlı olarak denendi ve dört test d
 **Ekleme — entry tarih aralığı sıralı olmak zorunda.** F-002; `endDate >= startDate`,
 `PATCH`'te yamanın sonucuna karşı ölçülüyor. `spec/08-api.md` § 35.2'ye yazıldı.
 Doküman sessizdi ve altındaki hiçbir katman ters aralığı reddetmiyordu.
+
+**Düzeltme — yazma yanıtındaki `completeness` yazmadan öncesini taşıyordu.**
+F-003. `ProfileService.replace()` rakamı hiç hesaplamıyordu; yalnız `readOwn()`
+hesaplıyor. İki baş ucu da artık kaydetmeden önce yeniden hesaplıyor. Kural
+`spec/08-api.md` § 35.6'ya yazıldı ve buraya not düşülmesinin nedeni **testin
+kendisi**: `currentEtag()` bir `GET` yapıyor ve `GET` saklı rakamı tazeliyor,
+yani iki yazma arasındaki her okuma yakalanmak istenen bayatlığı onarıyor.
+Tercihleri ölçen test düzeltmesiz de geçti; ETag'i önceki yazmanın yanıtından
+alınca düştü. Aşama 2'de kota sayaçları ve `generations` durumları da aynı
+şekilde okumayla kendini onaran yüzeyler olacak.
+
+**Sapma — `PUT /profile` gövdesinde `sourceLanguage` artık zorunlu.** F-004.
+Şema "replace" diyordu, davranış tek bu alanda "merge"dü. Kolon `NOT NULL`,
+yani temizlenecek değer yok; `DEFAULT`'a düşürmek Türkçe yazılmış bir profili
+sessizce İngilizceye çevirirdi. Alan zorunlu yapıldı — omit eden istek 400.
+`enabledLanguages` zaten `@NotEmpty` idi, yani dil çifti artık bütünüyle
+zorunlu. **Kırıcı sözleşme değişikliği:** `B-035`.
+
+**Ekleme — `params.fields` isteğin gönderdiği alanı adlandırır.** F-005. Tarih
+kuralı ihlali hangi uçtan tetiklenirse tetiklensin `endDate` diyordu. Kural
+`spec/08-api.md` § 35.2'de tabloyla. Yanında bir davranış değişikliği daha:
+hiçbir tarihe dokunmayan bir `PATCH` artık denetlenmiyor — aksi hâlde F-002'den
+önce ters kaydedilmiş bir satır ilgisiz bir başlık düzenlemesini, düzeltilecek
+alanı adlandıramadan reddederdi.
+
+**Düzeltme — sözcükleme silme tek kural değil, iki.** F-006. `deleteVariant`
+"son sözcükleme" (`fields: ["variantId"]`) ve "birincil, başkası var"
+(`fields: ["primary"]`) diye ayrı ayrı reddediyor; frontend ikisini de
+`variantId` ölçmüş, muhtemelen mock'tan. Birinci durumun testi yalnız 400'ü
+kontrol ediyordu, yani ayrımın kendisi test edilmemişti. Kural
+`spec/08-api.md` § 35.2'ye yazıldı, test iki alanı da sabitliyor.
