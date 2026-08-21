@@ -34,6 +34,15 @@ public class ProfileService {
      * Replaces the head. The precondition is checked inside the transaction
      * that writes, so nothing can slip between the check and the save — and the
      * version column catches a concurrent writer even then.
+     *
+     * <p>Every field is written unconditionally, {@code sourceLanguage}
+     * included (F-004). It used to be the one exception: omitted, it kept its
+     * stored value while the five around it were cleared, so the same request
+     * was a replace for most of the head and a merge for one field of it. The
+     * column is {@code NOT NULL}, so there is no null to clear it to and
+     * falling back to the default would silently turn a Turkish-authored
+     * profile into an English one — the field is required in the body instead,
+     * and omitting it is a 400 rather than a silent keep.
      */
     @Transactional
     public Profile replace(UserContext user, String ifMatch, ProfileHeadUpdate update) {
@@ -43,11 +52,9 @@ public class ProfileService {
         profile.setHeadline(update.headline());
         profile.setContact(update.contact());
         profile.setSelfDescription(update.selfDescription());
-        if (update.sourceLanguage() != null) {
-            profile.setSourceLanguage(update.sourceLanguage());
-        }
+        profile.setSourceLanguage(update.sourceLanguage());
         profile.setEnabledLanguages(update.enabledLanguages());
-        return profiles.save(user, profile);
+        return saveWithCompleteness(user, profile);
     }
 
     /** Preferences are replaced on their own, so a headline edit cannot reset them. */
@@ -57,7 +64,7 @@ public class ProfileService {
         EntityTags.requireMatch(ifMatch, profile.getVersion());
 
         profile.setPreferences(preferences);
-        return profiles.save(user, profile);
+        return saveWithCompleteness(user, profile);
     }
 
     /**
@@ -81,6 +88,29 @@ public class ProfileService {
             return profiles.save(user, profile);
         }
         return profile;
+    }
+
+    /**
+     * Saves the head and answers with the completeness of what was just
+     * written, not of what was there before (F-003).
+     *
+     * <p>Two of the seven terms in the formula — contact and
+     * {@code selfDescription} — live on the head, so a write that touches
+     * either moves the figure. Answering with the stored value made
+     * {@code PUT} return the percentage from before the request, and a bar
+     * drawn from it showed the previous edit; two writes with no completeness
+     * change agree, which is what kept it hidden.
+     *
+     * <p>The tree load this costs is charged to the head endpoints only. The
+     * section, entry and atom endpoints do not answer with the head, so they
+     * still leave the figure to the next read (Bolum 31.9) — the invariant is
+     * that a response carrying {@code completeness} carries a current one, not
+     * that the column is current after every write.
+     */
+    private Profile saveWithCompleteness(UserContext user, Profile profile) {
+        ProfileRef reference = ProfileRef.persistent(user, profile.getId(), profile.getOwnerId());
+        profile.setCompleteness(CompletenessCalculator.of(profile, assembler.load(reference)));
+        return profiles.save(user, profile);
     }
 
     /**
