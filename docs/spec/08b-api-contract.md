@@ -239,10 +239,26 @@ Kota: `429` ile birlikte `Retry-After` başlığı ve `params` içinde `resetsAt
 Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
 `capabilities` içinde de yayınlanır — sınır, çarpılmadan önce görünür olur.
 
-> **Açık:** `usage_counters.period` bir `DATE`; günlük sayaç hiçbir yerde
-> tanımlanmayan bir gün sınırında dönüyor. UTC mi, Europe/Istanbul mu?
-> `resetsAt` gönderilmeden önce cevaplanmalı ve kullanıcıya görünür: UTC dönüşü
-> Türkiye'de saat 03:00'e denk gelir.
+> **Karar (F-007): gün sınırı UTC, `resetsAt` mutlak bir andır.**
+> `usage_counters.period` bir `DATE` ve o tarih **UTC** takviminde okunur;
+> sayaç UTC gece yarısında döner, Türkiye'de saat 03:00'e denk gelir.
+>
+> Gerekçe: kolon zaten saat dilimsiz bir `DATE` ve UTC onu tek anlamlı kılan
+> okuma. Sunucunun saat dilimi değişse de aynı satır aynı günü gösterir,
+> yaz saati sınırı yoktur, ve sayaç sorgusu sunucunun yerelini hiç sormaz.
+> Uygulamaya gömülü bir `Europe/Istanbul`, ilk kez o dilimin dışına çıkan
+> kullanıcıda sessizce yanlış olurdu; istemcinin bildirdiği saat dilimi ise
+> kota kaçırmak için ayarlanabilir bir alan olurdu.
+>
+> **Telde `resetsAt` her zaman offset taşıyan bir ISO-8601 anıdır**
+> (`2026-08-22T00:00:00Z`), yalnız saat değil. İstemci onu kullanıcının
+> yerelinde biçimlendirir; "kotan 03:00'te yenilenir" cümlesini yazacak taraf
+> frontend'dir ve bunu ancak mutlak bir an ile doğru yazabilir. Aynı kural
+> `capabilities.quotaResetsAt` ve `QUOTA_EXCEEDED` /
+> `PROFILE_QUOTA_EXCEEDED` `params`'ı için de geçerli.
+>
+> `Retry-After` bunun yanında saniye cinsinden kalır — HTTP'nin kendi alanı,
+> ve istemci saati yanlışsa doğru olan tek değer odur.
 
 #### D.6.6 — Anonim oturum, CSRF, profil devralma (Aşama 3)
 

@@ -120,6 +120,36 @@ POST   /webhooks/resend                     imza doğrulamalı
 > Kural sunucuda durmak zorunda, çünkü ters aralığı aşağıdaki hiçbir katman
 > reddetmiyor: "Oca 2022 – Oca 2019" diye render ediliyor ve üretime o hâliyle
 > giriyor. Makul görünen bir tarih satırı ikinci kez okunmaz.
+>
+> **`params.fields` isteğin gönderdiği ucu adlandırır (F-005).** Kural çifti
+> karşılaştırır, istemci yalnız ekrana koyduğunu düzeltebilir:
+>
+> | İstek | `params.fields` |
+> |---|---|
+> | `PATCH {"endDate": …}` | `["endDate"]` |
+> | `PATCH {"startDate": …}` | `["startDate"]` |
+> | `PATCH` iki ucu birden | `["startDate", "endDate"]` |
+> | `POST /profile/entries` | `["startDate", "endDate"]` |
+>
+> Hiçbir tarihe dokunmayan bir `PATCH` **hiç denetlenmez**: aralığı
+> kötüleştiremez, ve F-002'den önce ters kaydedilmiş bir satır aksi hâlde
+> ilgisiz bir başlık düzenlemesini reddedip düzeltilecek alanı adlandıramazdı.
+
+> **Bir atom bir sözcükleme ve içlerinden bir birincil tutmak zorunda (F-006).**
+> `DELETE /profile/atoms/{id}/variants/{vid}` **iki ayrı kural** taşıyor, tek
+> kural değil; ikisi de **400 `VALIDATION_FAILED`** döner ve `params.fields`
+> hangisinin işlediğini söyler:
+>
+> | Durum | `params.fields` | İstemcinin yapabileceği |
+> |---|---|---|
+> | Atomun son sözcüklemesi | `["variantId"]` | Atomu sil |
+> | Birincil, ama başka sözcükleme var | `["primary"]` | Önce başkasını birincil yap |
+>
+> Ayrımın kayıtlı olması gerekiyor, çünkü iki ret iki farklı ekran davranışı
+> istiyor: birincisinde silme kontrolü atomun tamamını hedefler, ikincisinde
+> "önce başkasını varsayılan yap" der. Sözcüklemesiz bir atom kimsenin
+> okuyamayacağı bir satır, birincilsiz bir atom ise render'ın hangi cümleyi
+> alacağını bilemediği bir satırdır.
 
 ### 35.3 Uzun süren işler: 202 + job
 
@@ -213,6 +243,30 @@ If-Match: "7"
 Gönderilmeyen alanlar dokunulmaz. Versiyon uyuşmazsa **412 Precondition Failed**.
 
 JPA `@Version` → ETag.
+
+> **`PUT /profile` istisnasız değiştirir (F-004).** Gönderilmeyen alan
+> temizlenir — `sourceLanguage` dâhil. Daha önce tek bu alan omit edildiğinde
+> saklı değerini koruyordu, yani aynı istek başın çoğu için "replace", bir
+> alanı için "merge"dü ve kural hiçbir yerde yazılı değildi.
+>
+> Kolon `NOT NULL` olduğu için temizlenecek bir değer yok, `DEFAULT`'una
+> düşürmek de Türkçe yazılmış bir profili herhangi bir baş düzenlemesinde
+> sessizce İngilizceye çevirirdi. Bu yüzden alan **gövdede zorunlu**:
+> `sourceLanguage` ve `enabledLanguages` ikisi de eksikse **400
+> `VALIDATION_FAILED`** + ilgili `params.fields`. `preferences` başın parçası
+> değil, kendi ucu var (Bölüm 35.2) ve bir `PUT /profile` ona dokunmaz.
+
+> **Yazma yanıtındaki `completeness` yazmadan sonrasını taşır (F-003).**
+> Bölüm 31.9'un yedi teriminden ikisi başta duruyor (`contact`,
+> `selfDescription`), yani başı değiştiren bir yazma sayıyı da oynatıyor.
+> Yanıt önceki değeri taşıdığı sürece ondan çizilen çubuk bir önceki
+> düzenlemeyi gösterir — ve completeness'i değiştirmeyen iki yazma uyuştuğu
+> için hata kendini gizler.
+>
+> Kural şu şekilde: **`completeness` taşıyan bir yanıt güncel bir değer
+> taşır.** Kolonun her yazmadan sonra güncel olduğu değil — bölüm, entry ve
+> atom uçları başı döndürmüyor ve rakamı bir sonraki okumaya bırakmaya devam
+> ediyor; ağacı her yazmada yüklememenin sebebi buydu.
 
 > **Düzeltme (EK D.6.4).** Bu bölüm önce `application/merge-patch+json` ve
 > `If-Match: "v7"` yazıyordu; ikisi de yanlıştı ve ikisi de sessizce
