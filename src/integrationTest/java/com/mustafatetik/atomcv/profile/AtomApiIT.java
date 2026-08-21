@@ -335,15 +335,19 @@ class AtomApiIT extends AbstractIntegrationTest {
         String atomId = atom.get("id").asText();
         String primaryId = atom.get("variants").get(0).get("id").asText();
 
-        // The last one cannot go: the atom would have nothing to say.
+        // The last one cannot go: the atom would have nothing to say. Two
+        // rules, not one, and `params.fields` is what tells them apart (F-006):
+        // here the wording itself is what cannot be removed.
         mvc.perform(delete("/api/v1/profile/atoms/" + atomId + "/variants/" + primaryId)
                         .header(HttpHeaders.IF_MATCH, "\"0\""))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields").value(contains("variantId")));
 
         JsonNode second = created("/api/v1/profile/atoms/" + atomId + "/variants", """
                 { "language": "tr", "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
 
-        // Nor the primary while another remains — promote first.
+        // Nor the primary while another remains — a different rule, with a
+        // different field: promote another wording and this one can go.
         mvc.perform(delete("/api/v1/profile/atoms/" + atomId + "/variants/" + primaryId)
                         .header(HttpHeaders.IF_MATCH, "\"0\""))
                 .andExpect(status().isBadRequest())
