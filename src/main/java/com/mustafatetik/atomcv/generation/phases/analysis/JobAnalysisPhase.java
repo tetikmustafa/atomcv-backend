@@ -35,10 +35,13 @@ public class JobAnalysisPhase {
 
     private final PromptRegistry prompts;
     private final ProviderChain providers;
+    private final JobAnalysisCache cache;
 
-    public JobAnalysisPhase(PromptRegistry prompts, ProviderChain providers) {
+    public JobAnalysisPhase(
+            PromptRegistry prompts, ProviderChain providers, JobAnalysisCache cache) {
         this.prompts = prompts;
         this.providers = providers;
+        this.cache = cache;
     }
 
     /**
@@ -74,6 +77,14 @@ public class JobAnalysisPhase {
         }
 
         var version = prompts.selectVersion(PROMPT_ID, bucketKey);
+
+        // After the preflight, so a posting that would be refused is refused
+        // without a round trip; before the call, which is the point.
+        var cached = cache.find(jobDescription, version);
+        if (cached.isPresent()) {
+            return Result.ok(cached.get());
+        }
+
         var prompt = prompts.load(PROMPT_ID, version);
         var fenced = FencedPrompt.of(prompt);
 
@@ -88,14 +99,19 @@ public class JobAnalysisPhase {
             // what happened, and restating it as an unreadable posting would
             // blame the user for an outage.
             case Result.Err<LlmResponse<JobAnalysis>> failed -> Result.err(failed.error());
-            case Result.Ok<LlmResponse<JobAnalysis>> ok -> gate(ok.value().data());
+            case Result.Ok<LlmResponse<JobAnalysis>> ok ->
+                    gate(ok.value().data(), jobDescription, version);
         };
     }
 
     /** Bolum 18.4. A refusal here means Faz B is never entered, so no more is spent. */
-    private Result<JobAnalysis> gate(JobAnalysis analysis) {
+    private Result<JobAnalysis> gate(
+            JobAnalysis analysis, String jobDescription, String version) {
         var verdict = PlausibilityGate.check(analysis);
         if (verdict.isAccepted()) {
+            // Only what passed. Caching a refusal would freeze it for a week,
+            // and a model that wandered once should be asked again.
+            cache.put(jobDescription, version, analysis);
             return Result.ok(analysis);
         }
         log.info("Plausibility gate refused an analysis: {}", verdict);

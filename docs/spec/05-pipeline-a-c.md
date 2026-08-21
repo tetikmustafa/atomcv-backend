@@ -195,11 +195,19 @@ String embeddingTarget(JobAnalysis jd) {
 ### 18.6 Önbellekleme
 
 ```java
-String cacheKey = "jd:" + sha256(normalize(jobDescription));
+String cacheKey = "jd:" + promptVersion + ":" + sha256(normalize(jobDescription));
 // normalize: whitespace sadeleştirme, satır sonu birleştirme, trim
 ```
 
 Redis, **7 gün TTL**. Sadece analiz sonucu saklanır, ham metin değil.
+
+**Anahtar prompt sürümünü de taşır.** Prompt değişikliği geçersizleştirmek zorunda: taşımasa v2 prompt'u bir hafta boyunca v1'in cevaplarını sunardı ve — daha kötüsü — § 53.3'ün A/B testi hiçbir şey ölçmezdi, çünkü v2'ye kovalanan kullanıcılar o ilan için v1'in çoktan cache'lediğini okurdu.
+
+**Yalnız kapıdan geçen analiz yazılır.** Reddi cache'lemek onu bir hafta dondurur; bir kez sapan modele yeniden sorulmalı.
+
+**Cache arızası ıskalamadır, başarısız üretim değil.** Bu bir optimizasyon, ve arızası ürünü düşüren bir optimizasyon hiç olmamasından kötüdür. Aynı yol, kayıtlı değerin artık kayda uymadığı durumu da karşılar: `JobAnalysis`'e alan eklemek ondan önce yazılmış her girdiyi okunamaz yapar ve doğru cevap yine yeniden analiz etmektir.
+
+**Sıra:** ön kontrol → cache → çağrı. Ön kontrol bedava, dolayısıyla reddedilecek bir ilan için ağ gidiş dönüşü bile yapılmaz.
 
 **Kazanç:** Faz G düzenleme döngüsü, farklı şablon/dil denemeleri, popüler ilanlar.
 
