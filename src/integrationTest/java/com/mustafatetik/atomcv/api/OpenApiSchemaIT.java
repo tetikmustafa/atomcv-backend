@@ -222,6 +222,18 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void theHeadReplacementPublishesItsTwoRequiredFields() throws Exception {
+        // A PUT replaces, so the fields that cannot be cleared have to be the
+        // fields a client cannot leave out — and the generated type is where
+        // the frontend learns that (F-004, handoff B-035). `contains` is
+        // exact: a third required field here would be a contract change
+        // nobody announced.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.ProfileUpdate.required")
+                        .value(Matchers.containsInAnyOrder("sourceLanguage", "enabledLanguages")));
+    }
+
+    @Test
     void theProfileShapeIsPublishedWithoutAnIdentifier() throws Exception {
         // Bolum 35.1: no path carries a profile id, so the schema does not
         // suggest one exists to be sent back.
