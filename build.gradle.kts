@@ -41,6 +41,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // Bolum 18.6 caches the job analysis. Lettuce underneath, which the
+    // starter brings: the cache is consulted on the hot path and a blocking
+    // client there would hold a request thread through a network round trip.
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // JSON merge-patch needs three states — absent, null, value — and Java has
     // no tri-state Optional: Jackson deserializes an absent Optional field as
     // Optional.empty(), the same as an explicit null. This library owns that
@@ -60,6 +64,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    // No redis module: a GenericContainer running redis:7-alpine is the same
+    // image compose uses, and one fewer dependency to keep in step.
     testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

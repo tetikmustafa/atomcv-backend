@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-21 · Faz A çalışıyor (Redis cache hariç); **`B-037` açık**
+**Son güncelleme:** 2026-08-21 · Adım 2.3 kapandı — Faz A tam; **`B-037` açık**
 
 ---
 
@@ -16,18 +16,18 @@
 | **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
 | 2.1 Sağlayıcı hesapları | ✅ |
 | 2.2 LLM Gateway | ✅ |
-| 2.3 Faz A | 🔨 çağrı + kapı + `embeddingTarget` indi, Redis cache kaldı |
+| 2.3 Faz A | ✅ |
+| 2.4 Embedding | ⬜ Sırada |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
 **`B-037` açık:** `resolutions[].action` sözlüğü `continue_anyway` kazandı — ICU
 mesajı gerekiyor. Uç yok, sözlük büyüdü. Diğer değişenler iç:
 `Result`/`PipelineError` `shared/error`'a taşındı, `LlmProvider` `LlmOutcome`
-döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 18.1-18.4,
+döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 18.1-18.6,
 § 27.1-27.3, § 53.3, § 54.2 ve EK D.6.1 güncellendi — **`sync-spec.sh` Aşama 2
 kapanışında topluca çalıştırılacak** (karar: 2026-08-21).
 
-**Aşama 1 kontrol listesi:** 9/9 ✅ · **`F-003`…`F-007` kapandı** → `spec/08-api.md` § 35.2, § 35.6
-**Test:** 428 birim · 142 entegrasyon · 44 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 441 birim · 147 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 

@@ -4,6 +4,12 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
 
+  data:
+    redis:
+      # A name on the isolated compose network, not a published port.
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
   jpa:
     show-sql: false
 

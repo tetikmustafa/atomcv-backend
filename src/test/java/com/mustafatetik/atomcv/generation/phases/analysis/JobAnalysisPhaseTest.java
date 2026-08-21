@@ -173,6 +173,49 @@ class JobAnalysisPhaseTest {
                 .isInstanceOf(PipelineError.AllProvidersUnavailable.class);
     }
 
+    // ── Bolum 18.6, the cache ────────────────────────────────────────────
+
+    /**
+     * The whole point: Faz G's edit loop, another template, another language
+     * and a popular posting all arrive as the same text, and the second pass
+     * costs nothing.
+     */
+    @Test
+    void thesamePostingIsNotAnalysedTwice() {
+        var cache = new InMemoryCache();
+        var provider = new StubProvider(analysisJson(0.94, 2), sent);
+
+        phase(provider, cache).analyse(posting(), false, "user-1");
+        sent.set(null);
+        var second = phase(provider, cache).analyse(posting(), false, "user-1");
+
+        assertThat(second.isErr()).isFalse();
+        assertThat(sent.get()).isNull();
+        assertThat(cache.size()).isEqualTo(1);
+    }
+
+    /** Only what passed the gate. A refusal frozen for a week is a refusal repeated. */
+    @Test
+    void ananalysisThatFailedTheGateIsNotCached() {
+        var cache = new InMemoryCache();
+
+        phase(new StubProvider(analysisJson(0.30, 2), sent), cache)
+                .analyse(posting(), false, "user-1");
+
+        assertThat(cache.size()).isZero();
+    }
+
+    /** The preflight is free, so it runs before the round trip that is not. */
+    @Test
+    void aPostingRefusedByThePreflightIsNotLookedUp() {
+        var cache = new InMemoryCache();
+
+        phase(new StubProvider(analysisJson(0.94, 2), sent), cache)
+                .analyse("too short", false, "user-1");
+
+        assertThat(cache.size()).isZero();
+    }
+
     // ── Bolum 18.5 ───────────────────────────────────────────────────────
 
     /**
@@ -219,6 +262,10 @@ class JobAnalysisPhaseTest {
     // ── fixtures ─────────────────────────────────────────────────────────
 
     private JobAnalysisPhase phase(LlmProvider provider) {
+        return phase(provider, new InMemoryCache());
+    }
+
+    private JobAnalysisPhase phase(LlmProvider provider, JobAnalysisCache cache) {
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of(provider.id())),
                         Map.of(), Duration.ofSeconds(30), 0),
@@ -226,7 +273,35 @@ class JobAnalysisPhaseTest {
         return new JobAnalysisPhase(
                 new PromptRegistry(
                         new PromptProperties(Map.of("job_analysis", "v1"), Map.of()), JSON),
-                chain);
+                chain, cache);
+    }
+
+    /**
+     * The cache without Redis. Subclassing rather than mocking so the key
+     * derivation under test is the real one — two postings that normalise to
+     * the same text must collide here exactly as they would in Redis.
+     */
+    private static final class InMemoryCache extends JobAnalysisCache {
+
+        private final Map<String, JobAnalysis> entries = new java.util.HashMap<>();
+
+        InMemoryCache() {
+            super(null, JSON);
+        }
+
+        @Override
+        public java.util.Optional<JobAnalysis> find(String jobDescription, String version) {
+            return java.util.Optional.ofNullable(entries.get(keyFor(jobDescription, version)));
+        }
+
+        @Override
+        public void put(String jobDescription, String version, JobAnalysis analysis) {
+            entries.put(keyFor(jobDescription, version), analysis);
+        }
+
+        int size() {
+            return entries.size();
+        }
     }
 
     private static PipelineError.UnparseableJobDescription unreadable(Result<JobAnalysis> result) {

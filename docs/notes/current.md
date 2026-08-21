@@ -185,7 +185,11 @@ null kontrolü yapmanın kimseye faydası yok.
 Genel CV modu buraya hiç gelmez; `Result.err` yerine `IllegalArgumentException`
 çünkü bu kullanıcının yapabileceği bir şey değil, çağıranın yanlış dallanması.
 
-**Kalan (Adım 2.3, item 6): Redis cache.** Container ayakta ama Spring
-tarafında ne bağımlılık ne yapılandırma var. Yazılırken karara bağlanacak şey:
-**cache düşerse üretim düşmemeli** — § 18.6 sessiz, ama bir optimizasyonun
-arızası bir üretimi öldürmemeli, ıskalamaya dönüşmeli.
+**Ekleme — Redis cache'in dört kararı § 18.6'ya yazıldı:** anahtarın prompt
+sürümünü taşıması, yalnız kapıdan geçenin yazılması, arızanın ıskalamaya
+dönüşmesi ve sıranın ön kontrol → cache → çağrı olması. Buraya not düşülen tek
+şey **sondanın nasıl kurulduğu**: fail-open iki katmanda birden ölçülüyor —
+birim testi mock'a fırlattırıyor, entegrasyon testi *gerçekten kapalı bir
+porta* bağlanıyor. İkincisi olmasa "catch bloğu var" ölçülmüş olurdu, "Lettuce
+gerçekten o istisnayı atıyor" değil. `try/catch` kaldırıldığında ikisi de
+düştü.
