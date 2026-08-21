@@ -1000,9 +1000,14 @@ make record
 2. TeiEmbeddingProvider (HTTP)
 3. FakeEmbeddingProvider (hash → deterministik vektör)
 4. content_hash bazlı invalidation
-5. pgvector kolonu + migration
+5. pgvector kolonunun Hibernate eşlemesi
 6. Fallback (servis düşerse ağırlıkları yeniden dağıt)
 ```
+
+**Madde 5 migration istemiyor.** Kolon `V1`'de zaten var (`atoms.embedding
+vector(1024)`, `atoms.embedding_hash TEXT`); eksik olan yalnız eşleme. Yeni bir
+migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazdı
+(mutlak kural 2) ve gereksiz olurdu.
 
 ### Adım 2.5 — Faz B
 

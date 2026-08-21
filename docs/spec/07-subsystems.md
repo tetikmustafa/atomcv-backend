@@ -382,6 +382,10 @@ if (!embeddingProvider.isHealthy()) {
 
 Kalite düşer ama sistem çalışır. Kullanıcıya bilgi verilmez (iç detay), ama telemetriye kaydedilir.
 
+**`isHealthy()` TEI'nin kendi `/health`'ini sorar, port testi yapmaz.** Container portu ağırlıklar yüklenmeden çok önce açar; "bir şey dinliyor mu" diye soran bir kontrol, 2.5 GB'lık ilk açılışın tamamı boyunca *sağlıklı* raporlar ve skorlama her çağrıya 503 dönen bir servise karşı çalışır.
+
+**Kısmi cevap reddedilir.** Servis istenenden az vektör dönerse ya da boyut 1024 değilse çağrı hata verir: eksik bir cevap yanlış vektörü yanlış atomla eşleştirir, ve bu hiç vektör olmamasından kötüdür — profil başkasının maddesine göre skorlanır ve hiçbir şey bozuk görünmez.
+
 ---
 
 ## 29. LaTeX Container

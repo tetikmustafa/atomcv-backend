@@ -60,7 +60,9 @@ Dosya adı `{promptId}/{version}-{sha256[0:12]}.json` — girdinin **hash'i**, m
 **`local-fake` zinciri override etmek zorundadır** (`chain.cheap`/`chain.mid` → `[fake]`). Taban yapılandırma gerçek adaptörü sayar ve o profilde anahtar yoktur; override olmasa her üretim `ALL_PROVIDERS_UNAVAILABLE` ile biterdi — üstelik yapılandırma doğru görünürken. Bu, "bedava ve çevrimdışı çalışır"ın tam tersidir, dolayısıyla bir testle bağlanır.
 
 Diğer sahte sağlayıcılar:
-- `FakeEmbeddingProvider` — metin hash'inden deterministik vektör
+- `FakeEmbeddingProvider` — metin hash'inden deterministik vektör. Tohum, metnin *stringi* değil **küçük harfe indirilmiş ayrı kelimelerinin sıralı kümesi**: cümleyi yeniden sıralamak vektörü korur, bir kelimeyi değiştirmek korumaz — § 28.2'nin `content_hash` geçersizleştirmesi böylece gerçek bir değişiklik üzerinde denenebilir. Vektörler **birim uzunluktadır**, çünkü § 19 kosinüs benzerliği hesaplıyor ve normalize etmeyen bir fake o normalizasyondaki bir hatayı bir aşama boyunca gizlerdi. **Sıralama hakkında hiçbir şey iddia edilemez** — aynı konudaki iki metin burada alakasız iki metinden daha yakın değildir; o, gerçek servisin ya da golden set'in işidir.
+
+Sahte ve gerçek sağlayıcı **profil ile ayrılır** (`local-fake` / `!local-fake`), ve bu testlidir: iki bean olursa context hiçbir profili adlandırmayan bir belirsizlik mesajıyla açılmaz, sıfır olursa eksik sınıf gibi görünür — iki başarısızlık da sessizdir.
 - `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)
 
 ### 54.3 Seed data
