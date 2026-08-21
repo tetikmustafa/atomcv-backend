@@ -153,3 +153,24 @@ alanı adlandıramadan reddederdi.
 `variantId` ölçmüş, muhtemelen mock'tan. Birinci durumun testi yalnız 400'ü
 kontrol ediyordu, yani ayrımın kendisi test edilmemişti. Kural
 `spec/08-api.md` § 35.2'ye yazıldı, test iki alanı da sabitliyor.
+
+**Sapma — `Result` ve `PipelineError` `shared/error/`'a taşındı.** Bölüm 27.1
+`LlmProvider.callStructured`'ı `Result<LlmResponse<T>>` döndürüyor; `generation`
+de Faz A/B ile `llm`'e bağımlı olacak, yani ikisi birlikte `noCycles`'ı düşüren
+bir döngü. Tahmin değil: § 25.2 `AllProvidersUnavailable` ve
+`EmbeddingUnavailable`'ı zaten `PipelineError` durumu sayıyor, yani iki modül de
+tipi görmek zorunda. Bölüm 10.1 `PipelineError`'ı **zaten** `shared/error/`'da
+gösteriyordu; taşımayı engelleyen tek şey Aşama 1'de eklenen
+`CompilationFailed(CompilationException.Kind, …)` imzasıydı — `shared` hiçbir iş
+modülüne bakamaz (Bölüm 10.2, kural 4).
+
+Enum `shared/error/CompilationFailureKind`'a çıkarıldı; `CompilationException`
+onu import ediyor (`compilation → shared` serbest). § 25.2'nin kendi imzası
+`(String detail, boolean rawSourceAvailable)` — o yola gitmek retry kararının
+okuduğu ayrımı düz metne çevirirdi, bu yüzden enum korundu. `shared`'ın
+bağımsızlığı kasıtlı bir ihlalle doğrulandı: `shared.error`'dan
+`compilation`'a bir referans konduğunda `sharedIsIndependent` **ve** `noCycles`
+birlikte düşüyor — ikincisi taşımanın gerekçesini birebir gösteriyor.
+
+Şimdi taşındı çünkü **ucuzdu**: iki tipin 11 çağrı dosyası vardı ve hepsi
+`generation` ile `compilation` içindeydi. Faz A yazıldıktan sonra değil.

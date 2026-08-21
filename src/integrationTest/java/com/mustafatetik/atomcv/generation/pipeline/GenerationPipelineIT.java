@@ -23,6 +23,8 @@ import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Result;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;

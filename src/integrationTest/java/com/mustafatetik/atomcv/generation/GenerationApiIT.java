@@ -22,6 +22,7 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -138,7 +139,7 @@ class GenerationApiIT extends AbstractIntegrationTest {
     void aCompilerThatIsDownIsAnOutageNotABadProfile() throws Exception {
         seedCareer();
         when(compiler.compile(anyString())).thenThrow(new CompilationException(
-                CompilationException.Kind.UNAVAILABLE, "down", "", null));
+                CompilationFailureKind.UNAVAILABLE, "down", "", null));
 
         mvc.perform(post("/api/v1/generations/general"))
                 .andExpect(status().isBadGateway())

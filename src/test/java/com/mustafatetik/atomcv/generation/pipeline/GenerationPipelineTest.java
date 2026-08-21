@@ -28,6 +28,9 @@ import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Result;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -104,14 +107,14 @@ class GenerationPipelineTest {
     void aRefusedDocumentIsCarriedBackRatherThanThrown() {
         var fixture = profileOf(4);
         when(compiler.compile(anyString())).thenThrow(new CompilationException(
-                CompilationException.Kind.INVALID_DOCUMENT, "no", "! Undefined control sequence.",
+                CompilationFailureKind.INVALID_DOCUMENT, "no", "! Undefined control sequence.",
                 null));
 
         var result = run(fixture);
 
         var error = (PipelineError.CompilationFailed) ((Result.Err<GeneratedDocument>) result)
                 .error();
-        assertThat(error.kind()).isEqualTo(CompilationException.Kind.INVALID_DOCUMENT);
+        assertThat(error.kind()).isEqualTo(CompilationFailureKind.INVALID_DOCUMENT);
         assertThat(error.texLog()).contains("Undefined control sequence");
     }
 
