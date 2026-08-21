@@ -94,3 +94,38 @@ Aşama 2'de `POST /generations` + 202 + iş akışı gelecek.
 **Aksiyon:** Bu uca **kalıcı ekran bağlama.** Geçici bir "önizle ve indir" akışı yeterli.
 **Frontend:** Bağlı ekran yok. Uca yalnız `src/mocks/` ve üretilen tipler değiniyor;
 `dev/mocks` harness'ı üretim build'inde `notFound()`.
+
+### B-034 · Demote artık sürüm artırıyor — iyimser güncellemeniz de artırmalı
+**Since:** Adım 1 · F-001 kapanışı · **Spec:** `spec/08-api.md` § 35.6
+`PATCH /profile/atoms/{id}/variants/{vid}` ile bir sözcükleme birincil yapıldığında
+**demote edilen satırın `version`'ı da artıyor** artık. F-001'de istediğiniz buydu;
+diğer seçenek sözleşmeye "iyimser kilit bu satırda çalışmıyor" istisnası yazmaktı.
+**Aksiyon:** `usePatchVariant` demote'u önbelleğe kendisi uyguluyor ve `version`'a
+dokunmuyordu — tesadüfen hizalıydı, artık değil. Yerel demote `version`'ı **+1**
+yapmalı, yoksa invalidation gelene kadar elinizde bayat bir etag var ve o pencerede
+yapılan bir yazma 412 alır.
+**Değişmeyen:** Atomun promote'a karışmayan sözcüklemeleri sürümlenmiyor; onların
+etag'leri geçerli kalıyor. Yani "hepsini bir artır" da doğru değil, yalnız demote edilen.
+**Frontend:** Uygulandı ve doğrulandı. `usePatchVariant.onSuccess` demote edilen
+satırın sürümünü **+1** yapıyor — yalnız o satırın; promote'a karışmayanlara
+dokunmuyor. `version` telde opsiyonel olduğundan artış koşullu, yoksa
+`If-Match: "NaN"` giderdi.
+
+Gerçek uca karşı, MSW kapalı, iki yönde de ölçüldü — ve ilk koşum **kanıt
+değildi**: `onSuccess`'in invalidation'ı koleksiyonu yeniden çekip sürümleri
+seed'lediği için eksik artışı onarıyor, düzeltmesiz de geçiyordu. Ayırt etmek
+için `GET /profile/atoms` tutuldu:
+
+```
+düzeltmesiz   PATCH …/variants/21f6… if-match="14" -> 412
+düzeltmeli    PATCH …/variants/21f6… if-match="17" -> 200   (önbellek 16, +1)
+```
+
+Not: pencere her zaman kendini onarmıyor. Refetch yalnız koleksiyonun etkin bir
+gözlemcisi varsa oluyor ve editör listesiz de çizilebiliyor — o hâlde bayat etag
+kalıcı. Üç birim testi sabitliyor, MSW handler'ı da artık demote edileni
+sürümlüyor.
+
+F-002 de doğrulandı: create `400` + `endDate`, eşit tarih `201`, patch iki
+yönden de saklanan yarıya göre reddediyor, ileri aralık `200`. İstemci kontrolü
+kaldı — daha hızlı ve mesajı alanın yanına koyabilen taraf o.

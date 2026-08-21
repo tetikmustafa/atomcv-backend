@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-20 · `F-001`/`F-002` kapandı, `B-034` frontend'de uygulandı
+**Son güncelleme:** 2026-08-21 · `F-003`…`F-007` kapandı, kota gün sınırı UTC olarak karara bağlandı
 
 ---
 
@@ -26,8 +26,8 @@
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
 **Aşama 1'in devrettikleri:** `notes/current.md` — kapanmadan Aşama 2'ye girilmez.
 
-**Aşama 1 kontrol listesi:** 9/9 ✅ · **`F-001`, `F-002` kapandı** → `spec/08-api.md` § 35.2, § 35.6
-**Test:** 312 birim · 137 entegrasyon · 44 latex
+**Aşama 1 kontrol listesi:** 9/9 ✅ · **`F-003`…`F-007` kapandı** → `spec/08-api.md` § 35.2, § 35.6
+**Test:** 312 birim · 142 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 
@@ -37,8 +37,8 @@
 | Aşama 1 — Profil editörü | 🔨 Sürüyor |
 | Aşama 2 — Üretim akışı + SSE | ⬜ |
 
-**Açık `B-nnn` yok.** Backend'e beş madde açıldı: `F-003`…`F-007`. **Test:** 291 birim · 15 e2e.
-**Aşama 1'in devrettikleri:** 3/4 — kalan madde kota sıfırlanma saati, gün dönümü aşağıda açık.
+**Açık:** `B-035` (`sourceLanguage` zorunlu), `B-036` (`params.fields` alanı adlandırıyor).
+**Test:** 291 birim · 15 e2e. **Aşama 1'in devrettikleri:** 4/4 kapandı.
 
 ---
 
@@ -47,7 +47,6 @@
 | Soru | Bekleyen taraf |
 |---|---|
 | Üretimde migration nasıl çalışır | backend · Aşama 2 |
-| Kota gününün zaman dilimi | backend · `resetsAt` gönderilmeden önce |
 | Anonim akış kuyruğu kullanacak mı | backend · Aşama 3 |
 | Atomsuz entry seçilemiyor | backend · Bölüm 20.2 modelini etkiler |
 
