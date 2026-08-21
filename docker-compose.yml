@@ -58,5 +58,31 @@ services:
       resources:
         limits: { cpus: '1.5', memory: 1G }
 
+  # Bolum 28. Also under `full`: the first run downloads ~2.5 GB of model
+  # weights, which is not something `make dev` should ever do on its own.
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
+    profiles: [full]
+    command: ["--model-id", "BAAI/bge-m3", "--port", "8081"]
+    ports: ["8081:8081"]
+    # The weights outlive the container. Without this every `docker compose
+    # down` costs the 2.5 GB download again.
+    volumes: [modelcache:/data]
+    environment:
+      # The container writes its cache here; /data is the volume above.
+      HUGGINGFACE_HUB_CACHE: /data
+    healthcheck:
+      # /health is TEI's own; it answers only once the model is loaded, which
+      # is what "ready" has to mean here — the port opens well before that.
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      # Generous: the first start includes the download.
+      retries: 60
+    deploy:
+      resources:
+        limits: { cpus: '2', memory: 4G }
+
 volumes:
   pgdata:
+  modelcache:

@@ -38,6 +38,11 @@ atomcv:
   prompts:
     active:
       job_analysis: v1
+  # Bolum 28. Self-hosted BGE-M3 behind text-embeddings-inference; the CV
+  # content never leaves the deployment.
+  embedding:
+    base-url: ${EMBEDDINGS_URL:http://localhost:8081}
+
   llm:
     chain:
       # Comma-separated, so the order is deployable without a release

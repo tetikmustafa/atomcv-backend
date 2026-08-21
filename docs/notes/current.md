@@ -20,7 +20,7 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
-| `atoms.embedding` eşlenmemiş | Aşama 2 | `vector(1024)`'ün Hibernate tipi yok ve embedding'i hesaplayan bir şey de yok |
+| `atoms.embedding` eşlenmemiş | 2.4 sonrası | Sağlayıcı indi; kalan yalnız `vector(1024)`'ün Hibernate eşlemesi. Kolon `V1`'de var, migration gerekmiyor |
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
 | `tags` / `atom_tags` entity'siz | Aşama 2 | Aşama 2 skorlamasından önce okuyan yok |
 | `generations`'a yazan yok | Aşama 2 | Hat `GeneratedDocument` döndürüyor; kalıcı kayıt, kuyruk ve `GET /generations/{id}/download` birlikte gelir (`spec/08b-api-contract.md` § D.6.3) |
@@ -140,19 +140,6 @@ başarısızlığı için kod yok, dolayısıyla o `PipelineError` olamaz.
 `PipelineError` bu adımda tek durum kazandı — `AllProvidersUnavailable(tried)`,
 § 25.2 ve katalogda birebir yazılı.
 
-**Ekleme/Sapma — fake sağlayıcı ve prompt kovası.** Üçü de kalıcı olduğu için
-spec'e yazıldı, buradan silindi: fixture'ların dosya sisteminde durması, adının
-girdinin hash'i olması ve `synthesize` bayrağının üç profildeki değeri
-`spec/13-development.md` § 54.2'de; A/B kovasının murmur3 yerine CRC32 olması
-`spec/12-quality.md` § 53.3'te.
-
-**Ekleme — zincir ve OpenRouter adaptörünün dört kararı.** Dördü de kalıcı
-olduğu için spec'e yazıldı, buradan silindi: `schema-retries`'ın varsayılanı,
-zincirdeki bilinmeyen id'nin ölümcül olmaması ve zincirin env-driven olması
-`spec/07-subsystems.md` § 27.3'te; `structured-output`'un tespit değil
-yapılandırma olması § 27.2'de; `local-fake`'in zinciri override etmek zorunda
-olması `spec/13-development.md` § 54.2'de.
-
 **Düzeltme — § 18.1'in üç çıkış yolundan birinin adı yoktu.** Sözlük
 `continue_anyway` ile onuncu değerini kazandı; kural EK D.6.1 ve § 18.1'e
 yazıldı, frontend maddesi `B-037`. Buraya not düşülmesinin nedeni **sondanın
@@ -176,11 +163,6 @@ gözden geçirilmesi gerektiğini söyler. Kural ve sıralama (uzunluk entropide
 Kapı zaten başlıksız bir analizi kendi ölçütleriyle reddediyor, yani ayrıca
 null kontrolü yapmanın kimseye faydası yok.
 
-**Ekleme — prompt/fence bölünmesi ve sağlayıcı arızasının yolu spec'e yazıldı**
-(§ 18.3 ve § 18.4): sistem/kullanıcı ayrımı, fence'in *kendi satırında* olma
-şartı, sıralamanın incelikten şekle gitmesi ve `ALL_PROVIDERS_UNAVAILABLE`'ın
-`UNPARSEABLE_JOB_DESCRIPTION`'a çevrilmemesi.
-
 **Ekleme — boş ilanla `JobAnalysisPhase.analyse` çağırmak programlama hatası.**
 Genel CV modu buraya hiç gelmez; `Result.err` yerine `IllegalArgumentException`
 çünkü bu kullanıcının yapabileceği bir şey değil, çağıranın yanlış dallanması.
@@ -193,3 +175,26 @@ birim testi mock'a fırlattırıyor, entegrasyon testi *gerçekten kapalı bir
 porta* bağlanıyor. İkincisi olmasa "catch bloğu var" ölçülmüş olurdu, "Lettuce
 gerçekten o istisnayı atıyor" değil. `try/catch` kaldırıldığında ikisi de
 düştü.
+
+**Düzeltme — Adım 2.4'ün "pgvector kolonu + migration" maddesi yanlıştı.**
+Kolon `V1`'de zaten var; eksik olan **Hibernate eşlemesi** ve migration yazmak
+mutlak kural 2'yi ihlal etmeden mümkün değil. `spec/14-build-guide.md`'de
+düzeltildi. Eşleme bir sonraki dilime kaldı.
+
+**Spec'e promote edilen kararlar.** Kalıcı oldukları için `spec/`'te
+duruyorlar; burada yalnız nerede oldukları:
+
+| Konu | Nerede |
+|---|---|
+| Fixture'ların dosya sisteminde olması, adının hash olması, `synthesize` bayrağı | `13-development.md` § 54.2 |
+| A/B kovasının CRC32 olması | `12-quality.md` § 53.3 |
+| `schema-retries`, bilinmeyen sağlayıcı id'si, env-driven zincir | `07-subsystems.md` § 27.3 |
+| `structured-output`'un tespit değil yapılandırma olması | `07-subsystems.md` § 27.2 |
+| `local-fake`'in zinciri override etmesi | `13-development.md` § 54.2 |
+| Prompt/fence bölünmesi, sağlayıcı arızasının çevrilmemesi, kapı sırası | `05-pipeline-a-c.md` § 18.3-18.4 |
+| Cache anahtarının prompt sürümü taşıması, fail-open, sıra | `05-pipeline-a-c.md` § 18.6 |
+| Fake embedding'in tohumu ve birim uzunluk, profil ayrımı | `13-development.md` § 54.2 |
+| Sağlık kontrolünün `/health` olması, kısmi cevabın reddi | `07-subsystems.md` § 28.4 |
+
+**Aşama 2.5'e taşınan:** § 28.4'ün ağırlık yeniden dağıtımı — `ScoringWeights`
+henüz yok. `isHealthy()` bu dilimde indi, onu okuyan taraf Faz B ile geliyor.
