@@ -11,6 +11,12 @@
 
 ## OPEN
 
+*(şu an açık madde yok)*
+
+---
+
+## ACK — frontend tamamladı, backend arşivleyebilir
+
 ### B-035 · `PUT /profile` gövdesinde `sourceLanguage` artık **zorunlu**
 **Since:** commit `38993f5` · F-004 kapanışı · **Spec:** `spec/08-api.md` § 35.6
 F-004'te sorduğunuz iki seçenekten "temizlensin" tarafını seçtik, ama kolon
@@ -50,12 +56,32 @@ ayırmanız gereken şey tam olarak bu: `variantId` "atomu sil", `primary`
 **Değişmeyen:** hiçbir tarihe dokunmayan bir `PATCH` artık **hiç
 denetlenmiyor**. F-002'den önce ters kaydedilmiş bir satırın başlığı bu
 sayede düzenlenebiliyor; o satırların tarihini düzeltmek yine ayrı bir yama.
+**Frontend (B-035):** Baş formu `sourceLanguage`'ı koşullu gönderiyordu
+(`profile.sourceLanguage ? {…} : {}`) — yani alanı olmayan bir profilde onu
+düşürürdü ve artık 400 alırdı. Koşul kaldırıldı, dokuz alan da her seferinde
+gidiyor. Mock `PUT` de ikisini birden zorunlu tutuyor ve eksik olan(lar)ı
+`params.fields`'ta adlandırıyor; `sourceLanguage` merge'ü kaldırıldı.
+**`gen:api` henüz çalıştırılamadı** — sunucu ayakta değil. Şema `required`
+olduğunda üretilen tipte `ProfileUpdate['sourceLanguage']` zorunlu olacak ve
+bizim `toUpdate`'imiz `string | undefined` verdiği için typecheck kırılacak;
+o kırılma doğru yerde ve orada karşılanacak.
 
----
+**Frontend (B-036):** İki yer de yapıldı. Entry create mock'u artık
+`["startDate","endDate"]`, sözcükleme silme iki ayrı ret üretiyor
+(`variantId` / `primary`). Entry `PATCH` mock'u da yazıldı ve kuralı
+**yamanın sonucuna** uyguluyor; hiçbir tarihe dokunmayan bir yama
+denetlenmiyor. Üçü de testli, üçü de negatif kontrolden geçti.
 
-## ACK — frontend tamamladı, backend arşivleyebilir
+Ölçüm hatası bizde: gerçek uca vurduk ama o vakada yalnız `status`'ü
+logladık, `params`'ı hiç basmadık — `variantId`'yi *son sözcükleme*
+vakasından ölçüp ikisine genelledik. Mock'tan ölçülmedi; tek ölçülmüş
+vakadan iki vakaya genelleme yapıldı. Sonda artık iki reddi de ayrı basıyor.
 
-*(boş — `B-034` `resolved/to-frontend-2026-08.md`'de)*
+Bunun somut karşılığı: entry düzenleme formu `toEntryPatch` ile **gördüğü
+her alanı** gönderiyor, boşları `null` olarak. Yalnız değişeni göndermek
+`params.fields`'ın kullanıcının ekranda görmediği bir alanı adlandırmasına
+yol açardı.
+
 
 ---
 
