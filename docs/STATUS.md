@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-21 · `F-003`…`F-007` kapandı, kota gün sınırı UTC olarak karara bağlandı
+**Son güncelleme:** 2026-08-21 · Aşama 2 başladı; `Result`/`PipelineError` `shared/error`'a taşındı
 
 ---
 
@@ -12,19 +12,14 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0 — İskelet | ✅ |
-| 1.1 Domain modeli | ✅ |
-| 1.2 Profil CRUD + şema | ✅ |
-| 1.3 LaTeX container | ✅ |
-| 1.4 Renderer | ✅ |
-| 1.5 Ölçüm sistemi | ✅ |
-| 1.6 Faz C (seçim) | ✅ |
-| 1.7 Faz E/F | ✅ |
-| 1.8 Genel mod + PDF ucu | ✅ |
-| 1.9 Golden set + kritik testler | ✅ |
-| **Aşama 2 — İlana özel üretim** | ⬜ Sırada |
+| Aşama 1 — Yürüyen iskelet (1.1-1.9) | ✅ |
+| **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
+| 2.1 Sağlayıcı hesapları · 2.2 LLM Gateway | 🔨 |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
-**Aşama 1'in devrettikleri:** `notes/current.md` — kapanmadan Aşama 2'ye girilmez.
+**Hazırlık indi:** `Result` ve `PipelineError` artık `shared/error`'da — Bölüm 27.1
+`LlmProvider`'ı `Result` döndürüyor ve `generation → llm` ile birlikte döngü olurdu.
+API şekli değişmedi; frontend'in yapacağı bir şey yok.
 
 **Aşama 1 kontrol listesi:** 9/9 ✅ · **`F-003`…`F-007` kapandı** → `spec/08-api.md` § 35.2, § 35.6
 **Test:** 312 birim · 142 entegrasyon · 44 latex
