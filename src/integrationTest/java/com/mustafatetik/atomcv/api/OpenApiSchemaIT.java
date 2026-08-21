@@ -56,7 +56,11 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         .value(Matchers.containsInAnyOrder(
                                 "increase_page_limit", "review_pins", "keep_top_pinned", "sign_up",
                                 "paste_full_posting", "continue_as_general_cv",
-                                "switch_to_manual_form", "complete_profile", "retry")));
+                                "switch_to_manual_form", "complete_profile",
+                                // Adim 2.3, handoff B-037: Bolum 18.1 offers
+                                // three ways past a preflight refusal and the
+                                // vocabulary named only two of them.
+                                "continue_anyway", "retry")));
     }
 
     @Test

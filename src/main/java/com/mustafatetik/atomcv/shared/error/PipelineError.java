@@ -42,6 +42,22 @@ public sealed interface PipelineError {
     }
 
     /**
+     * The posting could not be read as one (Bolum 18.1, Bolum 18.4).
+     *
+     * <p>Both gates raise it: the preflight before any call is made, and the
+     * plausibility gate on what came back. The two are distinguishable inside
+     * the phase and not on the wire, because the catalogue publishes one code.
+     *
+     * @param confidence   what the model reported, or {@code 0} when the
+     *                     preflight refused before anything was analysed
+     * @param skillsFound  how many required skills the analysis produced,
+     *                     likewise {@code 0} from the preflight
+     */
+    record UnparseableJobDescription(double confidence, int skillsFound)
+            implements PipelineError {
+    }
+
+    /**
      * Pinned content does not fit the page limit (Bolum 20.3, stage 1).
      *
      * <p>This is a conflict between two things the user asked for, so the

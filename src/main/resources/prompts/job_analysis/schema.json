@@ -1,0 +1,85 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role", "company", "requiredSkills", "preferredSkills", "responsibilities",
+    "keywords", "experienceYears", "languageRequirements", "companyTone",
+    "jdLanguage", "confidence", "extractionNotes"
+  ],
+  "properties": {
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "seniority", "domain", "employmentType", "workMode"],
+      "properties": {
+        "title": { "type": "string" },
+        "seniority": {
+          "type": ["string", "null"],
+          "enum": ["junior", "mid", "senior", "lead", "principal", null]
+        },
+        "domain": { "type": "string" },
+        "employmentType": {
+          "type": ["string", "null"],
+          "enum": ["full_time", "part_time", "contract", "internship", null]
+        },
+        "workMode": {
+          "type": ["string", "null"],
+          "enum": ["onsite", "hybrid", "remote", null]
+        }
+      }
+    },
+    "company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "sizeHint"],
+      "properties": {
+        "name": { "type": "string" },
+        "sizeHint": {
+          "type": ["string", "null"],
+          "enum": ["startup", "scaleup", "enterprise", null]
+        }
+      }
+    },
+    "requiredSkills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "canonical", "importance"],
+        "properties": {
+          "name": { "type": "string" },
+          "canonical": { "type": "string" },
+          "importance": { "type": "string", "enum": ["critical", "high", "medium"] }
+        }
+      }
+    },
+    "preferredSkills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "canonical"],
+        "properties": {
+          "name": { "type": "string" },
+          "canonical": { "type": "string" }
+        }
+      }
+    },
+    "responsibilities": { "type": "array", "items": { "type": "string" } },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "experienceYears": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": ["integer", "null"] },
+        "max": { "type": ["integer", "null"] }
+      }
+    },
+    "languageRequirements": { "type": "array", "items": { "type": "string" } },
+    "companyTone": { "type": "string" },
+    "jdLanguage": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "extractionNotes": { "type": "array", "items": { "type": "string" } }
+  }
+}

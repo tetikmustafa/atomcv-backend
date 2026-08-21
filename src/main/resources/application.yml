@@ -33,6 +33,11 @@ management:
 # silently, so one chain definition serves a deployment with one vendor
 # configured and a deployment with five.
 atomcv:
+  # Bolum 53.2: the live version of each prompt, so rolling one back is a
+  # value change rather than a release.
+  prompts:
+    active:
+      job_analysis: v1
   llm:
     chain:
       # Comma-separated, so the order is deployable without a release

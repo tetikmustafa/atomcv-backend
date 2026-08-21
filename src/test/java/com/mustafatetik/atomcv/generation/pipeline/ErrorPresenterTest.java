@@ -86,6 +86,40 @@ class ErrorPresenterTest {
     }
 
     /**
+     * Bolum 18.1 is explicit that a posting which does not look like one is a
+     * question, not a refusal — so all three ways out are offered, and the
+     * first of them is proceeding with the same text.
+     */
+    @Test
+    void anUnreadablePostingIsAQuestionWithThreeWaysOut() {
+        var presented = presenter.present(
+                new PipelineError.UnparseableJobDescription(0.31, 1), PAGE_HEIGHT_PT);
+
+        assertThat(presented.httpStatus()).isEqualTo(422);
+        assertThat(presented.params())
+                .containsEntry("confidence", 0.31)
+                .containsEntry("skillsFound", 1);
+        assertThat(presented.resolutions()).extracting(Resolution::action).containsExactly(
+                ResolutionAction.CONTINUE_ANYWAY,
+                ResolutionAction.PASTE_FULL_POSTING,
+                ResolutionAction.CONTINUE_AS_GENERAL_CV);
+    }
+
+    /**
+     * A preflight refusal analysed nothing, so both numbers are zero rather
+     * than invented. The three ways out are the same either way.
+     */
+    @Test
+    void aPreflightRefusalReportsThatNothingWasAnalysed() {
+        var presented = presenter.present(
+                new PipelineError.UnparseableJobDescription(0, 0), PAGE_HEIGHT_PT);
+
+        assertThat(presented.params())
+                .containsEntry("confidence", 0.0)
+                .containsEntry("skillsFound", 0);
+    }
+
+    /**
      * Bolum 27.3: a chain runs out only for reasons that were transient at
      * every stop, so the answer is always "ask again".
      */

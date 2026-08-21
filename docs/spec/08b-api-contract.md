@@ -32,6 +32,7 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 | `sign_up` | Özellik hesap gerektiriyor | Kayda git, durumu koru |
 | `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
 | `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |
+| `continue_anyway` | Ön kontrol reddetti ama kullanıcı ısrar ediyor | Aynı metni ön kontrolü atlayan onayla yeniden gönder (Adım 2.3; Bölüm 18.1 üç çıkış yolu sunuyor, sözlükte ikisi vardı) |
 | `switch_to_manual_form` | Çıkarım başarısız | Manuel profil formuna git |
 | `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
 | `retry` | Geçici hata | Değiştirmeden yeniden gönder |
