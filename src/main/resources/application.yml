@@ -26,3 +26,27 @@ management:
   endpoint:
     health:
       show-details: never
+
+# ── LLM (Bolum 27.3) ──────────────────────────────────────────────────────
+# Model ids are environment variables, never literals: vendors rename models
+# faster than a release cycle (Bolum 5.4). A provider with no key is skipped
+# silently, so one chain definition serves a deployment with one vendor
+# configured and a deployment with five.
+atomcv:
+  llm:
+    chain:
+      # Comma-separated, so the order is deployable without a release
+      # (Bolum 5.4, "env-driven fallback"). Bolum 27.3's fuller order arrives
+      # with the other adapters: naming one that does not exist yet only logs
+      # a warning, but an order listing nothing runnable fails every
+      # generation, so the default names the adapter that exists.
+      cheap: ${LLM_CHAIN_CHEAP:openrouter}
+      mid:   ${LLM_CHAIN_MID:openrouter}
+    models:
+      openrouter: ${OPENROUTER_MODEL:}
+    call-timeout: 30s
+    # Bolum 27.3 retries a schema mismatch on the same provider. One catches a
+    # model that wandered; more pays repeatedly for a prompt that is wrong.
+    schema-retries: 1
+    openrouter:
+      api-key: ${OPENROUTER_API_KEY:}

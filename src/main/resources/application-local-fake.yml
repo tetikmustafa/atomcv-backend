@@ -5,6 +5,13 @@
 # running in fake mode while adding nothing at all.
 atomcv:
   llm:
+    # Both chains point at the fake, and nothing else. The base configuration
+    # names openrouter, which has no key here — a chain that found nothing
+    # available would fail every generation with ALL_PROVIDERS_UNAVAILABLE,
+    # which is exactly what "no cost, works offline" must not mean.
+    chain:
+      cheap: [fake]
+      mid:   [fake]
     fake:
       # Where `local-record` writes and this profile reads. Relative to the
       # working directory, which is the repository root under `make dev`.

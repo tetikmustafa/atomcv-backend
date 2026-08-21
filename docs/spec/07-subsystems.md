@@ -245,6 +245,8 @@ public record LlmResponse<T>(
 
 **Claude'un farkı önemli:** Bare JSON mode yok; forced tool use tek güvenilir yol. Bu, adaptörde ayrı kod yolu gerektirir.
 
+**"Desteklenmiyorsa" tespitle değil yapılandırmayla çözülür.** Hangi mekanizmayı hangi modelin desteklediği modele ait bir olgudur ve yanıt bunu güvenilir biçimde söylemez; hata metnine bakarak tahmin etmek her başarısızlığı sessizce zayıf moda düşürürdü. Adaptör başına açık bir ayar taşınır — OpenRouter'da `atomcv.llm.openrouter.structured-output: JSON_SCHEMA | JSON_OBJECT`. `JSON_SCHEMA` `strict: true` ile gider; `strict` olmadan sağlayıcı şemayı öneri sayar ve § 53.5'in Faz A için istediği %99 uyum tutmaz.
+
 ### 27.3 Fallback zinciri
 
 ```yaml
@@ -287,6 +289,12 @@ public <T> Result<LlmResponse<T>> call(StructuredRequest<T> req) {
 **`tried` boş olabilir ve bu normaldir.** Anahtarı olmayan sağlayıcı *sessizce* atlanır ve `tried`'a yazılmaz: beş vendor listeleyen bir zincir, tek anahtarlı bir kurulumda eksik değil olağan durumdur. Boş liste "hiçbir şey yapılandırılmamış" demek, "hepsi çöktü" değil.
 
 `ProviderChain.call` `Result<LlmResponse<T>>` döndürür — hata tipi `PipelineError` ve bugün üretebildiği tek durum `AllProvidersUnavailable(tried)`. Sağlayıcıdan zincire dönüşüm burada olur.
+
+**Aynı sağlayıcıdaki retry sayısı:** `atomcv.llm.schema-retries`, varsayılan **1**. Bir kez sapan model çoğu zaman ikincide tutturur; daha fazlası yanlış bir prompt için tekrar tekrar ödemektir. Sayı tükendiğinde yürüyüş durur, sonraki vendor denenmez.
+
+**Zincirdeki bilinmeyen sağlayıcı id'si ölümcül değildir**, `warn` basılıp atlanır. Ölümcül olsaydı yukarıdaki beş vendorlu varsayılan zincirle, adaptörlerin yalnız biri yazılmışken açılış yapılamazdı; sessiz olsaydı bir yazım hatası fark edilmezdi.
+
+**Zincir env-driven'dır** (§ 5.4): `LLM_CHAIN_CHEAP` / `LLM_CHAIN_MID` virgülle ayrılmış id listesi taşır, yani sıra sürüm çıkmadan değiştirilebilir.
 
 ### 27.4 Maliyet optimizasyonları
 
