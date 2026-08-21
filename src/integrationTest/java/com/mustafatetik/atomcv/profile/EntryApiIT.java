@@ -248,7 +248,10 @@ class EntryApiIT extends AbstractIntegrationTest {
                                   "startDate": "2022-01-01", "endDate": "2019-01-01" }"""
                                 .formatted(sectionId)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
+                // Both ends came in one body, so both are named: either is a
+                // field the create form can put the message next to (F-005).
+                .andExpect(jsonPath("$.params.fields")
+                        .value(contains("startDate", "endDate")));
     }
 
     @Test
@@ -267,13 +270,24 @@ class EntryApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
 
-        // And the mirror case: the start moves past the stored end.
+        // And the mirror case: the start moves past the stored end. The field
+        // named is the one this request sent (F-005) — it used to say endDate
+        // here, which a single-field form can only mark on the wrong input.
         mvc.perform(patch(path)
                         .header(HttpHeaders.IF_MATCH, "\"0\"")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"startDate\": \"2026-01-01\" }"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.params.fields").value(contains("endDate")));
+                .andExpect(jsonPath("$.params.fields").value(contains("startDate")));
+
+        // Both ends in one patch: both are named, same as on create.
+        mvc.perform(patch(path)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"startDate\": \"2025-01-01\", \"endDate\": \"2024-01-01\" }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields")
+                        .value(contains("startDate", "endDate")));
 
         // Clearing the end date is still how a job becomes ongoing: there is
         // no longer a second date, so there is nothing left to order.

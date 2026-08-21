@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,10 @@ public class EntryService {
         // cannot be hung off another profile's section by sending its id.
         sections.findById(profile, draft.sectionId())
                 .orElseThrow(() -> invalid("sectionId"));
-        requireOrderedDates(draft.startDate(), draft.endDate());
+        // A create carries both ends, so both are named when the pair is
+        // reversed: either one is the field the user can correct.
+        requireOrderedDates(draft.startDate(), draft.endDate(),
+                List.of("startDate", "endDate"));
 
         short next = (short) list(profile, draft.sectionId()).stream()
                 .mapToInt(Entry::getDisplayOrder)
@@ -73,9 +77,23 @@ public class EntryService {
         // Checked against what the entry will hold, not against what the body
         // carries: a patch that moves only one of the two dates is still able
         // to reverse the range, and it is the pair that has to stay ordered.
-        requireOrderedDates(
-                isDefined(patch.startDate()) ? patch.startDate().get() : entry.getStartDate(),
-                isDefined(patch.endDate()) ? patch.endDate().get() : entry.getEndDate());
+        //
+        // The pair is what is checked, but only the half this request sent is
+        // reported (F-005). A patch that moves startDate used to be answered
+        // with `fields: ["endDate"]` — a field it never mentioned — and a
+        // single-field form has nowhere to put that but the wrong input.
+        //
+        // A patch touching neither date is not checked at all. It cannot make
+        // the range worse, and a row stored reversed before F-002 existed
+        // would otherwise refuse an unrelated title edit while naming no field
+        // the user could fix.
+        List<String> patchedDates = patchedDateFields(patch);
+        if (!patchedDates.isEmpty()) {
+            requireOrderedDates(
+                    isDefined(patch.startDate()) ? patch.startDate().get() : entry.getStartDate(),
+                    isDefined(patch.endDate()) ? patch.endDate().get() : entry.getEndDate(),
+                    patchedDates);
+        }
 
         if (patch.title() != null) {
             entry.setTitle(patch.title());
@@ -149,11 +167,27 @@ public class EntryService {
      * has to be refused at the door (F-002). Equal dates are a same-day entry
      * and stay legal; an absent end date means ongoing and has nothing to
      * compare against.
+     *
+     * <p>{@code fields} is what the caller sent, not what the rule compared:
+     * the check needs both ends, the client can only correct the ones it put
+     * on screen.
      */
-    private static void requireOrderedDates(LocalDate start, LocalDate end) {
+    private static void requireOrderedDates(LocalDate start, LocalDate end, List<String> fields) {
         if (start != null && end != null && end.isBefore(start)) {
-            throw invalid("endDate");
+            throw invalid(fields);
         }
+    }
+
+    /** The date fields this patch carries, in the order the form shows them. */
+    private static List<String> patchedDateFields(EntryPatch patch) {
+        List<String> fields = new ArrayList<>(2);
+        if (isDefined(patch.startDate())) {
+            fields.add("startDate");
+        }
+        if (isDefined(patch.endDate())) {
+            fields.add("endDate");
+        }
+        return List.copyOf(fields);
     }
 
     /** Undefined means "leave it alone"; defined — even holding null — is an edit. */
@@ -167,8 +201,12 @@ public class EntryService {
     }
 
     private static ApiException invalid(String field) {
+        return invalid(List.of(field));
+    }
+
+    private static ApiException invalid(List<String> fields) {
         return new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
-                .param("fields", List.of(field))
+                .param("fields", fields)
                 .build());
     }
 }
