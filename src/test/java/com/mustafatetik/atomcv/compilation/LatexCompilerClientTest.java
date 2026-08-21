@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.compilation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,7 +61,7 @@ class LatexCompilerClientTest {
         assertThatThrownBy(() -> client.compile("x"))
                 .isInstanceOf(CompilationException.class)
                 .extracting(failure -> ((CompilationException) failure).kind())
-                .isEqualTo(CompilationException.Kind.UNAVAILABLE);
+                .isEqualTo(CompilationFailureKind.UNAVAILABLE);
     }
 
     @Test
@@ -81,7 +82,7 @@ class LatexCompilerClientTest {
                 .satisfies(failure -> {
                     var compilation = (CompilationException) failure;
                     assertThat(compilation.kind())
-                            .isEqualTo(CompilationException.Kind.INVALID_DOCUMENT);
+                            .isEqualTo(CompilationFailureKind.INVALID_DOCUMENT);
                     assertThat(compilation.log()).contains("Undefined control sequence");
                 });
     }
@@ -93,7 +94,7 @@ class LatexCompilerClientTest {
         assertThatThrownBy(() -> client.compile("x"))
                 .isInstanceOf(CompilationException.class)
                 .extracting(failure -> ((CompilationException) failure).kind())
-                .isEqualTo(CompilationException.Kind.BUSY);
+                .isEqualTo(CompilationFailureKind.BUSY);
     }
 
     @Test
@@ -104,7 +105,7 @@ class LatexCompilerClientTest {
         assertThatThrownBy(() -> unreachable.compile("x"))
                 .isInstanceOf(CompilationException.class)
                 .extracting(failure -> ((CompilationException) failure).kind())
-                .isEqualTo(CompilationException.Kind.UNAVAILABLE);
+                .isEqualTo(CompilationFailureKind.UNAVAILABLE);
     }
 
     @Test
@@ -122,7 +123,7 @@ class LatexCompilerClientTest {
         assertThatThrownBy(() -> client.compile("x"))
                 .isInstanceOf(CompilationException.class)
                 .extracting(failure -> ((CompilationException) failure).kind())
-                .isEqualTo(CompilationException.Kind.TIMEOUT);
+                .isEqualTo(CompilationFailureKind.TIMEOUT);
     }
 
     @Test
@@ -132,7 +133,7 @@ class LatexCompilerClientTest {
         assertThatThrownBy(() -> client.compile("x"))
                 .isInstanceOf(CompilationException.class)
                 .extracting(failure -> ((CompilationException) failure).kind())
-                .isEqualTo(CompilationException.Kind.UNAVAILABLE);
+                .isEqualTo(CompilationFailureKind.UNAVAILABLE);
     }
 
     private void respondWith(String path, int status, String body) {

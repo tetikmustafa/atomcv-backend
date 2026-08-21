@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.api;
 import com.mustafatetik.atomcv.generation.api.dto.GeneralCvRequest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
-import com.mustafatetik.atomcv.generation.pipeline.Result;
+import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.service.CvGenerationService;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;

@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.compilation;
 
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -45,7 +46,7 @@ public class LatexCompilerClient {
             // Faz F cannot promise a page limit it was unable to read, so a
             // compiler that does not report one is treated as the wrong
             // compiler rather than as a document with an unknown length (P4).
-            throw failure(CompilationException.Kind.UNAVAILABLE,
+            throw failure(CompilationFailureKind.UNAVAILABLE,
                     "the compiler reported no page count", "", null);
         }
         return new CompiledDocument(response.body(), pages);
@@ -71,29 +72,29 @@ public class LatexCompilerClient {
         try {
             response = http.send(request, HttpResponse.BodyHandlers.ofByteArray());
         } catch (HttpTimeoutException timeout) {
-            throw failure(CompilationException.Kind.TIMEOUT, "compilation timed out", "", timeout);
+            throw failure(CompilationFailureKind.TIMEOUT, "compilation timed out", "", timeout);
         } catch (IOException unreachable) {
-            throw failure(CompilationException.Kind.UNAVAILABLE,
+            throw failure(CompilationFailureKind.UNAVAILABLE,
                     "the compiler could not be reached", "", unreachable);
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-            throw failure(CompilationException.Kind.UNAVAILABLE,
+            throw failure(CompilationFailureKind.UNAVAILABLE,
                     "interrupted while compiling", "", interrupted);
         }
 
         return switch (response.statusCode()) {
             case 200 -> response;
-            case 422 -> throw failure(CompilationException.Kind.INVALID_DOCUMENT,
+            case 422 -> throw failure(CompilationFailureKind.INVALID_DOCUMENT,
                     "the document did not compile", body(response), null);
-            case 503 -> throw failure(CompilationException.Kind.BUSY,
+            case 503 -> throw failure(CompilationFailureKind.BUSY,
                     "every compilation slot is taken", "", null);
-            default -> throw failure(CompilationException.Kind.UNAVAILABLE,
+            default -> throw failure(CompilationFailureKind.UNAVAILABLE,
                     "the compiler answered " + response.statusCode(), "", null);
         };
     }
 
     private CompilationException failure(
-            CompilationException.Kind kind, String message, String texLog, Throwable cause) {
+            CompilationFailureKind kind, String message, String texLog, Throwable cause) {
 
         // The kind, never the log: it is built from the user's own content.
         log.warn("Compilation failed: {}", kind);

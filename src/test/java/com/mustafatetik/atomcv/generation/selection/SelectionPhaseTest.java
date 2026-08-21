@@ -2,8 +2,8 @@ package com.mustafatetik.atomcv.generation.selection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mustafatetik.atomcv.generation.pipeline.PipelineError;
-import com.mustafatetik.atomcv.generation.pipeline.Result;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.AtomCandidate;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.EntryPlan;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.SectionPlan;

@@ -2,7 +2,7 @@ package com.mustafatetik.atomcv.golden;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mustafatetik.atomcv.generation.pipeline.Result;
+import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;

@@ -1,6 +1,8 @@
 package com.mustafatetik.atomcv.generation.pipeline;
 
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
@@ -70,8 +72,7 @@ public class ErrorPresenter {
      * service being busy, slow or absent, and those pass.
      */
     private static boolean retryable(PipelineError.CompilationFailed failed) {
-        return failed.kind()
-                != com.mustafatetik.atomcv.compilation.CompilationException.Kind.INVALID_DOCUMENT;
+        return failed.kind() != CompilationFailureKind.INVALID_DOCUMENT;
     }
 
     /** One decimal is as much precision as a page count deserves. */

@@ -1,4 +1,4 @@
-package com.mustafatetik.atomcv.generation.pipeline;
+package com.mustafatetik.atomcv.shared.error;
 
 import java.util.function.Function;
 
@@ -9,6 +9,10 @@ import java.util.function.Function;
  * to generate from, pinned content that cannot fit, a provider that is down.
  * Each of them ends with something to tell the user, and a return type carries
  * that better than a throw — the compiler makes the caller look at it.
+ *
+ * <p>In {@code shared} with {@link PipelineError}, which it carries: every
+ * module that can fail a generation returns one, and {@code llm} may not
+ * reach into {@code generation} for it (Bolum 10.2, rule 2).
  *
  * <p>No library for this. The language has sealed interfaces and pattern
  * matching, which is the whole of what a Result needs.

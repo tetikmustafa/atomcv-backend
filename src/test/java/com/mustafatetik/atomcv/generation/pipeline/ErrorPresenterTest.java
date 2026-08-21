@@ -2,8 +2,9 @@ package com.mustafatetik.atomcv.generation.pipeline;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mustafatetik.atomcv.compilation.CompilationException;
+import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import java.util.List;
@@ -74,9 +75,9 @@ class ErrorPresenterTest {
     @Test
     void aBusyCompilerIsWorthRetryingAndABadDocumentIsNot() {
         var busy = presenter.present(new PipelineError.CompilationFailed(
-                CompilationException.Kind.BUSY, ""), PAGE_HEIGHT_PT);
+                CompilationFailureKind.BUSY, ""), PAGE_HEIGHT_PT);
         var broken = presenter.present(new PipelineError.CompilationFailed(
-                CompilationException.Kind.INVALID_DOCUMENT, "! Undefined control sequence."),
+                CompilationFailureKind.INVALID_DOCUMENT, "! Undefined control sequence."),
                 PAGE_HEIGHT_PT);
 
         assertThat(busy.resolutions()).extracting(Resolution::action)
@@ -88,7 +89,7 @@ class ErrorPresenterTest {
     @Test
     void theTexLogNeverReachesTheBody() {
         var presented = presenter.present(new PipelineError.CompilationFailed(
-                CompilationException.Kind.INVALID_DOCUMENT,
+                CompilationFailureKind.INVALID_DOCUMENT,
                 "! Undefined control sequence. \\thisWasTheUsersOwnBullet"), PAGE_HEIGHT_PT);
 
         assertThat(presented.params()).containsEntry("detail", "invalid_document");

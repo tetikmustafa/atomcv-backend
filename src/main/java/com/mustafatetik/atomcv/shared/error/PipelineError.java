@@ -1,7 +1,5 @@
-package com.mustafatetik.atomcv.generation.pipeline;
+package com.mustafatetik.atomcv.shared.error;
 
-import com.mustafatetik.atomcv.compilation.CompilationException;
-import com.mustafatetik.atomcv.shared.error.Resolution;
 import java.util.List;
 
 /**
@@ -11,6 +9,13 @@ import java.util.List;
  * of failure does not compile until someone has decided what the user is told
  * and what they can do about it. That is design principle 4 enforced by the
  * language rather than by discipline.
+ *
+ * <p>It lives in {@code shared} rather than in {@code generation.pipeline},
+ * because Bolum 27.1 has {@code LlmProvider} return a {@code Result} of it and
+ * {@code generation} depends on {@code llm} in turn — the two together are a
+ * cycle. Bolum 10.1 already places this type here; what kept it out was
+ * {@code CompilationFailed} naming a type from the {@code compilation} module,
+ * and that is now {@link CompilationFailureKind}.
  *
  * <p>Only the cases the pipeline can produce today are here. The rest arrive
  * with the phases that raise them; adding one early would mean guessing at its
@@ -80,7 +85,7 @@ public sealed interface PipelineError {
      * @param kind   which of the four, so the caller knows whether to retry
      * @param texLog what TeX said — user content, never logged (absolute rule 4)
      */
-    record CompilationFailed(CompilationException.Kind kind, String texLog)
+    record CompilationFailed(CompilationFailureKind kind, String texLog)
             implements PipelineError {
 
         public CompilationFailed {
