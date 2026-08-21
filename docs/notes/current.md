@@ -61,10 +61,12 @@ verilmeli.
   `spec/04-data-model.md`'de. Sayacı yazan kod bunu **`LocalDate.now(ZoneOffset.UTC)`**
   ile okumak zorunda: `LocalDate.now()` bu makinede UTC+3 döner ve testler
   günün 21:00'inden sonra geçmeye başlar — bir sonraki adımın tuzağı bu.
-- **`application-local-fake.yml`, `-local-record`, `-local-real` yok.** LLM
-  gateway'le birlikte yazılacaklar. Spring bilinmeyen profili sessizce yok
-  sayıyor, yani `make dev` bugün çalışıyor gibi görünürken `local-fake` hiçbir
-  şey katmıyor.
+- ~~**`application-local-fake.yml`, `-local-record`, `-local-real` yok.**~~
+  **Kapandı.** Üçü de yazıldı. Sessiz yutulma bir testle bağlandı
+  (`LocalProfileConfigTest`): dosyanın taşıyabileceği bir değere assert ediyor
+  ve negatif kontrolü içinde — var olmayan bir profil adıyla aynı özellik
+  varsayılana düşüyor. Kasıtlı ihlalle doğrulandı: dosya geçici olarak
+  kaldırıldığında test düşüyor.
 
 - ~~**`archunit.properties` içindeki `failOnEmptyShould=false` kaldırılmalı.**~~
   **Kapandı — ve maddenin kendisi yanlıştı:** öyle bir dosya hiç olmadı. Ayar
@@ -177,3 +179,9 @@ yazıldı, buradan silindi. Özeti: hata kataloğunda tek sağlayıcının
 başarısızlığı için kod yok, dolayısıyla o `PipelineError` olamaz.
 `PipelineError` bu adımda tek durum kazandı — `AllProvidersUnavailable(tried)`,
 § 25.2 ve katalogda birebir yazılı.
+
+**Ekleme/Sapma — fake sağlayıcı ve prompt kovası.** Üçü de kalıcı olduğu için
+spec'e yazıldı, buradan silindi: fixture'ların dosya sisteminde durması, adının
+girdinin hash'i olması ve `synthesize` bayrağının üç profildeki değeri
+`spec/13-development.md` § 54.2'de; A/B kovasının murmur3 yerine CRC32 olması
+`spec/12-quality.md` § 53.3'te.

@@ -1,0 +1,17 @@
+# Real calls, saved as fixtures (Bolum 54.2). Costs money — run it deliberately
+# with `make record`, then go back to local-fake.
+#
+# The provider adapters arrive in Adim 2.2's second half; until then this
+# profile carries only where the recordings land.
+atomcv:
+  llm:
+    fake:
+      fixture-dir: src/test/resources/fixtures/llm
+      # A miss must be a real call, never a placeholder: a synthetic answer
+      # recorded as a fixture would be indistinguishable from a real one
+      # afterwards.
+      synthesize: false
+
+logging:
+  level:
+    com.mustafatetik.atomcv.llm: debug

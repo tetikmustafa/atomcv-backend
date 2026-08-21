@@ -1,0 +1,18 @@
+# Daily work: no provider is called and nothing is spent (Bolum 54.2).
+#
+# Until this file existed Spring accepted `--spring.profiles.active=local,local-fake`
+# and ignored the second half silently, so `make dev` looked like it was
+# running in fake mode while adding nothing at all.
+atomcv:
+  llm:
+    fake:
+      # Where `local-record` writes and this profile reads. Relative to the
+      # working directory, which is the repository root under `make dev`.
+      fixture-dir: src/test/resources/fixtures/llm
+      # A call no fixture covers still answers, shaped like the schema. Off
+      # would mean a fresh clone cannot run a generation at all.
+      synthesize: true
+
+logging:
+  level:
+    com.mustafatetik.atomcv.llm: debug
