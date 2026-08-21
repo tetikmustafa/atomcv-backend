@@ -185,3 +185,10 @@ spec'e yazıldı, buradan silindi: fixture'ların dosya sisteminde durması, ad�
 girdinin hash'i olması ve `synthesize` bayrağının üç profildeki değeri
 `spec/13-development.md` § 54.2'de; A/B kovasının murmur3 yerine CRC32 olması
 `spec/12-quality.md` § 53.3'te.
+
+**Ekleme — zincir ve OpenRouter adaptörünün dört kararı.** Dördü de kalıcı
+olduğu için spec'e yazıldı, buradan silindi: `schema-retries`'ın varsayılanı,
+zincirdeki bilinmeyen id'nin ölümcül olmaması ve zincirin env-driven olması
+`spec/07-subsystems.md` § 27.3'te; `structured-output`'un tespit değil
+yapılandırma olması § 27.2'de; `local-fake`'in zinciri override etmek zorunda
+olması `spec/13-development.md` § 54.2'de.

@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-21 · Adım 2.2 LLM gateway — sözleşme, prompt registry, fake sağlayıcı
+**Son güncelleme:** 2026-08-21 · Adım 2.2 kapandı — gateway, zincir, OpenRouter adaptörü
 
 ---
 
@@ -15,15 +15,17 @@
 | Aşama 1 — Yürüyen iskelet (1.1-1.9) | ✅ |
 | **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
 | 2.1 Sağlayıcı hesapları | ✅ |
-| 2.2 LLM Gateway | 🔨 sözleşme + fake indi, adaptör kaldı |
+| 2.2 LLM Gateway | ✅ |
+| 2.3 Faz A | ⬜ Sırada |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
 **API şekli değişmedi; frontend'in yapacağı bir şey yok.** Değişenler iç:
 `Result`/`PipelineError` `shared/error`'a taşındı, `LlmProvider` `LlmOutcome`
-döndürüyor (§ 27.1 güncellendi), `local-fake/-record/-real` profilleri yazıldı.
+döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 27.1-27.3,
+§ 53.3 ve § 54.2 güncellendi — **`sync-spec.sh` henüz çalıştırılmadı.**
 
 **Aşama 1 kontrol listesi:** 9/9 ✅ · **`F-003`…`F-007` kapandı** → `spec/08-api.md` § 35.2, § 35.6
-**Test:** 352 birim · 142 entegrasyon · 44 latex
+**Test:** 382 birim · 142 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 

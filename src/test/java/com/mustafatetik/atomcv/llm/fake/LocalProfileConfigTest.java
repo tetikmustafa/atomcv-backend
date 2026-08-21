@@ -2,6 +2,8 @@ package com.mustafatetik.atomcv.llm.fake;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.llm.gateway.LlmProperties;
+import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
@@ -27,7 +29,7 @@ import org.springframework.context.annotation.Configuration;
 class LocalProfileConfigTest {
 
     @Configuration
-    @EnableConfigurationProperties(FakeLlmProperties.class)
+    @EnableConfigurationProperties({FakeLlmProperties.class, LlmProperties.class})
     static class Binding {
     }
 
@@ -39,6 +41,29 @@ class LocalProfileConfigTest {
             assertThat(properties.fixtureDir())
                     .isEqualTo(Path.of("src/test/resources/fixtures/llm"));
         });
+    }
+
+    /**
+     * Without this override the base chain names openrouter, which has no key
+     * under this profile — so every generation would end in
+     * ALL_PROVIDERS_UNAVAILABLE while looking correctly configured. That is
+     * the opposite of what "costs nothing, works offline" has to mean.
+     */
+    @Test
+    void localFakePointsBothChainsAtTheFakeAndNothingElse() {
+        run("local,local-fake", context -> {
+            var llm = context.getBean(LlmProperties.class);
+            assertThat(llm.chainFor(ModelTier.CHEAP)).containsExactly("fake");
+            assertThat(llm.chainFor(ModelTier.MID)).containsExactly("fake");
+        });
+    }
+
+    /** The base configuration, for contrast: the adapter that exists. */
+    @Test
+    void withoutTheFakeProfileTheChainNamesTheRealAdapter() {
+        run("local", context ->
+                assertThat(context.getBean(LlmProperties.class).chainFor(ModelTier.CHEAP))
+                        .containsExactly("openrouter"));
     }
 
     /**

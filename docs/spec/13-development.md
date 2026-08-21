@@ -57,6 +57,8 @@ Dosya adı `{promptId}/{version}-{sha256[0:12]}.json` — girdinin **hash'i**, m
 
 `FakeLlmProvider` iki kademeye birden cevap verir; tek tier'a bağlansa `local-fake` altında diğer zincir hiç çalışmazdı.
 
+**`local-fake` zinciri override etmek zorundadır** (`chain.cheap`/`chain.mid` → `[fake]`). Taban yapılandırma gerçek adaptörü sayar ve o profilde anahtar yoktur; override olmasa her üretim `ALL_PROVIDERS_UNAVAILABLE` ile biterdi — üstelik yapılandırma doğru görünürken. Bu, "bedava ve çevrimdışı çalışır"ın tam tersidir, dolayısıyla bir testle bağlanır.
+
 Diğer sahte sağlayıcılar:
 - `FakeEmbeddingProvider` — metin hash'inden deterministik vektör
 - `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)
