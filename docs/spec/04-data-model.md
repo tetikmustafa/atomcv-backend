@@ -407,7 +407,7 @@ CREATE TABLE usage_counters (
     subject_type    TEXT NOT NULL,   -- user | ip | anon_session
     subject_id      TEXT NOT NULL,
     metric          TEXT NOT NULL,   -- generation | profile_extract | llm_cost
-    period          DATE NOT NULL,
+    period          DATE NOT NULL,   -- UTC takviminde gün (F-007) — EK D.6.5
     count           INT NOT NULL DEFAULT 0,
     cost_usd        NUMERIC(10,6) NOT NULL DEFAULT 0,
     PRIMARY KEY (subject_type, subject_id, metric, period)
