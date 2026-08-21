@@ -146,6 +146,10 @@ yaz, ilan hangi dilde olursa olsun. Orijinal anlamı koru.
 </job_description>
 ```
 
+**Prompt iki mesaj olarak gider.** Fence'in üstündeki talimatlar **sistem** mesajı, `<job_description>` bloğu **kullanıcı** mesajıdır. İki sebep: § 27.4 sabit bir öneki indiriyor ve önek ancak ilan içinde değilse sabit kalır; ayrıca "bu bölge veri" ayrımı, fence gerçekten iki mesajın sınırı olduğunda daha net okunur. Sınır, *kendi satırında* duran `<job_description>` etiketidir — etiket adı üstteki talimatın içinde de geçtiği için satır sonları işaretin parçasıdır.
+
+**İlanın kendi metni kaçırılmaz.** `</job_description>` içeren bir ilan fence'i erken kapatabilir; buna karşı savunma modelin uyabileceği ya da uymayabileceği bir tırnaklama şeması değil, cevabın şemaya uymak ve § 18.4'ün kapısından geçmek zorunda olmasıdır.
+
 ### 18.4 Makullük kapısı (LLM SONRASI)
 
 ```java
@@ -166,6 +170,12 @@ boolean hasAbnormalFieldLength(JobAnalysis a) {
 ```
 
 Kapıdan geçemezse **Faz B'ye hiç geçilmez** — maliyet oluşmaz.
+
+Sıra önemlidir: incelik (güven, beceri sayısı, sorumluluk) **şekilden önce** bakılır, yani zayıf bir ilan zayıf olduğu için reddedilir, "şüpheli çıktı" diye değil.
+
+**Sağlayıcı arızası bu kapıdan geçmez, kendisi olarak yolculuk eder.** Zincir tükendiğinde hata `ALL_PROVIDERS_UNAVAILABLE` olarak kalır; onu `UNPARSEABLE_JOB_DESCRIPTION`'a çevirmek kullanıcıyı, hiç sorun olmamış bir metni düzeltmeye gönderirdi.
+
+**Uzunluk denetimi § 18.3'ün injection savunmasının yapısal yarısıdır.** Fence modele bölgenin veri olduğunu söyler; bu denetim modelin buna inanmayı bıraktığını fark eder. Enjekte edilmiş bir talimat daha kısa bir cevap üretmez — bir paragrafla adlandırılmış bir beceri ya da talimat taşıyan bir başlık üretir, ve bunların şekli vardır. Tavanlar gerçek bir ilanın ürettiğinin çok üstünde: uzun ama gerçek bir sorumluluğu reddeden bir kapı, hiç kapı olmamasından kötüdür.
 
 ### 18.5 Embedding hedefi sentezi
 

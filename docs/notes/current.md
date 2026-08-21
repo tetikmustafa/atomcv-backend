@@ -24,7 +24,7 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
 | `tags` / `atom_tags` entity'siz | Aşama 2 | Aşama 2 skorlamasından önce okuyan yok |
 | `generations`'a yazan yok | Aşama 2 | Hat `GeneratedDocument` döndürüyor; kalıcı kayıt, kuyruk ve `GET /generations/{id}/download` birlikte gelir (`spec/08b-api-contract.md` § D.6.3) |
-| `PipelineError` yalnız üç durum | Aşama 2 | Kalanları erken eklemek, frontend'in mesajlarının isteyeceği `params`'ı tahmin etmek olurdu |
+| `PipelineError`'da eksik durumlar | Aşama 2 | Fazıyla gelir. `AllProvidersUnavailable` (2.2) ve `UnparseableJobDescription` (2.3) indi; kalanlar erken eklenirse `params` tahmin edilmiş olur |
 | ATS raporu ve `FitReport` yok | Aşama 2 | Biri PDF metin çıkarımı, diğeri Faz A istiyor (`spec/06-pipeline-d-g.md` § 23) |
 | `UserScopedRepository`'de `findAll` yok | — | Bölüm 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi daraltılmış bulucularını ekler |
 
@@ -95,52 +95,22 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
 
 ## Aşama 2 kayıtları
 
-**Düzeltme — toplu JPQL `update` `@Version`'ı atlıyor.** Frontend'in F-001'i
-`atom_variants`'ta yakaladı: promote'ta demote edilen satır değişiyor ama `version`'ı
-sabit kalıyordu, çünkü demote tek satırlık bir `@Modifying` sorgu. `update versioned`
-oldu. Kuralın kendisi `spec/08-api.md` § 35.6'ya yazıldı; buraya not düşülmesinin
-nedeni **tekrar edecek olması** — Aşama 2'de kota sayaçları ve `generations` durum
-geçişleri de toplu update isteyecek ve aynı sessizlikle etag üretecek.
+**`F-001`…`F-006` kapandı ve kuralları `spec/08-api.md` § 35.2 / § 35.6'ya
+işlendi** (toplu update `@Version`, entry tarih aralığı, yazma yanıtındaki
+`completeness`, `sourceLanguage` zorunluluğu, `params.fields`, sözcükleme
+silmenin iki ayrı reddi). Buradan silindiler; **ikisi Aşama 2'de tekrar
+edeceği için duruyor:**
 
-Yanına iki şey: sorgu artık `and variant.isPrimary = true` taşıyor, çünkü hepsini
-sürümlemek promote'u **tamamen kırıyor** (promote edilen satırın merge'ü kendi
-bilmediği bir sürüme çarpıyor). Bu kasıtlı olarak denendi ve dört test düştü —
-`spec/12-quality.md` § 51.4'ün istediği doğrulama.
+- **Toplu JPQL `update` `@Version`'ı atlar.** Kota sayaçları (2.7) ve
+  `generations` durum geçişleri (2.6) de toplu update isteyecek ve aynı
+  sessizlikle bayat etag üretecek. `update versioned` — ama *hepsini*
+  sürümlemek promote'u kırıyor, bu kasıtlı denendi ve dört test düştü.
+- **Okuma, yakalanmak istenen bayatlığı onarır.** `completeness` testi
+  düzeltmesiz de geçiyordu çünkü etag'i almak için yapılan `GET` saklı rakamı
+  tazeliyordu. Kota sayaçları ve `generations` durumları da aynı şekilde
+  okumayla kendini onaran yüzeyler olacak — etag'i **önceki yazmanın
+  yanıtından** al.
 
-**Ekleme — entry tarih aralığı sıralı olmak zorunda.** F-002; `endDate >= startDate`,
-`PATCH`'te yamanın sonucuna karşı ölçülüyor. `spec/08-api.md` § 35.2'ye yazıldı.
-Doküman sessizdi ve altındaki hiçbir katman ters aralığı reddetmiyordu.
-
-**Düzeltme — yazma yanıtındaki `completeness` yazmadan öncesini taşıyordu.**
-F-003. `ProfileService.replace()` rakamı hiç hesaplamıyordu; yalnız `readOwn()`
-hesaplıyor. İki baş ucu da artık kaydetmeden önce yeniden hesaplıyor. Kural
-`spec/08-api.md` § 35.6'ya yazıldı ve buraya not düşülmesinin nedeni **testin
-kendisi**: `currentEtag()` bir `GET` yapıyor ve `GET` saklı rakamı tazeliyor,
-yani iki yazma arasındaki her okuma yakalanmak istenen bayatlığı onarıyor.
-Tercihleri ölçen test düzeltmesiz de geçti; ETag'i önceki yazmanın yanıtından
-alınca düştü. Aşama 2'de kota sayaçları ve `generations` durumları da aynı
-şekilde okumayla kendini onaran yüzeyler olacak.
-
-**Sapma — `PUT /profile` gövdesinde `sourceLanguage` artık zorunlu.** F-004.
-Şema "replace" diyordu, davranış tek bu alanda "merge"dü. Kolon `NOT NULL`,
-yani temizlenecek değer yok; `DEFAULT`'a düşürmek Türkçe yazılmış bir profili
-sessizce İngilizceye çevirirdi. Alan zorunlu yapıldı — omit eden istek 400.
-`enabledLanguages` zaten `@NotEmpty` idi, yani dil çifti artık bütünüyle
-zorunlu. **Kırıcı sözleşme değişikliği:** `B-035`.
-
-**Ekleme — `params.fields` isteğin gönderdiği alanı adlandırır.** F-005. Tarih
-kuralı ihlali hangi uçtan tetiklenirse tetiklensin `endDate` diyordu. Kural
-`spec/08-api.md` § 35.2'de tabloyla. Yanında bir davranış değişikliği daha:
-hiçbir tarihe dokunmayan bir `PATCH` artık denetlenmiyor — aksi hâlde F-002'den
-önce ters kaydedilmiş bir satır ilgisiz bir başlık düzenlemesini, düzeltilecek
-alanı adlandıramadan reddederdi.
-
-**Düzeltme — sözcükleme silme tek kural değil, iki.** F-006. `deleteVariant`
-"son sözcükleme" (`fields: ["variantId"]`) ve "birincil, başkası var"
-(`fields: ["primary"]`) diye ayrı ayrı reddediyor; frontend ikisini de
-`variantId` ölçmüş, muhtemelen mock'tan. Birinci durumun testi yalnız 400'ü
-kontrol ediyordu, yani ayrımın kendisi test edilmemişti. Kural
-`spec/08-api.md` § 35.2'ye yazıldı, test iki alanı da sabitliyor.
 
 **Sapma — `Result` ve `PipelineError` `shared/error/`'a taşındı.** Bölüm 27.1
 `LlmProvider.callStructured`'ı `Result<LlmResponse<T>>` döndürüyor; `generation`
@@ -198,3 +168,24 @@ yayımlıyor, ayrım `Verdict` enum'uyla içeride kalıyor: "ilan reddedildi"
 metriği hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın
 gözden geçirilmesi gerektiğini söyler. Kural ve sıralama (uzunluk entropiden
 önce) § 18.1'e, enum toleransı § 18.2'ye yazıldı.
+
+**Ekleme — eksik nesneler boş nesne olarak okunuyor.** `role`, `company` ve
+`experienceYears` yoksa `null` değil boş karşılıkları oluyor; listeler zaten
+öyleydi. Sebebi `embeddingTarget()`: `role.title()`'a bakıyor ve modelin
+`role`'ü hiç yazmadığı bir cevap onu `NullPointerException` ile düşürürdü.
+Kapı zaten başlıksız bir analizi kendi ölçütleriyle reddediyor, yani ayrıca
+null kontrolü yapmanın kimseye faydası yok.
+
+**Ekleme — prompt/fence bölünmesi ve sağlayıcı arızasının yolu spec'e yazıldı**
+(§ 18.3 ve § 18.4): sistem/kullanıcı ayrımı, fence'in *kendi satırında* olma
+şartı, sıralamanın incelikten şekle gitmesi ve `ALL_PROVIDERS_UNAVAILABLE`'ın
+`UNPARSEABLE_JOB_DESCRIPTION`'a çevrilmemesi.
+
+**Ekleme — boş ilanla `JobAnalysisPhase.analyse` çağırmak programlama hatası.**
+Genel CV modu buraya hiç gelmez; `Result.err` yerine `IllegalArgumentException`
+çünkü bu kullanıcının yapabileceği bir şey değil, çağıranın yanlış dallanması.
+
+**Kalan (Adım 2.3, item 6): Redis cache.** Container ayakta ama Spring
+tarafında ne bağımlılık ne yapılandırma var. Yazılırken karara bağlanacak şey:
+**cache düşerse üretim düşmemeli** — § 18.6 sessiz, ama bir optimizasyonun
+arızası bir üretimi öldürmemeli, ıskalamaya dönüşmeli.

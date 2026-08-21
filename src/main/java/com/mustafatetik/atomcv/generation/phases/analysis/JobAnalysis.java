@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -37,6 +38,14 @@ public record JobAnalysis(
         List<String> extractionNotes) {
 
     public JobAnalysis {
+        // An absent object reads as an empty one, the same way an absent list
+        // reads as empty: nothing downstream should have to decide whether a
+        // model that omitted `role` meant something by it, and the
+        // plausibility gate refuses a titleless analysis on its own terms.
+        role = role == null ? new Role(null, null, null, null, null) : role;
+        company = company == null ? new Company(null, null) : company;
+        experienceYears = experienceYears == null
+                ? new ExperienceYears(null, null) : experienceYears;
         requiredSkills = copyOf(requiredSkills);
         preferredSkills = copyOf(preferredSkills);
         responsibilities = copyOf(responsibilities);
@@ -170,6 +179,36 @@ public record JobAnalysis(
     /** Every skill the posting named, required first. */
     public Stream<Skill> allSkills() {
         return Stream.concat(requiredSkills.stream(), preferredSkills.stream());
+    }
+
+    /**
+     * The text Faz B embeds, synthesised rather than taken raw (Bolum 18.5).
+     *
+     * <p>A posting is mostly not about the job: benefits, an office
+     * description, a paragraph about the mission. Embedding all of it moves the
+     * vector towards whatever the company writes most of, and every candidate
+     * bullet then scores against that instead of against the work. What is left
+     * here is the title, the skills, the duties and the keywords — four fields
+     * that are already the extraction's answer to "what is this job".
+     *
+     * <p>Only {@code requiredSkills} take part. A preferred skill is a
+     * tie-breaker in Bolum 19's scoring, and letting it pull the vector would
+     * make it a requirement.
+     *
+     * <p>Built from the English fields (Bolum 18.2), because an atom's
+     * embedding comes from its English variant and a cross-language similarity
+     * measures the languages.
+     */
+    public String embeddingTarget() {
+        return Stream.of(
+                        role.title(),
+                        requiredSkills.stream().map(Skill::name)
+                                .collect(Collectors.joining(", ")),
+                        String.join(". ", responsibilities),
+                        String.join(", ", keywords))
+                .map(String::strip)
+                .filter(part -> !part.isEmpty())
+                .collect(Collectors.joining(". "));
     }
 
     private static <T> List<T> copyOf(List<T> values) {
