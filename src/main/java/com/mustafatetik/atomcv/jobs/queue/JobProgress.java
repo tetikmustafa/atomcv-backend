@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.jobs.queue;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * How far along a job is, as {@code jobs.progress} holds it and as the
@@ -15,11 +16,26 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * "4/7" — never a bullet, a company name or anything off the posting
  * (absolute rule 4).
  *
+ * <p><strong>An empty string is not sent (F-010).</strong> A queued job has no
+ * phase yet, and {@code {"phase":"","label":""}} is worse than no field at
+ * all: {@code label} is a translation key, the empty string is not one, and a
+ * client that did not special-case it would look up {@code generation.phase.}
+ * and print a raw key on the product's most-watched line. Absence says
+ * "nothing to show" in a way every client already handles — and it is what
+ * {@code GET /jobs/{id}} was already sending, so the stream and the poll now
+ * agree.
+ *
  * @param phase the pipeline phase, "A" through "G"
- * @param pct   0 to 100
+ * @param pct   0 to 100. Always sent, including zero: a progress bar with no
+ *              percentage is not the same as one at the start.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record JobProgress(String phase, String label, int pct, String detail) {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public record JobProgress(
+        String phase,
+        String label,
+        @JsonInclude(JsonInclude.Include.ALWAYS) int pct,
+        String detail) {
 
     /** A job that has been queued but not started. */
     public static final JobProgress NONE = new JobProgress("", "", 0, "");

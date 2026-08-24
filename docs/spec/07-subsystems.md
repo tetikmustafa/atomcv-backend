@@ -672,6 +672,16 @@ event: failed
 data: {"code":"CONFLICTING_PREFERENCES","params":{...},"resolutions":[...]}
 ```
 
+> **Düzeltme (`F-010`) — boş bir dize gönderilmez, alan düşürülür.** Kuyrukta
+> bekleyen bir işin fazı yoktur ve bağlanışta gönderilen anlık durum
+> `{"phase":"","label":"","pct":0}` diye çıkıyordu. `label` bir çeviri
+> anahtarı; boş dize anahtar değildir ama yokluktan da ayırt edilmez, yani
+> istemci onu özel durum yapmazsa `generation.phase.` diye bir anahtarı
+> çevirmeye kalkar. `phase`, `label` ve `detail` boşsa **gönderilmez**;
+> `pct` sıfırken de gönderilir, çünkü yüzdesiz bir çubuk başlangıçtaki
+> çubukla aynı şey değildir. `GET /jobs/{id}` zaten böyle davranıyordu —
+> akış ile yoklama artık aynı şeyi söylüyor.
+
 **Bağlanır bağlanmaz güncel durum gönderilir.** İki şeyi birden çözüyor:
 yeniden bağlanan istemci tampon olmadan yakalanıyor, ve **202 ile abonelik
 arasında biten bir iş** hiçbir şey göndermeden sessiz kalmıyor — bu, bu alt
@@ -701,6 +711,16 @@ olmadan kapanış testi üç koşudan birinde düşüyordu.
 
 **Satır önce yazılır, sonra duyurulur.** Tersi, geri düşeceği uçtan daha çok
 şey bilen bir istemci demek olurdu.
+
+**Araya giren her şey tamponlar, ve tamponlanmış SSE bozuk SSE'dir.** § 47'nin
+nginx'i için `proxy_buffering off;` (§ 3'te de yazılı). **Aynı tuzağın ikinci
+yüzü geliştirmede:** frontend lokalde Spring'e Next'in `next.config.ts`
+rewrite'ıyla gidiyor ve **Next'in dev sunucusu proxy'lediği yanıtı gzip'liyor**;
+gzip tamponlar. Ölçüldü (`F-011`) — doğrudan `:8080` 1/256/272/905 ms, rewrite
+üzerinden 867/867/867/867 ms, yani ilerleme çubuğu hiç kımıldamıyor ve
+**istemci bozuk sanılıyor**. Çözüm frontend tarafında `compress: false`,
+yalnız geliştirmede: üretimde rewrite zaten yok. Bir daha "SSE akmıyor"
+denildiğinde aranacak ikinci yer burasıdır.
 
 **Çok-instance dağıtımı** (ileride):
 ```java
