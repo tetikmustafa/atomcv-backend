@@ -71,19 +71,12 @@ migration — `CHECK` tabloyu yeniden yazmıyor.
 
 ## Aşama 2 kayıtları
 
-**`F-001`…`F-006` kapandı** (§ 35.2 / § 35.6). **İkisi ileriye dönük:**
-
-- **Toplu JPQL `update` `@Version`'ı atlar.** 2.7'nin kota sayaçları isteyecek
-  ve bayat etag üretecek. `update versioned` — ama *hepsini* sürümlemek
-  promote'u kırıyor (denendi, dört test düştü). 2.6'da ısırmadı: `jobs`'ta da
-  `generations`'ta da `version` kolonu yok.
-- **Okuma, yakalanmak istenen bayatlığı onarır** — etag'i **önceki yazmanın
-  yanıtından** al, yoksa araya giren `GET` rakamı tazeler.
-
-**Düzeltme — build guide üç kez "migration" dedi, üçü de yanlıştı:** 2.4'ün
-pgvector kolonu, 2.6'nın `jobs` ve `generations` tabloları `V1`'de vardı.
-Dördüncüsünü görürsen **önce `V1`'e bak**. · **`continue_anyway` sözlüğe girdi**
-(§ 18.1, EK D.6.1) — `B-037` hâlâ açık.
+> **Adım 2.1-2.5'in kayıtları `archive/stage-2-steps-1-5.md`'ye taşındı**
+> (2026-08-24). Kalıcı kararlar `spec/`'te; aşağıdaki iki tablo canlı indeks ve
+> burada kalıyor. **İleriye dönük tek madde:** toplu JPQL `update` `@Version`'ı
+> atlar — 2.7'nin kota sayaçları bayat etag üretecek, etag'i **önceki yazmanın
+> yanıtından** al. (2.6'da ısırmadı: `jobs`'ta da `generations`'ta da `version`
+> kolonu yok.)
 
 **Spec'e promote edilen kararlar.** Kalıcı oldukları için `spec/`'te
 duruyorlar; burada yalnız nerede oldukları:
@@ -121,6 +114,10 @@ neyi gerçekten ölçtüğü buradan okunur.
 | Etiket kapsamlaması | `where tag.profileId` → totoloji | 2 test |
 | § 28.4 geri çekilmesi | sağlık kontrolü + catch silindi | 3 test |
 | `..jobs..` ham repository | `JobJpaRepository` public + çağrı | ArchUnit |
+| `..generation..` ham repository | `GenerationJpaRepository` public + çağrı | 2 ArchUnit kuralı |
+| Anlık görüntü gidiş-dönüşü | özelleştirme serialize'dan gizlendi | 1 IT |
+| `..api..` → `JobQueue` | controller'a kapsamsız okuma | ArchUnit + çapraz kullanıcı IT'si |
+| Idempotency | anahtar araması silindi | 1 test |
 | Kuyruk canlılığı | `SKIP LOCKED` kaldırıldı | *yalnız* bloklanma testi — bkz. 2.6 |
 | Graceful shutdown | `releaseLocks` atlandı | 1 test |
 | Retry backoff | `runAfter` = şimdi | 1 test |
@@ -130,23 +127,6 @@ sabitlendi (Boot'un BOM'u o modülü yönetmiyor). **Düzeltme —
 `ddl-auto=validate` vektör boyutunu denetlemiyor**; ders `CLAUDE.md`'de.
 
 ---
-
-## Adım 2.5 kapanışı
-
-**Düzeltme — keyword bileşeni tag bileşeninin kopyasıydı** (§ 19.2). Ölü duran
-`titleTokens`, `contentTokens` adıyla bağlandı.
-
-**Ekleme — `atom_tags`'te `profile_id` yok**, kapsamlama join'den geçiyor;
-`AtomTag`, `ProfileOwned`'ı uygulayamayan tek profil satırı. Etiketler
-`ProfileAssembler`'a beşinci sorgu olarak **eklenmedi** (§ 52.2 dört diyor).
-
-**Ekleme — kapıların sırası maliyete göre.** Sırayı bozmak ne derlemeyi kırar ne
-çıktıyı değiştirir, yalnız para harcatır — bu yüzden testi var.
-
-**Açık soru — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.** Bölüm
-"yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız ikincisi
-var. "Yakın"ın tanımı yok ve tanımlamak `RelevanceScorer`'ın sözleşmesini
-değiştiriyor — uydurulmadı, sorulacak.
 
 ---
 
@@ -194,7 +174,22 @@ tek durumda — A/B deneyinde — yanlış olurdu.
 **Bilinçli boşluk:** handler uçtan uca koşturulmadı — kuyruğa koyan bir şey yok
 ve gerçek koşu LaTeX container'ı + `local-fake` istiyor. O test uca ait.
 
-**Kalan (Adım 2.6, ikinci dilim):** `generations` kaydı, `POST /generations` +
-202, SSE kaydı ve ucu, `GET /jobs/{id}`, idempotency, download, ve
+**Düzeltme — § 30.6'nın `label`'ı düz metin taşıyordu, § 35.4 ile çelişiyordu.**
+Anahtar tarafı seçildi (`generation.phase.<FAZ>`); § 30.6 ve EK D.6.4
+düzeltildi, frontend maddesi `B-038`. Tek dilde gönderilen bir cümle her yeni
+dilde yeniden gönderilirdi ve ilerleme satırı üründe en çok görülen metin.
+
+**Ekleme — ArchUnit'e üçüncü bir IDOR satırı.** `JobQueue` Spring Data değil,
+yani mevcut iki kural onu görmüyor ve bir controller'da **derlenirdi**: sahiplik
+kontrolü olmadan id ile iş okumak. Kural `..api..`'nin `JobQueue`'ya bağlanmasını
+yasaklıyor; servisten kuyruğa koymak serbest kalıyor. Kasıtlı ihlalde hem kural
+hem çapraz kullanıcı testi düştü.
+
+**Ekleme — ilerleme satıra da yazılıyor, yalnız olaya değil.** Yeniden bağlanan
+istemcinin yakalanacağı bir yer olmalı; kimseye gönderilmemiş olay yok olur
+(EK D.6.4). Bedeli faz başına bir update.
+
+**Kalan (Adım 2.6, üçüncü dilim):** SSE kaydı ve ucu (`streamUrl`),
+`GET /generations/{id}/download` (anlık görüntüden yeniden render), ve
 `POST /generations/general`'ın kaldırılması. Frontend'in senkronizasyon noktası
-orası (`STATUS.md`).
+orası (`STATUS.md`, `B-022`).
