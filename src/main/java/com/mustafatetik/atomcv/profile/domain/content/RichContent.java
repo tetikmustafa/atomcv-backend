@@ -13,6 +13,7 @@ import java.util.List;
  * <p>No format-specific markup ever enters this model (design principle 1).
  * LaTeX, HTML and DOCX are produced from the same instance at render time.
  */
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public record RichContent(List<Run> runs) {
 
     public static final RichContent EMPTY = new RichContent(List.of());
@@ -36,6 +37,7 @@ public record RichContent(List<Run> runs) {
      * The text a reader sees, with every mark removed. This is what the
      * embedding, the length checks and the rewrite validator work on.
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public String plainText() {
         var sb = new StringBuilder();
         for (Run run : runs) {
@@ -52,6 +54,7 @@ public record RichContent(List<Run> runs) {
      * width untouched, so it must not invalidate the stored embedding or the
      * measured render costs (Bolum 16.2).
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public String contentHash() {
         MessageDigest digest;
         try {
@@ -62,6 +65,7 @@ public record RichContent(List<Run> runs) {
         return HEX.formatHex(digest.digest(plainText().getBytes(StandardCharsets.UTF_8)));
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isEmpty() {
         return plainText().isEmpty();
     }

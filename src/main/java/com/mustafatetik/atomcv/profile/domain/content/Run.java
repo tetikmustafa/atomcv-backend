@@ -14,6 +14,7 @@ import java.util.Objects;
  * @param marks semantic labels applied to the whole run
  * @param href  target of a {@link Mark#LINK} run; null on every other run
  */
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public record Run(String text, List<Mark> marks, String href) {
 
     public Run {
