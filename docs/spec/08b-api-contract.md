@@ -185,6 +185,12 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
   `retry` resolution'ı. Bunu vermek ucuz: `generations.selection_state`
   `pdf_expires_at`'ten bağımsız kalıcı bir anlık görüntüdür, yani PDF her zaman
   yeniden üretilebilir — süre dolması kullanıcıya emeğine mal olmaz.
+- **Aşama 2'de bayt saklanmıyor** (karar: 2026-08-24). R2 hesabı Adım 3.1'de
+  açılıyor, dolayısıyla `pdf_key` ve `pdf_expires_at` NULL kalıyor ve indirme
+  anlık görüntüden **yeniden render ediyor**: bir derleme, sıfır LLM çağrısı.
+  Yani yukarıdaki geri düşüş Aşama 2'de tek yol; `410 Gone` yolu R2 ile
+  birlikte gelecek. Bunun bedeli indirme başına bir derleme, karşılığı da
+  aynı `selection_state`'in aynı PDF'i üretmesinin ölçülebilir olması.
 - `GET /profile/export` biçimi `?format=json|markdown` ile seçer; indirme
   endpoint'iyle aynı desen. Bilinmeyen biçim 400 `VALIDATION_FAILED`
   (`fields: ["format"]`).

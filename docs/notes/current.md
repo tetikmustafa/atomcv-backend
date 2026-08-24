@@ -21,22 +21,19 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
-| `generations`'a yazan yok | Aşama 2 | Hat `GeneratedDocument` döndürüyor; kalıcı kayıt, kuyruk ve `GET /generations/{id}/download` birlikte gelir (`spec/08b-api-contract.md` § D.6.3) |
 | `PipelineError`'da eksik durumlar | Aşama 2 | Fazıyla gelir. `AllProvidersUnavailable` (2.2) ve `UnparseableJobDescription` (2.3) indi; kalanlar erken eklenirse `params` tahmin edilmiş olur |
 | ATS raporu ve `FitReport` yok | Aşama 2 | Biri PDF metin çıkarımı, diğeri Faz A istiyor (`spec/06-pipeline-d-g.md` § 23) |
-| `UserScopedRepository`'de `findAll` yok | — | Bölüm 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi daraltılmış bulucularını ekler |
+| `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
 ## Isırmadan önce ele alınacak iki bulgu
 
 **Atomsuz entry sayfaya hiç çıkmıyor.** Seçim atom atom çalışıyor; altında madde
-olmayan bir diploma satırı aday bile değil. Golden fixture'lar her eğitim
-entry'sine bir atom vererek dolanıyor; gerçek çözüm § 20.2'nin modelini
+olmayan bir diploma satırı aday bile değil. Gerçek çözüm § 20.2'nin modelini
 değiştiriyor.
 
 **Eşitlik atom id'siyle bozuluyor, id'ler her içe aktarımda yeniden üretiliyor.**
-Aynı skor *ve* aynı maliyetteki iki atom yer değiştiriyor — Aşama 3'ün anonim
-profil devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu
-düzeltir; karar verilmeli.
+Aynı skor *ve* maliyetteki iki atom yer değiştiriyor — Aşama 3'ün anonim profil
+devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir.
 
 ## Aşama 1'den devredilen açık kararlar
 
@@ -48,18 +45,12 @@ düzeltir; karar verilmeli.
 - **Spotless eklenecek mi.** § 47.1 `spotlessCheck` çalıştırıyor ama
   yapılandırılmış formatlayıcı yok — bugün CI'da biçim kapısı yok.
 
-## Aşama 2'ye taşınanlar
+## Aşama 2'ye taşınanlar — hepsi kapandı, biri tuzağıyla duruyor
 
-- ~~**Kota sıfırlaması bir zaman dilimi istiyor.**~~ **Kapandı (F-007):** gün
-  sınırı **UTC**, `resetsAt` telde offset'li mutlak bir ISO-8601 anı. Karar
-  `spec/08b-api-contract.md` EK D.6.5'e yazıldı, `period` kolonunun yorumu da
-  `spec/04-data-model.md`'de. Sayacı yazan kod bunu **`LocalDate.now(ZoneOffset.UTC)`**
-  ile okumak zorunda: `LocalDate.now()` bu makinede UTC+3 döner ve testler
-  günün 21:00'inden sonra geçmeye başlar — bir sonraki adımın tuzağı bu.
-- ~~Üç `local-*` profil dosyası yok.~~ **Kapandı** (2.2) — `spec/13-development.md`
-  § 54.2, koruması `LocalProfileConfigTest`'te.
-- ~~`archunit.properties`'teki `failOnEmptyShould`.~~ **Kapandı, madde yanlıştı:**
-  öyle bir dosya yoktu. İlk sondanın yanlış geçmesi `CLAUDE.md`'ye yazıldı.
+**Kota gün sınırı UTC** (`F-007`, EK D.6.5). Sayacı yazan kod bunu
+**`LocalDate.now(ZoneOffset.UTC)`** ile okumak zorunda: `LocalDate.now()` bu
+makinede UTC+3 döner ve testler günün 21:00'inden sonra geçmeye başlar —
+**Adım 2.7'nin tuzağı bu.**
 
 ## Aşama 3'e taşınanlar
 
@@ -72,12 +63,9 @@ düzeltir; karar verilmeli.
 
 ## Aşamasız açık
 
-**V1 bazı enum benzeri kolonlara `CHECK` koyuyor** (`sections.layout`,
-`applications.status`, `jobs.status`), bazılarını yorum olarak bırakıyor
-(`sections.kind`, `atoms.kind`, `generations.status`, `jobs.type`,
-`llm_invocations.outcome`). Bu, `spec/04-data-model.md` § 13'ü bilinçli olarak
-yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
-çünkü `CHECK` tabloyu yeniden yazmıyor.
+**V1 bazı enum benzeri kolonlara `CHECK` koyuyor, bazılarına koymuyor.** § 13'ü
+bilinçli yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir
+migration — `CHECK` tabloyu yeniden yazmıyor.
 
 ---
 
@@ -85,20 +73,17 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
 
 **`F-001`…`F-006` kapandı** (§ 35.2 / § 35.6). **İkisi ileriye dönük:**
 
-- **Toplu JPQL `update` `@Version`'ı atlar.** 2.7'nin kota sayaçları toplu
-  update isteyecek ve aynı sessizlikle bayat etag üretecek. `update versioned` —
-  ama *hepsini* sürümlemek promote'u kırıyor, denendi, dört test düştü.
-  (2.6'da ısırmadı: `jobs`'ta da `generations`'ta da `version` kolonu yok.)
-- **Okuma, yakalanmak istenen bayatlığı onarır.** `completeness` testi
-  düzeltmesiz de geçiyordu, çünkü etag'i alan `GET` saklı rakamı tazeliyordu.
-  Etag'i **önceki yazmanın yanıtından** al.
+- **Toplu JPQL `update` `@Version`'ı atlar.** 2.7'nin kota sayaçları isteyecek
+  ve bayat etag üretecek. `update versioned` — ama *hepsini* sürümlemek
+  promote'u kırıyor (denendi, dört test düştü). 2.6'da ısırmadı: `jobs`'ta da
+  `generations`'ta da `version` kolonu yok.
+- **Okuma, yakalanmak istenen bayatlığı onarır** — etag'i **önceki yazmanın
+  yanıtından** al, yoksa araya giren `GET` rakamı tazeler.
 
-**Düzeltme — build guide iki kez "migration" dedi, ikisi de yanlıştı:** 2.4'ün
-pgvector kolonu da 2.6'nın `jobs` tablosu da `V1`'de vardı. Üçüncüsünü görürsen
-**önce `V1`'e bak**.
-
-**`continue_anyway` sözlüğe girdi** (§ 18.1, EK D.6.1) — frontend maddesi
-`B-037`, hâlâ açık.
+**Düzeltme — build guide üç kez "migration" dedi, üçü de yanlıştı:** 2.4'ün
+pgvector kolonu, 2.6'nın `jobs` ve `generations` tabloları `V1`'de vardı.
+Dördüncüsünü görürsen **önce `V1`'e bak**. · **`continue_anyway` sözlüğe girdi**
+(§ 18.1, EK D.6.1) — `B-037` hâlâ açık.
 
 **Spec'e promote edilen kararlar.** Kalıcı oldukları için `spec/`'te
 duruyorlar; burada yalnız nerede oldukları:
@@ -148,24 +133,19 @@ sabitlendi (Boot'un BOM'u o modülü yönetmiyor). **Düzeltme —
 
 ## Adım 2.5 kapanışı
 
-**Düzeltme — keyword bileşeni tag bileşeninin kopyasıydı.** `atom.tags()`
-okuyordu, ama `jdTags` ilanın keyword'lerini zaten içeriyor: tek sinyal 0.35
-ağırlıkla iki kez sayılıyor, atomun kendi metni hiç okunmuyordu. Ölü duran
-`titleTokens`, `contentTokens` adıyla bileşene bağlandı; kural § 19.2'ye yazıldı.
+**Düzeltme — keyword bileşeni tag bileşeninin kopyasıydı** (§ 19.2). Ölü duran
+`titleTokens`, `contentTokens` adıyla bağlandı.
 
-**Ekleme — `atom_tags`'te `profile_id` yok, kapsamlama join'den geçiyor.**
+**Ekleme — `atom_tags`'te `profile_id` yok**, kapsamlama join'den geçiyor;
 `AtomTag`, `ProfileOwned`'ı uygulayamayan tek profil satırı. Etiketler
-`ProfileAssembler`'a **beşinci sorgu olarak eklenmedi** (§ 52.2 dört diyor);
-beşinciyi yalnız ilan modu ödüyor.
+`ProfileAssembler`'a beşinci sorgu olarak **eklenmedi** (§ 52.2 dört diyor).
 
-**Ekleme — kapıların sırası maliyete göre.** Profil ön kontrolü bedava ve önce,
-Faz A ölçümden önce. İkisinin de testi var: sırayı bozmak ne derlemeyi kırar ne
-çıktıyı değiştirir, yalnız para harcatır.
+**Ekleme — kapıların sırası maliyete göre.** Sırayı bozmak ne derlemeyi kırar ne
+çıktıyı değiştirir, yalnız para harcatır — bu yüzden testi var.
 
-**Aşama 2.6'ya taşınan — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.**
-Bölüm "yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız
-ikincisi var, ilan modunda eşitlik doğrudan atom id'siyle bozuluyor. "Yakın"ın
-ne demek olduğu tanımlı değil ve tanımlamak `RelevanceScorer`'ın sözleşmesini
+**Açık soru — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.** Bölüm
+"yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız ikincisi
+var. "Yakın"ın tanımı yok ve tanımlamak `RelevanceScorer`'ın sözleşmesini
 değiştiriyor — uydurulmadı, sorulacak.
 
 ---
@@ -173,26 +153,46 @@ değiştiriyor — uydurulmadı, sorulacak.
 ## Adım 2.6 kayıtları — kuyruk
 
 **Düzeltme — sondam yanlış geçti.** `SKIP LOCKED` kaldırıldı, 14 test de geçti:
-READ COMMITTED'de düz `FOR UPDATE` kilidi bekleyip yüklemi yeniden
-değerlendiriyor, yani mükerrerliği ölçen test o cümleyi hiç ölçmüyordu. Gerçek
-fark **canlılık**; onu ölçen test bir kilidi açık tutup claim'in *hemen* boş
-dönmesini bekliyor ve ihlalde düşüyor. Kural § 30.2'de, genel ders
-`CLAUDE.md`'de.
+düz `FOR UPDATE` kilidi bekleyip yüklemi yeniden değerlendiriyor. Gerçek fark
+**canlılık**; onu ölçen test bir kilidi açık tutup claim'in *hemen* boş
+dönmesini bekliyor. Kural § 30.2'de, ders `CLAUDE.md`'de.
 
-**Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2). ArchUnit `..jobs..`'a
-kendi satırını kazandı.
+**Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2); ArchUnit `..jobs..` ve
+`..generation..` için kendi satırlarını kazandı.
 
-**Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'e yazıldı:**
-deneme hakkı geri verilmiyor, hakkı bitmiş iş `failed`'e alınıyor, ve
-`2^attempts` 63'te `long`'u taşırdığı için üs kaydırmadan önce sınırlanıyor.
+**Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'te:** hak
+geri verilmiyor, hakkı bitmiş iş `failed`'e gidiyor, üs kaydırmadan sınırlanıyor.
 
-**Düzeltme — CI'da düşen test, yerelde geçen kod.** `TagRepository.labelsByAtom`
-sorgunun sırasını `Set.copyOf` ile atıyordu; JDK'nın değişmez koleksiyonları
-**her JVM çalıştırmasında farklı** sırayla dolaşıyor (aynı üç elemanlı kümeyi üç
-kez ölçtüm, üç farklı sıra). Yerelde tuttu, runner'da tutmadı. Aynı tuzağın
-ikinci örneği `Job`'un üç JSONB kolonundaydı — `JobWorker` hata haritasını
-`code` başa gelsin diye sıralı kuruyor, `Map.copyOf` onu bozuyordu. İkisi de
-`Collections.unmodifiable*` + `Linked*`'e çevrildi, kural `CLAUDE.md`'ye yazıldı.
+**Düzeltme — CI'da düşen test, yerelde geçen kod.** `Set.copyOf`/`Map.copyOf`
+**her JVM çalıştırmasında farklı** sırayla dolaşıyor (üç ölçüm, üç sıra). İki
+yerde ısırdı: `TagRepository.labelsByAtom` sorgunun sırasını atıyordu, `Job`'un
+üç JSONB kolonu da `JobWorker`'ın sıralı kurduğu hata haritasını bozuyordu.
+İkisi de `Collections.unmodifiable*` + `Linked*`; kural `CLAUDE.md`'de.
+
+**Karar — Aşama 2'de PDF baytı saklanmıyor** (2026-08-24, EK D.6.3). R2 Adım
+3.1'de; indirme `selection_state`'ten yeniden render ediyor. Devredilen
+"`generations`'a yazan yok" kısıtı kapandı. **Sapma:** anlık görüntü
+`customizationId` değil özelleştirmenin kendisini taşıyor (§ 14.5) — işaret
+edilecek satır yok, hiçbir şeye çözülen id anlık görüntüyü işe yaramaz kılardı.
+
+**Düzeltme — `"\s+"` tek ters bölüyle yazılmıştı.** Java 15'ten beri `\s`
+geçerli bir string kaçışı ve **tek boşluk** demek: desen sessizce "boşluk
+dizileri"ne daralmış, satır sonları normalleştirmeden sağ çıkmış, aynı ilanın
+PDF'ten ve tarayıcıdan gelen hâli farklı hash'lenmişti. Derleniyor ve doğru
+görünüyor. Çıkarma sırasında yakalandı, çünkü artık iki çağıran aynı cevabı
+istiyor: cache ve `generations.jd_hash`.
+
+**Ekleme — kayıt yalnız belge çıkınca yazılıyor.** `selection_state` satırın
+sebebi; seçimden önce düşen koşunun arızası işin üstünde yaşıyor.
+`GenerationStatus`'ta bu yüzden `queued`/`running` yok — tek iş üzerinde iki
+durum makinesi haber vermeden ayrışır.
+
+**Ekleme — prompt sürümü *çalışan* sürüm.** `promptVersionFor` saf bir fonksiyon,
+iki kez sorulunca aynı cevabı veriyor. Varsayılanı yazmak, alanın işe yaradığı
+tek durumda — A/B deneyinde — yanlış olurdu.
+
+**Bilinçli boşluk:** handler uçtan uca koşturulmadı — kuyruğa koyan bir şey yok
+ve gerçek koşu LaTeX container'ı + `local-fake` istiyor. O test uca ait.
 
 **Kalan (Adım 2.6, ikinci dilim):** `generations` kaydı, `POST /generations` +
 202, SSE kaydı ve ucu, `GET /jobs/{id}`, idempotency, download, ve
