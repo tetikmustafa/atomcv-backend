@@ -41,6 +41,14 @@ public class ErrorPresenter {
              * do not already say: `resetsAt` is an absolute instant and the
              * client writes the sentence in the user's own locale (F-007).
              */
+            /*
+             * `retry` and nothing else: the brake is lifted by an operator,
+             * not by anything the user can do, and asking again later is
+             * exactly the right advice.
+             */
+            case PipelineError.GenerationPaused ignored -> UserFacingError.of(
+                    ErrorCode.GENERATION_PAUSED, new Resolution(ResolutionAction.RETRY, null));
+
             case PipelineError.QuotaExceeded spent -> UserFacingError
                     .with(ErrorCode.QUOTA_EXCEEDED)
                     .param("metric", spent.metric())

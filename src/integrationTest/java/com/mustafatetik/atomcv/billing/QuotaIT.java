@@ -40,6 +40,9 @@ class QuotaIT extends AbstractIntegrationTest {
     private QuotaProperties limits;
 
     @Autowired
+    private FeatureFlags flags;
+
+    @Autowired
     private JdbcTemplate jdbc;
 
     @Autowired
@@ -50,6 +53,7 @@ class QuotaIT extends AbstractIntegrationTest {
     @BeforeEach
     void startFromAnUnusedDay() {
         jdbc.update("DELETE FROM usage_counters");
+        jdbc.update("DELETE FROM feature_flags");
         user = UserContext.of(UUID.randomUUID());
     }
 
@@ -178,6 +182,45 @@ class QuotaIT extends AbstractIntegrationTest {
                 "SELECT period FROM usage_counters LIMIT 1", LocalDate.class);
         assertThat(stored).isEqualTo(counters.today());
         assertThat(stored).isEqualTo(LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC));
+    }
+
+    // ── Bolum 44.3: the brake ────────────────────────────────────────────
+
+    /**
+     * An empty table serves. A deployment that has never touched a flag must
+     * not behave as if everything were switched off.
+     */
+    @Test
+    void anunsetFlagIsOn() {
+        jdbc.update("DELETE FROM feature_flags");
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+        assertThat(flags.isEnabled("something.nobody.has.named")).isTrue();
+    }
+
+    @Test
+    void thebrakeGoesOnAndComesOffAgain() {
+        flags.disable(FeatureFlags.NEW_GENERATIONS);
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isFalse();
+
+        flags.enable(FeatureFlags.NEW_GENERATIONS);
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+    }
+
+    /**
+     * Read from the database every time, never cached. The flag exists to be
+     * flipped in the middle of an incident, and a cache is a delay between the
+     * decision and the effect.
+     */
+    @Test
+    void aflagFlippedOutsideTheProcessIsSeenAtOnce() {
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+
+        jdbc.update("INSERT INTO feature_flags (key, enabled) VALUES (?, false)"
+                + " ON CONFLICT (key) DO UPDATE SET enabled = false",
+                FeatureFlags.NEW_GENERATIONS);
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isFalse();
     }
 
     /** The counter resets at UTC midnight, and resetsAt says exactly when. */

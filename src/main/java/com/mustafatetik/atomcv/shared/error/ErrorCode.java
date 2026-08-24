@@ -40,6 +40,13 @@ public enum ErrorCode {
     REWRITE_VALIDATION_FAILED(500, param("atomId", UUID_VALUE), param("issues", STRING_ARRAY)),
     EMBEDDING_UNAVAILABLE(503),
 
+    /**
+     * Bolum 44.3's emergency brake is on. No parameters: there is nothing
+     * about the request to change, and the user's profile is untouched — the
+     * brake stops generation and not access.
+     */
+    GENERATION_PAUSED(503),
+
     // ── Ingestion (Bolum 31.10, coded in EK D.6) ──
     PDF_NOT_TEXT_BASED(422),
     PDF_ENCRYPTED(422),

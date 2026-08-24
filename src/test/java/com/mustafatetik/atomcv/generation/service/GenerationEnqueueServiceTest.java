@@ -57,6 +57,7 @@ class GenerationEnqueueServiceTest {
     private JobQueue queue;
     private JobRepository jobs;
     private com.mustafatetik.atomcv.billing.QuotaService quotas;
+    private com.mustafatetik.atomcv.billing.FeatureFlags flags;
     private GenerationEnqueueService service;
 
     private ProfileRef profile;
@@ -69,7 +70,9 @@ class GenerationEnqueueServiceTest {
         jobs = mock(JobRepository.class);
         quotas = mock(com.mustafatetik.atomcv.billing.QuotaService.class);
         when(quotas.consume(any(), any())).thenReturn(Result.ok(null));
-        service = new GenerationEnqueueService(profiles, assembler, queue, jobs, quotas,
+        flags = mock(com.mustafatetik.atomcv.billing.FeatureFlags.class);
+        when(flags.isEnabled(any())).thenReturn(true);
+        service = new GenerationEnqueueService(profiles, assembler, queue, jobs, quotas, flags,
                 Clock.fixed(Instant.parse("2026-08-24T09:00:00Z"), ZoneOffset.UTC));
 
         var head = new Profile(USER);
@@ -152,6 +155,23 @@ class GenerationEnqueueServiceTest {
         assertThat(queued.getValue().getOwnerId()).isEqualTo(USER);
         assertThat(GenerationPayload.from(queued.getValue().getPayload()))
                 .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr"));
+    }
+
+    /**
+     * Bolum 44.3's brake goes ahead of the quota: a paused deployment must not
+     * spend anyone's allowance on a request it is going to refuse.
+     */
+    @Test
+    void thebrakeStopsGenerationWithoutSpendingAnything() {
+        when(flags.isEnabled(any())).thenReturn(false);
+
+        var result = service.enqueue(user(), POSTING, false, null, null, null);
+
+        assertThat(((Result.Err<Job>) result).error())
+                .isInstanceOf(PipelineError.GenerationPaused.class);
+        verify(quotas, never()).consume(any(), any());
+        verify(profiles, never()).owned(any());
+        verify(queue, never()).enqueue(any());
     }
 
     /**
