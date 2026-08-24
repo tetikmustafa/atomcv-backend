@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-24 · Kuyruk indi (2.6/1); **`B-037` açık**
+**Son güncelleme:** 2026-08-24 · `generations` kaydı ve iş yürütücüsü indi (2.6/2); **`B-037` açık**
 
 ---
 
@@ -16,18 +16,18 @@
 | **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
 | 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding | ✅ |
 | 2.5 Faz B (skorlama) | ✅ |
-| 2.6 kuyruk ve SSE | 🔨 kuyruk + worker indi; `generations`, 202 ve SSE kaldı |
+| 2.6 kuyruk ve SSE | 🔨 kuyruk, worker ve `generations` kaydı indi; **HTTP + SSE kaldı** |
 | 2.7 kota ve maliyet | ⬜ |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
 **`B-037` açık:** `resolutions[].action` sözlüğü `continue_anyway` kazandı — ICU
 mesajı gerekiyor. Uç yok, sözlük büyüdü. Diğer değişenler iç:
 `Result`/`PipelineError` `shared/error`'a taşındı, `LlmProvider` `LlmOutcome`
-döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 14.3, § 18.1-18.6,
-§ 19.2, § 27.1-27.3, § 28.4, § 30.2-30.5, § 53.3, § 54.2, § 10.1, EK D.6.1, XI-A.5-6 güncellendi — **`sync-spec.sh` Aşama 2
+döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 14.3, § 14.5, § 18.1-18.6,
+§ 19.2, § 27.1-27.3, § 28.4, § 30.2-30.5, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3, XI-A.5-6 güncellendi — **`sync-spec.sh` Aşama 2
 kapanışında topluca çalıştırılacak** (karar: 2026-08-21).
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 525 birim · 185 entegrasyon · 44 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 541 birim · 193 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ gerçek uca karşı 34 kontrol geçti. Notlar `notes/archive/stage-1.md`.
 
 ## Sonraki senkronizasyon noktası
 
-Backend Aşama 2'de `POST /generations` + 202 + SSE'yi bitirdiğinde:
+**Bir sonraki dilim.** Backend `POST /generations` + 202 + SSE'yi bitirdiğinde:
 `gen:api` yeniden çalıştırılacak, `POST /generations/general` **kaldırılacak**.
 Frontend o uca kalıcı ekran bağlamamalı (handoff · B-022).

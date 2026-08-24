@@ -544,6 +544,13 @@ isteğin kendi `language` alanı ikisini de yener.
 
 `rejected.reason` değerleri: `BUDGET` | `LOW_SCORE` | `INACTIVE` | `DIVERSITY_CAP` | `USER_EXCLUDED`
 
+**Sapma — `customizationId` yerine özelleştirmenin kendisi yazılır.** İşaret
+edilecek bir `template_customizations` satırı yok (A şama 2 sabit bir
+özelleştirmeyle render ediyor) ve hiçbir şeye çözülen bir id, bu anlık
+görüntüyü tam olarak var olma sebebi için kullanılamaz kılardı: yeniden render
+fontu, kenar boşluğunu ve satır aralığını istiyor. Tablo satır kazandığında id
+onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
+
 ### 14.6 `generations.trace`
 
 ```json
