@@ -6,9 +6,11 @@ import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
+import com.mustafatetik.atomcv.jobs.queue.JobProgress;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobStatus;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import java.time.Clock;
@@ -79,6 +81,43 @@ class JobWorkerIT extends AbstractIntegrationTest {
         assertThat(done.getResult()).containsEntry("pageCount", 1);
         assertThat(done.getCompletedAt()).isNotNull();
         assertThat(done.getLockedBy()).isNull();
+    }
+
+    /**
+     * Bolum 30.6: what a reconnecting client is caught up from.
+     *
+     * <p>The row and not only an event, because an event sent to nobody is
+     * gone — and a client that reconnects to find no progress at all is a
+     * client that shows a spinner from zero over work that is nearly done.
+     */
+    @Test
+    void reportedProgressIsWrittenToTheRow() {
+        Job queued = enqueue();
+        var worker = new JobWorker(queue, List.of(reporting()),
+                properties(Duration.ofSeconds(30)), clock, NO_JITTER);
+
+        worker.runOne();
+
+        var progress = queue.find(queued.getId()).orElseThrow().getProgress();
+        assertThat(progress.phase()).isEqualTo("B");
+        // A key, never a sentence: the frontend owns the words (Bolum 35.4).
+        assertThat(progress.label()).isEqualTo("generation.phase.SCORING");
+        assertThat(progress.pct()).isEqualTo(50);
+    }
+
+    private static JobHandler reporting() {
+        return new JobHandler() {
+            @Override
+            public JobType type() {
+                return JobType.GENERATION;
+            }
+
+            @Override
+            public JobOutcome handle(Job job, ProgressSink progress) {
+                progress.report(new JobProgress("B", "generation.phase.SCORING", 50));
+                return JobOutcome.completed(Map.of());
+            }
+        };
     }
 
     /** Bolum 30.5: the world outside may have changed by the next attempt. */
@@ -289,7 +328,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
             }
 
             @Override
-            public JobOutcome handle(Job job) {
+            public JobOutcome handle(Job job, ProgressSink progress) {
                 return body.apply(job);
             }
         };

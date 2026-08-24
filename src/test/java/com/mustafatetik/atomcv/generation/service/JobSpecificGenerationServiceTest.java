@@ -16,6 +16,7 @@ import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.ScoredAtom;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomKind;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
@@ -95,7 +96,7 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null);
+        var result = service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
@@ -114,7 +115,7 @@ class JobSpecificGenerationServiceTest {
         when(analysis.analyse(anyString(), anyBoolean(), anyString()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(0, 0)));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null);
+        var result = service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
@@ -142,7 +143,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null);
+        service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any());
@@ -161,7 +162,7 @@ class JobSpecificGenerationServiceTest {
         when(analysis.analyse(anyString(), anyBoolean(), anyString()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(0, 0)));
 
-        service.generateForJob(user(), POSTING, true, null, null);
+        service.generateForJob(user(), POSTING, true, null, null, ProgressSink.NONE);
 
         verify(analysis).analyse(POSTING, true, USER.toString());
     }

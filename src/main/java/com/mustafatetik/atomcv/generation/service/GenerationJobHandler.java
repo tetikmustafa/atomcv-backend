@@ -13,6 +13,7 @@ import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobRetryPolicy;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
@@ -64,7 +65,7 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     @Override
-    public JobOutcome handle(Job job) {
+    public JobOutcome handle(Job job, ProgressSink progress) {
         UUID userId = job.getOwnerId();
         if (userId == null) {
             // Bolum 9's anonymous flow is Stage 3 and nothing enqueues one
@@ -79,7 +80,7 @@ public class GenerationJobHandler implements JobHandler {
 
         Result<GeneratedGeneration> result = generations.generateForJob(
                 user, payload.jobDescription(), payload.preflightAcknowledged(),
-                payload.maxPages(), payload.language());
+                payload.maxPages(), payload.language(), progress);
 
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
