@@ -33,10 +33,16 @@ import org.hibernate.type.SqlTypes;
  * so.
  *
  * <p><strong>{@code pdfKey} stays null in Stage 2.</strong> Nothing stores the
- * bytes; a download re-renders from {@link #selectionState}, which EK D.6.3
+ * bytes; a download re-renders from {@link #contentSnapshot}, which EK D.6.3
  * already describes as always possible. R2 and the fourteen-day expiry arrive
  * together in Stage 3, and until they do a {@code pdf_expires_at} would be a
  * promise nothing keeps.
+ *
+ * <p>Two snapshots and they answer different questions. {@code selectionState}
+ * says <em>why</em> the page looks like this — scores, rejections, the budget —
+ * and is what an edit later applies to. {@code contentSnapshot} says
+ * <em>what</em> was printed, and exists because the first one names atoms by id
+ * while the text under those ids goes on being edited.
  *
  * <p>No {@code @Version}: the column does not exist, and nothing updates a
  * generation concurrently — Faz G writes a <em>new</em> row and marks this one
@@ -81,8 +87,9 @@ public class Generation implements UserOwned {
     @Column(nullable = false)
     private StoredSelection selectionState;
 
+    /** The words that were printed, so a download does not re-read the profile. */
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> contentSnapshot;
+    private RenderedContent contentSnapshot;
 
     private String coverLetter;
 
@@ -190,8 +197,12 @@ public class Generation implements UserOwned {
         return selectionState;
     }
 
-    public Map<String, Object> getContentSnapshot() {
-        return contentSnapshot == null ? null : ordered(contentSnapshot);
+    public RenderedContent getContentSnapshot() {
+        return contentSnapshot;
+    }
+
+    public void setContentSnapshot(RenderedContent contentSnapshot) {
+        this.contentSnapshot = contentSnapshot;
     }
 
     public String getCoverLetter() {

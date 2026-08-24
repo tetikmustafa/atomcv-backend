@@ -93,7 +93,8 @@ public class GenerationPipeline {
 
             if (document.pageCount() <= maxPages) {
                 return Result.ok(new GeneratedDocument(
-                        document.pdf(), document.pageCount(), state, attempt, factor));
+                        document.pdf(), document.pageCount(), state, renderRequest,
+                        attempt, factor));
             }
 
             // Bolum 23.1: a rising rate here means the measurement layer is
