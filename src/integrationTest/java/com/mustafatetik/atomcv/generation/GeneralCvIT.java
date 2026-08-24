@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mustafatetik.atomcv.AbstractIntegrationTest;
+import com.mustafatetik.atomcv.AbstractLatexTest;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomKind;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
@@ -20,8 +20,6 @@ import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -53,25 +49,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Tag("latex")
 @AutoConfigureMockMvc
-class GeneralCvIT extends AbstractIntegrationTest {
-
-    static final org.testcontainers.containers.GenericContainer<?> LATEX =
-            new org.testcontainers.containers.GenericContainer<>(
-                    new org.testcontainers.images.builder.ImageFromDockerfile(
-                            "atomcv-latex-test", false)
-                            .withFileFromPath(".", Path.of("docker/latex")))
-                    .withExposedPorts(8090)
-                    .withStartupTimeout(Duration.ofMinutes(5));
-
-    static {
-        LATEX.start();
-    }
-
-    @DynamicPropertySource
-    static void latexAddress(DynamicPropertyRegistry registry) {
-        registry.add("atomcv.latex.base-url",
-                () -> "http://" + LATEX.getHost() + ":" + LATEX.getMappedPort(8090));
-    }
+class GeneralCvIT extends AbstractLatexTest {
 
     @Autowired
     private MockMvc mvc;
