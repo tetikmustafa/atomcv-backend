@@ -180,4 +180,14 @@ götürürdü. `shared/config`'e taşındı, her bileşen kendi
 kullanıcıya bugün için satır vermiyordu, yani aslında "kullanımı olmayan
 kullanıcı raporlanmaz" diyordu. Artık ikisi de bugün aynı sayıda üretiyor.
 
-**Kalan (2.7):** LLM maliyet kaydı + bütçe freni, ve Axiom/OpenTelemetry.
+**Ekleme — maliyet kaydı indi, bütçe freni gerçek oldu** (§ 44.3, § 27.4'e
+yazıldı). Adım 2.2'den beri yayımlanan olayı dinleyen yoktu; artık
+`LlmInvocationRecorder` kendi transaction'ında yazıyor ve **çağıranı asla
+düşürmüyor** — üretimi geri alabilen telemetri, ara sıra eksik olandan kötüdür.
+
+**Kalan boşluk — `llm_invocations.user_id` NULL.** Olay kullanıcıyı taşımıyor
+(zincir, `UserContext` tutan fazlardan çağrılıyor ama aşağı geçirmiyor). Günlük
+toplam bunu istemiyor, kullanıcı bazlı maliyet istiyor; id aşağı geçirildiğinde
+gelir.
+
+**Kalan (2.7):** Axiom/OpenTelemetry. Sonra Aşama 2 kapanış kontrolü.
