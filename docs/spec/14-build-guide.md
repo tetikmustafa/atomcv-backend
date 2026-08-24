@@ -1052,21 +1052,31 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 2. QuotaService (atomik INSERT ON CONFLICT)
 3. FeatureFlag tablosu + kill switch
 4. AnomalyDetector (@Scheduled)
-5. Axiom entegrasyonu (OpenTelemetry)
+5. OTLP dışa aktarımı (Axiom hedefi Adım 3.1'de açılır)
 6. /api/v1/account/usage endpoint'i
 ```
 
 ### ✅ Aşama 2 kontrolü
 
+> **Düzeltme — sıralama çelişkisi.** Bu liste "Axiom'da loglar görünüyor"
+> diyor, ama Axiom dataset'i **Adım 3.1'de** açılıyor (§ XI-A.6). Aşama 2'de
+> yapılabilecek olan OTLP dışa aktarımını bağlamak; ihracatçı bir URL
+> verilene kadar kapalı duruyor, çünkü gidecek yeri olmayan bir ihracatçı
+> zamanlayıcıyla yeniden deneyip kendi arızasını loglar — gözlem, gözlenen
+> sistemi bozar. Kutu **3.1'e taşındı**.
+
 ```
-□ İlan yapıştırılıp CV üretiliyor
-□ Sağlayıcı fallback çalışıyor (birincil key'i bozarak test et)
-□ SSE ilerleme akıyor
-□ Kota doluyor ve engelliyor
-□ Kill switch çalışıyor
-□ Anlamsız ilan reddediliyor
-□ Injection denemesi sistem davranışını değiştirmiyor
-□ Axiom'da loglar görünüyor
+◐ İlan yapıştırılıp CV üretiliyor   ← genel mod gerçek TeX'e karşı uçtan uca
+                                       (GeneralCvIT); ilan modu `local-fake`
+                                       profili istiyor, süit `local` koşuyor
+✅ Sağlayıcı fallback çalışıyor       ← ProviderChainTest
+✅ SSE ilerleme akıyor                ← JobStreamIT
+✅ Kota doluyor ve engelliyor         ← QuotaIT + GenerationEnqueueServiceTest
+✅ Kill switch çalışıyor              ← QuotaIT
+✅ Anlamsız ilan reddediliyor         ← JobDescriptionPreflight + QueuedGenerationApiIT
+✅ Injection denemesi davranışı       ← PlausibilityGate + JobAnalysisPromptTest
+   değiştirmiyor
+→  Axiom'da loglar görünüyor          ← Adım 3.1 (dataset yok)
 ```
 
 ---
@@ -1083,7 +1093,8 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 □ Cloudflare → Turnstile → Site ekle (atomcv.mustafatetik.com)
 □ Resend → hesap aç, domain doğrula (aşağıda)
 □ Sentry → proje oluştur
-□ Axiom → dataset oluştur
+□ Axiom → dataset oluştur  ← Aşama 2'nin "loglar görünüyor" kutusu buraya taşındı;
+                              OTLP ihracatçısı bağlı, tek eksik OTLP_URL/anahtar
 ```
 
 ### Adım 3.2 — E-posta domain kurulumu

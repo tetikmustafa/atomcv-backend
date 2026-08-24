@@ -41,6 +41,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // Bolum 44.3 wants the counters somewhere an operator can see them, and
+    // Bolum 2's table picked Axiom — observability data should not live on the
+    // machine being observed. OTLP is the wire format Axiom ingests, so this
+    // is the whole integration: the exporter is inert until a URL is set, and
+    // the dataset it points at is created in Adim 3.1.
+    implementation("io.micrometer:micrometer-registry-otlp")
     // Bolum 18.6 caches the job analysis. Lettuce underneath, which the
     // starter brings: the cache is consulted on the hot path and a blocking
     // client there would hold a request thread through a network round trip.
