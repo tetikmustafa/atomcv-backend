@@ -27,11 +27,9 @@ doğru olan tek değer o**, ve zaten hemen tekrar deneyecek istemci tam olarak
 odur. **`resolutions` boş**: kapalı sözlükte "yarın tekrar dene" yok ve `retry`
 bunun tersini söylüyor.
 
-**Yeni kod: `GENERATION_PAUSED` (503), parametresiz, `retry` resolution'ı ile.**
-§ 44.3'ün acil freni: maliyet anomalisinde üretim durur. **Veri erişimi
-durmaz** — kullanıcı profilini görebilir, düzenleyebilir, dışa aktarabilir; UI
-bunu böyle anlatmalı, "hesabınız kapandı" gibi değil. `errors.GENERATION_PAUSED`
-için ICU mesajı gerekiyor.
+**Yeni kod: `GENERATION_PAUSED` (503), parametresiz, `retry` ile.** § 44.3'ün
+acil freni. **Veri erişimi durmaz** — profil görülebilir, düzenlenebilir, dışa
+aktarılabilir; UI bunu böyle anlatmalı, "hesabınız kapandı" gibi değil.
 
 Kota kuyruğa alırken düşüyor ve **başarısız her işte geri veriliyor**.
 
