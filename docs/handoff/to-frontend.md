@@ -50,7 +50,9 @@ kuyruğa girmeden. `B-037`'nin bayrağı: `acknowledgePreflight: true`.
 
 **Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil** (§ 30.6 düz metin
 taşıyordu, § 35.4 ile çelişiyordu). Anahtarlar: `generation.phase.ANALYSING`,
-`.MEASURING`, `.SCORING`, `.RENDERING`.
+`.MEASURING`, `.SCORING`, `.RENDERING`. **Biten iş `pct: 100` döndürür ve
+`phase`/`label` göndermez** — çubuk "tamamlandı"nın yanında %70 göstermesin
+diye; **düşen iş nerede durduğunu korur**, sebebi hakkında en yararlı şey o.
 
 **SSE:** üç olay adı — koşarken `phase`, sonra **tam olarak bir tane**
 `completed` ya da `failed`, akış kapanır. Bağlanır bağlanmaz güncel durum
@@ -62,8 +64,7 @@ sürekliliğe değil terminal olaya güvenin. Akış terminal olay olmadan kapan
 **Terminal alanlar yalnız kendi durumlarında:** `generationId` sadece
 `completed`'da, `error` sadece `failed`'da. **`Idempotency-Key`** onurlandırılıyor.
 **Download üretim anındaki metinden** render ediliyor — sonradan bir madde
-düzenlenirse indirilen CV değişmez; yeniden render edilecek şeyi olmayan satır
-`410` + `GENERATION_ARTIFACT_EXPIRED` + `retry`.
+düzenlenirse indirilen CV değişmez; yoksa `410` + `GENERATION_ARTIFACT_EXPIRED`.
 
 **`gen:api` çalıştırılmalı.**
 
