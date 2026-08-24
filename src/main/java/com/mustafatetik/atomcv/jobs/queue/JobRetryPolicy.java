@@ -60,6 +60,10 @@ public final class JobRetryPolicy {
             // The next attempt reads the same counter. A retry budget spent
             // against a limit is three failures instead of one.
             case PipelineError.QuotaExceeded ignored -> false;
+
+            // Never queued in the first place: the brake is checked before
+            // anything is accepted, so this cannot reach a worker.
+            case PipelineError.GenerationPaused ignored -> false;
         };
     }
 

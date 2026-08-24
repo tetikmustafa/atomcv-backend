@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.service;
 
+import com.mustafatetik.atomcv.billing.FeatureFlags;
 import com.mustafatetik.atomcv.billing.QuotaMetric;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionPreflight;
@@ -47,12 +48,15 @@ public class GenerationEnqueueService {
     private final JobQueue queue;
     private final JobRepository jobs;
     private final QuotaService quotas;
+    private final FeatureFlags flags;
     private final Clock clock;
 
     GenerationEnqueueService(ProfileResolver profiles, ProfileAssembler assembler,
-            JobQueue queue, JobRepository jobs, QuotaService quotas, Clock clock) {
+            JobQueue queue, JobRepository jobs, QuotaService quotas, FeatureFlags flags,
+            Clock clock) {
 
         this.quotas = quotas;
+        this.flags = flags;
         this.profiles = profiles;
         this.assembler = assembler;
         this.queue = queue;
@@ -79,6 +83,12 @@ public class GenerationEnqueueService {
             // Answered with the job that already exists, not with a conflict:
             // the caller asked for one generation and there is one.
             return Result.ok(already.get());
+        }
+
+        if (!flags.isEnabled(FeatureFlags.NEW_GENERATIONS)) {
+            // Bolum 44.3, and it goes ahead of the quota: a paused deployment
+            // must not spend anyone's allowance on a request it will refuse.
+            return Result.err(new PipelineError.GenerationPaused());
         }
 
         Result<Void> spent = quotas.consume(user, QuotaMetric.GENERATION);

@@ -133,6 +133,18 @@ public sealed interface PipelineError {
     }
 
     /**
+     * The brake is on (Bolum 44.3).
+     *
+     * <p>Not the user's doing and not their problem to solve, which is why it
+     * carries no parameters — there is nothing about their request to change.
+     * It stops generation and nothing else: the profile stays readable,
+     * editable and exportable, because losing a day's work to a cost spike
+     * would be worse than the spike.
+     */
+    record GenerationPaused() implements PipelineError {
+    }
+
+    /**
      * The document did not compile, or the compiler was not there (Bolum 29).
      *
      * @param kind   which of the four, so the caller knows whether to retry

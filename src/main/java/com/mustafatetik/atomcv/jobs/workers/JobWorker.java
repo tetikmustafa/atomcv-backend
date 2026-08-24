@@ -196,10 +196,26 @@ public class JobWorker {
                 }
             }
         }
+        // Only if this worker still holds it. A forced shutdown releases the
+        // locks and interrupts the handler; the interrupted handler can still
+        // reach here, and by then the job may have been claimed by someone
+        // else — writing a terminal state over a live claim is how one job
+        // runs twice and reports once.
+        if (!stillHeld(job)) {
+            log.warn("Job {} is no longer held by {}; dropping its outcome",
+                    job.getId(), workerId);
+            return;
+        }
         queue.save(job);
         if (job.getStatus().isTerminal()) {
             events.terminal(job);
         }
+    }
+
+    private boolean stillHeld(Job job) {
+        return queue.find(job.getId())
+                .map(current -> workerId.equals(current.getLockedBy()))
+                .orElse(false);
     }
 
     /**
