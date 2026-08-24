@@ -1,5 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
+import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.domain.EngineVersion;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.RenderedContent;
@@ -51,11 +53,13 @@ public class GenerationJobHandler implements JobHandler {
     private final JobSpecificGenerationService generations;
     private final CvGenerationService general;
     private final GenerationRepository records;
+    private final QuotaService quotas;
     private final ErrorPresenter errors;
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
-            GenerationRepository records, ErrorPresenter errors) {
+            GenerationRepository records, QuotaService quotas, ErrorPresenter errors) {
 
+        this.quotas = quotas;
         this.generations = generations;
         this.general = general;
         this.records = records;
@@ -97,7 +101,13 @@ public class GenerationJobHandler implements JobHandler {
 
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
-            case Result.Err<GeneratedGeneration> failed -> failed(failed.error());
+            case Result.Err<GeneratedGeneration> failed -> {
+                // Bolum 44.2: the unit was taken when this was queued and no
+                // document came out of it. User error or system error, the
+                // section refunds both.
+                quotas.refund(user, QuotaMetric.GENERATION);
+                yield failed(failed.error());
+            }
         };
     }
 

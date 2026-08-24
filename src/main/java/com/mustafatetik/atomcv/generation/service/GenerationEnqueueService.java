@@ -1,5 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
+import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionPreflight;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
@@ -29,9 +31,11 @@ import org.springframework.stereotype.Service;
  * reads the profile, the other counts characters — so refusing costs nothing
  * and accepting costs a worker.
  *
- * <p>The quota check of Bolum 44 belongs in this method and arrives with
- * Adim 2.7. It is the third free gate and goes first of all, since a user over
- * their limit should not even have their profile loaded.
+ * <p>The quota goes first of all (Bolum 44). It is one statement against one
+ * row, and a user over their limit should not have their profile loaded or
+ * their posting measured to find that out. It is also the only gate here that
+ * <em>writes</em> — which is why it runs after idempotency: answering with a
+ * job that already exists must not cost a second unit.
  */
 @Service
 public class GenerationEnqueueService {
@@ -42,11 +46,13 @@ public class GenerationEnqueueService {
     private final ProfileAssembler assembler;
     private final JobQueue queue;
     private final JobRepository jobs;
+    private final QuotaService quotas;
     private final Clock clock;
 
     GenerationEnqueueService(ProfileResolver profiles, ProfileAssembler assembler,
-            JobQueue queue, JobRepository jobs, Clock clock) {
+            JobQueue queue, JobRepository jobs, QuotaService quotas, Clock clock) {
 
+        this.quotas = quotas;
         this.profiles = profiles;
         this.assembler = assembler;
         this.queue = queue;
@@ -75,8 +81,16 @@ public class GenerationEnqueueService {
             return Result.ok(already.get());
         }
 
+        Result<Void> spent = quotas.consume(user, QuotaMetric.GENERATION);
+        if (spent.isErr()) {
+            return spent.map(ignored -> null);
+        }
+
         Result<Void> refused = preflight(user, jobDescription, preflightAcknowledged);
         if (refused.isErr()) {
+            // Bolum 44.2: nothing was generated, so nothing was spent. Without
+            // this a user could burn a day's allowance on typos.
+            quotas.refund(user, QuotaMetric.GENERATION);
             return refused.map(ignored -> null);
         }
 

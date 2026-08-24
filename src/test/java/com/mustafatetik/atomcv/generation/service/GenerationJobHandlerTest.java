@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -52,6 +53,7 @@ class GenerationJobHandlerTest {
     private JobSpecificGenerationService generations;
     private CvGenerationService general;
     private GenerationRepository records;
+    private com.mustafatetik.atomcv.billing.QuotaService quotas;
     private GenerationJobHandler handler;
 
     @BeforeEach
@@ -59,8 +61,9 @@ class GenerationJobHandlerTest {
         generations = mock(JobSpecificGenerationService.class);
         records = mock(GenerationRepository.class);
         general = mock(CvGenerationService.class);
+        quotas = mock(com.mustafatetik.atomcv.billing.QuotaService.class);
         handler = new GenerationJobHandler(
-                generations, general, records, new ErrorPresenter());
+                generations, general, records, quotas, new ErrorPresenter());
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 
@@ -80,6 +83,7 @@ class GenerationJobHandlerTest {
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
+        verify(quotas, never()).refund(any(), any());
         assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Completed.class,
                 done -> assertThat(done.result())
                         .containsEntry("generationId", saved.getValue().getId().toString())
@@ -177,6 +181,8 @@ class GenerationJobHandlerTest {
         });
         // selection_state is what a row is for, and there is none.
         verify(records, never()).save(any(), any());
+        // Bolum 44.2: no document came out, so the unit goes back.
+        verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
     }
 
     /** The next attempt reads the same thin profile and reaches the same answer. */

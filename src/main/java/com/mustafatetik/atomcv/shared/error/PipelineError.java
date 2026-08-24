@@ -117,6 +117,22 @@ public sealed interface PipelineError {
     }
 
     /**
+     * The user has used up today's allowance (Bolum 44.1).
+     *
+     * <p>Raised before anything is queued, because the whole point of a quota
+     * is that it costs nothing to enforce. Never retryable: the next attempt
+     * reads the same counter, and a retry budget spent against a limit is
+     * three failures instead of one.
+     *
+     * @param metric   which allowance ran out — there are two, and a single
+     *                 one would let profile extraction eat the whole of it
+     * @param resetsAt an absolute instant, not an hour (F-007). The day
+     *                 boundary is UTC and the client writes the local text.
+     */
+    record QuotaExceeded(String metric, java.time.Instant resetsAt) implements PipelineError {
+    }
+
+    /**
      * The document did not compile, or the compiler was not there (Bolum 29).
      *
      * @param kind   which of the four, so the caller knows whether to retry
