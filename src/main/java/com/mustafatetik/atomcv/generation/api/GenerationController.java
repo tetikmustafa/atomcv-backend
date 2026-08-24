@@ -1,10 +1,14 @@
 package com.mustafatetik.atomcv.generation.api;
 
+import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GeneralCvRequest;
+import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.service.CvGenerationService;
+import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
+import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
@@ -17,17 +21,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.time.LocalDate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * A CV out of the profile, with no job description involved (Bolum 19.4).
+ * Asking for a CV (Bolum 35.3, Bolum 19.4).
  *
  * <p><strong>Stage 1 only, and synchronous.</strong> Bolum 35.3's
  * {@code POST /generations} answers 202 with a job to follow, because a
@@ -43,14 +49,51 @@ public class GenerationController {
 
     private final CurrentUser currentUser;
     private final CvGenerationService generations;
+    private final GenerationEnqueueService enqueue;
     private final ErrorPresenter errors;
 
     GenerationController(CurrentUser currentUser, CvGenerationService generations,
-            ErrorPresenter errors) {
+            GenerationEnqueueService enqueue, ErrorPresenter errors) {
 
         this.currentUser = currentUser;
         this.generations = generations;
+        this.enqueue = enqueue;
         this.errors = errors;
+    }
+
+    @Operation(
+            summary = "Generate a CV against a job posting",
+            description = """
+                    Answers 202 with a job to follow. A generation reads the                     posting with an LLM, scores the whole profile against it,                     then renders and compiles — half a minute is ordinary, and                     a request held open for that long is a request that times                     out somewhere in between.
+
+                    The preflights are synchronous. A posting that does not                     read as one and a profile with nothing in it are both                     refused here, on the spot, rather than accepted and failed                     thirty seconds later.
+
+                    `Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
+            @ApiResponse(responseCode = "422",
+                    description = "UNPARSEABLE_JOB_DESCRIPTION or INSUFFICIENT_PROFILE",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping
+    public ResponseEntity<AcceptedJobResponse> generate(
+            @Valid @RequestBody GenerationRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+
+        Result<Job> queued = enqueue.enqueue(
+                currentUser.require(), request.jobDescription(), request.acknowledged(),
+                request.maxPages(), request.language(), idempotencyKey);
+
+        Job job = switch (queued) {
+            case Result.Ok<Job> ok -> ok.value();
+            case Result.Err<Job> refused -> throw new ApiException(
+                    errors.present(refused.error(), pageHeightPt()));
+        };
+
+        return ResponseEntity.accepted()
+                .location(URI.create("/api/v1/jobs/" + job.getId()))
+                .body(AcceptedJobResponse.of(job));
     }
 
     @Operation(
