@@ -77,7 +77,6 @@ PATCH  /api/v1/customizations/{id}
 DELETE /api/v1/customizations/{id}
 
 ── Üretim ──────────────────────────────────────────
-POST   /api/v1/generations/general          → 200 + PDF  (Aşama 1, senkron)
 POST   /api/v1/generations                  → 202 + job
 GET    /api/v1/generations
 GET    /api/v1/generations/{id}
@@ -182,10 +181,11 @@ sonra düştü" diye bir akış yoktur.
 zaten yapılmış işi döndürür — çakışma değil, çünkü çağıran bir üretim istedi ve
 bir tane var.
 
-> **Not (Adım 1.8).** `POST /generations/general` bu akışın dışında: ilan da
-> LLM de kuyruk da yok, belge doğrudan `application/pdf` olarak dönüyor ve
-> hiçbir yere kaydedilmiyor. **Aşama 1'e özgüdür**; Aşama 2'de üretim kaydı ve
-> kuyruk gelince yerini yukarıdaki akışa bırakır (EK D.8.8, D.9 · 22).
+> **Kapandı (Adım 2.6).** `POST /generations/general` kaldırıldı. **Genel CV
+> modu kaybolmadı, aynı uca taşındı:** `jobDescription` opsiyoneldir ve
+> yokluğu genel moddur (§ 19.4) — Faz A ve Faz B atlanır, seçimden sonrası
+> aynı hattır. Kolon da bunu söylüyordu: `generations.job_description` tam bu
+> durumda NULL.
 
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 

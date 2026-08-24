@@ -14,39 +14,29 @@
 ### B-038 · İlana özel üretimin senkron yüzü + SSE indi; ilerleme metni **sizin**
 **Since:** commit `<bu PR>` · Adım 2.6 · **Spec:** `spec/08-api.md` § 35.3, `spec/08b-api-contract.md` EK D.6.4
 
-İlana özel üretimin senkron yüzü hazır. `POST /api/v1/generations` **202** ve
-`Location: /api/v1/jobs/{jobId}` dönüyor; gövde `{ jobId, status }`.
-`GET /api/v1/jobs/{jobId}` işin nerede olduğunu söylüyor.
+`POST /api/v1/generations` **202** + `Location: /api/v1/jobs/{jobId}` dönüyor;
+gövde `{ jobId, status, streamUrl }`. `GET /api/v1/jobs/{jobId}` durumu söylüyor.
 
-**Ön kontroller senkron.** İlan gibi okunmayan bir metin ve içi boş bir profil
-**422 ile anında** reddediliyor, kuyruğa hiç girmiyor: `UNPARSEABLE_JOB_DESCRIPTION`
-ve `INSUFFICIENT_PROFILE`. Yani "kabul edildi, otuz saniye izlendi, sonra düştü"
-diye bir akış yok — `B-037`'nin `continue_anyway` bayrağı da burada işe yarıyor,
-istekte `acknowledgePreflight: true`.
+**Ön kontroller senkron.** İlan gibi okunmayan metin ve boş profil **422 ile
+anında** reddediliyor, kuyruğa girmiyor (`UNPARSEABLE_JOB_DESCRIPTION`,
+`INSUFFICIENT_PROFILE`). `B-037`'nin bayrağı burada: `acknowledgePreflight: true`.
 
-**Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil.** § 30.6'nın örneği
-düz metin taşıyor; § 35.4 ile çelişiyordu ve **anahtar tarafını seçtik**.
-`GET /jobs/{id}` şunu döndürüyor:
+**Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil** (§ 30.6 düz metin
+taşıyordu, § 35.4 ile çelişiyordu). `GET /jobs/{id}`:
 
 ```json
 { "jobId": "...", "status": "running",
   "phase": "B", "label": "generation.phase.SCORING", "pct": 50 }
 ```
 
-Gereken anahtarlar: `generation.phase.ANALYSING`, `.MEASURING`, `.SCORING`,
-`.RENDERING`. Metni siz yazıyorsunuz; sunucu tek dilde cümle göndermiyor.
+Anahtarlar: `generation.phase.ANALYSING`, `.MEASURING`, `.SCORING`, `.RENDERING`.
 
 **Terminal alanlar yalnız kendi durumlarında var:** `generationId` sadece
-`completed`'da, `error` sadece `failed`'da. İkisinden biri gelince yoklamayı
-bırakabilirsiniz.
+`completed`'da, `error` sadece `failed`'da — biri gelince yoklamayı bırakın.
+**`Idempotency-Key`** onurlandırılıyor: çift tıklama tek CV.
 
-**`Idempotency-Key` onurlandırılıyor** (`POST /generations`): aynı anahtar aynı
-işi döndürüyor, çift tıklama tek CV üretiyor.
-
-**SSE indi.** 202 yanıtı artık `streamUrl` de taşıyor
-(`/api/v1/jobs/{jobId}/stream`) — yolu siz kurmayın, sunucu veriyor.
-`GET /api/v1/jobs/{jobId}/stream` üç olay adı kullanıyor: koşarken `phase`,
-sonra **tam olarak bir tane** `completed` veya `failed`, ardından akış kapanıyor.
+**SSE:** `streamUrl`'i sunucu veriyor, siz kurmayın. Üç olay adı: koşarken
+`phase`, sonra **tam olarak bir tane** `completed` ya da `failed`, akış kapanır.
 
 ```
 event: phase       data: {"phase":"C","label":"generation.phase.RENDERING","pct":70,"detail":""}
@@ -54,17 +44,26 @@ event: completed   data: {"generationId":"...","pageCount":1}
 event: failed      data: {"code":"...","params":{},"resolutions":[]}
 ```
 
-**Bağlanır bağlanmaz güncel durum geliyor**, yani ekran hiç boş başlamıyor ve
-yeniden bağlanma kendiliğinden yakalanıyor. **202 ile abonelik arasında biten
-bir iş de sonucunu gönderiyor** — o yüzden "önce abone ol sonra oku" yarışını
-kovalamanıza gerek yok.
+**Bağlanır bağlanmaz güncel durum geliyor** — ekran boş başlamıyor, yeniden
+bağlanma kendiliğinden yakalanıyor, ve **202 ile abonelik arasında biten iş de
+sonucunu gönderiyor**. `Last-Event-ID` kabul ediliyor ama **oynatma yok**; `id`
+tek akış içinde sıralama. Sürekliliğe değil **terminal olaya** güvenin; akış
+terminal olay olmadan kapanırsa `GET /jobs/{jobId}` geri düşüş.
 
-`Last-Event-ID` kabul ediliyor ama **oynatma yapılmıyor**; `id` yalnız tek bir
-akış içinde sıralama. Sürekliliğe değil **terminal olaya** güvenin. Akış terminal
-olay olmadan kapanırsa `GET /jobs/{jobId}` desteklenen geri düşüş.
+**`POST /generations/general` KALDIRILDI** (`B-022` kapandı). Genel CV modu
+kaybolmadı, **aynı uca taşındı**: `jobDescription` opsiyonel, yokluğu genel mod.
+Boş gövde (`{}`) de 202 dönüyor. Aksiyonunuz: o uca giden çağrıyı
+`POST /generations` + iş takibine çevirin.
 
-**Henüz gelmeyen:** `GET /generations/{id}/download` bir sonraki dilimde.
-`POST /generations/general` **hâlâ duruyor**, o dilimde kalkacak (`B-022`).
+**`GET /api/v1/generations/{generationId}/download`** indi:
+`application/pdf`, `Content-Disposition: attachment`, dosya adı yalnız tarih
+taşıyor (indirme klasörüne kişisel veri yazmıyoruz). Belge **üretim anındaki
+metinden** yeniden render ediliyor — kullanıcı sonradan bir maddeyi düzenlerse
+indirdiği CV değişmez, başvurduğu belge neyse odur. Yeniden render edilecek
+şeyi olmayan bir satır `410` + `GENERATION_ARTIFACT_EXPIRED` + `retry` döner.
+
+`gen:api`'yi bu PR'dan sonra çalıştırın: `/generations/general` tipten
+düşecek.
 
 `gen:api` bu PR'dan sonra çalıştırılabilir; şema uçları taşıyor.
 

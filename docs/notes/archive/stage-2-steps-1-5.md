@@ -64,3 +64,90 @@ yerde ısırdı: `TagRepository.labelsByAtom` sorgunun sırasını atıyordu, `J
 üç JSONB kolonu da `JobWorker`'ın sıralı kurduğu hata haritasını bozuyordu.
 İkisi de `Collections.unmodifiable*` + `Linked*`; kural `CLAUDE.md`'de.
 
+---
+
+> Adım 2.6 kapandı (2026-08-24); kalan kayıtları da buraya taşındı.
+
+## Adım 2.6 — kayıt, API, SSE ve indirme
+
+> Kuyruk diliminin kayıtları `archive/stage-2-steps-1-5.md`'de. Oradan
+> hatırlanmaya değer tek şey **`SKIP LOCKED` sondasının yanlış geçmesi**:
+> mükerrerliği ölçen test o cümleyi hiç ölçmüyordu, gerçek fark canlılık
+> (§ 30.2, ders `CLAUDE.md`'de).
+
+**Karar — Aşama 2'de PDF baytı saklanmıyor** (2026-08-24, EK D.6.3). R2 Adım
+3.1'de; indirme `selection_state`'ten yeniden render ediyor. Devredilen
+"`generations`'a yazan yok" kısıtı kapandı. **Sapma:** anlık görüntü
+`customizationId` değil özelleştirmenin kendisini taşıyor (§ 14.5) — işaret
+edilecek satır yok, hiçbir şeye çözülen id anlık görüntüyü işe yaramaz kılardı.
+
+**Düzeltme — `"\s+"` tek ters bölüyle yazılmıştı.** Java 15'ten beri `\s`
+geçerli bir string kaçışı ve **tek boşluk** demek: desen sessizce "boşluk
+dizileri"ne daralmış, satır sonları normalleştirmeden sağ çıkmış, aynı ilanın
+PDF'ten ve tarayıcıdan gelen hâli farklı hash'lenmişti. Derleniyor ve doğru
+görünüyor. Çıkarma sırasında yakalandı, çünkü artık iki çağıran aynı cevabı
+istiyor: cache ve `generations.jd_hash`.
+
+**Ekleme — kayıt yalnız belge çıkınca yazılıyor.** `selection_state` satırın
+sebebi; seçimden önce düşen koşunun arızası işin üstünde yaşıyor.
+`GenerationStatus`'ta bu yüzden `queued`/`running` yok — tek iş üzerinde iki
+durum makinesi haber vermeden ayrışır.
+
+**Ekleme — prompt sürümü *çalışan* sürüm.** `promptVersionFor` saf bir fonksiyon,
+iki kez sorulunca aynı cevabı veriyor. Varsayılanı yazmak, alanın işe yaradığı
+tek durumda — A/B deneyinde — yanlış olurdu.
+
+**Bilinçli boşluk:** handler uçtan uca koşturulmadı — kuyruğa koyan bir şey yok
+ve gerçek koşu LaTeX container'ı + `local-fake` istiyor. O test uca ait.
+
+**Düzeltme — § 30.6'nın `label`'ı düz metin taşıyordu, § 35.4 ile çelişiyordu.**
+Anahtar tarafı seçildi (`generation.phase.<FAZ>`); § 30.6 ve EK D.6.4
+düzeltildi, frontend maddesi `B-038`. Tek dilde gönderilen bir cümle her yeni
+dilde yeniden gönderilirdi ve ilerleme satırı üründe en çok görülen metin.
+
+**Ekleme — ArchUnit'e üçüncü bir IDOR satırı.** `JobQueue` Spring Data değil,
+yani mevcut iki kural onu görmüyor ve bir controller'da **derlenirdi**: sahiplik
+kontrolü olmadan id ile iş okumak. Kural `..api..`'nin `JobQueue`'ya bağlanmasını
+yasaklıyor; servisten kuyruğa koymak serbest kalıyor. Kasıtlı ihlalde hem kural
+hem çapraz kullanıcı testi düştü.
+
+**Ekleme — ilerleme satıra da yazılıyor, yalnız olaya değil** (EK D.6.4):
+kimseye gönderilmemiş olay yok olur. Bedeli faz başına bir update.
+
+**Ekleme — SSE'nin iki kararı § 30.6'ya, `Last-Event-ID` yorumu EK D.6.4'e
+yazıldı.** Bağlanışta güncel durum gönderiliyor (yeniden bağlanmayı *ve* 202 ile
+abonelik arasında biten işi birden çözüyor), terminal olay akışı kapatıyor.
+Replay tampon isterdi; § D.6.4 zaten daha ucuz olanı kabul ediyor. Kayıt süreç
+içi — javadoc bunun ne zaman yetmeyeceğini de söylüyor.
+
+**Ekleme — `JobEvents` no-op varsayılanlı arayüz**, kuyruk HTTP'ye bağlı değil.
+Satır önce yazılıyor, sonra duyuruluyor.
+
+**Düzeltme — bir testim yanlış şeyi taklit ediyordu.** MockMvc'nin koparacak
+istemcisi yok; "istemci koptu" testi kendi stub'ına assert etmiş olurdu.
+`remove` doğrudan çağrılıyor — gerçek callback'lerin yaptığı da bu.
+
+**Doküman kararı (onaylandı 2026-08-24):** aşama kapanmadan da kapanmış
+adımların kayıtları `archive/`'a taşınıyor; canlı indeksler burada kalıyor.
+`to-frontend.md`'nin kalıcı-kurallar tablosu da `resolved/`'a taşındı.
+
+**Karar — `content_snapshot` üretim anında yazılıyor** (onaylandı 2026-08-24,
+EK D.6.3'e işlendi). `selection_state` atomları id'yle adlandırıyor ve metin
+`atom_variants`'ta düzenlenmeye devam ediyor; profili yeniden okuyan bir indirme
+işverene gönderilenden başka bir belge verirdi. § 22.2'nin `RenderRequest`'i
+zaten id taşımıyor, yani onu saklamak render'ın kendisini saklamak.
+
+**Ekleme — genel mod kuyruğa taşındı, sonra `/general` kaldırıldı** — bu sırayla,
+tersi özellik kaybıydı. `jobDescription` opsiyonel; yokluğu genel mod (§ 19.4).
+`engine_version` `general-mode` yazıyor, `default` değil: hiçbir şey
+karşılaştırmamış bir koşu, karşılaştırmış gibi görünmemeli.
+
+**`GenerationApiIT` silindi, taşınmadı.** Kapsadığı her vaka ya
+`QueuedGenerationApiIT`'ye geçti ya da bir iş arızası olup
+`GenerationJobHandlerTest`'e düştü. `GeneralCvIT` artık akışı uçtan uca gerçek
+TeX'e karşı koşuyor: kuyruk → worker → `generations` satırı → download.
+
+**Kalan boşluk:** ilana özel yol uçtan uca hiç koşmadı — `local-fake` profili
+gerekiyor ve entegrasyon süiti `local` ile çalışıyor. Genel mod yolu koşuyor.
+
+**Adım 2.6 kapandı.** Sırada 2.7: kota, kill switch, anomali, Axiom.
