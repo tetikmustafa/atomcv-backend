@@ -187,7 +187,14 @@ tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni d
   yeniden üretilebilir — süre dolması kullanıcıya emeğine mal olmaz.
 - **Aşama 2'de bayt saklanmıyor** (karar: 2026-08-24). R2 hesabı Adım 3.1'de
   açılıyor, dolayısıyla `pdf_key` ve `pdf_expires_at` NULL kalıyor ve indirme
-  anlık görüntüden **yeniden render ediyor**: bir derleme, sıfır LLM çağrısı.
+  **`content_snapshot`'tan** yeniden render ediyor: bir derleme, sıfır LLM
+  çağrısı. **`selection_state` tek başına yetmez** — atomları id'yle adlandırır
+  ve o id'lerin altındaki metin `atom_variants`'ta durmadan düzenlenir; profili
+  yeniden okuyan bir indirme, işverene gönderilenden **başka bir belge** verir
+  ve bunu kimse söylemez. `content_snapshot`, § 22.2'nin id taşımayan
+  `RenderRequest`'inin kendisidir, yani ikinci koşu birebir aynı girdiyi alır.
+  Anlık görüntüsü olmayan bir satır `410` + `retry` döner; bugünün profilinden
+  render etmek, hiç gönderilmemiş bir belge üretmek olurdu.
   Yani yukarıdaki geri düşüş Aşama 2'de tek yol; `410 Gone` yolu R2 ile
   birlikte gelecek. Bunun bedeli indirme başına bir derleme, karşılığı da
   aynı `selection_state`'in aynı PDF'i üretmesinin ölçülebilir olması.

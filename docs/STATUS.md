@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-24 · SSE indi (2.6/4); **`B-037`, `B-038` açık**
+**Son güncelleme:** 2026-08-24 · **Adım 2.6 kapandı**; **`B-037`, `B-038` açık**
 
 ---
 
@@ -14,20 +14,19 @@
 | Aşama 0 — İskelet | ✅ |
 | Aşama 1 — Yürüyen iskelet (1.1-1.9) | ✅ |
 | **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
-| 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding | ✅ |
-| 2.5 Faz B (skorlama) | ✅ |
-| 2.6 kuyruk ve SSE | 🔨 kuyruk, kayıt, 202, `GET /jobs/{id}` ve **SSE** indi; genel mod + download kaldı |
-| 2.7 kota ve maliyet | ⬜ |
+| 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding · 2.5 Faz B · 2.6 kuyruk+SSE | ✅ |
+| 2.7 kota ve maliyet | ⬜ sırada |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
-**`B-038` açık:** `POST /generations` (202) ve `GET /jobs/{id}` yayımlandı; ilerleme
-`label`'ı **çeviri anahtarı** (`generation.phase.*`), metin frontend'in — `gen:api`
-artık çalıştırılabilir. **`B-037` açık:** `resolutions[].action` `continue_anyway`
+**`B-038` açık:** `POST /generations` (202), `GET /jobs/{id}`, SSE ve
+`GET /generations/{id}/download` yayımlandı; `POST /generations/general`
+**kaldırıldı** (`B-022` kapandı). İlerleme `label`'ı **çeviri anahtarı**
+(`generation.phase.*`). **`gen:api` çalıştırılmalı.** **`B-037` açık:** `resolutions[].action` `continue_anyway`
 kazandı, ICU mesajı gerekiyor. Spec § 14.3, § 14.5, § 18.1-18.6, § 19.2, § 27.1-27.3,
 § 28.4, § 30.2-30.6, § 35.3, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3-4, XI-A.5-6
 güncellendi — **`sync-spec.sh` Aşama 2 kapanışında** çalıştırılacak (karar: 2026-08-21).
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 547 birim · 218 entegrasyon · 44 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 547 birim · 211 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +54,6 @@ gerçek uca karşı 34 kontrol geçti. Notlar `notes/archive/stage-1.md`.
 
 ## Sonraki senkronizasyon noktası
 
-**Bir sonraki dilim.** Backend `POST /generations` + 202 + SSE'yi bitirdiğinde:
-`gen:api` yeniden çalıştırılacak, `POST /generations/general` **kaldırılacak**.
-Frontend o uca kalıcı ekran bağlamamalı (handoff · B-022).
+**Şimdi.** `POST /generations` + 202 + SSE + download indi, `/generations/general`
+kaldırıldı. Frontend `gen:api`'yi çalıştırıp üretim akışını bu uçlara bağlayabilir
+(handoff · `B-038`).
