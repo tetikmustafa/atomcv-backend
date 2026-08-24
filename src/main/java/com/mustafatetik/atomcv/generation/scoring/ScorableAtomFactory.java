@@ -127,11 +127,15 @@ public final class ScorableAtomFactory {
      * Turkish locale here would turn "SQL" into "sqı" — the atom would stop
      * matching the posting and the score would drop for every user on a
      * Turkish server, with nothing looking broken.
+     *
+     * <p>Through {@link RelevanceScorer#canonicalSkill} rather than inline, so
+     * the atom side and the posting side cannot drift: Faz F reports on the
+     * same keys Faz B matched on.
      */
-    private static Set<String> canonicalSkills(Atom atom) {
+    public static Set<String> canonicalSkills(Atom atom) {
         return atom.getSkills().stream()
-                .filter(skill -> skill != null && !skill.isBlank())
-                .map(skill -> skill.strip().toLowerCase(Locale.ROOT))
+                .map(RelevanceScorer::canonicalSkill)
+                .filter(skill -> !skill.isBlank())
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 }
