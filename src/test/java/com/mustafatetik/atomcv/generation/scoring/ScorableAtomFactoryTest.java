@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 class ScorableAtomFactoryTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
+    private static final LocalDate TODAY = LocalDate.of(2026, 8, 24);
 
     @Test
     void everyActiveAtomBecomesOneScorableAtom() {
@@ -33,7 +34,7 @@ class ScorableAtomFactoryTest {
         fixture.bullet(section, entry, "en", "Built ETL pipelines");
         fixture.looseAtom(section, "en", "Go");
 
-        assertThat(ScorableAtomFactory.from(fixture.tree(), Map.of())).hasSize(2);
+        assertThat(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY)).hasSize(2);
     }
 
     /**
@@ -48,7 +49,7 @@ class ScorableAtomFactoryTest {
         var atom = fixture.looseAtom(section, "en", "Go");
         atom.setActive(false);
 
-        assertThat(ScorableAtomFactory.from(fixture.tree(), Map.of())).isEmpty();
+        assertThat(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY)).isEmpty();
     }
 
     @Test
@@ -59,7 +60,7 @@ class ScorableAtomFactoryTest {
         var untagged = fixture.looseAtom(section, "en", "Rust");
 
         List<ScorableAtom> atoms = ScorableAtomFactory.from(fixture.tree(),
-                Map.of(tagged.getId(), Set.of("payments")));
+                Map.of(tagged.getId(), Set.of("payments")), TODAY);
 
         assertThat(byId(atoms, tagged).tags()).containsExactly("payments");
         assertThat(byId(atoms, untagged).tags()).isEmpty();
@@ -74,7 +75,7 @@ class ScorableAtomFactoryTest {
         embedded.setEmbedding(new float[Atom.EMBEDDING_DIMENSIONS], "hash");
         var bare = fixture.looseAtom(section, "en", "Rust");
 
-        List<ScorableAtom> atoms = ScorableAtomFactory.from(fixture.tree(), Map.of());
+        List<ScorableAtom> atoms = ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY);
 
         assertThat(byId(atoms, embedded).hasEmbedding()).isTrue();
         assertThat(byId(atoms, bare).hasEmbedding()).isFalse();
@@ -91,7 +92,7 @@ class ScorableAtomFactoryTest {
         var atom = fixture.bullet(section, entry, "en", "Built ETL pipelines");
 
         List<String> tokens = byId(
-                ScorableAtomFactory.from(fixture.tree(), Map.of()), atom).contentTokens();
+                ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY), atom).contentTokens();
 
         assertThat(tokens).contains("built", "etl", "pipelines", "engineer", "acme", "payments");
     }
@@ -105,7 +106,7 @@ class ScorableAtomFactoryTest {
         var fixture = new Fixture();
         var atom = fixture.looseAtom(fixture.section(), "en", "Kubernetes");
 
-        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of()), atom)
+        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY), atom)
                 .contentTokens()).containsExactly("kubernetes");
     }
 
@@ -120,7 +121,7 @@ class ScorableAtomFactoryTest {
         var atom = fixture.looseAtom(section, "tr", "Odeme altyapisi");
         fixture.wordingFor(atom, "en", "Payment infrastructure");
 
-        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of()), atom)
+        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY), atom)
                 .contentTokens()).contains("payment", "infrastructure");
     }
 
@@ -134,7 +135,7 @@ class ScorableAtomFactoryTest {
         var fixture = new Fixture();
         var atom = fixture.looseAtom(fixture.section(), "tr", "Kubernetes kumesi kurdum");
 
-        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of()), atom)
+        assertThat(byId(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY), atom)
                 .contentTokens()).contains("kubernetes");
     }
 
@@ -152,7 +153,7 @@ class ScorableAtomFactoryTest {
         var previous = Locale.getDefault();
         try {
             Locale.setDefault(Locale.forLanguageTag("tr-TR"));
-            var scorable = byId(ScorableAtomFactory.from(fixture.tree(), Map.of()), atom);
+            var scorable = byId(ScorableAtomFactory.from(fixture.tree(), Map.of(), TODAY), atom);
 
             assertThat(scorable.skills()).containsExactly("sql");
             assertThat(scorable.contentTokens()).contains("sql", "indexing");

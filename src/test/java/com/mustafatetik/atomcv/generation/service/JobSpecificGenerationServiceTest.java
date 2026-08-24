@@ -137,7 +137,7 @@ class JobSpecificGenerationServiceTest {
         when(analysis.analyse(anyString(), anyBoolean(), anyString()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any())).thenReturn(new RelevanceScores(
-                List.of(new ScoredAtom(atomId, 0.77,
+                List.of(new ScoredAtom(atomId, 0.77, 0.5,
                         new ScoredAtom.Components(0.5, 0.5, 0.5, 0.5))),
                 ScoringWeights.DEFAULT));
         when(pipeline.run(any(), any(), any(), any(), any()))

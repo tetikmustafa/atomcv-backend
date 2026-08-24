@@ -5,6 +5,8 @@ import com.mustafatetik.atomcv.embedding.EmbeddingProvider;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,10 +31,12 @@ public class RelevanceScoringService {
 
     private final EmbeddingProvider embeddings;
     private final MeterRegistry meters;
+    private final Clock clock;
 
-    RelevanceScoringService(EmbeddingProvider embeddings, MeterRegistry meters) {
+    RelevanceScoringService(EmbeddingProvider embeddings, MeterRegistry meters, Clock clock) {
         this.embeddings = embeddings;
         this.meters = meters;
+        this.clock = clock;
     }
 
     /**
@@ -42,7 +46,11 @@ public class RelevanceScoringService {
     public RelevanceScores scoreAgainst(
             ProfileTree tree, Map<UUID, Set<String>> tagsByAtom, JobAnalysis posting) {
 
-        List<ScorableAtom> atoms = ScorableAtomFactory.from(tree, tagsByAtom);
+        // The date reaches the factory, never the scorer: Bolum 19.4's
+        // criteria need one and Bolum 51.2's determinism test needs the
+        // scoring itself to be a pure function of its arguments.
+        List<ScorableAtom> atoms = ScorableAtomFactory.from(
+                tree, tagsByAtom, LocalDate.now(clock));
         float[] postingVector = postingVector(posting);
         ScoringWeights weights = postingVector == null
                 ? ScoringWeights.WITHOUT_EMBEDDING

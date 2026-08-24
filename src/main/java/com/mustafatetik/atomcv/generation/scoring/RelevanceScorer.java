@@ -39,9 +39,11 @@ public final class RelevanceScorer {
     /**
      * Every atom, ranked (Bolum 19.6).
      *
-     * <p>Ties break on the atom id as a string, which Bolum 19.6 calls
-     * mandatory. Without it two atoms of equal score swap places between runs
-     * and the same input produces a different CV.
+     * <p>Ordering is Bolum 19.6 and Bolum 19.4 together, and lives on
+     * {@link ScoredAtom#MOST_RELEVANT_FIRST}: relevance in buckets, then the
+     * general-mode criteria within a bucket, then the id. This function stays
+     * a pure comparison of values — the secondary score arrives on the
+     * {@link ScorableAtom}, computed where the clock is.
      */
     public static List<ScoredAtom> rank(
             List<ScorableAtom> atoms, JobAnalysis posting, float[] postingVector,
@@ -74,7 +76,7 @@ public final class RelevanceScorer {
         // A raw score can therefore exceed one, which is why the final score
         // is clamped rather than assumed to be a fraction.
         double finalScore = clamp(raw * (0.5 + atom.importance()));
-        return new ScoredAtom(atom.atomId(), finalScore,
+        return new ScoredAtom(atom.atomId(), finalScore, atom.secondaryScore(),
                 new ScoredAtom.Components(embedding, tag, skill, keyword));
     }
 

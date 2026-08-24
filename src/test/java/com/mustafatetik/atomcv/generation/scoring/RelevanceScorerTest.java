@@ -100,7 +100,7 @@ class RelevanceScorerTest {
         var perfect = new ScorableAtom(UUID.randomUUID(), null,
                 Set.of("go", "postgres", "fintech", "senior", "backend", "engineer",
                         "distributed systems", "high availability"),
-                Set.of("go", "postgres", "terraform"), List.of(), 1.0);
+                Set.of("go", "postgres", "terraform"), List.of(), 1.0, 0.5);
 
         var scored = RelevanceScorer.score(perfect,
                 new RelevanceScorer.PostingTarget(backendPosting()), null,
@@ -150,6 +150,83 @@ class RelevanceScorerTest {
                 .isCloseTo(0.4, EPSILON);
     }
 
+    // ── Bolum 19.4: what decides between two close atoms ─────────────────
+
+    /**
+     * Relevance dominates. A bucket apart is a bucket apart, whatever the
+     * secondary score says — otherwise a recent irrelevant bullet would climb
+     * over an older relevant one, which is the failure Bolum 19 exists to
+     * prevent.
+     */
+    @Test
+    void abetterRelevanceScoreWinsHoweverPoorTheSecondaryOne() {
+        var relevant = scored(0.80, 0.0);
+        var recent = scored(0.60, 1.0);
+
+        assertThat(ranked(recent, relevant)).containsExactly(relevant, recent);
+    }
+
+    /**
+     * Within one bucket, Bolum 19.4 decides: recency, importance, impact,
+     * verification. Two atoms this close are not meaningfully different on
+     * relevance, and the weights of Bolum 19.1 are tuned to one decimal.
+     */
+    @Test
+    void withinOneBucketTheGeneralModeCriteriaDecide() {
+        var older = scored(0.805, 0.2);
+        var fresher = scored(0.800, 0.9);
+
+        // Higher raw relevance, but the same bucket — so the fresher one wins.
+        assertThat(ranked(older, fresher)).containsExactly(fresher, older);
+    }
+
+    /**
+     * The reason this is a bucket and not an epsilon.
+     *
+     * <p>A comparator that asks "are these within 0.02 of each other" is not
+     * transitive: with a ≈ b and b ≈ c but a ≢ c, {@code List.sort} detects the
+     * inconsistency and throws — on a large profile, in production, having
+     * passed every smaller test. A chain of scores 0.02 apart is exactly that
+     * shape, and sorting it here must simply work.
+     */
+    @Test
+    void alongChainOfNearlyEqualScoresSortsWithoutComplaint() {
+        List<ScoredAtom> chain = new ArrayList<>();
+        for (int step = 0; step < 60; step++) {
+            chain.add(scored(step * 0.015, 1.0 - step * 0.015));
+        }
+        Collections.shuffle(chain, new Random(7));
+
+        var sorted = chain.stream().sorted(ScoredAtom.MOST_RELEVANT_FIRST).toList();
+
+        assertThat(sorted).hasSize(60);
+        assertThat(sorted.get(0).score()).isGreaterThan(sorted.get(59).score());
+    }
+
+    /**
+     * Bolum 19.6 is still mandatory, and it is still last. It is also reached
+     * far less often now — ids are regenerated on every import, so an ordering
+     * that leaned on them changed when the same content was imported twice.
+     */
+    @Test
+    void theidIsTheLastResortAndStillBreaksATrueTie() {
+        var first = new ScoredAtom(UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                0.5, 0.5, new ScoredAtom.Components(0, 0, 0, 0));
+        var second = new ScoredAtom(UUID.fromString("00000000-0000-0000-0000-000000000002"),
+                0.5, 0.5, new ScoredAtom.Components(0, 0, 0, 0));
+
+        assertThat(ranked(second, first)).containsExactly(first, second);
+    }
+
+    private static List<ScoredAtom> ranked(ScoredAtom... atoms) {
+        return java.util.Arrays.stream(atoms).sorted(ScoredAtom.MOST_RELEVANT_FIRST).toList();
+    }
+
+    private static ScoredAtom scored(double relevance, double secondary) {
+        return new ScoredAtom(UUID.randomUUID(), relevance, secondary,
+                new ScoredAtom.Components(0, 0, 0, 0));
+    }
+
     // ── The keyword component ────────────────────────────────────────────
 
     /**
@@ -191,9 +268,9 @@ class RelevanceScorerTest {
     void thekeywordComponentReadsTheAtomsWordsRatherThanItsTags() {
         var target = new RelevanceScorer.PostingTarget(backendPosting());
         var tagged = new ScorableAtom(UUID.randomUUID(), null,
-                Set.of("distributed systems", "high availability"), Set.of(), List.of(), 0.5);
+                Set.of("distributed systems", "high availability"), Set.of(), List.of(), 0.5, 0.5);
         var spoken = new ScorableAtom(UUID.randomUUID(), null, Set.of(), Set.of(),
-                List.of("kept", "distributed", "systems", "at", "high", "availability"), 0.5);
+                List.of("kept", "distributed", "systems", "at", "high", "availability"), 0.5, 0.5);
 
         assertThat(RelevanceScorer.score(tagged, target, null, ScoringWeights.DEFAULT)
                 .components().keyword()).isZero();
@@ -245,7 +322,7 @@ class RelevanceScorerTest {
         var atom = atom(Set.of("go"), Set.of("go"), 0.5);
         var target = new RelevanceScorer.PostingTarget(backendPosting());
         var withVector = new ScorableAtom(atom.atomId(), new float[] {1f, 0f, 0f},
-                atom.tags(), atom.skills(), List.of(), atom.importance());
+                atom.tags(), atom.skills(), List.of(), atom.importance(), 0.5);
 
         var scored = RelevanceScorer.score(
                 withVector, target, new float[] {1f, 0f, 0f}, ScoringWeights.WITHOUT_EMBEDDING);
@@ -297,7 +374,8 @@ class RelevanceScorerTest {
     // ── fixtures ─────────────────────────────────────────────────────────
 
     private static ScorableAtom atom(Set<String> tags, Set<String> skills, double importance) {
-        return new ScorableAtom(UUID.randomUUID(), null, tags, skills, List.of(), importance);
+        return new ScorableAtom(
+                UUID.randomUUID(), null, tags, skills, List.of(), importance, 0.5);
     }
 
     private static JobAnalysis backendPosting() {
