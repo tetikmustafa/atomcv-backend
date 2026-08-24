@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,6 +56,7 @@ class GenerationEnqueueServiceTest {
     private ProfileAssembler assembler;
     private JobQueue queue;
     private JobRepository jobs;
+    private com.mustafatetik.atomcv.billing.QuotaService quotas;
     private GenerationEnqueueService service;
 
     private ProfileRef profile;
@@ -65,7 +67,9 @@ class GenerationEnqueueServiceTest {
         assembler = mock(ProfileAssembler.class);
         queue = mock(JobQueue.class);
         jobs = mock(JobRepository.class);
-        service = new GenerationEnqueueService(profiles, assembler, queue, jobs,
+        quotas = mock(com.mustafatetik.atomcv.billing.QuotaService.class);
+        when(quotas.consume(any(), any())).thenReturn(Result.ok(null));
+        service = new GenerationEnqueueService(profiles, assembler, queue, jobs, quotas,
                 Clock.fixed(Instant.parse("2026-08-24T09:00:00Z"), ZoneOffset.UTC));
 
         var head = new Profile(USER);
@@ -148,6 +152,45 @@ class GenerationEnqueueServiceTest {
         assertThat(queued.getValue().getOwnerId()).isEqualTo(USER);
         assertThat(GenerationPayload.from(queued.getValue().getPayload()))
                 .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr"));
+    }
+
+    /**
+     * Bolum 44: the only gate that writes, and the first that runs. A user over
+     * their limit should not have their profile loaded to find that out.
+     */
+    @Test
+    void anexhaustedQuotaIsRefusedBeforeAnythingElseHappens() {
+        when(quotas.consume(any(), any())).thenReturn(Result.err(
+                new PipelineError.QuotaExceeded("generation", Instant.EPOCH)));
+
+        var result = service.enqueue(user(), POSTING, false, null, null, null);
+
+        assertThat(((Result.Err<Job>) result).error())
+                .isInstanceOf(PipelineError.QuotaExceeded.class);
+        verify(profiles, never()).owned(any());
+        verify(queue, never()).enqueue(any());
+    }
+
+    /**
+     * Bolum 44.2: nothing was generated, so nothing was spent. Without the
+     * refund a user could burn a day's allowance on typos.
+     */
+    @Test
+    void arefusedRequestGivesTheUnitBack() {
+        service.enqueue(user(), "hire me plz", false, null, null, null);
+
+        verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
+    }
+
+    /** Answering with a job that already exists must not cost a second unit. */
+    @Test
+    void aknownKeyCostsNothing() {
+        var existing = new Job(JobType.GENERATION, USER, java.util.Map.of(), Instant.EPOCH);
+        when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.of(existing));
+
+        service.enqueue(user(), POSTING, false, null, null, "key-1");
+
+        verify(quotas, never()).consume(any(), any());
     }
 
     private static UserContext user() {

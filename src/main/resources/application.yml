@@ -46,6 +46,12 @@ atomcv:
   # Bolum 30.4. Every instance works the queue and every instance reclaims
   # stale jobs, including its own — the condition is the heartbeat, not the
   # owner.
+  # Bolum 44.1. Two counters on purpose: with one limit somebody could spend
+  # all of it on profile extraction, which is the most expensive call we make.
+  quota:
+    generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
+    profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
+
   jobs:
     worker:
       enabled: ${JOBS_WORKER_ENABLED:true}

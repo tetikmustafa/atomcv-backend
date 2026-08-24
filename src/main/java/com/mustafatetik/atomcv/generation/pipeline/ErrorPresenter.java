@@ -33,6 +33,20 @@ public class ErrorPresenter {
                     .resolution(ResolutionAction.COMPLETE_PROFILE)
                     .build();
 
+            /*
+             * No resolution, deliberately. The closed vocabulary of EK D.6.1
+             * has no "wait until tomorrow", and `retry` means the opposite —
+             * a transient failure worth repeating unchanged, now. Adding an
+             * eleventh value would buy a button that does nothing the params
+             * do not already say: `resetsAt` is an absolute instant and the
+             * client writes the sentence in the user's own locale (F-007).
+             */
+            case PipelineError.QuotaExceeded spent -> UserFacingError
+                    .with(ErrorCode.QUOTA_EXCEEDED)
+                    .param("metric", spent.metric())
+                    .param("resetsAt", spent.resetsAt())
+                    .build();
+
             case PipelineError.UnparseableJobDescription unreadable -> UserFacingError
                     .with(ErrorCode.UNPARSEABLE_JOB_DESCRIPTION)
                     .param("confidence", unreadable.confidence())

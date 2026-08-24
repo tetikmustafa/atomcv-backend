@@ -12,11 +12,13 @@ import java.util.random.RandomGenerator;
  * possibly help. That is the same reason {@code PipelineError} is sealed at
  * all, applied to the second question every error raises.
  *
- * <p>Bolum 30.5 lists ten cases and six exist. The missing four —
- * {@code EmbeddingUnavailable}, {@code FeatureRequiresAccount},
- * {@code QuotaExceeded}, {@code RewriteValidationFailed} — arrive with the
- * phases that raise them, and each will fail this switch to compile on the way
- * in. That is the point of writing it exhaustively rather than with a default.
+ * <p>Bolum 30.5 lists ten cases and seven exist. {@code QuotaExceeded} arrived
+ * with Adim 2.7 and did exactly what this design is for: adding it failed both
+ * this switch and {@code ErrorPresenter} to compile, so nobody could add a
+ * failure without deciding what the user is told and whether repeating it
+ * could help. The remaining three — {@code EmbeddingUnavailable},
+ * {@code FeatureRequiresAccount}, {@code RewriteValidationFailed} — arrive the
+ * same way.
  */
 public final class JobRetryPolicy {
 
@@ -54,6 +56,10 @@ public final class JobRetryPolicy {
             case PipelineError.UnparseableJobDescription ignored -> false;
             case PipelineError.ConflictingPreferences ignored -> false;
             case PipelineError.PageLimitExceeded ignored -> false;
+
+            // The next attempt reads the same counter. A retry budget spent
+            // against a limit is three failures instead of one.
+            case PipelineError.QuotaExceeded ignored -> false;
         };
     }
 
