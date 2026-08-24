@@ -21,6 +21,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
@@ -69,10 +70,10 @@ class GenerationJobHandlerTest {
 
     @Test
     void asuccessfulRunIsWrittenDownAndItsIdComesBack() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
-        JobOutcome outcome = handler.handle(job());
+        JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
@@ -89,10 +90,10 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thesnapshotCarriesEnoughToDrawThePageAgain() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
-        handler.handle(job());
+        handler.handle(job(), ProgressSink.NONE);
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
@@ -106,10 +107,10 @@ class GenerationJobHandlerTest {
     /** The same hash the analysis cache keys on, so the two can be matched. */
     @Test
     void thepostingIsRecordedWithTheHashTheCacheUses() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
-        handler.handle(job());
+        handler.handle(job(), ProgressSink.NONE);
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
@@ -125,10 +126,10 @@ class GenerationJobHandlerTest {
      */
     @Test
     void theengineVersionNamesWhatActuallyRan() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.WITHOUT_EMBEDDING, "v7")));
 
-        handler.handle(job());
+        handler.handle(job(), ProgressSink.NONE);
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
@@ -145,10 +146,10 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thetraceCarriesOnlyThePhasesThatAreInstrumented() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
-        handler.handle(job());
+        handler.handle(job(), ProgressSink.NONE);
 
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
@@ -161,11 +162,11 @@ class GenerationJobHandlerTest {
     /** Bolum 30.5: the world outside may have changed by the next attempt. */
     @Test
     void aprovideroutageComesBackRetryableAndWritesNoRecord() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
-        JobOutcome outcome = handler.handle(job());
+        JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
 
         assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Failed.class, failed -> {
             assertThat(failed.retryable()).isTrue();
@@ -178,11 +179,11 @@ class GenerationJobHandlerTest {
     /** The next attempt reads the same thin profile and reaches the same answer. */
     @Test
     void athinProfileComesBackFinal() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.InsufficientProfile(10, List.of("atoms"))));
 
-        JobOutcome outcome = handler.handle(job());
+        JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
 
         assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Failed.class,
                 failed -> assertThat(failed.retryable()).isFalse());
@@ -197,13 +198,13 @@ class GenerationJobHandlerTest {
     void anAnonymousJobIsRefusedRatherThanGivenAnOwner() {
         var anonymous = new Job(JobType.GENERATION, null, payload(), Instant.EPOCH);
 
-        JobOutcome outcome = handler.handle(anonymous);
+        JobOutcome outcome = handler.handle(anonymous, ProgressSink.NONE);
 
         assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Failed.class, failed -> {
             assertThat(failed.retryable()).isFalse();
             assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         });
-        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any());
+        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), any());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────

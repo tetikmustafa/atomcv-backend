@@ -20,6 +20,12 @@ public interface JobHandler {
     /**
      * Runs the job.
      *
+     * @param progress where to say how far along it is. Called or not called
+     *                 as the work allows: a handler that cannot honestly
+     *                 divide itself into phases reports nothing rather than
+     *                 inventing percentages, and the terminal event still
+     *                 arrives.
+     *
      * <p>Returning {@link JobOutcome.Failed} is the ordinary way to fail: the
      * error is one the user is told about, and the handler has decided whether
      * another attempt is worth making. Throwing is the other way, and the
@@ -27,5 +33,5 @@ public interface JobHandler {
      * remain, because an exception is by definition something nobody reasoned
      * about.
      */
-    JobOutcome handle(Job job);
+    JobOutcome handle(Job job, ProgressSink progress);
 }

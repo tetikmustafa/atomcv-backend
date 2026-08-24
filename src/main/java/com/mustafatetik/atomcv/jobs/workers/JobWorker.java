@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRetryPolicy;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import jakarta.annotation.PreDestroy;
@@ -148,7 +149,7 @@ public class JobWorker {
             return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
         }
         try {
-            return handler.handle(job);
+            return handler.handle(job, sinkFor(job));
         } catch (RuntimeException thrown) {
             // Unreasoned-about failures are retried while attempts remain: an
             // exception is by definition something nobody decided was final.
@@ -157,6 +158,21 @@ public class JobWorker {
                     job.getType(), job.getId(), thrown.toString());
             return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), true);
         }
+    }
+
+    /**
+     * Writes each report to the row.
+     *
+     * <p>The row rather than only an event, because a client that reconnects
+     * has to be caught up from somewhere and an event that was sent to nobody
+     * is gone (EK D.6.4). One update per phase, which is a handful per
+     * generation.
+     */
+    private ProgressSink sinkFor(Job job) {
+        return progress -> {
+            job.setProgress(progress);
+            queue.save(job);
+        };
     }
 
     private void settle(Job job, JobOutcome outcome) {

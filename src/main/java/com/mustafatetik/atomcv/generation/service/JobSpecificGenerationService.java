@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.repository.TagRepository;
@@ -90,7 +91,8 @@ public class JobSpecificGenerationService {
             String jobDescription,
             boolean preflightAcknowledged,
             Integer maxPages,
-            String language) {
+            String language,
+            ProgressSink progress) {
 
         var owned = profiles.owned(user);
         Profile head = owned.profile();
@@ -104,6 +106,7 @@ public class JobSpecificGenerationService {
 
         // Faz A. The bucket key is the user id, so an A/B experiment keeps one
         // person on one prompt version across their generations (Bolum 53.3).
+        progress.report(GenerationPhase.ANALYSING.at(10));
         String bucketKey = user.userId().toString();
         Result<JobAnalysis> analysed =
                 analysis.analyse(jobDescription, preflightAcknowledged, bucketKey);
@@ -120,6 +123,8 @@ public class JobSpecificGenerationService {
                 .orElseThrow(() -> new IllegalStateException(
                         "This customization has never been calibrated; measure it first"));
 
+        progress.report(GenerationPhase.MEASURING.at(30));
+
         // One compilation for everything that has no cost yet, before
         // selection asks for numbers (Bolum 26.2).
         try {
@@ -130,6 +135,8 @@ public class JobSpecificGenerationService {
             return Result.err(
                     new PipelineError.CompilationFailed(failed.kind(), failed.log()));
         }
+
+        progress.report(GenerationPhase.SCORING.at(50));
 
         // Faz B. The fifth query of the generation, and the only one general
         // mode does not make: tags are a scoring input, not part of the tree
@@ -150,6 +157,8 @@ public class JobSpecificGenerationService {
             log.info("Selecting with {} estimated costs and {} atoms with no wording",
                     built.estimatedAtoms(), built.withoutWording());
         }
+
+        progress.report(GenerationPhase.RENDERING.at(70));
 
         return pipeline.run(head, tree, built.request(),
                         options.customization(), options.locale())
