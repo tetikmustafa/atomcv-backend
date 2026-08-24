@@ -99,6 +99,8 @@ public class GenerationEnqueueService {
     private Result<Void> preflight(
             UserContext user, String jobDescription, boolean preflightAcknowledged) {
 
+        // A blank posting is general CV mode, not a bad request: Bolum 18.1's
+        // check accepts it for exactly that reason.
         if (!preflightAcknowledged) {
             var verdict = JobDescriptionPreflight.check(jobDescription);
             if (!verdict.isAccepted()) {

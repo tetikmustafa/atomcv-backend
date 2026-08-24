@@ -194,15 +194,25 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
         assertThat(queuedJobs()).isEqualTo(1);
     }
 
+    /**
+     * Bolum 19.4: no posting is not a bad request, it is a general CV. The
+     * column agrees — {@code generations.job_description} is NULL for exactly
+     * this case — and it is the same endpoint because everything from
+     * selection onwards is the same pipeline.
+     */
     @Test
-    void anemptyPostingIsARequestError() throws Exception {
+    void nopostingIsAGeneralCvRatherThanARequestError() throws Exception {
         seedCareer();
 
         mvc.perform(post("/api/v1/generations")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isAccepted());
+        mvc.perform(post("/api/v1/generations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"jobDescription\":\"   \"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+                .andExpect(status().isAccepted());
+
+        assertThat(queuedJobs()).isEqualTo(2);
     }
 
     // ── Bolum 30.7: idempotency ──────────────────────────────────────────

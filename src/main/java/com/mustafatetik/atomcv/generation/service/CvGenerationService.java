@@ -1,11 +1,11 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
-import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
+import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
@@ -19,6 +19,7 @@ import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -65,8 +66,8 @@ public class CvGenerationService {
      * @param maxPages null to take the profile's own default
      * @param language null to take the profile's own default
      */
-    public Result<GeneratedDocument> generateGeneralCv(
-            UserContext user, Integer maxPages, String language) {
+    public Result<GeneratedGeneration> generateGeneralCv(
+            UserContext user, Integer maxPages, String language, ProgressSink progress) {
 
         var owned = profiles.owned(user);
         Profile head = owned.profile();
@@ -84,6 +85,8 @@ public class CvGenerationService {
         if (preflight.isErr()) {
             return preflight.map(ignored -> null);
         }
+
+        progress.report(GenerationPhase.MEASURING.at(30));
 
         // One compilation for everything that has no cost yet, before
         // selection asks for numbers (Bolum 26.2).
@@ -112,7 +115,13 @@ public class CvGenerationService {
                     built.estimatedAtoms(), built.withoutWording());
         }
 
+        progress.report(GenerationPhase.RENDERING.at(70));
+
         return pipeline.run(head, tree, built.request(),
-                options.customization(), options.locale());
+                        options.customization(), options.locale())
+                // No posting and no Faz B: both are null, and the record says
+                // so rather than pretending a comparison happened (Bolum 19.4).
+                .map(document -> new GeneratedGeneration(
+                        profile.id(), null, options, null, Map.of(), document));
     }
 }

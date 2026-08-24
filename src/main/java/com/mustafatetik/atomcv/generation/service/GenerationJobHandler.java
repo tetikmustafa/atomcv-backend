@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.generation.domain.EngineVersion;
 import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.generation.domain.RenderedContent;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
@@ -48,15 +49,21 @@ public class GenerationJobHandler implements JobHandler {
     private static final Logger log = LoggerFactory.getLogger(GenerationJobHandler.class);
 
     private final JobSpecificGenerationService generations;
+    private final CvGenerationService general;
     private final GenerationRepository records;
     private final ErrorPresenter errors;
 
-    GenerationJobHandler(JobSpecificGenerationService generations, GenerationRepository records,
-            ErrorPresenter errors) {
+    GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
+            GenerationRepository records, ErrorPresenter errors) {
 
         this.generations = generations;
+        this.general = general;
         this.records = records;
         this.errors = errors;
+    }
+
+    private static boolean isGeneralMode(GenerationPayload payload) {
+        return payload.jobDescription() == null || payload.jobDescription().isBlank();
     }
 
     @Override
@@ -78,9 +85,15 @@ public class GenerationJobHandler implements JobHandler {
         GenerationPayload payload = GenerationPayload.from(job.getPayload());
         UserContext user = UserContext.of(userId);
 
-        Result<GeneratedGeneration> result = generations.generateForJob(
-                user, payload.jobDescription(), payload.preflightAcknowledged(),
-                payload.maxPages(), payload.language(), progress);
+        // Bolum 19.4: no posting means no Faz A and no Faz B. Everything from
+        // selection onwards is the same code, which is what separating scoring
+        // from selection bought.
+        Result<GeneratedGeneration> result = isGeneralMode(payload)
+                ? general.generateGeneralCv(user, payload.maxPages(), payload.language(),
+                        progress)
+                : generations.generateForJob(
+                        user, payload.jobDescription(), payload.preflightAcknowledged(),
+                        payload.maxPages(), payload.language(), progress);
 
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
@@ -116,11 +129,14 @@ public class GenerationJobHandler implements JobHandler {
                 StoredSelection.of(selection, options.language(), options.customization()),
                 engineVersion(options, generated));
 
-        record.recordPosting(
-                payload.jobDescription(),
-                JobDescriptionDigest.of(payload.jobDescription()),
-                generated.posting());
+        if (!isGeneralMode(payload)) {
+            record.recordPosting(
+                    payload.jobDescription(),
+                    JobDescriptionDigest.of(payload.jobDescription()),
+                    generated.posting());
+        }
         record.setPageCount(document.pageCount());
+        record.setContentSnapshot(RenderedContent.of(document.rendered()));
         record.setTrace(trace(generated));
 
         return records.save(user, record);
@@ -144,7 +160,7 @@ public class GenerationJobHandler implements JobHandler {
                 // Bolum 28.4: which of the two weight sets ran. A week of
                 // generations scored without vectors otherwise looks exactly
                 // like a prompt regression.
-                generated.weights().usesEmbedding() ? "default" : "without-embedding",
+                weightsOf(generated),
                 options.customization().costKey(),
                 generated.promptVersions());
     }
@@ -160,8 +176,7 @@ public class GenerationJobHandler implements JobHandler {
         SelectionState selection = generated.document().selection();
 
         Map<String, Object> phaseB = new LinkedHashMap<>();
-        phaseB.put("weights", generated.weights().usesEmbedding()
-                ? "default" : "without-embedding");
+        phaseB.put("weights", weightsOf(generated));
 
         Map<String, Object> phaseC = new LinkedHashMap<>();
         phaseC.put("selected", selection.selected().size());
@@ -178,6 +193,19 @@ public class GenerationJobHandler implements JobHandler {
         trace.put("C", phaseC);
         trace.put("F", phaseF);
         return trace;
+    }
+
+    /**
+     * Which weight set scored this run, or that none did.
+     *
+     * <p>General mode has no Faz B at all, and writing "default" would make a
+     * run that never compared anything look like one that did.
+     */
+    private static String weightsOf(GeneratedGeneration generated) {
+        if (generated.weights() == null) {
+            return "general-mode";
+        }
+        return generated.weights().usesEmbedding() ? "default" : "without-embedding";
     }
 
     /**

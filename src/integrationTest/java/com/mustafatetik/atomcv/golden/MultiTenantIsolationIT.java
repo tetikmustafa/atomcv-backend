@@ -176,7 +176,8 @@ class MultiTenantIsolationIT extends AbstractIntegrationTest {
     void theGeneratedCvIsBuiltFromTheActingUsersProfileOnly() throws Exception {
         // Nothing of the acting user's, so there is nothing to generate — even
         // though a full profile exists in the same tables.
-        mvc.perform(post("/api/v1/generations/general"))
+        mvc.perform(post("/api/v1/generations")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
                         .jsonPath("$.code").value("INSUFFICIENT_PROFILE"));
     }

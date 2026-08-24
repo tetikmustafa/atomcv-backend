@@ -44,6 +44,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * real: the content is measured by TeX, scored, selected against the measured
  * capacity, rendered, compiled, and the page count that comes back is the
  * compiler's own.
+ *
+ * <p>Since Adim 2.6 the whole flow is exercised, not only the pipeline: the
+ * request is queued, a worker takes it, a generation row is written, and the
+ * PDF comes back from {@code /download} — which re-renders the stored content
+ * snapshot rather than the profile. General CV mode is used because it needs
+ * no LLM; the job-specific path through a fake provider is still to come.
  */
 @Tag("latex")
 @AutoConfigureMockMvc
@@ -79,6 +85,15 @@ class GeneralCvIT extends AbstractIntegrationTest {
     @Autowired
     private TransactionTemplate tx;
 
+    @Autowired
+    private com.mustafatetik.atomcv.jobs.queue.JobQueue queue;
+
+    @Autowired
+    private java.util.List<com.mustafatetik.atomcv.jobs.queue.JobHandler> handlers;
+
+    @Autowired
+    private java.time.Clock clock;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -92,11 +107,7 @@ class GeneralCvIT extends AbstractIntegrationTest {
     void aRealProfileBecomesARealOnePagePdf() throws Exception {
         seedCareer(3, 5);
 
-        byte[] pdf = mvc.perform(post("/api/v1/generations/general"))
-                .andExpect(status().isOk())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .header().string("Content-Type", MediaType.APPLICATION_PDF_VALUE))
-                .andReturn().getResponse().getContentAsByteArray();
+        byte[] pdf = generateAndDownload();
 
         assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
         assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
@@ -112,7 +123,7 @@ class GeneralCvIT extends AbstractIntegrationTest {
         seedCareer(2, 3);
         assertThat(measuredCosts()).isZero();
 
-        mvc.perform(post("/api/v1/generations/general")).andExpect(status().isOk());
+        generateAndDownload();
 
         assertThat(measuredCosts()).isEqualTo(6);
     }
@@ -122,7 +133,7 @@ class GeneralCvIT extends AbstractIntegrationTest {
     void moreContentThanFitsStillProducesOnePage() throws Exception {
         seedCareer(6, 10);
 
-        mvc.perform(post("/api/v1/generations/general")).andExpect(status().isOk());
+        generateAndDownload();
     }
 
     /**
@@ -137,6 +148,42 @@ class GeneralCvIT extends AbstractIntegrationTest {
                    AND profile_id IN (SELECT id FROM profiles WHERE user_id = ?)
                 """, Integer.class, LocalDevCurrentUser.DEV_USER_ID);
         return count == null ? 0 : count;
+    }
+
+    /**
+     * The whole flow: queue it, work it, download what was written down.
+     *
+     * <p>The worker is built here because the scheduler is off for the suite,
+     * and the download deliberately goes back through HTTP: re-rendering the
+     * stored content snapshot is the part that has never met real TeX before.
+     */
+    private byte[] generateAndDownload() throws Exception {
+        String accepted = mvc.perform(post("/api/v1/generations")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isAccepted())
+                .andReturn().getResponse().getContentAsString();
+
+        var worker = new com.mustafatetik.atomcv.jobs.workers.JobWorker(
+                queue, com.mustafatetik.atomcv.jobs.queue.JobEvents.NONE, handlers,
+                new com.mustafatetik.atomcv.jobs.workers.JobWorkerProperties(
+                        true, 1, null, null, null, java.time.Duration.ofSeconds(5)),
+                clock);
+        assertThat(worker.runOne()).as("the queued generation was taken").isTrue();
+
+        String jobId = com.jayway.jsonpath.JsonPath.read(accepted, "$.jobId");
+        String status = mvc.perform(org.springframework.test.web.servlet.request
+                        .MockMvcRequestBuilders.get("/api/v1/jobs/" + jobId))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String generationId = com.jayway.jsonpath.JsonPath.read(status, "$.generationId");
+
+        return mvc.perform(org.springframework.test.web.servlet.request
+                        .MockMvcRequestBuilders
+                        .get("/api/v1/generations/" + generationId + "/download"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .header().string("Content-Type", MediaType.APPLICATION_PDF_VALUE))
+                .andReturn().getResponse().getContentAsByteArray();
     }
 
     private void seedCareer(int jobs, int bulletsPerJob) {

@@ -50,6 +50,7 @@ class GenerationJobHandlerTest {
     private static final String POSTING = "We are hiring a senior backend engineer.";
 
     private JobSpecificGenerationService generations;
+    private CvGenerationService general;
     private GenerationRepository records;
     private GenerationJobHandler handler;
 
@@ -57,7 +58,9 @@ class GenerationJobHandlerTest {
     void wireTheMocks() {
         generations = mock(JobSpecificGenerationService.class);
         records = mock(GenerationRepository.class);
-        handler = new GenerationJobHandler(generations, records, new ErrorPresenter());
+        general = mock(CvGenerationService.class);
+        handler = new GenerationJobHandler(
+                generations, general, records, new ErrorPresenter());
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 
@@ -237,8 +240,13 @@ class GenerationJobHandlerTest {
                 new GenerationOptions(1, "en", TemplateCustomization.CLASSIC),
                 weights,
                 Map.of(JobAnalysisPhase.PROMPT_ID, promptVersion),
-                new GeneratedDocument(
-                        "%PDF".getBytes(StandardCharsets.UTF_8), 1, selection, 1, 1.0));
+                new GeneratedDocument("%PDF".getBytes(StandardCharsets.UTF_8), 1, selection,
+                        new com.mustafatetik.atomcv.rendering.model.RenderRequest(
+                                new com.mustafatetik.atomcv.rendering.model.RenderRequest
+                                        .ProfileHeader("Ada", "", List.of()),
+                                List.of(), TemplateCustomization.CLASSIC,
+                                java.util.Locale.ENGLISH),
+                        1, 1.0));
     }
 
     private static JobAnalysis posting() {

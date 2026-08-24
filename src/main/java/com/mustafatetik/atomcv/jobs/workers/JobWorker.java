@@ -62,7 +62,7 @@ public class JobWorker {
 
     private volatile boolean acceptingNewJobs = true;
 
-    JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
+    public JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
             JobWorkerProperties properties, Clock clock) {
         this(queue, events, handlers, properties, clock, RandomGenerator.getDefault());
     }

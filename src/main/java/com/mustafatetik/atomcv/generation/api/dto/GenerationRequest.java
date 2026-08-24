@@ -3,12 +3,16 @@ package com.mustafatetik.atomcv.generation.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * A CV asked for against one posting (Bolum 35.3).
+ * A CV asked for (Bolum 35.3).
+ *
+ * <p>{@code jobDescription} is optional, and leaving it out is not a mistake:
+ * it is general CV mode (Bolum 19.4), where there is nothing to be relevant to
+ * and the profile is ranked on its own terms. The column says the same thing —
+ * {@code generations.job_description} is NULL for exactly this case.
  *
  * @param acknowledgePreflight the user was told the text does not look like a
  *                             posting and asked to go ahead anyway
@@ -19,9 +23,8 @@ import jakarta.validation.constraints.Size;
 @Schema(description = "A generation against a job posting")
 public record GenerationRequest(
 
-        @Schema(description = "The posting, pasted as it was found",
-                requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotBlank
+        @Schema(description = "The posting, pasted as it was found. "
+                + "Omitted or blank means a general CV: no posting, no LLM.")
         // Well above what a posting ever is, and low enough that a pasted book
         // is refused by the framework rather than by the LLM bill.
         @Size(max = 60_000)
@@ -44,5 +47,10 @@ public record GenerationRequest(
 
     public boolean acknowledged() {
         return Boolean.TRUE.equals(acknowledgePreflight);
+    }
+
+    /** Bolum 19.4: no posting to be relevant to. */
+    public boolean isGeneralMode() {
+        return jobDescription == null || jobDescription.isBlank();
     }
 }

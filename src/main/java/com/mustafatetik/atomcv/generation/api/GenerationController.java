@@ -1,18 +1,20 @@
 package com.mustafatetik.atomcv.generation.api;
 
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
-import com.mustafatetik.atomcv.generation.api.dto.GeneralCvRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
-import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.shared.error.Result;
-import com.mustafatetik.atomcv.generation.service.CvGenerationService;
+import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.error.ApiException;
+import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,20 +22,29 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Asking for a CV (Bolum 35.3, Bolum 19.4).
+ * Asking for a CV, and getting one back (Bolum 35.3, Bolum 19.4).
+ *
+ * <p>One way in for both modes. A request with a posting is scored against it;
+ * a request without one is a general CV, which skips Faz A and Faz B and is
+ * otherwise the same pipeline. Stage 1's synchronous
+ * {@code POST /generations/general} is gone — it existed because there was no
+ * queue and no generation record, and both now exist (EK D.8.8, D.9 · 22).
  *
  * <p><strong>Stage 1 only, and synchronous.</strong> Bolum 35.3's
  * {@code POST /generations} answers 202 with a job to follow, because a
@@ -48,16 +59,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class GenerationController {
 
     private final CurrentUser currentUser;
-    private final CvGenerationService generations;
     private final GenerationEnqueueService enqueue;
+    private final GenerationDownloadService downloads;
     private final ErrorPresenter errors;
 
-    GenerationController(CurrentUser currentUser, CvGenerationService generations,
-            GenerationEnqueueService enqueue, ErrorPresenter errors) {
+    GenerationController(CurrentUser currentUser,
+            GenerationEnqueueService enqueue, GenerationDownloadService downloads,
+            ErrorPresenter errors) {
 
         this.currentUser = currentUser;
-        this.generations = generations;
         this.enqueue = enqueue;
+        this.downloads = downloads;
         this.errors = errors;
     }
 
@@ -97,42 +109,40 @@ public class GenerationController {
     }
 
     @Operation(
-            summary = "Generate a general CV as a PDF",
+            summary = "Download a generation as a PDF",
             description = """
-                    No job description, no LLM: the profile is scored on its own \
-                    terms, selection fills the page, and the document comes back \
-                    directly. Synchronous and stored nowhere — a generation \
-                    resource with a job and a download link arrives in Stage 2.
+                    Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.
 
-                    The page limit is a guarantee. When the compiled document \
-                    exceeds it the server shrinks the budget and tries again \
-                    twice; only then does it answer PAGE_LIMIT_EXCEEDED, so \
-                    retrying the same request unchanged will not help.""")
+                    No LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The document",
                     content = @Content(mediaType = MediaType.APPLICATION_PDF_VALUE)),
-            @ApiResponse(responseCode = "422",
-                    description = "INSUFFICIENT_PROFILE or PAGE_LIMIT_EXCEEDED",
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "409", description = "CONFLICTING_PREFERENCES",
-                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
-                            schema = @Schema(implementation = ApiErrorResponse.class))),
-            @ApiResponse(responseCode = "502", description = "COMPILATION_FAILED",
+            @ApiResponse(responseCode = "410",
+                    description = "GENERATION_ARTIFACT_EXPIRED — nothing left to re-render",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-    @PostMapping(path = "/general", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> generalCv(
-            @Valid @RequestBody(required = false) GeneralCvRequest request) {
+    @GetMapping(path = "/{generationId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> download(@PathVariable UUID generationId) {
+        Generation generation = downloads.find(currentUser.require(), generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
-        GeneralCvRequest asked = request == null ? GeneralCvRequest.EMPTY : request;
-        Result<GeneratedDocument> result = generations.generateGeneralCv(
-                currentUser.require(), asked.maxPages(), asked.language());
+        if (generation.getContentSnapshot() == null) {
+            // The selection is still there, so "make it again" is the honest
+            // answer — rendering today's profile would hand back a document
+            // that was never sent to anyone (EK D.6.3).
+            throw ApiException.of(ErrorCode.GENERATION_ARTIFACT_EXPIRED,
+                    new Resolution(ResolutionAction.RETRY, null));
+        }
 
-        GeneratedDocument document = switch (result) {
-            case Result.Ok<GeneratedDocument> ok -> ok.value();
-            case Result.Err<GeneratedDocument> failed -> throw new ApiException(
+        Result<byte[]> pdf = downloads.render(generation);
+        byte[] bytes = switch (pdf) {
+            case Result.Ok<byte[]> ok -> ok.value();
+            case Result.Err<byte[]> failed -> throw new ApiException(
                     errors.present(failed.error(), pageHeightPt()));
         };
 
@@ -140,10 +150,8 @@ public class GenerationController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + filename() + "\"")
-                // No store: the document is built from personal data and is
-                // cheap to make again.
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
-                .body(document.pdf());
+                .body(bytes);
     }
 
     /**
