@@ -320,6 +320,20 @@ public void detectAnomalies() {
 }
 ```
 
+**Uygulanan hâli (Adım 2.7): iki sinyal var, bütçe freni yok.** Kullanıcı
+baselineʼı ve kayıt patlaması indi; ikisi de **raporluyor, davranmıyor** —
+sıkılaştırılacak bir rate limiter yok ve freni tek yoğun kullanıcı için çekmek
+herkesi durdurur, o karar alarmı okuyana ait. Baseline kullanıcının **kendi**
+son yedi günü: sabit bir sayı ağır kullanıcıda işe yaramaz, hafif kullanıcıda
+her gün alarm çalar. Geçmişi olmayan kullanıcı join'le eleniyor — ilk gün
+anomali değil, onu günlük kota sınırlıyor.
+
+**Bütçe freni bilinçli olarak eksik.** Çağrı başına maliyet gerekiyor ve onu
+kaydeden yok: `ProviderChain` bir `LlmInvocationEvent` yayımlıyor ama dinleyen
+yok, yani `llm_invocations` boş ve `cost_usd` her zaman sıfır. O sayıya bağlı
+bir fren sonsuza kadar sıfır okur ve **tam olarak koruma gibi görünür**. Maliyet
+kaydıyla birlikte gelecek; çekeceği bayrak zaten var ve elle çekilebiliyor.
+
 **Kritik:** Fren **veri erişimini kesmez.** Üretim durur ama kullanıcı profilini görebilir ve dışa aktarabilir.
 
 **Ayarlanmamış bayrak AÇIK sayılır.** Tabloya hiç dokunmamış bir dağıtım hizmet
