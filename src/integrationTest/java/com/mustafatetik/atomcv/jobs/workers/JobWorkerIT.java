@@ -91,22 +91,38 @@ class JobWorkerIT extends AbstractIntegrationTest {
      * gone — and a client that reconnects to find no progress at all is a
      * client that shows a spinner from zero over work that is nearly done.
      */
+    /**
+     * Read <em>while the job is still running</em>, which is the only time it
+     * means anything: a completed job finishes its progress, so inspecting the
+     * row afterwards would show 100 whether the report had landed or not.
+     */
     @Test
-    void reportedProgressIsWrittenToTheRow() {
+    void reportedProgressIsWrittenToTheRowWhileItRuns() throws Exception {
         Job queued = enqueue();
-        var worker = new JobWorker(queue, JobEvents.NONE, List.of(reporting()),
+        var reported = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        var worker = new JobWorker(queue, JobEvents.NONE,
+                List.of(reporting(reported, release)),
                 properties(Duration.ofSeconds(30)), clock, NO_JITTER);
 
-        worker.runOne();
+        var thread = new Thread(worker::runOne);
+        thread.start();
+        assertThat(reported.await(10, TimeUnit.SECONDS)).isTrue();
 
         var progress = queue.find(queued.getId()).orElseThrow().getProgress();
         assertThat(progress.phase()).isEqualTo("B");
         // A key, never a sentence: the frontend owns the words (Bolum 35.4).
         assertThat(progress.label()).isEqualTo("generation.phase.SCORING");
         assertThat(progress.pct()).isEqualTo(50);
+
+        release.countDown();
+        thread.join(TimeUnit.SECONDS.toMillis(10));
+        // And once it finishes, the bar reads done rather than the last phase.
+        assertThat(queue.find(queued.getId()).orElseThrow().getProgress().pct())
+                .isEqualTo(100);
     }
 
-    private static JobHandler reporting() {
+    private static JobHandler reporting(CountDownLatch reported, CountDownLatch release) {
         return new JobHandler() {
             @Override
             public JobType type() {
@@ -116,6 +132,8 @@ class JobWorkerIT extends AbstractIntegrationTest {
             @Override
             public JobOutcome handle(Job job, ProgressSink progress) {
                 progress.report(new JobProgress("B", "generation.phase.SCORING", 50));
+                reported.countDown();
+                await(release);
                 return JobOutcome.completed(Map.of());
             }
         };

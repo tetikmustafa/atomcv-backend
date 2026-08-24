@@ -24,6 +24,20 @@ public record JobProgress(String phase, String label, int pct, String detail) {
     /** A job that has been queued but not started. */
     public static final JobProgress NONE = new JobProgress("", "", 0, "");
 
+    /**
+     * A job that finished.
+     *
+     * <p>The phase and the label are cleared rather than kept. A completed job
+     * reporting the last phase it passed through reads as "Rendering, 100%",
+     * which is a progress bar arguing with the status beside it; and the
+     * client's terminal state comes from {@code status} and
+     * {@code generationId}, not from a phase name.
+     *
+     * <p>A <em>failure</em> keeps its progress on purpose. Where it stopped is
+     * the most useful thing the row can say about why.
+     */
+    public static final JobProgress DONE = new JobProgress("", "", 100, "");
+
     public JobProgress {
         phase = phase == null ? "" : phase;
         label = label == null ? "" : label;

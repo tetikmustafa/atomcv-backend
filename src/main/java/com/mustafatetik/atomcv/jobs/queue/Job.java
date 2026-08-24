@@ -227,6 +227,9 @@ public class Job implements UserOwned {
     /** Done, with whatever the handler produced (Bolum 30.6's terminal event). */
     public void succeed(Map<String, Object> result, Instant now) {
         this.status = JobStatus.COMPLETED;
+        // Otherwise the row keeps the last phase it reported and a client
+        // renders "Rendering, 70%" beside the word "completed".
+        this.progress = JobProgress.DONE;
         this.result = result == null ? Map.of() : ordered(result);
         this.error = null;
         this.completedAt = now;
