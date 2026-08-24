@@ -188,6 +188,22 @@ public final class RelevanceScorer {
      *
      * <p>{@code Locale.ROOT} is absolute rule 7.
      */
+    /**
+     * One skill name reduced to the key everything matches on.
+     *
+     * <p>Public for the same reason {@link #tokensOf} is, and it has three
+     * callers now: the posting's skills, the atom's skills, and Faz F's
+     * report. All three have to agree — a report built on a second
+     * canonicalisation rule could call a skill missing that the scorer had
+     * counted, and no one reading the two numbers could explain the gap.
+     *
+     * <p>{@code Locale.ROOT} is absolute rule 7. A Turkish locale turns "SQL"
+     * into "sqı", and no atom would ever match it.
+     */
+    public static String canonicalSkill(String canonical) {
+        return canonical == null ? "" : canonical.strip().toLowerCase(Locale.ROOT);
+    }
+
     public static List<String> tokensOf(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
@@ -232,10 +248,8 @@ public final class RelevanceScorer {
         private static Set<String> canonicalSkills(List<JobAnalysis.Skill> skills) {
             return skills.stream()
                     .map(JobAnalysis.Skill::canonical)
+                    .map(RelevanceScorer::canonicalSkill)
                     .filter(name -> !name.isBlank())
-                    // Locale.ROOT: absolute rule 7. A Turkish locale turns
-                    // "SQL" into "sqı" and no atom would ever match it.
-                    .map(name -> name.toLowerCase(Locale.ROOT))
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());
         }
 
