@@ -68,6 +68,22 @@ class ArchitectureTest {
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
     /**
+     * The unscoped queue is for workers, and a controller is not one.
+     *
+     * <p>{@code JobQueue} is not a Spring Data interface, so the two rules
+     * above do not see it — and it would compile perfectly well in a
+     * controller, reading any job by id with no owner check. That is the exact
+     * IDOR absolute rule 3 exists for, on the one identifier this system hands
+     * to a browser. Enqueueing from a service is the intended use and stays
+     * allowed.
+     */
+    @ArchTest
+    static final ArchRule theUnscopedQueueIsNotReachableFromHttp = noClasses()
+            .that().resideInAPackage("..api..")
+            .should().dependOnClassesThat()
+            .haveFullyQualifiedName("com.mustafatetik.atomcv.jobs.queue.JobQueue");
+
+    /**
      * And for the generation record, which reaches a browser twice — in the
      * job's terminal event and in the download link.
      */
