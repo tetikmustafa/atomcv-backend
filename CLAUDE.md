@@ -156,26 +156,26 @@ cost a debugging round to find.
   PowerShell, and its recipes call `sh ./gradlew`: GNU Make runs a
   metacharacter-free recipe line straight through `CreateProcess`, and
   `./gradlew` is not a Windows executable.
-- **The Makefile includes and exports `.env`.** Compose reads that file by
-  itself, Spring does not — without the include, a changed `POSTGRES_PASSWORD`
-  breaks `make dev` with an authentication failure that looks like a code bug.
+- **The Makefile includes and exports `.env`.** Compose reads it, Spring does
+  not — without the include a changed `POSTGRES_PASSWORD` breaks `make dev`
+  with an authentication failure that looks like a code bug.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner.** The source
   encoding is pinned in `build.gradle.kts`; do not remove it.
+- **`Set.copyOf` / `Map.copyOf` iterate in an order salted per JVM run** — three
+  runs of one three-element set gave three orders. Order that reaches a JSON
+  column, a response or an assertion needs `Collections.unmodifiable*` over a
+  `Linked*`. Passed here, failed on the runner; reads as a flake, is not one.
 - **`gradlew` must stay mode 100755.** Committed as 100644 it fails every
   Linux runner.
-- Gradle directly, when a target does not fit: `sh ./gradlew test` (fast, no
-  Docker), `sh ./gradlew integrationTest` (needs Docker Desktop running),
-  `--tests '*SomeTest'` to narrow.
+- Gradle directly: `sh ./gradlew test` (fast, no Docker), `sh ./gradlew
+  integrationTest` (needs Docker Desktop), `--tests '*SomeTest'` to narrow.
 - **`make dev-full` rebuilds the LaTeX image on purpose (`--build`).** Compose
-  reuses the image it built last time otherwise, and a stale one answers
-  without `X-Page-Count`, which the client refuses as `UNAVAILABLE` — a
-  generation that fails with the container running and healthy.
-- **`make dev-full` does not run the backend**, only the containers. Run it
-  first, then `make dev`.
-- **`gradlew latexTest` builds the LaTeX image and compiles through it.** It is
-  excluded from `integrationTest` because the image takes minutes; run it when
-  `docker/latex` changes. Two things it already caught are in
-  `docs/notes/archive/stage-1.md` § D.8.1.
+  reuses the last image otherwise, and a stale one answers without
+  `X-Page-Count` — a generation that fails with the container healthy.
+- **`make dev-full` does not run the backend**, only the containers.
+- **`gradlew latexTest` builds the LaTeX image and compiles through it.**
+  Excluded from `integrationTest` (the image takes minutes); run it when
+  `docker/latex` changes. What it caught: `archive/stage-1.md` § D.8.1.
 - A `pre-commit` gitleaks hook runs on every commit. It is installed and
   configured; a commit that prints nothing about secrets did not run it.
 

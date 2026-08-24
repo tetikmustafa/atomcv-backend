@@ -83,8 +83,7 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
 
 ## Aşama 2 kayıtları
 
-**`F-001`…`F-006` kapandı**, kuralları `spec/08-api.md` § 35.2 / § 35.6'da.
-**İkisi ileriye dönük olduğu için duruyor:**
+**`F-001`…`F-006` kapandı** (§ 35.2 / § 35.6). **İkisi ileriye dönük:**
 
 - **Toplu JPQL `update` `@Version`'ı atlar.** 2.7'nin kota sayaçları toplu
   update isteyecek ve aynı sessizlikle bayat etag üretecek. `update versioned` —
@@ -95,8 +94,7 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
   Etag'i **önceki yazmanın yanıtından** al.
 
 **Düzeltme — build guide iki kez "migration" dedi, ikisi de yanlıştı:** 2.4'ün
-pgvector kolonu ve 2.6'nın `jobs` tablosu `V1`'de zaten vardı; eksik olan
-eşlemeydi. İkisi de `14-build-guide.md`'de düzeltildi. Üçüncüsünü görürsen
+pgvector kolonu da 2.6'nın `jobs` tablosu da `V1`'de vardı. Üçüncüsünü görürsen
 **önce `V1`'e bak**.
 
 **`continue_anyway` sözlüğe girdi** (§ 18.1, EK D.6.1) — frontend maddesi
@@ -142,10 +140,9 @@ neyi gerçekten ölçtüğü buradan okunur.
 | Graceful shutdown | `releaseLocks` atlandı | 1 test |
 | Retry backoff | `runAfter` = şimdi | 1 test |
 
-**Ekleme — `atoms.embedding` eşlendi.** `hibernate-vector`'ün sürümü
-`hibernate-core`'unkine sabitlendi: Boot'un BOM'u core'u yönetiyor, bu modülü
-yönetmiyor. **Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor**
-(`@Array(length)` yalnız DDL üretimini besliyor); ders `CLAUDE.md`'de.
+**Ekleme — `atoms.embedding` eşlendi**; `hibernate-vector`'ün sürümü elle
+sabitlendi (Boot'un BOM'u o modülü yönetmiyor). **Düzeltme —
+`ddl-auto=validate` vektör boyutunu denetlemiyor**; ders `CLAUDE.md`'de.
 
 ---
 
@@ -158,14 +155,12 @@ ağırlıkla iki kez sayılıyor, atomun kendi metni hiç okunmuyordu. Ölü dur
 
 **Ekleme — `atom_tags`'te `profile_id` yok, kapsamlama join'den geçiyor.**
 `AtomTag`, `ProfileOwned`'ı uygulayamayan tek profil satırı. Etiketler
-`ProfileAssembler`'a **beşinci sorgu olarak eklenmedi**: § 52.2 dört düz sorgu
-diyor, etiket bir skorlama girdisi — genel mod dörtte kalıyor, beşinciyi yalnız
-ilan modu ödüyor.
+`ProfileAssembler`'a **beşinci sorgu olarak eklenmedi** (§ 52.2 dört diyor);
+beşinciyi yalnız ilan modu ödüyor.
 
-**Ekleme — kapıların sırası maliyete göre.** Profil ön kontrolü bedava ve önce
-(boş profil LLM çağrısı satın almıyor), Faz A ölçümden önce (okunamayan ilan
-derleme satın almıyor). İkisinin de testi var: sırayı bozmak ne derlemeyi kırar
-ne çıktıyı değiştirir, yalnız para harcatır.
+**Ekleme — kapıların sırası maliyete göre.** Profil ön kontrolü bedava ve önce,
+Faz A ölçümden önce. İkisinin de testi var: sırayı bozmak ne derlemeyi kırar ne
+çıktıyı değiştirir, yalnız para harcatır.
 
 **Aşama 2.6'ya taşınan — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.**
 Bölüm "yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız
@@ -177,14 +172,12 @@ değiştiriyor — uydurulmadı, sorulacak.
 
 ## Adım 2.6 kayıtları — kuyruk
 
-**Düzeltme — sondam yanlış geçti, ve ders `CLAUDE.md`'ye yazıldı.**
-`SKIP LOCKED`'ı sorgudan kaldırdım: dört worker sekiz işi hâlâ mükerrersiz aldı,
-14 test de geçti. Sebep, READ COMMITTED'de düz `FOR UPDATE`'in kilidi bekleyip
-yüklemi yeniden değerlendirmesi. Yani mükerrerliği ölçen test o cümleyi hiç
-ölçmüyordu. Gerçek fark **canlılık**, ve onu ölçen test bir kilidi açık tutup
-claim'in *hemen* boş dönmesini bekliyor — o test ihlalde düşüyor. Kural § 30.2'ye
-yazıldı; genel ders (bir eşzamanlılık sondasının bloklanmayı mı mükerrerliği mi
-göreceğini önce sor) `CLAUDE.md` · Testing Requirements'ta.
+**Düzeltme — sondam yanlış geçti.** `SKIP LOCKED` kaldırıldı, 14 test de geçti:
+READ COMMITTED'de düz `FOR UPDATE` kilidi bekleyip yüklemi yeniden
+değerlendiriyor, yani mükerrerliği ölçen test o cümleyi hiç ölçmüyordu. Gerçek
+fark **canlılık**; onu ölçen test bir kilidi açık tutup claim'in *hemen* boş
+dönmesini bekliyor ve ihlalde düşüyor. Kural § 30.2'de, genel ders
+`CLAUDE.md`'de.
 
 **Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2). ArchUnit `..jobs..`'a
 kendi satırını kazandı.
@@ -192,6 +185,14 @@ kendi satırını kazandı.
 **Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'e yazıldı:**
 deneme hakkı geri verilmiyor, hakkı bitmiş iş `failed`'e alınıyor, ve
 `2^attempts` 63'te `long`'u taşırdığı için üs kaydırmadan önce sınırlanıyor.
+
+**Düzeltme — CI'da düşen test, yerelde geçen kod.** `TagRepository.labelsByAtom`
+sorgunun sırasını `Set.copyOf` ile atıyordu; JDK'nın değişmez koleksiyonları
+**her JVM çalıştırmasında farklı** sırayla dolaşıyor (aynı üç elemanlı kümeyi üç
+kez ölçtüm, üç farklı sıra). Yerelde tuttu, runner'da tutmadı. Aynı tuzağın
+ikinci örneği `Job`'un üç JSONB kolonundaydı — `JobWorker` hata haritasını
+`code` başa gelsin diye sıralı kuruyor, `Map.copyOf` onu bozuyordu. İkisi de
+`Collections.unmodifiable*` + `Linked*`'e çevrildi, kural `CLAUDE.md`'ye yazıldı.
 
 **Kalan (Adım 2.6, ikinci dilim):** `generations` kaydı, `POST /generations` +
 202, SSE kaydı ve ucu, `GET /jobs/{id}`, idempotency, download, ve

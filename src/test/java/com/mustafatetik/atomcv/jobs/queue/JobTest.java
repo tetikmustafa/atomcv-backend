@@ -99,6 +99,29 @@ class JobTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    /**
+     * The three JSON columns keep the order they were given.
+     *
+     * <p>{@code Map.copyOf} does not: the JDK's immutable maps iterate in an
+     * order salted per JVM run, measured at three different orders in three
+     * runs of the same three-element set. The error map is built ordered so
+     * that {@code code} leads, and every restart would otherwise serialise the
+     * same failure differently.
+     */
+    @Test
+    void thejsonColumnsKeepTheOrderTheyWereGiven() {
+        var ordered = new java.util.LinkedHashMap<String, Object>();
+        ordered.put("code", "INSUFFICIENT_PROFILE");
+        ordered.put("params", Map.of());
+        ordered.put("resolutions", java.util.List.of());
+        var job = job(JobType.GENERATION);
+
+        job.fail(ordered, NOW);
+
+        assertThat(job.getError().keySet())
+                .containsExactly("code", "params", "resolutions");
+    }
+
     /** Absolute rule 4: the payload is built from user content. */
     @Test
     void thetoStringCarriesNoPayload() {
