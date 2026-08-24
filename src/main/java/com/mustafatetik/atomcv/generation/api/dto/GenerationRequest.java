@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -49,7 +50,22 @@ public record GenerationRequest(
         return Boolean.TRUE.equals(acknowledgePreflight);
     }
 
-    /** Bolum 19.4: no posting to be relevant to. */
+    /**
+     * Bolum 19.4: no posting to be relevant to.
+     *
+     * <p><strong>Not a field, and the annotations are what say so (F-009).</strong>
+     * An {@code isX()} on a record is a getter as far as Jackson and springdoc
+     * are concerned, so this published a {@code generalMode} boolean into the
+     * request schema — a second way to ask for general mode, next to the one
+     * that decides it. The frontend found it and asked what it was for.
+     *
+     * <p>Same shape as the bug Stage 2 hit on {@code RichContent}, on the other
+     * side of the wire: <em>every getter-shaped method on a record that
+     * Jackson touches is a field somebody will find</em> — a stored one on a
+     * JSONB column, a documented one on a DTO.
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
     public boolean isGeneralMode() {
         return jobDescription == null || jobDescription.isBlank();
     }

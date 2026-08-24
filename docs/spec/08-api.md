@@ -157,7 +157,8 @@ POST /api/v1/generations
 Idempotency-Key: 7f3a9c2e-...
 Content-Type: application/json
 
-{ "jobDescription": "...", "directives": {...}, "options": {...} }
+{ "jobDescription": "...", "acknowledgePreflight": false,
+  "maxPages": 1, "language": "en" }
 ```
 
 ```http
@@ -186,6 +187,14 @@ bir tane var.
 > yokluğu genel moddur (§ 19.4) — Faz A ve Faz B atlanır, seçimden sonrası
 > aynı hattır. Kolon da bunu söylüyordu: `generations.job_description` tam bu
 > durumda NULL.
+
+> **Düzeltme (`F-009`).** Yukarıdaki gövde **düzdür**; `directives` ve
+> `options` diye iç içe nesneler yoktur. Alanlar: `jobDescription?`,
+> `acknowledgePreflight`, `maxPages?`, `language?` — ve **`generalMode` diye
+> bir alan yoktur.** Bir süre şemada göründü, çünkü `GenerationRequest`
+> üzerindeki `isGeneralMode()` türetilmiş metodunu Jackson bir alan sandı;
+> `@JsonIgnore` ile kapatıldı. Genel modu isteyen tek şey `jobDescription`'ın
+> yokluğudur, ikinci bir bayrak iki ayrı "genel" tanımı doğururdu.
 
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 

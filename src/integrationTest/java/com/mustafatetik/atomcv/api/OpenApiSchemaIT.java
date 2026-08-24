@@ -238,6 +238,45 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void theGenerationRequestPublishesNoSecondWayToAskForGeneralMode() throws Exception {
+        // F-009. `isGeneralMode()` is a derived method, but an isX() on a
+        // record is a getter to Jackson and to springdoc, so the schema grew a
+        // `generalMode` boolean — a second way to ask for the thing the
+        // absence of `jobDescription` already decides. The frontend found it
+        // and asked what it was for.
+        //
+        // Same defect as Stage 2's RichContent, on the other side of the wire:
+        // a getter-shaped method on a record is a field somebody will find.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
+                        .doesNotExist())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
+                        .value(Matchers.aMapWithSize(4)))
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.jobDescription").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.acknowledgePreflight").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.maxPages").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.language").exists());
+    }
+
+    @Test
+    void usageSeparatesWhatWasSpentFromWhatWasAttempted() throws Exception {
+        // F-012. The counter counts attempts, so a single `used` ran past
+        // `limit` and the screen read "26 of 20". Two fields, because there
+        // are two facts — clamping alone would have been the server
+        // misreporting itself.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.Usage.properties.used").exists())
+                .andExpect(jsonPath("$.components.schemas.Usage.properties.attempted").exists())
+                .andExpect(jsonPath("$.components.schemas.Usage.properties.remaining").exists())
+                .andExpect(jsonPath("$.components.schemas.Usage.properties.limit").exists())
+                .andExpect(jsonPath("$.components.schemas.Usage.properties.resetsAt").exists());
+    }
+
+    @Test
     void theProfileShapeIsPublishedWithoutAnIdentifier() throws Exception {
         // Bolum 35.1: no path carries a profile id, so the schema does not
         // suggest one exists to be sent back.
