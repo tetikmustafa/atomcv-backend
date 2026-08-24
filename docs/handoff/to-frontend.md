@@ -11,7 +11,7 @@
 
 ## OPEN
 
-### B-038 · `POST /generations` ve `GET /jobs/{id}` indi; ilerleme metni **sizin**
+### B-038 · İlana özel üretimin senkron yüzü + SSE indi; ilerleme metni **sizin**
 **Since:** commit `<bu PR>` · Adım 2.6 · **Spec:** `spec/08-api.md` § 35.3, `spec/08b-api-contract.md` EK D.6.4
 
 İlana özel üretimin senkron yüzü hazır. `POST /api/v1/generations` **202** ve
@@ -43,11 +43,28 @@ bırakabilirsiniz.
 **`Idempotency-Key` onurlandırılıyor** (`POST /generations`): aynı anahtar aynı
 işi döndürüyor, çift tıklama tek CV üretiyor.
 
-**Henüz gelmeyen:** SSE akışı (`streamUrl`) ve `GET /generations/{id}/download`
-bir sonraki dilimde. Bugün ilerlemeyi **yoklayarak** izlemek destekleniyor ve
-EK D.6.4 bunu kalıcı geri düşüş olarak adlandırıyor — akış inince yoklama
-kodunuz çöpe gitmez. `POST /generations/general` **hâlâ duruyor**, o dilimde
-kalkacak (`B-022`).
+**SSE indi.** 202 yanıtı artık `streamUrl` de taşıyor
+(`/api/v1/jobs/{jobId}/stream`) — yolu siz kurmayın, sunucu veriyor.
+`GET /api/v1/jobs/{jobId}/stream` üç olay adı kullanıyor: koşarken `phase`,
+sonra **tam olarak bir tane** `completed` veya `failed`, ardından akış kapanıyor.
+
+```
+event: phase       data: {"phase":"C","label":"generation.phase.RENDERING","pct":70,"detail":""}
+event: completed   data: {"generationId":"...","pageCount":1}
+event: failed      data: {"code":"...","params":{},"resolutions":[]}
+```
+
+**Bağlanır bağlanmaz güncel durum geliyor**, yani ekran hiç boş başlamıyor ve
+yeniden bağlanma kendiliğinden yakalanıyor. **202 ile abonelik arasında biten
+bir iş de sonucunu gönderiyor** — o yüzden "önce abone ol sonra oku" yarışını
+kovalamanıza gerek yok.
+
+`Last-Event-ID` kabul ediliyor ama **oynatma yapılmıyor**; `id` yalnız tek bir
+akış içinde sıralama. Sürekliliğe değil **terminal olaya** güvenin. Akış terminal
+olay olmadan kapanırsa `GET /jobs/{jobId}` desteklenen geri düşüş.
+
+**Henüz gelmeyen:** `GET /generations/{id}/download` bir sonraki dilimde.
+`POST /generations/general` **hâlâ duruyor**, o dilimde kalkacak (`B-022`).
 
 `gen:api` bu PR'dan sonra çalıştırılabilir; şema uçları taşıyor.
 
@@ -56,26 +73,18 @@ kalkacak (`B-022`).
 ### B-037 · `resolutions[].action` sözlüğü onuncu değeri kazandı: `continue_anyway`
 **Since:** commit `<bu PR>` · Adım 2.3 · **Spec:** `spec/08b-api-contract.md` EK D.6.1, `spec/05-pipeline-a-c.md` § 18.1
 
-Faz A'nın ön kontrolü (§ 18.1) **engelleme değil, sorma** olarak tanımlı ve üç
-çıkış yolu sunuyor: `[Yine de devam et] [Metni düzenle] [Genel CV oluştur]`.
-Sözlükte son ikisi vardı (`paste_full_posting`, `continue_as_general_cv`),
-**birincisi yoktu**. `retry` de karşılamıyor: `retry` "geçici hata, aynen
-yeniden gönder" demek, oysa ön kontrol birebir aynı metni birebir aynı şekilde
-yine reddeder — dönen bir döngü olurdu.
+Ön kontrol (§ 18.1) **engelleme değil sorma**: üç çıkış yolu var, sözlükte
+ikisi vardı. `retry` karşılamıyor — aynı metin aynı şekilde yine reddedilir,
+dönen bir döngü olurdu.
 
-**Aksiyon:** `errors.resolutions.continue_anyway` için ICU mesajı ve düğme
-gerekiyor. Kod `UNPARSEABLE_JOB_DESCRIPTION` (422), `params` değişmedi:
-`confidence: number`, `skillsFound: integer`. Ön kontrol reddinde **ikisi de 0**
-— hiçbir şey analiz edilmedi ve sıfır bunu dürüstçe söylüyor; makullük kapısı
-(§ 18.4) reddettiğinde gerçek değerler geliyor. Mesajınız iki durumu ayırmak
-isterse `skillsFound == 0 && confidence == 0` ayırt edici.
-
-Üç resolution sunucudan **bu sırayla** geliyor: `continue_anyway`,
+**Aksiyon:** `errors.resolutions.continue_anyway` için ICU mesajı ve düğme.
+Kod `UNPARSEABLE_JOB_DESCRIPTION` (422), `params` değişmedi (`confidence`,
+`skillsFound`); ön kontrol reddinde **ikisi de 0**, makullük kapısı (§ 18.4)
+reddettiğinde gerçek değerler geliyor. Sıra: `continue_anyway`,
 `paste_full_posting`, `continue_as_general_cv`.
 
-**Henüz uç yok.** `continue_anyway`'in isteğe koyacağı onay bayrağı
-`POST /generations` ile, Adım 2.6'da geliyor — bugün bağlayacağınız bir çağrı
-yok, ama sözlük büyüdü ve `gen:api` sonrası tipte görünecek.
+**Uç indi:** `POST /generations` gövdesinde `acknowledgePreflight: true`
+(bkz. `B-038`).
 
 ---
 
@@ -85,14 +94,7 @@ yok, ama sözlük büyüdü ve `gen:api` sonrası tipte görünecek.
 
 ---
 
-## Kalıcı kurallar — `spec/`'e işlendi, burada tutulmuyor
+## Kalıcı kurallar
 
-| Eski # | Konu | Nerede |
-|---|---|---|
-| 1-4 | Run/mark kuralları (`href` zorunluluğu, bilinmeyen mark koruması, `v` sunucuya ait, `m` daima dizi) | `spec/04-data-model.md` § 14.1 |
-| 5 | `content_hash` düz metnin hash'i | `spec/04-data-model.md` § 16.2 |
-| 6 | Sözlükler küçük harf, hata kodu büyük harf | `spec/08b-api-contract.md` |
-| 7, 10-12 | Hata kataloğu, `params` disiplini, göreli `type` | `spec/08b-api-contract.md` |
-| 8 | ETag kapsamı (`generations` ETag taşımaz) | `spec/08-api.md` § 35.6 |
-| 9 | Anonim TTL kayar — "son etkinliğinden iki saat sonra" | `spec/08-api.md` § 35.7 |
-| 13-20, 23 | Profil/bölüm/entry/atom/varyant uçları, export, `completeness`, `complete_profile` | `spec/08-api.md` |
+Eski maddelerin `spec/`'e işlendiği yerlerin tablosu
+`resolved/to-frontend-2026-08.md`'ye taşındı (2026-08-24) — dosya sınırı.

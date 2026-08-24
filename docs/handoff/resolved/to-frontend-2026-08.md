@@ -196,3 +196,20 @@ Bunun somut karşılığı: entry düzenleme formu `toEntryPatch` ile **gördü�
 her alanı** gönderiyor, boşları `null` olarak. Yalnız değişeni göndermek
 `params.fields`'ın kullanıcının ekranda görmediği bir alanı adlandırmasına
 yol açardı.
+
+---
+
+> `to-frontend.md`'den taşındı (2026-08-24): dosya 100 satır sınırını aştı ve
+> aşağıdaki tablo zaten yalnız `spec/`'e işaret eden bir indeksti.
+
+## Kalıcı kurallar — `spec/`'e işlendi, burada tutulmuyor
+
+| Eski # | Konu | Nerede |
+|---|---|---|
+| 1-4 | Run/mark kuralları (`href` zorunluluğu, bilinmeyen mark koruması, `v` sunucuya ait, `m` daima dizi) | `spec/04-data-model.md` § 14.1 |
+| 5 | `content_hash` düz metnin hash'i | `spec/04-data-model.md` § 16.2 |
+| 6 | Sözlükler küçük harf, hata kodu büyük harf | `spec/08b-api-contract.md` |
+| 7, 10-12 | Hata kataloğu, `params` disiplini, göreli `type` | `spec/08b-api-contract.md` |
+| 8 | ETag kapsamı (`generations` ETag taşımaz) | `spec/08-api.md` § 35.6 |
+| 9 | Anonim TTL kayar — "son etkinliğinden iki saat sonra" | `spec/08-api.md` § 35.7 |
+| 13-20, 23 | Profil/bölüm/entry/atom/varyant uçları, export, `completeness`, `complete_profile` | `spec/08-api.md` |
