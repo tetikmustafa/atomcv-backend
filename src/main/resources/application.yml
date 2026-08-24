@@ -26,6 +26,25 @@ management:
   endpoint:
     health:
       show-details: never
+  # Bolum 44.3's counters, and everything else Micrometer already collects,
+  # pushed over OTLP. Off unless a URL is given: an exporter with nowhere to
+  # send retries on a timer and fills the log with its own failure, which is
+  # observability making the system worse.
+  otlp:
+    metrics:
+      export:
+        enabled: ${OTLP_ENABLED:false}
+        url: ${OTLP_URL:}
+        headers:
+          # Axiom authenticates the push and names the dataset in headers.
+          Authorization: ${OTLP_AUTHORIZATION:}
+          X-Axiom-Dataset: ${OTLP_DATASET:}
+  metrics:
+    tags:
+      # Without these every deployment's numbers arrive in one undifferentiated
+      # stream and "is this staging?" becomes unanswerable.
+      application: atomcv-backend
+      environment: ${DEPLOY_ENV:local}
 
 # ── LLM (Bolum 27.3) ──────────────────────────────────────────────────────
 # Model ids are environment variables, never literals: vendors rename models

@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-24 · maliyet kaydı + bütçe freni indi; **`B-037`…`B-039` açık**
+**Son güncelleme:** 2026-08-24 · **Adım 2.7 kapandı**; **`B-037`…`B-039` açık**
 
 ---
 
@@ -13,11 +13,12 @@
 |---|---|
 | Aşama 0 — İskelet | ✅ |
 | Aşama 1 — Yürüyen iskelet (1.1-1.9) | ✅ |
-| **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
+| **Aşama 2 — İlana özel üretim** | ✅ (bir açık kutu: ilan modu uçtan uca) |
 | 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding · 2.5 Faz B · 2.6 kuyruk+SSE | ✅ |
-| 2.7 kota ve maliyet | 🔨 kota, kill switch, anomali, maliyet freni indi; **Axiom kaldı** |
+| 2.7 kota ve maliyet | ✅ (Axiom dataset'i 3.1'e taşındı) |
 
-**Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
+**Aşama 3 planı:** `spec/14-build-guide.md` § XI-A.6. Aşama 2'nin kaydı
+`notes/archive/stage-2.md`'de; açık kutular `notes/current.md`'de.
 **`B-039` açık:** `GET /account/usage`, `QUOTA_EXCEEDED` (429) ve yeni
 `GENERATION_PAUSED` (503) — ICU mesajı gerekiyor. **`B-038` açık:** `POST /generations` (202), `GET /jobs/{id}`, SSE ve
 `GET /generations/{id}/download` yayımlandı; `POST /generations/general`
@@ -27,7 +28,7 @@ kazandı, ICU mesajı gerekiyor. Spec § 14.3, § 14.5, § 18.1-18.6, § 19.2, �
 § 28.4, § 30.2-30.6, § 35.3, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3-4, XI-A.5-6
 güncellendi — **`sync-spec.sh` Aşama 2 kapanışında** çalıştırılacak (karar: 2026-08-21).
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 558 birim · 236 entegrasyon · 44 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 558 birim · 239 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 
