@@ -258,7 +258,33 @@ double skillOverlap(Atom atom, JobAnalysis jd) {
     double preferred = weightedOverlap(atomSkills, jd.preferredSkills(), 0.4);
     return clamp(required + preferred, 0, 1);
 }
+
+double keywordCoverage(Atom atom, JobAnalysis jd) {
+    List<String> words = atom.contentTokens();   // EN varyantı + entry başlığı
+    long covered = jd.keywords().stream()
+            .filter(kw -> tokens(kw).allMatch(words::contains))
+            .count();
+    return jd.keywords().isEmpty() ? 0 : (double) covered / jd.keywords().size();
+}
 ```
+
+**Keyword bileşeni atomun *sözcüklerini* okur, etiketlerini değil.** Etiket
+bileşeni zaten `jdTags`'e karşı ölçüyor ve `jdTags` ilanın keyword'lerini
+içeriyor: keyword'ü de etiketlerden hesaplamak tek sinyali 0.35 ağırlıkla iki
+kez saymak, ve atomun kendi metnini hiç okumamak olurdu — Kubernetes'i on bir
+kez adı geçen bir madde, hiç geçmeyen bir maddeyle aynı puanı alırdı.
+
+**Bir keyword, sözcüklerinin *hepsi* atomunkiler arasında geçiyorsa sayılır.**
+İlanlar öbek yazar ("distributed systems"), maddeler cümle yazar; eşitlik
+neredeyse hiçbir şeyi eşleştirmezdi. Hepsini istemek de "systems"in tek başına
+öbeği sahiplenmesini engelliyor.
+
+**Atomun sözcükleri EN varyantından okunur**, keyword'ler her zaman İngilizce
+olduğu için (§ 18.2). EN varyantı yoksa birincil varyant yine de okunur:
+teknoloji adları ve özel isimler iki dilde de aynı yazılır ve bir keyword
+listesinin çoğu odur. **Entry'nin başlığı ve kurumu da bu kümeye girer** —
+sayfada maddeyle birlikte basılıyorlar, ve bir ilanın aradığı role ait
+maddeleri ilgisiz bir rolünkilerin üstüne çıkaran şey bu.
 
 **Benzerlik pgvector sorgusuyla değil, Java'da hesaplanır.** Faz B çalıştığında profil ağacı zaten bellektedir (Faz C onu istiyor): sorgu, yüklü olanı getirmek için bir gidiş dönüş ekler ve sıralamayı § 51.2'nin determinizm testinin ulaşamayacağı yere, SQL'e taşır. Skorlayıcı saf bir fonksiyondur.
 
