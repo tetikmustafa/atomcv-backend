@@ -58,6 +58,9 @@ atomcv:
     enabled: ${ANOMALY_DETECTION_ENABLED:true}
     baseline-factor: ${ANOMALY_BASELINE_FACTOR:5.0}
     signups-per-hour: ${ANOMALY_SIGNUPS_PER_HOUR:50}
+    # The brake. Low on purpose: an ordinary day costs cents, and raising a
+    # threshold that fired beats a bill nobody saw coming.
+    daily-budget-usd: ${ANOMALY_DAILY_BUDGET_USD:10}
 
   jobs:
     worker:
@@ -65,6 +68,15 @@ atomcv:
       concurrency: ${JOBS_WORKER_CONCURRENCY:2}
 
   llm:
+    # Bolum 27.4, USD per million tokens. Configuration because vendors change
+    # prices faster than a release; an unpriced model costs zero and is
+    # counted, never guessed at.
+    pricing:
+      per-million-tokens:
+        "[google/gemini-2.0-flash-001]":
+          input: 0.10
+          output: 0.40
+          cached: 0.025
     chain:
       # Comma-separated, so the order is deployable without a release
       # (Bolum 5.4, "env-driven fallback"). Bolum 27.3's fuller order arrives

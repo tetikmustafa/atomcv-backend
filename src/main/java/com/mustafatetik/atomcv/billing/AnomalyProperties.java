@@ -13,12 +13,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                       a heavy user and an alarm every day for a light one.
  * @param signupsPerHour above this, something is registering accounts rather
  *                       than someone
+ * @param dailyBudgetUsd the ceiling that pulls the brake. Deliberately low by
+ *                       default: a free product's ordinary day costs cents,
+ *                       and an operator raising a threshold that fired is a
+ *                       better failure than a bill nobody saw coming.
  */
 @ConfigurationProperties(prefix = "atomcv.anomaly")
-public record AnomalyProperties(boolean enabled, double baselineFactor, int signupsPerHour) {
+public record AnomalyProperties(
+        boolean enabled, double baselineFactor, int signupsPerHour,
+        java.math.BigDecimal dailyBudgetUsd) {
 
     public AnomalyProperties {
         baselineFactor = baselineFactor <= 0 ? 5.0 : baselineFactor;
         signupsPerHour = signupsPerHour < 1 ? 50 : signupsPerHour;
+        dailyBudgetUsd = dailyBudgetUsd == null || dailyBudgetUsd.signum() <= 0
+                ? java.math.BigDecimal.valueOf(10)
+                : dailyBudgetUsd;
     }
 }

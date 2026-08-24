@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.billing;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -17,22 +18,17 @@ import org.springframework.stereotype.Component;
  *
  * <p>Two signals, and a third that is deliberately absent.
  *
- * <p><strong>The daily budget brake is not here, and that is on purpose.</strong>
- * Bolum 44.3 reads {@code counterRepo.totalCostToday()} and disables generation
- * above a threshold — the single most valuable thing in this section, because
- * it is what stops a runaway bill. It needs a cost per call, and nothing
- * records one yet: {@code ProviderChain} publishes an
- * {@code LlmInvocationEvent} that no listener persists, so
- * {@code llm_invocations} is empty and {@code usage_counters.cost_usd} is
- * always zero. A brake wired to that number would read zero forever and look
- * exactly like protection. It arrives with cost recording, and the flag it
- * would pull already exists and can be pulled by hand today
- * ({@link FeatureFlags#NEW_GENERATIONS}).
+ * <p>Three signals now. <strong>The budget brake is the only one that acts</strong>
+ * — it disables {@link FeatureFlags#NEW_GENERATIONS} — and that asymmetry is
+ * deliberate: a day's bill above the ceiling is about the deployment and
+ * stopping everybody is the correct response, while one busy user is about one
+ * person and stopping everybody is not. Bolum 44.3 asks for tightening a rate
+ * limit on that user instead; there is no rate limiter yet, so those two
+ * signals report and an operator decides.
  *
- * <p>What the two signals here do is <em>report</em>. Bolum 44.3 also calls for
- * tightening a rate limit on the offender, and there is no rate limiter to
- * tighten; an operator reading the alert can pull the flag, which is the
- * blunter version of the same action.
+ * <p>The brake is one-way. Nothing here turns generation back on, because
+ * nothing here knows whether the cause was dealt with — the budget resets at
+ * midnight and the flag does not, on purpose.
  */
 @Component
 @ConditionalOnProperty(
@@ -51,12 +47,14 @@ public class AnomalyDetector {
 
     private final JdbcTemplate jdbc;
     private final AnomalyProperties properties;
+    private final FeatureFlags flags;
     private final MeterRegistry meters;
     private final Clock clock;
 
-    AnomalyDetector(JdbcTemplate jdbc, AnomalyProperties properties, MeterRegistry meters,
-            Clock clock) {
+    AnomalyDetector(JdbcTemplate jdbc, AnomalyProperties properties, FeatureFlags flags,
+            MeterRegistry meters, Clock clock) {
 
+        this.flags = flags;
         this.jdbc = jdbc;
         this.properties = properties;
         this.meters = meters;
@@ -66,6 +64,11 @@ public class AnomalyDetector {
     /** Bolum 44.3: every fifteen minutes. */
     @Scheduled(cron = "${atomcv.anomaly.cron:0 */15 * * * *}")
     public void detectAnomalies() {
+        BigDecimal spentToday = costToday();
+        if (spentToday.compareTo(properties.dailyBudgetUsd()) > 0) {
+            brake(spentToday);
+        }
+
         heavyUsers().forEach(this::report);
         int signups = signupsInLastHour();
         if (signups > properties.signupsPerHour()) {
@@ -73,6 +76,36 @@ public class AnomalyDetector {
             log.warn("Signup anomaly: {} in the last hour, threshold {}",
                     signups, properties.signupsPerHour());
         }
+    }
+
+    /**
+     * What today's calls have cost, failures included (Bolum 27.5): a provider
+     * that answers with a schema error still bills for the tokens.
+     */
+    BigDecimal costToday() {
+        LocalDate today = LocalDate.ofInstant(clock.instant(), java.time.ZoneOffset.UTC);
+        BigDecimal total = jdbc.queryForObject(
+                "SELECT coalesce(sum(cost_usd), 0) FROM llm_invocations WHERE created_at >= ?",
+                BigDecimal.class, java.sql.Timestamp.from(
+                        today.atStartOfDay().toInstant(java.time.ZoneOffset.UTC)));
+        return total == null ? BigDecimal.ZERO : total;
+    }
+
+    /**
+     * Bolum 44.3's emergency brake.
+     *
+     * <p>Pulled here and never released here. Whether the cause was dealt with
+     * is not something a scheduled job can know, and a brake that lifted
+     * itself at midnight would let the same runaway repeat every night.
+     */
+    private void brake(BigDecimal spentToday) {
+        if (!flags.isEnabled(FeatureFlags.NEW_GENERATIONS)) {
+            return;
+        }
+        meters.counter("anomaly.budget_exceeded").increment();
+        log.error("Daily budget exceeded: ${} against ${}; pausing new generations",
+                spentToday, properties.dailyBudgetUsd());
+        flags.disable(FeatureFlags.NEW_GENERATIONS);
     }
 
     /**
