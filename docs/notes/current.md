@@ -21,7 +21,6 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
-| `tags` / `atom_tags` entity'siz | Aşama 2 | Aşama 2 skorlamasından önce okuyan yok |
 | `generations`'a yazan yok | Aşama 2 | Hat `GeneratedDocument` döndürüyor; kalıcı kayıt, kuyruk ve `GET /generations/{id}/download` birlikte gelir (`spec/08b-api-contract.md` § D.6.3) |
 | `PipelineError`'da eksik durumlar | Aşama 2 | Fazıyla gelir. `AllProvidersUnavailable` (2.2) ve `UnparseableJobDescription` (2.3) indi; kalanlar erken eklenirse `params` tahmin edilmiş olur |
 | ATS raporu ve `FitReport` yok | Aşama 2 | Biri PDF metin çıkarımı, diğeri Faz A istiyor (`spec/06-pipeline-d-g.md` § 23) |
@@ -45,12 +44,10 @@ verilmeli.
 - **Üretimde migration nasıl çalışacak.** `spec/11-operations.md` § 47 dağıtım
   öncesi `--spring.flyway.migrate-only=true` ile bir adım gösteriyor; bu gerçek
   bir Spring Boot property'si değil. Flyway şu an üretimde de açılışta çalışıyor.
-- **CI'a imaj taraması.** Dockerfile artık var, yani Trivy'nin yanlış-yapılandırma
-  taraması onu görüyor; ama derlenen imaj taranmıyor. Bu, CI'da bir build (birkaç
-  GB) istiyor ve registry push'uyla birlikte gelir.
-- **Spotless eklenecek mi.** `spec/11-operations.md` § 47.1 `spotlessCheck`
-  çalıştırıyor, ama yapılandırılmış bir formatlayıcı yok — bugün CI'da hiç
-  biçim kapısı yok.
+- **CI'a imaj taraması.** Trivy Dockerfile'ı görüyor, derlenen imajı görmüyor;
+  CI'da bir build (birkaç GB) istiyor, registry push'uyla birlikte gelir.
+- **Spotless eklenecek mi.** § 47.1 `spotlessCheck` çalıştırıyor ama
+  yapılandırılmış formatlayıcı yok — bugün CI'da biçim kapısı yok.
 
 ## Aşama 2'ye taşınanlar
 
@@ -60,13 +57,10 @@ verilmeli.
   `spec/04-data-model.md`'de. Sayacı yazan kod bunu **`LocalDate.now(ZoneOffset.UTC)`**
   ile okumak zorunda: `LocalDate.now()` bu makinede UTC+3 döner ve testler
   günün 21:00'inden sonra geçmeye başlar — bir sonraki adımın tuzağı bu.
-- ~~Üç `local-*` profil dosyası yok.~~ **Kapandı** (Adım 2.2). Davranış
-  `spec/13-development.md` § 54.2'de, sessiz yutulmaya karşı koruma
-  `LocalProfileConfigTest`'te — negatif kontrolü içinde.
-- ~~`archunit.properties`'teki `failOnEmptyShould`.~~ **Kapandı, ve madde
-  yanlıştı:** öyle bir dosya yoktu, tek kurala verilmiş bir
-  `allowEmptyShould(true)` vardı; gerekçesi Adım 1.4'te doldu, kaldırıldı.
-  İlk sondanın yanlış geçmesi `CLAUDE.md` · Testing Requirements'a yazıldı.
+- ~~Üç `local-*` profil dosyası yok.~~ **Kapandı** (2.2) — `spec/13-development.md`
+  § 54.2, koruması `LocalProfileConfigTest`'te.
+- ~~`archunit.properties`'teki `failOnEmptyShould`.~~ **Kapandı, madde yanlıştı:**
+  öyle bir dosya yoktu. İlk sondanın yanlış geçmesi `CLAUDE.md`'ye yazıldı.
 
 ## Aşama 3'e taşınanlar
 
@@ -110,26 +104,18 @@ edeceği için duruyor:**
   okumayla kendini onaran yüzeyler olacak — etag'i **önceki yazmanın
   yanıtından** al.
 
-Enum `shared/error/CompilationFailureKind`'a çıkarıldı; `CompilationException`
-onu import ediyor (`compilation → shared` serbest). § 25.2'nin kendi imzası
-`(String detail, boolean rawSourceAvailable)` — o yola gitmek retry kararının
-okuduğu ayrımı düz metne çevirirdi, bu yüzden enum korundu. `shared`'ın
-bağımsızlığı kasıtlı bir ihlalle doğrulandı: `shared.error`'dan
-`compilation`'a bir referans konduğunda `sharedIsIndependent` **ve** `noCycles`
-birlikte düşüyor — ikincisi taşımanın gerekçesini birebir gösteriyor.
-
-Şimdi taşındı çünkü **ucuzdu**: iki tipin 11 çağrı dosyası vardı ve hepsi
-`generation` ile `compilation` içindeydi. Faz A yazıldıktan sonra değil.
+Enum `shared/error/CompilationFailureKind`'a çıkarıldı. § 25.2'nin imzası
+`(String detail, boolean rawSourceAvailable)` — o yol retry kararının okuduğu
+ayrımı düz metne çevirirdi, enum korundu. `shared`'ın bağımsızlığı kasıtlı
+ihlalle doğrulandı: `shared.error`'dan `compilation`'a bir referans konduğunda
+`sharedIsIndependent` **ve** `noCycles` birlikte düşüyor.
 
 **Düzeltme — § 18.1'in üç çıkış yolundan birinin adı yoktu.** Sözlük
 `continue_anyway` ile onuncu değerini kazandı; kural EK D.6.1 ve § 18.1'e
-yazıldı, frontend maddesi `B-037`. Buraya not düşülmesinin nedeni **sondanın
-kendiliğinden çalışması**: eklemeden önce `theActionVocabularyIsTheAgreedEight`
-düştü, yani kapalı sözlüğün kapalılığı gerçekten korunuyor. **İki ayrı yerde
-düştü:** birim testi enum'u, `OpenApiSchemaIT` ise *yayımlanan şemayı* ölçüyor —
-ikincisi değerin frontend'in üretilen tipine gerçekten girdiğini kanıtlıyor,
-birincisi yalnız enum'da olduğunu. Bir sonraki sözlük genişletmesinde ikisi de
-düşecek ve `B-nnn` yazmayı hatırlatacak.
+yazıldı, frontend maddesi `B-037`. Sonda kendiliğinden çalıştı ve **iki ayrı
+yerde**: birim testi enum'u, `OpenApiSchemaIT` *yayımlanan şemayı* ölçüyor —
+ikincisi değerin frontend'in tipine gerçekten girdiğini kanıtlıyor. Sonraki
+genişletmede ikisi de düşecek ve `B-nnn` yazmayı hatırlatacak.
 
 **Ekleme — Redis cache'in dört kararı § 18.6'ya yazıldı:** anahtarın prompt
 sürümünü taşıması, yalnız kapıdan geçenin yazılması, arızanın ıskalamaya
@@ -163,31 +149,52 @@ duruyorlar; burada yalnız nerede oldukları:
 | `LlmProvider`'ın `LlmOutcome` döndürmesi, `JsonSchema` | `07-subsystems.md` § 27.1 |
 | Ön kontrolün dört ret sebebinin telde ayrışmaması, sıralama | `05-pipeline-a-c.md` § 18.1 |
 | `Result`/`PipelineError`'ın `shared/error`'da olması | `03-architecture.md` § 10.1 |
+| Keyword bileşeninin atomun sözcüklerini okuması, öbek kuralı | `05-pipeline-a-c.md` § 19.2 |
+| `isHealthy()`'nin sinyal olması, iki katmanlı geri çekilme | `07-subsystems.md` § 28.4 |
+| `cvLanguage: "auto"`'nun iki moddaki anlamı | `04-data-model.md` § 14.3 |
 
-**Aşama 2.5'e taşınan:** § 28.4'ün ağırlık yeniden dağıtımı — `ScoringWeights`
-henüz yok. `isHealthy()` bu dilimde indi, onu okuyan taraf Faz B ile geliyor.
+**Aşama 2.5'e taşınan:** ~~§ 28.4'ün ağırlık yeniden dağıtımı~~ **kapandı** —
+`RelevanceScoringService` `isHealthy()`'yi okuyup `WITHOUT_EMBEDDING`'e düşüyor.
 
-**Ekleme — `atoms.embedding` eşlendi; devredilen kısıt kapandı.**
-`hibernate-vector` (sürümü `hibernate-core`'unkine sabitlendi — Spring Boot'un
-BOM'u core'u yönetiyor, bu modülü yönetmiyor ve sabitlenmemiş koordinat
-çözülmüyor) + `@JdbcTypeCode(SqlTypes.VECTOR)`. Migration yok, kolon `V1`'de.
+**Ekleme — `atoms.embedding` eşlendi.** `hibernate-vector` (sürümü
+`hibernate-core`'unkine sabitlendi; Boot'un BOM'u core'u yönetiyor, bu modülü
+yönetmiyor) + `@JdbcTypeCode(SqlTypes.VECTOR)`. Migration yok, kolon `V1`'de.
+**Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor** (`@Array(length)`
+yalnız DDL üretimini besliyor; ders `CLAUDE.md`'de). `AtomEmbeddingMappingIT` bu
+yüzden var; `@JdbcTypeCode` kaldırıldığında altı testi birden düşüyor.
 
-**Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor.** `@Array(length)`
-yalnız DDL üretimini besliyor: 512 yazıp `vector(1024)` kolonuna karşı
-çalıştırdım, **validation temiz geçti**. Yani boyut garantisi Hibernate'te
-değil; `setEmbedding`'in kendi kontrolünde ve gerçek veritabanına karşı bir
-gidiş dönüşte. Ders `CLAUDE.md` · Testing Requirements'a yazıldı çünkü aynı
-tuzak `vector` kullanan her kolonda tekrar edecek.
+**§ 19.6'nın doğrulanması.** Eşitlik bozucusu kaldırıldığında determinizm testi
+düştü — `List.sorted()` kararlı olduğu için giriş sırası çıkışa sızıyor.
 
-`AtomEmbeddingMappingIT` bu yüzden var ve kasıtlı ihlalle doğrulandı:
-`@JdbcTypeCode` kaldırıldığında altı testi birden düşüyor.
+---
 
-**§ 19.6'nın doğrulanması.** Faz B'nin dört kararı § 19.2'ye yazıldı (tabloda);
-buraya not düşülen tek şey şu: eşitlik
-bozucusu kaldırıldığında determinizm testi düştü — `List.sorted()` kararlı
-olduğu için giriş sırası çıkışa sızıyor ve karıştırılmış girdi farklı CV
-üretiyor. Kural "zorunlu" diye yazılmış, artık ölçülmüş de.
+## Adım 2.5 kapanışı
 
-**Kalan (Adım 2.5):** `tags`/`atom_tags` entity'leri (`ScorableAtom.tags` bugün
-çağıranın verdiği bir küme), Faz B'yi hatta bağlayan servis, ve `isHealthy()`'yi
-okuyup `WITHOUT_EMBEDDING`'e düşen yer.
+**Düzeltme — keyword bileşeni yanlış şeyi ölçüyordu, ve `ScorableAtom`'un bir
+alanı ölüydü.** `keyword`, `atom.tags()` okuyordu; ama tag bileşeni zaten
+`jdTags`'e karşı ölçüyor ve `jdTags` ilanın keyword'lerini içeriyor — tek sinyal
+0.35 ağırlıkla iki kez sayılıyordu ve atomun kendi metni hiç okunmuyordu.
+`titleTokens` bu metni taşımak için konmuş ve hiç okunmamıştı; `contentTokens`
+adıyla bileşene bağlandı. § 19.2 keyword örtüşmesini tanımlamıyordu, kural
+oraya yazıldı. Sonda kasıtlı ihlalle doğrulandı: kaynak `tags`'e çevrildiğinde
+test düşüyor.
+
+**Ekleme — `atom_tags`'te `profile_id` yok, kapsamlama join'den geçiyor.**
+Tablo yalnız iki id'yle anahtarlı, yani `AtomTag` `ProfileOwned`'ı uygulayamayan
+tek profil satırı. `TagRepository` onu `tags.profile_id` üzerinden okuyan tek
+yer; `where` düşürüldüğünde `AtomTagMappingIT`'in iki testi birden düşüyor.
+Etiketler `ProfileAssembler`'a **beşinci sorgu olarak eklenmedi**: § 52.2 dört
+düz sorgu diyor ve etiket bir skorlama girdisi, render ağacının parçası değil —
+genel mod dörtte kalıyor, beşinciyi yalnız ilan modu ödüyor.
+
+**Ekleme — kapıların sırası maliyete göre.** Profil ön kontrolü bedava ve önce
+koşuyor (boş profil LLM çağrısı satın almıyor), Faz A para harcıyor ve ölçümden
+önce koşuyor (okunamayan ilan derleme satın almıyor). İkisinin de testi var,
+çünkü sırayı bozmak ne derlemeyi kırar ne çıktıyı değiştirir — yalnız para
+harcatır.
+
+**Aşama 2.6'ya taşınan — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.**
+Bölüm "yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız
+ikincisi var, ilan modunda eşitlik doğrudan atom id'siyle bozuluyor. "Yakın"ın
+ne demek olduğu tanımlı değil ve tanımlamak `RelevanceScorer`'ın sözleşmesini
+değiştiriyor — uydurulmadı, sorulacak.
