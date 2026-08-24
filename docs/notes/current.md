@@ -28,16 +28,15 @@ bir sonraki aşamanın işi ve erken doldurmak kararı yanlış yerden verdirir.
 
 ## Isırmadan önce ele alınacak iki bulgu
 
-**Atomsuz entry sayfaya hiç çıkmıyor.** Seçim atom atom çalışıyor, dolayısıyla
-altında madde olmayan bir diploma satırı aday bile değil. Golden fixture'lar her
-eğitim entry'sine bir atom vererek etrafından dolaşıyor; gerçek çözüm
-`spec/05-pipeline-a-c.md` § 20.2'nin modelini değiştiriyor ve Aşama 2'ye ait.
+**Atomsuz entry sayfaya hiç çıkmıyor.** Seçim atom atom çalışıyor; altında madde
+olmayan bir diploma satırı aday bile değil. Golden fixture'lar her eğitim
+entry'sine bir atom vererek dolanıyor; gerçek çözüm § 20.2'nin modelini
+değiştiriyor.
 
 **Eşitlik atom id'siyle bozuluyor, id'ler her içe aktarımda yeniden üretiliyor.**
-Aynı skora *ve* aynı maliyete sahip iki atom, aynı içerik yeniden içe
-aktarıldığında yer değiştiriyor — Aşama 3'teki anonim profil devralma tam olarak
-bunu yapacak. İçerikten türetilen bir eşitlik bozucu düzeltir; bilinçli karar
-verilmeli.
+Aynı skor *ve* aynı maliyetteki iki atom yer değiştiriyor — Aşama 3'ün anonim
+profil devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu
+düzeltir; karar verilmeli.
 
 ## Aşama 1'den devredilen açık kararlar
 
@@ -64,16 +63,12 @@ verilmeli.
 
 ## Aşama 3'e taşınanlar
 
-- **`CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key)` anonim istekleri
-  tekilleştirmiyor.** Orada `user_id` NULL ve Postgres NULL'ları birbirinden
-  farklı sayıyor, yani aynı anahtar ikinci bir iş yaratıyor.
-  `COALESCE(user_id::text, anon_session_id)` üzerinden anahtarlayan bir migration
-  gerekiyor — ertelendi, çünkü anonim akışın kuyruğu kullanıp kullanmayacağı hâlâ
-  açık (`STATUS.md` · açık kararlar).
-- **Anonim TTL etkinlikle kayıyor**, dolayısıyla kullanıcıya görünen metin "iki
-  saat" değil "son etkinliğinden iki saat sonra" demeli. `spec/01-foundations.md`
-  § 9 ve ürün dokümanı hâlâ mutlak ifadeyi taşıyor; ikisi de güncellenmeli ve
-  metnin sahibi frontend.
+- **`jobs (user_id, idempotency_key)` anonim istekleri tekilleştirmiyor** —
+  `user_id` NULL ve Postgres NULL'ları farklı sayıyor. `COALESCE`'lı migration
+  gerekiyor; ertelendi (kayıt EK D.6.5'te).
+- **Anonim TTL etkinlikle kayıyor**, metin "son etkinliğinden iki saat sonra"
+  demeli. `spec/01-foundations.md` § 9 ve ürün dokümanı güncellenmeli; metnin
+  sahibi frontend.
 
 ## Aşamasız açık
 
@@ -88,48 +83,24 @@ yansıtıyor; kısıt uydurmuyor. Eksikleri sonradan eklemek ucuz bir migration,
 
 ## Aşama 2 kayıtları
 
-**`F-001`…`F-006` kapandı ve kuralları `spec/08-api.md` § 35.2 / § 35.6'ya
-işlendi** (toplu update `@Version`, entry tarih aralığı, yazma yanıtındaki
-`completeness`, `sourceLanguage` zorunluluğu, `params.fields`, sözcükleme
-silmenin iki ayrı reddi). Buradan silindiler; **ikisi Aşama 2'de tekrar
-edeceği için duruyor:**
+**`F-001`…`F-006` kapandı**, kuralları `spec/08-api.md` § 35.2 / § 35.6'da.
+**İkisi ileriye dönük olduğu için duruyor:**
 
-- **Toplu JPQL `update` `@Version`'ı atlar.** Kota sayaçları (2.7) ve
-  `generations` durum geçişleri (2.6) de toplu update isteyecek ve aynı
-  sessizlikle bayat etag üretecek. `update versioned` — ama *hepsini*
-  sürümlemek promote'u kırıyor, bu kasıtlı denendi ve dört test düştü.
+- **Toplu JPQL `update` `@Version`'ı atlar.** 2.7'nin kota sayaçları toplu
+  update isteyecek ve aynı sessizlikle bayat etag üretecek. `update versioned` —
+  ama *hepsini* sürümlemek promote'u kırıyor, denendi, dört test düştü.
+  (2.6'da ısırmadı: `jobs`'ta da `generations`'ta da `version` kolonu yok.)
 - **Okuma, yakalanmak istenen bayatlığı onarır.** `completeness` testi
-  düzeltmesiz de geçiyordu çünkü etag'i almak için yapılan `GET` saklı rakamı
-  tazeliyordu. Kota sayaçları ve `generations` durumları da aynı şekilde
-  okumayla kendini onaran yüzeyler olacak — etag'i **önceki yazmanın
-  yanıtından** al.
+  düzeltmesiz de geçiyordu, çünkü etag'i alan `GET` saklı rakamı tazeliyordu.
+  Etag'i **önceki yazmanın yanıtından** al.
 
-Enum `shared/error/CompilationFailureKind`'a çıkarıldı. § 25.2'nin imzası
-`(String detail, boolean rawSourceAvailable)` — o yol retry kararının okuduğu
-ayrımı düz metne çevirirdi, enum korundu. `shared`'ın bağımsızlığı kasıtlı
-ihlalle doğrulandı: `shared.error`'dan `compilation`'a bir referans konduğunda
-`sharedIsIndependent` **ve** `noCycles` birlikte düşüyor.
+**Düzeltme — build guide iki kez "migration" dedi, ikisi de yanlıştı:** 2.4'ün
+pgvector kolonu ve 2.6'nın `jobs` tablosu `V1`'de zaten vardı; eksik olan
+eşlemeydi. İkisi de `14-build-guide.md`'de düzeltildi. Üçüncüsünü görürsen
+**önce `V1`'e bak**.
 
-**Düzeltme — § 18.1'in üç çıkış yolundan birinin adı yoktu.** Sözlük
-`continue_anyway` ile onuncu değerini kazandı; kural EK D.6.1 ve § 18.1'e
-yazıldı, frontend maddesi `B-037`. Sonda kendiliğinden çalıştı ve **iki ayrı
-yerde**: birim testi enum'u, `OpenApiSchemaIT` *yayımlanan şemayı* ölçüyor —
-ikincisi değerin frontend'in tipine gerçekten girdiğini kanıtlıyor. Sonraki
-genişletmede ikisi de düşecek ve `B-nnn` yazmayı hatırlatacak.
-
-**Ekleme — Redis cache'in dört kararı § 18.6'ya yazıldı:** anahtarın prompt
-sürümünü taşıması, yalnız kapıdan geçenin yazılması, arızanın ıskalamaya
-dönüşmesi ve sıranın ön kontrol → cache → çağrı olması. Buraya not düşülen tek
-şey **sondanın nasıl kurulduğu**: fail-open iki katmanda birden ölçülüyor —
-birim testi mock'a fırlattırıyor, entegrasyon testi *gerçekten kapalı bir
-porta* bağlanıyor. İkincisi olmasa "catch bloğu var" ölçülmüş olurdu, "Lettuce
-gerçekten o istisnayı atıyor" değil. `try/catch` kaldırıldığında ikisi de
-düştü.
-
-**Düzeltme — Adım 2.4'ün "pgvector kolonu + migration" maddesi yanlıştı.**
-Kolon `V1`'de zaten var; eksik olan **Hibernate eşlemesi** ve migration yazmak
-mutlak kural 2'yi ihlal etmeden mümkün değil. `spec/14-build-guide.md`'de
-düzeltildi. Eşleme bir sonraki dilime kaldı.
+**`continue_anyway` sözlüğe girdi** (§ 18.1, EK D.6.1) — frontend maddesi
+`B-037`, hâlâ açık.
 
 **Spec'e promote edilen kararlar.** Kalıcı oldukları için `spec/`'te
 duruyorlar; burada yalnız nerede oldukları:
@@ -153,48 +124,76 @@ duruyorlar; burada yalnız nerede oldukları:
 | `isHealthy()`'nin sinyal olması, iki katmanlı geri çekilme | `07-subsystems.md` § 28.4 |
 | `cvLanguage: "auto"`'nun iki moddaki anlamı | `04-data-model.md` § 14.3 |
 
-**Aşama 2.5'e taşınan:** ~~§ 28.4'ün ağırlık yeniden dağıtımı~~ **kapandı** —
-`RelevanceScoringService` `isHealthy()`'yi okuyup `WITHOUT_EMBEDDING`'e düşüyor.
+**Kasıtlı ihlalle doğrulanmış sondalar.** Her biri bir kez düşürüldü; hangisinin
+neyi gerçekten ölçtüğü buradan okunur.
 
-**Ekleme — `atoms.embedding` eşlendi.** `hibernate-vector` (sürümü
-`hibernate-core`'unkine sabitlendi; Boot'un BOM'u core'u yönetiyor, bu modülü
-yönetmiyor) + `@JdbcTypeCode(SqlTypes.VECTOR)`. Migration yok, kolon `V1`'de.
-**Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor** (`@Array(length)`
-yalnız DDL üretimini besliyor; ders `CLAUDE.md`'de). `AtomEmbeddingMappingIT` bu
-yüzden var; `@JdbcTypeCode` kaldırıldığında altı testi birden düşüyor.
+| Sonda | İhlal | Ne düştü |
+|---|---|---|
+| `shared`'ın bağımsızlığı | `shared.error` → `compilation` referansı | `sharedIsIndependent` + `noCycles` |
+| Kapalı `action` sözlüğü | onuncu değer eklendi | birim testi **ve** `OpenApiSchemaIT` |
+| Redis fail-open | `try/catch` kaldırıldı | birim testi + *gerçekten kapalı porta* bağlanan IT |
+| `atoms.embedding` eşlemesi | `@JdbcTypeCode` kaldırıldı | `AtomEmbeddingMappingIT`'in altı testi |
+| Faz B determinizmi | eşitlik bozucusu kaldırıldı | giriş sırası çıkışa sızdı |
+| Keyword kaynağı | `contentTokens` → `tags` | 1 test |
+| Etiket kapsamlaması | `where tag.profileId` → totoloji | 2 test |
+| § 28.4 geri çekilmesi | sağlık kontrolü + catch silindi | 3 test |
+| `..jobs..` ham repository | `JobJpaRepository` public + çağrı | ArchUnit |
+| Kuyruk canlılığı | `SKIP LOCKED` kaldırıldı | *yalnız* bloklanma testi — bkz. 2.6 |
+| Graceful shutdown | `releaseLocks` atlandı | 1 test |
+| Retry backoff | `runAfter` = şimdi | 1 test |
 
-**§ 19.6'nın doğrulanması.** Eşitlik bozucusu kaldırıldığında determinizm testi
-düştü — `List.sorted()` kararlı olduğu için giriş sırası çıkışa sızıyor.
+**Ekleme — `atoms.embedding` eşlendi.** `hibernate-vector`'ün sürümü
+`hibernate-core`'unkine sabitlendi: Boot'un BOM'u core'u yönetiyor, bu modülü
+yönetmiyor. **Düzeltme — `ddl-auto=validate` vektör boyutunu denetlemiyor**
+(`@Array(length)` yalnız DDL üretimini besliyor); ders `CLAUDE.md`'de.
 
 ---
 
 ## Adım 2.5 kapanışı
 
-**Düzeltme — keyword bileşeni yanlış şeyi ölçüyordu, ve `ScorableAtom`'un bir
-alanı ölüydü.** `keyword`, `atom.tags()` okuyordu; ama tag bileşeni zaten
-`jdTags`'e karşı ölçüyor ve `jdTags` ilanın keyword'lerini içeriyor — tek sinyal
-0.35 ağırlıkla iki kez sayılıyordu ve atomun kendi metni hiç okunmuyordu.
-`titleTokens` bu metni taşımak için konmuş ve hiç okunmamıştı; `contentTokens`
-adıyla bileşene bağlandı. § 19.2 keyword örtüşmesini tanımlamıyordu, kural
-oraya yazıldı. Sonda kasıtlı ihlalle doğrulandı: kaynak `tags`'e çevrildiğinde
-test düşüyor.
+**Düzeltme — keyword bileşeni tag bileşeninin kopyasıydı.** `atom.tags()`
+okuyordu, ama `jdTags` ilanın keyword'lerini zaten içeriyor: tek sinyal 0.35
+ağırlıkla iki kez sayılıyor, atomun kendi metni hiç okunmuyordu. Ölü duran
+`titleTokens`, `contentTokens` adıyla bileşene bağlandı; kural § 19.2'ye yazıldı.
 
 **Ekleme — `atom_tags`'te `profile_id` yok, kapsamlama join'den geçiyor.**
-Tablo yalnız iki id'yle anahtarlı, yani `AtomTag` `ProfileOwned`'ı uygulayamayan
-tek profil satırı. `TagRepository` onu `tags.profile_id` üzerinden okuyan tek
-yer; `where` düşürüldüğünde `AtomTagMappingIT`'in iki testi birden düşüyor.
-Etiketler `ProfileAssembler`'a **beşinci sorgu olarak eklenmedi**: § 52.2 dört
-düz sorgu diyor ve etiket bir skorlama girdisi, render ağacının parçası değil —
-genel mod dörtte kalıyor, beşinciyi yalnız ilan modu ödüyor.
+`AtomTag`, `ProfileOwned`'ı uygulayamayan tek profil satırı. Etiketler
+`ProfileAssembler`'a **beşinci sorgu olarak eklenmedi**: § 52.2 dört düz sorgu
+diyor, etiket bir skorlama girdisi — genel mod dörtte kalıyor, beşinciyi yalnız
+ilan modu ödüyor.
 
 **Ekleme — kapıların sırası maliyete göre.** Profil ön kontrolü bedava ve önce
-koşuyor (boş profil LLM çağrısı satın almıyor), Faz A para harcıyor ve ölçümden
-önce koşuyor (okunamayan ilan derleme satın almıyor). İkisinin de testi var,
-çünkü sırayı bozmak ne derlemeyi kırar ne çıktıyı değiştirir — yalnız para
-harcatır.
+(boş profil LLM çağrısı satın almıyor), Faz A ölçümden önce (okunamayan ilan
+derleme satın almıyor). İkisinin de testi var: sırayı bozmak ne derlemeyi kırar
+ne çıktıyı değiştirir, yalnız para harcatır.
 
 **Aşama 2.6'ya taşınan — § 19.4'ün ikincil kriterleri ilan modunda okunmuyor.**
 Bölüm "yakın skorlu atomlar arasında ve genel CV modunda" diyor; bugün yalnız
 ikincisi var, ilan modunda eşitlik doğrudan atom id'siyle bozuluyor. "Yakın"ın
 ne demek olduğu tanımlı değil ve tanımlamak `RelevanceScorer`'ın sözleşmesini
 değiştiriyor — uydurulmadı, sorulacak.
+
+---
+
+## Adım 2.6 kayıtları — kuyruk
+
+**Düzeltme — sondam yanlış geçti, ve ders `CLAUDE.md`'ye yazıldı.**
+`SKIP LOCKED`'ı sorgudan kaldırdım: dört worker sekiz işi hâlâ mükerrersiz aldı,
+14 test de geçti. Sebep, READ COMMITTED'de düz `FOR UPDATE`'in kilidi bekleyip
+yüklemi yeniden değerlendirmesi. Yani mükerrerliği ölçen test o cümleyi hiç
+ölçmüyordu. Gerçek fark **canlılık**, ve onu ölçen test bir kilidi açık tutup
+claim'in *hemen* boş dönmesini bekliyor — o test ihlalde düşüyor. Kural § 30.2'ye
+yazıldı; genel ders (bir eşzamanlılık sondasının bloklanmayı mı mükerrerliği mi
+göreceğini önce sor) `CLAUDE.md` · Testing Requirements'ta.
+
+**Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2). ArchUnit `..jobs..`'a
+kendi satırını kazandı.
+
+**Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'e yazıldı:**
+deneme hakkı geri verilmiyor, hakkı bitmiş iş `failed`'e alınıyor, ve
+`2^attempts` 63'te `long`'u taşırdığı için üs kaydırmadan önce sınırlanıyor.
+
+**Kalan (Adım 2.6, ikinci dilim):** `generations` kaydı, `POST /generations` +
+202, SSE kaydı ve ucu, `GET /jobs/{id}`, idempotency, download, ve
+`POST /generations/general`'ın kaldırılması. Frontend'in senkronizasyon noktası
+orası (`STATUS.md`).

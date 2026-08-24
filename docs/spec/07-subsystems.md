@@ -548,6 +548,26 @@ WHERE id = (
 RETURNING *;
 ```
 
+**`SKIP LOCKED`'ın aldığı şey mükerrer claim değil, bloklanmama.** Ölçüldü:
+sözcükler kaldırıldığında dört worker sekiz işi hâlâ mükerrersiz alıyor, çünkü
+READ COMMITTED'de düz `FOR UPDATE` kilidi bekliyor, serbest kalınca yüklemi
+yeniden değerlendiriyor, satırı artık `queued` bulmayıp bir sonrakine geçiyor.
+Fark **canlılık**: `SKIP LOCKED` olmadan boştaki her yoklama tek bir yavaş
+üretimin arkasına park edebilir, ve kuyruk kuyruk olmaktan çıkar. Testi de buna
+göre kurmak gerekiyor — mükerrerliği ölçen bir test iki sözcük silindiğinde
+geçmeye devam eder (`CLAUDE.md` · Testing Requirements).
+
+**Kuyruğun iki okuyucusu ayrı tiplerdir.** `JobQueue` worker içindir ve
+kapsamsızdır — worker'ın davranan bir kullanıcısı yoktur, sıradakini alır.
+`JobRepository` kullanıcı içindir ve her okuması kapsamlıdır: iş id'si sisteme
+ait olup tarayıcıya verilen tek tanımlayıcıdır ve ilerleme akışı onunla
+adreslenir (mutlak kural 3). Tek sınıf, üstünde kapsamsız bir metot taşıyan
+kapsamlı bir repository olurdu — birinin er geç controller'dan çağıracağı şekil.
+
+**`jobs`'ta `version` kolonu yok ve olmamalı.** İki worker'ı tek satırdan uzak
+tutan şey iyimser kilitleme değil, claim'in kendisidir; ikinci ve daha zayıf bir
+cevap eklemek çözülmüş bir soruyu yeniden açardı.
+
 ### 30.3 Öncelik sınıfları
 
 ```
@@ -569,6 +589,7 @@ public void heartbeat() { jobRepo.touchHeartbeat(workerId, runningJobIds); }
 // Zombi toplayıcı
 @Scheduled(fixedDelay = 60_000)
 public void reclaimStale() { jobRepo.reclaim(Duration.ofMinutes(2)); }
+// Deneme HAKKI geri verilmez, ve hakkı bitmiş iş kuyruğa değil 'failed'e gider
 
 // Graceful shutdown
 @PreDestroy
@@ -577,6 +598,16 @@ public void shutdown() {
     if (!executor.awaitTermination(30, SECONDS)) jobRepo.releaseLocks(workerId);
 }
 ```
+
+**Toplayıcı denemeyi geri vermez.** Üretimin ortasında öldürülmüş bir worker'ı
+pekâlâ üretimin kendisi öldürmüş olabilir; kendini sonsuza kadar geri alan bir
+iş, tek bir zehirli payload'ın kuyruğu düşürme yoludur. **Denemesi bitmiş bir iş
+kuyruğa dönemez**, ama `running` bırakılamaz da: `failed`'e alınır, yoksa
+birinin izlediği ekranda hiç durmayan bir spinner olur.
+
+**Her instance kendi işlerini de toplar.** Koşul sahiplik değil heartbeat'tir:
+ölü görünecek kadar takılmış bir instance, kendisi tarafından da başkası
+tarafından da ölü sayılır.
 
 ### 30.5 Retry politikası
 
@@ -600,6 +631,14 @@ long backoffMs(int attempts) {
     return (long)(Math.pow(2, attempts) * 1000) + random.nextInt(1000);   // jitter
 }
 ```
+
+**Üs kaydırmadan önce sınırlanır ve sonuç bir tavana vurur (5 dakika).**
+`2^attempts` 63'te `long`'u taşırır ve gecikme negatife döner: iş hemen çalışır,
+ve sonsuza kadar öyle yapar. Normalde bir iş o kadar denenmez, ama zombi
+toplayıcı bir işi retry bütçesinin ima ettiğinden daha çok kez geri verebilir.
+
+**Jitter süs değil.** Onsuz aynı kesintiye düşen bütün işler aynı ana geri gelir
+ve birlikte yine düşer.
 
 ### 30.6 SSE ilerleme bildirimi
 

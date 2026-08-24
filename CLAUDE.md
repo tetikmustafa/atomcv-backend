@@ -188,13 +188,13 @@ tests worth the most. Two rules live here because no spec file enforces them:
 to catch something was confirmed against a deliberate violation before being
 trusted — the ArchUnit rules against a planted dependency, schema validation
 against a renamed column, the query counter against a lower bound, gitleaks
-against a real token pattern. Do the same for the next one. Two probes that report a **false pass**: one
-built from the AWS documentation example keys (gitleaks allowlists them), and
-an ArchUnit probe reading a compile-time constant — javac inlines it, so no
-reference survives into the bytecode. Plant a method call instead. And
-`ddl-auto=validate` does **not** check a vector's dimension: `@Array(length)`
-feeds DDL generation only, so 512 against a `vector(1024)` column validates
-clean. That shape needs a round trip against a real database.
+against a real token pattern. Do the same for the next one. Four probes that
+report a **false pass**: the AWS documentation example keys (gitleaks allowlists
+them); an ArchUnit probe reading a compile-time constant (javac inlines it —
+plant a method call); `@Array(length)` against `vector(1024)` (DDL generation
+only, so 512 validates clean — needs a real round trip); and a test asserting
+**no duplicate claim**, which passes with `SKIP LOCKED` removed — that clause
+buys **liveness**, so hold a lock and assert the rival claim returns *at once*.
 
 **Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
