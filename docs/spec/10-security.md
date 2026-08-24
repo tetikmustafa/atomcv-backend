@@ -328,11 +328,21 @@ son yedi günü: sabit bir sayı ağır kullanıcıda işe yaramaz, hafif kullan
 her gün alarm çalar. Geçmişi olmayan kullanıcı join'le eleniyor — ilk gün
 anomali değil, onu günlük kota sınırlıyor.
 
-**Bütçe freni bilinçli olarak eksik.** Çağrı başına maliyet gerekiyor ve onu
-kaydeden yok: `ProviderChain` bir `LlmInvocationEvent` yayımlıyor ama dinleyen
-yok, yani `llm_invocations` boş ve `cost_usd` her zaman sıfır. O sayıya bağlı
-bir fren sonsuza kadar sıfır okur ve **tam olarak koruma gibi görünür**. Maliyet
-kaydıyla birlikte gelecek; çekeceği bayrak zaten var ve elle çekilebiliyor.
+**Bütçe freni davranan tek sinyal, ve bu asimetri kasıtlı.** Günün faturası
+tavanı aşıyorsa mesele dağıtımın kendisidir ve herkesi durdurmak doğru cevaptır;
+tek yoğun kullanıcı ise tek kişiyle ilgilidir ve herkesi durdurmak değildir.
+**Fren tek yönlüdür:** buradaki hiçbir şey üretimi geri açmaz, çünkü sebebin
+giderilip giderilmediğini zamanlanmış bir iş bilemez — gece yarısı kendini
+kaldıran bir fren aynı kaçağın her gece tekrarlamasına izin verirdi.
+
+**Maliyet her çağrıda kaydedilir, arızalar dâhil** (§ 27.5): şema hatası dönen
+bir sağlayıcı da ürettiği token'ları faturalandırır, ve yalnız başarıları sayan
+bir toplam tam da önemli olan kötü günü olduğundan az gösterir. Fiyat tablosu
+yapılandırmadır; **cache'lenmiş girdi ayrı fiyatlanır ve taze girdinin *yerine*
+sayılır** (§ 27.4) — üstüne eklemek cache'e düşen her çağrıyı şişirir ve freni
+kimsenin ödemediği bir faturada çektirir. **Fiyatı bilinmeyen model sıfır eder,
+tahmin değil**: operatörün üzerine karar vereceği bir sayıya uydurma para
+koymak, görünür bir boşluktan kötüdür; `llm.unpriced_calls` onları sayar.
 
 **Kritik:** Fren **veri erişimini kesmez.** Üretim durur ama kullanıcı profilini görebilir ve dışa aktarabilir.
 
