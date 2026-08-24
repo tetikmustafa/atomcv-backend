@@ -11,7 +11,23 @@
 
 ## OPEN
 
-*(şu an açık madde yok — `F-003`…`F-007` kapandı)*
+### F-008 · Uygunluk raporu telde yok — sıra 8 buna bağlı
+**Since:** frontend `49eb0e1` · Aşama 2 · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/07-subsystems.md` § 30.6
+
+**Neden:** `completed` iki alan taşıyor — `{"generationId":"…","pageCount":1}`.
+§ 30.6'nın örneğindeki `matchLevel` **gelmiyor**, `FitReport` (§ 23.3) hiçbir
+uçta yok, ve `GET /generations/{id}` kaynak haritasında var ama şemada yok.
+
+**İstenen:** Raporun hangi uçtan geleceği. XI-B.9.2 sıra 8 "SSE ilerleme +
+**uygunluk raporu**" diyor; ilerleme bağlandı, rapor inşa edilemiyor. Sonuç
+ekranı sayfa sayısı + indirmeyle sınırlı kaldı — uydurulmuş bir yüzde § 23.3'ün
+adıyla yasakladığı şey. **`pageCount` de yalnız akışta**: geri düşüşle uzlaşan
+bir iş sonuca sahip ama sayfa sayısına değil.
+
+> **Alındı, yazılıyor.** Karar: rapor Faz F'de hesaplanıp `generations.fit_report`'a
+> yazılıyor; **`GET /generations/{id}`** tam raporu + `pageCount` + `status`
+> yayımlıyor, `completed` olayı § 30.6'nın örneğindeki `matchLevel`'ı kazanıyor,
+> `GET /jobs/{id}` de `pageCount` kazanıyor. Bir sonraki dilim.
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -25,74 +41,47 @@
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
 
-### F-003 · Yazma yanıtındaki `completeness` — kapandı
-Ölçümünüz birebir doğruydu ve sebebi tam olarak tarif ettiğiniz yerdeydi:
-`ProfileService.replace()` rakamı hiç hesaplamıyordu, yalnız `readOwn()`
-hesaplıyor. `PUT /profile` ve `PUT /profile/preferences` artık kaydetmeden
-önce yeniden hesaplıyor, yani yanıt **yazmadan sonrasını** taşıyor.
+### F-009 · Düz gövde ve `generalMode` — kapandı, ve `generalMode` hiç var olmamıştı
+§ 35.3'ün örneği düzeltildi: gövde **düz**, `directives`/`options` yok.
 
-Kural `spec/08-api.md` § 35.6'da: **`completeness` taşıyan bir yanıt güncel bir
-değer taşır** — kolonun her yazmadan sonra güncel olduğu değil; bölüm/entry/atom
-uçları başı döndürmüyor ve rakamı bir sonraki okumaya bırakıyor.
-**Aksiyonunuz:** `PUT` sonrası yeniden okuma kaldırılabilir.
+İkinci sorunuzun cevabı, sorduğunuz için bulundu: **`generalMode` diye bir alan
+yazılmadı.** `GenerationRequest` üzerindeki `isGeneralMode()` türetilmiş bir
+metot, ama bir record'da `isX()` Jackson ve springdoc için bir getter — şemaya
+bir boolean olarak sızmış. Sizin de tahmin ettiğiniz gibi gereksizdi ve düştü
+(`@JsonIgnore`); genel modu isteyen tek şey `jobDescription`'ın yokluğu.
 
-Bir not, çünkü sizde de aynı şekilde saklanır: "değişim olmayan iki tur uyuşuyor"
-dediğiniz maskeleme testte de çıktı. Tercihleri ölçen testimiz düzeltmesiz de
-geçti — etag'i almak için yaptığı `GET` saklı rakamı tazeliyor, yani iki yazma
-arasındaki her okuma bayatlığı onarıyor. ETag'i önceki yazmanın **yanıtından**
-alınca düştü.
+Bu, Aşama 2'de `RichContent`'te yediğimiz hatanın telin öbür yüzündeki hâli:
+*Jackson'ın dokunduğu bir record'daki her getter şeklindeki metot, birinin
+bulacağı bir alandır.* Şema testi artık `GenerationRequest`'in **tam dört**
+özelliği olduğunu sabitliyor. **Aksiyonunuz var — `B-040`.**
 
-### F-004 · Omitted alanların tekdüze temizlenmesi — kapandı, davranış değişti
-İki seçeneğinizden "temizlensin" tarafını seçtik ama uygulaması farklı oldu:
-`source_language` kolonu `NOT NULL DEFAULT 'en'`, yani temizlenecek bir değer
-yok ve `DEFAULT`'a düşürmek Türkçe yazılmış bir profili herhangi bir baş
-düzenlemesinde sessizce İngilizceye çevirirdi. Alan **gövdede zorunlu** oldu.
-Artık başın hiçbir alanı merge edilmiyor; `preferences` haklı olarak
-beklediğiniz gibi kendi ucunda kalıyor.
+### F-010 · Anlık durumdaki boş dizeler — kapandı
+`phase`, `label` ve `detail` boşken **gönderilmiyor**; `pct` sıfırken de
+gönderiliyor, çünkü yüzdesiz bir çubuk başlangıçtaki çubukla aynı şey değil.
+`GET /jobs/{id}` zaten böyle davranıyordu — akış ile yoklama artık aynı şeyi
+söylüyor, ve tek bir shape serialize edildiği için ayrışamazlar. § 30.6'ya
+yazıldı. **Aksiyonunuz var — `B-040`.**
 
-**Aksiyonunuz var — `B-035`.** Şema değişti, `gen:api` sonrası tip de.
+### F-011 · Dev proxy'nin SSE'yi gzip'lemesi — yazıldı
+Ölçümünüz § 30.6'ya, `proxy_buffering off` satırının yanına girdi: "araya giren
+her şey tamponlar", nginx **ve** Next'in dev rewrite'ı. Rakamlarınız da orada.
+Doğru yere işaret ettiniz — bir daha "SSE akmıyor" denildiğinde aranacak ikinci
+yer artık orası.
 
-### F-005 · Entry `PATCH`'te `params.fields` — kapandı
-Kural artık isteğin gönderdiği ucu adlandırıyor; tam tablo `spec/08-api.md`
-§ 35.2'de. Kontrol yine **yamanın sonucu** üzerinde, çünkü aralığı bozan tek
-uç da olabilir — değişen yalnız hangi alanın raporlandığı.
+### F-012 · `used > limit` — karar verildi, iki alan oldu
+Sayaç **denemeleri** sayıyor ve bu kasıtlı: reddedilen istek birimini geri
+almıyor, yoksa sınırını aşmış bir kullanıcı sayaç tavanda sabitken ucu döverdi.
+Yani sayı yanlış değil, **adı** yanlıştı.
 
-Yanına, sormadığınız ama sizi ilgilendiren bir davranış: hiçbir tarihe
-dokunmayan bir `PATCH` artık hiç denetlenmiyor. Aksi hâlde F-002'den önce
-ters kaydedilmiş bir satır, ilgisiz bir başlık düzenlemesini düzeltilecek
-alanı adlandıramadan reddederdi.
-
-**Aksiyonunuz var — `B-036`**, create'in iki alan birden döndürmesiyle birlikte.
-
-### F-006 · Birincil sözcükleme kuralı — kapandı, ve ölçümünüz eksikti
-Kural `spec/08-api.md` § 35.2'ye yazıldı. Sorduğunuz ayrımın cevabı: **iki ayrı
-kural**, ve ikisi zaten farklı `params.fields` döndürüyor.
+Tercihinize uyduk — ikisini aynı alanda toplamıyoruz:
 
 ```
-son sözcükleme            400 fields: ["variantId"]   → atomu sil
-birincil, başkası var     400 fields: ["primary"]     → önce başkasını birincil yap
+used       harcanan, asla limit'ten büyük değil  →  "20 of 20" basılabilir
+attempted  birim alan her istek, reddedilenler dahil (26)
+remaining  limit - used, asla negatif değil
 ```
 
-İkincisini `variantId` ölçmüşsünüz; gerçek uçta `primary` dönüyor ve bunun
-Aşama 1'den beri entegrasyon testi var. Muhtemelen mock'unuzdan ölçüldü.
-Bizim tarafta eksik olan şuydu: **birinci durumun testi yalnız 400'ü kontrol
-ediyordu**, yani ayrımın kendisi test edilmemişti — artık ikisi de sabit.
-Sözcükleme silme kontrolünü çizerken ayırmanız gereken şey tam olarak bu.
+Kırpma tek bir fabrikada ve bir invariant onu orada tutuyor: `used > limit`
+taşıyan bir `Usage` inşa edilemiyor. **Aksiyonunuz var — `B-040`.**
 
-### F-007 · Kota gün dönümü — karar verildi
-**Gün sınırı UTC**; Türkiye'de sayaç 03:00'te döner. `usage_counters.period`
-zaten saat dilimsiz bir `DATE` ve UTC onu tek anlamlı kılan okuma: sunucunun
-dilimi değişse de aynı satır aynı günü gösterir, yaz saati sınırı yok. Gömülü
-bir `Europe/Istanbul` o dilimin dışına ilk çıkan kullanıcıda sessizce yanlış
-olurdu; istemcinin bildirdiği dilim ise kota kaçırmak için ayarlanabilirdi.
-
-**Tercihiniz kabul:** `resetsAt` telde her zaman offset taşıyan bir ISO-8601
-**anı** (`2026-08-22T00:00:00Z`), yalnız saat değil — `capabilities.quotaResetsAt`
-ve `QUOTA_EXCEEDED` / `PROFILE_QUOTA_EXCEEDED` `params`'ı için de aynı. Metni
-kullanıcının yerelinde yazacak taraf sizsiniz; `Retry-After` yanında saniye
-cinsinden kalıyor, istemci saati yanlışsa doğru olan tek değer o.
-
-Karar `spec/08b-api-contract.md` EK D.6.5'te, `period` kolonunun yorumu
-`spec/04-data-model.md`'de; `STATUS.md`'nin açık kararlar tablosundan düştü.
-**Henüz kod yok** — `resetsAt` gönderen uç Aşama 2, Adım 2.7 ile geliyor.
-
+*(`F-001`…`F-007` `resolved/to-backend-2026-08.md`'de)*
