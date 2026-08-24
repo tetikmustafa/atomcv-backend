@@ -63,7 +63,7 @@ public final class RelevanceScorer {
                 : 0.0;
         double tag = jaccard(atom.tags(), target.tags());
         double skill = skillOverlap(atom.skills(), target);
-        double keyword = coverage(atom.tags(), target.keywords());
+        double keyword = keywordCoverage(atom.contentTokens(), target.keywords());
 
         double raw = weights.embedding() * embedding
                 + weights.tag() * tag
@@ -144,12 +144,38 @@ public final class RelevanceScorer {
         return clamp(required + preferred);
     }
 
-    /** How much of the posting's vocabulary this atom covers at all. */
-    static double coverage(Set<String> atomTags, Set<String> postingKeywords) {
-        if (atomTags.isEmpty() || postingKeywords.isEmpty()) {
+    /**
+     * How many of the posting's literal phrases the atom actually says
+     * (Bolum 19.1's fourth term).
+     *
+     * <p>Measured against the atom's <em>words</em> rather than its tags,
+     * which is what makes this a component of its own. The tag term already
+     * compares tags against a set that contains the posting's keywords, so
+     * scoring keywords the same way counted one signal twice at 0.35 and left
+     * the atom's own text unread — a bullet that named Kubernetes eleven times
+     * scored no better than one that never mentioned it.
+     *
+     * <p>A keyword counts as covered when <strong>every</strong> word of it
+     * appears among the atom's, in any order. Postings write phrases
+     * ("distributed systems") and bullets write sentences, so equality would
+     * match almost nothing; requiring every word keeps "systems" alone from
+     * claiming the phrase.
+     */
+    static double keywordCoverage(List<String> atomTokens, Set<String> postingKeywords) {
+        if (atomTokens.isEmpty() || postingKeywords.isEmpty()) {
             return 0.0;
         }
-        return (double) countMatches(atomTags, postingKeywords) / postingKeywords.size();
+        Set<String> words = Set.copyOf(atomTokens);
+        long covered = postingKeywords.stream()
+                .filter(keyword -> saysEveryWordOf(keyword, words))
+                .count();
+        return (double) covered / postingKeywords.size();
+    }
+
+    private static boolean saysEveryWordOf(String keyword, Set<String> words) {
+        return TOKENS.splitAsStream(keyword)
+                .filter(part -> !part.isBlank())
+                .allMatch(words::contains);
     }
 
     private static long countMatches(Set<String> left, Set<String> right) {

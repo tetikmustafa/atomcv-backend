@@ -150,6 +150,57 @@ class RelevanceScorerTest {
                 .isCloseTo(0.4, EPSILON);
     }
 
+    // ── The keyword component ────────────────────────────────────────────
+
+    /**
+     * Postings write phrases and bullets write sentences, so a keyword counts
+     * when every word of it is present rather than when the whole string
+     * matches. Equality would score almost every atom at zero.
+     */
+    @Test
+    void akeywordCountsWhenEveryWordOfItIsPresent() {
+        List<String> tokens = List.of("built", "a", "distributed", "queue", "for", "systems");
+
+        assertThat(RelevanceScorer.keywordCoverage(
+                tokens, Set.of("distributed systems"))).isCloseTo(1.0, EPSILON);
+        assertThat(RelevanceScorer.keywordCoverage(
+                tokens, Set.of("distributed systems", "high availability")))
+                .isCloseTo(0.5, EPSILON);
+    }
+
+    /** Half a phrase is not the phrase. */
+    @Test
+    void onewordOfATwoWordKeywordDoesNotCoverIt() {
+        assertThat(RelevanceScorer.keywordCoverage(
+                List.of("ran", "many", "systems"), Set.of("distributed systems"))).isZero();
+    }
+
+    @Test
+    void anatomWithNoWordsAndAPostingWithNoKeywordsBothScoreZero() {
+        assertThat(RelevanceScorer.keywordCoverage(List.of(), Set.of("go"))).isZero();
+        assertThat(RelevanceScorer.keywordCoverage(List.of("go"), Set.of())).isZero();
+    }
+
+    /**
+     * The reason this component reads {@code contentTokens} and not
+     * {@code tags}: the tag term already compares tags against a set that
+     * contains the posting's keywords, so reading tags here counted one signal
+     * twice and never looked at what the atom says.
+     */
+    @Test
+    void thekeywordComponentReadsTheAtomsWordsRatherThanItsTags() {
+        var target = new RelevanceScorer.PostingTarget(backendPosting());
+        var tagged = new ScorableAtom(UUID.randomUUID(), null,
+                Set.of("distributed systems", "high availability"), Set.of(), List.of(), 0.5);
+        var spoken = new ScorableAtom(UUID.randomUUID(), null, Set.of(), Set.of(),
+                List.of("kept", "distributed", "systems", "at", "high", "availability"), 0.5);
+
+        assertThat(RelevanceScorer.score(tagged, target, null, ScoringWeights.DEFAULT)
+                .components().keyword()).isZero();
+        assertThat(RelevanceScorer.score(spoken, target, null, ScoringWeights.DEFAULT)
+                .components().keyword()).isCloseTo(1.0, EPSILON);
+    }
+
     // ── Embedding similarity ─────────────────────────────────────────────
 
     @Test
