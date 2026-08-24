@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
+import com.mustafatetik.atomcv.generation.validation.FitReport;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,6 +27,11 @@ import java.util.UUID;
  * @param promptVersions the versions that actually ran, which under an A/B
  *                       experiment is not the same as the configured defaults
  *                       (Bolum 53.3)
+ * @param fitReport      Faz F's coverage counts, or null in general mode.
+ *                       Computed where the posting and the finished selection
+ *                       are both in hand, which is here and nowhere later:
+ *                       the handler holds the document but not the tree the
+ *                       skills are read from.
  */
 public record GeneratedGeneration(
         UUID profileId,
@@ -33,7 +39,17 @@ public record GeneratedGeneration(
         GenerationOptions options,
         ScoringWeights weights,
         Map<String, String> promptVersions,
-        GeneratedDocument document) {
+        GeneratedDocument document,
+        FitReport fitReport) {
+
+    /** General mode: no posting, no report (Bolum 19.4). */
+    public GeneratedGeneration(
+            UUID profileId, JobAnalysis posting, GenerationOptions options,
+            ScoringWeights weights, Map<String, String> promptVersions,
+            GeneratedDocument document) {
+
+        this(profileId, posting, options, weights, promptVersions, document, null);
+    }
 
     public GeneratedGeneration {
         promptVersions = promptVersions == null

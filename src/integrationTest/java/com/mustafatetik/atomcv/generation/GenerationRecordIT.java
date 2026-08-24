@@ -11,6 +11,8 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
+import com.mustafatetik.atomcv.generation.validation.FitReport;
+import com.mustafatetik.atomcv.generation.validation.MatchLevel;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -151,6 +153,50 @@ class GenerationRecordIT extends AbstractIntegrationTest {
 
         assertThat(generations.findById(user(), saved.getId())).isPresent();
         assertThat(generations.findById(stranger, saved.getId())).isEmpty();
+    }
+
+    /**
+     * The fit report is a seventh JSONB column and it round-trips as a typed
+     * record rather than a map (Bolum 23.3, F-008).
+     *
+     * <p>Worth its own test because the column is what the result screen reads
+     * and nothing else validates its shape: a field that failed to deserialise
+     * would come back null, and a report that is missing looks exactly like a
+     * general-mode generation that never had one.
+     */
+    @Test
+    void thefitReportSurvivesTheRoundTripAsCounts() {
+        var report = new FitReport(
+                2, 3, 1, 2,
+                List.of("Go", "PostgreSQL", "gRPC"),
+                List.of("Kubernetes"),
+                List.of("Terraform"),
+                MatchLevel.MODERATE);
+        var generation = record(snapshot());
+        generation.setFitReport(report);
+
+        var saved = generations.save(user(), generation);
+        var reloaded = generations.findById(user(), saved.getId()).orElseThrow();
+
+        assertThat(reloaded.getFitReport()).isEqualTo(report);
+        assertThat(reloaded.getFitReport().level()).isEqualTo(MatchLevel.MODERATE);
+        assertThat(reloaded.getFitReport().missingRequired()).containsExactly("Kubernetes");
+    }
+
+    /**
+     * General mode has no posting, so it has no report — and null is the
+     * honest value. Zero counts with a level over them would be a verdict
+     * about nothing.
+     */
+    @Test
+    void ageneralModeGenerationStoresNoReportAtAll() {
+        var saved = generations.save(user(), record(snapshot()));
+
+        assertThat(generations.findById(user(), saved.getId()).orElseThrow().getFitReport())
+                .isNull();
+        assertThat(jdbc.queryForObject(
+                "SELECT fit_report FROM generations WHERE id = ?", String.class, saved.getId()))
+                .isNull();
     }
 
     /**

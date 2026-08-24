@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.domain;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.generation.validation.FitReport;
 import com.mustafatetik.atomcv.shared.security.UserOwned;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -93,9 +94,15 @@ public class Generation implements UserOwned {
 
     private String coverLetter;
 
-    /** Faz F's coverage counts. Null until Faz F lands (Bolum 23). */
+    /**
+     * Faz F's coverage counts (Bolum 23.3).
+     *
+     * <p>Null for a general-mode generation, and that is the honest value:
+     * there was no posting to be relevant to, so every count would be zero and
+     * a level would be a verdict about nothing.
+     */
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> fitReport;
+    private FitReport fitReport;
 
     private Short pageCount;
 
@@ -209,12 +216,12 @@ public class Generation implements UserOwned {
         return coverLetter;
     }
 
-    public Map<String, Object> getFitReport() {
-        return fitReport == null ? null : ordered(fitReport);
+    public FitReport getFitReport() {
+        return fitReport;
     }
 
-    public void setFitReport(Map<String, Object> fitReport) {
-        this.fitReport = fitReport == null ? null : ordered(fitReport);
+    public void setFitReport(FitReport fitReport) {
+        this.fitReport = fitReport;
     }
 
     public Short getPageCount() {

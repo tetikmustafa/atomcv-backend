@@ -292,7 +292,13 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.jobId").value(jobId))
                 .andExpect(jsonPath("$.status").value("queued"))
                 .andExpect(jsonPath("$.generationId").doesNotExist())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.pageCount").doesNotExist())
+                .andExpect(jsonPath("$.error").doesNotExist())
+                // F-010: an empty translation key is worse than no field.
+                .andExpect(jsonPath("$.phase").doesNotExist())
+                .andExpect(jsonPath("$.label").doesNotExist())
+                .andExpect(jsonPath("$.detail").doesNotExist())
+                .andExpect(jsonPath("$.pct").value(0));
     }
 
     /**
@@ -317,6 +323,19 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     void ajobThatDoesNotExistIsNotFound() throws Exception {
         mvc.perform(get("/api/v1/jobs/" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Absolute rule 3 on the endpoint F-008 added. The generation id is the
+     * second identifier this system hands to a browser, and reading one is now
+     * a third thing it can be spent on — the report names what a profile is
+     * missing.
+     */
+    @Test
+    void anotherUsersGenerationIsNotFound() throws Exception {
+        mvc.perform(get("/api/v1/generations/" + UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 
     /** Bolum 30.6's progress, read back through the polling fallback. */
@@ -351,6 +370,9 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("completed"))
                 .andExpect(jsonPath("$.generationId").value(generationId.toString()))
+                // F-008: a client that fell back to polling could reach the
+                // generation but not the number printed beside it.
+                .andExpect(jsonPath("$.pageCount").value(1))
                 .andExpect(jsonPath("$.error").doesNotExist())
                 // A bar that stopped at the last reported phase would argue
                 // with the word beside it.

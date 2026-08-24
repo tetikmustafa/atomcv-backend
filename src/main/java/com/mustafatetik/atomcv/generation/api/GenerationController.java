@@ -2,7 +2,9 @@ package com.mustafatetik.atomcv.generation.api;
 
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
+import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
+import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
@@ -61,15 +63,17 @@ public class GenerationController {
     private final CurrentUser currentUser;
     private final GenerationEnqueueService enqueue;
     private final GenerationDownloadService downloads;
+    private final GenerationRepository generations;
     private final ErrorPresenter errors;
 
     GenerationController(CurrentUser currentUser,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
-            ErrorPresenter errors) {
+            GenerationRepository generations, ErrorPresenter errors) {
 
         this.currentUser = currentUser;
         this.enqueue = enqueue;
         this.downloads = downloads;
+        this.generations = generations;
         this.errors = errors;
     }
 
@@ -106,6 +110,35 @@ public class GenerationController {
         return ResponseEntity.accepted()
                 .location(URI.create("/api/v1/jobs/" + job.getId()))
                 .body(AcceptedJobResponse.of(job));
+    }
+
+    @Operation(
+            summary = "One generation and how well it fits the posting",
+            description = """
+                    Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.
+
+                    **Counts, never a percentage.** Bolum 23.3 forbids one by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.
+
+                    The report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The generation"),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping(path = "/{generationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GenerationResponse> read(@PathVariable UUID generationId) {
+        // Scoped, and it is the whole IDOR defense on this endpoint: the
+        // generation id reaches a browser twice and this is the third place it
+        // can be spent (absolute rule 3). Someone else's id answers 404 rather
+        // than 403 — that an id exists is itself information.
+        Generation generation = generations.findById(currentUser.require(), generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(GenerationResponse.of(generation));
     }
 
     @Operation(

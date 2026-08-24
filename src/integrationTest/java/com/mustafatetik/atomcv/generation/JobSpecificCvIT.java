@@ -153,6 +153,56 @@ class JobSpecificCvIT extends AbstractLatexTest {
         assertThat(row.get("engine_version")).asString().doesNotContain("general-mode");
     }
 
+    /**
+     * Faz F's report, through the whole pipeline and back out of the endpoint
+     * that publishes it (Bolum 23.3, F-008).
+     *
+     * <p>The counts themselves are a unit test's job. What only this lane can
+     * show is that the report survives every hop it has to make — computed
+     * against a real analysis, written to JSONB, read back as a typed record,
+     * and serialised — and that it is measured on the page rather than on the
+     * ranking. That last part is the one worth a real run: the profile here
+     * has more atoms than a page holds.
+     */
+    @Test
+    void thefitReportReachesTheEndpointAndDescribesThePage() throws Exception {
+        seedCareer();
+
+        String jobId = enqueue();
+        worker().runOne();
+        String generationId = completedGenerationId(jobId);
+
+        String body = mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat((String) JsonPath.read(body, "$.generationId")).isEqualTo(generationId);
+        assertThat(((Number) JsonPath.read(body, "$.pageCount")).intValue()).isEqualTo(1);
+        assertThat((String) JsonPath.read(body, "$.status")).isEqualTo("completed");
+
+        int requiredTotal = ((Number) JsonPath.read(body, "$.fitReport.requiredTotal")).intValue();
+        int requiredCovered =
+                ((Number) JsonPath.read(body, "$.fitReport.requiredCovered")).intValue();
+        assertThat(requiredTotal).as("Faz A found requirements to report on").isPositive();
+        assertThat(requiredCovered).isBetween(0, requiredTotal);
+        assertThat((String) JsonPath.read(body, "$.fitReport.level"))
+                .isIn("WEAK", "MODERATE", "GOOD", "STRONG");
+
+        // Bolum 23.3 forbids a percentage by name, and the schema is where
+        // one would quietly appear.
+        assertThat(body).doesNotContain("percent").doesNotContain("score");
+
+        // The heading rides the terminal event so the result screen can print
+        // it without a second round trip.
+        String status = mvc.perform(get("/api/v1/jobs/" + jobId))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(((Number) JsonPath.read(status, "$.pageCount")).intValue()).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "SELECT result ->> 'matchLevel' FROM jobs WHERE id = ?::uuid",
+                String.class, jobId))
+                .isEqualTo(JsonPath.read(body, "$.fitReport.level"));
+    }
+
     /** Bolum 44.2: the unit is spent when the work is queued, and kept on success. */
     @Test
     void asuccessfulGenerationKeepsItsQuotaUnit() throws Exception {

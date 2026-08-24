@@ -7,6 +7,8 @@ import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
+import com.mustafatetik.atomcv.generation.validation.FitReport;
+import com.mustafatetik.atomcv.generation.validation.SelectedSkills;
 import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
@@ -160,12 +162,23 @@ public class JobSpecificGenerationService {
 
         progress.report(GenerationPhase.RENDERING.at(70));
 
+        // Faz F reads the tree the selection was made from, so the reference
+        // has to survive the lambda — measurement may have reloaded it above.
+        ProfileTree rendered = tree;
+
         return pipeline.run(head, tree, built.request(),
                         options.customization(), options.locale())
                 .map(document -> new GeneratedGeneration(
                         profile.id(), posting, options, scores.weights(),
                         Map.of(JobAnalysisPhase.PROMPT_ID,
                                 analysis.promptVersionFor(bucketKey)),
-                        document));
+                        document,
+                        // Bolum 23.3, and it is measured on what the page
+                        // prints rather than on what Faz B ranked: selection
+                        // drops most of the profile for budget, and a report
+                        // built from the ranking would credit the user for a
+                        // skill that never made it onto the document.
+                        FitReport.of(posting,
+                                SelectedSkills.onThePage(rendered, document.selection()))));
     }
 }
