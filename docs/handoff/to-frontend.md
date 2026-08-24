@@ -14,16 +14,18 @@
 ### B-039 · Kota indi: iki yeni durum, bir yeni hata kodu
 **Since:** commit `<bu PR>` · Adım 2.7 · **Spec:** `spec/10-security.md` § 44, EK D.6.5
 
-**`GET /api/v1/account/usage`** günün kullanımını veriyor: her metrik için
-`{ metric, used, limit, resetsAt }`. **İki metrik** var (`generation`,
-`profile_extract`) ve ikisi de her zaman dönüyor — eksik giriş "sıfır" demek
-değil, hiç olmuyor. `resetsAt` **mutlak bir an** (UTC gece yarısı, Türkiye'de
-03:00); metni kullanıcının yerelinde siz yazıyorsunuz.
+**`GET /api/v1/account/usage`**: her metrik için `{ metric, used, limit,
+resetsAt }`. **İki metrik** (`generation`, `profile_extract`) ve ikisi de her
+zaman dönüyor — eksik giriş "sıfır" demek değil, hiç olmuyor. `resetsAt` mutlak
+bir an (UTC gece yarısı, Türkiye'de 03:00); metni siz yazıyorsunuz.
 
-**`QUOTA_EXCEEDED` (429)** artık gerçekten dönüyor, `params`: `metric` (string),
-`resetsAt` (timestamp). **`resolutions` boş** — kapalı sözlükte "yarın tekrar
-dene" yok ve `retry` bunun tersini söylüyor ("geçici hata, aynen yeniden
-gönder"). Mesajınız `resetsAt`'ten kendi cümlesini kursun.
+**`QUOTA_EXCEEDED` (429)** artık gerçekten dönüyor: `params` içinde `metric`
+(string) ve `resetsAt` (timestamp), **başlıkta `Retry-After`** (saniye).
+İkisi birden, ve gereksiz tekrar değil: `resetsAt` kullanıcının yerelinde
+yazacağınız mutlak an, `Retry-After` ise süre — **istemcinin saati yanlışsa
+doğru olan tek değer o**, ve zaten hemen tekrar deneyecek istemci tam olarak
+odur. **`resolutions` boş**: kapalı sözlükte "yarın tekrar dene" yok ve `retry`
+bunun tersini söylüyor.
 
 **Yeni kod: `GENERATION_PAUSED` (503), parametresiz, `retry` resolution'ı ile.**
 § 44.3'ün acil freni: maliyet anomalisinde üretim durur. **Veri erişimi
@@ -31,8 +33,7 @@ durmaz** — kullanıcı profilini görebilir, düzenleyebilir, dışa aktarabil
 bunu böyle anlatmalı, "hesabınız kapandı" gibi değil. `errors.GENERATION_PAUSED`
 için ICU mesajı gerekiyor.
 
-Kota **kuyruğa alırken** düşüyor ve **başarısız her işte geri veriliyor**, yani
-düşen bir üretim kullanıcının hakkını yemiyor.
+Kota kuyruğa alırken düşüyor ve **başarısız her işte geri veriliyor**.
 
 ---
 

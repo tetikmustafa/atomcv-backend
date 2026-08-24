@@ -88,6 +88,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
         jdbc.update("DELETE FROM jobs");
+        jdbc.update("DELETE FROM usage_counters");
         jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
     }
 
@@ -213,6 +214,38 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isAccepted());
 
         assertThat(queuedJobs()).isEqualTo(2);
+    }
+
+    /**
+     * Bolum 44.1 on the wire, and EK D.6.5 asks for both numbers.
+     *
+     * <p>{@code resetsAt} is an absolute instant the client renders in the
+     * user's own locale; {@code Retry-After} is a duration, and it is the only
+     * one of the two that is right when the client's clock is wrong — which is
+     * exactly the client that would otherwise retry at once and be refused
+     * again. Written after the manual-test guide claimed the header existed
+     * and nothing sent it.
+     */
+    @Test
+    void aquotaRefusalCarriesRetryAfterAsWellAsResetsAt() throws Exception {
+        seedCareer();
+        jdbc.update("""
+                INSERT INTO usage_counters (subject_type, subject_id, metric, period, count)
+                VALUES ('user', ?, 'generation', (now() at time zone 'utc')::date, 100000)
+                ON CONFLICT (subject_type, subject_id, metric, period)
+                DO UPDATE SET count = 100000
+                """, LocalDevCurrentUser.DEV_USER_ID.toString());
+
+        mvc.perform(post("/api/v1/generations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body(POSTING)))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("QUOTA_EXCEEDED"))
+                .andExpect(jsonPath("$.params.metric").value("generation"))
+                .andExpect(jsonPath("$.params.resetsAt").exists())
+                .andExpect(header().exists("Retry-After"));
+
+        assertThat(queuedJobs()).as("a refused request queues nothing").isZero();
     }
 
     // ── Bolum 30.7: idempotency ──────────────────────────────────────────

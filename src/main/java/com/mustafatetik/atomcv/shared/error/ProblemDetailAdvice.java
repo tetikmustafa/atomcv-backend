@@ -9,7 +9,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -38,6 +42,12 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class ProblemDetailAdvice {
 
     private static final Logger log = LoggerFactory.getLogger(ProblemDetailAdvice.class);
+
+    private final java.time.Clock clock;
+
+    ProblemDetailAdvice(java.time.Clock clock) {
+        this.clock = clock;
+    }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ProblemDetail> handle(ApiException exception) {
@@ -182,7 +192,33 @@ public class ProblemDetailAdvice {
         return respond(UserFacingError.of(ErrorCode.INTERNAL_ERROR));
     }
 
-    private static ResponseEntity<ProblemDetail> respond(UserFacingError error) {
-        return ResponseEntity.status(error.httpStatus()).body(ProblemDetails.from(error));
+    private ResponseEntity<ProblemDetail> respond(UserFacingError error) {
+        var response = ResponseEntity.status(error.httpStatus());
+        retryAfterSeconds(error).ifPresent(seconds ->
+                response.header(HttpHeaders.RETRY_AFTER, String.valueOf(seconds)));
+        return response.body(ProblemDetails.from(error));
+    }
+
+    /**
+     * EK D.6.5: a 429 carries {@code Retry-After} as well as {@code resetsAt}.
+     *
+     * <p>Both, and they are not redundant. {@code resetsAt} is an absolute
+     * instant the client renders in the user's own locale; {@code Retry-After}
+     * is a duration, and it is the only one of the two that is right when the
+     * client's own clock is wrong — which is exactly the client that would
+     * otherwise retry immediately and be refused again.
+     *
+     * <p>Rounded up and floored at one: a wait of zero seconds is an
+     * invitation to retry now, which is what the header exists to prevent.
+     */
+    private Optional<Long> retryAfterSeconds(UserFacingError error) {
+        if (error.httpStatus() != 429) {
+            return Optional.empty();
+        }
+        if (!(error.params().get("resetsAt") instanceof Instant resetsAt)) {
+            return Optional.empty();
+        }
+        long seconds = Duration.between(clock.instant(), resetsAt).toSeconds();
+        return Optional.of(Math.max(1, seconds + (seconds < 0 ? 0 : 1)));
     }
 }

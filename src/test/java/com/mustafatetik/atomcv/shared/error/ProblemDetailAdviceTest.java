@@ -34,7 +34,10 @@ import org.springframework.web.bind.annotation.RestController;
 // ones stay out of it; `@Import` is what actually registers it, since a nested
 // test class is never component-scanned.
 @WebMvcTest(controllers = ProblemDetailAdviceTest.ThrowingController.class)
-@Import({ProblemDetailAdvice.class, ProblemDetailAdviceTest.ThrowingController.class})
+// ClockConfig too: the advice reads a clock to compute Retry-After, and a
+// @WebMvcTest slice carries no configuration that is not web-shaped.
+@Import({ProblemDetailAdvice.class, ProblemDetailAdviceTest.ThrowingController.class,
+        com.mustafatetik.atomcv.shared.config.ClockConfig.class})
 class ProblemDetailAdviceTest {
 
     @Autowired
