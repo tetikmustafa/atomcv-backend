@@ -3,7 +3,6 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
-import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService;
@@ -22,6 +21,7 @@ import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -85,7 +85,7 @@ public class JobSpecificGenerationService {
      * @param language              null to let the profile decide, which for
      *                              {@code auto} means following the posting
      */
-    public Result<GeneratedDocument> generateForJob(
+    public Result<GeneratedGeneration> generateForJob(
             UserContext user,
             String jobDescription,
             boolean preflightAcknowledged,
@@ -104,8 +104,9 @@ public class JobSpecificGenerationService {
 
         // Faz A. The bucket key is the user id, so an A/B experiment keeps one
         // person on one prompt version across their generations (Bolum 53.3).
-        Result<JobAnalysis> analysed = analysis.analyse(
-                jobDescription, preflightAcknowledged, user.userId().toString());
+        String bucketKey = user.userId().toString();
+        Result<JobAnalysis> analysed =
+                analysis.analyse(jobDescription, preflightAcknowledged, bucketKey);
         if (analysed instanceof Result.Err<JobAnalysis> refused) {
             return Result.err(refused.error());
         }
@@ -151,6 +152,11 @@ public class JobSpecificGenerationService {
         }
 
         return pipeline.run(head, tree, built.request(),
-                options.customization(), options.locale());
+                        options.customization(), options.locale())
+                .map(document -> new GeneratedGeneration(
+                        profile.id(), posting, options, scores.weights(),
+                        Map.of(JobAnalysisPhase.PROMPT_ID,
+                                analysis.promptVersionFor(bucketKey)),
+                        document));
     }
 }

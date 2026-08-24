@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
-import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.ScoredAtom;
@@ -99,7 +98,7 @@ class JobSpecificGenerationServiceTest {
         var result = service.generateForJob(user(), POSTING, false, null, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
-        assertThat(((Result.Err<GeneratedDocument>) result).error())
+        assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
         verify(analysis, never()).analyse(anyString(), anyBoolean(), anyString());
     }
@@ -117,7 +116,7 @@ class JobSpecificGenerationServiceTest {
 
         var result = service.generateForJob(user(), POSTING, false, null, null);
 
-        assertThat(((Result.Err<GeneratedDocument>) result).error())
+        assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
         verify(renderCosts, never()).measureMissing(any(), any());
         verify(relevance, never()).scoreAgainst(any(), any(), any());
