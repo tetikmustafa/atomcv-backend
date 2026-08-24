@@ -130,24 +130,12 @@ sabitlendi (Boot'un BOM'u o modülü yönetmiyor). **Düzeltme —
 
 ---
 
-## Adım 2.6 kayıtları — kuyruk
+## Adım 2.6 kayıtları
 
-**Düzeltme — sondam yanlış geçti.** `SKIP LOCKED` kaldırıldı, 14 test de geçti:
-düz `FOR UPDATE` kilidi bekleyip yüklemi yeniden değerlendiriyor. Gerçek fark
-**canlılık**; onu ölçen test bir kilidi açık tutup claim'in *hemen* boş
-dönmesini bekliyor. Kural § 30.2'de, ders `CLAUDE.md`'de.
-
-**Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2); ArchUnit `..jobs..` ve
-`..generation..` için kendi satırlarını kazandı.
-
-**Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'te:** hak
-geri verilmiyor, hakkı bitmiş iş `failed`'e gidiyor, üs kaydırmadan sınırlanıyor.
-
-**Düzeltme — CI'da düşen test, yerelde geçen kod.** `Set.copyOf`/`Map.copyOf`
-**her JVM çalıştırmasında farklı** sırayla dolaşıyor (üç ölçüm, üç sıra). İki
-yerde ısırdı: `TagRepository.labelsByAtom` sorgunun sırasını atıyordu, `Job`'un
-üç JSONB kolonu da `JobWorker`'ın sıralı kurduğu hata haritasını bozuyordu.
-İkisi de `Collections.unmodifiable*` + `Linked*`; kural `CLAUDE.md`'de.
+> Kuyruk diliminin kayıtları `archive/stage-2-steps-1-5.md`'de. Oradan
+> hatırlanmaya değer tek şey **`SKIP LOCKED` sondasının yanlış geçmesi**:
+> mükerrerliği ölçen test o cümleyi hiç ölçmüyordu, gerçek fark canlılık
+> (§ 30.2, ders `CLAUDE.md`'de).
 
 **Karar — Aşama 2'de PDF baytı saklanmıyor** (2026-08-24, EK D.6.3). R2 Adım
 3.1'de; indirme `selection_state`'ten yeniden render ediyor. Devredilen
@@ -185,11 +173,28 @@ kontrolü olmadan id ile iş okumak. Kural `..api..`'nin `JobQueue`'ya bağlanma
 yasaklıyor; servisten kuyruğa koymak serbest kalıyor. Kasıtlı ihlalde hem kural
 hem çapraz kullanıcı testi düştü.
 
-**Ekleme — ilerleme satıra da yazılıyor, yalnız olaya değil.** Yeniden bağlanan
-istemcinin yakalanacağı bir yer olmalı; kimseye gönderilmemiş olay yok olur
-(EK D.6.4). Bedeli faz başına bir update.
+**Ekleme — ilerleme satıra da yazılıyor, yalnız olaya değil** (EK D.6.4):
+kimseye gönderilmemiş olay yok olur. Bedeli faz başına bir update.
 
-**Kalan (Adım 2.6, üçüncü dilim):** SSE kaydı ve ucu (`streamUrl`),
-`GET /generations/{id}/download` (anlık görüntüden yeniden render), ve
-`POST /generations/general`'ın kaldırılması. Frontend'in senkronizasyon noktası
-orası (`STATUS.md`, `B-022`).
+**Ekleme — SSE'nin iki kararı § 30.6'ya, `Last-Event-ID` yorumu EK D.6.4'e
+yazıldı.** Bağlanışta güncel durum gönderiliyor (yeniden bağlanmayı *ve* 202 ile
+abonelik arasında biten işi birden çözüyor), terminal olay akışı kapatıyor.
+Replay tampon isterdi; § D.6.4 zaten daha ucuz olanı kabul ediyor. Kayıt süreç
+içi — javadoc bunun ne zaman yetmeyeceğini de söylüyor.
+
+**Ekleme — `JobEvents` no-op varsayılanlı arayüz**, kuyruk HTTP'ye bağlı değil.
+Satır önce yazılıyor, sonra duyuruluyor.
+
+**Düzeltme — bir testim yanlış şeyi taklit ediyordu.** MockMvc'nin koparacak
+istemcisi yok; "istemci koptu" testi kendi stub'ına assert etmiş olurdu.
+`remove` doğrudan çağrılıyor — gerçek callback'lerin yaptığı da bu.
+
+**Doküman kararı (onaylandı 2026-08-24):** aşama kapanmadan da kapanmış
+adımların kayıtları `archive/`'a taşınıyor; canlı indeksler burada kalıyor.
+`to-frontend.md`'nin kalıcı-kurallar tablosu da `resolved/`'a taşındı.
+
+**Kalan (Adım 2.6, son dilim):** `POST /generations`'ın `jobDescription`'ını
+opsiyonel yapıp **genel modu kuyruğa taşımak**, `GET /generations/{id}/download`
+(anlık görüntüden yeniden render), sonra `POST /generations/general`'ı kaldırmak
+— **bu sırayla**, yoksa özellik kaybı olur. Uçtan uca `@Tag("latex")` testi de
+orada: kuyruğa iş koy, worker koştur, PDF çıksın.

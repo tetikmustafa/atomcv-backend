@@ -41,3 +41,26 @@ Dördüncüsünü görürsen **önce `V1`'e bak**. · **`continue_anyway` sözl�
 var. "Yakın"ın tanımı yok ve tanımlamak `RelevanceScorer`'ın sözleşmesini
 değiştiriyor — uydurulmadı, sorulacak.
 
+---
+
+> Adım 2.6'nın **kuyruk dilimi** de buraya taşındı (2026-08-24, aynı sebeple).
+
+## Adım 2.6 — kuyruk dilimi
+
+**Düzeltme — sondam yanlış geçti.** `SKIP LOCKED` kaldırıldı, 14 test de geçti:
+düz `FOR UPDATE` kilidi bekleyip yüklemi yeniden değerlendiriyor. Gerçek fark
+**canlılık**; onu ölçen test bir kilidi açık tutup claim'in *hemen* boş
+dönmesini bekliyor. Kural § 30.2'de, ders `CLAUDE.md`'de.
+
+**Ekleme — kuyruğun iki okuyucusu ayrı tip** (§ 30.2); ArchUnit `..jobs..` ve
+`..generation..` için kendi satırlarını kazandı.
+
+**Ekleme — toplayıcının iki kuralı ve backoff'un taşması § 30.4-30.5'te:** hak
+geri verilmiyor, hakkı bitmiş iş `failed`'e gidiyor, üs kaydırmadan sınırlanıyor.
+
+**Düzeltme — CI'da düşen test, yerelde geçen kod.** `Set.copyOf`/`Map.copyOf`
+**her JVM çalıştırmasında farklı** sırayla dolaşıyor (üç ölçüm, üç sıra). İki
+yerde ısırdı: `TagRepository.labelsByAtom` sorgunun sırasını atıyordu, `Job`'un
+üç JSONB kolonu da `JobWorker`'ın sıralı kurduğu hata haritasını bozuyordu.
+İkisi de `Collections.unmodifiable*` + `Linked*`; kural `CLAUDE.md`'de.
+

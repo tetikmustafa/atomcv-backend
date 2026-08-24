@@ -672,6 +672,29 @@ event: failed
 data: {"code":"CONFLICTING_PREFERENCES","params":{...},"resolutions":[...]}
 ```
 
+**Bağlanır bağlanmaz güncel durum gönderilir.** İki şeyi birden çözüyor:
+yeniden bağlanan istemci tampon olmadan yakalanıyor, ve **202 ile abonelik
+arasında biten bir iş** hiçbir şey göndermeden sessiz kalmıyor — bu, bu alt
+sistemin en kötü arızası ve düzeltmesi tek satır. Zaten terminal olan bir işe
+abone olan istemci sonucu alıp kapanıyor; beş dakika boş bağlantı tutulmuyor.
+
+**Terminal olay akışı kapatır.** Zaman aşımıyla biten bir akış, takılmış bir
+üretimden ayırt edilemez.
+
+**`Last-Event-ID` kabul edilir ama oynatma yapılmaz.** Gerçek replay iş başına
+tampon ister; EK D.6.4 daha ucuz ve dürüst alternatifi ("en azından güncel
+durumu yeniden gönder") kabul ediyor ve bağlanışta gönderilen anlık durum tam
+olarak odur. Olay `id`'leri **tek bir akışın** olaylarını sıralar, daha
+fazlasını değil.
+
+**Kayıt süreç içi ve bunun bir son kullanma tarihi var.** Bugün tek instance hem
+worker'ları koşturuyor hem akışı sunuyor. İki instance olduğu an A'ya bağlı
+izleyici B'de koşan işi duymaz — çıkış yolu aşağıdaki `LISTEN/NOTIFY`, ve durum
+ucu ikisinde de çalışıyor.
+
+**Satır önce yazılır, sonra duyurulur.** Tersi, geri düşeceği uçtan daha çok
+şey bilen bir istemci demek olurdu.
+
 **Çok-instance dağıtımı** (ileride):
 ```java
 jdbc.execute("NOTIFY job_progress, ?", jsonPayload);   // Postgres LISTEN/NOTIFY

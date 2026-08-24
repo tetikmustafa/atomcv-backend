@@ -211,6 +211,13 @@ Her SSE olayı bir `id` taşır ve yeniden bağlanmada `Last-Event-ID` onurland�
 Bunsuz ilerleme ekranının tek bir hata modu olur: iş çoktan bitmişken spinner
 sonsuza kadar döner — P4'ün yasakladığı sessiz kötü sonuç.
 
+**Uygulanan yol ikinci seçenek** (Adım 2.6): bağlanır bağlanmaz güncel durum
+gönderiliyor, `Last-Event-ID`'den oynatma yapılmıyor. Gerçek replay iş başına
+tampon ister ve anlık durum aynı işi görüyor — üstelik yalnız yeniden
+bağlananları değil, **202 ile abonelik arasında biten işleri** de kurtarıyor.
+`id` tek bir akış içinde sıralamadır; istemci sürekliliğine değil, terminal
+olaya güvenmeli. Akış terminal olayla kapanır.
+
 ```json
 // GET /api/v1/jobs/{id}
 {
