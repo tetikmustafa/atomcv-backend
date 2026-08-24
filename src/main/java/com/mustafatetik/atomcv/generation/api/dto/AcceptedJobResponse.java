@@ -8,10 +8,11 @@ import java.util.UUID;
 /**
  * What a 202 carries (Bolum 35.3).
  *
- * <p>The id and nothing else the caller could have worked out. Where to watch
- * it is {@code Location}, and the progress stream of Bolum 30.6 arrives in the
- * next slice — until it does, {@code GET /jobs/{id}} is the way to follow a
- * generation, which EK D.6.4 already names as an acceptable fallback.
+ * <p>{@code streamUrl} is published rather than left to the client to build:
+ * it is the one place the shape of that path is decided, and a client that
+ * assembled it itself would break silently the day it moved. Polling
+ * {@code GET /jobs/{id}} stays supported — EK D.6.4 names it the fallback for
+ * a stream that closed without a terminal event.
  */
 @Schema(description = "A generation that was accepted and queued")
 public record AcceptedJobResponse(
@@ -19,9 +20,14 @@ public record AcceptedJobResponse(
         @Schema(description = "Follow it at /api/v1/jobs/{jobId}")
         UUID jobId,
 
-        JobStatus status) {
+        JobStatus status,
+
+        @Schema(description = "Server-sent events for this job",
+                example = "/api/v1/jobs/9b1c4e7a-.../stream")
+        String streamUrl) {
 
     public static AcceptedJobResponse of(Job job) {
-        return new AcceptedJobResponse(job.getId(), job.getStatus());
+        return new AcceptedJobResponse(job.getId(), job.getStatus(),
+                "/api/v1/jobs/" + job.getId() + "/stream");
     }
 }

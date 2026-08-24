@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.jobs.api;
 import com.mustafatetik.atomcv.jobs.api.dto.JobStatusResponse;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
+import com.mustafatetik.atomcv.jobs.sse.SseRegistry;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * Following a queued piece of work (EK D.6.4).
@@ -41,10 +43,12 @@ public class JobController {
 
     private final CurrentUser currentUser;
     private final JobRepository jobs;
+    private final SseRegistry streams;
 
-    JobController(CurrentUser currentUser, JobRepository jobs) {
+    JobController(CurrentUser currentUser, JobRepository jobs, SseRegistry streams) {
         this.currentUser = currentUser;
         this.jobs = jobs;
+        this.streams = streams;
     }
 
     @Operation(
@@ -75,5 +79,32 @@ public class JobController {
                 // "queued" is what a stuck progress bar is made of.
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(JobStatusResponse.of(job));
+    }
+
+    @Operation(
+            summary = "Watch a job as it runs",
+            description = """
+                    A server-sent event stream. Three event names: `phase`                     while it runs, then exactly one of `completed` or                     `failed`, after which the stream closes.
+
+                    The current state is sent immediately on connect, so a                     client that reconnects is caught up without replay — and a                     job that finished between the 202 and the subscribe sends                     its outcome rather than nothing at all.
+
+                    `Last-Event-ID` is accepted and not replayed from: ids                     order the events of one stream, and the snapshot on                     connect does the catching up. If the stream ever closes                     without a terminal event, `GET /jobs/{jobId}` is the                     supported way to find out what happened.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The stream",
+                    content = @Content(mediaType = MediaType.TEXT_EVENT_STREAM_VALUE)),
+            @ApiResponse(responseCode = "404",
+                    description = "No such job, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping(path = "/{jobId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@PathVariable UUID jobId) {
+        // The ownership check comes first and it is the whole IDOR defense on
+        // this endpoint (Bolum 30.6): a stream carries the job's error, which
+        // names what a profile is missing.
+        Job job = jobs.findById(currentUser.require(), jobId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return streams.subscribe(job);
     }
 }

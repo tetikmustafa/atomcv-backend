@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.jobs.workers;
 
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobEvents;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
@@ -49,6 +50,7 @@ public class JobWorker {
     private static final Logger log = LoggerFactory.getLogger(JobWorker.class);
 
     private final JobQueue queue;
+    private final JobEvents events;
     private final Map<JobType, JobHandler> handlers;
     private final JobWorkerProperties properties;
     private final Clock clock;
@@ -60,15 +62,16 @@ public class JobWorker {
 
     private volatile boolean acceptingNewJobs = true;
 
-    JobWorker(JobQueue queue, List<JobHandler> handlers, JobWorkerProperties properties,
-            Clock clock) {
-        this(queue, handlers, properties, clock, RandomGenerator.getDefault());
+    JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
+            JobWorkerProperties properties, Clock clock) {
+        this(queue, events, handlers, properties, clock, RandomGenerator.getDefault());
     }
 
-    JobWorker(JobQueue queue, List<JobHandler> handlers, JobWorkerProperties properties,
-            Clock clock, RandomGenerator random) {
+    JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
+            JobWorkerProperties properties, Clock clock, RandomGenerator random) {
 
         this.queue = queue;
+        this.events = events;
         this.handlers = handlers.stream().collect(Collectors.toUnmodifiableMap(
                 JobHandler::type, handler -> handler));
         this.properties = properties;
@@ -172,6 +175,10 @@ public class JobWorker {
         return progress -> {
             job.setProgress(progress);
             queue.save(job);
+            // The row first, then the announcement. An event published before
+            // the write would be a client that knows more than the endpoint it
+            // falls back to.
+            events.progress(job);
         };
     }
 
@@ -190,6 +197,9 @@ public class JobWorker {
             }
         }
         queue.save(job);
+        if (job.getStatus().isTerminal()) {
+            events.terminal(job);
+        }
     }
 
     /**
