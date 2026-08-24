@@ -25,8 +25,13 @@ import java.util.UUID;
  *                      printed under. This is what the keyword component
  *                      measures the posting's literal phrases against — see
  *                      {@link RelevanceScorer#keywordCoverage}.
- * @param importance    the user's own weighting, 0 to 1, which becomes
- *                      Bolum 19.1's multiplier
+ * @param importance     the user's own weighting, 0 to 1, which becomes
+ *                       Bolum 19.1's multiplier
+ * @param secondaryScore what Bolum 19.4's general-mode formula makes of this
+ *                       atom: recency, importance, impact, verification. In
+ *                       job-specific mode it does not compete with relevance —
+ *                       it decides between atoms whose relevance is
+ *                       indistinguishable (see {@link ScoredAtom#MOST_RELEVANT_FIRST}).
  */
 public record ScorableAtom(
         UUID atomId,
@@ -34,7 +39,8 @@ public record ScorableAtom(
         Set<String> tags,
         Set<String> skills,
         List<String> contentTokens,
-        double importance) {
+        double importance,
+        double secondaryScore) {
 
     public ScorableAtom {
         tags = tags == null ? Set.of() : Set.copyOf(tags);
@@ -42,6 +48,10 @@ public record ScorableAtom(
         contentTokens = contentTokens == null ? List.of() : List.copyOf(contentTokens);
         if (importance < 0 || importance > 1) {
             throw new IllegalArgumentException("importance is 0..1, got " + importance);
+        }
+        if (secondaryScore < 0 || secondaryScore > 1) {
+            throw new IllegalArgumentException(
+                    "secondaryScore is 0..1, got " + secondaryScore);
         }
         embedding = embedding == null ? null : embedding.clone();
     }

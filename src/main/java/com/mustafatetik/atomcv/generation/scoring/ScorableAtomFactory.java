@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -26,7 +27,10 @@ import java.util.UUID;
  * a scorer.
  *
  * <p>Pure and deterministic: no clock, no session, and the tree's own order is
- * preserved (Bolum 19.6).
+ * preserved (Bolum 19.6). It also computes each atom's general-mode score
+ * (Bolum 19.4) — the thing that decides between two atoms whose relevance is
+ * indistinguishable — because that needs a date and the scorer must not have
+ * one.
  */
 public final class ScorableAtomFactory {
 
@@ -47,16 +51,18 @@ public final class ScorableAtomFactory {
      *         before a score would matter, and scoring them would spend a
      *         cosine per atom the user has switched off.
      */
-    public static List<ScorableAtom> from(ProfileTree tree, Map<UUID, Set<String>> tagsByAtom) {
+    public static List<ScorableAtom> from(
+            ProfileTree tree, Map<UUID, Set<String>> tagsByAtom, LocalDate today) {
+
         List<ScorableAtom> atoms = new ArrayList<>();
         for (SectionNode section : tree.sections()) {
             for (EntryNode entry : section.entries()) {
                 for (AtomNode node : entry.atoms()) {
-                    add(atoms, node, entry.entry(), tagsByAtom);
+                    add(atoms, node, entry.entry(), tagsByAtom, today);
                 }
             }
             for (AtomNode node : section.atoms()) {
-                add(atoms, node, null, tagsByAtom);
+                add(atoms, node, null, tagsByAtom, today);
             }
         }
         return List.copyOf(atoms);
@@ -64,7 +70,7 @@ public final class ScorableAtomFactory {
 
     private static void add(
             List<ScorableAtom> atoms, AtomNode node, Entry entry,
-            Map<UUID, Set<String>> tagsByAtom) {
+            Map<UUID, Set<String>> tagsByAtom, LocalDate today) {
 
         Atom atom = node.atom();
         if (!atom.isActive()) {
@@ -76,7 +82,13 @@ public final class ScorableAtomFactory {
                 tagsByAtom.getOrDefault(atom.getId(), Set.of()),
                 canonicalSkills(atom),
                 contentTokens(node, entry),
-                atom.getImportance()));
+                atom.getImportance(),
+                // Bolum 19.4, computed here because it needs a date and the
+                // scorer must not have one. Today is a parameter for the same
+                // reason it is in GeneralModeScorer: a factory that read the
+                // clock could not be tested for the same-input-same-output
+                // property Bolum 51.2 requires.
+                GeneralModeScorer.score(atom, entry, today)));
     }
 
     /**

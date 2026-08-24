@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
 class RelevanceScoringServiceTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
+    private static final java.time.Clock CLOCK = java.time.Clock.fixed(
+            java.time.Instant.parse("2026-08-24T09:00:00Z"), java.time.ZoneOffset.UTC);
 
     @Test
     void ahealthyServiceScoresWithTheEmbeddingComponent() {
@@ -96,7 +98,7 @@ class RelevanceScoringServiceTest {
         var embeddings = new StubProvider();
         embeddings.healthy = false;
 
-        new RelevanceScoringService(embeddings, meters)
+        new RelevanceScoringService(embeddings, meters, CLOCK)
                 .scoreAgainst(tree(), Map.of(), posting());
 
         assertThat(meters.counter("generation.scoring.weights", "set", "without_embedding")
@@ -131,7 +133,7 @@ class RelevanceScoringServiceTest {
     }
 
     private static RelevanceScoringService serviceWith(EmbeddingProvider embeddings) {
-        return new RelevanceScoringService(embeddings, new SimpleMeterRegistry());
+        return new RelevanceScoringService(embeddings, new SimpleMeterRegistry(), CLOCK);
     }
 
     private static ProfileTree tree() {
