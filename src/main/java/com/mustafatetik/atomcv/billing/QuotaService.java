@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.billing;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalTime;
@@ -77,7 +78,7 @@ public class QuotaService {
     /** What {@code GET /account/usage} and {@code capabilities} publish. */
     public Usage usage(UserContext user, QuotaMetric metric) {
         QuotaSubject subject = QuotaSubject.of(user);
-        return new Usage(metric.wireValue(), counters.used(subject, metric),
+        return Usage.of(metric.wireValue(), counters.used(subject, metric),
                 limits.dailyLimit(metric), resetsAt());
     }
 
@@ -95,12 +96,60 @@ public class QuotaService {
     }
 
     /**
-     * @param resetsAt an absolute instant; the frontend renders the local text
+     * Today's allowance as a client reads it (F-012).
+     *
+     * <p><strong>Two numbers, because there are two facts.</strong> The
+     * counter behind this counts <em>attempts</em>: {@link #consume} increments
+     * before it checks and does not give the unit back when the limit is hit,
+     * which is what stops a user who is already over from hammering the
+     * endpoint with the number never moving. So the raw counter runs past the
+     * limit, and a single field called {@code used} carrying 26 against a
+     * limit of 20 reads as a broken screen rather than as a refusal.
+     *
+     * <p>{@code used} is therefore consumption — never more than
+     * {@code limit}, so {@code used}/{@code limit} is a pair that can be
+     * printed — and {@code attempted} is the raw count, refusals included.
+     * Clamping alone would have been the server misreporting itself; the
+     * second field is what keeps it honest.
+     *
+     * @param used      what was actually spent, {@code 0..limit}
+     * @param attempted every request that took a unit, refused ones included.
+     *                  Equal to {@code used} until the limit is reached, above
+     *                  it afterwards.
+     * @param remaining {@code limit - used}, and never negative
+     * @param resetsAt  an absolute instant; the frontend renders the local text
      */
-    public record Usage(String metric, int used, int limit, Instant resetsAt) {
+    @Schema(description = "One metric's allowance for today")
+    public record Usage(
+            String metric,
 
-        public int remaining() {
-            return Math.max(0, limit - used);
+            @Schema(description = "What was actually spent. Never above `limit`, "
+                    + "so `used`/`limit` is a pair that can be printed as it is.")
+            int used,
+
+            @Schema(description = "Every request that took a unit, refusals included. "
+                    + "Equal to `used` until the limit is reached, above it afterwards.")
+            int attempted,
+
+            int limit,
+
+            @Schema(description = "`limit - used`, never negative")
+            int remaining,
+
+            @Schema(description = "When the counters roll over, as an absolute instant. "
+                    + "The boundary is UTC midnight.")
+            Instant resetsAt) {
+
+        static Usage of(String metric, int attempted, int limit, Instant resetsAt) {
+            int used = Math.min(attempted, limit);
+            return new Usage(metric, used, attempted, limit, limit - used, resetsAt);
+        }
+
+        public Usage {
+            if (used > limit || used > attempted || remaining != limit - used) {
+                throw new IllegalArgumentException(
+                        "used is consumption: 0..limit, and remaining is what is left of it");
+            }
         }
     }
 }
