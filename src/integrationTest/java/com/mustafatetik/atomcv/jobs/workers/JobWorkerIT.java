@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobEvents;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
@@ -93,7 +94,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
     @Test
     void reportedProgressIsWrittenToTheRow() {
         Job queued = enqueue();
-        var worker = new JobWorker(queue, List.of(reporting()),
+        var worker = new JobWorker(queue, JobEvents.NONE, List.of(reporting()),
                 properties(Duration.ofSeconds(30)), clock, NO_JITTER);
 
         worker.runOne();
@@ -210,7 +211,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
     @Test
     void ajobWithNoHandlerFailsRatherThanSittingInTheQueue() {
         Job queued = enqueue();
-        var worker = new JobWorker(queue, List.of(), properties(Duration.ofSeconds(30)),
+        var worker = new JobWorker(queue, JobEvents.NONE, List.of(), properties(Duration.ofSeconds(30)),
                 clock, NO_JITTER);
 
         worker.runOne();
@@ -262,7 +263,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
         Job queued = enqueue();
         var started = new CountDownLatch(1);
         var release = new CountDownLatch(1);
-        var worker = new JobWorker(queue,
+        var worker = new JobWorker(queue, JobEvents.NONE,
                 List.of(handler(job -> {
                     started.countDown();
                     await(release);
@@ -288,7 +289,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
         }
         var handled = new AtomicInteger();
         var release = new CountDownLatch(1);
-        var worker = new JobWorker(queue,
+        var worker = new JobWorker(queue, JobEvents.NONE,
                 List.of(handler(job -> {
                     handled.incrementAndGet();
                     await(release);
@@ -316,7 +317,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
     }
 
     private JobWorker workerRunning(Function<Job, JobOutcome> body) {
-        return new JobWorker(queue, List.of(handler(body)),
+        return new JobWorker(queue, JobEvents.NONE, List.of(handler(body)),
                 properties(Duration.ofSeconds(30)), clock, NO_JITTER);
     }
 
