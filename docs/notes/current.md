@@ -138,6 +138,35 @@ OpenAPI.
 ve gzip tamponluyor, yani lokalde SSE hiç akmıyor. § 30.6'ya `proxy_buffering
 off`'un yanına yazıldı. Düzeltme frontend'de.
 
-**Açık kalan: `F-008`** — uygunluk raporu. `generations.fit_report` kolonu ve
-setter'ı Aşama 2'den beri duruyor ve **hiçbir çağıran yok**; `validation/`
-paketi yalnız `package-info` taşıyor. Sıradaki dilim.
+### `F-008` — uygunluk raporu indi (2026-08-25)
+
+**Ekleme — `fit_report` tipli saklanıyor, `Map<String,Object>` değil.** Kolon ve
+setter Aşama 2'den beri duruyordu ve hiçbir çağıranı yoktu. `StoredSelection`
+kalıbı: JSONB'ye record map'leniyor. Bunun bedeli, Aşama 2'nin `RichContent`
+dersini `FitReport`'ta baştan uygulamak — **getter şeklinde tek bir metot yok**,
+`level` hesaplanıp component olarak saklanıyor.
+
+**Ekleme — rapor sıralamayla değil, sayfayla ölçülüyor.** Faz B profilin
+tamamını puanlıyor, Faz C çoğunu bütçe için düşürüyor. `SelectedSkills` yalnız
+seçilen atomların becerilerini topluyor; sıralamadan kurulmuş bir rapor
+belgede yer bulamamış beceriyi kullanıcının hanesine yazardı. Sondayla
+doğrulandı: filtreyi kaldırınca iki test düşüyor.
+
+**Ekleme — canonical kuralı tek yere indi.** `RelevanceScorer.canonicalSkill`
+artık public ve **üç** çağıranı var (ilanın becerileri, atomun becerileri,
+rapor). İkinci bir kural, puanlayıcının saydığı bir beceriye raporun "eksik"
+demesine yol açardı — kimsenin açıklayamayacağı bir fark. `strip()` tarafında
+birleştiler; `trim()` ve `strip()` yan yana duruyordu.
+
+**Ekleme — seviye akışta, sayılar uçta.** `matchLevel` `completed` olayına
+girdi (dört karakter, başlık bir tur beklemesin); rapor `GET /generations/{id}`
+üzerinden. Raporu yalnız akışa koymak, sayfayı yenileyen istemcinin onu bir
+daha hiç görememesi demekti. `GET /jobs/{id}` de `pageCount` kazandı.
+
+**Sonda:** `record.setFitReport(...)` satırı kaldırılınca `latexTest`'teki
+uçtan uca kontrol düşüyor. Yavaş hattın bu diliminde koşturulması Aşama 2'nin
+dersiydi ve yine karşılığını verdi — rapor JSONB'den tipli okunuyor, o yolu
+başka hiçbir lane geçmiyor.
+
+**Açık kalan:** § 23.2 (ATS metin çıkarma) hâlâ yok, PDF metin çıkarımı
+istiyor. Aşama 3.

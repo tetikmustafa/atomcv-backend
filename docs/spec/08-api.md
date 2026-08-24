@@ -196,6 +196,12 @@ bir tane var.
 > `@JsonIgnore` ile kapatıldı. Genel modu isteyen tek şey `jobDescription`'ın
 > yokluğudur, ikinci bir bayrak iki ayrı "genel" tanımı doğururdu.
 
+> **`GET /generations/{id}` indi (`F-008`).** Kaynak haritasında baştan beri
+> vardı, şemada yoktu. Taşıdığı: `generationId`, `status`, `pageCount`,
+> `createdAt` ve **Faz F'nin uygunluk raporu** (§ 23.3) — genel modda rapor
+> alanı düşer. **İlanı geri döndürmez**: sistemin tuttuğu en büyük kullanıcı
+> içeriği ve hiçbir ekran istemiyor (mutlak kural 4). ETag taşımaz, § 35.6.
+
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 
 ```json

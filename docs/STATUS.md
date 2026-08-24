@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-25 · **Aşama 2 iki repoda da kapandı**; **`F-008` açık · `B-040` açık**
+**Son güncelleme:** 2026-08-25 · **`F-008`…`F-012` kapandı**; **`B-040`, `B-041` açık**
 
 ---
 
@@ -21,10 +21,11 @@
 **`F-009`…`F-012` kapandı** ve şemayı değiştirdiler — **`B-040` açık,
 `gen:api` çalıştırılmalı**: `generalMode` düştü, ilerleme alanları opsiyonel
 oldu, `usage` `attempted` kazandı. `B-037`…`B-039` arşivlendi.
-**`F-008` (uygunluk raporu) sıradaki dilim.** `sync-spec.sh` o dilim
-kapanınca.
+**`F-008` de kapandı** — Faz F'nin uygunluk raporu indi (`B-041`):
+`GET /generations/{id}`, `completed` olayında `matchLevel`, `GET /jobs/{id}`'de
+`pageCount`. **`sync-spec.sh` çalıştırılmalı.**
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 580 birim · 245 entegrasyon · 47 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 593 birim · 250 entegrasyon · 48 latex
 
 ## Frontend — `atomcv-frontend`
 
@@ -32,14 +33,12 @@ kapanınca.
 |---|---|
 | Aşama 0 — İskelet | ✅ |
 | Aşama 1 — Profil editörü | ✅ |
-| Aşama 2 — Üretim akışı + SSE | ✅ (uygunluk raporu hariç · `F-008`) |
+| Aşama 2 — Üretim akışı + SSE | ✅ (uygunluk raporu ekranı `B-041` ile yazılabilir) |
 
-**`B-040` açık** (`gen:api`) — `B-037`…`B-039` arşivlendi. **Test:** 352 birim · 23 e2e ·
+**`B-040`, `B-041` açık** (`gen:api` + sonuç ekranı). **Test:** 352 birim · 23 e2e ·
 **bundle** profil 250.6 / üretim 214.8 KB.
-**Aşama 2 kapandı:** üretim akışı, SSE, sonuç ekranı ve kota bağlı; gerçek uca
-karşı MSW kapalı **10 kontrol** geçti ve ikisi gerçek hata buldu (`Accept` →
-406, dev proxy'nin SSE'yi gzip'lemesi). **Uygunluk raporu yazılamadı** —
-veri yayımlanmadı (`F-008`). Notlar `notes/archive/stage-2.md`.
+**Aşama 2 kapandı:** üretim akışı, SSE, sonuç ekranı ve kota bağlı; MSW kapalı
+**10 kontrol** geçti, ikisi gerçek hata buldu. Notlar `notes/archive/stage-2.md`.
 
 ---
 
@@ -55,6 +54,6 @@ veri yayımlanmadı (`F-008`). Notlar `notes/archive/stage-2.md`.
 
 ## Sonraki senkronizasyon noktası
 
-**`B-040` → `gen:api`.** Dördü kapandı; kalan `F-008`, uygunluk raporu:
-Faz F hesaplar, `GET /generations/{id}` yayımlar, `completed` olayı
-`matchLevel` kazanır.
+**`B-040` + `B-041` → `gen:api`, sonra sonuç ekranı.** Beş `F-nnn`'in beşi de
+kapandı; frontend'in Aşama 2'de yazılamayan tek parçası uygunluk raporuydu ve
+verisi artık telde.

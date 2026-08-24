@@ -300,8 +300,15 @@ DOCX'te sayfa garantisi **yaklaşıktır** — kullanıcıya belirtilir.
 
 > **Not (Adım 1.7).** Aşağıdaki `pdfAnalyzer` diye bir bileşen yok: sayfa sayısı
 > derleyiciden **`X-Page-Count` başlığıyla** geliyor ve gelmezse belge
-> reddediliyor. 23.2 (ATS metin çıkarma) ve 23.3 (`FitReport`) Aşama 2'de.
+> reddediliyor. 23.2 (ATS metin çıkarma) hâlâ Aşama 3'te.
 > Uygulanan hali ve gerekçeleri: **EK D.8.6**.
+
+> **23.3 indi (`F-008`).** `FitReport` `generation/validation/`'da, tek bir saf
+> fonksiyon; `generations.fit_report` kolonuna **tipli** yazılıyor (Map değil)
+> ve `GET /generations/{id}` yayımlıyor. `MatchLevel` `completed` SSE olayında
+> da var — başlık bir tur daha beklemesin diye. Genel modda rapor **yok**:
+> ilan yoksa her sayı sıfır olurdu ve seviye hiçbir şey hakkında bir hüküm
+> olurdu.
 
 ### 23.1 Sayfa doğrulaması
 
@@ -355,6 +362,25 @@ MatchLevel level(FitReport r) {
     return GOOD;
 }
 ```
+
+**Basamakların sırası tasarımın kendisi.** Eksik bir zorunlu beceri, kaç tane
+tercih edilen kapsanırsa kapsansın telafi edilmiyor — aksi hâlde rapor
+kullanıcıya boşluğunun önemsiz olduğunu söylerdi. `0.6` **kesin eşit değil**:
+beşte üç `GOOD` kalıyor, yoksa iki seviye farklı şeyler söylemeyi bırakırdı.
+Hiç zorunlu beceri listelemeyen bir ilan eksik kalamaz, tercih oranına düşer.
+
+**Rapor sayfaya çıkanla ölçülüyor, sıralananla değil.** Faz B profilin tamamını
+puanlıyor, Faz C bütçe için çoğunu düşürüyor; sıralamadan kurulan bir rapor,
+belgede yer bulamamış bir beceriyi kullanıcının hanesine yazardı — CV'nin
+söylemediği bir şeyi iddia etmesiyle aynı kusur.
+
+**Eşleştirme `canonical` üzerinden, gösterim `name` üzerinden.** Kullanıcı
+ilanda okuduğu sözcüğü arar; atom İngilizce anahtarı taşır. Canonical'a çeviren
+kural Faz B'nin kuralının **aynısı** (`RelevanceScorer.canonicalSkill`) —
+ikinci bir kural, puanlayıcının saydığı bir beceriye rapor "eksik" dedirtirdi.
+Modelin canonical'ini üretemediği bir beceri **eksik sayılıyor**, atlanmıyor:
+atlamak paydayı küçültür ve bir çıkarım boşluğunu daha iyi bir eşleşmeye
+çevirirdi.
 
 **Kullanıcı gösterimi:**
 ```

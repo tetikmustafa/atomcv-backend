@@ -672,6 +672,15 @@ event: failed
 data: {"code":"CONFLICTING_PREFERENCES","params":{...},"resolutions":[...]}
 ```
 
+> **`matchLevel` artık gerçekten geliyor (`F-008`).** Yukarıdaki örnek onu bir
+> süre yalnız vaat ediyordu. Terminal olayda **yalnız seviye** var, sayılar
+> değil: seviye dört karakter ve sonuç ekranının başlığını bir tur beklemeden
+> yazdırıyor, rapor ise bir belge ve `GET /generations/{id}`'den okunuyor —
+> akışı kaçıran ya da sayfayı yenileyen istemcinin onu bir daha göremeyeceği
+> tek tasarım, raporu yalnız akışa koyan tasarımdı. Genel modda alan **yok**.
+> `pageCount` aynı gerekçeyle `GET /jobs/{id}`'ye de eklendi: yoklamaya geri
+> düşen istemci üretime ulaşıp yanındaki sayıya ulaşamıyordu.
+
 > **Düzeltme (`F-010`) — boş bir dize gönderilmez, alan düşürülür.** Kuyrukta
 > bekleyen bir işin fazı yoktur ve bağlanışta gönderilen anlık durum
 > `{"phase":"","label":"","pct":0}` diye çıkıyordu. `label` bir çeviri

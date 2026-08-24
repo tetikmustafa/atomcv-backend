@@ -48,11 +48,38 @@ göstermek isterseniz `attempted` orada.
 **`F-011` için aksiyon yok:** ölçümünüz § 30.6'ya, `proxy_buffering off`
 satırının yanına yazıldı. Doğru yere işaret ettiniz.
 
-**`F-008` sırada** — uygunluk raporu bir sonraki dilim. Rapor Faz F'de
-hesaplanıp `generations.fit_report`'a yazılacak; **`GET /generations/{id}`**
-tam raporu + `pageCount` + `status` yayımlayacak, `completed` olayı
-`matchLevel` kazanacak, `GET /jobs/{id}` de `pageCount`. Sonuç ekranını buna
-göre planlayabilirsiniz.
+---
+
+### B-041 · Uygunluk raporu yayımlandı — sıra 8 yazılabilir
+**Since:** commit `<bu PR>` · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/08-api.md` § 35.3
+**Kapatır:** `F-008`
+
+Üç yerden okunuyor:
+
+```
+GET /generations/{id}   { generationId, status, pageCount, createdAt, fitReport? }
+completed olayı         { generationId, pageCount, matchLevel }
+GET /jobs/{id}          pageCount kazandı
+```
+
+`fitReport`: `requiredCovered/requiredTotal`, `preferredCovered/preferredTotal`,
+`coveredSkills`, `missingRequired`, `missingPreferred`, `level`.
+`level` ∈ `WEAK | MODERATE | GOOD | STRONG` — **kapalı sözlük**, şemada enum.
+
+**Yüzde yok ve olmayacak.** § 23.3 onu adıyla yasaklıyor: ölçüm beceri adlarını
+karşılaştırıyor, virgülden sonrası olan bir sayı işe alınma olasılığı gibi
+okunur. Ekranda sayılar gösterilsin — "4/4 zorunlu", "2/3 tercih edilen".
+
+**İki davranış:** (1) rapor **sayfaya çıkanla** ölçülüyor, sıralananla değil —
+belgede yer bulamamış beceri kapsanmış sayılmıyor; (2) **genel modda `fitReport`
+alanı hiç gelmiyor** (ilan yok, her sayı sıfır olurdu).
+
+`missingRequired` **ilanın kendi sözcüklerini** taşıyor (ilan Türkçeyse
+"mikroservis"), eşleştirme İngilizce anahtar üzerinden — kullanıcı ilanda
+okuduğu sözcüğü arar. § 23.3'ün "Terraform deneyimin varsa…" önerisini bu
+listeden yazabilirsiniz.
+
+**Aksiyonunuz:** `gen:api` (bu da `B-040` ile aynı tur), sonra sonuç ekranı.
 
 ---
 

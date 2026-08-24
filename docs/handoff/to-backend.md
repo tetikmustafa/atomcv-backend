@@ -11,23 +11,7 @@
 
 ## OPEN
 
-### F-008 · Uygunluk raporu telde yok — sıra 8 buna bağlı
-**Since:** frontend `49eb0e1` · Aşama 2 · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/07-subsystems.md` § 30.6
-
-**Neden:** `completed` iki alan taşıyor — `{"generationId":"…","pageCount":1}`.
-§ 30.6'nın örneğindeki `matchLevel` **gelmiyor**, `FitReport` (§ 23.3) hiçbir
-uçta yok, ve `GET /generations/{id}` kaynak haritasında var ama şemada yok.
-
-**İstenen:** Raporun hangi uçtan geleceği. XI-B.9.2 sıra 8 "SSE ilerleme +
-**uygunluk raporu**" diyor; ilerleme bağlandı, rapor inşa edilemiyor. Sonuç
-ekranı sayfa sayısı + indirmeyle sınırlı kaldı — uydurulmuş bir yüzde § 23.3'ün
-adıyla yasakladığı şey. **`pageCount` de yalnız akışta**: geri düşüşle uzlaşan
-bir iş sonuca sahip ama sayfa sayısına değil.
-
-> **Alındı, yazılıyor.** Karar: rapor Faz F'de hesaplanıp `generations.fit_report`'a
-> yazılıyor; **`GET /generations/{id}`** tam raporu + `pageCount` + `status`
-> yayımlıyor, `completed` olayı § 30.6'nın örneğindeki `matchLevel`'ı kazanıyor,
-> `GET /jobs/{id}` de `pageCount` kazanıyor. Bir sonraki dilim.
+*(şu an açık madde yok)*
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -40,6 +24,25 @@ bir iş sonuca sahip ama sayfa sayısına değil.
 ---
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
+
+### F-008 · Uygunluk raporu — indi
+Faz F artık raporu hesaplıyor (`spec/06-pipeline-d-g.md` § 23.3) ve üç yerden
+okunuyor:
+
+```
+GET /generations/{id}   tam rapor + pageCount + status + createdAt
+completed olayı         matchLevel   (yalnız seviye — başlık bir tur beklemesin)
+GET /jobs/{id}          pageCount    (yoklamaya geri düşen istemci için)
+```
+
+**Uydurulmuş yüzde yok** ve olmayacak: § 23.3 onu adıyla yasaklıyor, şema
+testi de `level`'ı dört değerlik kapalı bir sözlük olarak sabitliyor.
+
+Bilmeniz gereken iki davranış: (1) **rapor sayfaya çıkanla ölçülüyor**,
+sıralananla değil — belgede yer bulamamış bir beceri kapsanmış sayılmıyor;
+(2) **genel modda `fitReport` alanı hiç gelmiyor**, ilan yoksa her sayı sıfır
+olurdu. `missingRequired` ilanın kendi sözcüklerini taşıyor, eşleştirme
+İngilizce anahtar üzerinden. **Aksiyonunuz var — `B-041`.**
 
 ### F-009 · Düz gövde ve `generalMode` — kapandı, ve `generalMode` hiç var olmamıştı
 § 35.3'ün örneği düzeltildi: gövde **düz**, `directives`/`options` yok.
