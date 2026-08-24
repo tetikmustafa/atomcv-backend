@@ -351,7 +351,11 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("completed"))
                 .andExpect(jsonPath("$.generationId").value(generationId.toString()))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").doesNotExist())
+                // A bar that stopped at the last reported phase would argue
+                // with the word beside it.
+                .andExpect(jsonPath("$.pct").value(100))
+                .andExpect(jsonPath("$.phase").doesNotExist());
     }
 
     @Test

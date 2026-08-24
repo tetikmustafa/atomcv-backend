@@ -241,6 +241,12 @@ olaya güvenmeli. Akış terminal olayla kapanır.
 Sahibi olmayan bir iş **404** döner, 403 değil: bir id'nin var olduğunu
 yabancıya söylemek de bilgidir (mutlak kural 3).
 
+**Biten iş `pct: 100` taşır ve `phase`/`label` taşımaz.** Son geçtiği fazı
+saklayan bir satır, istemciye "Rendering, %70" ile "completed"ı yan yana
+göstertir — kendi yanındaki sözcükle tartışan bir ilerleme çubuğu. **Düşen iş
+ilerlemesini korur**, çünkü nerede durduğu, satırın nedeni hakkında
+söyleyebileceği en yararlı şeydir.
+
 `generationId` yalnız `completed`'da, `error` yalnız `failed`'da bulunur; bu
 ikisi terminal durumlardır. Akış terminal olay olmadan kapanırsa bu endpoint'i
 yoklamak (polling) kabul edilebilir bir geri düşüştür.

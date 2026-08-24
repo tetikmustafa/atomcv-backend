@@ -64,6 +64,40 @@ class JobTest {
         assertThat(job.getCompletedAt()).isNull();
     }
 
+    /**
+     * A completed job reads as complete. Keeping the last phase it passed
+     * through gives a client "Rendering, 70%" next to the word "completed" —
+     * a progress bar arguing with the status beside it.
+     */
+    @Test
+    void succeedingFinishesTheProgressToo() {
+        var job = job(JobType.GENERATION);
+        job.setProgress(new JobProgress("C", "generation.phase.RENDERING", 70));
+
+        job.succeed(Map.of("generationId", "x"), NOW);
+
+        assertThat(job.getProgress().pct()).isEqualTo(100);
+        // Cleared, not kept: the terminal state comes from status and
+        // generationId, not from a phase name.
+        assertThat(job.getProgress().phase()).isEmpty();
+        assertThat(job.getProgress().label()).isEmpty();
+    }
+
+    /**
+     * A failure keeps its progress. Where it stopped is the most useful thing
+     * the row can say about why.
+     */
+    @Test
+    void failingKeepsWhereItGotTo() {
+        var job = job(JobType.GENERATION);
+        job.setProgress(new JobProgress("B", "generation.phase.SCORING", 50));
+
+        job.fail(Map.of("code", "INTERNAL_ERROR"), NOW);
+
+        assertThat(job.getProgress().pct()).isEqualTo(50);
+        assertThat(job.getProgress().phase()).isEqualTo("B");
+    }
+
     /** Succeeding after a failed attempt clears the error it left behind. */
     @Test
     void succeedingClearsAnEarlierError() {
