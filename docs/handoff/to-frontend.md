@@ -13,7 +13,7 @@
 ## OPEN
 
 ### B-040 · Üç şema düzeltmesi — `gen:api` çalıştırın
-**Since:** commit `<bu PR>` · **Spec:** `spec/08-api.md` § 35.3, `spec/07-subsystems.md` § 30.6
+**Since:** `06d78d3`…`0955bcb` · **Spec:** `spec/08-api.md` § 35.3, `spec/07-subsystems.md` § 30.6
 **Kapatır:** `F-009`, `F-010`, `F-011`, `F-012`
 
 Üçü de sizin ölçümlerinizden çıktı ve üçü de tipi değiştiriyor.
@@ -51,7 +51,7 @@ satırının yanına yazıldı. Doğru yere işaret ettiniz.
 ---
 
 ### B-041 · Uygunluk raporu yayımlandı — sıra 8 yazılabilir
-**Since:** commit `<bu PR>` · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/08-api.md` § 35.3
+**Since:** `d96e2df`…`075e023` · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/08-api.md` § 35.3
 **Kapatır:** `F-008`
 
 Üç yerden okunuyor:
