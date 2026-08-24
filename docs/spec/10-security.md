@@ -284,6 +284,18 @@ Kuyruğa alırken → sayacı artır
 
 **Bir üretim = bir kota birimi**, kaç iç retry olduğu fark etmez.
 
+**Artırma ve kontrol tek ifadedir** (Adım 2.7): `INSERT … ON CONFLICT DO UPDATE
+… RETURNING count`. Oku-sonra-yaz, aynı anda gelen iki isteğin ikisinin de 19
+görüp ikisinin de geçmesine izin verir — testte hiç görünmeyen, faturada görünen
+bir yarış.
+
+**İade sıfırda dibe vurur.** Hiç sayılmamış bir kullanım için iade — zombi
+toplayıcı bir işi geri verdikten sonra ikinci kez düşmesi gibi — satırı negatife
+iter ve kimsenin istemediği bedava kota dağıtır.
+
+**Kota kuyruğa alırken düşer, ama idempotency aramasından sonra.** Zaten var olan
+bir işi döndürmek ikinci bir birime mal olmamalı.
+
 ### 44.3 Anomali tespiti ve kill switch
 
 ```java
@@ -309,6 +321,15 @@ public void detectAnomalies() {
 ```
 
 **Kritik:** Fren **veri erişimini kesmez.** Üretim durur ama kullanıcı profilini görebilir ve dışa aktarabilir.
+
+**Ayarlanmamış bayrak AÇIK sayılır.** Tabloya hiç dokunmamış bir dağıtım hizmet
+vermeli, her şeyi kapatmış gibi davranmamalı. **Bayrak önbelleğe alınmaz:** olay
+ortasında çevrilmek için var, önbellek ise kararla etki arasına TTL kadar gecikme
+koyar. Üretim başına bir birincil-anahtar okuması burada kısılacak maliyet değil.
+
+**Fren kotanın önünde koşar:** duraklatılmış bir dağıtım, reddedeceği bir istek
+için kimsenin hakkını harcamamalı. Kod `GENERATION_PAUSED` (503, parametresiz)
+döner — istekte değiştirilecek bir şey yok.
 
 ### 44.4 Sahte hesap koruması
 

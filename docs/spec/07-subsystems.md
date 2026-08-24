@@ -692,6 +692,13 @@ worker'ları koşturuyor hem akışı sunuyor. İki instance olduğu an A'ya ba�
 izleyici B'de koşan işi duymaz — çıkış yolu aşağıdaki `LISTEN/NOTIFY`, ve durum
 ucu ikisinde de çalışıyor.
 
+**Kaybedilmiş worker sonucunu yazamaz.** Zorla kapanış kilitleri bırakır *ve*
+handler'ı keser; kesilen handler yine de sonuç yazma noktasına ulaşır ve o ana
+kadar iş başkası tarafından alınmış olabilir. Canlı bir claim'in üstüne terminal
+durum yazmak, bir işin iki kez koşup bir kez raporlanmasıdır — bu yüzden yazma,
+satırın `locked_by`'ı hâlâ bu worker'ı gösteriyorsa yapılır. **Ölçüldü:** koruma
+olmadan kapanış testi üç koşudan birinde düşüyordu.
+
 **Satır önce yazılır, sonra duyurulur.** Tersi, geri düşeceği uçtan daha çok
 şey bilen bir istemci demek olurdu.
 

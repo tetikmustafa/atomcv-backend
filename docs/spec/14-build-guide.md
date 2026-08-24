@@ -1042,8 +1042,13 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 
 ### Adım 2.7 — Kota ve maliyet
 
+> **Düzeltme, dördüncü ve beşinci kez.** `usage_counters` ve `feature_flags`
+> **`V1`'de zaten var**. Bu adımda yazılan şey eşleme ve kurallar; migration
+> yazmak mutlak kural 2'yi ihlal eder. Artık bir kalıp: bu kılavuz "tablo"
+> dediğinde **önce `V1`'e bak**.
+
 ```
-1. usage_counters tablosu
+1. usage_counters eşlemesi (migration YOK)
 2. QuotaService (atomik INSERT ON CONFLICT)
 3. FeatureFlag tablosu + kill switch
 4. AnomalyDetector (@Scheduled)
