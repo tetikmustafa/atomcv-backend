@@ -108,6 +108,30 @@ class QuotaIT extends AbstractIntegrationTest {
         }
     }
 
+    /**
+     * F-012: what the screen reads once the allowance is gone.
+     *
+     * <p>A refused request keeps its unit — that is what stops a user who is
+     * already over from hammering the endpoint with the number never moving —
+     * so the row itself runs past the limit. The wire says both things: what
+     * was spent, and how many times they asked.
+     */
+    @Test
+    void refusedRequestsShowUpAsAttemptsAndNotAsConsumption() {
+        int limit = limits.profileExtractsPerUser();
+        for (int i = 0; i < limit + 2; i++) {
+            quotas.consume(user, QuotaMetric.PROFILE_EXTRACT);
+        }
+
+        var usage = quotas.usage(user, QuotaMetric.PROFILE_EXTRACT);
+        assertThat(counters.used(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT))
+                .as("the row keeps counting; that is the abuse brake")
+                .isEqualTo(limit + 2);
+        assertThat(usage.used()).isEqualTo(limit);
+        assertThat(usage.attempted()).isEqualTo(limit + 2);
+        assertThat(usage.remaining()).isZero();
+    }
+
     /** Bolum 44.1: one limit would let extraction eat the whole of it. */
     @Test
     void thetwoMetricsAreCountedApart() {
