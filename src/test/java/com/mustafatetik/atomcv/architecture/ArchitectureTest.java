@@ -68,6 +68,21 @@ class ArchitectureTest {
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
     /**
+     * The same line for the queue, which Bolum 30 gives its own package layout.
+     *
+     * <p>{@code jobs.queue} holds both halves of the split deliberately:
+     * {@code JobRepository} scopes by user for anything a browser asked for,
+     * {@code JobQueue} does not scope at all because a worker has no acting
+     * user. What must not happen is a worker or an SSE registry reaching past
+     * both for the Spring Data interface underneath.
+     */
+    @ArchTest
+    static final ArchRule jobDataIsReachedThroughTheQueuePackage = noClasses()
+            .that().resideInAPackage("..jobs..")
+            .and().resideOutsideOfPackage("..jobs.queue..")
+            .should().dependOnClassesThat().areAssignableTo(Repository.class);
+
+    /**
      * Absolute rule 6: rendering is deterministic by design, so it may never
      * reach for an LLM.
      *

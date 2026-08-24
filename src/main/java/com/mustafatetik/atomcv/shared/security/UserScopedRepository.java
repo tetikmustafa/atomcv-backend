@@ -22,10 +22,17 @@ public abstract class UserScopedRepository<T extends UserOwned> {
 
     protected abstract JpaRepository<T, UUID> delegate();
 
-    /** A row belonging to someone else reads as absent, never as forbidden. */
+    /**
+     * A row belonging to someone else reads as absent, never as forbidden.
+     *
+     * <p>The comparison is written owner-side-second on purpose. A
+     * {@code jobs} row for an anonymous request carries no {@code user_id} at
+     * all, and asking a null owner whether it equals anyone would throw where
+     * the honest answer is "this is not yours".
+     */
     public Optional<T> findById(UserContext user, UUID id) {
         requireUser(user);
-        return delegate().findById(id).filter(row -> row.getOwnerId().equals(user.userId()));
+        return delegate().findById(id).filter(row -> user.userId().equals(row.getOwnerId()));
     }
 
     public boolean exists(UserContext user, UUID id) {
@@ -47,7 +54,9 @@ public abstract class UserScopedRepository<T extends UserOwned> {
         if (entity == null) {
             throw new IllegalArgumentException("entity");
         }
-        if (!entity.getOwnerId().equals(user.userId())) {
+        if (!user.userId().equals(entity.getOwnerId())) {
+            // Includes an unowned row: an anonymous job may not be written
+            // through the user-scoped path, and saying so beats an NPE.
             throw new CrossTenantAccessException("The row belongs to a different user");
         }
     }
