@@ -10,10 +10,15 @@ import java.util.UUID;
 /**
  * Where a job has got to (EK D.6.4).
  *
- * <p>Two fields are present only in their own terminal state:
- * {@code generationId} when it completed, {@code error} when it failed. That
- * is deliberate and the frontend can rely on it — a completed job with no
- * generation id would be a success nobody can open.
+ * <p>Three fields are present only in their own terminal state:
+ * {@code generationId} and {@code pageCount} when it completed, {@code error}
+ * when it failed. That is deliberate and the frontend can rely on it — a
+ * completed job with no generation id would be a success nobody can open.
+ *
+ * <p>{@code pageCount} is here because the stream is not the only way to a
+ * result (F-008). A client that fell back to polling — the documented answer
+ * to a stream that closed without a terminal event — could reach the
+ * generation but not the number printed beside it.
  *
  * <p>Polling this is the documented fallback for a progress stream that closed
  * without a terminal event. Without it the failure mode is the one Bolum 4's
@@ -34,6 +39,7 @@ public record JobStatusResponse(
         int pct,
         String detail,
         UUID generationId,
+        Integer pageCount,
         Map<String, Object> error) {
 
     public static JobStatusResponse of(Job job) {
@@ -46,6 +52,7 @@ public record JobStatusResponse(
                 progress.pct(),
                 blankToNull(progress.detail()),
                 generationIdOf(job),
+                pageCountOf(job),
                 job.getStatus() == JobStatus.FAILED ? job.getError() : null);
     }
 
@@ -55,6 +62,14 @@ public record JobStatusResponse(
         }
         Object id = job.getResult().get("generationId");
         return id instanceof String text ? UUID.fromString(text) : null;
+    }
+
+    private static Integer pageCountOf(Job job) {
+        if (job.getStatus() != JobStatus.COMPLETED || job.getResult() == null) {
+            return null;
+        }
+        return job.getResult().get("pageCount") instanceof Number pages
+                ? pages.intValue() : null;
     }
 
     private static String blankToNull(String value) {

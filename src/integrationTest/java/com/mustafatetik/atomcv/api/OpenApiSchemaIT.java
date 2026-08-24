@@ -263,6 +263,46 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void theFitReportIsPublishedAsCountsAndAClosedVocabulary() throws Exception {
+        // F-008. The frontend cannot draw a result screen from a report that
+        // is not in the schema, and Bolum 23.3 forbids a percentage by name —
+        // so what is published has to be the counts and a closed set of
+        // levels, not a number the client is tempted to render as a bar.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.paths['/api/v1/generations/{generationId}'].get")
+                        .exists())
+                .andExpect(jsonPath("$.paths['/api/v1/generations/{generationId}'].get"
+                        + ".responses.200.content['application/json'].schema.$ref")
+                        .value("#/components/schemas/GenerationResponse"))
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.fitReport.$ref").value("#/components/schemas/FitReport"))
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.pageCount").exists())
+                .andExpect(jsonPath("$.components.schemas.FitReport.properties.requiredCovered")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.FitReport.properties.missingRequired")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.FitReport.properties.level.enum")
+                        .value(Matchers.containsInAnyOrder(
+                                "WEAK", "MODERATE", "GOOD", "STRONG")))
+                // Absolute rule 4: no path publishes the posting back.
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.jobDescription").doesNotExist());
+    }
+
+    @Test
+    void aPolledJobCanReachTheSameResultTheStreamCarried() throws Exception {
+        // F-008: polling is the documented fallback for a stream that closed
+        // without a terminal event, and it was reaching the generation but not
+        // the page count beside it.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
+                        + ".properties.pageCount").exists())
+                .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
+                        + ".properties.generationId").exists());
+    }
+
+    @Test
     void usageSeparatesWhatWasSpentFromWhatWasAttempted() throws Exception {
         // F-012. The counter counts attempts, so a single `used` ran past
         // `limit` and the screen read "26 of 20". Two fields, because there

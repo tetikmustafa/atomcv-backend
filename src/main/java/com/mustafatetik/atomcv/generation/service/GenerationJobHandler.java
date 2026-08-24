@@ -122,6 +122,14 @@ public class GenerationJobHandler implements JobHandler {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("generationId", record.getId().toString());
         result.put("pageCount", document.pageCount());
+        if (generated.fitReport() != null) {
+            // Bolum 30.6's example carries it and F-008 asked for it: the
+            // heading is on the terminal event so the result screen can print
+            // it without a second round trip. The counts underneath are on
+            // GET /generations/{id} — a level is four characters, a report is
+            // not something to push down a stream.
+            result.put("matchLevel", generated.fitReport().level().name());
+        }
         return JobOutcome.completed(result);
     }
 
@@ -146,6 +154,7 @@ public class GenerationJobHandler implements JobHandler {
                     generated.posting());
         }
         record.setPageCount(document.pageCount());
+        record.setFitReport(generated.fitReport());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
         record.setTrace(trace(generated));
 
