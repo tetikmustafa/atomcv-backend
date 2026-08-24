@@ -182,19 +182,24 @@ cost a debugging round to find.
 ## Testing Requirements
 
 `spec/12-quality.md` § 51 lists what to write and Bölüm 51.2 names the four
-tests worth the most. Two rules live here because no spec file enforces them:
+tests worth the most. These rules live here because no spec file enforces them:
 
-**A guard that has never failed is not known to work.** Every rule that exists
-to catch something was confirmed against a deliberate violation before being
-trusted — the ArchUnit rules against a planted dependency, schema validation
-against a renamed column, the query counter against a lower bound, gitleaks
-against a real token pattern. Do the same for the next one. Four probes that
-report a **false pass**: the AWS documentation example keys (gitleaks allowlists
-them); an ArchUnit probe reading a compile-time constant (javac inlines it —
-plant a method call); `@Array(length)` against `vector(1024)` (DDL generation
-only, so 512 validates clean — needs a real round trip); and a test asserting
-**no duplicate claim**, which passes with `SKIP LOCKED` removed — that clause
-buys **liveness**, so hold a lock and assert the rival claim returns *at once*.
+**A guard that has never failed is not known to work.** Every rule that catches
+something was confirmed against a deliberate violation before being trusted —
+ArchUnit against a planted dependency, schema validation against a renamed
+column, the query counter against a lower bound, gitleaks against a real token.
+Do the same for the next one. Four probes that report a **false pass**: the AWS
+documentation example keys (gitleaks allowlists them); an ArchUnit probe reading
+a compile-time constant (javac inlines it — plant a method call);
+`@Array(length)` against `vector(1024)` (DDL generation only, so 512 validates
+clean); and a test asserting **no duplicate claim**, which passes with `SKIP
+LOCKED` removed — that clause buys **liveness**, so hold a lock and assert the
+rival claim returns *at once*.
+
+**A component the whole suite switches off has unverified wiring.** The worker
+is off in every test so its scheduler cannot claim rows others assert on, and
+the tests that use it build it by hand — so nothing asked Spring to create the
+bean and `make dev` failed on a second constructor. Hold one context with it on.
 
 **Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
@@ -250,31 +255,26 @@ also reports success.
 
 ## Current Stage — and How to Resume
 
-**Stage 2 — job-specific generation.** Stage 0 and Stage 1 are closed.
+**Stage 3 — account and MVP.** Stages 0-2 closed; Stage 2's record is in
+`docs/notes/archive/stage-2.md`.
 
-A session that opens with "let's continue with Stage 2" starts here, in this
-order. Nothing below is summarised in this file: it is not synced to the
-frontend, and a second copy of the state would drift from the one that is.
+A session resuming starts here, in order. Nothing below is summarised here: it
+is not synced to the frontend, and a second copy would drift from the real one.
 
-1. **`docs/STATUS.md`** — which step both repos are on, the open decisions,
-   and the next cross-repo sync point.
-2. **`docs/handoff/to-backend.md`** — open `F-nnn` items from the frontend.
-   **Handle these before starting new work.**
-3. **`docs/notes/current.md`** — what the previous stage handed over: the
-   deliberate gaps that must not be "fixed" without asking, the findings worth
-   acting on, and the per-stage carry-overs. Clear the carry-overs the step
-   depends on before writing code that assumes them away.
-4. **The step's plan** — `docs/INDEX.md` routes it. Stage 2 is
-   `spec/14-build-guide.md` § XI-A.5, steps 2.1-2.7; the reasoning behind the
-   stage is `spec/13-development.md` § 55. Search the file, read the range.
+1. **`docs/STATUS.md`** — where both repos are, the open decisions, the next
+   sync point.
+2. **`docs/handoff/to-backend.md`** — open `F-nnn` items. **Handle first.**
+3. **`docs/notes/current.md`** — deliberate gaps that must not be "fixed"
+   without asking, and the carry-overs. Clear the ones the step depends on.
+4. **The step's plan** — `docs/INDEX.md` routes it. Stage 3 is
+   `spec/14-build-guide.md` § XI-A.6; the reasoning is
+   `spec/13-development.md` § 55. Search the file, read the range.
 
-Then work the step, and close it the way *Recording Deviations*, *Cross-Repo
-Communication* and *How We Ship* above describe: a record in
-`docs/notes/current.md`, a `B-nnn` item if the frontend must act, `STATUS.md`
-marked, all in the same PR as the code.
+Then close the step the way *Recording Deviations*, *Cross-Repo Communication*
+and *How We Ship* describe: a record in `docs/notes/current.md`, a `B-nnn` item
+if the frontend must act, `STATUS.md` marked, all in the PR with the code.
 
-**When a stage closes:** move `docs/notes/current.md` to
-`docs/notes/archive/stage-<n>.md`, open a fresh one carrying only what the
-next stage still needs, and write the permanent decisions into the
-`docs/spec/` files they belong to. `scripts/check-doc-sizes.sh` says when a
-rolling file has outgrown its limit.
+**When a stage closes** (or a rolling file outgrows its limit — see
+`scripts/check-doc-sizes.sh`): move the closed step's records to
+`docs/notes/archive/`, keep the live indexes, and write the permanent decisions
+into the `docs/spec/` files they belong to.
