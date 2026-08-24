@@ -173,9 +173,27 @@ public final class RelevanceScorer {
     }
 
     private static boolean saysEveryWordOf(String keyword, Set<String> words) {
-        return TOKENS.splitAsStream(keyword)
-                .filter(part -> !part.isBlank())
-                .allMatch(words::contains);
+        return tokensOf(keyword).stream().allMatch(words::contains);
+    }
+
+    /**
+     * Text split into the words this scorer matches on.
+     *
+     * <p>Public because the posting and the atom have to be split by the same
+     * rule: a tokeniser that kept hyphens on one side and dropped them on the
+     * other would fail to match "high-availability" against "high
+     * availability" and nothing would look wrong.
+     *
+     * <p>{@code Locale.ROOT} is absolute rule 7.
+     */
+    public static List<String> tokensOf(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
+        }
+        return TOKENS.splitAsStream(text)
+                .filter(token -> !token.isBlank())
+                .map(token -> token.toLowerCase(Locale.ROOT))
+                .toList();
     }
 
     private static long countMatches(Set<String> left, Set<String> right) {
@@ -227,10 +245,7 @@ public final class RelevanceScorer {
         }
 
         private static Set<String> tokensOf(String title) {
-            return TOKENS.splitAsStream(title)
-                    .filter(token -> !token.isBlank())
-                    .map(token -> token.toLowerCase(Locale.ROOT))
-                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
+            return Set.copyOf(RelevanceScorer.tokensOf(title));
         }
     }
 

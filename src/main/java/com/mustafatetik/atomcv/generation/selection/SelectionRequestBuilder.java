@@ -1,6 +1,6 @@
 package com.mustafatetik.atomcv.generation.selection;
 
-import com.mustafatetik.atomcv.generation.scoring.GeneralModeScorer;
+import com.mustafatetik.atomcv.generation.scoring.AtomScoreSource;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.AtomCandidate;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.EntryPlan;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.SectionPlan;
@@ -48,6 +48,10 @@ public final class SelectionRequestBuilder {
             SelectionRequest request, int estimatedAtoms, int withoutWording) {
     }
 
+    /**
+     * General CV mode: rank on what the profile says about itself
+     * (Bolum 19.4).
+     */
     public static BuiltRequest build(
             ProfileTree tree,
             TemplateCustomization customization,
@@ -56,7 +60,26 @@ public final class SelectionRequestBuilder {
             String language,
             LocalDate today) {
 
-        var run = new Run(customization, capacity, language, today);
+        return build(tree, customization, capacity, maxPages, language,
+                AtomScoreSource.generalMode(today));
+    }
+
+    /**
+     * @param scores where each atom's score comes from — Faz B against a
+     *               posting, or the general-mode scorer when there is none.
+     *               It is the only difference between the two modes: the
+     *               algorithm below reads numbers and does not know which
+     *               produced them (Bolum 19.4).
+     */
+    public static BuiltRequest build(
+            ProfileTree tree,
+            TemplateCustomization customization,
+            CapacityModel capacity,
+            int maxPages,
+            String language,
+            AtomScoreSource scores) {
+
+        var run = new Run(customization, capacity, language, scores);
         List<SectionPlan> sections = new ArrayList<>();
 
         for (SectionNode section : tree.sections()) {
@@ -140,19 +163,19 @@ public final class SelectionRequestBuilder {
         private final CapacityModel capacity;
         private final String costKey;
         private final String language;
-        private final LocalDate today;
+        private final AtomScoreSource scores;
 
         private int estimated;
         private int withoutWording;
 
         Run(TemplateCustomization customization, CapacityModel capacity,
-                String language, LocalDate today) {
+                String language, AtomScoreSource scores) {
 
             this.customization = customization;
             this.capacity = capacity;
             this.costKey = customization.costKey();
             this.language = language;
-            this.today = today;
+            this.scores = scores;
         }
 
         List<AtomCandidate> candidates(List<AtomNode> atoms, Entry entry) {
@@ -172,7 +195,7 @@ public final class SelectionRequestBuilder {
                         node.atom().getId(),
                         variant.getId(),
                         entry == null ? null : entry.getId(),
-                        GeneralModeScorer.score(node.atom(), entry, today),
+                        scores.scoreOf(node.atom(), entry),
                         costOf(variant),
                         node.atom().isAlwaysInclude(),
                         node.atom().isActive()));

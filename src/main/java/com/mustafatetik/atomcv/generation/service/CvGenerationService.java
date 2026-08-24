@@ -18,7 +18,6 @@ import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,7 @@ public class CvGenerationService {
                         "This customization has never been calibrated; measure it first"));
 
         ProfileTree tree = assembler.load(profile);
-        Result<Void> preflight = checkEnoughToWorkWith(head, tree);
+        Result<Void> preflight = ProfilePreflight.check(head, tree);
         if (preflight.isErr()) {
             return preflight.map(ignored -> null);
         }
@@ -115,28 +114,5 @@ public class CvGenerationService {
 
         return pipeline.run(head, tree, built.request(),
                 options.customization(), options.locale());
-    }
-
-    /**
-     * The preflight of Bolum 25.2: is there a profile here at all?
-     *
-     * <p>Deliberately structural rather than a percentage. Completeness is a
-     * nudge on a progress bar; what stops a generation is having nothing to
-     * print, and a percentage threshold would refuse profiles that would have
-     * rendered perfectly well.
-     */
-    private static Result<Void> checkEnoughToWorkWith(Profile head, ProfileTree tree) {
-        List<String> missing = new ArrayList<>();
-        if (tree.atomCount() == 0) {
-            missing.add("atoms");
-        }
-        if (tree.sections().isEmpty()) {
-            missing.add("sections");
-        }
-        if (missing.isEmpty()) {
-            return Result.ok(null);
-        }
-        return Result.err(new PipelineError.InsufficientProfile(
-                CompletenessCalculator.of(head, tree), missing));
     }
 }

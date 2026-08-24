@@ -42,6 +42,27 @@ public record GenerationOptions(
         return pages == null ? this : new GenerationOptions(pages, language, customization);
     }
 
+    /**
+     * The defaults for a CV written against a posting.
+     *
+     * <p>The one thing that differs from {@link #defaultsOf}: {@code auto}
+     * means "follow the posting", and here there is a posting to follow. In
+     * general mode the same preference falls back to the profile's own source
+     * language, because there is nothing else to read it from.
+     *
+     * @param postingLanguage {@code jdLanguage} from Faz A, which may be blank
+     *                        when the extraction did not name one
+     */
+    public static GenerationOptions forPosting(Profile profile, String postingLanguage) {
+        var defaults = profile.getPreferences().defaults();
+        if (!"auto".equals(defaults.cvLanguage())
+                || postingLanguage == null || postingLanguage.isBlank()) {
+            return defaultsOf(profile);
+        }
+        return new GenerationOptions(defaults.maxPages(), postingLanguage.strip(),
+                TemplateCustomization.CLASSIC);
+    }
+
     public GenerationOptions withLanguage(String requested) {
         return requested == null || requested.isBlank()
                 ? this
