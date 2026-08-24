@@ -141,5 +141,28 @@ yeniden okuyan bir indirme, işverene gönderilenden başka bir belge verirdi
 gerekiyor, entegrasyon süiti `local` ile çalışıyor. Genel mod yolu `GeneralCvIT`
 ile gerçek TeX'e karşı koşuyor.
 
-**Sırada 2.7:** kota (`usage_counters`, `LocalDate.now(ZoneOffset.UTC)` tuzağı
-yukarıda), kill switch, anomali tespiti, Axiom.
+---
+
+## Adım 2.7 — kota ve kill switch indi
+
+**Düzeltme, dördüncü ve beşinci kez:** `usage_counters` ve `feature_flags` de
+`V1`'deydi. Artık kalıp — kılavuz "tablo" dediğinde **önce `V1`'e bak**
+(§ XI-A.5'e yazıldı).
+
+**Düzeltme — UTC testimi iki kez yazdım.** İlki `today()`'i duvar saatiyle
+karşılaştırıyordu: bu makinede UTC+3, yani UTC ile 21:00'e kadar **aynı fikirde**
+— ekilen `Europe/Istanbul` okumasına karşı geçti. İkincisi 22:30 UTC'de sabit bir
+ana çakılı, iki dilim farklı gün adlandırıyor, ve o düşüyor. Ders: bir tarih
+sondasının günün hangi saatinde ayırt ettiğini sor.
+
+**Bulgu — kaybedilmiş worker canlı bir claim'in üstüne yazıyordu.**
+`JobWorkerIT`'nin kapanış testi üç koşudan birinde düşüyordu ve sebep test
+değildi: zorla kapanış kilitleri bırakıyor *ve* handler'ı kesiyor, kesilen
+handler yine de sonuç yazıyor, o ana kadar iş başkasınca alınmış olabiliyor.
+Yazma artık `locked_by` hâlâ bu worker'ı gösteriyorsa yapılıyor; dört koşu temiz.
+Kural § 30.4'e yazıldı.
+
+**Ekleme — `GENERATION_PAUSED` (503) kataloğa girdi**, `B-039`. Fren kotanın
+önünde koşuyor ve **veri erişimini kesmiyor** (§ 44.3).
+
+**Kalan (2.7):** anomali tespiti (`@Scheduled`) ve Axiom/OpenTelemetry.

@@ -11,61 +11,62 @@
 
 ## OPEN
 
-### B-038 · İlana özel üretimin senkron yüzü + SSE indi; ilerleme metni **sizin**
-**Since:** commit `<bu PR>` · Adım 2.6 · **Spec:** `spec/08-api.md` § 35.3, `spec/08b-api-contract.md` EK D.6.4
+### B-039 · Kota indi: iki yeni durum, bir yeni hata kodu
+**Since:** commit `<bu PR>` · Adım 2.7 · **Spec:** `spec/10-security.md` § 44, EK D.6.5
 
-`POST /api/v1/generations` **202** + `Location: /api/v1/jobs/{jobId}` dönüyor;
-gövde `{ jobId, status, streamUrl }`. `GET /api/v1/jobs/{jobId}` durumu söylüyor.
+**`GET /api/v1/account/usage`** günün kullanımını veriyor: her metrik için
+`{ metric, used, limit, resetsAt }`. **İki metrik** var (`generation`,
+`profile_extract`) ve ikisi de her zaman dönüyor — eksik giriş "sıfır" demek
+değil, hiç olmuyor. `resetsAt` **mutlak bir an** (UTC gece yarısı, Türkiye'de
+03:00); metni kullanıcının yerelinde siz yazıyorsunuz.
 
-**Ön kontroller senkron.** İlan gibi okunmayan metin ve boş profil **422 ile
-anında** reddediliyor, kuyruğa girmiyor (`UNPARSEABLE_JOB_DESCRIPTION`,
-`INSUFFICIENT_PROFILE`). `B-037`'nin bayrağı burada: `acknowledgePreflight: true`.
+**`QUOTA_EXCEEDED` (429)** artık gerçekten dönüyor, `params`: `metric` (string),
+`resetsAt` (timestamp). **`resolutions` boş** — kapalı sözlükte "yarın tekrar
+dene" yok ve `retry` bunun tersini söylüyor ("geçici hata, aynen yeniden
+gönder"). Mesajınız `resetsAt`'ten kendi cümlesini kursun.
 
-**Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil** (§ 30.6 düz metin
-taşıyordu, § 35.4 ile çelişiyordu). `GET /jobs/{id}`:
+**Yeni kod: `GENERATION_PAUSED` (503), parametresiz, `retry` resolution'ı ile.**
+§ 44.3'ün acil freni: maliyet anomalisinde üretim durur. **Veri erişimi
+durmaz** — kullanıcı profilini görebilir, düzenleyebilir, dışa aktarabilir; UI
+bunu böyle anlatmalı, "hesabınız kapandı" gibi değil. `errors.GENERATION_PAUSED`
+için ICU mesajı gerekiyor.
 
-```json
-{ "jobId": "...", "status": "running",
-  "phase": "B", "label": "generation.phase.SCORING", "pct": 50 }
-```
+Kota **kuyruğa alırken** düşüyor ve **başarısız her işte geri veriliyor**, yani
+düşen bir üretim kullanıcının hakkını yemiyor.
 
-Anahtarlar: `generation.phase.ANALYSING`, `.MEASURING`, `.SCORING`, `.RENDERING`.
+---
 
-**Terminal alanlar yalnız kendi durumlarında var:** `generationId` sadece
-`completed`'da, `error` sadece `failed`'da — biri gelince yoklamayı bırakın.
-**`Idempotency-Key`** onurlandırılıyor: çift tıklama tek CV.
+### B-038 · İlana özel üretimin uçları + SSE indi; ilerleme metni **sizin**
+**Since:** Adım 2.6 · **Spec:** `spec/08-api.md` § 35.3, `spec/08b-api-contract.md` EK D.6.4
 
-**SSE:** `streamUrl`'i sunucu veriyor, siz kurmayın. Üç olay adı: koşarken
-`phase`, sonra **tam olarak bir tane** `completed` ya da `failed`, akış kapanır.
-
-```
-event: phase       data: {"phase":"C","label":"generation.phase.RENDERING","pct":70,"detail":""}
-event: completed   data: {"generationId":"...","pageCount":1}
-event: failed      data: {"code":"...","params":{},"resolutions":[]}
-```
-
-**Bağlanır bağlanmaz güncel durum geliyor** — ekran boş başlamıyor, yeniden
-bağlanma kendiliğinden yakalanıyor, ve **202 ile abonelik arasında biten iş de
-sonucunu gönderiyor**. `Last-Event-ID` kabul ediliyor ama **oynatma yok**; `id`
-tek akış içinde sıralama. Sürekliliğe değil **terminal olaya** güvenin; akış
-terminal olay olmadan kapanırsa `GET /jobs/{jobId}` geri düşüş.
+`POST /api/v1/generations` **202** + `Location` + gövdede `{ jobId, status,
+streamUrl }`. `GET /api/v1/jobs/{jobId}` durum, `.../stream` SSE,
+`GET /api/v1/generations/{id}/download` PDF. Şekiller OpenAPI'de.
 
 **`POST /generations/general` KALDIRILDI** (`B-022` kapandı). Genel CV modu
-kaybolmadı, **aynı uca taşındı**: `jobDescription` opsiyonel, yokluğu genel mod.
-Boş gövde (`{}`) de 202 dönüyor. Aksiyonunuz: o uca giden çağrıyı
-`POST /generations` + iş takibine çevirin.
+kaybolmadı: `jobDescription` opsiyonel, yokluğu genel mod. Boş gövde (`{}`) 202.
 
-**`GET /api/v1/generations/{generationId}/download`** indi:
-`application/pdf`, `Content-Disposition: attachment`, dosya adı yalnız tarih
-taşıyor (indirme klasörüne kişisel veri yazmıyoruz). Belge **üretim anındaki
-metinden** yeniden render ediliyor — kullanıcı sonradan bir maddeyi düzenlerse
-indirdiği CV değişmez, başvurduğu belge neyse odur. Yeniden render edilecek
-şeyi olmayan bir satır `410` + `GENERATION_ARTIFACT_EXPIRED` + `retry` döner.
+**Ön kontroller senkron:** okunmayan ilan ve boş profil **422 ile anında**,
+kuyruğa girmeden. `B-037`'nin bayrağı: `acknowledgePreflight: true`.
 
-`gen:api`'yi bu PR'dan sonra çalıştırın: `/generations/general` tipten
-düşecek.
+**Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil** (§ 30.6 düz metin
+taşıyordu, § 35.4 ile çelişiyordu). Anahtarlar: `generation.phase.ANALYSING`,
+`.MEASURING`, `.SCORING`, `.RENDERING`.
 
-`gen:api` bu PR'dan sonra çalıştırılabilir; şema uçları taşıyor.
+**SSE:** üç olay adı — koşarken `phase`, sonra **tam olarak bir tane**
+`completed` ya da `failed`, akış kapanır. Bağlanır bağlanmaz güncel durum
+geliyor, yani ekran boş başlamıyor ve **202 ile abonelik arasında biten iş de
+sonucunu gönderiyor**. `Last-Event-ID` kabul ediliyor ama **oynatma yok**;
+sürekliliğe değil terminal olaya güvenin. Akış terminal olay olmadan kapanırsa
+`GET /jobs/{jobId}` geri düşüş.
+
+**Terminal alanlar yalnız kendi durumlarında:** `generationId` sadece
+`completed`'da, `error` sadece `failed`'da. **`Idempotency-Key`** onurlandırılıyor.
+**Download üretim anındaki metinden** render ediliyor — sonradan bir madde
+düzenlenirse indirilen CV değişmez; yeniden render edilecek şeyi olmayan satır
+`410` + `GENERATION_ARTIFACT_EXPIRED` + `retry`.
+
+**`gen:api` çalıştırılmalı.**
 
 ---
 
