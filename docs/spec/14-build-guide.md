@@ -1022,9 +1022,15 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 
 ### Adım 2.6 — Kuyruk ve SSE
 
+> **Düzeltme.** Birinci madde yanlıştı: `jobs` tablosu **`V1`'de zaten var**
+> (2.4'ün pgvector maddesiyle aynı hata). Eksik olan eşlemeydi; migration
+> yazmak mutlak kural 2'yi ihlal ederdi. İkinci madde de ikiye ayrıldı:
+> `JobQueue` worker'ın kapsamsız yüzü, `JobRepository` kullanıcının kapsamlı
+> yüzü — gerekçe § 30.2'de.
+
 ```
-1. jobs tablosu migration
-2. JobRepository (SKIP LOCKED sorgusu)
+1. jobs eşlemesi (migration YOK)
+2. JobQueue (SKIP LOCKED) + JobRepository (kullanıcı kapsamlı)
 3. JobWorker + heartbeat
 4. Zombi toplayıcı (@Scheduled)
 5. Retry politikası
