@@ -28,7 +28,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobAnalysisPhase {
 
-    static final String PROMPT_ID = "job_analysis";
+    /** Public so a generation record can name the prompt it ran (Bolum 14.7). */
+    public static final String PROMPT_ID = "job_analysis";
 
     private static final Logger log = LoggerFactory.getLogger(JobAnalysisPhase.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -56,6 +57,25 @@ public class JobAnalysisPhase {
      * @param bucketKey             the user id, so an A/B experiment keeps one
      *                              person on one prompt version (Bolum 53.3)
      */
+    /**
+     * Which prompt version this bucket runs on (Bolum 53.3).
+     *
+     * <p>Asked separately rather than returned from {@link #analyse}, and that
+     * is safe for one reason: the selection is a pure function of the prompt id
+     * and the bucket key — a CRC32 of the user id against the configured
+     * split. The same two arguments give the same answer, here and inside the
+     * phase, including on a cache hit: the cache key carries the version, so a
+     * hit was a hit on that version's entry.
+     *
+     * <p>It exists because {@code generations.engine_version} has to record
+     * the version that <em>ran</em>. Recording the default instead would be
+     * wrong in exactly the case the field is for — an experiment, where half
+     * the users are not on the default.
+     */
+    public String promptVersionFor(String bucketKey) {
+        return prompts.selectVersion(PROMPT_ID, bucketKey);
+    }
+
     public Result<JobAnalysis> analyse(
             String jobDescription, boolean preflightAcknowledged, String bucketKey) {
 
