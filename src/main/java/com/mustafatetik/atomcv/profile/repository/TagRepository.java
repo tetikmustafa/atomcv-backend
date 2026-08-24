@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.profile.repository;
 import com.mustafatetik.atomcv.profile.domain.Tag;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.ProfileScopedRepository;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,6 +41,13 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      * tree in four (Bolum 52.2). Tags are a scoring input, not part of what is
      * rendered, so general mode never pays for this one.
      *
+     * <p>The query's order is kept all the way out. {@code Set.copyOf} and
+     * {@code Map.copyOf} would <em>not</em> keep it: the JDK's immutable
+     * collections iterate in an order salted per JVM run, so the same profile
+     * came back in one order here and another on the CI runner — which is how
+     * this was found. {@code UserFacingError} avoids the same trap for the
+     * same reason.
+     *
      * @return atoms that have at least one tag; an untagged atom is absent
      *         rather than present with an empty set, and the caller reads a
      *         missing key as "no tags"
@@ -50,7 +58,7 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
             labels.computeIfAbsent(row.atomId(), atom -> new LinkedHashSet<>())
                     .add(row.label());
         }
-        labels.replaceAll((atom, set) -> Set.copyOf(set));
-        return Map.copyOf(labels);
+        labels.replaceAll((atom, set) -> Collections.unmodifiableSet(set));
+        return Collections.unmodifiableMap(labels);
     }
 }

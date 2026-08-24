@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -108,7 +110,7 @@ public class Job implements UserOwned {
     public Job(JobType type, UUID userId, Map<String, Object> payload, Instant now) {
         this.type = Objects.requireNonNull(type, "type");
         this.userId = userId;
-        this.payload = Map.copyOf(Objects.requireNonNull(payload, "payload"));
+        this.payload = ordered(Objects.requireNonNull(payload, "payload"));
         this.priority = type.priority();
         this.runAfter = Objects.requireNonNull(now, "now");
         this.createdAt = now;
@@ -145,7 +147,7 @@ public class Job implements UserOwned {
     }
 
     public Map<String, Object> getPayload() {
-        return payload == null ? Map.of() : Map.copyOf(payload);
+        return payload == null ? Map.of() : ordered(payload);
     }
 
     public JobStatus getStatus() {
@@ -165,11 +167,11 @@ public class Job implements UserOwned {
     }
 
     public Map<String, Object> getResult() {
-        return result == null ? null : Map.copyOf(result);
+        return result == null ? null : ordered(result);
     }
 
     public Map<String, Object> getError() {
-        return error == null ? null : Map.copyOf(error);
+        return error == null ? null : ordered(error);
     }
 
     public short getAttempts() {
@@ -225,7 +227,7 @@ public class Job implements UserOwned {
     /** Done, with whatever the handler produced (Bolum 30.6's terminal event). */
     public void succeed(Map<String, Object> result, Instant now) {
         this.status = JobStatus.COMPLETED;
-        this.result = result == null ? Map.of() : Map.copyOf(result);
+        this.result = result == null ? Map.of() : ordered(result);
         this.error = null;
         this.completedAt = now;
         releaseLock();
@@ -240,7 +242,7 @@ public class Job implements UserOwned {
      */
     public void fail(Map<String, Object> error, Instant now) {
         this.status = JobStatus.FAILED;
-        this.error = error == null ? Map.of() : Map.copyOf(error);
+        this.error = error == null ? Map.of() : ordered(error);
         this.completedAt = now;
         releaseLock();
     }
@@ -262,6 +264,20 @@ public class Job implements UserOwned {
         this.status = JobStatus.CANCELLED;
         this.completedAt = now;
         releaseLock();
+    }
+
+    /**
+     * A defensive copy that keeps the caller's order.
+     *
+     * <p>{@code Map.copyOf} would not: the JDK's immutable maps iterate in an
+     * order salted per JVM run, and all three of these columns are JSONB —
+     * the same failure would serialise differently on every restart, and the
+     * error map is built ordered on purpose so that {@code code} leads.
+     * Measured rather than assumed: three runs of the same three-element set
+     * through {@code Set.copyOf} gave three different orders.
+     */
+    private static Map<String, Object> ordered(Map<String, Object> values) {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(values));
     }
 
     private void releaseLock() {

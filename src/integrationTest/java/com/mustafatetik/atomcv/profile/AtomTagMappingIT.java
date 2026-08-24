@@ -108,6 +108,12 @@ class AtomTagMappingIT extends AbstractIntegrationTest {
         assertThat(tags.labelsByAtom(theirs).values()).containsExactly(Set.of("logistics"));
     }
 
+    /**
+     * Ordered, and it has to be asserted as order rather than as membership.
+     * {@code Set.copyOf} iterates in an order salted per JVM run: the first
+     * version of this passed here and failed on the CI runner, which is a
+     * failure mode that looks like a flake and is not one.
+     */
     @Test
     void anAtomsLabelsComeBackTogetherAndSorted() {
         var profile = persistedProfile();
