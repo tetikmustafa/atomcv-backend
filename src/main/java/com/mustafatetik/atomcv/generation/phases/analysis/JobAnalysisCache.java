@@ -1,13 +1,8 @@
 package com.mustafatetik.atomcv.generation.phases.analysis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.util.HexFormat;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,7 +32,6 @@ public class JobAnalysisCache {
     static final Duration TTL = Duration.ofDays(7);
 
     private static final String PREFIX = "jd:";
-    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private static final Logger log = LoggerFactory.getLogger(JobAnalysisCache.class);
 
@@ -85,24 +79,11 @@ public class JobAnalysisCache {
      * already cached for that posting (Bolum 53.3).
      */
     String keyFor(String jobDescription, String promptVersion) {
-        return PREFIX + promptVersion + ":" + sha256(normalize(jobDescription));
+        return PREFIX + promptVersion + ":" + JobDescriptionDigest.of(jobDescription);
     }
 
-    /**
-     * Bolum 18.6: collapse whitespace, join line endings, trim. The same
-     * posting pasted from a PDF and from a browser differs only in this, and
-     * two entries for one posting is a cache that misses on purpose.
-     */
+    /** Kept for the tests that were written against it; see {@link JobDescriptionDigest}. */
     static String normalize(String jobDescription) {
-        return WHITESPACE.matcher(jobDescription).replaceAll(" ").trim();
-    }
-
-    private static String sha256(String input) {
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(input.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is required of every JVM", e);
-        }
+        return JobDescriptionDigest.normalize(jobDescription);
     }
 }
