@@ -26,7 +26,12 @@ import org.testcontainers.utility.DockerImageName;
  * pointed at its port, and every later class would fail on a refused
  * connection. Ryuk removes it when the JVM exits.
  */
-@SpringBootTest(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
+@SpringBootTest(properties = {
+        "spring.jpa.properties.hibernate.generate_statistics=true",
+        // The worker is driven by hand in the tests that care about it. A
+        // scheduler firing underneath the others would claim the very rows
+        // they are asserting about, and the failure would look like a flake.
+        "atomcv.jobs.worker.enabled=false"})
 @ActiveProfiles("local")
 public abstract class AbstractIntegrationTest {
 
