@@ -52,6 +52,13 @@ atomcv:
     generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
     profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
 
+  # Bolum 44.3. Reports, does not act: there is no rate limiter to tighten and
+  # the brake stops everybody, so an operator decides.
+  anomaly:
+    enabled: ${ANOMALY_DETECTION_ENABLED:true}
+    baseline-factor: ${ANOMALY_BASELINE_FACTOR:5.0}
+    signups-per-hour: ${ANOMALY_SIGNUPS_PER_HOUR:50}
+
   jobs:
     worker:
       enabled: ${JOBS_WORKER_ENABLED:true}
