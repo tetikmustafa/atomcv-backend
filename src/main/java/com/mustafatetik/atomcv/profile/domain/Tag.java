@@ -57,7 +57,13 @@ public class Tag implements ProfileOwned {
         return label;
     }
 
-    public final void setLabel(String label) {
+    /**
+     * Not {@code final}: Hibernate builds a lazy proxy by subclassing and
+     * refuses an entity whose setters cannot be overridden — quietly, as a
+     * warning during startup rather than a failure, so the entity keeps
+     * working and nothing says the proxy was skipped.
+     */
+    public void setLabel(String label) {
         this.label = canonical(label);
     }
 
