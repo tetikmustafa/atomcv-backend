@@ -31,7 +31,10 @@ import org.testcontainers.utility.DockerImageName;
         // The worker is driven by hand in the tests that care about it. A
         // scheduler firing underneath the others would claim the very rows
         // they are asserting about, and the failure would look like a flake.
-        "atomcv.jobs.worker.enabled=false"})
+        "atomcv.jobs.worker.enabled=false",
+        // Likewise: a detector firing on the schedule would report on rows
+        // other tests are still writing. AnomalyDetectorIT calls it directly.
+        "atomcv.anomaly.enabled=false"})
 @ActiveProfiles("local")
 public abstract class AbstractIntegrationTest {
 
