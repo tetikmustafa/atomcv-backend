@@ -11,6 +11,48 @@
 
 ## OPEN
 
+### B-038 · `POST /generations` ve `GET /jobs/{id}` indi; ilerleme metni **sizin**
+**Since:** commit `<bu PR>` · Adım 2.6 · **Spec:** `spec/08-api.md` § 35.3, `spec/08b-api-contract.md` EK D.6.4
+
+İlana özel üretimin senkron yüzü hazır. `POST /api/v1/generations` **202** ve
+`Location: /api/v1/jobs/{jobId}` dönüyor; gövde `{ jobId, status }`.
+`GET /api/v1/jobs/{jobId}` işin nerede olduğunu söylüyor.
+
+**Ön kontroller senkron.** İlan gibi okunmayan bir metin ve içi boş bir profil
+**422 ile anında** reddediliyor, kuyruğa hiç girmiyor: `UNPARSEABLE_JOB_DESCRIPTION`
+ve `INSUFFICIENT_PROFILE`. Yani "kabul edildi, otuz saniye izlendi, sonra düştü"
+diye bir akış yok — `B-037`'nin `continue_anyway` bayrağı da burada işe yarıyor,
+istekte `acknowledgePreflight: true`.
+
+**Aksiyonunuz — `label` bir çeviri anahtarı, cümle değil.** § 30.6'nın örneği
+düz metin taşıyor; § 35.4 ile çelişiyordu ve **anahtar tarafını seçtik**.
+`GET /jobs/{id}` şunu döndürüyor:
+
+```json
+{ "jobId": "...", "status": "running",
+  "phase": "B", "label": "generation.phase.SCORING", "pct": 50 }
+```
+
+Gereken anahtarlar: `generation.phase.ANALYSING`, `.MEASURING`, `.SCORING`,
+`.RENDERING`. Metni siz yazıyorsunuz; sunucu tek dilde cümle göndermiyor.
+
+**Terminal alanlar yalnız kendi durumlarında var:** `generationId` sadece
+`completed`'da, `error` sadece `failed`'da. İkisinden biri gelince yoklamayı
+bırakabilirsiniz.
+
+**`Idempotency-Key` onurlandırılıyor** (`POST /generations`): aynı anahtar aynı
+işi döndürüyor, çift tıklama tek CV üretiyor.
+
+**Henüz gelmeyen:** SSE akışı (`streamUrl`) ve `GET /generations/{id}/download`
+bir sonraki dilimde. Bugün ilerlemeyi **yoklayarak** izlemek destekleniyor ve
+EK D.6.4 bunu kalıcı geri düşüş olarak adlandırıyor — akış inince yoklama
+kodunuz çöpe gitmez. `POST /generations/general` **hâlâ duruyor**, o dilimde
+kalkacak (`B-022`).
+
+`gen:api` bu PR'dan sonra çalıştırılabilir; şema uçları taşıyor.
+
+---
+
 ### B-037 · `resolutions[].action` sözlüğü onuncu değeri kazandı: `continue_anyway`
 **Since:** commit `<bu PR>` · Adım 2.3 · **Spec:** `spec/08b-api-contract.md` EK D.6.1, `spec/05-pipeline-a-c.md` § 18.1
 

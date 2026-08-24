@@ -217,11 +217,15 @@ sonsuza kadar döner — P4'ün yasakladığı sessiz kötü sonuç.
   "jobId": "...",
   "status": "queued | running | completed | failed",
   "phase": "C",
+  "label": "generation.phase.RENDERING",   // çeviri anahtarı, cümle değil
   "pct": 60,
   "generationId": "...",
   "error": { "code": "...", "params": {}, "resolutions": [] }
 }
 ```
+
+Sahibi olmayan bir iş **404** döner, 403 değil: bir id'nin var olduğunu
+yabancıya söylemek de bilgidir (mutlak kural 3).
 
 `generationId` yalnız `completed`'da, `error` yalnız `failed`'da bulunur; bu
 ikisi terminal durumlardır. Akış terminal olay olmadan kapanırsa bu endpoint'i

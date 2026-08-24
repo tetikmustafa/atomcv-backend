@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-24 · `generations` kaydı ve iş yürütücüsü indi (2.6/2); **`B-037` açık**
+**Son güncelleme:** 2026-08-24 · `POST /generations` + 202 indi (2.6/3); **`B-037`, `B-038` açık**
 
 ---
 
@@ -16,18 +16,18 @@
 | **Aşama 2 — İlana özel üretim** | 🔨 Sürüyor |
 | 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding | ✅ |
 | 2.5 Faz B (skorlama) | ✅ |
-| 2.6 kuyruk ve SSE | 🔨 kuyruk, worker ve `generations` kaydı indi; **HTTP + SSE kaldı** |
+| 2.6 kuyruk ve SSE | 🔨 kuyruk, kayıt, `POST /generations` + 202 ve `GET /jobs/{id}` indi; **SSE + download kaldı** |
 | 2.7 kota ve maliyet | ⬜ |
 
 **Aşama 2 planı:** `spec/14-build-guide.md` § XI-A.5, Adım 2.1-2.7.
-**`B-037` açık:** `resolutions[].action` sözlüğü `continue_anyway` kazandı — ICU
-mesajı gerekiyor. Uç yok, sözlük büyüdü. Diğer değişenler iç:
-`Result`/`PipelineError` `shared/error`'a taşındı, `LlmProvider` `LlmOutcome`
-döndürüyor, `local-fake/-record/-real` profilleri yazıldı. Spec § 14.3, § 14.5, § 18.1-18.6,
-§ 19.2, § 27.1-27.3, § 28.4, § 30.2-30.5, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3, XI-A.5-6 güncellendi — **`sync-spec.sh` Aşama 2
-kapanışında topluca çalıştırılacak** (karar: 2026-08-21).
+**`B-038` açık:** `POST /generations` (202) ve `GET /jobs/{id}` yayımlandı; ilerleme
+`label`'ı **çeviri anahtarı** (`generation.phase.*`), metin frontend'in — `gen:api`
+artık çalıştırılabilir. **`B-037` açık:** `resolutions[].action` `continue_anyway`
+kazandı, ICU mesajı gerekiyor. Spec § 14.3, § 14.5, § 18.1-18.6, § 19.2, § 27.1-27.3,
+§ 28.4, § 30.2-30.6, § 35.3, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3-4, XI-A.5-6
+güncellendi — **`sync-spec.sh` Aşama 2 kapanışında** çalıştırılacak (karar: 2026-08-21).
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 541 birim · 193 entegrasyon · 44 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 547 birim · 210 entegrasyon · 44 latex
 
 ## Frontend — `atomcv-frontend`
 

@@ -654,9 +654,16 @@ public SseEmitter stream(@PathVariable UUID jobId, @AuthenticationPrincipal Prin
 ```
 
 **Olay tipleri:**
+
+> **Düzeltme — `label` bir çeviri anahtarıdır, cümle değil.** Aşağıdaki örnek
+> düz metin taşıyordu ve § 35.4 ile çelişiyordu: sunucu anahtar gönderir,
+> metni frontend yazar. Tek dilde gönderilen bir cümle her yeni dilde yeniden
+> gönderilmek zorunda kalırdı, ve ilerleme satırı üründe en çok görülen metin.
+> Değerler `generation.phase.<FAZ>` biçiminde.
+
 ```
 event: phase
-data: {"phase":"D","label":"Metinler uyarlanıyor","pct":60,"detail":"4/7"}
+data: {"phase":"B","label":"generation.phase.SCORING","pct":50,"detail":"4/7"}
 
 event: completed
 data: {"generationId":"...","pageCount":1,"matchLevel":"STRONG"}
