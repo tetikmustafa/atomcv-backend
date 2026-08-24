@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-24 · **Aşama 2 tamamen kapandı**; **`B-037`…`B-039` açık**
+**Son güncelleme:** 2026-08-25 · **Aşama 2 iki repoda da kapandı**; **`F-008` açık · `B-040` açık**
 
 ---
 
@@ -18,16 +18,13 @@
 | 2.7 kota ve maliyet | ✅ (Axiom dataset'i 3.1'e taşındı) |
 
 **Aşama 3 planı:** § XI-A.6. Aşama 2'nin kaydı `notes/archive/stage-2.md`'de.
-**`B-039` açık:** `GET /account/usage`, `QUOTA_EXCEEDED` (429) ve yeni
-`GENERATION_PAUSED` (503) — ICU mesajı gerekiyor. **`B-038` açık:** `POST /generations` (202), `GET /jobs/{id}`, SSE ve
-`GET /generations/{id}/download` yayımlandı; `POST /generations/general`
-**kaldırıldı** (`B-022` kapandı). İlerleme `label`'ı **çeviri anahtarı**
-(`generation.phase.*`). **`gen:api` çalıştırılmalı.** **`B-037` açık:** `resolutions[].action` `continue_anyway`
-kazandı, ICU mesajı gerekiyor. Spec § 14.3, § 14.5, § 18.1-18.6, § 19.2, § 27.1-27.3,
-§ 28.4, § 30.2-30.6, § 35.3, § 53.3, § 54.2, § 10.1, EK D.6.1, D.6.3-4, XI-A.5-6
-güncellendi — **`sync-spec.sh` Aşama 2 kapanışında** çalıştırılacak (karar: 2026-08-21).
+**`F-009`…`F-012` kapandı** ve şemayı değiştirdiler — **`B-040` açık,
+`gen:api` çalıştırılmalı**: `generalMode` düştü, ilerleme alanları opsiyonel
+oldu, `usage` `attempted` kazandı. `B-037`…`B-039` arşivlendi.
+**`F-008` (uygunluk raporu) sıradaki dilim.** `sync-spec.sh` o dilim
+kapanınca.
 
-**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 567 birim · 239 entegrasyon · 47 latex
+**Aşama 1:** 9/9 ✅, `F-001`…`F-007` kapandı · **Test:** 580 birim · 245 entegrasyon · 47 latex
 
 ## Frontend — `atomcv-frontend`
 
@@ -35,11 +32,14 @@ güncellendi — **`sync-spec.sh` Aşama 2 kapanışında** çalıştırılacak 
 |---|---|
 | Aşama 0 — İskelet | ✅ |
 | Aşama 1 — Profil editörü | ✅ |
-| Aşama 2 — Üretim akışı + SSE | ⬜ |
+| Aşama 2 — Üretim akışı + SSE | ✅ (uygunluk raporu hariç · `F-008`) |
 
-**Açık `B-nnn` yok.** **Test:** 305 birim · 15 e2e · **bundle** 244.0 / 75.8 KB.
-**Aşama 1 kapandı:** 1.2'nin frontend kutuları ✅, devredilenler 4/4, `gen:api` güncel,
-gerçek uca karşı 34 kontrol geçti. Notlar `notes/archive/stage-1.md`.
+**`B-040` açık** (`gen:api`) — `B-037`…`B-039` arşivlendi. **Test:** 352 birim · 23 e2e ·
+**bundle** profil 250.6 / üretim 214.8 KB.
+**Aşama 2 kapandı:** üretim akışı, SSE, sonuç ekranı ve kota bağlı; gerçek uca
+karşı MSW kapalı **10 kontrol** geçti ve ikisi gerçek hata buldu (`Accept` →
+406, dev proxy'nin SSE'yi gzip'lemesi). **Uygunluk raporu yazılamadı** —
+veri yayımlanmadı (`F-008`). Notlar `notes/archive/stage-2.md`.
 
 ---
 
@@ -55,6 +55,6 @@ gerçek uca karşı 34 kontrol geçti. Notlar `notes/archive/stage-1.md`.
 
 ## Sonraki senkronizasyon noktası
 
-**Şimdi.** `POST /generations` + 202 + SSE + download indi, `/generations/general`
-kaldırıldı. Frontend `gen:api`'yi çalıştırıp üretim akışını bu uçlara bağlayabilir
-(handoff · `B-038`).
+**`B-040` → `gen:api`.** Dördü kapandı; kalan `F-008`, uygunluk raporu:
+Faz F hesaplar, `GET /generations/{id}` yayımlar, `completed` olayı
+`matchLevel` kazanır.

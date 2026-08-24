@@ -104,4 +104,40 @@ ama içinden geçen bir şey değiştiğinde de** koştur. `CLAUDE.md`'ye yazıl
 
 ## Aşama 3 kayıtları
 
-*(boş)*
+### Frontend'in beş bulgusu — `F-009`…`F-012` kapandı (2026-08-25)
+
+**Düzeltme — `generalMode` diye bir alan hiç yazılmadı.** Şemada göründü,
+çünkü `GenerationRequest.isGeneralMode()` türetilmiş bir metot ve **bir
+record'da `isX()` Jackson ile springdoc için bir getter'dır.** Aşama 2'de
+`RichContent`'te yediğimiz hatanın telin öbür yüzü: orada JSONB kolonuna
+yazılan bir alan doğurdu, burada request şemasına. Genel kural artık iki
+yönlü — *Jackson'ın dokunduğu bir record'daki her getter şeklindeki metot,
+kimsenin bildirmediği bir alandır.* Tüm DTO record'ları tarandı, tek örnek
+buydu. Şema testi `GenerationRequest`'in **tam dört** özelliği olduğunu
+sabitliyor; `@JsonIgnore`'u kaldıran bir sonda ile düşürüldüğü doğrulandı.
+
+**Ekleme — boş dize göndermek yokluk göndermekten kötüdür.** `JobProgress`
+tek bir shape olarak hem `jobs.progress` kolonuna hem `phase` olayına gidiyor,
+ve `NONE` boş dizelerle çıkıyordu. `JobStatusResponse` bunları zaten `null`'a
+çeviriyordu, yani **akış ile yoklama aynı olayı farklı gönderiyordu** — tek
+shape'in engellemesi gereken tam da bu. `@JsonInclude(NON_EMPTY)` shape'in
+kendisine kondu; `pct` üzerinde açık bir `ALWAYS` var, çünkü NON_EMPTY'nin
+ilkelleri atlaması Jackson'ın kararı, bizim değil.
+
+**Ekleme — `used`, `limit`'i geçebiliyordu ve sayı doğruydu, adı yanlıştı.**
+Kota sayacı **denemeleri** sayıyor: reddedilen istek birimini geri almıyor,
+yoksa sınırını aşmış bir kullanıcı sayaç tavanda sabitken ucu döverdi. Kırpmak
+sunucuyu yanlış aktarmak olurdu; `Usage` iki alan taşıyor — `used` (harcanan,
+`0..limit`) ve `attempted` (ham sayaç). Kırpma tek bir fabrikada ve bir
+invariant onu orada tutuyor: `used > limit` taşıyan bir `Usage` inşa
+edilemiyor. İki alanın anlamı **şemanın kendisine** yazıldı — `@Schema`
+açıklamalarıyla, çünkü springdoc javadoc'u okumuyor ve şekil için otorite
+OpenAPI.
+
+**`F-011` yalnız belge:** Next'in dev rewrite'ı proxy'lediği yanıtı gzip'liyor
+ve gzip tamponluyor, yani lokalde SSE hiç akmıyor. § 30.6'ya `proxy_buffering
+off`'un yanına yazıldı. Düzeltme frontend'de.
+
+**Açık kalan: `F-008`** — uygunluk raporu. `generations.fit_report` kolonu ve
+setter'ı Aşama 2'den beri duruyor ve **hiçbir çağıran yok**; `validation/`
+paketi yalnız `package-info` taşıyor. Sıradaki dilim.

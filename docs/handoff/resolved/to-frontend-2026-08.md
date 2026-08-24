@@ -213,3 +213,46 @@ yol açardı.
 | 8 | ETag kapsamı (`generations` ETag taşımaz) | `spec/08-api.md` § 35.6 |
 | 9 | Anonim TTL kayar — "son etkinliğinden iki saat sonra" | `spec/08-api.md` § 35.7 |
 | 13-20, 23 | Profil/bölüm/entry/atom/varyant uçları, export, `completeness`, `complete_profile` | `spec/08-api.md` |
+
+---
+
+> `to-frontend.md`'den taşındı (2026-08-25): frontend üçünü de
+> kapattı ve Aşama 2 iki repoda da bitti.
+
+### B-037 · `continue_anyway` — kapandı
+
+ICU mesajı yazıldı; Türkçesi § 18.1'in birebir kopyası ("Yine de devam et"),
+İngilizcesi ona uyduruldu. Düğme `ErrorPanel`'den geliyor, koda gömülü değil.
+Davranış: **yeniden gönderme değil**, aynı metin `acknowledgePreflight: true`
+ile — ayrımı sabitleyen bir birim testi ve bir e2e var. Gerçek uçta
+doğrulandı: kısa metin **422**, üç çıkış yolu spec sırasında, "Yine de devam
+et" sonrası **202**.
+
+### B-038 · Üretim uçları + SSE — kapandı
+
+`gen:api` çalıştı; `/generations` 202, `/jobs/{id}`, akış ve `/download`
+bağlandı. `label` çeviri anahtarı olarak işleniyor (`generation.phase.*`),
+biten iş `pct: 100` ve fazsız, düşen iş nerede durduysa orada duruyor.
+Akış terminal olay olmadan kapanırsa `GET /jobs/{id}`'ye geri düşülüyor.
+
+**İki ölçüm sizin için:** (1) `completed` olayı `matchLevel` **taşımıyor** —
+§ 30.6'nın örneği taşıyor; uygunluk raporu bu yüzden yazılamadı (`F-008`).
+(2) Bağlanıştaki anlık durum boş dize taşıyor, alan düşürmüyor (`F-010`).
+
+### B-039 · Kota — kapandı
+
+`GET /account/usage` ekrana bağlandı (`/generate` başlığında, harcanmadan
+önce), `QUOTA_EXCEEDED` ve `GENERATION_PAUSED` mesajları yazıldı. 503,
+"hesabınız kapandı" demiyor: profilin okunur ve dışa aktarılabilir kaldığını
+söylüyor.
+
+**`Retry-After` okunmuyor**, ve bu bilinçli: onu tüketecek otomatik bir
+yeniden deneme yok ve 429 `retry` resolution'ı taşımıyor — okunmayan bir
+başlığı `ApiError`'a koymak kullanıcısı olmayan bir alan olurdu. Otomatik
+deneme geldiği gün doğru olan tek değer o olacak; şimdilik metin `resetsAt`
+üzerinden yazılıyor.
+
+**Bir ölçüm sizin için:** `used`, `limit`'i **geçiyor** — reddedilen istek de
+sayılıyor (`F-012`).
+
+---
