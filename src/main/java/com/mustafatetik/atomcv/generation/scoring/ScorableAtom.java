@@ -12,28 +12,34 @@ import java.util.UUID;
  * cannot lazily load anything mid-scoring, and the determinism Bolum 19.6
  * requires is a property of the arguments rather than of the session.
  *
- * <p>{@code tags} and {@code skills} arrive already canonical — lowercase,
- * English. Canonicalising here would mean the scorer lowercased text, and
- * absolute rule 7 is easier to keep in one place than in four.
+ * <p>{@code tags}, {@code skills} and {@code contentTokens} arrive already
+ * canonical — lowercase, English. Canonicalising here would mean the scorer
+ * lowercased text, and absolute rule 7 is easier to keep in one place than in
+ * four.
  *
- * @param embedding  the stored vector, or null for an atom nothing has
- *                   embedded yet. Bolum 28.2 computes these after the fact, so
- *                   a freshly written atom is scoreable before it is embedded.
- * @param importance the user's own weighting, 0 to 1, which becomes
- *                   Bolum 19.1's multiplier
+ * @param embedding     the stored vector, or null for an atom nothing has
+ *                      embedded yet. Bolum 28.2 computes these after the fact,
+ *                      so a freshly written atom is scoreable before it is
+ *                      embedded.
+ * @param contentTokens the atom's own words, plus the words of the entry it is
+ *                      printed under. This is what the keyword component
+ *                      measures the posting's literal phrases against — see
+ *                      {@link RelevanceScorer#keywordCoverage}.
+ * @param importance    the user's own weighting, 0 to 1, which becomes
+ *                      Bolum 19.1's multiplier
  */
 public record ScorableAtom(
         UUID atomId,
         float[] embedding,
         Set<String> tags,
         Set<String> skills,
-        List<String> titleTokens,
+        List<String> contentTokens,
         double importance) {
 
     public ScorableAtom {
         tags = tags == null ? Set.of() : Set.copyOf(tags);
         skills = skills == null ? Set.of() : Set.copyOf(skills);
-        titleTokens = titleTokens == null ? List.of() : List.copyOf(titleTokens);
+        contentTokens = contentTokens == null ? List.of() : List.copyOf(contentTokens);
         if (importance < 0 || importance > 1) {
             throw new IllegalArgumentException("importance is 0..1, got " + importance);
         }
