@@ -165,4 +165,19 @@ Kural § 30.4'e yazıldı.
 **Ekleme — `GENERATION_PAUSED` (503) kataloğa girdi**, `B-039`. Fren kotanın
 önünde koşuyor ve **veri erişimini kesmiyor** (§ 44.3).
 
-**Kalan (2.7):** anomali tespiti (`@Scheduled`) ve Axiom/OpenTelemetry.
+**Ekleme — anomali tespiti indi, bütçe freni bilinçli olarak inmedi.** Çağrı
+başına maliyet kaydeden yok (`ProviderChain` olayı yayımlıyor, dinleyen yok),
+yani o sayıya bağlı bir fren sonsuza kadar sıfır okur ve koruma gibi görünür.
+§ 44.3'e yazıldı. **Sıkılaştırılacak rate limiter de yok**; sinyaller raporluyor.
+
+**Düzeltme — `@EnableScheduling` worker'ın anahtarına bağlıydı.** İkinci bir
+zamanlanmış bileşen gelince yanlış oldu: worker'ı kapatmak detector'ı sessizce
+götürürdü. `shared/config`'e taşındı, her bileşen kendi
+`@ConditionalOnProperty`'sini taşıyor.
+
+**Düzeltme — bir testi yeniden yazdım.** "Her kullanıcı kendi geçmişine karşı
+ölçülür" diyen test, join koşulu kasten bozulduğunda geçiyordu: yoğun
+kullanıcıya bugün için satır vermiyordu, yani aslında "kullanımı olmayan
+kullanıcı raporlanmaz" diyordu. Artık ikisi de bugün aynı sayıda üretiyor.
+
+**Kalan (2.7):** LLM maliyet kaydı + bütçe freni, ve Axiom/OpenTelemetry.
