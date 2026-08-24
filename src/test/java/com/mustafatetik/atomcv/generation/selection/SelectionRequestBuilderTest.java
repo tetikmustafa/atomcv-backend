@@ -238,6 +238,62 @@ class SelectionRequestBuilderTest {
 
     // ── fixtures ──────────────────────────────────────────────────────────
 
+    // -- Bolum 19.4: the score function is the only thing that differs -----
+
+    /**
+     * What separating Faz B from Faz C buys. The builder reads numbers from
+     * whatever it was handed and does not know which mode produced them — the
+     * general-mode scorer here would have ranked these two the other way
+     * round, because the second bullet is the more recent.
+     */
+    @Test
+    void thescoresComeFromWhicheverSourceTheCallerGave() {
+        var fixture = new Fixture();
+        var section = fixture.section(SectionKind.EXPERIENCE, 0);
+        var entry = fixture.entry(section, 0);
+        var first = fixture.bullet(section, entry, "Built ETL pipelines");
+        var second = fixture.bullet(section, entry, "Ran the on-call rota");
+
+        var built = SelectionRequestBuilder.build(fixture.tree(), TemplateCustomization.CLASSIC,
+                CAPACITY, 1, "en",
+                (atom, parent) -> atom.getId().equals(first.getId()) ? 0.9 : 0.1);
+
+        var candidates = built.request().sections().get(0).entries().get(0).atoms();
+        assertThat(candidateFor(candidates, first).score()).isEqualTo(0.9);
+        assertThat(candidateFor(candidates, second).score()).isEqualTo(0.1);
+    }
+
+    /**
+     * A lock is pinned by score, so the source decides which atom survives a
+     * budget that only has room for one of them.
+     */
+    @Test
+    void thepinnedAtomOfAnAlwaysIncludeEntryIsTheOneTheSourceRanksHighest() {
+        var fixture = new Fixture();
+        var section = fixture.section(SectionKind.EXPERIENCE, 0);
+        var entry = fixture.entry(section, 0);
+        entry.setAlwaysInclude(true);
+        // One bullet is enough to be worth printing, so only one is pinned
+        // and the source is what decides which (EK D.8.7).
+        entry.setMinAtoms((short) 1);
+        var ignored = fixture.bullet(section, entry, "Built ETL pipelines");
+        var wanted = fixture.bullet(section, entry, "Ran the on-call rota");
+
+        var built = SelectionRequestBuilder.build(fixture.tree(), TemplateCustomization.CLASSIC,
+                CAPACITY, 1, "en",
+                (atom, parent) -> atom.getId().equals(wanted.getId()) ? 0.9 : 0.1);
+
+        var candidates = built.request().sections().get(0).entries().get(0).atoms();
+        assertThat(candidateFor(candidates, wanted).alwaysInclude()).isTrue();
+        assertThat(candidateFor(candidates, ignored).alwaysInclude()).isFalse();
+    }
+
+    private static AtomCandidate candidateFor(List<AtomCandidate> candidates, Atom atom) {
+        return candidates.stream()
+                .filter(candidate -> candidate.atomId().equals(atom.getId()))
+                .findFirst().orElseThrow();
+    }
+
     private static SelectionRequestBuilder.BuiltRequest build(Fixture fixture) {
         return SelectionRequestBuilder.build(fixture.tree(),
                 TemplateCustomization.CLASSIC, CAPACITY, 1, "en", TODAY);
