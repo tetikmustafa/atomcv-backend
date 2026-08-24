@@ -14,22 +14,12 @@ Aşama 1 `archive/stage-1.md`'de.
 
 ## Aşama 2'den taşınan açık kutular
 
-**İlan modu uçtan uca hiç koşmadı.** Genel mod `GeneralCvIT` ile gerçek TeX'e
-karşı koşuyor (kuyruk → worker → `generations` satırı → download); ilan modu LLM
-istiyor, yani `local-fake` profili istiyor, entegrasyon süiti ise `local` ile
-çalışıyor. Aşama 2 kapanış listesinin tek yarım kutusu bu.
-
 **`Axiom'da loglar görünüyor` kutusu 3.1'e taşındı.** OTLP ihracatçısı bağlı ama
 bir URL verilene kadar kapalı; dataset Adım 3.1'de açılıyor. Kutu oraya yazıldı.
 
 **`llm_invocations.user_id` NULL.** Olay kullanıcıyı taşımıyor — zincir,
 `UserContext` tutan fazlardan çağrılıyor ama aşağı geçirmiyor. Günlük toplam
 (bütçe freni) bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
-
-**§ 19.4'ün ikincil kriterleri ilan modunda okunmuyor.** Bölüm "yakın skorlu
-atomlar arasında ve genel CV modunda" diyor; bugün yalnız ikincisi var.
-"Yakın"ın tanımı yok ve tanımlamak `RelevanceScorer`'ın sözleşmesini
-değiştiriyor — uydurulmadı, sorulacak.
 
 **Sıkılaştırılacak rate limiter yok.** § 44.3 anormal kullanıcı için bunu
 istiyor; anomali sinyalleri şimdilik yalnız raporluyor.
@@ -80,6 +70,35 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
 - **Toplu JPQL `update` `@Version`'ı atlar** ve **okuma, yakalanmak istenen
   bayatlığı onarır** — etag'i **önceki yazmanın yanıtından** al. Aşama 3'ün
   başvuru izlemesi ikisine de çarpacak.
+
+---
+
+## Aşama 2'nin son iki işi (kapandı 2026-08-24)
+
+**§ 19.4'ün "yakın skor"u bir kova genişliği oldu** (0.02, § 19.6'ya yazıldı).
+Buraya not düşülen tek şey **neden epsilon olmadığı**: "bu ikisi yakın mı" diye
+soran bir karşılaştırıcı geçişli değil, ve `List.sort` bunu fark edince
+`IllegalArgumentException` fırlatıyor — büyük profilde, üretimde, her küçük testi
+geçmiş olarak. Altmış skoru sıralayan bir test var.
+
+**`latexTest`'i bu oturumda ilk kez koşturdum ve iki gerçek hata çıktı.**
+Bu kayda değer, çünkü indirme dilimini yazarken "`GeneralCvIT` artık uçtan uca
+koşuyor" dedim ve **koşturmamıştım**:
+
+1. **`RichContent`/`Mark` türetilmiş alanlarını JSONB'ye yazıyordu.**
+   `plainText()`, `contentHash()`, `isEmpty()`, `isKnown()` — dördü de
+   getter şeklinde, dördü de serialize ediliyor, hiçbiri deserialize edilemiyor.
+   İndirme 500 veriyordu. **İki yönlü düzeltildi:** `@JsonIgnore` yazmayı
+   kesiyor, `ignoreUnknown` bozuk build'in yazdığı satırları okunur tutuyor —
+   veriyi bozan bir düzeltme düzeltme değildir. Genel ders: **JSONB kolonuna
+   düşen bir record'daki her getter şeklindeki metot, kimsenin bildirmediği bir
+   saklanan alandır.**
+2. **`Tag#setLabel` `final`'dı.** Hibernate lazy proxy kurarken reddediyor —
+   uyarı olarak, yani entity çalışmaya devam ediyor ve proxy'nin atlandığını
+   kimse söylemiyor.
+
+**Ders:** yavaş hattı ("run it when `docker/latex` changes") **onu değiştirmeyen
+ama içinden geçen bir şey değiştiğinde de** koştur. `CLAUDE.md`'ye yazıldı.
 
 ---
 

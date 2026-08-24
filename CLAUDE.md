@@ -152,10 +152,10 @@ Spring profiles:
 Facts that are true here and nowhere in the architecture documents. Each one
 cost a debugging round to find.
 
-- **Run `make` from Git Bash.** The Makefile refuses to run under `cmd.exe` or
-  PowerShell, and its recipes call `sh ./gradlew`: GNU Make runs a
-  metacharacter-free recipe line straight through `CreateProcess`, and
-  `./gradlew` is not a Windows executable.
+- **Run `make` from Git Bash.** The Makefile refuses `cmd.exe` and PowerShell,
+  and its recipes call `sh ./gradlew`: GNU Make runs a metacharacter-free
+  recipe line straight through `CreateProcess`, and `./gradlew` is not a
+  Windows executable.
 - **The Makefile includes and exports `.env`.** Compose reads it, Spring does
   not — without the include a changed `POSTGRES_PASSWORD` breaks `make dev`
   with an authentication failure that looks like a code bug.
@@ -165,19 +165,19 @@ cost a debugging round to find.
   runs of one three-element set gave three orders. Order that reaches a JSON
   column, a response or an assertion needs `Collections.unmodifiable*` over a
   `Linked*`. Passed here, failed on the runner; reads as a flake, is not one.
-- **`gradlew` must stay mode 100755.** Committed as 100644 it fails every
-  Linux runner.
+- **`gradlew` must stay mode 100755**, or every Linux runner fails.
 - Gradle directly: `sh ./gradlew test` (fast, no Docker), `sh ./gradlew
   integrationTest` (needs Docker Desktop), `--tests '*SomeTest'` to narrow.
 - **`make dev-full` rebuilds the LaTeX image on purpose (`--build`).** Compose
   reuses the last image otherwise, and a stale one answers without
   `X-Page-Count` — a generation that fails with the container healthy.
 - **`make dev-full` does not run the backend**, only the containers.
-- **`gradlew latexTest` builds the LaTeX image and compiles through it.**
-  Excluded from `integrationTest` (the image takes minutes); run it when
-  `docker/latex` changes. What it caught: `archive/stage-1.md` § D.8.1.
-- A `pre-commit` gitleaks hook runs on every commit. It is installed and
-  configured; a commit that prints nothing about secrets did not run it.
+- **`gradlew latexTest` compiles through a real LaTeX image.** Excluded from
+  `integrationTest` (minutes). Run it when `docker/latex` changes **and when
+  anything it exercises changes** — the only lane with a real compiler and a
+  real profile round trip; it caught two bugs the others could not see.
+- A `pre-commit` gitleaks hook runs on every commit; a commit that printed
+  nothing about secrets did not run it.
 
 ## Testing Requirements
 

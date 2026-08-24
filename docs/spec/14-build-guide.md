@@ -1066,9 +1066,8 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 > sistemi bozar. Kutu **3.1'e taşındı**.
 
 ```
-◐ İlan yapıştırılıp CV üretiliyor   ← genel mod gerçek TeX'e karşı uçtan uca
-                                       (GeneralCvIT); ilan modu `local-fake`
-                                       profili istiyor, süit `local` koşuyor
+✅ İlan yapıştırılıp CV üretiliyor   ← JobSpecificCvIT: Faz A (fake sağlayıcı),
+                                       Faz B, seçim, gerçek TeX, ve /download
 ✅ Sağlayıcı fallback çalışıyor       ← ProviderChainTest
 ✅ SSE ilerleme akıyor                ← JobStreamIT
 ✅ Kota doluyor ve engelliyor         ← QuotaIT + GenerationEnqueueServiceTest

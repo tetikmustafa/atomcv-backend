@@ -337,11 +337,30 @@ double generalModeScore(Atom atom) {
 
 ```java
 // Eşit skorlarda kararlı sıralama — ZORUNLU
-Comparator.comparingDouble(ScoredAtom::score).reversed()
+Comparator.comparingLong(ScoredAtom::relevanceBucket).reversed()   // round(score, 0.02)
+          .thenComparing(comparingDouble(ScoredAtom::secondary).reversed())
           .thenComparing(a -> a.atomId().toString());
 ```
 
 Bu satır olmadan aynı girdi farklı çıktı üretebilir.
+
+**§ 19.4'ün "yakın skorlu atomlar arasında" ifadesi bir kova genişliğidir**
+(karar: Adım 2.7 sonrası). Skor 0.02'nin katına yuvarlanır ve yuvarlanmış değer
+sıralama anahtarı olur; ağırlıklar bir ondalığa elle ayarlandığı için 0.02
+içindeki iki atom anlamlı biçimde farklı değildir.
+
+**Epsilon değil kova, ve sebebi ciddi.** "Bu iki skor birbirine yakın mı" diye
+soran bir karşılaştırıcı **geçişli değildir**: a ≈ b ve b ≈ c ama a ≢ c olduğunda
+`List.sort` tutarsızlığı fark eder ve `IllegalArgumentException: Comparison
+method violates its general contract` fırlatır — büyük bir profilde, üretimde,
+her küçük testi geçmiş olarak. Yuvarlama, yakınlığı bir bağıntı değil bir
+denklik sınıfı yapar ve sonuç sıradan bir tam sıralamadır.
+
+**İlgi skoru baskın kalır:** bir kova fark, ikincil skor ne derse desin bir kova
+farktır — yeni ama alakasız bir madde, eski ama alakalı birinin üstüne çıkamaz.
+Kova içinde § 19.4 karar verir. **id son çare olarak kalır** (zorunlu), ama artık
+çok daha az sıklıkla ulaşılır; id'ler her içe aktarımda yeniden üretildiği için
+bu iyi bir yöndür.
 
 ---
 
