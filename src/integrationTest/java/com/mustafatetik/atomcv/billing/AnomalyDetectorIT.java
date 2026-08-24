@@ -20,10 +20,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * a detector firing on a timer would report on rows other tests are still
  * writing, and the failure would look like a flake.
  *
- * <p>The third signal — the daily budget brake — is not tested here because it
- * is not implemented, and it is not implemented because nothing records a cost
- * yet. That is written down in {@link AnomalyDetector}'s own javadoc rather
- * than left as an absence someone has to notice.
+ * <p>The budget brake is the only signal that acts, and the tests for it are
+ * about the two ways an emergency brake goes wrong: firing when it should not,
+ * and lifting itself.
  */
 class AnomalyDetectorIT extends AbstractIntegrationTest {
 
@@ -32,6 +31,9 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
 
     @Autowired
     private Clock clock;
+
+    @Autowired
+    private FeatureFlags flags;
 
     /**
      * Built rather than injected: the suite switches the detector off so its
@@ -45,8 +47,10 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
     @BeforeEach
     void startFromQuietDays() {
         jdbc.update("DELETE FROM usage_counters");
-        properties = new AnomalyProperties(true, 5.0, 50);
-        detector = new AnomalyDetector(jdbc, properties,
+        jdbc.update("DELETE FROM llm_invocations");
+        jdbc.update("DELETE FROM feature_flags");
+        properties = new AnomalyProperties(true, 5.0, 50, java.math.BigDecimal.TEN);
+        detector = new AnomalyDetector(jdbc, properties, flags,
                 new io.micrometer.core.instrument.simple.SimpleMeterRegistry(), clock);
         today = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
     }
@@ -134,15 +138,93 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
         assertThat(detector.signupsInLastHour()).isEqualTo(before + 1);
     }
 
-    /** The whole pass runs without touching anything it should not. */
+    // ── Bolum 44.3: the brake ────────────────────────────────────────────
+
+    /** A quiet day changes nothing. The brake that fires on nothing is useless. */
     @Test
     void afullPassIsHarmlessOnAQuietSystem() {
         detector.detectAnomalies();
 
-        assertThat(jdbc.queryForObject(
-                "SELECT count(*) FROM feature_flags WHERE enabled = false", Integer.class))
-                .as("reporting, not acting — Bolum 44.3 leaves the brake to an operator")
-                .isZero();
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+    }
+
+    /** At the ceiling is not over it. */
+    @Test
+    void spendingUpToTheBudgetDoesNotPullTheBrake() {
+        spent("9.999999");
+
+        detector.detectAnomalies();
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+    }
+
+    @Test
+    void spendingOverTheBudgetPausesNewGenerations() {
+        spent("10.000001");
+
+        detector.detectAnomalies();
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isFalse();
+    }
+
+    /**
+     * Failures cost money too (Bolum 27.5): a provider that answers with a
+     * schema error still bills for the tokens it produced. A total that
+     * counted only successes would understate exactly the bad day that
+     * matters.
+     */
+    @Test
+    void failedCallsCountTowardsTheBill() {
+        spent("6", "provider_error");
+        spent("5", "success");
+
+        detector.detectAnomalies();
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isFalse();
+    }
+
+    /** Yesterday's bill is yesterday's. */
+    @Test
+    void ancientSpendingIsNotTodaysBill() {
+        spentAt("50", clock.instant().minus(Duration.ofDays(2)));
+
+        detector.detectAnomalies();
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isTrue();
+    }
+
+    /**
+     * The brake is one-way. Whether the cause was dealt with is not something
+     * a scheduled job can know, and one that lifted itself would let the same
+     * runaway repeat every night.
+     */
+    @Test
+    void thebrakeIsNotReleasedWhenTheDayIsQuietAgain() {
+        flags.disable(FeatureFlags.NEW_GENERATIONS);
+
+        detector.detectAnomalies();
+
+        assertThat(flags.isEnabled(FeatureFlags.NEW_GENERATIONS)).isFalse();
+    }
+
+    private void spent(String usd) {
+        spent(usd, "success");
+    }
+
+    private void spent(String usd, String outcome) {
+        spentAt(usd, clock.instant(), outcome);
+    }
+
+    private void spentAt(String usd, java.time.Instant at) {
+        spentAt(usd, at, "success");
+    }
+
+    private void spentAt(String usd, java.time.Instant at, String outcome) {
+        jdbc.update("""
+                INSERT INTO llm_invocations (prompt_id, prompt_version, provider, model,
+                                             cost_usd, outcome, created_at)
+                VALUES ('job_analysis', 'v1', 'fake', 'fake-model', ?, ?, ?)
+                """, new java.math.BigDecimal(usd), outcome, java.sql.Timestamp.from(at));
     }
 
     private void countOn(String subject, LocalDate day, int count) {
