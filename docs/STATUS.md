@@ -17,8 +17,7 @@
 | 2.1 hesaplar · 2.2 gateway · 2.3 Faz A · 2.4 embedding · 2.5 Faz B · 2.6 kuyruk+SSE | ✅ |
 | 2.7 kota ve maliyet | ✅ (Axiom dataset'i 3.1'e taşındı) |
 
-**Aşama 3 planı:** `spec/14-build-guide.md` § XI-A.6. Aşama 2'nin kaydı
-`notes/archive/stage-2.md`'de; açık kutular `notes/current.md`'de.
+**Aşama 3 planı:** § XI-A.6. Aşama 2'nin kaydı `notes/archive/stage-2.md`'de.
 **`B-039` açık:** `GET /account/usage`, `QUOTA_EXCEEDED` (429) ve yeni
 `GENERATION_PAUSED` (503) — ICU mesajı gerekiyor. **`B-038` açık:** `POST /generations` (202), `GET /jobs/{id}`, SSE ve
 `GET /generations/{id}/download` yayımlandı; `POST /generations/general`
