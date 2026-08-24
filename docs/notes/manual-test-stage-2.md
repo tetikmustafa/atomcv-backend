@@ -34,6 +34,50 @@ curl -s localhost:8080/actuator/health          # {"status":"UP"}
 curl -s localhost:8080/api/v1/profile | head -c 300
 ```
 
+## Swagger UI ile mi, curl ile mi
+
+`http://localhost:8080/swagger-ui/index.html` — kimlik doğrulama gerekmediği için
+**Try it out** doğrudan çalışır. Ama iki adım Swagger'da yanıltıcıdır:
+
+| Adım | Swagger'da |
+|---|---|
+| `POST /generations`, `GET /jobs/{id}`, `/account/usage`, tüm profil uçları | ✅ rahatça |
+| `GET /jobs/{id}/stream` (SSE) | ⚠️ **canlı akmaz.** Swagger yanıtın tamamını bekler; akış terminal olayda kapandığı için sonunda hepsini birden gösterir. Olayların **sırayla geldiğini** görmek istiyorsan `curl -N` |
+| `GET /generations/{id}/download` | ✅ "Download file" bağlantısı çıkar; ama **iki PDF'i karşılaştırmak** (5. adım) kabuk ister |
+| Kota / kill switch / kuyruk dayanıklılığı | ⚠️ env değişkeni, `psql` ya da `Ctrl-C` ister — Swagger'dan yapılamaz |
+
+Yani: **akışı önce Swagger'dan sür, ilerlemeyi curl'den izle.** Aşağıdaki adımlar
+her ikisi için de geçerli; Swagger'da olanı `→ Swagger` ile işaretli.
+
+**Swagger'da izlenecek sıra** (en hızlı tur):
+
+1. `GET /api/v1/account/usage` → sayaçlar ve `resetsAt`
+2. `POST /api/v1/generations` → **202**, gövdeden `jobId`'yi kopyala
+3. `GET /api/v1/jobs/{jobId}` → birkaç saniye içinde `completed`, `generationId` çıkar
+4. `GET /api/v1/generations/{generationId}/download` → **Download file**
+5. `GET /api/v1/profile/atoms` → bir `variantId` seç,
+   `PATCH /api/v1/profile/atoms/{id}/variants/{variantId}` ile metnini değiştir
+6. Aynı `download`'u tekrar → **PDF değişmemeli** (5. adımın asıl testi)
+7. `GET /api/v1/account/usage` → `used` bir artmış olmalı
+
+`POST /generations` gövdesi için Swagger'ın hazır örneği **yetmez** — ön kontrol
+onu "ilan gibi okunmuyor" diye 422 ile reddeder (§ 18.1: en az 150 karakter,
+40 kelime, iki sinyal kelimesi). Şunu yapıştır:
+
+```json
+{
+  "jobDescription": "We are seeking a senior backend engineer to join our payments team.
+
+Responsibilities: design and operate distributed services in Go, own the reliability of a high throughput ledger, and mentor other engineers as the team grows.
+
+Requirements: several years of production experience with Go and PostgreSQL, comfort with observability tooling, and a track record of shipping. Preferred qualifications include Kubernetes and Terraform. Apply with a short note about the systems you have run.",
+  "maxPages": 1
+}
+```
+
+Ölçüldü: **202**, iş birkaç saniyede `completed`, indirme 21 KB'lik gerçek bir
+PDF veriyor (`Content-Disposition: attachment`, dosya adı yalnız tarih).
+
 ## 1. Kota görünüyor mu (§ 44.1)
 
 ```bash
