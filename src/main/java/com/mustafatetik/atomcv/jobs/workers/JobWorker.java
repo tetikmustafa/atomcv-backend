@@ -62,6 +62,15 @@ public class JobWorker {
 
     private volatile boolean acceptingNewJobs = true;
 
+    /**
+     * The one Spring uses, and it says so.
+     *
+     * <p>With two constructors and neither annotated, Spring looks for a
+     * no-arg one, does not find it, and fails to start — which nothing here
+     * caught, because every test either switches the worker off or builds it
+     * by hand. {@code JobWorkerWiringIT} now starts a context with it on.
+     */
+    @org.springframework.beans.factory.annotation.Autowired
     public JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
             JobWorkerProperties properties, Clock clock) {
         this(queue, events, handlers, properties, clock, RandomGenerator.getDefault());
