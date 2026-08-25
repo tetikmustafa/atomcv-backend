@@ -130,7 +130,8 @@ public class GenerationEnqueueService {
             if (!verdict.isAccepted()) {
                 // The verdict, never the posting (absolute rule 4).
                 log.info("Refused a posting before queueing: {}", verdict);
-                return Result.err(new PipelineError.UnparseableJobDescription(0, 0));
+                return Result.err(new PipelineError.UnparseableJobDescription(
+                        0, 0, verdict.reason()));
             }
         }
 

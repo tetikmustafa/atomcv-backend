@@ -91,8 +91,11 @@ public class JobAnalysisPhase {
                 // check refused is what a metric is worth; the text is not.
                 log.info("Preflight refused a posting: {}", verdict);
                 // Nothing was analysed, and zero says so rather than inventing
-                // a number the message would read out.
-                return Result.err(new PipelineError.UnparseableJobDescription(0, 0));
+                // a number the message would read out. The verdict travels too
+                // now, so the sentence is written from it and not from the
+                // zeroes (F-016).
+                return Result.err(new PipelineError.UnparseableJobDescription(
+                        0, 0, verdict.reason()));
             }
         }
 
@@ -135,7 +138,11 @@ public class JobAnalysisPhase {
             return Result.ok(analysis);
         }
         log.info("Plausibility gate refused an analysis: {}", verdict);
+        // The two numbers describe LOW_CONFIDENCE and TOO_FEW_SKILLS and
+        // nothing else. They still travel — the catalogue declares them — but
+        // the verdict travels beside them, so a SUSPICIOUS_OUTPUT refusal is
+        // no longer read out as "unreadable posting, confidence 95%" (F-016).
         return Result.err(new PipelineError.UnparseableJobDescription(
-                analysis.confidence(), analysis.requiredSkills().size()));
+                analysis.confidence(), analysis.requiredSkills().size(), verdict.reason()));
     }
 }

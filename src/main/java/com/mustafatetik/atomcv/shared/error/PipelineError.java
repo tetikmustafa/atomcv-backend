@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.shared.error;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * What can go wrong on the way to a CV (Bolum 25.2).
@@ -45,16 +46,28 @@ public sealed interface PipelineError {
      * The posting could not be read as one (Bolum 18.1, Bolum 18.4).
      *
      * <p>Both gates raise it: the preflight before any call is made, and the
-     * plausibility gate on what came back. The two are distinguishable inside
-     * the phase and not on the wire, because the catalogue publishes one code.
+     * plausibility gate on what came back. The catalogue still publishes one
+     * code for all eight ways it happens, but no longer only two numbers —
+     * {@code reason} says which check refused, because {@code confidence} and
+     * {@code skillsFound} describe two of the eight and contradict the other
+     * six (F-016). A gate refusal reporting {@code confidence 0.95} was read
+     * out to users as "we could not read the posting; confidence 95%".
      *
      * @param confidence   what the model reported, or {@code 0} when the
      *                     preflight refused before anything was analysed
      * @param skillsFound  how many required skills the analysis produced,
      *                     likewise {@code 0} from the preflight
+     * @param reason       which of the eight checks refused; never {@code null},
+     *                     because a refusal with no reason is the bug this
+     *                     parameter exists to close
      */
-    record UnparseableJobDescription(double confidence, int skillsFound)
+    record UnparseableJobDescription(
+            double confidence, int skillsFound, UnreadablePostingReason reason)
             implements PipelineError {
+
+        public UnparseableJobDescription {
+            Objects.requireNonNull(reason, "reason");
+        }
     }
 
     /**

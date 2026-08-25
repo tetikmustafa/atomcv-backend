@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.phases.analysis;
 
+import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
@@ -63,30 +64,46 @@ public final class JobDescriptionPreflight {
     /**
      * Why a posting was refused, or {@link Verdict#ACCEPTED}.
      *
-     * <p>Finer than the wire: the catalogue publishes one code for all of
-     * them (EK D.6). The distinction is kept because it is what a metric and a
-     * log line are worth — "postings refused" says nothing, "refused as
-     * low-entropy" says the heuristic may need looking at.
+     * <p>The catalogue still publishes one code for all of them (EK D.6), but
+     * the distinction now reaches the user in {@code params.reason} rather than
+     * stopping at a log line (F-016). It was always worth a metric — "postings
+     * refused" says nothing, "refused as low-entropy" says the heuristic may
+     * need looking at — and it turns out to be worth a sentence too: the four
+     * refusals here send the user to four different places.
      */
     public enum Verdict {
 
         /** Good enough to analyse — or empty, which is general CV mode. */
-        ACCEPTED,
+        ACCEPTED(null),
 
         /** Fewer than {@link #MIN_CHARACTERS} characters or {@link #MIN_WORDS} words. */
-        TOO_SHORT,
+        TOO_SHORT(UnreadablePostingReason.TOO_SHORT),
 
         /** More than {@link #MAX_CHARACTERS}. */
-        TOO_LONG,
+        TOO_LONG(UnreadablePostingReason.TOO_LONG),
 
         /** Too few distinct words to be prose. */
-        LOW_ENTROPY,
+        LOW_ENTROPY(UnreadablePostingReason.LOW_ENTROPY),
 
         /** Prose, but nothing in it reads like a job posting. */
-        NOT_JOB_LIKE;
+        NOT_JOB_LIKE(UnreadablePostingReason.NOT_JOB_LIKE);
+
+        private final UnreadablePostingReason reason;
+
+        Verdict(UnreadablePostingReason reason) {
+            this.reason = reason;
+        }
 
         public boolean isAccepted() {
             return this == ACCEPTED;
+        }
+
+        /** @throws IllegalStateException if called on {@link #ACCEPTED} */
+        public UnreadablePostingReason reason() {
+            if (reason == null) {
+                throw new IllegalStateException("ACCEPTED is not a refusal");
+            }
+            return reason;
         }
     }
 

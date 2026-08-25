@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
 import java.time.Duration;
 import java.util.List;
 import java.util.random.RandomGenerator;
@@ -47,7 +48,8 @@ class JobRetryPolicyTest {
         assertThat(JobRetryPolicy.isRetryable(
                 new PipelineError.InsufficientProfile(10, List.of("atoms")))).isFalse();
         assertThat(JobRetryPolicy.isRetryable(
-                new PipelineError.UnparseableJobDescription(0.2, 0))).isFalse();
+                new PipelineError.UnparseableJobDescription(
+                        0.2, 0, UnreadablePostingReason.LOW_CONFIDENCE))).isFalse();
         assertThat(JobRetryPolicy.isRetryable(
                 new PipelineError.ConflictingPreferences(900, 700, List.of()))).isFalse();
         assertThat(JobRetryPolicy.isRetryable(
