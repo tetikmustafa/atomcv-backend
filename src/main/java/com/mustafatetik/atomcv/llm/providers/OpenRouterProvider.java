@@ -82,22 +82,20 @@ public class OpenRouterProvider implements LlmProvider {
         try {
             response = http.send(httpRequestFor(request), HttpResponse.BodyHandlers.ofString());
         } catch (HttpTimeoutException timeout) {
-            return failed(LlmFailure.Kind.TIMEOUT, "no answer within " + request.timeout());
+            return failed(request, LlmFailure.Kind.TIMEOUT,
+                    "no answer within " + request.timeout());
         } catch (IOException unreachable) {
-            return failed(LlmFailure.Kind.UNREACHABLE, "connection failed");
+            return failed(request, LlmFailure.Kind.UNREACHABLE, "connection failed");
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
-            return failed(LlmFailure.Kind.UNREACHABLE, "interrupted");
+            return failed(request, LlmFailure.Kind.UNREACHABLE, "interrupted");
         }
 
         var status = response.statusCode();
         if (status != 200) {
-            var kind = kindOf(status);
             // The status and the kind, never the body: an error body can echo
             // the prompt back.
-            log.warn("OpenRouter answered {} for prompt {}: {}",
-                    status, request.promptRef(), kind);
-            return failed(kind, "http " + status);
+            return failed(request, kindOf(status), "http " + status);
         }
 
         return parse(request, response.body(), System.nanoTime() - startedAt);
@@ -157,7 +155,7 @@ public class OpenRouterProvider implements LlmProvider {
             var envelope = json.readTree(body);
             var content = envelope.path("choices").path(0).path("message").path("content");
             if (content.isMissingNode() || !content.isTextual()) {
-                return failed(LlmFailure.Kind.SCHEMA_MISMATCH, "no message content");
+                return failed(request, LlmFailure.Kind.SCHEMA_MISMATCH, "no message content");
             }
             var value = json.treeToValue(json.readTree(content.asText()), request.resultType());
             var usage = envelope.path("usage");
@@ -169,10 +167,9 @@ public class OpenRouterProvider implements LlmProvider {
                     usage.path("prompt_tokens_details").path("cached_tokens").asInt(),
                     elapsedNanos / 1_000_000));
         } catch (Exception malformed) {
-            // Deliberately not logged with the body attached: the answer is
-            // the user's content rendered by a model.
-            log.warn("OpenRouter answer did not fit prompt {}", request.promptRef());
-            return failed(LlmFailure.Kind.SCHEMA_MISMATCH, "answer did not parse");
+            // Never with the body attached: the answer is the user's content
+            // rendered by a model.
+            return failed(request, LlmFailure.Kind.SCHEMA_MISMATCH, "answer did not parse");
         }
     }
 
@@ -195,7 +192,26 @@ public class OpenRouterProvider implements LlmProvider {
         return LlmFailure.Kind.REQUEST_REJECTED;
     }
 
-    private static <T> LlmOutcome<T> failed(LlmFailure.Kind kind, String detail) {
+    /**
+     * The one way out of a failed call, and the one place it is written down
+     * (F-014).
+     *
+     * <p>Three of these paths used to return in silence. A chain that walks
+     * past a timeout, an unreachable host and an interrupt keeps going —
+     * {@code tryNextProvider()} is true for all three — so it never reaches
+     * {@code ProviderChain}'s "Chain stopped" line either, and the user was
+     * shown ALL_PROVIDERS_UNAVAILABLE against an empty log. The diagnosis had
+     * to be reconstructed from how many attempts the chain had made.
+     *
+     * <p><strong>The kind and the detail, never a body and never a prompt</strong>
+     * (absolute rule 4, Bolum 27.2). {@code detail} was already being built
+     * for every one of these and nothing read it.
+     */
+    private static <T> LlmOutcome<T> failed(
+            StructuredRequest<?> request, LlmFailure.Kind kind, String detail) {
+
+        log.warn("OpenRouter did not answer prompt {}: {} ({})",
+                request.promptRef(), kind, detail);
         return LlmOutcome.failed(new LlmFailure(kind, ID, detail));
     }
 }

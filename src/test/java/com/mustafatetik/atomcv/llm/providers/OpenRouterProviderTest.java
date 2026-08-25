@@ -1,7 +1,12 @@
 package com.mustafatetik.atomcv.llm.providers;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.llm.gateway.JsonSchema;
 import com.mustafatetik.atomcv.llm.gateway.LlmFailure;
@@ -44,6 +49,14 @@ class OpenRouterProviderTest {
     private final AtomicReference<int[]> nextStatus = new AtomicReference<>(new int[] {200});
     private final AtomicReference<String> nextBody = new AtomicReference<>("{}");
 
+    /**
+     * F-014 is about what reaches the log, so the log is what the assertion
+     * reads. An appender on the adapter's own logger rather than on the root:
+     * anything else here would be someone else's line.
+     */
+    private final ListAppender<ILoggingEvent> logged = new ListAppender<>();
+    private ch.qos.logback.classic.Logger providerLog;
+
     @BeforeEach
     void startServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
@@ -62,11 +75,18 @@ class OpenRouterProviderTest {
             }
         });
         server.start();
+
+        providerLog = (ch.qos.logback.classic.Logger)
+                org.slf4j.LoggerFactory.getLogger(OpenRouterProvider.class);
+        logged.start();
+        providerLog.addAppender(logged);
     }
 
     @AfterEach
     void stopServer() {
         server.stop(0);
+        providerLog.detachAppender(logged);
+        logged.stop();
     }
 
     // ── Bolum 27.3: no key is a silent skip ───────────────────────────────
@@ -264,7 +284,77 @@ class OpenRouterProviderTest {
         assertThat(failedOutcome(outcome).kind().tryNextProvider()).isTrue();
     }
 
+    // ── F-014: no failure leaves without saying so ────────────────────────
+
+    /**
+     * The three transport failures used to return in silence, and because
+     * every one of them advances the chain they never reached
+     * {@code ProviderChain}'s "Chain stopped" line either. What the user saw
+     * was ALL_PROVIDERS_UNAVAILABLE over an empty log.
+     */
+    @Test
+    void anUnreachableProviderIsWrittenDownWithItsKindAndDetail() {
+        server.stop(0);
+
+        provider("sk-test", "some-model").callStructured(request());
+
+        assertThat(warnings()).singleElement(as(STRING))
+                .contains("UNREACHABLE")
+                .contains("connection failed")
+                .contains("job_analysis");
+    }
+
+    /**
+     * The one the manual test actually hit: a 200 whose envelope carries no
+     * message. It reads as a schema mismatch, which is the only kind the chain
+     * retries — so the line has to name the kind, not just say "failed".
+     */
+    @Test
+    void anEnvelopeWithNoContentIsWrittenDownAsASchemaMismatch() {
+        respond(200, "{\"choices\":[]}");
+
+        provider("sk-test", "some-model").callStructured(request());
+
+        assertThat(warnings()).singleElement(as(STRING))
+                .contains("SCHEMA_MISMATCH")
+                .contains("no message content");
+    }
+
+    @Test
+    void arejectedStatusIsWrittenDownToo() {
+        respond(401, "{\"error\":{\"message\":\"nope\"}}");
+
+        provider("sk-test", "some-model").callStructured(request());
+
+        assertThat(warnings()).singleElement(as(STRING))
+                .contains("REQUEST_REJECTED")
+                .contains("http 401");
+    }
+
+    /**
+     * Absolute rule 4. The prompt and the answer are both built from the
+     * user's own content, and an error body can echo the prompt back.
+     */
+    @Test
+    void whatIsWrittenDownCarriesNoPromptAndNoBody() {
+        respond(500, "{\"error\":{\"message\":\"a posting leaked into the error\"}}");
+
+        provider("sk-test", "some-model").callStructured(request());
+
+        assertThat(warnings()).singleElement(as(STRING))
+                .doesNotContain("a posting")
+                .doesNotContain("You extract job postings")
+                .doesNotContain("leaked");
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────
+
+    private List<String> warnings() {
+        return logged.list.stream()
+                .filter(event -> event.getLevel() == Level.WARN)
+                .map(ILoggingEvent::getFormattedMessage)
+                .toList();
+    }
 
     private LlmFailure failure(int status) {
         respond(status, "{\"error\":{\"message\":\"nope\"}}");
