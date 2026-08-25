@@ -169,7 +169,12 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.params.reason").value("too_short"))
                 // The preflight analysed nothing, and says so.
                 .andExpect(jsonPath("$.params.confidence").value(0.0))
-                .andExpect(jsonPath("$.params.skillsFound").value(0));
+                .andExpect(jsonPath("$.params.skillsFound").value(0))
+                // Bolum 18.1's three ways out, unchanged for a preflight refusal.
+                .andExpect(jsonPath("$.resolutions[*].action").value(
+                        org.hamcrest.Matchers.contains(
+                                "continue_anyway", "paste_full_posting",
+                                "continue_as_general_cv")));
 
         assertThat(queuedJobs()).isZero();
     }

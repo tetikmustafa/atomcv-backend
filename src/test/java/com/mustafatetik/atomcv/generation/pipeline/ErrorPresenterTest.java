@@ -134,6 +134,32 @@ class ErrorPresenterTest {
                 .containsEntry("reason", "suspicious_output")
                 .containsEntry("confidence", 0.95)
                 .containsEntry("skillsFound", 8);
+        // Nothing about the text is wrong, so there is nothing to paste; the
+        // gate does not cache a refusal, so asking again is the way out.
+        assertThat(presented.resolutions()).extracting(Resolution::action).containsExactly(
+                ResolutionAction.RETRY,
+                ResolutionAction.CONTINUE_AS_GENERAL_CV);
+    }
+
+    /**
+     * The three thin-posting verdicts. {@code continue_anyway} is not offered:
+     * the preflight had already passed, so acknowledging it skips nothing and
+     * the resubmission meets the same gate — the button was {@code retry}
+     * under a name that told the user to expect something else.
+     */
+    @Test
+    void aThinPostingIsNotOfferedAWayPastAPreflightItAlreadyPassed() {
+        for (var reason : List.of(UnreadablePostingReason.LOW_CONFIDENCE,
+                UnreadablePostingReason.TOO_FEW_SKILLS,
+                UnreadablePostingReason.NO_RESPONSIBILITIES)) {
+            var presented = presenter.present(
+                    new PipelineError.UnparseableJobDescription(0.7, 1, reason), PAGE_HEIGHT_PT);
+
+            assertThat(presented.resolutions()).extracting(Resolution::action)
+                    .as("%s", reason)
+                    .containsExactly(ResolutionAction.PASTE_FULL_POSTING,
+                            ResolutionAction.CONTINUE_AS_GENERAL_CV);
+        }
     }
 
     /** Every reason presents, and every one of them publishes its own value. */

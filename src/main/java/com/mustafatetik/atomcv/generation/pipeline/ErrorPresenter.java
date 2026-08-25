@@ -5,7 +5,9 @@ import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
+import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
 
@@ -62,12 +64,7 @@ public class ErrorPresenter {
                         .param("reason", unreadable.reason().wireValue())
                         .param("confidence", unreadable.confidence())
                         .param("skillsFound", unreadable.skillsFound());
-                // Bolum 18.1: a posting that does not look like one is a
-                // question, not a refusal. All three ways out are offered,
-                // in the order Bolum 18.1 lists them.
-                presented.resolution(ResolutionAction.CONTINUE_ANYWAY)
-                        .resolution(ResolutionAction.PASTE_FULL_POSTING)
-                        .resolution(ResolutionAction.CONTINUE_AS_GENERAL_CV);
+                waysOut(unreadable.reason()).forEach(presented::resolution);
                 yield presented.build();
             }
 
@@ -115,6 +112,40 @@ public class ErrorPresenter {
                 yield presented.build();
             }
         };
+    }
+
+    /**
+     * What the user can do about a posting that could not be read (F-016).
+     *
+     * <p>Bolum 18.1 names three ways out and they are the right three — for
+     * the refusal Bolum 18.1 is about. A preflight refusal is a question:
+     * the heuristics are cheap on purpose and the user may know better, so
+     * {@code continue_anyway} leads somewhere.
+     *
+     * <p>It leads nowhere after the gate. Acknowledging the preflight skips
+     * only the preflight, and the preflight had already passed — so the
+     * resubmission makes the same call and meets the same gate.
+     * {@code continue_anyway} and {@code retry} were the same button under two
+     * names, and the one that told the truth was not the one being offered.
+     *
+     * <p>Bolum 18.4 says nothing about resolutions; this is the addition, and
+     * it splits where Bolum 18.4 itself splits. The first three gate verdicts
+     * say the posting was thin, so the way out is a fuller posting or no
+     * posting. {@code SUSPICIOUS_OUTPUT} says the answer was not shaped like
+     * an analysis — nothing about the text is wrong, and a refused analysis is
+     * deliberately not cached, so asking again is the advice that fits.
+     */
+    private static List<ResolutionAction> waysOut(UnreadablePostingReason reason) {
+        if (!reason.isFromGate()) {
+            return List.of(ResolutionAction.CONTINUE_ANYWAY,
+                    ResolutionAction.PASTE_FULL_POSTING,
+                    ResolutionAction.CONTINUE_AS_GENERAL_CV);
+        }
+        if (reason == UnreadablePostingReason.SUSPICIOUS_OUTPUT) {
+            return List.of(ResolutionAction.RETRY, ResolutionAction.CONTINUE_AS_GENERAL_CV);
+        }
+        return List.of(ResolutionAction.PASTE_FULL_POSTING,
+                ResolutionAction.CONTINUE_AS_GENERAL_CV);
     }
 
     /**
