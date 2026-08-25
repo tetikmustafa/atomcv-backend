@@ -291,6 +291,19 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void aGenerationSaysWhichLanguageItCameOutIn() throws Exception {
+        // F-013. The posting's language is followed only as far as the
+        // profile's own wordings reach, so the two can differ and the screen
+        // has to be able to say so. Two facts rather than a flag: the sentence
+        // the user reads names both languages.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.contentLanguage.type").value("string"))
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.postingLanguage.type").value("string"));
+    }
+
+    @Test
     void aPolledJobCanReachTheSameResultTheStreamCarried() throws Exception {
         // F-008: polling is the documented fallback for a stream that closed
         // without a terminal event, and it was reaching the generation but not

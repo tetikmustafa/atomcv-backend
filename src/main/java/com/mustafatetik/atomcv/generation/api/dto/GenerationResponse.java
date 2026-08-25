@@ -25,8 +25,18 @@ import java.util.UUID;
  * <p>No ETag — Bolum 35.6 keeps them off generations, which are written once
  * and not edited.
  *
- * @param fitReport absent in general mode, where there was no posting to be
- *                  relevant to
+ * <p><strong>Two languages, and the client compares them</strong> (F-013).
+ * {@code contentLanguage} is what the document was actually written in;
+ * {@code postingLanguage} is what the posting was read as. They differ when
+ * the profile has no wording for every atom in the posting's language — the
+ * CV is written in the profile's own language rather than in two at once —
+ * and a screen that says so is the only place a user would learn it.
+ *
+ * @param fitReport       absent in general mode, where there was no posting to
+ *                        be relevant to
+ * @param contentLanguage the BCP 47 tag the document was written in
+ * @param postingLanguage absent in general mode, and absent when Faz A did not
+ *                        name a language for the posting
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "A generation that was made")
@@ -38,7 +48,16 @@ public record GenerationResponse(
         Integer pageCount,
 
         Instant createdAt,
-        FitReport fitReport) {
+        FitReport fitReport,
+
+        @Schema(description = "The language the document was written in, as a BCP 47 tag",
+                example = "tr")
+        String contentLanguage,
+
+        @Schema(description = """
+                The language Faz A read the posting as. When it differs from                 contentLanguage the CV was written in the profile's language                 instead: the profile has no wording for every atom in the                 posting's language, and one document is written in one                 language.""",
+                example = "en")
+        String postingLanguage) {
 
     public static GenerationResponse of(Generation generation) {
         return new GenerationResponse(
@@ -46,6 +65,20 @@ public record GenerationResponse(
                 generation.getStatus(),
                 generation.getPageCount() == null ? null : generation.getPageCount().intValue(),
                 generation.getCreatedAt(),
-                generation.getFitReport());
+                generation.getFitReport(),
+                blankToNull(generation.getSelectionState() == null
+                        ? null : generation.getSelectionState().language()),
+                blankToNull(generation.getJdAnalysis() == null
+                        ? null : generation.getJdAnalysis().jdLanguage()));
+    }
+
+    /**
+     * Both fields are stored as "" rather than null — {@code StoredSelection}
+     * and {@code JobAnalysis} normalise them that way — and F-010 settled that
+     * an empty string on the wire is worse than an absent field: a client
+     * cannot tell it from a language whose name is blank.
+     */
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }
