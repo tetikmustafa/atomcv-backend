@@ -55,17 +55,21 @@ public class ErrorPresenter {
                     .param("resetsAt", spent.resetsAt())
                     .build();
 
-            case PipelineError.UnparseableJobDescription unreadable -> UserFacingError
-                    .with(ErrorCode.UNPARSEABLE_JOB_DESCRIPTION)
-                    .param("confidence", unreadable.confidence())
-                    .param("skillsFound", unreadable.skillsFound())
-                    // Bolum 18.1: a posting that does not look like one is a
-                    // question, not a refusal. All three ways out are offered,
-                    // in the order Bolum 18.1 lists them.
-                    .resolution(ResolutionAction.CONTINUE_ANYWAY)
-                    .resolution(ResolutionAction.PASTE_FULL_POSTING)
-                    .resolution(ResolutionAction.CONTINUE_AS_GENERAL_CV)
-                    .build();
+            case PipelineError.UnparseableJobDescription unreadable -> {
+                var presented = UserFacingError.with(ErrorCode.UNPARSEABLE_JOB_DESCRIPTION)
+                        // The reason, never the posting (absolute rule 4): a
+                        // closed vocabulary naming which check refused.
+                        .param("reason", unreadable.reason().wireValue())
+                        .param("confidence", unreadable.confidence())
+                        .param("skillsFound", unreadable.skillsFound());
+                // Bolum 18.1: a posting that does not look like one is a
+                // question, not a refusal. All three ways out are offered,
+                // in the order Bolum 18.1 lists them.
+                presented.resolution(ResolutionAction.CONTINUE_ANYWAY)
+                        .resolution(ResolutionAction.PASTE_FULL_POSTING)
+                        .resolution(ResolutionAction.CONTINUE_AS_GENERAL_CV);
+                yield presented.build();
+            }
 
             case PipelineError.ConflictingPreferences conflict -> UserFacingError
                     .with(ErrorCode.CONFLICTING_PREFERENCES)

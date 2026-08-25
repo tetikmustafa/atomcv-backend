@@ -28,7 +28,14 @@ public enum ErrorCode {
 
     // ── Preflight, before any LLM call is made (Bolum 25.2) ──
     INSUFFICIENT_PROFILE(422, param("completeness", INTEGER), param("missing", STRING_ARRAY)),
-    UNPARSEABLE_JOB_DESCRIPTION(422, param("confidence", NUMBER), param("skillsFound", INTEGER)),
+    /**
+     * One code, eight reasons. {@code reason} is the closed vocabulary of
+     * {@link UnreadablePostingReason}; {@code confidence} and
+     * {@code skillsFound} describe two of the eight and are zero from the
+     * preflight, so the message is chosen on {@code reason} first (F-016).
+     */
+    UNPARSEABLE_JOB_DESCRIPTION(422,
+            param("reason", STRING), param("confidence", NUMBER), param("skillsFound", INTEGER)),
     CONFLICTING_PREFERENCES(409, param("pinnedPages", NUMBER), param("maxPages", INTEGER)),
     FEATURE_REQUIRES_ACCOUNT(403, param("feature", STRING)),
     QUOTA_EXCEEDED(429, param("metric", STRING), param("resetsAt", TIMESTAMP)),

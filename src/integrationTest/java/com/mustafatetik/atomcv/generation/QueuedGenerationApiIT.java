@@ -161,7 +161,15 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("hire me plz")))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value("UNPARSEABLE_JOB_DESCRIPTION"));
+                .andExpect(jsonPath("$.code").value("UNPARSEABLE_JOB_DESCRIPTION"))
+                // F-016: one code, eight reasons — and this is the only place
+                // that shows the reason surviving the whole way to the body.
+                // "hire me plz" is short before it is anything else, and
+                // Bolum 18.1 checks length first on purpose.
+                .andExpect(jsonPath("$.params.reason").value("too_short"))
+                // The preflight analysed nothing, and says so.
+                .andExpect(jsonPath("$.params.confidence").value(0.0))
+                .andExpect(jsonPath("$.params.skillsFound").value(0));
 
         assertThat(queuedJobs()).isZero();
     }

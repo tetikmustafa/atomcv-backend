@@ -31,6 +31,7 @@ import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -113,7 +114,8 @@ class JobSpecificGenerationServiceTest {
     void anunreadablePostingCostsNoCompilation() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
         when(analysis.analyse(anyString(), anyBoolean(), anyString()))
-                .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(0, 0)));
+                .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
+                        0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
         var result = service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
 
@@ -160,7 +162,8 @@ class JobSpecificGenerationServiceTest {
     void thepromptBucketIsTheUser() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
         when(analysis.analyse(anyString(), anyBoolean(), anyString()))
-                .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(0, 0)));
+                .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
+                        0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
         service.generateForJob(user(), POSTING, true, null, null, ProgressSink.NONE);
 

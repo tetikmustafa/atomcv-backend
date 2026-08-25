@@ -7,6 +7,8 @@ import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
+import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -91,14 +93,11 @@ class ErrorPresenterTest {
      * first of them is proceeding with the same text.
      */
     @Test
-    void anUnreadablePostingIsAQuestionWithThreeWaysOut() {
-        var presented = presenter.present(
-                new PipelineError.UnparseableJobDescription(0.31, 1), PAGE_HEIGHT_PT);
+    void aPreflightRefusalIsAQuestionWithThreeWaysOut() {
+        var presented = presenter.present(new PipelineError.UnparseableJobDescription(
+                0, 0, UnreadablePostingReason.NOT_JOB_LIKE), PAGE_HEIGHT_PT);
 
         assertThat(presented.httpStatus()).isEqualTo(422);
-        assertThat(presented.params())
-                .containsEntry("confidence", 0.31)
-                .containsEntry("skillsFound", 1);
         assertThat(presented.resolutions()).extracting(Resolution::action).containsExactly(
                 ResolutionAction.CONTINUE_ANYWAY,
                 ResolutionAction.PASTE_FULL_POSTING,
@@ -107,16 +106,47 @@ class ErrorPresenterTest {
 
     /**
      * A preflight refusal analysed nothing, so both numbers are zero rather
-     * than invented. The three ways out are the same either way.
+     * than invented — and {@code reason} is what the sentence is written from.
      */
     @Test
     void aPreflightRefusalReportsThatNothingWasAnalysed() {
-        var presented = presenter.present(
-                new PipelineError.UnparseableJobDescription(0, 0), PAGE_HEIGHT_PT);
+        var presented = presenter.present(new PipelineError.UnparseableJobDescription(
+                0, 0, UnreadablePostingReason.TOO_SHORT), PAGE_HEIGHT_PT);
 
         assertThat(presented.params())
+                .containsEntry("reason", "too_short")
                 .containsEntry("confidence", 0.0)
                 .containsEntry("skillsFound", 0);
+    }
+
+    /**
+     * F-016: the defect itself. A gate refusal carried {@code confidence 0.95}
+     * and nothing to say the confidence was not what was wrong, so the screen
+     * read "we could not read the posting — confidence 95%, 8 skills found".
+     * The numbers still travel; {@code reason} is what makes them readable.
+     */
+    @Test
+    void aSuspiciousAnswerSaysSoRatherThanBlamingThePosting() {
+        var presented = presenter.present(new PipelineError.UnparseableJobDescription(
+                0.95, 8, UnreadablePostingReason.SUSPICIOUS_OUTPUT), PAGE_HEIGHT_PT);
+
+        assertThat(presented.params())
+                .containsEntry("reason", "suspicious_output")
+                .containsEntry("confidence", 0.95)
+                .containsEntry("skillsFound", 8);
+    }
+
+    /** Every reason presents, and every one of them publishes its own value. */
+    @Test
+    void everyReasonReachesTheWireUnderItsOwnName() {
+        var published = Arrays.stream(UnreadablePostingReason.values())
+                .map(reason -> presenter.present(new PipelineError.UnparseableJobDescription(
+                        0.5, 2, reason), PAGE_HEIGHT_PT).params().get("reason"))
+                .toList();
+
+        assertThat(published).doesNotHaveDuplicates()
+                .hasSize(UnreadablePostingReason.values().length)
+                .allSatisfy(value -> assertThat((String) value).matches("[a-z][a-z_]*"));
     }
 
     /**
