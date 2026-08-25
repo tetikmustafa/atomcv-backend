@@ -139,6 +139,21 @@ Doğrulama: About'ta geçen her teknoloji, seçilmiş atomların `skills` birle�
 
 **Çeviri önbelleği:** İkinci üretimde aynı dil isteniyorsa varyant zaten var → maliyet sıfır.
 
+> **Adım 2 gelene kadar hedef dil koşullu (`F-013`).** Yalnız adım 1 yazılı;
+> adım 2 (çeviren faz) yok. Eksik varyantta seçim sessizce birincil sözcüklemeye
+> düşüyor, ama tarihler ve "Halen"/"Present" istenen dili izlemeye devam ediyordu —
+> ortaya **Türkçe maddelerin üstünde İngilizce tarih** taşıyan bir CV çıkıyordu.
+>
+> Kural: **bir belge tek dilde yazılır ve o dil profilin taşıdığından seçilir.**
+> `auto`, ilanın diline yalnızca profil o dilde gerçekten yazılabiliyorsa çözülür —
+> yani sayfaya çıkabilecek her atomun (aktif ve en az bir sözcüklemesi olan)
+> hedef dilde varyantı varsa. Yoksa `sourceLanguage`'de kalır.
+> `ProfileTree.canBeWrittenIn` bu kontroldür.
+>
+> Adım 2 indiğinde kontrol her dil için doğru olur ve kural kendiliğinden
+> "ilanı izle"ye geri döner. Kapalı kalan farkı kullanıcıya söyleyecek olan şey
+> `GET /generations/{id}`'nin iki dil alanıdır (§ 35.3).
+
 ---
 
 ## 22. Faz E — Render

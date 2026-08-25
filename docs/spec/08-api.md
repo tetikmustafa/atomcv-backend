@@ -202,6 +202,14 @@ bir tane var.
 > alanı düşer. **İlanı geri döndürmez**: sistemin tuttuğu en büyük kullanıcı
 > içeriği ve hiçbir ekran istemiyor (mutlak kural 4). ETag taşımaz, § 35.6.
 
+> **İki dil alanı (`F-013`).** `contentLanguage` belgenin gerçekten yazıldığı
+> dil, `postingLanguage` Faz A'nın ilanı okuduğu dil; ikisi de BCP 47, ikisi de
+> boşken **gönderilmez** (`F-010`'un kuralı). Ayrıldıklarında CV profilin
+> dilinde yazılmıştır — § 21.8'in çeviren fazı henüz yok ve bir belge iki dil
+> taşımaz. **Karşılaştırmayı istemci yapar**, çünkü ekranda okunan cümle iki
+> dilin de adını anar; tek bir bayrak yine ikisini sormayı gerektirirdi.
+> Genel modda `postingLanguage` hiç gelmez.
+
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 
 ```json
