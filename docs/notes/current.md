@@ -75,6 +75,18 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
 
 ## Aşama 3 kayıtları
 
+**Düzeltme — § 18.4'ün kod parçacığı `requiredSkills` diyordu, kod
+`allSkills()` kullanıyor.** Kod doğruydu: enjekte edilmiş bir talimatın
+`preferredSkills`'e düşmesini engelleyen bir şey yok. Kalıcı olduğu için
+`spec/05-pipeline-a-c.md` § 18.4'e işlendi, burada yalnız izi duruyor.
+
+**`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Frontend
+gerçek uca karşı üç ilanla denedi, üçünde de model uzun beceri adlarını
+normalleştirdi. Kapı bir enjeksiyon tripwire'ı; uslu bir modelle açılmaması
+beklenen davranış. `PlausibilityGateTest` onu kurgulanmış analizle sınıyor.
+**Bunu "çalışmıyor" diye tamir etmeye kalkma.**
+
+
 `F-008`…`F-016` kapandı ve kayıtları
 `archive/stage-3-frontend-findings.md`'ye indi (2026-08-25) — dosya sınırı.
 Kalıcı kararlar `spec/`'te; arşiv yalnız nasıl bulunduklarını taşıyor.
