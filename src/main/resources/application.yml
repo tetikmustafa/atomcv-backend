@@ -90,12 +90,21 @@ atomcv:
     # Bolum 27.4, USD per million tokens. Configuration because vendors change
     # prices faster than a release; an unpriced model costs zero and is
     # counted, never guessed at.
+    #
+    # F-015: this table listed a model no chain had run in months, so every
+    # cost in the system was zero and the counter beside it was the only thing
+    # that said so. LlmPricingAudit now names the gap at startup. Keep this
+    # table and LLM_CHAIN_*/OPENROUTER_MODEL in step — a slug here that nobody
+    # asks for is as useless as a slug nobody priced.
+    #
+    # A free model is written down as zero rather than left out: the figure is
+    # the same, the claim is not. Left out means "we do not know".
     pricing:
       per-million-tokens:
-        "[google/gemini-2.0-flash-001]":
-          input: 0.10
-          output: 0.40
-          cached: 0.025
+        "[google/gemma-4-26b-a4b-it:free]":
+          input: 0
+          output: 0
+          cached: 0
     chain:
       # Comma-separated, so the order is deployable without a release
       # (Bolum 5.4, "env-driven fallback"). Bolum 27.3's fuller order arrives
