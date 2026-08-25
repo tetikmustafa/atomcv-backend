@@ -75,6 +75,26 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
 
 ## Aşama 3 kayıtları
 
+### `F-016` — tek kodun arkasındaki sekiz sebep (2026-08-25)
+
+Kalıcı karar `spec/`'e yazıldı (§ 18.1, § 18.4, EK D.6.1 ve kod tablosu).
+Buraya yalnız oradan okunamayacak olan düşüyor.
+
+**Frontend dördü bildirdi, sekiz çıktı.** Şikâyet § 18.4'ün kapısı üzerineydi,
+ama `JobDescriptionPreflight` de dört verdict'i tek koda düşürüyordu ve
+`(0, 0)` gönderiyordu. Yalnız bildirilen yarıyı düzeltmek, aynı hatayı ikinci
+kez açtırırdı. Sekizi tek kapalı sözlükte birleşti.
+
+**`continue_anyway` kapıda `retry` ile aynı şeydi** — akışı izleyince çıktı:
+onay yalnız ön kontrolü atlıyor, kapı her hâlükârda çalışıyor. Bildirilmemişti,
+ve `reason` telde ayrıştığı anda frontend'in soracağı ilk şeydi. **Sapma
+değil, Ekleme:** § 18.4 resolution'lardan hiç söz etmiyordu.
+
+**Sebep verdict'in kurucusunda duruyor**, faza dağılmış bir `switch`'te değil —
+reason'sız bir verdict derlenmiyor. Üç sonda: dokuzuncu bir sebep eklenince
+`everyReasonIsRaisedBySomeCheck`, `retry` dalı silinince presenter testi,
+`Locale.ROOT` kaldırılınca tel değeri `not_job_lıke` olup kendi testi düşüyor.
+
 ### Frontend'in üç bulgusu — `F-013`…`F-015` kapandı (2026-08-25)
 
 Üçünün kalıcı kararı `spec/`'e yazıldı (§ 21.8, § 27.2, § 27.4, § 35.3).

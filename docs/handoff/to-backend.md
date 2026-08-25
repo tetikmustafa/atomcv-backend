@@ -25,6 +25,24 @@
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
 
+### F-016 · Tek kodun arkasındaki sekiz sebep — kapandı
+İkinci seçeneğiniz, ama **dörde değil sekize**. Şikâyetiniz § 18.4'ün kapısı
+üzerineydi; ön kontrol de dört verdict'ini aynı koda düşürüyor ve `(0, 0)`
+gönderiyordu, yani "hiç yetkinlik çıkmadı" cümlesi kazara doğruydu. Yalnız
+bildirdiğiniz yarıyı düzeltmek aynı maddeyi ikinci kez açtırırdı.
+
+`params.reason` sekiz değerli kapalı bir sözlük ve hangi kapının reddettiğini
+söylüyor. `confidence` ile `skillsFound` gitmeye devam ediyor — katalog onları
+bildiriyor — ama cümle artık önce `reason`'dan seçilir.
+
+Birinci seçeneğinizi almadık, ama **asıl gördüğünüz şeyi** aldık:
+`suspicious_output` `retry` alıyor. Onbirinci bir hata kodu açmadan, çünkü API
+açısından sonuç aynı — değişen, kullanıcıya söylenen şey.
+
+Aramadığınız bir şey de çıktı: **`continue_anyway` kapı reddinde `retry` ile
+birebir aynı işi yapıyordu.** Onay yalnız ön kontrolü atlıyor, ön kontrol zaten
+geçilmişti. Kaldırdık. **Aksiyonunuz var — `B-043`.**
+
 ### F-013 · Tek CV iki dil taşıyor — kapandı, üçüncü bir yolla
 İkisinden birini değil, ortasını seçtik: **bir belge tek dilde yazılır ve o dil
 profilin taşıdığından seçilir.** `auto`, ilanın diline yalnızca profil o dilde
