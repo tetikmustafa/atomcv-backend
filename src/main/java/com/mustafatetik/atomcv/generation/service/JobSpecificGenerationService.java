@@ -117,9 +117,18 @@ public class JobSpecificGenerationService {
         }
         JobAnalysis posting = analysed.orElseThrow();
 
-        GenerationOptions options = GenerationOptions.forPosting(head, posting.jdLanguage())
+        GenerationOptions options = GenerationOptions.forPosting(head, tree, posting.jdLanguage())
                 .withMaxPages(maxPages)
                 .withLanguage(language);
+
+        if (posting.jdLanguage() != null && !posting.jdLanguage().isBlank()
+                && !posting.jdLanguage().strip().equals(options.language())) {
+            // F-013. Not an error and not a refusal: the CV is written, in one
+            // language, and the response says which one so the screen can too.
+            log.info("Posting is in {} but the CV is written in {}; "
+                    + "the profile has no wording for every atom in the posting's language",
+                    posting.jdLanguage().strip(), options.language());
+        }
 
         CapacityModel capacity = TemplateRegistry.capacityOf(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
