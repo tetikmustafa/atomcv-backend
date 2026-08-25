@@ -245,6 +245,8 @@ public record LlmResponse<T>(
 
 **Claude'un farkı önemli:** Bare JSON mode yok; forced tool use tek güvenilir yol. Bu, adaptörde ayrı kod yolu gerektirir.
 
+**Her başarısız çağrı bir satır bırakır (`F-014`).** Adaptörden çıkışın tek yolu vardır ve WARN'ı orada basar: `promptRef`, `kind` ve `detail` — **gövde asla, prompt asla** (mutlak kural 4; bir hata gövdesi promptu geri yankılayabilir). Sessiz bırakılırsa görülmez: zaman aşımı, erişilemezlik ve kesinti `tryNextProvider()=true` taşır, yani zincirin "Chain stopped" satırına da düşmezler; zincir sessizce tükenir ve kullanıcı `ALL_PROVIDERS_UNAVAILABLE` görürken log boştur. `detail` zaten üretiliyordu, okuyanı yoktu.
+
 **"Desteklenmiyorsa" tespitle değil yapılandırmayla çözülür.** Hangi mekanizmayı hangi modelin desteklediği modele ait bir olgudur ve yanıt bunu güvenilir biçimde söylemez; hata metnine bakarak tahmin etmek her başarısızlığı sessizce zayıf moda düşürürdü. Adaptör başına açık bir ayar taşınır — OpenRouter'da `atomcv.llm.openrouter.structured-output: JSON_SCHEMA | JSON_OBJECT`. `JSON_SCHEMA` `strict: true` ile gider; `strict` olmadan sağlayıcı şemayı öneri sayar ve § 53.5'in Faz A için istediği %99 uyum tutmaz.
 
 ### 27.3 Fallback zinciri
@@ -325,6 +327,10 @@ pricing:
   ${GEMINI_MODEL}: { input: 0.10, output: 0.40, cachedInput: 0.025 }
   ${DEEPSEEK_MODEL}: { input: 0.14, output: 0.28 }
 ```
+
+**Fiyatı olmayan model sıfıra mal olur, ve bu açılışta söylenir (`F-015`).** Uydurulmuş bir rakam, operatörün üzerine karar verdiği bir sayıya olmayan parayı koyardı; sıfır ise görünür biçimde yanlıştır. Ama **sıfır ile "kimse fiyatlamadı" aynı basılır**, ve tablo aylardır hiçbir zincirin çalıştırmadığı bir modeli fiyatlarken sistemdeki her maliyet sıfırdı — bunu yalnız `llm.unpriced_calls` sayacı söylüyordu, yani yalnız zaten panele bakan birine. `LlmPricingAudit` `ApplicationReadyEvent`'te tabloyu `atomcv.llm.models` ile karşılaştırır ve eksikleri adıyla WARN'lar. İkisi de yapılandırmadır: uyuşup uyuşmadıkları ilk çağrıdan **önce** bilinebilir, sonrasında ise sessizce yanlış bir sayıdır.
+
+**Ücretsiz model sıfır olarak yazılır, tablodan çıkarılmaz.** Rakam aynı, iddia değil: biri "sağlayıcı ücret almıyor" der, öteki "bilmiyoruz".
 
 ---
 

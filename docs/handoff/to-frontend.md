@@ -12,80 +12,63 @@
 
 ## OPEN
 
-### B-040 · Üç şema düzeltmesi — `gen:api` çalıştırın
-**Since:** `06d78d3`…`0955bcb` · **Spec:** `spec/08-api.md` § 35.3, `spec/07-subsystems.md` § 30.6
-**Kapatır:** `F-009`, `F-010`, `F-011`, `F-012`
+### B-042 · CV'nin dili artık koşullu, ve yanıt hangisi olduğunu söylüyor
+**Since:** bu PR · **Spec:** `spec/06-pipeline-d-g.md` § 21.8, `spec/08-api.md` § 35.3
+**Kapatır:** `F-013`
 
-Üçü de sizin ölçümlerinizden çıktı ve üçü de tipi değiştiriyor.
+Üçüncü bir yol seçtik — 1. ve 2. seçeneklerinizin ortası, ve ikisinin de
+istediğini veriyor.
 
-**1 · `generalMode` şemadan düştü** (`F-009`). Hiç yazılmamıştı: bir record'daki
-`isGeneralMode()` Jackson ve springdoc için bir getter ve şemaya sızmıştı.
-Genel modu isteyen tek şey `jobDescription`'ın yokluğu — sizin de tahmininiz
-buydu. `GenerationRequest` artık **tam dört** özellik: `jobDescription?`,
-`acknowledgePreflight`, `maxPages?`, `language?`. § 35.3'ün `directives`/`options`
-gösteren örneği de düzeltildi.
+**Kural: bir belge tek dilde yazılır.** `auto`, ilanın diline **yalnızca profil
+o dilde gerçekten yazılabiliyorsa** çözülüyor — sayfaya çıkabilecek her atomun
+(aktif, en az bir sözcüklemesi olan) hedef dilde varyantı varsa. Yoksa
+`sourceLanguage`'de kalıyor. Gövde, tarih ve "Halen"/"Present" tek bir
+`contentLanguage` okuduğu için ayrışamıyorlar.
 
-**2 · İlerleme alanları opsiyonel oldu** (`F-010`). `phase`, `label` ve `detail`
-**boşken gönderilmiyor** — akışta da, `GET /jobs/{id}`'de de, çünkü ikisi tek
-bir shape'i serialize ediyor. `pct` sıfırken de geliyor. İstediğiniz buydu;
-`generation.phase.` diye bir anahtarı çevirmeye kalkan istemci artık mümkün
-değil. Tipiniz bu alanları `string | undefined` görecek.
+2. seçeneğinizi düz uygulamadık, çünkü § 21.8'in **çalışan** yarısını kapatırdı:
+profilinde tüm atomların İngilizce varyantı olan bir kullanıcı bugün gerçek bir
+İngilizce CV alıyor ve maliyeti sıfır. Onu geri almadık.
 
-**3 · `usage` iki sayı taşıyor** (`F-012`). Sayaç **denemeleri** sayıyor ve bu
-kasıtlı — reddedilen istek birimini geri almıyor, yoksa sınırını aşmış bir
-kullanıcı ucu döverdi. Yani sayı yanlış değildi, adı yanlıştı:
+1. seçeneğinizi de seçmedik: geri düşüş atom atom, yani tarihi ölçüme uydurmak
+tarihi düzeltir, **karışık gövdeyi düzeltmezdi**.
 
-```
-used       harcanan, asla limit'ten büyük değil  →  "20 of 20" basılabilir
-attempted  birim alan her istek, reddedilenler dahil (26)
-remaining  limit - used, asla negatif
-```
-
-**Aksiyonunuz:** `gen:api`, sonra kota ekranındaki yara bandını kaldırın —
-`used`/`limit` çifti artık olduğu gibi basılabilir. Kaç kez denendiğini
-göstermek isterseniz `attempted` orada.
-
-**`F-011` için aksiyon yok:** ölçümünüz § 30.6'ya, `proxy_buffering off`
-satırının yanına yazıldı. Doğru yere işaret ettiniz.
-
----
-
-### B-041 · Uygunluk raporu yayımlandı — sıra 8 yazılabilir
-**Since:** `d96e2df`…`075e023` · **Spec:** `spec/06-pipeline-d-g.md` § 23.3, `spec/08-api.md` § 35.3
-**Kapatır:** `F-008`
-
-Üç yerden okunuyor:
+**Yanıtta iki alan var** (`GET /generations/{id}`):
 
 ```
-GET /generations/{id}   { generationId, status, pageCount, createdAt, fitReport? }
-completed olayı         { generationId, pageCount, matchLevel }
-GET /jobs/{id}          pageCount kazandı
+contentLanguage   belgenin gerçekten yazıldığı dil        "tr"
+postingLanguage   Faz A'nın ilanı okuduğu dil             "en"
 ```
 
-`fitReport`: `requiredCovered/requiredTotal`, `preferredCovered/preferredTotal`,
-`coveredSkills`, `missingRequired`, `missingPreferred`, `level`.
-`level` ∈ `WEAK | MODERATE | GOOD | STRONG` — **kapalı sözlük**, şemada enum.
+İkisi de BCP 47, ikisi de boşken **gönderilmiyor** (`F-010`'un kuralı).
+Genel modda `postingLanguage` hiç gelmiyor.
 
-**Yüzde yok ve olmayacak.** § 23.3 onu adıyla yasaklıyor: ölçüm beceri adlarını
-karşılaştırıyor, virgülden sonrası olan bir sayı işe alınma olasılığı gibi
-okunur. Ekranda sayılar gösterilsin — "4/4 zorunlu", "2/3 tercih edilen".
+**Aksiyonunuz:** `gen:api`, sonra ikisi ayrıldığında istediğiniz cümleyi yazın —
+"bu CV profil dilinde yazıldı, ilanın dilinde değil". Karşılaştırmayı size
+bıraktık **bilerek**: o cümle iki dilin de adını anıyor, tek bir boolean size
+yine iki alanı sordururdu.
 
-**İki davranış:** (1) rapor **sayfaya çıkanla** ölçülüyor, sıralananla değil —
-belgede yer bulamamış beceri kapsanmış sayılmıyor; (2) **genel modda `fitReport`
-alanı hiç gelmiyor** (ilan yok, her sayı sıfır olurdu).
+Bu geçici ve geçiciliği kasıtlı. § 21.8'in çeviren fazı indiğinde kontrol her
+dil için doğru olur, alanlar aynı değeri taşımaya başlar ve cümle kendiliğinden
+çizilmez olur — bir bayrak arkasına koymadık.
 
-`missingRequired` **ilanın kendi sözcüklerini** taşıyor (ilan Türkçeyse
-"mikroservis"), eşleştirme İngilizce anahtar üzerinden — kullanıcı ilanda
-okuduğu sözcüğü arar. § 23.3'ün "Terraform deneyimin varsa…" önerisini bu
-listeden yazabilirsiniz.
+**`F-014` ve `F-015` için aksiyonunuz yok**, ikisi de sunucu tarafında kapandı:
 
-**Aksiyonunuz:** `gen:api` (bu da `B-040` ile aynı tur), sonra sonuç ekranı.
+- **`F-014`** — adaptörden çıkışın tek yolu var ve WARN'ı orada basıyor:
+  `promptRef`, `kind`, `detail`. Gövde ve prompt asla (mutlak kural 4).
+  Dördünüzün dördü de kapsandı; `detail`'iniz artık okunuyor. Sonda iki yönlü:
+  satırı kaldırınca dört test düşüyor, `detail`'e gövde ekleyince **yalnız
+  sızıntı testi** düşüyor.
+- **`F-015`** — haklıydınız, o slug'ı hiçbir zincir çalıştırmıyordu ve her
+  maliyet sıfırdı. Tablo kullanılan modeli kapsıyor (ücretsiz model **açıkça**
+  sıfır — rakam aynı, iddia değil), ve `LlmPricingAudit` açılışta fiyatı olmayan
+  her yapılandırılmış modeli adıyla WARN'lıyor. Sıfır doğru sayı değil,
+  bilinmeyen sayı — cümleniz aynen alındı.
 
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
 
-_(boş — `B-037`…`B-039` `resolved/to-frontend-2026-08.md`'de)_
+_(boş — `B-037`…`B-041` `resolved/to-frontend-2026-08.md`'de)_
 
 ---
 

@@ -73,36 +73,41 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
 
 ---
 
-## Aşama 2'nin son iki işi (kapandı 2026-08-24)
-
-**§ 19.4'ün "yakın skor"u bir kova genişliği oldu** (0.02, § 19.6'ya yazıldı).
-Buraya not düşülen tek şey **neden epsilon olmadığı**: "bu ikisi yakın mı" diye
-soran bir karşılaştırıcı geçişli değil, ve `List.sort` bunu fark edince
-`IllegalArgumentException` fırlatıyor — büyük profilde, üretimde, her küçük testi
-geçmiş olarak. Altmış skoru sıralayan bir test var.
-
-**`latexTest`'i bu oturumda ilk kez koşturdum ve iki gerçek hata çıktı.**
-Bu kayda değer, çünkü indirme dilimini yazarken "`GeneralCvIT` artık uçtan uca
-koşuyor" dedim ve **koşturmamıştım**:
-
-1. **`RichContent`/`Mark` türetilmiş alanlarını JSONB'ye yazıyordu.**
-   `plainText()`, `contentHash()`, `isEmpty()`, `isKnown()` — dördü de
-   getter şeklinde, dördü de serialize ediliyor, hiçbiri deserialize edilemiyor.
-   İndirme 500 veriyordu. **İki yönlü düzeltildi:** `@JsonIgnore` yazmayı
-   kesiyor, `ignoreUnknown` bozuk build'in yazdığı satırları okunur tutuyor —
-   veriyi bozan bir düzeltme düzeltme değildir. Genel ders: **JSONB kolonuna
-   düşen bir record'daki her getter şeklindeki metot, kimsenin bildirmediği bir
-   saklanan alandır.**
-2. **`Tag#setLabel` `final`'dı.** Hibernate lazy proxy kurarken reddediyor —
-   uyarı olarak, yani entity çalışmaya devam ediyor ve proxy'nin atlandığını
-   kimse söylemiyor.
-
-**Ders:** yavaş hattı ("run it when `docker/latex` changes") **onu değiştirmeyen
-ama içinden geçen bir şey değiştiğinde de** koştur. `CLAUDE.md`'ye yazıldı.
-
----
-
 ## Aşama 3 kayıtları
+
+### Frontend'in üç bulgusu — `F-013`…`F-015` kapandı (2026-08-25)
+
+Üçünün kalıcı kararı `spec/`'e yazıldı (§ 21.8, § 27.2, § 27.4, § 35.3).
+Buraya yalnız oradan okunamayacak olan düşüyor.
+
+**`F-013` geçici, ve geçiciliği kasıtlı.** `canBeWrittenIn` tek bir eksik
+sözcüklemede tüm belgeyi profilin diline indiriyor — sert bir eşik, ve doğru
+olanı: **iki dilli bir CV, o dilde olmayan bir CV'den kötü.** Yumuşak bir eşik
+("atomların %90'ı çevriliyse hedef dile geç") kalan %10'u sayfaya karışık
+çıkarırdı, ki F-013'ün şikâyeti tam buydu. § 21.8'in çeviren fazı indiğinde
+kontrol her dil için doğru olur ve kural kendiliğinden çözülür — o yüzden bir
+bayrak arkasına konmadı.
+
+**Ölçüm hedeflemeden ayrı tutuldu.** Alternatif, seçimden *sonra* seçilmiş
+varyantların dilini ölçüp tarihi ona uydurmaktı (frontend'in 1. seçeneği).
+Tarihi düzeltirdi, gövdeyi düzeltmezdi: geri düşüş atom atom, yani gövde
+karışık kalırdı. Karar üretimin **başında** veriliyor, tek yerde.
+
+**Ekleme — iki dil alanı, tek bayrak değil.** `contentLanguage` +
+`postingLanguage` gidiyor. `B-040`'ın "karşılaştırma sunucunun" dersi burada
+tersine işliyor: ekranda okunan cümle **iki dilin de adını** anıyor, yani tek
+bir boolean istemciye yine iki alanı sordururdu.
+
+**`F-014` sondası iki yönlü.** `log.warn` satırı kaldırılınca dört test
+düşüyor — beklenen. İkinci sonda daha değerli: 200 olmayan yolun `detail`'ine
+`response.body()` eklenince **yalnız sızıntı testi** düşüyor. Yani "gövde
+basmıyor" iddiasının kendi kanıtı var, varlığı kanıtlayan testlerden bağımsız.
+
+**`F-015`'in asıl bulgusu tabloda değil, tablonun sessizliğindeydi.** `costOf`
+zaten sıfır dönüyordu ve `llm.unpriced_calls` zaten sayıyordu; ikisi de
+doğruydu ve ikisi de kimseye ulaşmıyordu. Eklenen şey fiyat değil, **açılışta
+bir cümle**. Ücretsiz modelin sıfırla açıkça yazılması da bunun için: sayacın
+susması gerekiyor ki konuştuğunda anlamı olsun.
 
 ### Frontend'in beş bulgusu — `F-009`…`F-012` kapandı (2026-08-25)
 
