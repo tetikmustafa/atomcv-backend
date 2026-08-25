@@ -91,7 +91,9 @@ Girdiğin metin bir iş ilanına benzemiyor.
 
 Üçünün karşılığı sırasıyla `continue_anyway`, `paste_full_posting`, `continue_as_general_cv` (EK D.6.1). Üçü de tek kodla gelir: `UNPARSEABLE_JOB_DESCRIPTION`, `confidence: 0` ve `skillsFound: 0` ile — ön kontrol hiçbir şeyi analiz etmemiştir ve sıfır bunu dürüstçe söyler.
 
-**Redde götüren kontrol telde ayrışmaz**, çünkü katalog tek kod yayımlıyor. Kod içinde ayrışır (`TOO_SHORT`, `TOO_LONG`, `LOW_ENTROPY`, `NOT_JOB_LIKE`): metrik ve log için ayrım gerekiyor — "ilan reddedildi" hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın gözden geçirilmesi gerektiğini söyler.
+**Redde götüren kontrol telde de ayrışır**, `params.reason` ile: `too_short`, `too_long`, `low_entropy`, `not_job_like`. Katalog hâlâ **tek kod** yayımlıyor — API açısından sonuç aynı ve dört kardeş kod hiçbir şey kazandırmazdı — ama tek kod tek cümle demek değil. Ayrım zaten metrik ve log için gerekiyordu ("ilan reddedildi" hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın gözden geçirilmesi gerektiğini söyler); telde de gerekiyor, çünkü dört ret kullanıcıyı dört ayrı yere gönderiyor.
+
+`reason`'ın kapalı sözlüğü **sekiz** değer taşıyor: buradaki dördü ve § 18.4'ün dördü. İkisi çakışmaz, ve `reason` hangi kapının reddettiğini söyler — bu ayrım kullanıcıya görünür, çünkü ön kontrol **kullanıcının metnini** reddetmiştir ve kullanıcı sezgiselden iyi bilebilir, § 18.4 ise **modelin cevabını** reddetmiştir ve metinde düzeltilecek bir şey yoktur.
 
 Sıra önemlidir: uzunluk entropiden **önce** bakılır, yoksa 40.000 karakterlik tekrarlı bir yapıştırma "tekrarlı olduğu için" reddedilir, gerçekte olduğu şey için değil.
 
@@ -172,6 +174,19 @@ boolean hasAbnormalFieldLength(JobAnalysis a) {
 Kapıdan geçemezse **Faz B'ye hiç geçilmez** — maliyet oluşmaz.
 
 Sıra önemlidir: incelik (güven, beceri sayısı, sorumluluk) **şekilden önce** bakılır, yani zayıf bir ilan zayıf olduğu için reddedilir, "şüpheli çıktı" diye değil.
+
+**Dört verdict telde `params.reason` olarak çıkar** (`low_confidence`, `too_few_skills`, `no_responsibilities`, `suspicious_output`), § 18.1'in dördüyle aynı kapalı sözlükte. Zorunluydu: `confidence` ve `skillsFound` yalnız ilk ikisini anlatıyor, ve `SUSPICIOUS_OUTPUT` ile reddedilen bir analiz `confidence: 0.95` taşıyabiliyor — ekranda "ilanı okuyamadık, güven %95" diye okunan bir çelişki.
+
+**Çıkış yolları sebebe göre değişir**, ve § 18.1'in üçlüsü buraya olduğu gibi gelmez:
+
+| `reason` | resolutions |
+|---|---|
+| `low_confidence`, `too_few_skills`, `no_responsibilities` | `paste_full_posting`, `continue_as_general_cv` |
+| `suspicious_output` | `retry`, `continue_as_general_cv` |
+
+**`continue_anyway` bu kapıda yoktur.** Onay yalnız ön kontrolü atlar, ve ön kontrol zaten geçilmiştir — yeniden gönderim aynı çağrıyı yapıp aynı kapıya çarpar. İki isim altında tek buton demekti, ve doğruyu söyleyen isim sunulan değildi.
+
+**`suspicious_output` `retry` alır**, çünkü metinde düzeltilecek bir şey yok: model bir kez sapmıştır ve reddedilen analiz **bilerek cache'lenmez**, yani yeniden sormak gerçekten farklı bir cevap getirebilir. Diğer üçü `retry` almaz — ince bir ilan yeniden sorulduğunda ince kalır.
 
 **Sağlayıcı arızası bu kapıdan geçmez, kendisi olarak yolculuk eder.** Zincir tükendiğinde hata `ALL_PROVIDERS_UNAVAILABLE` olarak kalır; onu `UNPARSEABLE_JOB_DESCRIPTION`'a çevirmek kullanıcıyı, hiç sorun olmamış bir metni düzeltmeye gönderirdi.
 

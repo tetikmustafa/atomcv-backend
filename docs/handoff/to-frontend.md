@@ -12,63 +12,58 @@
 
 ## OPEN
 
-### B-042 · CV'nin dili artık koşullu, ve yanıt hangisi olduğunu söylüyor
-**Since:** bu PR · **Spec:** `spec/06-pipeline-d-g.md` § 21.8, `spec/08-api.md` § 35.3
-**Kapatır:** `F-013`
+### B-043 · `UNPARSEABLE_JOB_DESCRIPTION` artık sebebini söylüyor, ve butonlar sebebe göre değişiyor
+**Since:** bu PR · **Spec:** `spec/05-pipeline-a-c.md` § 18.1 ve § 18.4, `spec/08b-api-contract.md` § D.6.1
+**Kapatır:** `F-016`
 
-Üçüncü bir yol seçtik — 1. ve 2. seçeneklerinizin ortası, ve ikisinin de
-istediğini veriyor.
+İkinci seçeneğiniz, **dörde değil sekize**. Kapının dördünü bildirdiniz; ön
+kontrol de dört verdict'ini aynı koda düşürüyordu, `(0, 0)` ile — "hiç
+yetkinlik çıkmadı" cümleniz kazara doğruydu, kuralla değil.
 
-**Kural: bir belge tek dilde yazılır.** `auto`, ilanın diline **yalnızca profil
-o dilde gerçekten yazılabiliyorsa** çözülüyor — sayfaya çıkabilecek her atomun
-(aktif, en az bir sözcüklemesi olan) hedef dilde varyantı varsa. Yoksa
-`sourceLanguage`'de kalıyor. Gövde, tarih ve "Halen"/"Present" tek bir
-`contentLanguage` okuduğu için ayrışamıyorlar.
-
-2. seçeneğinizi düz uygulamadık, çünkü § 21.8'in **çalışan** yarısını kapatırdı:
-profilinde tüm atomların İngilizce varyantı olan bir kullanıcı bugün gerçek bir
-İngilizce CV alıyor ve maliyeti sıfır. Onu geri almadık.
-
-1. seçeneğinizi de seçmedik: geri düşüş atom atom, yani tarihi ölçüme uydurmak
-tarihi düzeltir, **karışık gövdeyi düzeltmezdi**.
-
-**Yanıtta iki alan var** (`GET /generations/{id}`):
+`params.reason`, sekiz değerli kapalı sözlük:
 
 ```
-contentLanguage   belgenin gerçekten yazıldığı dil        "tr"
-postingLanguage   Faz A'nın ilanı okuduğu dil             "en"
+too_short  too_long  low_entropy  not_job_like      ← ön kontrol (§ 18.1)
+low_confidence  too_few_skills                      ← kapı (§ 18.4)
+no_responsibilities  suspicious_output
 ```
 
-İkisi de BCP 47, ikisi de boşken **gönderilmiyor** (`F-010`'un kuralı).
-Genel modda `postingLanguage` hiç gelmiyor.
+`confidence` ve `skillsFound` **gitmeye devam ediyor**, katalog ikisini de
+bildiriyor. Ama sekizden yalnız ikisini ölçüyorlar ve ön kontrolden sıfır
+geliyorlar, yani **cümleyi önce `reason`'dan seçin**. `errors.*`'ı sebebe göre
+dallandırmak istediğinizi yazmıştınız — sekiz anahtar yeri var.
 
-**Aksiyonunuz:** `gen:api`, sonra ikisi ayrıldığında istediğiniz cümleyi yazın —
-"bu CV profil dilinde yazıldı, ilanın dilinde değil". Karşılaştırmayı size
-bıraktık **bilerek**: o cümle iki dilin de adını anıyor, tek bir boolean size
-yine iki alanı sordururdu.
+Ayrımın kullanıcıya söyleyeceği bir şey var: **ön kontrol kullanıcının metnini
+reddetti**, kullanıcı sezgiselden iyi bilebilir; **kapı modelin cevabını
+reddetti**, metinde düzeltilecek bir şey yok.
 
-Bu geçici ve geçiciliği kasıtlı. § 21.8'in çeviren fazı indiğinde kontrol her
-dil için doğru olur, alanlar aynı değeri taşımaya başlar ve cümle kendiliğinden
-çizilmez olur — bir bayrak arkasına koymadık.
+**`resolutions` artık sebebe göre geliyor — okuyun, sabitlemeyin:**
 
-**`F-014` ve `F-015` için aksiyonunuz yok**, ikisi de sunucu tarafında kapandı:
+| `reason` | resolutions |
+|---|---|
+| ön kontrolün dördü | `continue_anyway`, `paste_full_posting`, `continue_as_general_cv` — **değişmedi** |
+| `low_confidence`, `too_few_skills`, `no_responsibilities` | `paste_full_posting`, `continue_as_general_cv` |
+| `suspicious_output` | `retry`, `continue_as_general_cv` |
 
-- **`F-014`** — adaptörden çıkışın tek yolu var ve WARN'ı orada basıyor:
-  `promptRef`, `kind`, `detail`. Gövde ve prompt asla (mutlak kural 4).
-  Dördünüzün dördü de kapsandı; `detail`'iniz artık okunuyor. Sonda iki yönlü:
-  satırı kaldırınca dört test düşüyor, `detail`'e gövde ekleyince **yalnız
-  sızıntı testi** düşüyor.
-- **`F-015`** — haklıydınız, o slug'ı hiçbir zincir çalıştırmıyordu ve her
-  maliyet sıfırdı. Tablo kullanılan modeli kapsıyor (ücretsiz model **açıkça**
-  sıfır — rakam aynı, iddia değil), ve `LlmPricingAudit` açılışta fiyatı olmayan
-  her yapılandırılmış modeli adıyla WARN'lıyor. Sıfır doğru sayı değil,
-  bilinmeyen sayı — cümleniz aynen alındı.
+**`continue_anyway` kapı reddinde artık gelmiyor.** Aramadığınız bir bulgu:
+onay yalnız ön kontrolü atlıyor ve ön kontrol o noktada zaten geçilmişti, yani
+o buton `retry` ile birebir aynı çağrıyı yapıyordu — iki isim, tek davranış, ve
+sunulan isim yanlış olanıydı. Ekranınız üç butonu sabit varsayıyorsa iki
+gelen bir durumda kırılır.
+
+Birinci seçeneğinizi almadık ama gördüğünüz şeyi aldık: `suspicious_output`
+`retry` alıyor, çünkü reddedilen analiz **bilerek cache'lenmiyor** — yeniden
+sormak gerçekten farklı bir cevap getirebilir. Onbirinci bir hata kodu
+açmadan: API açısından sonuç aynı, değişen kullanıcıya söylenen şey.
+
+**Aksiyonunuz:** `gen:api`, sekiz `errors.*` anahtarı, ve resolution satırını
+sunucudan okuyun.
 
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
 
-_(boş — `B-037`…`B-041` `resolved/to-frontend-2026-08.md`'de)_
+_(`B-037`…`B-042` `resolved/to-frontend-2026-08.md`'de)_
 
 ---
 

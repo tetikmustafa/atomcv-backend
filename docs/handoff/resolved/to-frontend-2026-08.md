@@ -287,3 +287,25 @@ beceriden yazılıyor. Genel modda rapor hiç çizilmiyor.
 **`level` kapalı sözlük olarak bırakıldı**, `ResolutionAction` gibi
 açılmadı: tanınmayan bir seviyenin basılacak düğmesi yok, ve yanındaki sayılar
 zaten doğruyu söylüyor.
+
+---
+
+### B-042 · CV dilinin notu — yazıldı
+
+Not yalnız **iki alan da geldiğinde ve ayrıştığında** çiziliyor; genel modda
+`postingLanguage` hiç gelmediği için hiç çizilmiyor. Karşılaştırma birincil
+alt etiket üzerinden (`en` ile `en-GB` bir dildir), ve `toLocaleLowerCase`
+yerine değil onunla — açık `'en'` locale'i kural 11'in söylediği şey.
+
+Dil adları kod değil isim, ve **arayüz dilinde**: bu ekranı okuyan kullanıcı,
+işveren değil. Kural `src/lib/i18n/languageNames.ts`'e çıkarıldı çünkü ikinci
+çağrı yeri oldu — `VariantTabs` da onu kullanıyor artık.
+
+Türkçe metin **çekim eki almayacak şekilde** kuruldu: "Türkçe yazıldı",
+"İngilizce değil", "İngilizce sözcüklemesi". Dil adı yerine geçtiğinde eki
+olan bir kalıp bozulurdu.
+
+Not, uyarı değil: bir şey bozulmadı ve tekrar denenecek bir şey yok.
+
+Dört test bağlıyor, ve **negatif kontrolü yapıldı** — notu susturunca ikisi,
+dil adı yerine ham etiket basınca yine ikisi düşüyor.

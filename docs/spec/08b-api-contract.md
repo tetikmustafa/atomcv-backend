@@ -32,10 +32,32 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 | `sign_up` | Özellik hesap gerektiriyor | Kayda git, durumu koru |
 | `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
 | `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |
-| `continue_anyway` | Ön kontrol reddetti ama kullanıcı ısrar ediyor | Aynı metni ön kontrolü atlayan onayla yeniden gönder (Adım 2.3; Bölüm 18.1 üç çıkış yolu sunuyor, sözlükte ikisi vardı) |
+| `continue_anyway` | **Ön kontrol** reddetti ama kullanıcı ısrar ediyor | Aynı metni ön kontrolü atlayan onayla yeniden gönder (Adım 2.3; Bölüm 18.1 üç çıkış yolu sunuyor, sözlükte ikisi vardı). **Yalnız `reason` ön kontrolden geldiğinde sunulur** — § 18.4'ün kapısı onaydan etkilenmez |
 | `switch_to_manual_form` | Çıkarım başarısız | Manuel profil formuna git |
 | `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
 | `retry` | Geçici hata | Değiştirmeden yeniden gönder |
+
+**`params.reason`** (`UNPARSEABLE_JOB_DESCRIPTION`) — bir ilanın neden analize
+dönüşemediği. Sekiz değer, tek kod: kod API sonucunu adlandırıyor, `reason`
+kullanıcıya söylenecek cümleyi. `confidence` ve `skillsFound` sekizden yalnız
+ikisini ölçer ve ön kontrolden sıfır gelir, dolayısıyla **mesaj önce `reason`'a
+göre seçilir**.
+
+| `reason` | Nereden | Anlamı |
+|---|---|---|
+| `too_short` | ön kontrol (§ 18.1) | Analiz edilecek kadar metin yok |
+| `too_long` | ön kontrol | İlan değil, sayfa |
+| `low_entropy` | ön kontrol | Düzyazı olamayacak kadar az farklı sözcük |
+| `not_job_like` | ön kontrol | Düzyazı, ama iş ilanına benzemiyor |
+| `low_confidence` | kapı (§ 18.4) | Model tahmin ettiğini bildirdi |
+| `too_few_skills` | kapı | İkiden az aranan beceri |
+| `no_responsibilities` | kapı | Sorumluluk yok; Faz B'nin eşleyeceği bir şey yok |
+| `suspicious_output` | kapı | Bir alan o alanın olabileceğinden çok uzun — cevap analiz şeklinde değil |
+
+Ayrım kullanıcıya görünür: ön kontrol **kullanıcının metnini** reddetti ve
+kullanıcı sezgiselden iyi bilebilir; kapı **modelin cevabını** reddetti ve
+metinde düzeltilecek bir şey yok. Çıkış yolları buna göre değişiyor — § 18.4'ün
+tablosu.
 
 **Frontend kendi resolution'ını uydurmaz.** Listeyi sunucu sahiplenir; istemci
 yalnız render eder ve isterse resolution satırının dışına düz bir "kapat"
@@ -50,7 +72,7 @@ yalnızca yerine koyar.
 | Kod | HTTP | `params` |
 |---|---|---|
 | `INSUFFICIENT_PROFILE` | 422 | `completeness: integer`, `missing: string[]` |
-| `UNPARSEABLE_JOB_DESCRIPTION` | 422 | `confidence: number`, `skillsFound: integer` |
+| `UNPARSEABLE_JOB_DESCRIPTION` | 422 | `reason: string`, `confidence: number`, `skillsFound: integer` |
 | `CONFLICTING_PREFERENCES` | 409 | `pinnedPages: number`, `maxPages: integer` |
 | `FEATURE_REQUIRES_ACCOUNT` | 403 | `feature: string` |
 | `QUOTA_EXCEEDED` | 429 | `metric: string`, `resetsAt: timestamp` |
