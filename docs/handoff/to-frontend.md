@@ -12,56 +12,65 @@
 
 ## OPEN
 
-### B-043 · `UNPARSEABLE_JOB_DESCRIPTION` artık sebebini söylüyor, ve butonlar sebebe göre değişiyor
-**Since:** bu PR · **Spec:** `spec/05-pipeline-a-c.md` § 18.1 ve § 18.4, `spec/08b-api-contract.md` § D.6.1
-**Kapatır:** `F-016`
-
-İkinci seçeneğiniz, **dörde değil sekize**. Kapının dördünü bildirdiniz; ön
-kontrol de dört verdict'ini aynı koda düşürüyordu, `(0, 0)` ile — "hiç
-yetkinlik çıkmadı" cümleniz kazara doğruydu, kuralla değil.
-
-`params.reason`, sekiz değerli kapalı sözlük:
-
-```
-too_short  too_long  low_entropy  not_job_like      ← ön kontrol (§ 18.1)
-low_confidence  too_few_skills                      ← kapı (§ 18.4)
-no_responsibilities  suspicious_output
-```
-
-`confidence` ve `skillsFound` **gitmeye devam ediyor**, katalog ikisini de
-bildiriyor. Ama sekizden yalnız ikisini ölçüyorlar ve ön kontrolden sıfır
-geliyorlar, yani **cümleyi önce `reason`'dan seçin**. `errors.*`'ı sebebe göre
-dallandırmak istediğinizi yazmıştınız — sekiz anahtar yeri var.
-
-Ayrımın kullanıcıya söyleyeceği bir şey var: **ön kontrol kullanıcının metnini
-reddetti**, kullanıcı sezgiselden iyi bilebilir; **kapı modelin cevabını
-reddetti**, metinde düzeltilecek bir şey yok.
-
-**`resolutions` artık sebebe göre geliyor — okuyun, sabitlemeyin:**
-
-| `reason` | resolutions |
-|---|---|
-| ön kontrolün dördü | `continue_anyway`, `paste_full_posting`, `continue_as_general_cv` — **değişmedi** |
-| `low_confidence`, `too_few_skills`, `no_responsibilities` | `paste_full_posting`, `continue_as_general_cv` |
-| `suspicious_output` | `retry`, `continue_as_general_cv` |
-
-**`continue_anyway` kapı reddinde artık gelmiyor.** Aramadığınız bir bulgu:
-onay yalnız ön kontrolü atlıyor ve ön kontrol o noktada zaten geçilmişti, yani
-o buton `retry` ile birebir aynı çağrıyı yapıyordu — iki isim, tek davranış, ve
-sunulan isim yanlış olanıydı. Ekranınız üç butonu sabit varsayıyorsa iki
-gelen bir durumda kırılır.
-
-Birinci seçeneğinizi almadık ama gördüğünüz şeyi aldık: `suspicious_output`
-`retry` alıyor, çünkü reddedilen analiz **bilerek cache'lenmiyor** — yeniden
-sormak gerçekten farklı bir cevap getirebilir. Onbirinci bir hata kodu
-açmadan: API açısından sonuç aynı, değişen kullanıcıya söylenen şey.
-
-**Aksiyonunuz:** `gen:api`, sekiz `errors.*` anahtarı, ve resolution satırını
-sunucudan okuyun.
+_(şu an açık madde yok)_
 
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
+
+### B-043 · Sekiz sebep — yazıldı, ve telde doğrulandı
+
+`gen:api` çalıştı: **fark yok**. Beklediğimiz buydu (`params` şemada
+`Record<string, unknown>`, `code` ve `Resolution.action` enum'ları aynı) ama
+artık ölçüldü.
+
+Sekiz cümle tek `errors.*` anahtarında, ICU `select` ile — `Fit.level` ile
+aynı kalıp. Dokuzuncu bir dal daha var: `other`, tanımadığı bir sebep için.
+
+**Ölçüp koda yazdığımız şey:** next-intl'de **eksik** bir `select` argümanı
+mesajı kendi anahtar yoluna çeviriyor (`errors.UNPARSEABLE_JOB_DESCRIPTION`
+ekranda), **bilinmeyen bir değer** ise `other`'a düşüyor. Katalog testimizin
+süslü parantez kontrolü ilkini kaçırıyordu — anahtar yolunda parantez yok.
+Artık `rendered !== code` de sınanıyor ve `useErrorMessage` `reason`'ı
+garanti ediyor.
+
+**Gerçek uca karşı üç red görüldü** ve üçü de tarif ettiğiniz gibi geldi:
+
+```
+422     too_short           conf 0     skills 0    3 resolution
+stream  too_few_skills      conf 0.9   skills 0    2 resolution
+stream  no_responsibilities conf 1     skills 18   2 resolution
+```
+
+`continue_anyway` kapı reddinde gerçekten yok. Üçüncüsü `F-016`'nın
+şikâyetinin ta kendisi: **%100 güven, 18 beceri, yine de red** — eski tek
+cümle sayıyı okuyup kendini yalanlardı.
+
+**`suspicious_output` tetiklenemedi.** `gpt-4.1-nano` uzun beceri adlarını
+normalleştiriyor; üç ayrı ilan denedik, üçü de geçti. Yani o sebebin `retry`
+satırı **mock'ta ve testte var, telde görülmedi** — sizin tarifinize
+dayanıyor. Aksi bir şey varsa haber verin.
+
+**Backend cevabı: tetikleyememeniz doğru sonuç, eksik değil.**
+`suspicious_output` bir *incelik* değil *şekil* denetimi — § 18.4'ün uzunluk
+tavanları: 60'ı aşan beceri adı, 100'ü aşan anahtar kelime, 120'yi aşan unvan,
+300'ü aşan sorumluluk. Tavanlar gerçek bir ilanın ürettiğinin çok üstünde
+duruyor, çünkü uzun ama gerçek bir sorumluluğu reddeden bir kapı hiç kapı
+olmamasından kötü. Uslu bir modelle ilan yazarak açılması **beklenmiyor**;
+kapıyı açan şey enjeksiyon, ve o da modelin fence'e inanmayı bırakmasını
+gerektiriyor. `PlausibilityGateTest` onu kurgulanmış analizle doğrudan sınıyor.
+
+Bir ayrıntı sizin tarafınızı ilgilendirebilir: kapı **sırayla** bakıyor —
+`low_confidence` → `too_few_skills` → `no_responsibilities` → uzunluk. Bu
+bilinçli (§ 18.4, "Sıra önemlidir"): zayıf bir ilan zayıf olduğu için
+reddedilsin, "şüpheli çıktı" diye değil. Yani bir enjeksiyon denemesi aynı
+anda ikiden az beceri de üretirse size `too_few_skills` olarak gelir.
+`suspicious_output`, "sayılar yerinde ama şekil bozuk" hâlinin adı.
+
+Denetimi ararken § 18.4'ün kod parçacığında bir hata bulduk ve düzelttik:
+parçacık yalnız `requiredSkills`'e bakıyordu, kod `allSkills()` kullanıyor —
+tercih edilen beceriler de kapsanıyor. Kod doğruydu, spec eksikti. Şekil
+değişmedi, `gen:api` gerekmez.
 
 _(`B-037`…`B-042` `resolved/to-frontend-2026-08.md`'de)_
 
