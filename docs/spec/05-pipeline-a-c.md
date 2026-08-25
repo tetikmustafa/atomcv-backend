@@ -164,7 +164,7 @@ Result<JobAnalysis> gate(JobAnalysis a) {
 }
 
 boolean hasAbnormalFieldLength(JobAnalysis a) {
-    return a.requiredSkills().stream().anyMatch(s -> s.name().length() > 60)
+    return a.allSkills().anyMatch(s -> s.name().length() > 60)
         || a.keywords().stream().anyMatch(k -> k.length() > 100)
         || a.role().title().length() > 120
         || a.responsibilities().stream().anyMatch(r -> r.length() > 300);
@@ -190,7 +190,7 @@ Sıra önemlidir: incelik (güven, beceri sayısı, sorumluluk) **şekilden önc
 
 **Sağlayıcı arızası bu kapıdan geçmez, kendisi olarak yolculuk eder.** Zincir tükendiğinde hata `ALL_PROVIDERS_UNAVAILABLE` olarak kalır; onu `UNPARSEABLE_JOB_DESCRIPTION`'a çevirmek kullanıcıyı, hiç sorun olmamış bir metni düzeltmeye gönderirdi.
 
-**Uzunluk denetimi § 18.3'ün injection savunmasının yapısal yarısıdır.** Fence modele bölgenin veri olduğunu söyler; bu denetim modelin buna inanmayı bıraktığını fark eder. Enjekte edilmiş bir talimat daha kısa bir cevap üretmez — bir paragrafla adlandırılmış bir beceri ya da talimat taşıyan bir başlık üretir, ve bunların şekli vardır. Tavanlar gerçek bir ilanın ürettiğinin çok üstünde: uzun ama gerçek bir sorumluluğu reddeden bir kapı, hiç kapı olmamasından kötüdür.
+**Uzunluk denetimi § 18.3'ün injection savunmasının yapısal yarısıdır.** Fence modele bölgenin veri olduğunu söyler; bu denetim modelin buna inanmayı bıraktığını fark eder. Enjekte edilmiş bir talimat daha kısa bir cevap üretmez — bir paragrafla adlandırılmış bir beceri ya da talimat taşıyan bir başlık üretir, ve bunların şekli vardır. Tavanlar gerçek bir ilanın ürettiğinin çok üstünde: uzun ama gerçek bir sorumluluğu reddeden bir kapı, hiç kapı olmamasından kötüdür. Denetim **tercih edilen becerileri de** kapsar (`allSkills`), yalnız zorunluları değil: enjekte edilmiş bir talimatın hangi listeye düşeceğini seçen bir şey yok.
 
 ### 18.5 Embedding hedefi sentezi
 
