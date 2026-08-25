@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.profile.domain.Profile;
+import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.util.Locale;
 
@@ -50,16 +51,35 @@ public record GenerationOptions(
      * general mode the same preference falls back to the profile's own source
      * language, because there is nothing else to read it from.
      *
+     * <p><strong>And only when the profile can be written in it</strong>
+     * (F-013). Bolum 21.8 fills a missing wording by translating it and saving
+     * the result; that phase does not exist yet, so selection silently falls
+     * back to the primary wording while the dates and "Present" keep following
+     * the language that was asked for — a CV of Turkish bullets under English
+     * dates. One document is written in one language, and which one is decided
+     * here, from what the profile actually holds. When the translating phase
+     * lands, {@link ProfileTree#canBeWrittenIn} is true for every language and
+     * this narrows back to "follow the posting".
+     *
+     * @param tree            the profile as it will be selected from, which is
+     *                        the only thing that knows whether a language is
+     *                        deliverable
      * @param postingLanguage {@code jdLanguage} from Faz A, which may be blank
      *                        when the extraction did not name one
      */
-    public static GenerationOptions forPosting(Profile profile, String postingLanguage) {
+    public static GenerationOptions forPosting(
+            Profile profile, ProfileTree tree, String postingLanguage) {
+
         var defaults = profile.getPreferences().defaults();
         if (!"auto".equals(defaults.cvLanguage())
                 || postingLanguage == null || postingLanguage.isBlank()) {
             return defaultsOf(profile);
         }
-        return new GenerationOptions(defaults.maxPages(), postingLanguage.strip(),
+        String posting = postingLanguage.strip();
+        if (tree == null || !tree.canBeWrittenIn(posting)) {
+            return defaultsOf(profile);
+        }
+        return new GenerationOptions(defaults.maxPages(), posting,
                 TemplateCustomization.CLASSIC);
     }
 
