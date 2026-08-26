@@ -4,7 +4,7 @@ import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.Section;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
@@ -50,14 +50,14 @@ public class DevSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         Long existing = em.createQuery(
                         "SELECT count(p) FROM Profile p WHERE p.userId = :owner", Long.class)
-                .setParameter("owner", LocalDevCurrentUser.DEV_USER_ID)
+                .setParameter("owner", LocalDevUser.DEV_USER_ID)
                 .getSingleResult();
         if (existing > 0) {
             log.debug("The local profile already exists; not seeding");
             return;
         }
 
-        GoldenProfile golden = GoldenProfileReader.read(fixture, LocalDevCurrentUser.DEV_USER_ID);
+        GoldenProfile golden = GoldenProfileReader.read(fixture, LocalDevUser.DEV_USER_ID);
         em.persist(golden.profile());
         golden.sections().forEach(em::persist);
         golden.entries().forEach(em::persist);
