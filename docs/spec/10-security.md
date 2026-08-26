@@ -88,6 +88,60 @@ session.put("oauth_state", state);
 
 **Öneri:** OAuth'u magic link'ten **önce** implement et — e-posta teslimat riski varken bile ürün kullanılabilir kalır.
 
+#### 40.6.1 Kararlar (Adım 3.3, dilim 2)
+
+**Sağlayıcılar: Google ve GitHub.** LinkedIn kaldırıldı — uygulama açmak için
+doğrulanmış bir şirket sayfası istiyor ve karşılığında diğer ikisinin zaten
+verdiği girişi veriyor.
+
+**`state` Redis'te, ve tek kullanımlık.** Yukarıdaki parçacık servlet
+oturumunu gösteriyor; öyle bir oturum yok (§ 40.1 stateless). Anahtar state'in
+kendisi, değer sağlayıcı + dönüş yolu, TTL 10 dakika, ve **kullanım tek bir
+atomik oku-ve-sil**. Çerez tabanlı çift gönderimin veremediği özellik bu:
+geçmiş dosyasına, proxy log'una veya paylaşılan bir ekrana düşen bir callback
+URL'i ikinci kez işe yaramaz. Yanlış sağlayıcının callback'inde kullanılan bir
+state de **harcanır** — yoksa saldırgan doğru sağlayıcıyı deneme yanılmayla
+bulurdu.
+
+**Hesap birleştirme: yalnız sağlayıcının doğruladığı e-postada.** Sıra
+(a) sağlayıcının kendi `sub`/`id`'si, (b) doğrulanmış e-posta, (c) yeni hesap.
+Kimlik **e-postaya değil sağlayıcının kimliğine** bağlanır: adres değişip
+devredilebilir, ve e-postayı anahtar yapmak hesabı adresi devralana verirdi.
+Doğrulanmamış adreste birleştirmek ise doğrudan hesap ele geçirmedir — herkes
+başkasının adresini kendi sağlayıcı hesabına ekleyebilir. Kontrol hem
+adaptörde hem serviste yapılır; tek yerde duran savunma yanlış yerde durur.
+
+**GitHub iki çağrı ister.** `/user`'ın `email` alanı kişinin herkese açık
+yaptığı adres — çoğu geliştiricide `null` — ve **doğrulama bayrağı taşımaz**.
+`/user/emails` `primary` ve `verified` taşır; birleştirme kuralının sorduğu
+soruyu yanıtlayabilen tek kaynak odur. Ayrıca bir GitHub OAuth App **tek
+callback URL** kabul eder: geliştirme ve üretim iki ayrı uygulamadır.
+
+**Google'ın `id_token`'ı bilerek okunmuyor.** Claim'leri yeterli ama okumak ya
+dönen bir JWKS'e karşı RS256 imzası doğrulamak ya da doğrulanmamış bir JWT'ye
+güvenmek demek — ikincisi klasik OAuth hatası. Token ucundan aldığımız access
+token'la userinfo'ya bir çağrı daha, yanlış yapılacak bir şey bırakmıyor.
+
+**Kapsamlar dar.** Google'da `openid email profile`; fazlası haftalar süren
+doğrulama kuyruğunu tetikler. GitHub'da `read:user user:email`; `repo` yok.
+Sağlayıcı token'ı **saklanmıyor** — `oauth_identities.access_token_enc` NULL
+kalıyor, çünkü giriş sonrası kimse sağlayıcıyı tekrar aramıyor ve şifreleyecek
+anahtar yok. İhtiyaç doğduğunda anahtar yönetimiyle birlikte gelir.
+
+**Başarı doğrudan hedefe inmiyor.** Oturum çerezi `SameSite=Strict` (§ 40.1) ve
+tarayıcı, yönlendirme zinciri başka bir sitede başlamış bir isteğe Strict
+çerezi **göndermez** — bu zincir sağlayıcıda başladı. Doğrudan uygulamaya
+yönlendirmek ilk sayfayı çıkışlı gösterirdi ve yalnız elle yenileme düzeltirdi:
+tutarsız giriş gibi okunan bir hata. Callback bir iniş rotasına yönlendirir,
+istemci oradan `/auth/session`'ı **aynı-origin fetch** ile sorar (o çerezi
+taşır) ve yoluna devam eder.
+
+**Dönüş yolu doğrulanır.** `next` yalnız bu sitede düz bir yol olabilir;
+gerisi `/` olur. Açık yönlendirme (open redirect), adres çubuğu gerçekten bizim
+alan adımızla başlayan bir bağlantının başkasının giriş formunda bitmesidir.
+`//evil.example` de reddedilir: tarayıcı protokol-göreli URL'i mutlak okur, ve
+"eğik çizgiyle başlıyor mu" kontrolü onu geçirir.
+
 ---
 
 ## 41. Yetkilendirme ve Çok-Kiracılı İzolasyon
