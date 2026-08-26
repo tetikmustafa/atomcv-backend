@@ -55,7 +55,7 @@ class OAuthLoginServiceTest {
         var outcome = service.signIn(account(OAuthProvider.GITHUB, "42", "new@example.com", true));
 
         assertThat(outcome).isInstanceOf(SignInOutcome.SignedIn.class);
-        verify(accounts, never()).byVerifiedEmail(any());
+        verify(accounts, never()).byEmail(any());
         verify(accounts, never()).create(any(), any());
         verify(sessions).create(existing.getId(), UserRole.USER, AuthMethod.OAUTH_GITHUB);
     }
@@ -69,7 +69,7 @@ class OAuthLoginServiceTest {
         UserAccount existing = UserAccount.signingUp("ada@example.com", null);
         when(accounts.byProviderIdentity(OAuthProvider.GOOGLE, "sub-1"))
                 .thenReturn(Optional.empty());
-        when(accounts.byVerifiedEmail("ada@example.com")).thenReturn(Optional.of(existing));
+        when(accounts.byEmail("ada@example.com")).thenReturn(Optional.of(existing));
 
         var outcome = service.signIn(
                 account(OAuthProvider.GOOGLE, "sub-1", "ada@example.com", true));
@@ -85,7 +85,7 @@ class OAuthLoginServiceTest {
     @Test
     void anUnknownSubjectWithAnUnknownAddressBecomesANewAccount() {
         when(accounts.byProviderIdentity(any(), any())).thenReturn(Optional.empty());
-        when(accounts.byVerifiedEmail(any())).thenReturn(Optional.empty());
+        when(accounts.byEmail(any())).thenReturn(Optional.empty());
         UserAccount created = UserAccount.signingUp("new@example.com", "Ada Lovelace");
         when(accounts.create("new@example.com", "Ada Lovelace")).thenReturn(created);
 
@@ -110,7 +110,7 @@ class OAuthLoginServiceTest {
 
         assertThat(outcome).isEqualTo(new SignInOutcome.Refused(OAuthFailure.EMAIL_UNVERIFIED));
         verify(accounts, never()).byProviderIdentity(any(), any());
-        verify(accounts, never()).byVerifiedEmail(any());
+        verify(accounts, never()).byEmail(any());
         verify(sessions, never()).create(any(), any(), any());
     }
 
