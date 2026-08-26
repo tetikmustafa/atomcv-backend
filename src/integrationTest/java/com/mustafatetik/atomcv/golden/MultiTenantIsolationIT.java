@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -50,7 +50,7 @@ class MultiTenantIsolationIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @Autowired
     private TransactionTemplate tx;
@@ -68,7 +68,7 @@ class MultiTenantIsolationIT extends AbstractIntegrationTest {
     @BeforeEach
     void twoUsersOneOfThemAStranger() {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
 
         if (strangerProfileId != null) {
             return;

@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -34,6 +35,12 @@ import org.springframework.web.bind.annotation.RestController;
 // ones stay out of it; `@Import` is what actually registers it, since a nested
 // test class is never component-scanned.
 @WebMvcTest(controllers = ProblemDetailAdviceTest.ThrowingController.class)
+// No filter chain. Since Adim 3.3 put Spring Security on the classpath, a
+// @WebMvcTest slice auto-configures its default chain — which is not ours and
+// refuses everything — and each case below would assert Spring Security's 401
+// instead of the advice under test. The chain has its own tests; this one is
+// about the shape of a body.
+@AutoConfigureMockMvc(addFilters = false)
 // ClockConfig too: the advice reads a clock to compute Retry-After, and a
 // @WebMvcTest slice carries no configuration that is not web-shaped.
 @Import({ProblemDetailAdvice.class, ProblemDetailAdviceTest.ThrowingController.class,

@@ -10,7 +10,7 @@ import com.mustafatetik.atomcv.jobs.queue.JobProgress;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.jobs.sse.SseRegistry;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import java.time.Clock;
 import java.util.Map;
 import java.util.UUID;
@@ -47,7 +47,7 @@ class JobStreamIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @Autowired
     private Clock clock;
@@ -192,7 +192,7 @@ class JobStreamIT extends AbstractIntegrationTest {
     // ── fixtures ─────────────────────────────────────────────────────────
 
     private Job queued() {
-        return queue.enqueue(new Job(JobType.GENERATION, LocalDevCurrentUser.DEV_USER_ID,
+        return queue.enqueue(new Job(JobType.GENERATION, LocalDevUser.DEV_USER_ID,
                 Map.of("jobDescription", "irrelevant"), clock.instant()));
     }
 

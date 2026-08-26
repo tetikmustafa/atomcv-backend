@@ -16,7 +16,7 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.Mark;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +58,7 @@ class GeneralCvIT extends AbstractLatexTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @Autowired
     private TransactionTemplate tx;
@@ -78,7 +78,7 @@ class GeneralCvIT extends AbstractLatexTest {
     @BeforeEach
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     @Test
@@ -124,7 +124,7 @@ class GeneralCvIT extends AbstractLatexTest {
                 SELECT count(*) FROM atom_variants
                  WHERE cost_measured_at IS NOT NULL
                    AND profile_id IN (SELECT id FROM profiles WHERE user_id = ?)
-                """, Integer.class, LocalDevCurrentUser.DEV_USER_ID);
+                """, Integer.class, LocalDevUser.DEV_USER_ID);
         return count == null ? 0 : count;
     }
 
@@ -166,7 +166,7 @@ class GeneralCvIT extends AbstractLatexTest {
 
     private void seedCareer(int jobs, int bulletsPerJob) {
         tx.executeWithoutResult(status -> {
-            var profile = new Profile(LocalDevCurrentUser.DEV_USER_ID);
+            var profile = new Profile(LocalDevUser.DEV_USER_ID);
             profile.setHeadline("Backend Engineer");
             profile.setContact(new Contact("Mustafa Tetik", "mustafa@example.com", null,
                     null, null, null, "İstanbul"));

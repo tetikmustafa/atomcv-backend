@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class AtomApiIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     private String sectionId;
     private String entryId;
@@ -51,7 +51,7 @@ class AtomApiIT extends AbstractIntegrationTest {
     @BeforeEach
     void startFromOneEmptyEntry() throws Exception {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
         sectionId = created("/api/v1/profile/sections",
                 "{ \"kind\": \"experience\", \"title\": \"Experience\" }").get("id").asText();
         entryId = created("/api/v1/profile/entries",

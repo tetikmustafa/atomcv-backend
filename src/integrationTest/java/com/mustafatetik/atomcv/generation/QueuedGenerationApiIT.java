@@ -19,7 +19,7 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.Clock;
@@ -70,7 +70,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @Autowired
     private TransactionTemplate tx;
@@ -89,7 +89,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
         localUser.ensureUserExists();
         jdbc.update("DELETE FROM jobs");
         jdbc.update("DELETE FROM usage_counters");
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     // ── the happy path ───────────────────────────────────────────────────
@@ -138,7 +138,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
 
         Job job = queue.claim("test-reader").flatMap(queue::find).orElseThrow();
         assertThat(job.getType()).isEqualTo(JobType.GENERATION);
-        assertThat(job.getOwnerId()).isEqualTo(LocalDevCurrentUser.DEV_USER_ID);
+        assertThat(job.getOwnerId()).isEqualTo(LocalDevUser.DEV_USER_ID);
         Map<String, Object> payload = job.getPayload();
         assertThat(payload).containsEntry("maxPages", 2)
                 .containsEntry("language", "tr")
@@ -247,7 +247,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 VALUES ('user', ?, 'generation', (now() at time zone 'utc')::date, 100000)
                 ON CONFLICT (subject_type, subject_id, metric, period)
                 DO UPDATE SET count = 100000
-                """, LocalDevCurrentUser.DEV_USER_ID.toString());
+                """, LocalDevUser.DEV_USER_ID.toString());
 
         mvc.perform(post("/api/v1/generations")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -442,7 +442,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     /** Three bullets under one job, already measured so no compiler is needed. */
     private void seedCareer() {
         tx.executeWithoutResult(status -> {
-            var profile = new Profile(LocalDevCurrentUser.DEV_USER_ID);
+            var profile = new Profile(LocalDevUser.DEV_USER_ID);
             em.persist(profile);
             UUID profileId = profile.getId();
 
