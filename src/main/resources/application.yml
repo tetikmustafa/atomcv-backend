@@ -76,6 +76,23 @@ atomcv:
     domain: ${SESSION_COOKIE_DOMAIN:}
     secure: ${SESSION_COOKIE_SECURE:true}
 
+  # Bolum 40.2. Resend where there is a key, SMTP where there is not --
+  # locally that means Mailpit, so the email is read the way a person reads it.
+  email:
+    # Has to live under the verified subdomain of Adim 3.2: SPF and DKIM are
+    # published there and nowhere else, so a From on the apex fails both.
+    from: ${EMAIL_FROM:no-reply@localhost}
+    from-name: ${EMAIL_FROM_NAME:AtomCV}
+    reply-to: ${EMAIL_REPLY_TO:}
+    resend-key: ${RESEND_API_KEY:}
+
+  # Bolum 40.3. The link points at a page on the frontend, not at this API:
+  # mail scanners follow links, and a one-shot token spent by a scanner is a
+  # sign-in the person never got. Redemption is the POST that page makes.
+  magic-link:
+    verify-base-url: ${APP_BASE_URL:http://localhost:3000}
+    verify-path: ${MAGIC_LINK_VERIFY_PATH:/verify}
+
   # Bolum 40.6. A provider with no credentials is absent, not broken — the
   # same shape Bolum 27.3 uses for LLM vendors, so one file serves a deployment
   # that registered one provider and one that registered both.

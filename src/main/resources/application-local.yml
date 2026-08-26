@@ -10,6 +10,12 @@ spring:
       host: localhost
       port: 6379
 
+  # Mailpit, from docker-compose. Its interface is at http://localhost:8025 and
+  # the Stage 0 checklist already keeps it open.
+  mail:
+    host: ${MAILPIT_HOST:localhost}
+    port: ${MAILPIT_PORT:1025}
+
   jpa:
     show-sql: true
     properties:
