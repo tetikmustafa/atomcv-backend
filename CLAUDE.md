@@ -204,6 +204,17 @@ bean and `make dev` failed on a second constructor. Hold one context with it on.
 **Report test counts, not "the suite is green".** A suite that runs zero tests
 also reports success.
 
+**CSRF is on in every integration test, and no test carries a token by hand.**
+`AbstractIntegrationTest` supplies one through a `MockMvcBuilderCustomizer`
+that sets `defaultRequest(get("/").with(csrf()))`. Two traps came with it: a
+nested `@TestConfiguration` is detected only on the class actually being run,
+never on a base class it inherits from — so it is `@Import`ed, and without
+that every mutating call answers 403; and since Spring Security reached the
+classpath, a `@WebMvcTest` slice builds its own default chain, which is why
+`ProblemDetailAdviceTest` runs with `addFilters = false`. `CsrfRejectionIT`
+builds a MockMvc without the default token, because a guard that never fails
+is not known to work.
+
 ## How We Ship
 
 1. **One branch per slice**, named `feat/…`, `test/…` or `docs/…`. A slice is

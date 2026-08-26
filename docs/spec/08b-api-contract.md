@@ -93,6 +93,7 @@ yalnızca yerine koyar.
 | `PROFILE_ALREADY_EXISTS` | 409 | — |
 | `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
 | `CSRF_TOKEN_INVALID` | 403 | — |
+| `AUTHENTICATION_REQUIRED` | 401 | — |
 | `RESOURCE_NOT_FOUND` | 404 | — |
 | `VERSION_CONFLICT` | 412 | — |
 | `PRECONDITION_REQUIRED` | 428 | — |
@@ -323,6 +324,16 @@ Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
 | TTL davranışı (Bölüm 9 "2 saat sonra silinir" diyor) | **TTL kayar: etkinlikte tazelenir.** Mutlak iki saat, inceleme ekranında çalışmakta olan kullanıcıyı keserdi — P8'in önlemek için var olduğu emek kaybı. Kullanıcıya gösterilen metin "son etkinliğinden iki saat sonra" demeli. |
 | CSRF (Bölüm 40.1 adını koyup tanımlamıyor) | Spring Security'nin double-submit varsayılanı: sunucu okunabilir (HttpOnly olmayan) `XSRF-TOKEN` çerezi verir, istemci güvensiz metotlarda (POST/PUT/PATCH/DELETE) `X-XSRF-TOKEN` başlığında yankılar, uyuşmazlıkta `403` + `CSRF_TOKEN_INVALID`. Oturum çerezi zaten `SameSite=Strict` olduğu için asıl vektör kapalı; bu derinlemesine savunmadır, o yüzden kimlikle birlikte gelir, öne çekilmez. |
 | Profil devralma | `POST /api/v1/profile/claim` → `200`, `404 NO_ANONYMOUS_PROFILE`, `409 PROFILE_ALREADY_EXISTS`. 409 yalnız **değiştir veya koru** sunar, **birleştir sunmaz**: birleştirme atom düzeyinde tekilleştirme demek (Bölüm 7, Jaro-Winkler + embedding) ve o Aşama 4 işi. Erken sunmak ya endpoint'i alakasız bir işe bağlar ya da içeriği sessizce çoğaltan bir birleştirme gönderir — P8 ikincisini yasaklar. API, yerine getiremeyeceği bir resolution'ı adlandırmamalı. |
+
+**`AUTHENTICATION_REQUIRED` neden ayrı bir kod (Adım 3.3).** Katalog uzun süre
+oturumu **hiç olmayan** bir isteğe cevapsızdı: `ANONYMOUS_SESSION_EXPIRED`
+süresi dolmuş anonim oturumun, `FEATURE_REQUIRES_ACCOUNT` erişilemeyen bir
+özelliğin adı. `sid` çerezi taşımayan bir istek ikisi de değil. Süre dolma
+kodunu ödünç almak sunucuya hiç var olmamış bir oturum hakkında cümle
+kurdururdu — kullanıcının okuduğu cümle, ve logların sonradan düzeltemeyeceği
+bir teşhis. Tek resolution `sign_up`. Adım 3.6 çerezsiz çağırana anonim oturum
+basmaya başlayınca kod **nadirleşir, yanlış olmaz**: kullanıcı kapsamlı bir uca
+hiçbir şey taşımadan gelen isteğin cevabı olarak kalır.
 
 #### D.6.7 — Kapsam dışı bırakılanlar
 
