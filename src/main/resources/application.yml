@@ -62,9 +62,25 @@ atomcv:
   embedding:
     base-url: ${EMBEDDINGS_URL:http://localhost:8081}
 
-  # Bolum 30.4. Every instance works the queue and every instance reclaims
-  # stale jobs, including its own — the condition is the heartbeat, not the
-  # owner.
+  # Bolum 40.1 and EK D.6.6. Redis holds the session; the cookie only points
+  # at it, so revoking is a DEL rather than the impossibility it is with a JWT.
+  session:
+    ttl: ${SESSION_TTL:30d}
+    # How much activity has to pass before the sliding TTL is rewritten. Two
+    # orders below the shortest TTL: an active browser stays alive, and a read
+    # does not carry a write.
+    touch-interval: ${SESSION_TOUCH_INTERVAL:5m}
+    # Adim 3.3: no leading dot. `.mustafatetik.com` would send the session to
+    # the portfolio site on the same apex. Empty everywhere but production,
+    # where the host is the only host.
+    domain: ${SESSION_COOKIE_DOMAIN:}
+    secure: ${SESSION_COOKIE_SECURE:true}
+
+  # § 35.7 wrote down the anonymous capability set and never the account one.
+  # This is that half, published to the frontend as B-044.
+  capabilities:
+    account-languages: ${CAPABILITY_ACCOUNT_LANGUAGES:en,tr}
+
   # Bolum 44.1. Two counters on purpose: with one limit somebody could spend
   # all of it on profile extraction, which is the most expensive call we make.
   quota:
@@ -81,6 +97,9 @@ atomcv:
     # threshold that fired beats a bill nobody saw coming.
     daily-budget-usd: ${ANOMALY_DAILY_BUDGET_USD:10}
 
+  # Bolum 30.4. Every instance works the queue and every instance reclaims
+  # stale jobs, including its own — the condition is the heartbeat, not the
+  # owner.
   jobs:
     worker:
       enabled: ${JOBS_WORKER_ENABLED:true}
