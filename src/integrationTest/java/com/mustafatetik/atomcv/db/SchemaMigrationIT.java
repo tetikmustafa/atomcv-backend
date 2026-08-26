@@ -47,6 +47,22 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
                 "jobs", "llm_invocations", "usage_counters", "feature_flags");
     }
 
+    /**
+     * V2 narrowed the provider vocabulary, and a CHECK nobody has watched
+     * refuse is a CHECK nobody knows works. Both halves are asserted: the two
+     * that survive, and the one that was taken away.
+     */
+    @Test
+    void theProviderColumnAcceptsOnlyTheTwoProvidersThatRemain() {
+        var user = newUser("oauth@example.com");
+
+        assertThatCode(() -> insertIdentity(user, "google")).doesNotThrowAnyException();
+        assertThatCode(() -> insertIdentity(user, "github")).doesNotThrowAnyException();
+
+        assertThatThrownBy(() -> insertIdentity(user, "linkedin"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
     @Test
     void requiredExtensionsAreInstalled() {
         var extensions = jdbc.queryForList("SELECT extname FROM pg_extension", String.class);
@@ -163,6 +179,13 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
         var id = UUID.randomUUID();
         jdbc.update("INSERT INTO users (id, email) VALUES (?, ?)", id, email);
         return id;
+    }
+
+    private void insertIdentity(UUID userId, String provider) {
+        jdbc.update("""
+                INSERT INTO oauth_identities (user_id, provider, provider_uid)
+                VALUES (?, ?, ?)
+                """, userId, provider, provider + ":" + UUID.randomUUID());
     }
 
     private UUID newProfile(String email) {
