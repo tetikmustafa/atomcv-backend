@@ -90,3 +90,56 @@ beklenen davranış. `PlausibilityGateTest` onu kurgulanmış analizle sınıyor
 `F-008`…`F-016` kapandı ve kayıtları
 `archive/stage-3-frontend-findings.md`'ye indi (2026-08-25) — dosya sınırı.
 Kalıcı kararlar `spec/`'te; arşiv yalnız nasıl bulunduklarını taşıyor.
+
+### Adım 3.3 · dilim 1 — oturum omurgası
+
+**Sapma — `LocalDevCurrentUser` "kimlik gelince bütünüyle silinecek" diyordu;
+silinmedi, ikiye bölündü.** Oturumlar, oturum *başlatmanın* herhangi bir
+yolundan önce indi: OAuth bir sonraki dilim. Sınıfı silmek `make dev`'e
+kullanıcısı olmayan bir veritabanı ve kimse olamayan bir tarayıcı bırakırdı.
+Kalanı `LocalDevUser` (yalnız satırı basan tohum) ve
+`identity.service.LocalDevSessions` (yalnız `sid` çerezi **hiç yokken**
+cevaplayan yedek). Gerçek çerez her zaman kazanır, ikisi de `@Profile("local")`.
+Gerçek giriş inince ikisi de gider.
+
+**Ekleme — `AUTHENTICATION_REQUIRED` (401).** Katalogda oturumsuz isteğin
+karşılığı yoktu. Kalıcı olduğu için `spec/08b-api-contract.md` § EK D.6'ya
+işlendi; frontend'e `B-045`.
+
+**Ekleme — hesabın yetenek kümesi.** § 35.7 yalnız anonim gövdeyi yazmıştı.
+Karar `spec/08-api.md` § 35.7'ye işlendi; frontend'e `B-046`.
+
+**Ekleme — oturum deposu Spring Session değil, elde yazıldı.** Kayan TTL
+(§ D.6.6) ve Adım 3.6'nın anonim→hesap devri `SessionRepository`'nin etrafından
+dolaşmayı gerektirirdi. Spring Security yalnız filtre zinciri ve CSRF için
+duruyor; kimliği o taşımıyor. `SessionStore` kullanıcı başına ikinci bir anahtar
+tutuyor (`sess:user:{id}`) — Bölüm 40.1'in JWT'ye karşı öne sürdüğü "iptal
+anında" iddiasının tek dayanağı o, ve sonradan eklenirse o ana kadarki her
+oturum iptal edilemez kalırdı.
+
+**Ekleme — `sid` çerezinde `secure` yalnız `local`'de kapalı.** Safari
+`http://localhost` üzerinde `Secure` çerezi reddediyor, Chrome ve Firefox
+kabul ediyor. `application.yml` açık tutuyor, `application-local.yml`
+kapatıyor, üretim hiçbir şeyi geçersiz kılmıyor. `SessionProperties` noktayla
+başlayan bir `domain`'i **açılışta reddediyor** — Adım 3.3'ün uyarısı yazı
+değil kural.
+
+**Testte iki tuzak, ikisi de bir koşuya mal oldu.**
+`AbstractIntegrationTest` artık her isteğe geçerli bir CSRF tokenı koyuyor
+(`MockMvcBuilderCustomizer` + `defaultRequest(...with(csrf()))`), böylece filtre
+tüm pakette açık ve 130 çağrı noktasına dokunulmadı. **Ama iç içe
+`@TestConfiguration` yalnız *koşulan* sınıfta bulunuyor, miras alınan taban
+sınıfta değil** — `@Import` olmadan bean sessizce yok ve her yazma 403.
+İkincisi: Spring Security classpath'e girdiği an `@WebMvcTest` kendi varsayılan
+zincirini kuruyor; `ProblemDetailAdviceTest` artık `addFilters = false` ile
+koşuyor, yoksa gövde yerine 401 sınıyordu.
+
+**Redis artık entegrasyon paketinde gerçek.** Taban sınıfa bir konteyner
+eklendi. Yoksa `SessionStore` her aramada başarısız oluyor — ve tam olarak
+tasarlandığı gibi, "kimse giriş yapmamış" diye — yani oturum testi bir kesintiye
+karşı iddiada bulunurdu. Bölüm 18.6'nın analiz önbelleği de aynı yokluğu fark
+edilmeden hoş görüyordu.
+
+**Açık kalan:** giriş yolu yok (OAuth · dilim 2), magic link (dilim 3), üç
+katmanlı rate limit ve Turnstile (dilim 4). `revokeAllFor` yazıldı ve sınandı
+ama henüz çağıran yok — rol değişimi ve hesap silme onu isteyecek.

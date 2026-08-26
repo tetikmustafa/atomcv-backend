@@ -379,6 +379,32 @@ GET /api/v1/auth/session
 
 **Sunucu yine de doğrular** — istemci kontrolü sadece UX.
 
+**Hesaplı oturumun kümesi (Adım 3.3).** Yukarıdaki gövde `authenticated: false`
+taşıyor ve uzun süre yazılı olan tek küme oydu. Hesabınki:
+
+| Alan | Anonim | Hesap |
+|---|---|---|
+| `allowedLanguages` | `["en"]` | `atomcv.capabilities.account-languages`, varsayılan `["en", "tr"]` |
+| `allowedTemplates` | kayıtta var olanlar | aynısı |
+| `canCustomizeTemplate`, `canEditAtomControls`, `canAddAlternatives`, `canSaveHistory` | `false` | `true` |
+| `dailyGenerationQuota`, `dailyProfileQuota` | 5, 3 | `QuotaService`'in uyguladığı sayılar |
+| `generationsUsedToday`, `profilesUsedToday` | 0 | aynı sayaçtan |
+| `maxAtoms` | 60 | **alan yok** |
+| `quotaResetsAt` | `null` | mutlak an (EK D.6.5) |
+| `anonymousExpiresAt` | EK D.6.6 | **alan yok** |
+
+Hesapta `maxAtoms` ve `anonymousExpiresAt` `null` değil, **JSON'da hiç yok**:
+`ATOM_LIMIT_EXCEEDED` anonim kapıdır ve olmayan bir limite karşı çizilen bir
+ilerleme çubuğu yanlış bir ekrandır.
+
+`allowedTemplates` **kayıtta gerçekten var olan** şablonları taşır, bu örneğin
+saydığı üçü değil. Render edilemeyecek bir şablonu listelemek, üretim anında
+patlayan bir seçenek sunmaktır.
+
+Sayılar `QuotaService`'ten okunur, yapılandırmadan ikinci kez değil: kullanıcının
+birazdan alacağı 429 ile çelişen bir yetenek ekranı, hiç yetenek ekranı
+olmamasından kötüdür.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:
