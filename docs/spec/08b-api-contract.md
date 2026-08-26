@@ -95,6 +95,7 @@ yalnızca yerine koyar.
 | `CSRF_TOKEN_INVALID` | 403 | — |
 | `AUTHENTICATION_REQUIRED` | 401 | — |
 | `OAUTH_FAILED` | 400 | `reason: string` |
+| `MAGIC_LINK_INVALID` | 400 | — |
 | `RESOURCE_NOT_FOUND` | 404 | — |
 | `VERSION_CONFLICT` | 412 | — |
 | `PRECONDITION_REQUIRED` | 428 | — |
@@ -335,6 +336,12 @@ kurdururdu — kullanıcının okuduğu cümle, ve logların sonradan düzelteme
 bir teşhis. Tek resolution `sign_up`. Adım 3.6 çerezsiz çağırana anonim oturum
 basmaya başlayınca kod **nadirleşir, yanlış olmaz**: kullanıcı kapsamlı bir uca
 hiçbir şey taşımadan gelen isteğin cevabı olarak kalır.
+
+**`MAGIC_LINK_INVALID` bilerek parametresizdir (Adım 3.3).** Katalogda başka
+her yerde kapalı bir `reason` daha iyi bir şekildir; burada açıktır — süresi
+dolmuş, kullanılmış, yanlış verifier ve hiç var olmamış ayırt edilebilirse
+tahmin yürüten kişi tahmininin hangi yarısının doğru olduğunu öğrenir
+(§ 40.4.1).
 
 **`OAUTH_FAILED` tek kod, yedi sebep (Adım 3.3).** `reason` kapalı bir sözlük:
 `state_invalid`, `declined`, `provider_disabled`, `provider_unavailable`,
