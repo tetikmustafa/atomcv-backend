@@ -12,10 +12,17 @@ package com.mustafatetik.atomcv.identity.domain;
  */
 public enum AuthMethod {
 
-    /** Bolum 40.6, in the order that section implements them. */
+    /**
+     * Bolum 40.6, in the order that section implements them.
+     *
+     * <p>LinkedIn was the third and is gone: it is the only one of the three
+     * that requires a verified company page before an app can exist at all,
+     * and the sign-in it buys is the same sign-in the other two already give.
+     * {@code V2} narrows the column to match, so the database and this
+     * vocabulary cannot drift apart.
+     */
     OAUTH_GOOGLE,
     OAUTH_GITHUB,
-    OAUTH_LINKEDIN,
 
     /** Bolum 40.2's selector/verifier link. */
     MAGIC_LINK,
