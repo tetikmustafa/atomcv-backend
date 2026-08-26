@@ -27,3 +27,11 @@ atomcv:
     # here and nowhere else — application.yml keeps it on, and prod overrides
     # nothing.
     secure: false
+
+  # The stand-in acting user for a request with no cookie. Turn it off to try a
+  # real sign-in end to end: with it on, signing out drops back to the dev user
+  # and the browser looks signed in again, which is confusing exactly when you
+  # are trying to watch a logout work. A real cookie always wins over it, so
+  # signing in works either way.
+  local-dev-session:
+    enabled: ${LOCAL_DEV_SESSION:true}

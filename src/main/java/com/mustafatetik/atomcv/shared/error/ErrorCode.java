@@ -88,6 +88,22 @@ public enum ErrorCode {
      */
     AUTHENTICATION_REQUIRED(401),
 
+    /**
+     * A sign-in that did not happen (Adim 3.3, Bolum 40.6).
+     *
+     * <p>One code with a closed {@code reason} rather than seven codes, which
+     * is the shape F-016 asked for: the frontend resolves one ICU key with a
+     * {@code select}, and a reason added later lands in its {@code other}
+     * branch instead of rendering a raw key to a user. The vocabulary is
+     * {@code identity.oauth.OAuthFailure}.
+     *
+     * <p><strong>It usually arrives as a query parameter, not as a body.</strong>
+     * Both OAuth endpoints are browser navigations, so a failure is a redirect
+     * to the frontend's error route carrying this code and its reason. The
+     * status is what it would be if anything ever asked for it as JSON.
+     */
+    OAUTH_FAILED(400, param("reason", STRING)),
+
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),
