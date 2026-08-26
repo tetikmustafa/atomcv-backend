@@ -19,3 +19,11 @@ spring:
 logging:
   level:
     org.flywaydb: debug
+
+atomcv:
+  session:
+    # Safari refuses a Secure cookie over http://localhost, where Chrome and
+    # Firefox accept one. `make dev` serves plain http, so the flag comes off
+    # here and nowhere else — application.yml keeps it on, and prod overrides
+    # nothing.
+    secure: false
