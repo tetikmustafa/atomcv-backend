@@ -148,13 +148,16 @@ LLM_CHAIN_CHEAP=
 LLM_CHAIN_MID=
 
 # ── Güvenlik (Aşama 3'te) ──
-SESSION_SECRET=
+# SESSION_SECRET yok: oturum kimliği imzalanmıyor, Redis'te duruyor (§ 46.5).
+OAUTH_GOOGLE_CLIENT_ID=      OAUTH_GOOGLE_CLIENT_SECRET=
+OAUTH_GITHUB_CLIENT_ID=      OAUTH_GITHUB_CLIENT_SECRET=
 TURNSTILE_SECRET_KEY=
+SESSION_COOKIE_DOMAIN=       SESSION_COOKIE_SECURE=true
 # NEXT_PUBLIC_* anahtarları frontend reposuna aittir; burada yeri yok.
 
 # ── Servisler (Aşama 3'te) ──
 RESEND_API_KEY=
-AXIOM_TOKEN=
+OTLP_ENABLED=   OTLP_URL=   OTLP_AUTHORIZATION=   OTLP_DATASET=
 SENTRY_DSN=
 
 # ── Bütçe ──
@@ -1088,7 +1091,7 @@ migration yazmak, uygulanmış bir migration'ı değiştirmeden mümkün olmazd�
 □ Google Cloud Console → OAuth 2.0 Client ID
      Redirect URI: https://atomcv.mustafatetik.com/api/v1/auth/oauth/google/callback
 □ GitHub → Settings → Developer settings → OAuth Apps
-□ LinkedIn → Developer Portal → Create App
+     Tek callback URL kabul eder — dev ve prod için AYRI iki uygulama
 □ Cloudflare → Turnstile → Site ekle (atomcv.mustafatetik.com)
 □ Resend → hesap aç, domain doğrula (aşağıda)
 □ Sentry → proje oluştur
@@ -1117,7 +1120,7 @@ Resend'de `mail.atomcv.mustafatetik.com` alt alanını ekle, verdiği kayıtlar�
 ```
 1. Session yönetimi (Redis + HttpOnly cookie)
 2. CSRF koruması
-3. OAuth (Google → GitHub → LinkedIn)      ← e-posta riski yok
+3. OAuth (Google → GitHub)                 ← e-posta riski yok
 4. Magic link (selector/verifier)
 5. POST ile doğrulama sayfası (prefetch koruması)
 6. Account enumeration koruması

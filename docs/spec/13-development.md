@@ -272,7 +272,7 @@ Yeni makinede kurulum: `make dev`
 
 ```
 [B] Kimlik
-├── OAuth (Google, GitHub, LinkedIn)   ← magic link'ten ÖNCE
+├── OAuth (Google, GitHub)             ← magic link'ten ÖNCE
 ├── Session cookie + Redis + CSRF
 ├── Magic link (selector/verifier, POST doğrulama)
 ├── Account enumeration koruması

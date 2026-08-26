@@ -128,7 +128,7 @@ Model adları **env değişkeni**dir, koda gömülmez — model isimlendirmeleri
 | **Resend** | Transactional e-posta | 3.000/ay ücretsiz, modern API, iyi DNS kurulum rehberi |
 | **Cloudflare Turnstile** | Bot koruması | Ücretsiz, CAPTCHA'sız UX, Cloudflare ekosisteminde |
 | **Cloudflare R2** | Nesne depolama (PDF, yedek) | S3 uyumlu, **egress ücretsiz** (restore testi bedava) |
-| **OAuth: Google/GitHub/LinkedIn** | Kimlik | Magic link'e alternatif; e-posta teslimat riskini azaltır |
+| **OAuth: Google/GitHub** | Kimlik | Magic link'e alternatif; e-posta teslimat riskini azaltır |
 
 **Kendi SMTP sunucusu neden yok:** VPS IP'leri evrensel olarak güvenilmez kabul edilir. Gmail/Outlook doğrudan spam'e atar. IP itibarı aylar sürer, tek şikayet sıfırlar.
 

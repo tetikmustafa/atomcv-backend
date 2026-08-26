@@ -100,7 +100,7 @@ CREATE TABLE users (
 CREATE TABLE oauth_identities (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    provider        TEXT NOT NULL CHECK (provider IN ('google','github','linkedin')),
+    provider        TEXT NOT NULL CHECK (provider IN ('google','github')),   -- V2: linkedin çıkarıldı
     provider_uid    TEXT NOT NULL,
     access_token_enc TEXT,                     -- şifreli
     scopes          TEXT[],

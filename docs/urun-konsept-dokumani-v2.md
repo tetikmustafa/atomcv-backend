@@ -282,7 +282,7 @@ Kullanıcı hesap açmadan tam işlevsel deneyebilir:
 
 ### Aşama 1 — Hesap Oluşturma
 
-- Google / GitHub / LinkedIn ile giriş
+- Google / GitHub ile giriş
 - Ya da e-posta ile magic link (şifresiz)
 
 ### Aşama 2 — Master Profil Oluşturma
