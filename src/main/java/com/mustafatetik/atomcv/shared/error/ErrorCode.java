@@ -72,6 +72,22 @@ public enum ErrorCode {
     GENERATION_ARTIFACT_EXPIRED(410),
     CSRF_TOKEN_INVALID(403),
 
+    /**
+     * No session at all on a request that needs one (Adim 3.3, Ekleme).
+     *
+     * <p>EK D.6 names {@link #ANONYMOUS_SESSION_EXPIRED} for a session that ran
+     * out and {@link #FEATURE_REQUIRES_ACCOUNT} for a feature an anonymous
+     * user cannot reach, but nothing for the plain case of a request arriving
+     * with no {@code sid} cookie. Reusing the expiry code would have the
+     * server claim a session existed and lapsed, which is a sentence the user
+     * reads and a diagnosis the logs cannot correct later.
+     *
+     * <p>Adim 3.6 mints an anonymous session for a caller without a cookie, so
+     * this becomes rare rather than wrong: it stays the answer for a request
+     * that reaches a user-scoped endpoint carrying nothing.
+     */
+    AUTHENTICATION_REQUIRED(401),
+
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),

@@ -11,25 +11,28 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * A stand-in acting user for local development, until identity lands in
- * Stage 3 (XI-A.6).
+ * The row every local profile and every generation hangs off, and nothing more.
  *
- * <p>Adim 1.2 needs endpoints, endpoints need a {@link UserContext}, and a
- * {@code ProfileRef} cannot be produced without one. The alternatives were
- * worse: picking the user from a request header is an authentication bypass
- * the moment it reaches production, and waiting for identity would block the
- * rest of Stage 1, all of which reads profile data.
+ * <p>This was {@code LocalDevUser} and it was a {@code CurrentUser}: a
+ * fixed acting user, standing in until identity arrived. Identity arrived in
+ * Adim 3.3 and took that half — {@code CurrentUser} is now backed by a real
+ * session. What is left is the seed.
  *
- * <p><strong>It cannot exist outside the {@code local} profile.</strong> There
- * is no fallback bean, so a production start-up fails loudly the moment
- * something needs a user rather than quietly serving one user's data to
- * everyone. That failure is the point, and it ends when the real
- * implementation arrives — at which point this class is deleted whole.
+ * <p><strong>It was not deleted whole, as its predecessor said it would be.</strong>
+ * Sessions landed before any way to start one did: OAuth is the next slice and
+ * the magic link the one after. Deleting the seed here would leave {@code make
+ * dev} with a database that has no user in it and a browser that can be nobody.
+ * The row is what {@code identity.service.LocalDevSessions} signs in, and both
+ * go when a real login exists.
+ *
+ * <p><strong>It cannot exist outside the {@code local} profile.</strong> A
+ * production start-up has no such bean, so nothing can fall back to a shared
+ * user.
  */
 @Component
 @Profile("local")
 @Order(0)
-public class LocalDevCurrentUser implements CurrentUser, ApplicationRunner {
+public class LocalDevUser implements ApplicationRunner {
 
     /** Fixed so that local data survives a restart and seeds stay meaningful. */
     public static final UUID DEV_USER_ID =
@@ -37,23 +40,19 @@ public class LocalDevCurrentUser implements CurrentUser, ApplicationRunner {
 
     private static final String DEV_EMAIL = "dev@localhost";
 
-    private static final Logger log = LoggerFactory.getLogger(LocalDevCurrentUser.class);
+    private static final Logger log = LoggerFactory.getLogger(LocalDevUser.class);
 
     private final JdbcTemplate jdbc;
 
-    LocalDevCurrentUser(JdbcTemplate jdbc) {
+    LocalDevUser(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
-    }
-
-    @Override
-    public UserContext require() {
-        return new UserContext(DEV_USER_ID, UserRole.USER);
     }
 
     /**
      * The row has to exist: every profile is a foreign key away from it.
-     * Written with JDBC because identity has no entity yet — and when it does,
-     * this whole class goes.
+     * Written with JDBC because identity has no entity yet — Adim 3.3's first
+     * slice needs no read of {@code users}, and inventing one to seed a row
+     * would be the tail wagging the dog.
      *
      * <p>Runs as an {@link ApplicationRunner} so it happens after Flyway rather
      * than racing it.
