@@ -30,8 +30,9 @@ POST   /api/v1/auth/magic-link              magic link iste
 POST   /api/v1/auth/verify                  token doğrula (POST! prefetch koruması)
 GET    /api/v1/auth/session                 oturum + capabilities
 POST   /api/v1/auth/logout
-GET    /api/v1/auth/oauth/{provider}/start
-GET    /api/v1/auth/oauth/{provider}/callback
+GET    /api/v1/auth/providers                yapılandırılmış sağlayıcılar
+GET    /api/v1/auth/oauth/{provider}/start    302 sağlayıcıya
+GET    /api/v1/auth/oauth/{provider}/callback 302 iniş rotasına (§ 40.6.1)
 
 ── Profil ──────────────────────────────────────────
 GET    /api/v1/profile                      yoksa yaratır, 404 dönmez (EK D.8)

@@ -94,6 +94,7 @@ yalnızca yerine koyar.
 | `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
 | `CSRF_TOKEN_INVALID` | 403 | — |
 | `AUTHENTICATION_REQUIRED` | 401 | — |
+| `OAUTH_FAILED` | 400 | `reason: string` |
 | `RESOURCE_NOT_FOUND` | 404 | — |
 | `VERSION_CONFLICT` | 412 | — |
 | `PRECONDITION_REQUIRED` | 428 | — |
@@ -334,6 +335,16 @@ kurdururdu — kullanıcının okuduğu cümle, ve logların sonradan düzelteme
 bir teşhis. Tek resolution `sign_up`. Adım 3.6 çerezsiz çağırana anonim oturum
 basmaya başlayınca kod **nadirleşir, yanlış olmaz**: kullanıcı kapsamlı bir uca
 hiçbir şey taşımadan gelen isteğin cevabı olarak kalır.
+
+**`OAUTH_FAILED` tek kod, yedi sebep (Adım 3.3).** `reason` kapalı bir sözlük:
+`state_invalid`, `declined`, `provider_disabled`, `provider_unavailable`,
+`email_missing`, `email_unverified`, `account_disabled`. `F-016`'nın istediği
+şekil — istemci tek bir ICU anahtarını `select` ile çözer, sonradan eklenen bir
+sebep `other` dalına düşer, ham anahtar ekrana çıkmaz.
+
+**Ve genelde gövdede değil, sorgu parametresinde gelir.** İki OAuth ucu da
+tarayıcı gezinmesidir; hata, frontend'in hata rotasına `?code=OAUTH_FAILED&reason=...`
+ile yönlendirmedir. Katalogdaki 400, biri onu JSON olarak isterse ne olacağıdır.
 
 #### D.6.7 — Kapsam dışı bırakılanlar
 

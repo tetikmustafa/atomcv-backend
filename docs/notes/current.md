@@ -14,8 +14,9 @@ Aşama 1 `archive/stage-1.md`'de.
 
 ## Aşama 2'den taşınan açık kutular
 
-**`Axiom'da loglar görünüyor` kutusu 3.1'e taşındı.** OTLP ihracatçısı bağlı ama
-bir URL verilene kadar kapalı; dataset Adım 3.1'de açılıyor. Kutu oraya yazıldı.
+**`Axiom'da loglar görünüyor` — dataset açıldı ve `.env` dolduruldu
+(2026-08-26).** Değişkenler `OTLP_*`; telde doğrulanması üretim dağıtımını
+bekliyor.
 
 **`llm_invocations.user_id` NULL.** Olay kullanıcıyı taşımıyor — zincir,
 `UserContext` tutan fazlardan çağrılıyor ama aşağı geçirmiyor. Günlük toplam
@@ -124,15 +125,9 @@ kapatıyor, üretim hiçbir şeyi geçersiz kılmıyor. `SessionProperties` nokt
 başlayan bir `domain`'i **açılışta reddediyor** — Adım 3.3'ün uyarısı yazı
 değil kural.
 
-**Testte iki tuzak, ikisi de bir koşuya mal oldu.**
-`AbstractIntegrationTest` artık her isteğe geçerli bir CSRF tokenı koyuyor
-(`MockMvcBuilderCustomizer` + `defaultRequest(...with(csrf()))`), böylece filtre
-tüm pakette açık ve 130 çağrı noktasına dokunulmadı. **Ama iç içe
-`@TestConfiguration` yalnız *koşulan* sınıfta bulunuyor, miras alınan taban
-sınıfta değil** — `@Import` olmadan bean sessizce yok ve her yazma 403.
-İkincisi: Spring Security classpath'e girdiği an `@WebMvcTest` kendi varsayılan
-zincirini kuruyor; `ProblemDetailAdviceTest` artık `addFilters = false` ile
-koşuyor, yoksa gövde yerine 401 sınıyordu.
+**Testteki iki tuzak `CLAUDE.md`'ye yazıldı** (iç içe `@TestConfiguration`
+miras alınan taban sınıfta bulunmaz; `@WebMvcTest` kendi zincirini kurar).
+Burada ikinci kopyası durmasın.
 
 **Redis artık entegrasyon paketinde gerçek.** Taban sınıfa bir konteyner
 eklendi. Yoksa `SessionStore` her aramada başarısız oluyor — ve tam olarak
@@ -162,3 +157,43 @@ metrik sessizce reddedilir, log'a hiçbir şey düşmez.
 **`SESSION_SECRET` `.env.example`'dan silindi.** İmzalanan bir şey yok;
 kullanılmayan bir sır yalnızca sızabilecek bir sırdır. Yerine
 `SESSION_COOKIE_DOMAIN` ve `SESSION_COOKIE_SECURE` geldi.
+
+### Adım 3.3 · dilim 2 — OAuth
+
+Kalıcı kararların tamamı `spec/10-security.md` § 40.6.1'e yazıldı; burada
+yalnız izleri ve **koddan öğrenilenler** duruyor.
+
+**Düzeltme — `citext` kolonu `varchar` parametreyle aranırsa büyük/küçük harf
+duyarlı arar.** JPA'nın türettiği `findByEmail`, JDBC parametresini `varchar`
+bağlıyor; Postgres `citext = varchar`'ı citext'i `text`'e indirerek çözüyor.
+Sonuç iki yarının çelişmesi: **UNIQUE index duyarsız koruyor, sorgu duyarlı
+arıyor** — var olan hesap bulunamıyor, giriş "yeni kişi" diyor, insert
+`users_email_key`'de ölüyor ve kullanıcı 500 görüyor. Çözüm parametreyi
+`CAST(:email AS citext)` ile yukarı çevirmek; aynı index'i de kullanıyor.
+`OAuthApiIT` yalnız harf büyüklüğü farkeden bir adresle iki kez giriyor — bunu
+o buldu. **Aynı tuzak `users.email`'e dokunan her yeni sorguda var.**
+
+**Düzeltme — çok kuruculu bir record'u Spring Boot bağlamıyor.**
+`Registration`'a kolaylık olsun diye eklenen ikinci kurucu, her sağlayıcıyı
+sessizce yapılandırılmamış bıraktı; belirti, hiç görünmeyen bir giriş
+düğmesiydi. Kolaylık artık statik `of(...)` fabrikası.
+
+**Ekleme — `SignInAccounts` kullanıcı kapsamlı değil.** Mutlak kural 3'ün tek
+istisnası: giriş, *kullanıcının kim olduğunu hesaplama* eylemi ve hesaplamakta
+olduğu cevapla kapsanamaz. Yerine geçen şey cephenin darlığı — id alan bulucu
+yok, listeleyen yok. ArchUnit'e modülün satırı eklendi ve **kasıtlı ihlalle
+düştüğü görüldü**. Metot eklenecekse ölçüt: saldırganın cevabını istediği bir
+soruyu yanıtlıyorsa kapsamlı bir repository'nin arkasına ait.
+
+**Ekleme — `UserAccount.email` `@Column(columnDefinition = "citext")` şart;**
+onsuz Hibernate `validate` açılışta düşüyor (`citext (Types#OTHER)` vs
+`varchar`).
+
+**Ekleme — yerel giriş kısayolu kapatılabilir** (`LOCAL_DEV_SESSION=false`).
+Açıkken çıkış yapmak dev kullanıcısına düşürüyor ve tarayıcı tekrar girişli
+görünüyor — logout'un çalıştığını izlemeye çalışırken kafa karıştırıcı.
+
+**Açık kalan:** magic link (dilim 3), üç katmanlı rate limit + Turnstile
+(dilim 4). `LocalDevUser` ve `LocalDevSessions` hâlâ duruyor — entegrasyon
+paketinin 27 sınıfı çerezsiz istek atıyor; onları gerçek oturuma taşımak ayrı
+bir test-altyapısı dilimi.
