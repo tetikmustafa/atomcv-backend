@@ -12,6 +12,11 @@
 
 ## OPEN
 
+> **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
+> değil:** altı madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
+> yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
+
 ### B-044 · Her yazma isteği bir CSRF token taşıyor
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6.6
 
@@ -19,13 +24,13 @@
 istemci güvensiz metotlarda (`POST`/`PUT`/`PATCH`/`DELETE`) `X-XSRF-TOKEN`
 başlığında yankılıyor. Yankılamayan istek `403 CSRF_TOKEN_INVALID` alır.
 
-**Aksiyon:** `client.ts`'e iki satır. Çerez `HttpOnly` **değil** — okunması
-gerekiyor, ve `sid` olmadan hiçbir şey kanıtlamıyor. Kodu gören istemci tekrar
-denemesin, tokenı yeniden okusun: her `GET` taze bir tane taşıyor.
+**Aksiyon:** `client.ts`'e iki satır. Çerez `HttpOnly` **değil** (okunması
+gerekiyor; `sid` olmadan hiçbir şey kanıtlamıyor). Kodu gören istemci tekrar
+denemesin, tokenı yeniden okusun.
 
 **Tuzak:** çerez `SameSite=Strict` ve host'a bağlı; ayrı portlarda
-(`:3000`/`:8080`) `document.cookie` göremez. Next.js rewrite'ı üzerinden tek
-origin'den geçin — OAuth callback'i de dahil.
+(`:3000`/`:8080`) `document.cookie` göremez — Next.js rewrite'ı üzerinden tek
+origin'den geçin, OAuth callback'i dahil.
 
 ### B-045 · Yeni hata kodu — `AUTHENTICATION_REQUIRED` (401)
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6
@@ -40,16 +45,8 @@ resolution `sign_up`. Adım 3.6 anonim oturum basınca nadirleşir.
 `GET /auth/session` → `authenticated` + `capabilities`, `no-store`.
 `POST /auth/logout` → `204`, oturumu sunucuda iptal eder; oturumsuz da `204`.
 
-§ 35.7 yalnız **anonim** kümeyi yazmıştı; hesaplı hâli artık spec'te.
-
-| Alan | Anonim | Hesap |
-|---|---|---|
-| `allowedLanguages` | `["en"]` | `["en","tr"]`, yapılandırılabilir |
-| `canCustomizeTemplate` · `canEditAtomControls` · `canAddAlternatives` · `canSaveHistory` | `false` | `true` |
-| `dailyGenerationQuota` · `dailyProfileQuota` | 5 · 3 | bugün 20 · 5 |
-| `maxAtoms` | 60 | **alan yok** |
-| `quotaResetsAt` | `null` | mutlak an |
-| `anonymousExpiresAt` | Adım 3.6'da | **alan yok** |
+§ 35.7 yalnız **anonim** kümeyi yazmıştı; hesaplı hâlinin tam tablosu artık
+orada — hesapta diller `["en","tr"]`, dört yetenek `true`, kotalar 20 · 5.
 
 **Aksiyon:** `maxAtoms` ve `anonymousExpiresAt` hesapta `null` değil, JSON'da
 **hiç yok** — tipleriniz opsiyonel okusun; olmayan bir limite karşı çizilen
@@ -68,23 +65,43 @@ GitHub'ın zaten verdiği giriş.
 **Since:** commit <sha> · Adım 3.3 dilim 2 · **Spec:** `spec/10-security.md` § 40.6.1
 
 `GET /auth/providers` → yapılandırılmış sağlayıcılar (anahtarı olmayan sessizce
-yok; düğmeleri buna göre çizin). `GET /auth/oauth/{provider}/start?next=/profile`
-→ 302 sağlayıcıya.
+yok). `GET /auth/oauth/{provider}/start?next=/profile` → 302 sağlayıcıya.
 
 **`/auth/complete?next=...`** — başarılı girişin indiği yer. Doğrudan hedefe
-yönlendirmiyoruz: oturum çerezi `SameSite=Strict` ve tarayıcı, zinciri başka
-bir sitede başlamış bir isteğe onu **göndermez** — zincir Google'da başladı.
-Doğrudan gitseydik ilk sayfa çıkışlı görünür, yalnız elle yenileme düzeltirdi.
-Bu sayfa `/auth/session`'ı **aynı-origin fetch** ile sorsun, sonra `next`'e
-gitsin.
+yönlendirmiyoruz: `SameSite=Strict` çerezi, zinciri başka bir sitede başlamış
+bir isteğe **gönderilmez** — zincir Google'da başladı, ve ilk sayfa çıkışlı
+görünürdü. Bu sayfa `/auth/session`'ı **aynı-origin fetch** ile sorsun, sonra
+`next`'e gitsin.
 
 **`/auth/error?code=OAUTH_FAILED&reason=...`** — hata burada iniyor.
-`OAUTH_FAILED` tek kod, yedi sebep (`F-016`'nın istediği şekil):
-`state_invalid`, `declined`, `provider_disabled`, `provider_unavailable`,
-`email_missing`, `email_unverified`, `account_disabled`. **`declined`
-kullanıcının vazgeçmesi, hata değil** — dili ona göre olsun.
+`OAUTH_FAILED` tek kod, yedi sebep (`F-016`'nın şekli): `state_invalid`,
+`declined`, `provider_disabled`, `provider_unavailable`, `email_missing`,
+`email_unverified`, `account_disabled`. **`declined` kullanıcının vazgeçmesi,
+hata değil.** `next` sunucuda doğrulanıyor: yalnız düz bir yol, gerisi `/`.
 
-`next` sunucuda doğrulanıyor: yalnız bu sitede düz bir yol, gerisi `/`.
+### B-049 · Magic link indi — bir rota ve bir tuzak
+**Since:** commit <sha> · Adım 3.3 dilim 3 · **Spec:** `spec/10-security.md` § 40.4.1
+
+`POST /auth/magic-link` `{email}` → **her zaman `202`, gövdesiz**. Hesabın var
+olup olmadığı tam da gizlenecek şey (§ 40.4); "kayıtlıysa gönderildi"
+cümlesini **siz** yazıyorsunuz ve iki halde de aynı.
+
+**Sizden bir rota: `/verify?s=..&v=..`** — bağlantı buraya iner, ve bu `GET`
+**doğrulama yapmamalı**: kurumsal posta tarayıcıları bağlantılara otomatik
+tıklıyor, tek kullanımlık tokenı tarayıcı harcarsa kullanıcı hiç giremiyor
+(§ 40.3). Sayfa bir düğme göstersin; düğme `POST /auth/verify`
+`{selector, verifier}` yapsın → `204` + oturum çerezi.
+
+**Tuzak — o sayfa önce bir `GET` yapmak zorunda.** `POST /auth/verify` CSRF
+tokenı istiyor, token `XSRF-TOKEN` çerezinden okunuyor, ve e-postadan gelen
+kullanıcının tarayıcısında o çerez **henüz yok**. Sayfa yüklenince önce
+`/auth/session`'ı çağırın, sonra POST edin — yoksa her magic link girişi 403
+alır.
+
+**Yeni kod `MAGIC_LINK_INVALID`, `params` yok — bilerek.** Süresi dolmuş,
+kullanılmış, yanlış ve hiç var olmamış **tek bir cevap**; ayırt edilebilirse
+tahmin yürüten kişi hangi yarının doğru olduğunu öğrenir. Tek bir metin yazın,
+sebep sormayın.
 
 ---
 

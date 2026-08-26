@@ -65,6 +65,50 @@ return ok("Eğer bu adres kayıtlıysa, giriş bağlantısı gönderildi.");
 
 Erken dönmek zamanlama farkı yaratır — sahte bir gecikme ekle veya her durumda aynı yolu yürüt.
 
+#### 40.4.1 Kararlar (Adım 3.3, dilim 3)
+
+**Magic link hesap da yaratır.** Ürün dokümanı onu hesap oluşturma yolu sayıyor
+ve doğrulanacak bir şey de yok: **bağlantıyı açmak kanıttır.**
+`magic_link_tokens.user_id` `NOT NULL` olduğu için kullanıcı satırı istek
+anında doğar, `email_verified = false` ile; doğrulama bağlantı açılınca düşer.
+Satır o ana kadar bir yer tutucudur — ona ait oturum da profil de yoktur.
+
+**Bunun bedeli açıkça yazılsın:** herhangi biri, sahibi olmadığı bir adres için
+satır yaratabilir ve o adrese e-posta gönderttirebilir. Freni § 40.5'in rate
+limit'i ve Turnstile'dır; **onlar inmeden bu uç üretime açılmamalıdır.**
+
+**İstek her zaman aynı yanıtı verir: `202`, gövdesiz.** § 40.4'ün gerektirdiği
+şey bu, ve sunucunun cümle yazmaması genel kuralıyla da uyuşuyor — "kayıtlıysa
+gönderildi" cümlesini istemci yazar. İki dal da aynı işi yürür (bul-veya-yarat,
+token üret, gönder), yani ölçülecek bir zaman farkı da kalmaz.
+
+**Ret her zaman aynı rettir.** `MAGIC_LINK_INVALID`, parametresiz ve
+**bilinçli olarak sebepsiz**. Katalogda başka her yerde kapalı bir `reason`
+daha iyi bir şekildir; burada açıktır: süresi dolmuş, kullanılmış, yanlış
+verifier ve hiç var olmamış ayırt edilebilirse tahmin yürüten kişi tahmininin
+hangi yarısının doğru olduğunu öğrenir.
+
+**Tek kullanım koşullu `UPDATE` ile.** `used_at`'i okuyup yazmak, aynı anda
+gelen iki isteğin ikisini de içeri alırdı — testte hiç görünmeyen, bağlantıyı
+ele geçirene ikinci bir oturum veren bir yarış. `WHERE used_at IS NULL` ve
+etkilenen satır sayısı kararı veritabanına bırakır.
+
+**Giriş, hesabın bekleyen diğer bağlantılarını da harcar.** § 40.2 istemiyor;
+sahibi olmadığı bir adrese bağlantı isteten biri arkasında canlı bir token
+bırakır, ve gerçek sahibin giriş anı bunun kapandığından emin olabileceği
+andır.
+
+**Gönderici anahtarla seçilir, üç dallı.** Resend anahtarı varsa HTTP API
+(reddi bir durum kodu olarak döner, dakikalar sonra bir bounce olarak değil);
+yoksa `spring.mail` varsa SMTP — yerelde Mailpit, çünkü bu e-posta sağlayıcı
+kullanmayan herkesin üründen gördüğü ilk şey ve bakılmadan doğrulanamaz;
+ikisi de yoksa **açılışta WARN** ve hiçbir şey gitmez. Sessizce sıfır davranan
+bir yol yerine adıyla söylenen bir eksik.
+
+**Bastırılmış adrese gönderilmez.** Sert bounce ya da şikâyet kalıcı bir
+talimattır; yok saymak gönderim alan adının itibarına mal olur, o da girişi
+herkes için bozar. Token yine de yazılır, iş aynı kalsın diye.
+
 ### 40.5 Rate limiting (3 katman)
 
 ```
