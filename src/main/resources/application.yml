@@ -76,6 +76,28 @@ atomcv:
     domain: ${SESSION_COOKIE_DOMAIN:}
     secure: ${SESSION_COOKIE_SECURE:true}
 
+  # Bolum 40.6. A provider with no credentials is absent, not broken — the
+  # same shape Bolum 27.3 uses for LLM vendors, so one file serves a deployment
+  # that registered one provider and one that registered both.
+  oauth:
+    # Where the provider sends the browser back. It has to be an origin the
+    # frontend also serves: the session cookie is SameSite=Strict and the CSRF
+    # token is read from document.cookie, so a callback landing on a different
+    # origin than the app arrives with neither.
+    redirect-base-url: ${APP_BASE_URL:http://localhost:3000}
+    # Not the destination: a Strict cookie is withheld from a redirect chain
+    # that began at the provider, so the client lands here and asks
+    # /auth/session with a same-origin fetch before routing on.
+    landing-path: ${OAUTH_LANDING_PATH:/auth/complete}
+    error-path: ${OAUTH_ERROR_PATH:/auth/error}
+    providers:
+      google:
+        client-id: ${OAUTH_GOOGLE_CLIENT_ID:}
+        client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET:}
+      github:
+        client-id: ${OAUTH_GITHUB_CLIENT_ID:}
+        client-secret: ${OAUTH_GITHUB_CLIENT_SECRET:}
+
   # § 35.7 wrote down the anonymous capability set and never the account one.
   # This is that half, published to the frontend as B-044.
   capabilities:
