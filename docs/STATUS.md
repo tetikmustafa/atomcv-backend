@@ -4,7 +4,7 @@
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
 **Son güncelleme:** 2026-08-26 · **Aşama 3 başladı** — 3.3 dilim 1 (oturum) indi ·
-frontend'de açık: **`B-044`, `B-045`, `B-046`**
+frontend'de açık: **`B-044`** – **`B-047`**
 
 ---
 
@@ -33,8 +33,8 @@ Kataloga `AUTHENTICATION_REQUIRED` (401), § 35.7'ye hesabın yetenek kümesi.
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
 
-**`B-042`, `B-043` kapandı; `B-044`-`B-046` açıldı** — CSRF başlığı, yeni
-401 kodu, `/auth/session` + hesabın yetenek kümesi. `gen:api` gerekiyor.
+**`B-042`, `B-043` kapandı; `B-044`-`B-047` açıldı** — CSRF başlığı, yeni 401
+kodu, `/auth/session` + yetenek kümesi, LinkedIn girişi kalktı. `gen:api` şart.
 **Test:** 401 birim · 25 e2e · **bundle** profil 250.7 / üretim 214.8 KB.
 **Aşama 2 gerçek uca karşı denetlendi (2026-08-25): 26/26** — yalnız
 `suspicious_output` tetiklenemedi, ve o beklenen sonuç (`notes/current.md`).
@@ -53,5 +53,5 @@ Kataloga `AUTHENTICATION_REQUIRED` (401), § 35.7'ye hesabın yetenek kümesi.
 
 ## Sonraki senkronizasyon noktası
 
-**`/auth/session` ve `capabilities` telde** — frontend `B-044`-`B-046`'yı alsın.
+**`/auth/session` ve `capabilities` telde** — frontend `B-044`-`B-047`'yi alsın.
 Sonrası OAuth (3.3 dilim 2), ki Adım 3.1'in Google client ID'sini bekliyor.

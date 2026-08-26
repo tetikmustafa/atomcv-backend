@@ -15,75 +15,74 @@
 ### B-044 · Her yazma isteği artık bir CSRF token taşıyor
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6.6
 
-**Neden:** Kimlik indi, ve § D.6.6 CSRF'i "kimlikle birlikte gelir" diye
-bağlamıştı. Çift-gönderim (double submit) deseni açık: sunucu her yanıtta
-okunabilir bir `XSRF-TOKEN` çerezi veriyor, istemci güvensiz metotlarda
-(`POST`/`PUT`/`PATCH`/`DELETE`) bunu `X-XSRF-TOKEN` başlığında yankılıyor.
+**Neden:** § D.6.6 CSRF'i "kimlikle birlikte gelir" diye bağlamıştı; kimlik indi.
+Çift-gönderim: sunucu her yanıtta okunabilir bir `XSRF-TOKEN` çerezi veriyor,
+istemci güvensiz metotlarda (`POST`/`PUT`/`PATCH`/`DELETE`) bunu
+`X-XSRF-TOKEN` başlığında yankılıyor.
 
-**Aksiyon:** `client.ts`'teki fetch sarmalayıcısına iki satır. Çerez `HttpOnly`
-**değil** — okunması gerekiyor, ve bu güvenli: token tek başına bir kimlik
-belgesi değil, `sid` olmadan hiçbir şey kanıtlamıyor. `sid` `HttpOnly` kalıyor.
+**Aksiyon:** `client.ts`'e iki satır. Çerez `HttpOnly` **değil** — okunması
+gerekiyor, ve güvenli: token `sid` olmadan hiçbir şey kanıtlamıyor, `sid` ise
+`HttpOnly` kalıyor. Yankılamayan istek `403` + `CSRF_TOKEN_INVALID` alır; doğru
+davranış tekrar denemek değil tokenı yeniden okumak — her `GET` taze bir tane
+taşıyor.
 
-Yankılamayan bir istek **`403` + `CSRF_TOKEN_INVALID`** alıyor — kod katalogda
-zaten vardı, artık telde de var. Bu kodu gören istemcinin doğru davranışı
-tekrar denemek değil, tokenı yeniden okumak: `GET` yanıtlarının hepsi taze bir
-tane taşıyor.
-
-**Bir tuzak:** çerez `SameSite=Strict` ve host'a bağlı. Geliştirmede frontend
-`:3000`, backend `:8080` ise `document.cookie` onu **göremez** — Next.js
-rewrite'ı üzerinden tek origin'den geçmeniz gerekiyor. Üretimde nginx zaten
-tek origin veriyor.
+**Tuzak:** çerez `SameSite=Strict` ve host'a bağlı; ayrı portlarda
+(`:3000`/`:8080`) `document.cookie` göremez. Next.js rewrite'ı üzerinden tek
+origin'den geçin — OAuth callback'i de dahil.
 
 ### B-045 · Yeni hata kodu — `AUTHENTICATION_REQUIRED` (401)
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6
 
-**Neden:** Katalogda **oturumu hiç olmayan** bir isteğin karşılığı yoktu.
-`ANONYMOUS_SESSION_EXPIRED` süresi *dolmuş* anonim oturum için,
-`FEATURE_REQUIRES_ACCOUNT` erişilemeyen bir *özellik* için. `sid` çerezi hiç
-gelmeyen bir isteğin cevabı yazılmamıştı; ikisinden birini ödünç almak sunucuya
-hiç var olmamış bir oturum hakkında cümle kurdururdu.
+**Neden:** Katalogda **oturumu hiç olmayan** isteğin karşılığı yoktu.
+`ANONYMOUS_SESSION_EXPIRED` süresi *dolmuş* oturumun,
+`FEATURE_REQUIRES_ACCOUNT` erişilemeyen bir *özelliğin* adı; ikisinden birini
+ödünç almak sunucuya hiç var olmamış bir oturum hakkında cümle kurdururdu.
 
 **Aksiyon:** `errors.AUTHENTICATION_REQUIRED` anahtarı. `params` yok, tek
-resolution `sign_up`. Adım 3.6 çerezi olmayana anonim oturum basmaya
-başlayınca bu kod **nadirleşir ama yanlış olmaz** — kullanıcı kapsamlı bir uca
-hiçbir şey taşımadan gelen isteğin cevabı olarak kalır.
+resolution `sign_up`. Adım 3.6 anonim oturum basmaya başlayınca **nadirleşir,
+yanlış olmaz.**
 
 ### B-046 · `/auth/session`, `/auth/logout`, ve hesabın yetenek kümesi
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08-api.md` § 35.7
 
-**Neden:** İkisi de telde. `GET /api/v1/auth/session` → `authenticated` +
-`capabilities`, `no-store`. `POST /api/v1/auth/logout` → `204`, oturumu
-sunucuda iptal eder ve çerezi siler; oturumsuz çağrılması da `204`.
+**Neden:** `GET /api/v1/auth/session` → `authenticated` + `capabilities`,
+`no-store`. `POST /api/v1/auth/logout` → `204`, oturumu sunucuda iptal eder ve
+çerezi siler; oturumsuz çağrılması da `204`.
 
-**Ama asıl söylenmesi gereken şu: § 35.7 yalnız *anonim* kümeyi yazmış.**
-Örnek gövdesi `"authenticated": false` taşıyor ve hesaplı hâli hiçbir bölümde
-tarif edilmemiş. Sessizce uydurmak yerine kararı burada bildiriyoruz:
+**Asıl mesele: § 35.7 yalnız *anonim* kümeyi yazmış** (`"authenticated": false`),
+hesaplı hâli hiçbir bölümde yok. Uydurmak yerine karar § 35.7'ye işlendi:
 
-| Alan | Anonim (§ 35.7) | Hesap (yeni) |
+| Alan | Anonim | Hesap |
 |---|---|---|
-| `allowedLanguages` | `["en"]` | `["en", "tr"]` — yapılandırılabilir |
-| `canCustomizeTemplate` / `canEditAtomControls` / `canAddAlternatives` / `canSaveHistory` | `false` | `true` |
-| `dailyGenerationQuota` / `dailyProfileQuota` | 5 / 3 | `QuotaService`'ten — bugün 20 / 5 |
+| `allowedLanguages` | `["en"]` | `["en","tr"]`, yapılandırılabilir |
+| `canCustomizeTemplate` · `canEditAtomControls` · `canAddAlternatives` · `canSaveHistory` | `false` | `true` |
+| `dailyGenerationQuota` · `dailyProfileQuota` | 5 · 3 | `QuotaService`'ten — bugün 20 · 5 |
 | `maxAtoms` | 60 | **alan yok** |
 | `quotaResetsAt` | `null` | mutlak an (EK D.6.5) |
 | `anonymousExpiresAt` | Adım 3.6'da | **alan yok** |
 
-**Aksiyon:** `maxAtoms` ve `anonymousExpiresAt` hesapta **yok** — `null` değil,
-JSON'da hiç bulunmuyorlar. Bir hesap için tavan yok, ve olmayan bir limite
-karşı çizilen bir ilerleme çubuğu yanlış bir ekran. Tipleriniz ikisini de
-opsiyonel okumalı.
+**Aksiyon:** `maxAtoms` ve `anonymousExpiresAt` hesapta `null` değil, JSON'da
+**hiç yok** — tipleriniz ikisini de opsiyonel okumalı; olmayan bir limite karşı
+çizilen ilerleme çubuğu yanlış bir ekran. `allowedTemplates` bugün tek eleman:
+`["classic"]` — kayıtta bir tane var, render edilemeyecek bir şablonu
+listelemek üretimde patlayan bir seçenek olurdu. İkincisi gelince liste
+kendiliğinden büyür.
 
-**`allowedTemplates` bugün tek eleman taşıyor: `["classic"]`.** § 35.7'nin
-örneği üçünü sayıyor ama kayıtta bir tane var; render edilemeyecek bir şablonu
-listelemek üretim anında patlayan bir seçenek olurdu. İkincisi geldiğinde
-liste kendiliğinden büyür, `gen:api` fark üretmez.
+**Henüz giriş yolu yok.** OAuth sıradaki dilim; bugün oturumu yalnız `local`
+kısayolu başlatıyor, yani `authenticated` geliştirmede hep `true`, üretimde hep
+`false`.
 
-**`sid` çerezi anonim ve hesaplı oturumda aynı** (§ D.6.6). Kimlik doğrulama
-istemci tarafında bir `capabilities` sorusu olarak kalıyor.
+### B-047 · LinkedIn ile giriş kaldırıldı
+**Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/02-tech-stack.md`, `spec/13-development.md`
 
-**Henüz giriş yolu yok.** OAuth bir sonraki dilim; şu an oturum başlatan tek
-şey `local` profilindeki geliştirme kısayolu. Yani `authenticated` bugün
-geliştirmede hep `true`, üretimde hep `false`.
+**Neden:** Geliştirici kararı. Üçünün içinde yalnız LinkedIn, uygulama
+açabilmek için **doğrulanmış bir şirket sayfası** istiyor, ve karşılığında
+Google ile GitHub'ın zaten verdiği girişi veriyor.
+
+**Aksiyon:** Giriş ekranından LinkedIn düğmesini çıkarın. Kalanlar `google` ve
+`github`; `V2` migration'ı `oauth_identities.provider` CHECK'ini de ikiye
+indirdi. **Karıştırmayın:** CV'deki `contact.linkedin` alanı duruyor — o bir
+iletişim bilgisi, kimlik sağlayıcısı değil.
 
 ---
 

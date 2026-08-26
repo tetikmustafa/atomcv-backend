@@ -143,3 +143,22 @@ edilmeden hoş görüyordu.
 **Açık kalan:** giriş yolu yok (OAuth · dilim 2), magic link (dilim 3), üç
 katmanlı rate limit ve Turnstile (dilim 4). `revokeAllFor` yazıldı ve sınandı
 ama henüz çağıran yok — rol değişimi ve hesap silme onu isteyecek.
+
+### Adım 3.3 · LinkedIn ve OTLP adlandırması
+
+**Sapma — LinkedIn bir kimlik sağlayıcısı değil artık.** Geliştirici kararı;
+`spec/`'in altı dosyasına ve `V2` migration'ına işlendi, yani kalıcı ve burada
+yalnız izi duruyor. `AuthMethod` ikiye indi, `oauth_identities.provider`
+CHECK'i `('google','github')`. **`Contact.linkedin` CV alanı bununla
+ilgisiz ve duruyor** — bir sonraki oturum ikisini karıştırmasın.
+
+**Düzeltme — `spec/11-operations.md` § 46.5 `AXIOM_TOKEN` / `AXIOM_DATASET`
+diyordu, kod `OTLP_*` okuyor.** Kod doğruydu ve spec koda uyduruldu: isim
+satıcının değil telin adı. İki tuzak § 46.5'e yazıldı — `OTLP_AUTHORIZATION`
+kendi `Bearer ` önekini taşır, ve `micrometer-registry-otlp` **metrik**
+gönderdiği için URL sağlayıcının *metrics* ucu olmalı; trace ucuna giden
+metrik sessizce reddedilir, log'a hiçbir şey düşmez.
+
+**`SESSION_SECRET` `.env.example`'dan silindi.** İmzalanan bir şey yok;
+kullanılmayan bir sır yalnızca sızabilecek bir sırdır. Yerine
+`SESSION_COOKIE_DOMAIN` ve `SESSION_COOKIE_SECURE` geldi.

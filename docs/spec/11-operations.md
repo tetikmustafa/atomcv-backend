@@ -97,21 +97,32 @@ LLM_CHAIN_CHEAP=gemini,deepseek,openrouter
 LLM_CHAIN_MID=openai,anthropic,openrouter
 
 # Güvenlik
-SESSION_SECRET=
 OAUTH_GOOGLE_CLIENT_ID=      OAUTH_GOOGLE_CLIENT_SECRET=
 OAUTH_GITHUB_CLIENT_ID=      OAUTH_GITHUB_CLIENT_SECRET=
-OAUTH_LINKEDIN_CLIENT_ID=    OAUTH_LINKEDIN_CLIENT_SECRET=
 TURNSTILE_SECRET_KEY=        NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+SESSION_COOKIE_DOMAIN=       SESSION_COOKIE_SECURE=true
 
 # Servisler
 RESEND_API_KEY=
-AXIOM_TOKEN=                 AXIOM_DATASET=
+OTLP_ENABLED=   OTLP_URL=   OTLP_AUTHORIZATION=   OTLP_DATASET=
 SENTRY_DSN=
 R2_ACCOUNT_ID=  R2_ACCESS_KEY=  R2_SECRET_KEY=  R2_BUCKET=
 
 # Bütçe
 DAILY_BUDGET_USD=40
 ```
+
+**`SESSION_SECRET` yok, ve olmamalı.** Oturum kimliği `SecureRandom`'dan gelen
+256 bitlik opak bir değer ve Redis'te duruyor; imzalanan hiçbir şey yok,
+dolayısıyla imzalayacak bir sır da yok. Kullanılmayan bir sır, yalnızca
+sızabilecek bir sırdır.
+
+**Gözlemlenebilirlik değişkenleri `AXIOM_*` değil `OTLP_*`.** Kod
+`management.otlp.metrics.export.*` altından okuyor, ve isim satıcının değil
+telin adı: Axiom'dan çıkılırsa değişken adı yalan söylemez. İki tuzak birlikte
+geliyor — `OTLP_AUTHORIZATION` `Bearer ` önekini de taşır, ve
+`micrometer-registry-otlp` **metrik** gönderdiği için URL sağlayıcının
+*metrics* ucudur; trace ucuna giden metrik sessizce reddedilir.
 
 ---
 

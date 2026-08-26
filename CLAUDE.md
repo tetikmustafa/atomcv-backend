@@ -29,17 +29,11 @@ Documentation is split by **access pattern**, not by topic. Read accordingly.
 
 ### Read on demand — never in full
 
-`docs/spec/**` holds the full specification, split into 18 files.
-**Never read a spec file end to end.** Consult `docs/INDEX.md` for the right file,
-then search before reading:
-
-```bash
-rg -n "<term>" docs/spec/<file>.md      # locate
-# then read only the matching range
-```
-
-Full spec is ~8,500 lines. The right file is 200-1,100. Reading everything wastes
-15-40× the tokens and buries the relevant part.
+`docs/spec/**` is the full specification in 18 files, ~8,500 lines.
+**Never read one end to end.** Route with `docs/INDEX.md`, then
+`rg -n "<term>" docs/spec/<file>.md` and read only the matching range — the
+right file is 200-1,100 lines, so reading everything costs 15-40× the tokens
+and buries the part you needed.
 
 ### Never read routinely
 
@@ -141,11 +135,9 @@ make test-int   # integration tests (Testcontainers)
 make golden-costs # re-measure the golden set's render costs (after a fixture changes)
 ```
 
-Spring profiles:
-- `local,local-fake` — default for daily work; no real LLM calls, no cost
-- `local,local-record` — real LLM calls, responses saved as fixtures
-- `local,local-real` — real LLM calls, nothing saved (prompt work)
-- `prod` — production
+Spring profiles: `local,local-fake` (daily work, no real LLM calls),
+`local,local-record` (real calls saved as fixtures), `local,local-real` (real
+calls, nothing saved — prompt work), `prod`.
 
 ### What this machine needs you to know
 
@@ -168,10 +160,10 @@ cost a debugging round to find.
 - **`gradlew` must stay mode 100755**, or every Linux runner fails.
 - Gradle directly: `sh ./gradlew test` (fast, no Docker), `sh ./gradlew
   integrationTest` (needs Docker Desktop), `--tests '*SomeTest'` to narrow.
-- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`).** Compose
-  reuses the last image otherwise, and a stale one answers without
-  `X-Page-Count` — a generation that fails with the container healthy.
-- **`make dev-full` does not run the backend**, only the containers.
+- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`)** and does
+  not run the backend, only the containers. Compose reuses the last image
+  otherwise, and a stale one answers without `X-Page-Count` — a generation that
+  fails with the container healthy.
 - **`gradlew latexTest` compiles through a real LaTeX image.** Excluded from
   `integrationTest` (minutes). Run it when `docker/latex` changes **and when
   anything it exercises changes** — the only lane with a real compiler and a
@@ -201,19 +193,16 @@ is off in every test so its scheduler cannot claim rows others assert on, and
 the tests that use it build it by hand — so nothing asked Spring to create the
 bean and `make dev` failed on a second constructor. Hold one context with it on.
 
-**Report test counts, not "the suite is green".** A suite that runs zero tests
-also reports success.
+**Report test counts, not "the suite is green"** — a suite that runs zero tests reports success too.
 
 **CSRF is on in every integration test, and no test carries a token by hand.**
-`AbstractIntegrationTest` supplies one through a `MockMvcBuilderCustomizer`
-that sets `defaultRequest(get("/").with(csrf()))`. Two traps came with it: a
-nested `@TestConfiguration` is detected only on the class actually being run,
-never on a base class it inherits from — so it is `@Import`ed, and without
-that every mutating call answers 403; and since Spring Security reached the
-classpath, a `@WebMvcTest` slice builds its own default chain, which is why
-`ProblemDetailAdviceTest` runs with `addFilters = false`. `CsrfRejectionIT`
-builds a MockMvc without the default token, because a guard that never fails
-is not known to work.
+`AbstractIntegrationTest` supplies one via a `MockMvcBuilderCustomizer`
+(`defaultRequest(get("/").with(csrf()))`), and `CsrfRejectionIT` builds a
+MockMvc without it to watch the guard refuse. Two traps: a nested
+`@TestConfiguration` is found only on the class being run, never on a base
+class — hence the `@Import`, without which every write answers 403; and a
+`@WebMvcTest` now builds its own chain, hence `addFilters = false` in
+`ProblemDetailAdviceTest`.
 
 ## How We Ship
 

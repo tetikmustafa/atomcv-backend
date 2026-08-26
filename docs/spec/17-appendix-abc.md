@@ -160,7 +160,7 @@ KONFİGÜRASYON
 ALTYAPI
 □ Cloudflare DNS → yeni A/AAAA kaydı (eskisini hemen silme)
 □ TLS sertifikası → yeni domain için certbot
-□ OAuth redirect URI'ları → Google, GitHub, LinkedIn (3 yerde)
+□ OAuth redirect URI'ları → Google, GitHub (2 yerde, GitHub'da iki uygulama)
 □ Turnstile site ayarı → yeni domain ekle
 □ Resend domain doğrulama → yeni alt alan + DNS kayıtları
 □ R2 bucket adı (opsiyonel, veri taşıma gerektirir)
