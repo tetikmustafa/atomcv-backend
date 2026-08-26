@@ -41,6 +41,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // Bolum 40.1 and EK D.6.6. Sessions are ours — Redis, our own store — and
+    // this is here for the filter chain and for the double-submit CSRF filter
+    // EK D.6.6 names. Spring Session is deliberately not used: the sliding TTL
+    // and the anonymous-to-account handover of Adim 3.6 both need the store.
+    implementation("org.springframework.boot:spring-boot-starter-security")
     // Bolum 44.3 wants the counters somewhere an operator can see them, and
     // Bolum 2's table picked Axiom — observability data should not live on the
     // machine being observed. OTLP is the wire format Axiom ingests, so this
@@ -74,6 +79,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
