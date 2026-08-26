@@ -1,6 +1,14 @@
 package com.mustafatetik.atomcv;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcBuilderCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.testcontainers.containers.GenericContainer;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -36,13 +44,53 @@ import org.testcontainers.utility.DockerImageName;
         // other tests are still writing. AnomalyDetectorIT calls it directly.
         "atomcv.anomaly.enabled=false"})
 @ActiveProfiles("local")
+@Import(AbstractIntegrationTest.CsrfOnEveryRequest.class)
 public abstract class AbstractIntegrationTest {
 
     @ServiceConnection
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"));
 
+    /**
+     * Bolum 40.1 puts sessions in Redis, so the suite needs a real one. With
+     * none, {@code SessionStore} fails every lookup and fails it the way it is
+     * meant to — as nobody signed in — and a test of the session would be
+     * asserting against an outage rather than against the store. Bolum 18.6's
+     * analysis cache lands here too; it had been tolerating the same absence
+     * unnoticed, because a cache miss and an outage look alike from outside.
+     */
+    @ServiceConnection(name = "redis")
+    static final GenericContainer<?> REDIS =
+            new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
+
     static {
         POSTGRES.start();
+        REDIS.start();
+    }
+
+    /**
+     * CSRF is on for the whole suite, and no test had to be edited for it.
+     *
+     * <p>The alternative was switching the filter off in tests, and CLAUDE.md
+     * has the answer to that: a guard the suite disables has unverified
+     * wiring. One default request post-processor puts a valid token on every
+     * mutating call in the suite, so what the tests exercise is the chain as
+     * production runs it. {@code CsrfRejectionIT} is the other half — it
+     * performs the same call <em>without</em> the post-processor and asserts
+     * the refusal, because a guard that has never failed is not known to work.
+     *
+     * <p><strong>{@code @Import} and not detection.</strong> A nested
+     * {@code @TestConfiguration} is picked up automatically only on the class
+     * actually being run, never on a base class it inherits from — without
+     * the annotation above, this bean is silently absent and every mutating
+     * call in the suite answers 403.
+     */
+    @TestConfiguration
+    static class CsrfOnEveryRequest {
+
+        @Bean
+        MockMvcBuilderCustomizer defaultCsrfToken() {
+            return builder -> builder.defaultRequest(get("/").with(csrf()));
+        }
     }
 }

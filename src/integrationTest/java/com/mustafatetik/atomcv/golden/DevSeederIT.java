@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.profile.seed.DevSeeder;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,12 +28,12 @@ class DevSeederIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @BeforeEach
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     @Test
@@ -41,7 +41,7 @@ class DevSeederIT extends AbstractIntegrationTest {
         seeder.run(null);
 
         UUID profileId = jdbc.queryForObject("SELECT id FROM profiles WHERE user_id = ?",
-                UUID.class, LocalDevCurrentUser.DEV_USER_ID);
+                UUID.class, LocalDevUser.DEV_USER_ID);
         assertThat(rows("sections", profileId)).isPositive();
         assertThat(rows("entries", profileId)).isPositive();
         assertThat(rows("atoms", profileId)).isPositive();
@@ -52,13 +52,13 @@ class DevSeederIT extends AbstractIntegrationTest {
     void seedingTwiceChangesNothing() {
         seeder.run(null);
         UUID profileId = jdbc.queryForObject("SELECT id FROM profiles WHERE user_id = ?",
-                UUID.class, LocalDevCurrentUser.DEV_USER_ID);
+                UUID.class, LocalDevUser.DEV_USER_ID);
         int atoms = rows("atoms", profileId);
 
         seeder.run(null);
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE user_id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID)).isEqualTo(1);
+                Integer.class, LocalDevUser.DEV_USER_ID)).isEqualTo(1);
         assertThat(rows("atoms", profileId)).isEqualTo(atoms);
     }
 
@@ -67,7 +67,7 @@ class DevSeederIT extends AbstractIntegrationTest {
         // Someone typed their own CV in locally. Seeding must not replace it.
         UUID profileId = jdbc.queryForObject(
                 "INSERT INTO profiles (user_id, headline) VALUES (?, 'Mine') RETURNING id",
-                UUID.class, LocalDevCurrentUser.DEV_USER_ID);
+                UUID.class, LocalDevUser.DEV_USER_ID);
 
         seeder.run(null);
 

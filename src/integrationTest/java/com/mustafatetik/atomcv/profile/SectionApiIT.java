@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +37,12 @@ class SectionApiIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @BeforeEach
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     @Test

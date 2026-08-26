@@ -20,7 +20,7 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.nio.charset.StandardCharsets;
@@ -85,7 +85,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     @Autowired
     private TransactionTemplate tx;
@@ -106,9 +106,9 @@ class JobSpecificCvIT extends AbstractLatexTest {
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
         jdbc.update("DELETE FROM jobs");
-        jdbc.update("DELETE FROM generations WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM generations WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
         jdbc.update("DELETE FROM usage_counters");
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     /**
@@ -257,7 +257,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     /** Two jobs with bullets that a backend posting should have opinions about. */
     private void seedCareer() {
         tx.executeWithoutResult(status -> {
-            var profile = new Profile(LocalDevCurrentUser.DEV_USER_ID);
+            var profile = new Profile(LocalDevUser.DEV_USER_ID);
             em.persist(profile);
             UUID profileId = profile.getId();
 

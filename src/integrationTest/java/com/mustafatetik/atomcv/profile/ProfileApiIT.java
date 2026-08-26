@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mustafatetik.atomcv.shared.security.LocalDevCurrentUser;
+import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +45,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
-    private LocalDevCurrentUser localUser;
+    private LocalDevUser localUser;
 
     /**
      * Other integration tests clear {@code users} after themselves, and the
@@ -58,13 +58,13 @@ class ProfileApiIT extends AbstractIntegrationTest {
     @BeforeEach
     void startFromAnEmptyProfile() {
         localUser.ensureUserExists();
-        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevCurrentUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
     }
 
     @Test
     void theStandInUserExistsSoThatProfilesCanHangOffIt() {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID)).isEqualTo(1);
+                Integer.class, LocalDevUser.DEV_USER_ID)).isEqualTo(1);
     }
 
     @Test
@@ -84,7 +84,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.version").doesNotExist());
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE user_id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID)).isEqualTo(1);
+                Integer.class, LocalDevUser.DEV_USER_ID)).isEqualTo(1);
     }
 
     @Test
@@ -93,7 +93,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
         mvc.perform(get("/api/v1/profile")).andExpect(status().isOk());
 
         assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE user_id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID)).isEqualTo(1);
+                Integer.class, LocalDevUser.DEV_USER_ID)).isEqualTo(1);
     }
 
     @Test
@@ -395,7 +395,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
         mvc.perform(get("/api/v1/profile")).andExpect(jsonPath("$.completeness").value(45));
 
         assertThat(jdbc.queryForObject("SELECT completeness FROM profiles WHERE user_id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID))
+                Integer.class, LocalDevUser.DEV_USER_ID))
                 .as("stored for the preflight gate, not only rendered")
                 .isEqualTo(45);
     }
@@ -416,7 +416,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM sections WHERE id = ?",
                 Integer.class, java.util.UUID.fromString(section))).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE id = ?",
-                Integer.class, LocalDevCurrentUser.DEV_USER_ID))
+                Integer.class, LocalDevUser.DEV_USER_ID))
                 .as("the account survives its profile")
                 .isEqualTo(1);
 
