@@ -56,16 +56,47 @@ public class SignInAccounts {
     }
 
     /**
-     * Used only to decide whether a <em>verified</em> address belongs to an
-     * account that already exists. The caller checks verification first; this
-     * cannot.
+     * Whose account an address belongs to.
+     *
+     * <p><strong>This cannot tell you the address was proved.</strong> OAuth
+     * calls it only after a provider has vouched for the address, because
+     * linking an identity to an account found this way on an <em>unverified</em>
+     * address is an account takeover. The magic link calls it to decide who to
+     * send to, which needs no such proof — the proof is the person opening the
+     * email.
      */
-    public Optional<UserAccount> byVerifiedEmail(String email) {
+    public Optional<UserAccount> byEmail(String email) {
         return users.findByEmailIgnoringCase(email);
     }
 
+    /**
+     * The account a redeemed link belongs to.
+     *
+     * <p>An id-taking finder, which the class javadoc says to be careful
+     * about. It is safe here because the id does not come from a caller: it
+     * comes off a token row that was found by a selector and matched against a
+     * verifier. Nothing a client sends reaches this argument.
+     */
+    public Optional<UserAccount> byId(UUID userId) {
+        return users.findById(userId);
+    }
+
+    /** A first sign-in through a provider: the address is already proved. */
     public UserAccount create(String email, String displayName) {
         return users.save(UserAccount.signingUp(email, displayName));
+    }
+
+    /**
+     * A first magic link to an address nobody has claimed.
+     *
+     * <p>The row exists before the person proves anything, because
+     * {@code magic_link_tokens.user_id} is {@code NOT NULL} and V1 meant it
+     * that way. It carries {@code email_verified = false} until the link is
+     * opened, and until then it is a placeholder: no session has ever pointed
+     * at it and no profile hangs off it.
+     */
+    public UserAccount createAwaitingVerification(String email) {
+        return users.save(UserAccount.awaitingVerification(email));
     }
 
     public void link(UUID userId, OAuthProvider provider, String providerUid) {

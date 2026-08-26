@@ -82,6 +82,15 @@ public class UserAccount {
         return new UserAccount(email, displayName, true);
     }
 
+    /**
+     * A magic link was asked for at an address nobody has claimed. Nothing is
+     * proved yet — opening the link is what proves it — so the row exists
+     * unverified until then.
+     */
+    public static UserAccount awaitingVerification(String email) {
+        return new UserAccount(email, null, false);
+    }
+
     public UUID getId() {
         return id;
     }
@@ -96,6 +105,11 @@ public class UserAccount {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    /** Which language the emails this account receives are written in. */
+    public String getLocale() {
+        return locale;
     }
 
     public UserRole getRole() {

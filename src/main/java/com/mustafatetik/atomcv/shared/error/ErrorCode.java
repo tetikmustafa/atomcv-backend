@@ -104,6 +104,17 @@ public enum ErrorCode {
      */
     OAUTH_FAILED(400, param("reason", STRING)),
 
+    /**
+     * A sign-in link that will not be redeemed (Bolum 40.2).
+     *
+     * <p><strong>No parameters, and deliberately no reason.</strong> Everywhere
+     * else in this catalogue a closed vocabulary is the better shape; here it
+     * is the vulnerability. Expired, already used, wrong verifier and never
+     * existed have to be one answer, because distinguishing them tells someone
+     * guessing which half of the guess was right.
+     */
+    MAGIC_LINK_INVALID(400),
+
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),

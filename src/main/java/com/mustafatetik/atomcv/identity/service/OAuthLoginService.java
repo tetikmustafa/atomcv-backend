@@ -74,7 +74,7 @@ public class OAuthLoginService {
         if (bound.isPresent()) {
             return bound.get();
         }
-        var existing = accounts.byVerifiedEmail(account.email());
+        var existing = accounts.byEmail(account.email());
         if (existing.isPresent()) {
             UserAccount user = existing.get();
             if (user.isDeleted()) {
