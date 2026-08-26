@@ -68,6 +68,24 @@ class ArchitectureTest {
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
     /**
+     * And for identity, which gained a repository when sign-in did.
+     *
+     * <p>{@code SignInAccounts} is the one facade in this codebase that is not
+     * user-scoped, because sign-in is the act of working out who the user is
+     * and cannot be scoped by the answer it is computing. What keeps that from
+     * becoming a hole is the facade being the only way in: its surface is two
+     * lookups keyed by a credential the caller has just proved and two writes
+     * for an account it has just established, with no finder that takes an id
+     * and none that lists. A class reaching past it to the Spring Data
+     * interface underneath would have neither the narrowness nor the argument.
+     */
+    @ArchTest
+    static final ArchRule identityDataIsReachedThroughItsFacade = noClasses()
+            .that().resideInAPackage("..identity..")
+            .and().resideOutsideOfPackage("..identity.repository..")
+            .should().dependOnClassesThat().areAssignableTo(Repository.class);
+
+    /**
      * The unscoped queue is for workers, and a controller is not one.
      *
      * <p>{@code JobQueue} is not a Spring Data interface, so the two rules
