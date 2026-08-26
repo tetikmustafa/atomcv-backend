@@ -46,6 +46,11 @@ dependencies {
     // EK D.6.6 names. Spring Session is deliberately not used: the sliding TTL
     // and the anonymous-to-account handover of Adim 3.6 both need the store.
     implementation("org.springframework.boot:spring-boot-starter-security")
+    // Bolum 40.2's magic link has to leave the building. Resend is the
+    // production sender and speaks HTTP, but local development sends to
+    // Mailpit over SMTP -- which is the point of having Mailpit in compose:
+    // the email is read as a person would read it, not as a log line.
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     // Bolum 44.3 wants the counters somewhere an operator can see them, and
     // Bolum 2's table picked Axiom — observability data should not live on the
     // machine being observed. OTLP is the wire format Axiom ingests, so this
