@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.identity.domain.Session;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import com.mustafatetik.atomcv.shared.security.UserRole;
 import java.time.Clock;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,12 @@ import org.springframework.stereotype.Component;
  * {@code AUTHENTICATION_REQUIRED} and the integration suite — twenty-seven
  * classes that drive the API through MockMvc with no cookie jar — would fail
  * on authentication rather than on what each of them is about.
+ *
+ * <p><strong>Switch it off to watch a real sign-in.</strong> With it on,
+ * signing out drops straight back to the dev user and the browser looks signed
+ * in again — confusing at exactly the moment you are trying to see a logout
+ * work. {@code LOCAL_DEV_SESSION=false} turns it off; signing in through a
+ * provider works either way, because a real cookie always wins.
  *
  * <p><strong>It applies only when the request carries no {@code sid}.</strong>
  * A real cookie always wins, so the moment a login exists it takes precedence
@@ -31,6 +38,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Profile("local")
+@ConditionalOnProperty(
+        name = "atomcv.local-dev-session.enabled", havingValue = "true", matchIfMissing = true)
 public class LocalDevSessions {
 
     /**
