@@ -129,36 +129,19 @@ sorgu duyarlı arar; ikisi çelişince var olan satır bulunamaz ve insert
 Entegrasyon paketinin sınıfları çerezsiz istek atıyor; gerçek oturuma taşımak
 ayrı bir test-altyapısı dilimi. `LOCAL_DEV_SESSION=false` ile kapatılabiliyor.
 
-### Dilim 3 — magic link
+### Dilim 3-4 — magic link, rate limit, Turnstile
 
-Beş kararın beşi de kalıcı çıktı ve `spec/10-security.md` § 40.4.1'e işlendi:
-hesabın istek anında doğması, tek kullanımın koşullu `UPDATE` ile olması,
-girişin bekleyen diğer bağlantıları harcaması, `EmailSender`'ın üç dallı
-olması, ve bastırılmış adrese gönderilmemesi. Burada yalnız izleri duruyor.
-**"Bu uç üretime açılmamalı" kısıtı kalktı** — freni dilim 4'te indi.
+Kapandı; kayıtları `archive/stage-3-identity.md`'de, kalıcı kararları
+`spec/10-security.md` § 40.4.1 ve § 40.5.1'de. İki şey hâlâ canlı:
 
-**Tuzak (canlı) — doğrulama sayfası önce bir `GET` yapmalı.** `POST
-/auth/verify` CSRF tokenı istiyor, token da `XSRF-TOKEN` çerezinden okunuyor;
-e-postadan gelen kullanıcının tarayıcısında o çerez henüz yok. Sayfa
-`/auth/session`'ı çağırsın, sonra POST etsin. `B-049`'da yazılı.
+**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da siliyor.**
+Sınıfın çoğu testi ilk satırında bağlantı istiyor ve pencere üçte doluyor;
+silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
+**Yeni bir kimlik testi yazan bunu unutmasın.**
 
-### Dilim 4 — rate limit ve Turnstile
+**`/auth/verify` limitsiz.** Verifier 32 rastgele bayt; Nginx'in `auth`
+zone'u (1r/s) önünde. Bugün koruduğu bir şey yok.
 
-Altı kararın altısı da kalıcı çıktı ve `spec/10-security.md` § 40.5.1'e
-işlendi: katmanların sırası ve challenge'ın neden aralarında durduğu, adres
-katmanının serviste yaşaması, Bucket4j yerine kayan pencere (§ 02'nin tablosuna
-da), Redis erişilemezken reddetme, `remoteip`'in gönderilmemesi, ve `prod`
-profilinin secret'sız açılmaması. Ters yöndeki tuzak § 46.5'te.
-
-**Canlı — `MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da
-siliyor.** Düzen değil zorunluluk: sınıfın çoğu testi ilk satırında bağlantı
-istiyor ve pencere üçte doluyor. Silinmezse dördüncü test ilgisiz bir 429'da
-düşer ve flake gibi okunur. **Yeni bir kimlik testi yazan bunu unutmasın.**
-
-**Açık — `/auth/verify` limitsiz.** Verifier 32 rastgele bayt, yani tahmin
-edilemez; Nginx'in `auth` zone'u (1r/s) de önünde. Bugün koruduğu bir şey yok.
-
----
 
 ## Adım 3.4 — CV yükleme ve çıkarım
 
@@ -189,3 +172,29 @@ kalkardı (§ 42.1).
 uzantı listesi onları ilgilendiriyor ama uç inmeden yapabilecekleri iş yarım
 kalır; `B-051` yükleme sözleşmesinin tamamını tek maddede taşıyacak.
 `to-frontend.md` zaten 145 satır.
+
+### Dilim 2 — LLM ile yapılandırma
+
+Sekiz kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.4.1'e işlendi
+(üçüncü katman § 43.1'e, prompt dosyası kontrolü § 53.1'e). Aşağıdakiler yalnız
+burada yaşıyor.
+
+**Bulgu — `PromptRegistry.validateConfiguredPrompts()` üretim kodunda hiç
+çağrılmıyordu.** Javadoc'u "eksik dosya açılışta hata" diyordu; çağıran yoktu,
+yani ilk kullanıcının üretiminde patlardı. `PromptFilesPresent` bağladı ve
+eksik dosya artık bağlamı düşürüyor — denendi. **Ders: bir metodun javadoc'u
+ne zaman çalıştığını söylüyorsa, çağıranı da ara.**
+
+**Canlı — `ExtractedContact` ile `Contact` aynı şekle sahip iki kayıt.**
+Ayrı olmalarının sebebi § 31.4.1'de; dilim 3'ün eşlemesi bu ikisini birbirine
+bağlayacak, ve **alan eklendiğinde ikisi birden güncellenmeli.**
+`theContactSchemaAndTheRecordAgree` yalnız şema tarafını tutuyor.
+
+**Canlı — `MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'la eşleşiyor.** Prompt modele
+"yerleştiremediğin belgeyi 0.5'in altında puanla" diyor. **Birini değiştiren
+ötekini de değiştirmeli**, yoksa talimat yalan olur.
+
+**Açık — `local-fake` için kayıtlı fixture yok.** Sahte sağlayıcı şema
+şeklinde bir yer tutucu üretiyor, yani `make dev` çalışıyor ama çıkan profil
+anlamsız. Gerçek bir fixture `make record` ile dilim 4'te, uç inince alınacak.
+
