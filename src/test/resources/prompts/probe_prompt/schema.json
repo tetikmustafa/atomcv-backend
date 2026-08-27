@@ -5,7 +5,7 @@
     "title":      { "type": "string" },
     "seniority":  { "type": "string", "enum": ["junior", "mid", "senior"] },
     "skills":     { "type": "array", "items": { "type": "string" } },
-    "confidence": { "type": "number" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
     "remote":     { "type": "boolean" },
     "headcount":  { "type": "integer" }
   }

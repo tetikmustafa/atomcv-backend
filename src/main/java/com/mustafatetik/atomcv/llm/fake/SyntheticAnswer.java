@@ -50,12 +50,34 @@ final class SyntheticAnswer {
         return switch (typeOf(schema)) {
             case "object" -> objectFrom(schema, seed, depth, nodes);
             case "array" -> arrayFrom(schema, seed, depth, nodes);
-            case "integer" -> nodes.numberNode(Math.floorMod(seed, 100));
-            case "number" -> nodes.numberNode(Math.floorMod(seed, 1000) / 10.0);
+            case "integer" -> nodes.numberNode((int) within(schema, Math.floorMod(seed, 100)));
+            case "number" -> nodes.numberNode(within(schema, Math.floorMod(seed, 1000) / 10.0));
             case "boolean" -> nodes.booleanNode(seed % 2 == 0);
             case "null" -> nodes.nullNode();
             default -> nodes.textNode("synthetic-" + Math.floorMod(seed, 1000));
         };
+    }
+
+    /**
+     * Inside the schema's own bounds, when it states any.
+     *
+     * <p>A placeholder that violates the schema it was built from is not a
+     * placeholder, it is a second definition of the contract. It also has a
+     * practical cost that took a while to be worth naming: {@code confidence}
+     * is declared {@code 0..1}, an unbounded draw put it anywhere in
+     * {@code 0..99.9}, and the few draws that landed under a gate's floor made
+     * {@code make dev} fail for no reason a reader could see.
+     */
+    private static double within(JsonNode schema, double value) {
+        double low = schema.has("minimum") ? schema.get("minimum").asDouble() : value;
+        double high = schema.has("maximum") ? schema.get("maximum").asDouble() : value;
+        if (low > high) {
+            return value;
+        }
+        // Scaled rather than clamped: clamping would pin every draw to the
+        // ceiling, and a field that is always its maximum stops exercising
+        // anything that branches on it.
+        return low + Math.floorMod((long) (value * 10), 100) / 100.0 * (high - low);
     }
 
     private static ObjectNode objectFrom(
