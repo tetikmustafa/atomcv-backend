@@ -76,6 +76,7 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | Dosya doğrulama merdiveni, metin çıkarımı kararları | `spec/07-subsystems.md` § 31.2, § 31.3.1 |
 | LLM ile yapılandırma, çıkarım prompt'u | `spec/07-subsystems.md` § 31.4, § 31.4.1 |
 | Beceri/tarih/run normalizasyonu, alias sözlüğü | `spec/07-subsystems.md` § 31.5, § 31.5.1 |
+| Yükleme ucu, çıkarım işi, profile yazma | `spec/07-subsystems.md` § 31.6.1 |
 | Çok dillilik, varyant senkronu | `spec/07-subsystems.md` § 32 |
 | Şablon, özelleştirme | `spec/07-subsystems.md` § 33 |
 | Cover letter | `spec/07-subsystems.md` § 34 |

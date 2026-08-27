@@ -1042,6 +1042,39 @@ t=8s   Çıkarım bitti → ekran açılır
 t=25s  Her şey hazır (kullanıcı hâlâ inceliyor)
 ```
 
+#### 31.6.1 Kararlar (Adım 3.4, dilim 4)
+
+**`POST /profile/import`, multipart, `202` + iş.** Ayrım § 31.10'un ilk üç
+satırı: şifreli PDF, taranmış PDF ve içi boş dosya kullanıcının **hemen**
+davranacağı şeyler, o yüzden istekte reddediliyor. Kalan iş bir LLM çağrısı;
+o kuyrukta, ve § 31.6 önüne bir ekran koyuyor.
+
+**Kuyruğa metin giriyor, bayt değil** (§ 31.3.1'in kararı). **Bedeli:**
+çıkarılan metin iş terminal duruma gelene kadar `jobs.payload`'da duruyor ve
+**tamamlanmış işleri budayan bir şey yok.** Açık madde olarak kaydedildi;
+saklama süresi her iş tipinin sorusu, yalnız bunun değil.
+
+**Kota kapıda alınıyor, hiçbir şey çıkmadıysa geri veriliyor** (§ 44.2) —
+reddedilen dosyada da, reddedilen çıkarımda da. Birincisi olmadan kullanıcı
+üründeki en küçük hakkını ilk basamağı geçemeyen dosyalara yakabilirdi.
+
+**Yazma kapsamlı depolardan, `ProfileResolver`'ın verdiği `ProfileRef` ile**
+(mutlak kural 3). Toplu içe aktarma, birinin "sadece bu seferlik" ham depoya
+uzanıp kimsenin kontrol etmediği bir id altına yüz satır yazacağı yerin ta
+kendisi. **Tek transaction:** beş bölümün üçünü taşıyan bir profil kısmi
+başarı değil, kullanıcının fark etmesi gereken bir hata.
+
+**İki eşleme modelden istenmiyor.** Atomun `kind`'ı üstündeki bölümden
+geliyor — bölüm zaten ne olduğunu söylüyor. `YearMonth` ayın birine
+dönüşüyor, çünkü `entries.start_date` bir `DATE`; gün bir depolama artığı,
+iddia değil.
+
+**Çok büyük multipart artık `413 DOCUMENT_TOO_LARGE`.** Dilim 1'de bilinçli
+bırakılmıştı: uç yokken tetiklenemiyordu ve hiç düşmemiş bir kapı, çalıştığı
+bilinmeyen kapıdır. Sınır, `shared`'ın iş modülüne bağımlı olamaması yüzünden
+`spring.servlet.multipart.max-file-size`'dan okunuyor — zaten isteği reddeden
+sayı o.
+
 ### 31.7 Manuel form
 
 Aşamalı doldurma:
