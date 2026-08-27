@@ -136,6 +136,22 @@ public enum ErrorCode {
      */
     RATE_LIMITED(429, param("resetsAt", TIMESTAMP)),
 
+    /**
+     * The bot check did not pass (Bolum 44.4).
+     *
+     * <p><strong>Named for what it is, not for who provides it.</strong> The
+     * same reasoning that made the observability variables {@code OTLP_*}
+     * rather than {@code AXIOM_*}: this code is rendered by a frontend and
+     * stored in its message catalogue, and leaving Cloudflare should not turn
+     * a user-facing string into a lie.
+     *
+     * <p>No parameters. A token that was missing, expired, already spent or
+     * forged all leave the client with the same single thing to do — reset the
+     * widget and ask again — so a reason would be a vocabulary nobody
+     * branches on.
+     */
+    CHALLENGE_FAILED(403),
+
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),
