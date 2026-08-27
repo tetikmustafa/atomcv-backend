@@ -8,7 +8,9 @@ import com.mustafatetik.atomcv.identity.oauth.OAuthProperties;
 import com.mustafatetik.atomcv.identity.oauth.OAuthStateStore;
 import com.mustafatetik.atomcv.identity.service.OAuthLoginService;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
+import com.mustafatetik.atomcv.identity.service.SignInHandover;
 import com.mustafatetik.atomcv.identity.service.SignInOutcome;
+import com.mustafatetik.atomcv.profile.service.ProfileUpgrade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
@@ -59,14 +61,17 @@ public class OAuthController {
     private final OAuthStateStore states;
     private final OAuthLoginService logins;
     private final SessionCookies cookies;
+    private final SignInHandover handover;
     private final Map<OAuthProvider, OAuthClient> clients;
 
     OAuthController(OAuthProperties properties, OAuthStateStore states,
-            OAuthLoginService logins, SessionCookies cookies, List<OAuthClient> clients) {
+            OAuthLoginService logins, SessionCookies cookies, SignInHandover handover,
+            List<OAuthClient> clients) {
         this.properties = properties;
         this.states = states;
         this.logins = logins;
         this.cookies = cookies;
+        this.handover = handover;
         var byProvider = new EnumMap<OAuthProvider, OAuthClient>(OAuthProvider.class);
         clients.forEach(client -> byProvider.put(client.provider(), client));
         this.clients = Map.copyOf(byProvider);
@@ -147,11 +152,15 @@ public class OAuthController {
             return redirectTo(errorUri(refused.reason()));
         }
         var session = ((SignInOutcome.SignedIn) outcome).session();
+        // Before the cookie is replaced: after this response the browser no
+        // longer holds the anonymous session, and the profile built under it
+        // is addressed by a value derived from that id (Adim 3.6).
+        ProfileUpgrade upgrade = handover.follow(session);
         // The provider and the outcome, never the address or the subject.
         log.info("Signed in through {}", target.wireValue());
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.SET_COOKIE, cookies.issue(session.id()).toString())
-                .location(landingUri(begun.get()))
+                .location(landingUri(begun.get(), upgrade))
                 .build();
     }
 
@@ -164,9 +173,20 @@ public class OAuthController {
         return ResponseEntity.status(HttpStatus.FOUND).location(target).build();
     }
 
-    private URI landingUri(String returnTo) {
+    /**
+     * Where a signed-in person lands, and what happened to their anonymous
+     * work on the way.
+     *
+     * <p>{@code profile} is carried in the URL rather than fetched afterwards
+     * because it is a one-time fact: a value the client reads once and acts on
+     * — most often by saying nothing at all. Kept on the session instead, it
+     * would be answered to every {@code /session} call for a fortnight and the
+     * client would have to remember whether it had already shown the message.
+     */
+    private URI landingUri(String returnTo, ProfileUpgrade upgrade) {
         return URI.create(properties.redirectBaseUrl() + properties.landingPath()
-                + "?next=" + URLEncoder.encode(returnTo, StandardCharsets.UTF_8));
+                + "?next=" + URLEncoder.encode(returnTo, StandardCharsets.UTF_8)
+                + "&profile=" + upgrade.wireValue());
     }
 
     private URI errorUri(OAuthFailure reason) {
