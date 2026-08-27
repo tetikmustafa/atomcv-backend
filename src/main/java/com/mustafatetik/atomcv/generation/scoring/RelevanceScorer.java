@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.scoring;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -201,7 +202,14 @@ public final class RelevanceScorer {
      * into "sqı", and no atom would ever match it.
      */
     public static String canonicalSkill(String canonical) {
-        return canonical == null ? "" : canonical.strip().toLowerCase(Locale.ROOT);
+        // Delegated, not reimplemented (Adim 3.4). Bolum 31.5 adds an alias
+        // dictionary, and a dictionary applied on one side of a comparison is
+        // worse than none: a posting saying "React.js" would stop matching an
+        // atom normalised to "react", and the pairs that broke would be the
+        // ones the dictionary was added to fix. The rule now lives in `shared`
+        // where ingestion reaches it too, which is what the paragraph above
+        // has always required.
+        return SkillNames.canonical(canonical);
     }
 
     public static List<String> tokensOf(String text) {
