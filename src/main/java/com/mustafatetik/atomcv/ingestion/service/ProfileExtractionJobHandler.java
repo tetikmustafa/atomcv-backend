@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
+import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRetryPolicy;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
@@ -19,6 +20,7 @@ import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -61,13 +63,17 @@ public class ProfileExtractionJobHandler implements JobHandler {
     private final ProfileNormalizer normalizer;
     private final ProfileWriter writer;
     private final QuotaService quotas;
+    private final JobQueue queue;
+    private final Clock clock;
 
     ProfileExtractionJobHandler(ProfileStructuring structuring, ProfileNormalizer normalizer,
-            ProfileWriter writer, QuotaService quotas) {
+            ProfileWriter writer, QuotaService quotas, JobQueue queue, Clock clock) {
         this.structuring = structuring;
         this.normalizer = normalizer;
         this.writer = writer;
         this.quotas = quotas;
+        this.queue = queue;
+        this.clock = clock;
     }
 
     @Override
@@ -102,9 +108,37 @@ public class ProfileExtractionJobHandler implements JobHandler {
                 progress.report(ORGANISING);
                 NormalizedProfile normalized = normalizer.normalize(ok.value());
                 progress.report(SAVING);
-                yield completed(writer.write(user, normalized), normalized);
+                Profile profile = writer.write(user, normalized);
+                queueBackgroundWork(userId);
+                yield completed(profile, normalized);
             }
         };
+    }
+
+    /**
+     * Bolum 31.6's background box, as two jobs rather than two waits.
+     *
+     * <p>The screen opens the moment the profile exists; the vectors and the
+     * measured heights arrive underneath it while the person reads their own
+     * CV. Done inline they would add twenty seconds to the one moment the
+     * product asks anybody to wait, and neither is needed until the first
+     * generation.
+     *
+     * <p><strong>Queued after the write and outside its transaction's
+     * concern.</strong> A worker that picked one of these up before the rows
+     * were committed would find an empty profile and do nothing — which is not
+     * a failure it could report, only a profile that is quietly never
+     * embedded. The write is committed by the time this handler returns
+     * because {@code ProfileWriter} owns its own transaction and this method
+     * has none.
+     *
+     * <p>Both are low priority (Bolum 30.3) and both are separately
+     * retryable, because they fail for different reasons and neither failure
+     * is the import's.
+     */
+    private void queueBackgroundWork(UUID userId) {
+        queue.enqueue(new Job(JobType.EMBEDDING, userId, Map.of(), clock.instant()));
+        queue.enqueue(new Job(JobType.MEASUREMENT, userId, Map.of(), clock.instant()));
     }
 
     /**
