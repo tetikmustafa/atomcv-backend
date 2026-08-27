@@ -32,7 +32,7 @@ onu bağlayacak yer `QuotaService`. Anomali sinyalleri hâlâ yalnız raporluyor
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
 | `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
-| ATS metin çıkarma (§ 23.2) yok | Aşama 3 | PDF metin çıkarımı istiyor. `FitReport` `F-008`'de indi — bu satırın kalan yarısı |
+| ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı: PDFBox 3.4 dilim 1'de geldi. `FitReport` `F-008`'de indi — kalan yarısı üretilen PDF'i geri okumak |
 | `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
 ## Isırmadan önce ele alınacak iki bulgu
@@ -144,42 +144,48 @@ e-postadan gelen kullanıcının tarayıcısında o çerez henüz yok. Sayfa
 
 ### Dilim 4 — rate limit ve Turnstile
 
-**Sapma — Bucket4j alınmadı, yerine Redis'te kayan pencere.** Kalıcı olduğu için
-`spec/02-tech-stack.md`'nin tablosuna ve § 40.5.1'e işlendi, burada yalnız izi
-duruyor. Gerekçe `Retry-After`: bir sonraki slotun ne zaman boşaldığını yalnız
-pencere söyleyebilir.
+Altı kararın altısı da kalıcı çıktı ve `spec/10-security.md` § 40.5.1'e
+işlendi: katmanların sırası ve challenge'ın neden aralarında durduğu, adres
+katmanının serviste yaşaması, Bucket4j yerine kayan pencere (§ 02'nin tablosuna
+da), Redis erişilemezken reddetme, `remoteip`'in gönderilmemesi, ve `prod`
+profilinin secret'sız açılmaması. Ters yöndeki tuzak § 46.5'te.
 
-**Ekleme — üç katman tek çağrı değil: IP → global → Turnstile → e-posta.**
-Adres katmanı üç istekte doluyor; challenge'ın önünde olsaydı bir yabancıyı
-kendi hesabından kilitlemek üç isteğe mal olurdu. § 40.5.1'de.
+**Canlı — `MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da
+siliyor.** Düzen değil zorunluluk: sınıfın çoğu testi ilk satırında bağlantı
+istiyor ve pencere üçte doluyor. Silinmezse dördüncü test ilgisiz bir 429'da
+düşer ve flake gibi okunur. **Yeni bir kimlik testi yazan bunu unutmasın.**
 
-**Ekleme — adres katmanı `MagicLinkService`'te, denetleyicide değil.** Anahtar
-hesabın arandığı dizenin ta kendisi olmalı; başka türlü `A@x.com` ile `a@x.com`
-tek hesaba karşı iki pencere olur. `theAddressLayerIsCountedUnderTheNormalisedAddress`
-onu orada tutuyor.
+**Açık — `/auth/verify` limitsiz.** Verifier 32 rastgele bayt, yani tahmin
+edilemez; Nginx'in `auth` zone'u (1r/s) de önünde. Bugün koruduğu bir şey yok.
 
-**Tuzak — `server.forward-headers-strategy` ayarlanmazsa IP katmanı tek kova
-olur.** Yerelde `none`, üretimde `framework`. § 46.5'e yazıldı, ve
-`.env.example`'a `FORWARD_HEADERS_STRATEGY` olarak. **Porta doğrudan
-ulaşılabilen hiçbir yerde `framework` yazılmaz** — başlık orada istemcinin
-uydurabileceği bir şeydir.
+---
 
-**Ekleme — `remoteip` Turnstile'a gönderilmiyor**, ve Turnstile'a ulaşılamazsa
-istek geçiyor. İkisinin de gerekçesi § 40.5.1'de; ikisi de yanlış
-yapılandırmanın ya da üçüncü tarafın kesintisinin **bizim** kesintimize
-dönmemesi için.
+## Adım 3.4 — CV yükleme ve çıkarım
 
-**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da siliyor.**
-Düzen değil zorunluluk: sınıfın çoğu testi ilk satırında bağlantı istiyor ve
-pencere üçte doluyor; silinmezse dördüncü test, ilgisiz bir 429'da düşer ve
-flake gibi okunur.
+**Plan:** § XI-A.6 Adım 3.4, dokuz madde; dört dilime bölündü —
+**1** dosya doğrulama + metin çıkarımı · **2** LLM yapılandırma
+(§ 31.4) · **3** normalizasyon (§ 31.5) · **4** uç + `PROFILE_EXTRACT` işi +
+arka plan tetikleme.
 
-**İki koruma kasıtlı ihlale karşı denendi.** ZSET üyesini yalnız varış anıyla
-adlandırmak (`ZADD` upsert'tür) sekiz testten ikisini düşürdü; Redis
-erişilemezken `admit()` dönmek üçüncüsünü. Challenge tarafında kontrolü
-`magicLinks.request()`'in **arkasına** almak `ChallengeApiIT`'nin iki ret
-testini düşürdü — hesap satırı hayatta kalıyor, ki § 40.4.1'in asıl derdi o.
+### Dilim 1 — doğrulama ve çıkarım
 
-**Açık kalan — `/auth/verify` limitsiz.** Verifier 32 rastgele bayt, yani
-tahmin edilemez; Nginx'in `auth` zone'u (1r/s) de onun önünde. Bir katman
-eklemek gerekirse yer belli, ama bugün koruduğu bir şey yok.
+Yedi kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.3.1'e işlendi:
+dosyanın hiçbir yere yazılmaması, merdivenin sırası, NUL baytı, iki yeni hata
+kodu, taranmış/boş ayrımı, `orphanWordRatio`'nun okunuşu, ve Markdown ile
+LaTeX'in zıt muamele görmesi. Aşağıdakiler yalnız burada yaşıyor.
+
+**Canlı — çok büyük multipart'ın `DOCUMENT_TOO_LARGE`'a eşlenmesi dilim 4'e
+kaldı.** Spring `MaxUploadSizeExceededException` fırlatıyor ve
+`ProblemDetailAdvice` onu bugün 500'e düşürür. Uç olmadan tetiklenemediği için
+yazılmadı — **hiç düşmemiş bir kapı, çalıştığı bilinmeyen kapıdır.** Merdivenin
+kendi boyut kontrolü çalışıyor ve test edildi.
+
+**Canlı — `ZipSecureFile.setMinInflateRatio` global durum.** POI'nin statiği;
+`DocxTextExtractor`'ın kurucusu onu her açılışta yeniden yazıyor, çünkü başka
+bir kütüphane ya da sonraki bir POI sürümü gevşetirse zip-bomb koruması sessizce
+kalkardı (§ 42.1).
+
+**Frontend'e söylenecek şey dilim 4'e bırakıldı.** İki yeni kod ve kabul edilen
+uzantı listesi onları ilgilendiriyor ama uç inmeden yapabilecekleri iş yarım
+kalır; `B-051` yükleme sözleşmesinin tamamını tek maddede taşıyacak.
+`to-frontend.md` zaten 145 satır.

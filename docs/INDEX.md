@@ -73,6 +73,7 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | LaTeX container, güvenlik izolasyonu | `spec/07-subsystems.md` § 29 |
 | Kuyruk, SSE, worker | `spec/07-subsystems.md` § 30 |
 | CV yükleme, çıkarım | `spec/07-subsystems.md` § 31 |
+| Dosya doğrulama merdiveni, metin çıkarımı kararları | `spec/07-subsystems.md` § 31.2, § 31.3.1 |
 | Çok dillilik, varyant senkronu | `spec/07-subsystems.md` § 32 |
 | Şablon, özelleştirme | `spec/07-subsystems.md` § 33 |
 | Cover letter | `spec/07-subsystems.md` § 34 |

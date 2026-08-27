@@ -5,11 +5,9 @@
 AtomCV lets a user build a structured "Master Profile" once, then generate
 job-specific, ATS-optimized resumes and cover letters in seconds — with a
 **mathematically guaranteed page limit** and **structural protection against
-fabricated content**.
-
-The core architectural insight: a person's professional history is not a CV
-file — it is a **structured dataset**. A CV is a transient *view* rendered
-from that data.
+fabricated content**. The core insight: a person's professional history is not
+a CV file, it is a **structured dataset**, and a CV is a transient *view*
+rendered from it.
 
 This repository contains **only the backend**. The frontend lives in a
 separate repository (`atomcv-frontend`, Next.js). Never add frontend code here.
@@ -29,16 +27,16 @@ Documentation is split by **access pattern**, not by topic. Read accordingly.
 
 ### Read on demand — never in full
 
-`docs/spec/**` is the full specification in 18 files, ~8,500 lines.
-**Never read one end to end.** Route with `docs/INDEX.md`, then
-`rg -n "<term>" docs/spec/<file>.md` and read only the matching range — the
-right file is 200-1,100 lines, so reading everything costs 15-40× the tokens
-and buries the part you needed.
+`docs/spec/**` is the full specification in 18 files, ~8,500 lines. **Never
+read one end to end.** Route with `docs/INDEX.md`, then `rg -n "<term>"
+docs/spec/<file>.md` and read only the matching range — the right file is
+200-1,100 lines, so reading it all costs 15-40x the tokens and buries the part
+you needed.
 
 ### Never read routinely
 
-- `docs/notes/archive/**` — closed stages, archaeology only
-- `docs/handoff/resolved/**` — settled cross-repo items
+`docs/notes/archive/**` (closed stages, archaeology only) and
+`docs/handoff/resolved/**` (settled cross-repo items).
 
 ### Ownership
 
@@ -82,7 +80,7 @@ Rules:
 
 ## Where the Standing Answers Live
 
-These are specified, not summarised here — a second copy would drift.
+Specified, not summarised here — a second copy would drift.
 
 | Question | File |
 |---|---|
@@ -92,8 +90,8 @@ These are specified, not summarised here — a second copy would drift.
 | Test strategy, the tests that matter most | `spec/12-quality.md` § 51 |
 | Anything else | `docs/INDEX.md` routes it |
 
-Java 21, Spring Boot 3.x, PostgreSQL 17 + pgvector, Flyway, Redis, XeLaTeX in
-an isolated container, BGE-M3 self-hosted. **No Lombok** — records for value
+Java 21, Spring Boot 3.x, PostgreSQL 17 + pgvector, Flyway, Redis, XeLaTeX in an
+isolated container, BGE-M3 self-hosted. **No Lombok** — records for value
 objects, plain constructors elsewhere.
 
 ## Absolute Rules — Never Violate
@@ -103,21 +101,21 @@ objects, plain constructors elsewhere.
 2. **Never modify an applied Flyway migration.** Write a new one.
 3. **All data access goes through a scoped repository.** `UserScopedRepository`
    for tables with `user_id`, `ProfileScopedRepository` for tables with only
-   `profile_id` — and a `ProfileRef` can only be produced by comparing the
-   acting user against the profile's owner. Never call a raw `JpaRepository`
-   from a controller or service that handles user data. This is the IDOR
-   defense and it is enforced by ArchUnit across `..api..` and `..service..`,
-   plus a per-module rule keeping raw repositories inside `..repository..`.
-4. **Never log user content.** No `RichContent`, no atom text, no job
-   description, no email body. Log `ContentShape` (statistics) instead.
+   `profile_id`, and a `ProfileRef` is producible only by comparing the acting
+   user against the profile's owner. Never call a raw `JpaRepository` from a
+   controller or service handling user data. This is the IDOR defense, enforced
+   by ArchUnit across `..api..` and `..service..` plus a per-module rule keeping
+   raw repositories inside `..repository..`.
+4. **Never log user content** — no `RichContent`, atom text, job description
+   or email body. Log statistics instead (`ContentShape`, or a stage's own).
 5. **Never put secrets in code.** Environment variables only.
 6. **The rendering module must never depend on the llm module.** Rendering is
    deterministic by design.
 7. **Never call `String.toLowerCase()` / `toUpperCase()` without a locale**
    for identity or matching operations — use `Locale.ROOT`. Turkish locale
    turns "SQL" into "sqı" and silently breaks skill matching.
-8. **LaTeX compilation always uses `-no-shell-escape`** and runs in the
-   isolated container.
+8. **LaTeX compilation always uses `-no-shell-escape`**, in the isolated
+   container.
 9. **Never let the LLM produce LaTeX.** Renderers produce LaTeX; LLMs produce
    plain text only.
 10. **Page budget is measured in points (pt), never in lines.** Rounding to
@@ -136,8 +134,8 @@ make golden-costs # re-measure the golden set's render costs (after a fixture ch
 ```
 
 Spring profiles: `local,local-fake` (daily work, no real LLM calls),
-`local,local-record` (real calls saved as fixtures), `local,local-real` (real
-calls, nothing saved — prompt work), `prod`.
+`local,local-record` (real calls saved as fixtures), `local,local-real`
+(real calls, nothing saved — prompt work), `prod`.
 
 ### What this machine needs you to know
 
@@ -154,22 +152,26 @@ cost a debugging round to find.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner.** The source
   encoding is pinned in `build.gradle.kts`; do not remove it.
 - **`Set.copyOf` / `Map.copyOf` iterate in an order salted per JVM run** — three
-  runs of one three-element set gave three orders. Order that reaches a JSON
-  column, a response or an assertion needs `Collections.unmodifiable*` over a
-  `Linked*`. Passed here, failed on the runner; reads as a flake, is not one.
+  runs of one three-element set gave three orders. Order reaching a JSON column,
+  a response or an assertion needs `Collections.unmodifiable*` over a `Linked*`.
+  Passed here, failed on the runner; reads as a flake, is not one.
 - **`gradlew` must stay mode 100755**, or every Linux runner fails.
 - Gradle directly: `sh ./gradlew test` (fast, no Docker), `sh ./gradlew
   integrationTest` (needs Docker Desktop), `--tests '*SomeTest'` to narrow.
-- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`)** and does
-  not run the backend, only the containers. Compose reuses the last image
+- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`)** and runs
+  only the containers, not the backend. Compose reuses the last image
   otherwise, and a stale one answers without `X-Page-Count` — a generation that
   fails with the container healthy.
-- **`gradlew latexTest` compiles through a real LaTeX image.** Excluded from
-  `integrationTest` (minutes). Run it when `docker/latex` changes **and when
-  anything it exercises changes** — the only lane with a real compiler and a
-  real profile round trip; it caught two bugs the others could not see.
+- **`gradlew latexTest` compiles through a real LaTeX image**, is excluded from
+  `integrationTest` (minutes), and is the only lane with a real compiler and a
+  real profile round trip — it caught two bugs the others could not see. Run it
+  when `docker/latex` changes **and when anything it exercises changes**.
 - A `pre-commit` gitleaks hook runs on every commit; a commit that printed
   nothing about secrets did not run it.
+- **A shell heredoc here halves backslashes**, quoted delimiter or not, so a
+  Java regex written with four arrives with two and `"\\s+"` arrives as
+  `"\s+"`. **Write any file containing a backslash with the editor tool, not
+  `cat > X <<'EOF'`** — a heredoc'd Python script carrying them included.
 
 ## Testing Requirements
 
@@ -208,47 +210,44 @@ class — hence the `@Import`, without which every write answers 403; and a
 
 1. **One branch per slice**, named `feat/…`, `test/…` or `docs/…`. A slice is
    what fits in one review, not one step of the build guide.
-2. **`main` is pushed before a PR is opened.** A rebase merge rewrote twelve
-   unpushed local commits once; the fix was `git reset --hard origin/main`
+2. **`main` is pushed before a PR is opened.** A rebase merge once rewrote
+   twelve unpushed local commits; the fix was `git reset --hard origin/main`
    after verifying the trees matched.
-3. **Split commits by logical unit**, not by file. Conventional Commits; the
-   body says *why*, in English, and names the Bölüm it comes from.
+3. **Split commits by logical unit**, not by file. Conventional Commits
+   (`feat(scope):`, ...); the body says *why*, in English, and names its Bölüm.
 4. **The developer decides when to merge.** Open the PR, wait for all five
    checks (`gh pr checks <n> --watch`), report, and ask. On approval:
    `gh pr merge <n> --rebase --delete-branch`, then `git checkout main` and
    `git reset --hard origin/main`. History stays linear.
 5. **Deviations go into `docs/notes/current.md` in the same PR as the code**,
    and anything the frontend must act on becomes a `B-nnn` item in
-   `docs/handoff/to-frontend.md` and is said out loud in the conversation.
-   Both reach the other repository through `scripts/sync-handoff.sh push` —
+   `docs/handoff/to-frontend.md`, said out loud in the conversation too. Both
+   reach the other repository through `scripts/sync-handoff.sh push` —
    deliberately, not automatically.
 
 ## Code Style
 
-- Code, comments, commit messages, and identifiers: **English**
-- Conversation with the developer: **Turkish**
-- Commit format: Conventional Commits (`feat(scope):`, `fix(scope):`, ...)
+- Code, comments, commit messages, and identifiers: **English**; conversation
+  with the developer: **Turkish**
 - Prefer records for value objects, sealed interfaces for closed hierarchies
 - Prefer `Result<T>` over exceptions for expected failure paths
 
 ## How We Work Together
 
-1. **Apply the documented decisions as written.** If you disagree with a
-   decision, or find something missing or contradictory in the documents,
-   raise it *before* implementing — never silently deviate.
+1. **Apply the documented decisions as written.** If you disagree, or find
+   something missing or contradictory in the documents, raise it *before*
+   implementing — never silently deviate.
 2. **Work in small steps.** State what you are about to do, wait for
    approval, then do it. Do not create twenty files in one turn.
 3. **Ask when the documents are ambiguous.** A wrong assumption baked into an
    early layer is expensive to remove.
-4. **Update this file** when we make a decision that future sessions need to
-   know.
+4. **Update this file** on a decision future sessions need to know.
 5. **Record deviations, additions and corrections in `docs/notes/current.md`**,
    in the same commit as the code they describe — see *Recording Deviations*
    above for the three record types and the promotion rule. `docs/spec/**` is
    the source of truth; notes are the rolling log in front of it.
 6. **Say so when something changes the frontend's work.** Write the `B-nnn`
-   item in `docs/handoff/to-frontend.md` as *Cross-Repo Communication* above
-   describes, and name it in the conversation as well.
+   item as *Cross-Repo Communication* describes, and name it in conversation.
 7. **Update `docs/STATUS.md` at the end of every slice**: mark the step, adjust
    the test counts, keep the open decisions current. It is the only place the
    frontend can read this repo's state — `CLAUDE.md` is not synced.
@@ -266,9 +265,10 @@ is not synced to the frontend, and a second copy would drift from the real one.
 2. **`docs/handoff/to-backend.md`** — open `F-nnn` items. **Handle first.**
 3. **`docs/notes/current.md`** — deliberate gaps that must not be "fixed"
    without asking, and the carry-overs. Clear the ones the step depends on.
-4. **The step's plan** — `docs/INDEX.md` routes it. Stage 3 is
-   `spec/14-build-guide.md` § XI-A.6; the reasoning is
-   `spec/13-development.md` § 55. Search the file, read the range.
+4. **The step's plan** — `docs/INDEX.md` routes it; Stage 3 is
+   `spec/14-build-guide.md` § XI-A.6 and its reasoning `spec/13-development.md`
+   § 55. Search the file, read the range. **A build-guide step is not a slice**
+   — see *How We Ship* — so split it before starting, not halfway through.
 
 Then close the step the way *Recording Deviations*, *Cross-Repo Communication*
 and *How We Ship* describe: a record in `docs/notes/current.md`, a `B-nnn` item

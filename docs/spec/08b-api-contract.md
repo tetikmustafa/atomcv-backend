@@ -81,6 +81,8 @@ yalnızca yerine koyar.
 | `PAGE_LIMIT_EXCEEDED` | 422 | `actual: integer`, `limit: integer` |
 | `REWRITE_VALIDATION_FAILED` | 500 | `atomId: uuid`, `issues: string[]` |
 | `EMBEDDING_UNAVAILABLE` | 503 | — |
+| `UNSUPPORTED_DOCUMENT` | 415 | `accepted: string[]` |
+| `DOCUMENT_TOO_LARGE` | 413 | `limitBytes: integer` |
 | `PDF_NOT_TEXT_BASED` | 422 | — |
 | `PDF_ENCRYPTED` | 422 | — |
 | `EXTRACTION_EMPTY` | 422 | — |
@@ -112,6 +114,22 @@ kaynağın kastedildiğini istemci zaten bilir (isteği o attı), ve advice
 katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
+
+**Adım 3.4 dilim 1'de eklenen iki kod.** EK D.6 § 31.10'un tablosunu
+kodluyor, o da dosya kabul edildikten *sonra* başlıyor; § 31.2'nin ilk iki
+basamağının kodu yoktu.
+
+`UNSUPPORTED_DOCUMENT` **kabul edilen uzantı listesini yayınlıyor**, istemciye
+gömülmesin diye: bir biçim eklendiğinde dosya seçicinin mesajı frontend sürümü
+beklemeden doğru olur. Tek kod üç sebep için — okumadığımız bir uzantı,
+uzantıyla çelişen bir medya tipi, ikisiyle de çelişen baytlar — çünkü hepsinde
+kullanıcının yapacağı şey aynı, ve cümle her hâlükârda "PDF, DOCX, TEX, TXT ya
+da MD yükle" diye bitiyor.
+
+`DOCUMENT_TOO_LARGE` **sınırı yayınlıyor, gönderilen boyutu değil.** İstemci ne
+yüklediğini biliyor, ve sunucunun okuması bu hatanın çoğu kez doğduğu noktada
+güvenilir değil: Spring çok büyük bir multipart'ı baytlar sayılmadan reddediyor.
+Bazen doğru olan bir sayı, hatada hiç olmamasından kötüdür.
 
 **Adım 3.3 dilim 4'te eklenen iki kod.** Bölüm 40.5 ile 44.4 davranışı
 tanımlıyor, kodu vermiyordu.
