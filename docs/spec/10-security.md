@@ -330,6 +330,29 @@ evi yok; "hiçbir şey yüklememişsin" cümlesi, az önce yükleyen birine
 verilebilecek en kötü cevap — ve onu, hâlâ çökük olan bir depoya karşı yeniden
 yüklemeye iter.
 
+#### 41.3.2 İşin sahibi (Adım 3.6, dilim 4)
+
+**Kuyruk kural 3'ü `JobOwner` ile uyguluyor.** Bir iş, sahibine ve başka
+kimseye okunuyor; sahibi kurmanın iki yolu, kimin sorduğunu tesis eden iki
+şey: bir `UserContext`, ya da yalnız oturumu kontrol edebilen modülün
+üretebildiği bir `AnonymousSessionId`. İkisi de bir path değişkeninden
+yapılamıyor.
+
+**Anonim sahip tam olarak çerez kadar güçlü** — anonim profilin kapsandığı
+güçle aynı. Hesaptan zayıf, ve bilerek: koruduğu şey kişinin kaydolmamayı
+seçtiği iki saatlik bir emek.
+
+**`CurrentUser`'ın üçüncü sorusu.** "Kimse giriş yapmamış" ile "biri hesapsız
+burada" farklı durumlar; kullanıcıya değil **çağırana** kapsanan her şeyin
+ikisini ayırması gerekiyor. `find()` ile `anonymousSession()` yalnızca hiç
+oturum yokken birlikte boş.
+
+**Düzeltme — `V1`'in idempotency index'i anonim satırları kapsamıyordu.**
+`(user_id, idempotency_key)`, ve anonim satırın sahibi NULL; Postgres NULL'ları
+birbirinden farklı sayıyor, yani § 30.7'nin emdiği çift tıklama iki kez
+geçiyordu. `V3` iki sahip kolonunu `COALESCE`'lıyor. Eski index bırakılmıyor,
+düşürülüyor: tek bir niyet üzerine iki tekil index, muhakeme edilecek iki şey.
+
 ### 41.4 RBAC
 
 Rol yapısı basit: `USER`, `ADMIN`. Asıl mesele rol değil, **kaynak sahipliği** — o da repository katmanında çözülüyor.

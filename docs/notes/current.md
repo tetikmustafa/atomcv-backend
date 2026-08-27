@@ -45,9 +45,6 @@ bozucu düzeltir.
 
 ## Aşama 3'e taşınanlar
 
-- **`jobs (user_id, idempotency_key)` anonim istekleri tekilleştirmiyor** —
-  `user_id` NULL, Postgres NULL'ları farklı sayıyor; `COALESCE`'lı migration
-  gerek (EK D.6.5).
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
   demeli (§ 9), sahibi frontend.
 
@@ -162,8 +159,10 @@ artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 
 **Dilim 1 (anonim oturum) ve dilim 2 (kalıcı olmayan profil) indi**; kararlar
 § 35.7.1 ve § 41.3.1'de. **Dilim 3 (adres bazlı kota) indi**; kararlar § 44.1.1'de.
-**Dilim 4:** kalıcı olmayan profilin ingestion'a bağlanması (anonim yükleme).
-**Dilim 5:** yükseltme akışı.
+**Dilim 4 (işin anonim sahibi) indi**; kararlar § 41.3.2'de, ve
+`jobs (user_id, idempotency_key)` carry-over'ı `V3` ile kapandı.
+**Dilim 5:** kalıcı olmayan profilin ingestion'a bağlanması (anonim yükleme).
+**Dilim 6:** yükseltme akışı.
 
 **Bulgu — `AnomalyDetectorIT` § 44.3'ün frenini çekip arkasında bırakıyordu.**
 Bayrak `feature_flags`'te tek satır ve ayarlanmamış bayrak açık sayılıyor, yani
