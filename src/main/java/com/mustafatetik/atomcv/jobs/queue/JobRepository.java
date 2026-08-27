@@ -35,22 +35,51 @@ public class JobRepository extends UserScopedRepository<Job> {
         return jpa;
     }
 
-    public List<Job> findAll(UserContext user) {
-        return jpa.findByUserIdOrderByCreatedAtDesc(user.userId());
+    /**
+     * Every job this caller started (Adim 3.6).
+     *
+     * <p>Owner rather than user, and that is the whole of the change: the
+     * queue always had a column for an anonymous session and no way to say
+     * "this caller" without meaning an account, so somebody who had not signed
+     * up could not poll the job they had just started.
+     */
+    public List<Job> findAll(JobOwner owner) {
+        return owner.isAnonymous()
+                ? jpa.findByAnonSessionIdOrderByCreatedAtDesc(owner.anonSessionId())
+                : jpa.findByUserIdOrderByCreatedAtDesc(owner.userId());
     }
 
     /**
-     * Bolum 30.7: the same key from the same user is the same job.
+     * One job, if it belongs to this caller.
      *
-     * <p>Only ever asked for a signed-in user. The unique index behind it does
-     * not cover anonymous rows — Postgres counts NULL owners as distinct — and
-     * that defect is written down in EK D.6.5 rather than worked around here,
-     * because whether the anonymous flow uses the queue at all is still open.
+     * <p>Empty rather than an exception when it belongs to somebody else: the
+     * endpoint answers 404 either way, and telling a caller that a job exists
+     * but is not theirs is telling them something about a stranger.
      */
-    public Optional<Job> findByIdempotencyKey(UserContext user, String key) {
+    public Optional<Job> findById(JobOwner owner, UUID jobId) {
+        return delegate().findById(jobId).filter(job -> belongsTo(job, owner));
+    }
+
+    /** Bolum 30.7: the same key from the same caller is the same job. */
+    public Optional<Job> findByIdempotencyKey(JobOwner owner, String key) {
         if (key == null || key.isBlank()) {
             return Optional.empty();
         }
-        return jpa.findByUserIdAndIdempotencyKey(user.userId(), key);
+        return owner.isAnonymous()
+                ? jpa.findByAnonSessionIdAndIdempotencyKey(owner.anonSessionId(), key)
+                : jpa.findByUserIdAndIdempotencyKey(owner.userId(), key);
     }
+
+    /**
+     * <p>V3 is what makes the anonymous half of this actually hold. V1's
+     * unique index was {@code (user_id, idempotency_key)}, and an anonymous
+     * row has a null owner — which Postgres counts as distinct from every
+     * other null, so the double click Bolum 30.7 absorbs went through twice.
+     */
+    private static boolean belongsTo(Job job, JobOwner owner) {
+        return owner.isAnonymous()
+                ? owner.anonSessionId().equals(job.getAnonSessionId())
+                : owner.userId().equals(job.getOwnerId());
+    }
+
 }

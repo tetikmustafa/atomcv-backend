@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,6 +64,22 @@ public class SessionCurrentUser implements CurrentUser {
     @Override
     public Optional<UserContext> find() {
         return session().filter(session -> !session.isAnonymous()).map(Session::asUserContext);
+    }
+
+    /**
+     * The anonymous session behind this request, when nobody has signed in on
+     * it (Adim 3.6).
+     *
+     * <p>This is the one place an {@link AnonymousSessionId} is made, and that
+     * is the point of the type: it is produced from a session already
+     * established to have no user, so nothing downstream can mint an anonymous
+     * scope out of a String it was handed.
+     */
+    @Override
+    public Optional<AnonymousSessionId> anonymousSession() {
+        return session()
+                .filter(Session::isAnonymous)
+                .map(session -> AnonymousSessionId.of(session.id()));
     }
 
     /** The session itself, for the endpoint whose subject is the session. */

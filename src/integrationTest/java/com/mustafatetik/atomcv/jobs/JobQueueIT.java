@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.jobs.queue.JobStatus;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
@@ -303,11 +304,11 @@ class JobQueueIT extends AbstractIntegrationTest {
         first.setIdempotencyKey("key-1");
         queue.enqueue(first);
 
-        Optional<Job> found = jobs.findByIdempotencyKey(UserContext.of(userId), "key-1");
+        Optional<Job> found = jobs.findByIdempotencyKey(JobOwner.of(UserContext.of(userId)), "key-1");
 
         assertThat(found).map(Job::getId).contains(first.getId());
-        assertThat(jobs.findByIdempotencyKey(UserContext.of(userId), "key-2")).isEmpty();
-        assertThat(jobs.findByIdempotencyKey(UserContext.of(userId), null)).isEmpty();
+        assertThat(jobs.findByIdempotencyKey(JobOwner.of(UserContext.of(userId)), "key-2")).isEmpty();
+        assertThat(jobs.findByIdempotencyKey(JobOwner.of(UserContext.of(userId)), null)).isEmpty();
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────

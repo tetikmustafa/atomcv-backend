@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.ingestion.extraction.DocumentExtraction;
 import com.mustafatetik.atomcv.ingestion.extraction.ExtractedText;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
@@ -70,7 +71,7 @@ public class ProfileImportService {
     public Job importCv(UserContext user, String filename, String contentType,
             byte[] bytes, String idempotencyKey) {
 
-        Optional<Job> already = jobs.findByIdempotencyKey(user, idempotencyKey);
+        Optional<Job> already = jobs.findByIdempotencyKey(JobOwner.of(user), idempotencyKey);
         if (already.isPresent()) {
             return already.get();
         }
