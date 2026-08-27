@@ -35,5 +35,11 @@ public record VariantPatchRequest(
                 description = "Send null to return the wording to the neutral register")
         JsonNullable<Tone> tone,
 
-        @Schema(description = "Make this the wording used by default") Boolean primary) {
+        @Schema(description = "Make this the wording used by default") Boolean primary,
+
+        @Schema(description = "Send `false` to hand a wording back: it stops being "
+                + "yours, and a stale one is queued for regeneration (Bolum 32.2's "
+                + "\"regenerate\" button). `true` is refused — a wording becomes "
+                + "yours by writing words, never by claiming it.")
+        Boolean userEdited) {
 }

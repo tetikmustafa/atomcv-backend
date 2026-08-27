@@ -232,7 +232,8 @@ public class AtomController {
                         request.content() == null ? null : request.content().toRichContent(),
                         request.language(),
                         request.tone(),
-                        request.primary()));
+                        request.primary(),
+                        request.userEdited()));
 
         return ResponseEntity.ok()
                 .eTag(EntityTags.of(patched.getVersion()))

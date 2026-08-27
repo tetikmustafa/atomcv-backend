@@ -50,6 +50,21 @@ public class VariantSynchronization {
     }
 
     /**
+     * One wording the person has just handed back (Bolum 32.2).
+     *
+     * <p>The other half of the protection. Marking a wording as the person's
+     * own is something they do by typing; taking that back is something they
+     * do by asking, and this is where the asking lands.
+     */
+    @Transactional
+    public void regenerate(ProfileRef profile, UserContext user, AtomVariant variant) {
+        queue.enqueue(new Job(JobType.TRANSLATION, user.userId(),
+                Map.of(TranslationJobHandler.VARIANT_ID, variant.getId().toString()),
+                clock.instant()));
+        log.info("A wording was handed back and queued for regeneration");
+    }
+
+    /**
      * @param edited the wording whose words just changed
      * @return how many wordings were queued for regeneration
      */

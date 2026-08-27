@@ -196,6 +196,77 @@ class SelectionRequestBuilderTest {
                 .isEqualTo(turkish.getId());
     }
 
+    /**
+     * <strong>Bolum 32.3, and the half the test above does not cover.</strong>
+     *
+     * <p>Picking the right wording and then charging the other one's height is
+     * the failure the section is about: the page is optimised against English
+     * costs and overflows when Turkish is what gets rendered. The wording that
+     * is chosen has to be the wording that is charged.
+     */
+    @Test
+    void theWordingInTheAskedForLanguageIsChargedItsOwnHeight() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        var atom = profile.looseAtom(section, "Built ETL pipelines");
+        String costKey = TemplateCustomization.CLASSIC.costKey();
+        profile.variants.get(0).recordRenderCost(costKey, 40.0, java.time.Instant.now());
+
+        var turkish = new AtomVariant(PROFILE, atom.getId(), "tr",
+                RichContent.plain("ETL hatlari kurdum"));
+        // Bolum 32.3: the same claim, ten to twenty per cent taller.
+        turkish.recordRenderCost(costKey, 47.0, java.time.Instant.now());
+        profile.variants.add(turkish);
+
+        var built = SelectionRequestBuilder.build(profile.tree(),
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", TODAY);
+
+        assertThat(built.request().sections().get(0).atoms().get(0).renderCostPt())
+                .isEqualTo(47.0);
+    }
+
+    /**
+     * <strong>The consequence Bolum 32.3 calls the right behaviour.</strong>
+     *
+     * <p>Turkish runs longer for the same claim, so the same budget holds
+     * fewer of its bullets. That the two languages select different sets is
+     * not a defect to be smoothed over — it is what a page limit measured in
+     * points rather than in items means, and the alternative is a document
+     * that overflows.
+     */
+    @Test
+    void thesameBudgetHoldsFewerTurkishBulletsThanEnglishOnes() {
+        assertThat(chargedTotalFor("tr")).isGreaterThan(chargedTotalFor("en"));
+    }
+
+    private double chargedTotalFor(String language) {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        String costKey = TemplateCustomization.CLASSIC.costKey();
+
+        for (int i = 0; i < 4; i++) {
+            var atom = profile.looseAtom(section, "Built ETL pipelines number " + i);
+            // The English wording the fixture just made for this atom.
+            profile.variants.stream()
+                    .filter(variant -> variant.getAtomId().equals(atom.getId()))
+                    .forEach(variant -> variant.recordRenderCost(
+                            costKey, 40.0, java.time.Instant.now()));
+
+            var turkish = new AtomVariant(PROFILE, atom.getId(), "tr",
+                    RichContent.plain("ETL hatlari kurdum numara " + i));
+            turkish.recordRenderCost(costKey, 47.0, java.time.Instant.now());
+            profile.variants.add(turkish);
+        }
+
+        var built = SelectionRequestBuilder.build(profile.tree(),
+                TemplateCustomization.CLASSIC, CAPACITY, 1, language, TODAY);
+
+        return built.request().sections().stream()
+                .flatMap(sec -> sec.atoms().stream())
+                .mapToDouble(candidate -> candidate.renderCostPt())
+                .sum();
+    }
+
     // ── shape ─────────────────────────────────────────────────────────────
 
     @Test

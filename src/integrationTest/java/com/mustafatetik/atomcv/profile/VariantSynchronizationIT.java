@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.profile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.profile.domain.Atom;
@@ -116,7 +117,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
         AtomVariant english = derived(false);
 
         atomService.patchVariant(profile, user, atom.getId(), turkish.getId(),
-                etagOf(turkish), new VariantPatch(null, null, null, null));
+                etagOf(turkish), new VariantPatch(null, null, null, null, null));
 
         assertThat(reload(english).isStale()).isFalse();
         assertThat(queuedTranslations()).isZero();
@@ -133,6 +134,67 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
         assertThat(reload(unrelated).isStale()).isFalse();
     }
 
+    /**
+     * Writing words is what makes a wording the person's own — the fact the
+     * whole protection is built on.
+     *
+     * <p>Written after a planted change that cleared the flag on every patch
+     * broke nothing: the tests below all watch the <em>derived</em> wording,
+     * and none of them watched the one being written. A protection whose
+     * precondition is untested is a protection that can be removed by
+     * accident.
+     */
+    @Test
+    void writingWordsMakesAWordingThePersonsOwn() {
+        edit("300 bin satır taşıdım ve raporladım");
+
+        assertThat(reload(turkish).isUserEdited()).isTrue();
+    }
+
+    // -- handing a wording back (Bolum 32.2's other button) ----------------
+
+    /**
+     * The half dilim 1 owed. A wording becomes the person's by typing; taking
+     * that back is asking, and asking is an explicit {@code userEdited:false}
+     * rather than something a content write does as a side effect.
+     */
+    @Test
+    void handingAWordingBackClearsTheFlagAndQueuesIt() {
+        AtomVariant mine = derived(true);
+        edit("300 bin satır taşıdım ve raporladım");
+        assertThat(queuedTranslations()).isZero();
+
+        AtomVariant reloaded = reload(mine);
+        atomService.patchVariant(profile, user, atom.getId(), mine.getId(),
+                etagOf(reloaded), new VariantPatch(null, null, null, null, false));
+
+        assertThat(reload(mine).isUserEdited()).isFalse();
+        assertThat(queuedTranslations()).isEqualTo(1);
+    }
+
+    /** A fresh wording handed back has nothing to regenerate. */
+    @Test
+    void handingBackAWordingThatIsNotStaleQueuesNothing() {
+        AtomVariant mine = derived(true);
+
+        atomService.patchVariant(profile, user, atom.getId(), mine.getId(),
+                etagOf(mine), new VariantPatch(null, null, null, null, false));
+
+        assertThat(reload(mine).isUserEdited()).isFalse();
+        assertThat(queuedTranslations()).isZero();
+    }
+
+    /**
+     * Claiming authorship on somebody's behalf is the one direction that could
+     * hide a machine translation behind a human's name, so it is refused
+     * rather than ignored.
+     */
+    @Test
+    void claimingAWordingAsYourOwnIsRefused() {
+        assertThatThrownBy(() -> new VariantPatch(null, null, null, null, true))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     // -- fixtures ----------------------------------------------------------
 
     private AtomVariant derived(boolean userEdited) {
@@ -145,7 +207,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
 
     private void edit(String words) {
         atomService.patchVariant(profile, user, atom.getId(), turkish.getId(),
-                etagOf(turkish), new VariantPatch(RichContent.plain(words), null, null, null));
+                etagOf(turkish), new VariantPatch(RichContent.plain(words), null, null, null, null));
     }
 
     private AtomVariant reload(AtomVariant variant) {
