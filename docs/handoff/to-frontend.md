@@ -196,12 +196,13 @@ bırakıyor. § 32.2'nin metni:
 > ⚠ Bu maddenin Türkçe hali güncellendi, İngilizce halini sen düzenlemiştin.
 >   [ İngilizceyi yeniden üret ] [ Benim halimi koru ]
 
-**"Yeniden üret" için ayrı bir uç yok** — o düğme, İngilizce varyanta bir
-`PATCH` ile `userEdited`'ı geri almalı. **Bunu şimdilik yapamazsınız:** varyant
-`PATCH`'i içerik yazınca `userEdited`'ı `true` yapıyor ve geri almanın yolu yok.
-Bir sonraki dilimde bir uç açacağım — **düğmeyi çizin, bağlamayın.**
-"Benim halimi koru" ise sunucuya hiçbir şey sormuyor: kullanıcı uyarıyı
-kapatır, satır bayat kalır. Bu doğru davranış, eksik değil.
+**"Yeniden üret" düğmesi bağlanabilir** — varyanta `PATCH` gönderin, gövdede
+`{"userEdited": false}`. Sunucu bayrağı temizliyor ve satır bayatsa çeviriyi
+**hemen** kuyruğa alıyor. `{"userEdited": true}` **reddediliyor**: bir
+sözcükleme kelime yazarak sizin olur, iddia ederek değil.
+
+"Benim halimi koru" sunucuya hiçbir şey sormuyor: kullanıcı uyarıyı kapatır,
+satır bayat kalır. Bu doğru davranış, eksik değil.
 
 **Yenileme başarısız olabilir** ve bu da sessiz: iş `TRANSLATION_FAILED` (422,
 parametresiz) ile düşerse sözcükleme **bayat kalır**. Ekranınız zaten doğru
