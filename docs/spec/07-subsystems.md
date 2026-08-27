@@ -958,6 +958,55 @@ text.toLowerCase(Locale.ROOT)
 ```
 JVM: `-Duser.language=en -Duser.country=US`
 
+#### 31.5.1 Kararlar (Adım 3.4, dilim 3)
+
+**Yedi adımın hiçbiri modelden istenmiyor.** Bölünme kasıtlı: bir modele
+kanonik beceri adı, tarih biçimi ya da sıralama sorulursa **çoğu zaman**
+uyar — ve "çoğu zaman", sonraki bir karşılaştırmanın tam olmasına bağlı olduğu
+bir şey için mümkün olan en kötü oran. Model belgenin ne dediğini bildiriyor;
+iki belge arasında aynı olmak zorunda olan her şey kodda kararlaştırılıyor.
+
+**Alias sözlüğü `shared`'da, çünkü karşılaştırmanın iki tarafı da onu
+uygulamak zorunda.** Faz B atomun becerilerini ilanın becerileriyle
+puanlıyor ve ikisi iki ayrı okumadan geliyor. Tek tarafa uygulanan bir
+sözlük, hiç sözlük olmamasından kötüdür: "React.js" diyen bir ilan "react"a
+normalleştirilmiş bir atomla eşleşmeyi bırakır ve bozulan çiftler tam olarak
+sözlüğün düzeltmek için eklendiği çiftler olur. `RelevanceScorer` ona
+devrediyor — zaten kendi yorumu "üç çağıranın da aynı fikirde olması gerek"
+diyordu, ingestion dördüncüsü.
+
+**Düzeltme — § 31.4'ün tarih alanlarındaki şema kalıbı (dilim 2) kaldırıldı.**
+`^\d{4}-\d{2}$` normalleşmemiş bir tarihi şema ihlaline çeviriyordu, yani
+üründeki **en pahalı çağrının tamamı** tek alan için tekrar ediliyordu — ve
+§ 31.5'in koda verdiği işi modelden istiyordu. Prompt artık "yorumlaman
+gereken bir tarihi belgenin yazdığı gibi döndür" diyor.
+
+**Ayrıştırılamayan tarih `null`, ve aysız yıl da ayrıştırılamamış sayılır.**
+"2019" on iki ayın herhangi biri olabilir; Ocak'a genişletmek belgenin hiç
+iddia etmediği on bir ay uydurmaktır. Uyarı hangisi olduğunu söylüyor, çünkü
+kullanıcıya sorulacak soru farklı.
+
+**Vurgular bağımsız aranıp sonra sıralanıyor**, imleçten ileri yürünmüyor:
+model önemli bulduğunu listeliyor, önce geleni değil, ve ileri yönlü bir
+yürüyüş sırasız listelenen her vurguyu sessizce düşürürdü. Çakışan iki vurguda
+**erken başlayan** kazanıyor — § 12'de iç içe run yok, ve kural çıktının
+girdinin bir bölüntüsü kalmasını sağlıyor: **runlar cümleye geri birleşiyor.**
+
+**Cümlede bulunmayan vurgu düşürülüyor**, yaklaştırılmıyor. Prompt tam
+alıntı istemesinin sebebi bu; bulanık eşleşme, modelin hangi kelimeleri
+kastettiğine kodun karar vermesi olurdu.
+
+**`properNouns` `ORGANIZATION` işareti almıyor.** § 31.4 ürünleri, işverenleri,
+kurumları ve yerleri tek listede topluyor; herhangi birini kurum diye
+işaretlemek verinin desteklemediği bir iddia olurdu — üstelik bilinmeyen bir
+işaret düz metin olarak render edilir (§ 16.2) ve vurgu tamamen kaybolurdu.
+`EMPHASIS`, onlar hakkında bilinen şeyin ta kendisi.
+
+**`display_order` sıralamadan *sonra* yazılıyor.** O, okuyucunun gördüğü sıra;
+önce yazmak modelin cevap verdiği sırayı kaydederdi. **Eğitim yeniden
+sıralanmıyor:** okuyucu en yüksek dereceyi en üstte bekler ve bu her zaman en
+yeni satır değildir.
+
 ### 31.6 Gözden geçirme ekranı (zorunlu)
 
 ```

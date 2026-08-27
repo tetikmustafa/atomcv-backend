@@ -14,18 +14,16 @@ Aşama 1 `archive/stage-1.md`'de.
 
 ## Aşama 2'den taşınan açık kutular
 
-**`Axiom'da loglar görünüyor` — dataset açıldı ve `.env` dolduruldu
-(2026-08-26).** Değişkenler `OTLP_*`; telde doğrulanması üretim dağıtımını
-bekliyor.
+**`Axiom'da loglar görünüyor`** — dataset açık, `.env` dolu (2026-08-26);
+telde doğrulanması üretim dağıtımını bekliyor.
 
-**`llm_invocations.user_id` NULL.** Olay kullanıcıyı taşımıyor — zincir,
-`UserContext` tutan fazlardan çağrılıyor ama aşağı geçirmiyor. Günlük toplam
-(bütçe freni) bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
+**`llm_invocations.user_id` NULL.** Zincir `UserContext` tutan fazlardan
+çağrılıyor ama kullanıcıyı aşağı geçirmiyor. Günlük toplam (bütçe freni) bunu
+istemiyor; **kullanıcı bazlı maliyet** istiyor.
 
-**Sıkılaştırılacak rate limiter hâlâ yok — ama artık bir limiter var.**
-Dilim 4'ün getirdiği `RateLimiter` genel: katman adı, konu, sınır ve pencere
-alıyor. § 44.3'ün istediği şey ağır kullanıcının **üretim** hakkını kısmak, ve
-onu bağlayacak yer `QuotaService`. Anomali sinyalleri hâlâ yalnız raporluyor.
+**§ 44.3'ün sıkılaştıracağı limiter hâlâ yok** — 3.3 dilim 4'ün `RateLimiter`'ı
+genel (katman, konu, sınır, pencere) ama **girişe** bağlı. § 44.3 ağır
+kullanıcının **üretim** hakkını kısmak istiyor; yeri `QuotaService`.
 
 ## Aşama 1'den taşınan kısıtlar — hâlâ açık
 
@@ -51,8 +49,7 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
   `user_id` NULL ve Postgres NULL'ları farklı sayıyor. `COALESCE`'lı migration
   gerekiyor (kayıt EK D.6.5'te).
 - **Anonim TTL etkinlikle kayıyor**, metin "son etkinliğinden iki saat sonra"
-  demeli. `spec/01-foundations.md` § 9 ve ürün dokümanı güncellenmeli; metnin
-  sahibi frontend.
+  demeli (`spec/01-foundations.md` § 9); metnin sahibi frontend.
 
 ## Devredilen açık kararlar
 
@@ -78,29 +75,21 @@ devralması tam olarak bunu yapacak. İçerikten türetilen bir bozucu düzeltir
 
 ## Aşama 3 kayıtları
 
-**Düzeltme — § 18.4'ün kod parçacığı `requiredSkills` diyordu, kod
-`allSkills()` kullanıyor.** Kod doğruydu: enjekte edilmiş bir talimatın
-`preferredSkills`'e düşmesini engelleyen bir şey yok. Kalıcı olduğu için
-`spec/05-pipeline-a-c.md` § 18.4'e işlendi, burada yalnız izi duruyor.
-
 **`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Frontend
 gerçek uca karşı üç ilanla denedi, üçünde de model uzun beceri adlarını
 normalleştirdi. Kapı bir enjeksiyon tripwire'ı; uslu bir modelle açılmaması
 beklenen davranış. `PlausibilityGateTest` onu kurgulanmış analizle sınıyor.
 **Bunu "çalışmıyor" diye tamir etmeye kalkma.**
 
-
-`F-008`…`F-016` kapandı ve kayıtları
-`archive/stage-3-frontend-findings.md`'ye indi (2026-08-25) — dosya sınırı.
-Kalıcı kararlar `spec/`'te; arşiv yalnız nasıl bulunduklarını taşıyor.
+§ 18.4'ün `requiredSkills`/`allSkills()` düzeltmesi `spec/05-pipeline-a-c.md`
+§ 18.4'e işlendi. `F-008`…`F-016` kapandı, kayıtları
+`archive/stage-3-frontend-findings.md`'de (2026-08-25).
 
 ### Adım 3.3 · LinkedIn ve OTLP adlandırması
 
-**Sapma — LinkedIn bir kimlik sağlayıcısı değil artık.** Geliştirici kararı;
-`spec/`'in altı dosyasına ve `V2` migration'ına işlendi, yani kalıcı ve burada
-yalnız izi duruyor. `AuthMethod` ikiye indi, `oauth_identities.provider`
-CHECK'i `('google','github')`. **`Contact.linkedin` CV alanı bununla
-ilgisiz ve duruyor** — bir sonraki oturum ikisini karıştırmasın.
+**Sapma — LinkedIn bir kimlik sağlayıcısı değil artık.** `spec/`'in altı
+dosyasına ve `V2`'ye işlendi. **`Contact.linkedin` CV alanı bununla ilgisiz ve
+duruyor** — bir sonraki oturum ikisini karıştırmasın.
 
 **Düzeltme — `spec/11-operations.md` § 46.5 `AXIOM_TOKEN` / `AXIOM_DATASET`
 diyordu, kod `OTLP_*` okuyor.** Kod doğruydu ve spec koda uyduruldu: isim
@@ -150,51 +139,62 @@ zone'u (1r/s) önünde. Bugün koruduğu bir şey yok.
 (§ 31.4) · **3** normalizasyon (§ 31.5) · **4** uç + `PROFILE_EXTRACT` işi +
 arka plan tetikleme.
 
-### Dilim 1 — doğrulama ve çıkarım
+### Dilim 1-2 — doğrulama, çıkarım, yapılandırma
 
-Yedi kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.3.1'e işlendi:
-dosyanın hiçbir yere yazılmaması, merdivenin sırası, NUL baytı, iki yeni hata
-kodu, taranmış/boş ayrımı, `orphanWordRatio`'nun okunuşu, ve Markdown ile
-LaTeX'in zıt muamele görmesi. Aşağıdakiler yalnız burada yaşıyor.
+On beş kararın hepsi kalıcı çıktı: § 31.3.1 ve § 31.4.1'de, üçüncü enjeksiyon
+katmanı § 43.1'de, prompt dosyası kontrolü § 53.1'de. **Ders olarak duran
+bulgu:** `PromptRegistry.validateConfiguredPrompts()` "eksik dosya açılışta
+hata" diyordu ve **üretim kodunda hiçbir şey onu çağırmıyordu** — bir metodun
+javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı da ara. Aşağıdakiler hâlâ
+canlı.
 
-**Canlı — çok büyük multipart'ın `DOCUMENT_TOO_LARGE`'a eşlenmesi dilim 4'e
-kaldı.** Spring `MaxUploadSizeExceededException` fırlatıyor ve
-`ProblemDetailAdvice` onu bugün 500'e düşürür. Uç olmadan tetiklenemediği için
-yazılmadı — **hiç düşmemiş bir kapı, çalıştığı bilinmeyen kapıdır.** Merdivenin
-kendi boyut kontrolü çalışıyor ve test edildi.
+**Çok büyük multipart'ın `DOCUMENT_TOO_LARGE`'a eşlenmesi dilim 4'e kaldı.**
+Spring `MaxUploadSizeExceededException` fırlatıyor, `ProblemDetailAdvice` onu
+bugün 500'e düşürür. Uç olmadan tetiklenemediği için yazılmadı — hiç düşmemiş
+bir kapı, çalıştığı bilinmeyen kapıdır.
 
-**Canlı — `ZipSecureFile.setMinInflateRatio` global durum.** POI'nin statiği;
-`DocxTextExtractor`'ın kurucusu onu her açılışta yeniden yazıyor, çünkü başka
-bir kütüphane ya da sonraki bir POI sürümü gevşetirse zip-bomb koruması sessizce
-kalkardı (§ 42.1).
+**`ZipSecureFile.setMinInflateRatio` global durum.** POI'nin statiği;
+`DocxTextExtractor`'ın kurucusu her açılışta yeniden yazıyor, çünkü başka bir
+kütüphane gevşetirse zip-bomb koruması sessizce kalkardı (§ 42.1).
 
-**Frontend'e söylenecek şey dilim 4'e bırakıldı.** İki yeni kod ve kabul edilen
-uzantı listesi onları ilgilendiriyor ama uç inmeden yapabilecekleri iş yarım
-kalır; `B-051` yükleme sözleşmesinin tamamını tek maddede taşıyacak.
+**`ExtractedContact` ile `Contact` aynı şekle sahip iki kayıt** (sebebi
+§ 31.4.1'de). `ProfileNormalizer` ikisini bağlıyor; **alan eklendiğinde üçü
+birden güncellenmeli** — iki kayıt ve şema.
+
+**`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'la eşleşiyor.** Prompt modele
+"yerleştiremediğin belgeyi 0.5'in altında puanla" diyor; birini değiştiren
+ötekini de değiştirmeli, yoksa talimat yalan olur.
+
+**Açık — `local-fake` için kayıtlı fixture yok.** Sahte sağlayıcı şema şeklinde
+bir yer tutucu üretiyor: `make dev` çalışıyor ama çıkan profil anlamsız.
+`make record` ile dilim 4'te, uç inince.
+
+**Frontend'e söylenecek her şey `B-051`'de toplanacak** (dilim 4): iki hata
+kodu, kabul edilen uzantı listesi, ve yükleme ucunun sözleşmesi.
 `to-frontend.md` zaten 145 satır.
 
-### Dilim 2 — LLM ile yapılandırma
+### Dilim 3 — normalizasyon
 
-Sekiz kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.4.1'e işlendi
-(üçüncü katman § 43.1'e, prompt dosyası kontrolü § 53.1'e). Aşağıdakiler yalnız
-burada yaşıyor.
+Dokuz kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.5.1'e işlendi.
+Aşağıdakiler yalnız burada yaşıyor.
 
-**Bulgu — `PromptRegistry.validateConfiguredPrompts()` üretim kodunda hiç
-çağrılmıyordu.** Javadoc'u "eksik dosya açılışta hata" diyordu; çağıran yoktu,
-yani ilk kullanıcının üretiminde patlardı. `PromptFilesPresent` bağladı ve
-eksik dosya artık bağlamı düşürüyor — denendi. **Ders: bir metodun javadoc'u
-ne zaman çalıştığını söylüyorsa, çağıranı da ara.**
+**Canlı — alias sözlüğü `src/main/resources/skills/aliases.txt`.** Üç özelliği
+testle tutuluyor: kanonik ad kendisi alias olamaz, idempotent, ve her anahtar
+yazım kurallarının ürettiği biçimde olmalı ("React JS" yazılmış bir anahtar
+haritada sonsuza dek durur ve hiçbir şeyle eşleşmez). **Yeni satır eklerken
+soldaki tarafı insanların gerçekten yazdığı gibi yaz.**
 
-**Canlı — `ExtractedContact` ile `Contact` aynı şekle sahip iki kayıt.**
-Ayrı olmalarının sebebi § 31.4.1'de; dilim 3'ün eşlemesi bu ikisini birbirine
-bağlayacak, ve **alan eklendiğinde ikisi birden güncellenmeli.**
-`theContactSchemaAndTheRecordAgree` yalnız şema tarafını tutuyor.
+**Canlı — `SkillNames.canonical` artık dört çağıranın ortak kuralı**
+(ingestion, Faz B skorlayıcı, Faz F raporu, run işaretleme). Birini
+değiştirmek dördünü birden değiştirir; `SelectedSkillsTest`'in beklentisi bu
+yüzden bu dilimde değişti.
 
-**Canlı — `MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'la eşleşiyor.** Prompt modele
-"yerleştiremediğin belgeyi 0.5'in altında puanla" diyor. **Birini değiştiren
-ötekini de değiştirmeli**, yoksa talimat yalan olur.
+**Canlı — `NormalizedProfile` hâlâ bellekte, hiçbir satır yazılmıyor.**
+§ 31.6'nın gözden geçirme ekranı zorunlu olduğu için, insanın düzelteceği
+şeklin herhangi bir satırdan önce var olması gerekiyor. Dilim 4 onu
+`Profile`/`Section`/`Entry`/`Atom`'a çevirecek.
 
-**Açık — `local-fake` için kayıtlı fixture yok.** Sahte sağlayıcı şema
-şeklinde bir yer tutucu üretiyor, yani `make dev` çalışıyor ama çıkan profil
-anlamsız. Gerçek bir fixture `make record` ile dilim 4'te, uç inince alınacak.
+**Açık — atomsuz entry hâlâ sayfaya çıkamıyor** (Aşama 2'den taşınan bulgu).
+Normalizasyon böyle bir entry'yi koruyor ve sıralıyor; § 20.2'nin seçim modeli
+onu aday bile saymıyor. Dilim 4 bunu değiştirmiyor.
 
