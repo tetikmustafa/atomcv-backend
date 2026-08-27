@@ -68,7 +68,7 @@ public class SessionStore {
                 SessionIds.next(), userId, role, method, clock.instant());
         try {
             redis.opsForValue().set(
-                    keyOf(session.id()), json.writeValueAsString(session), properties.ttl());
+                    keyOf(session.id()), json.writeValueAsString(session), ttlFor(session));
             redis.opsForSet().add(userIndexOf(userId), session.id());
             // The index outlives no session it points at; without this it is a
             // key that only ever grows.
@@ -77,6 +77,40 @@ public class SessionStore {
         } catch (Exception unavailable) {
             throw new SessionStoreUnavailableException(unavailable);
         }
+    }
+
+    /**
+     * A session for somebody who has not signed in (Adim 3.6).
+     *
+     * <p>No user index entry, because there is no user to revoke every
+     * session of. What ends one is its own TTL, and that is the whole of its
+     * lifecycle.
+     *
+     * @throws SessionStoreUnavailableException when it could not be stored —
+     *         handing back a cookie that points at nothing would give the
+     *         person a session that silently is not one
+     */
+    public Session createAnonymous() {
+        Session session = Session.anonymous(SessionIds.next(), clock.instant());
+        try {
+            redis.opsForValue().set(
+                    keyOf(session.id()), json.writeValueAsString(session), ttlFor(session));
+            return session;
+        } catch (Exception unavailable) {
+            throw new SessionStoreUnavailableException(unavailable);
+        }
+    }
+
+    /**
+     * Two hours for a session nobody signed in to, thirty days for one they
+     * did (Bolum 9, EK D.6.6).
+     *
+     * <p>Read from the session rather than passed in, so that the refresh and
+     * the creation cannot disagree — a sliding TTL that slid to the wrong
+     * length would quietly turn a two-hour window into a month.
+     */
+    private Duration ttlFor(Session session) {
+        return session.isAnonymous() ? properties.anonymousTtl() : properties.ttl();
     }
 
     /**
@@ -113,8 +147,10 @@ public class SessionStore {
             return;
         }
         try {
-            find(sessionId).ifPresent(
-                    session -> redis.opsForSet().remove(userIndexOf(session.userId()), sessionId));
+            find(sessionId)
+                    .filter(session -> !session.isAnonymous())
+                    .ifPresent(session ->
+                            redis.opsForSet().remove(userIndexOf(session.userId()), sessionId));
             redis.delete(keyOf(sessionId));
         } catch (Exception unavailable) {
             log.warn("Session revocation failed: {}", unavailable.getClass().getSimpleName());
@@ -150,8 +186,12 @@ public class SessionStore {
         }
         Session refreshed = session.seenAt(now);
         redis.opsForValue().set(
-                keyOf(refreshed.id()), json.writeValueAsString(refreshed), properties.ttl());
-        redis.expire(userIndexOf(refreshed.userId()), properties.ttl());
+                keyOf(refreshed.id()), json.writeValueAsString(refreshed), ttlFor(refreshed));
+        if (!refreshed.isAnonymous()) {
+            // There is no index for an anonymous session, because there is no
+            // user whose every session might have to be revoked at once.
+            redis.expire(userIndexOf(refreshed.userId()), properties.ttl());
+        }
         return refreshed;
     }
 

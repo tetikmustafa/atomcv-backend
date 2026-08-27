@@ -39,7 +39,7 @@ class SessionCurrentUserTest {
     private final SessionStore store = mock(SessionStore.class);
 
     private final SessionCookies cookies =
-            new SessionCookies(new SessionProperties(null, null, null, null, true));
+            new SessionCookies(new SessionProperties(null, null, null, null, null, true));
 
     @AfterEach
     void clearTheRequest() {

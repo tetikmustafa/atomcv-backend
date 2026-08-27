@@ -32,7 +32,7 @@ class CapabilitiesTest {
      */
     @Test
     void withoutASessionTheCallerIsToldExactlyWhatTheSectionWroteDown() {
-        CapabilitiesResponse capabilities = capabilities().of(Optional.empty());
+        CapabilitiesResponse capabilities = capabilities().of(Optional.empty(), null);
 
         assertThat(capabilities.allowedLanguages()).containsExactly("en");
         assertThat(capabilities.canCustomizeTemplate()).isFalse();
@@ -46,7 +46,7 @@ class CapabilitiesTest {
 
     @Test
     void nothingHasBeenCountedForACallerWithNoSessionSoNothingRollsOver() {
-        CapabilitiesResponse capabilities = capabilities().of(Optional.empty());
+        CapabilitiesResponse capabilities = capabilities().of(Optional.empty(), null);
 
         assertThat(capabilities.generationsUsedToday()).isZero();
         assertThat(capabilities.profilesUsedToday()).isZero();
@@ -65,7 +65,7 @@ class CapabilitiesTest {
         when(quotas.usage(eq(SOMEONE), eq(QuotaMetric.PROFILE_EXTRACT)))
                 .thenReturn(new QuotaService.Usage("profile_extract", 1, 1, 5, 4, MIDNIGHT));
 
-        CapabilitiesResponse capabilities = capabilities().of(Optional.of(SOMEONE));
+        CapabilitiesResponse capabilities = capabilities().of(Optional.of(SOMEONE), null);
 
         assertThat(capabilities.dailyGenerationQuota()).isEqualTo(20);
         assertThat(capabilities.generationsUsedToday()).isEqualTo(3);
@@ -78,7 +78,7 @@ class CapabilitiesTest {
     void anAccountHasNoAtomCeilingAndNoAnonymousExpiry() {
         stubUsage();
 
-        CapabilitiesResponse capabilities = capabilities().of(Optional.of(SOMEONE));
+        CapabilitiesResponse capabilities = capabilities().of(Optional.of(SOMEONE), null);
 
         // ATOM_LIMIT_EXCEEDED is the anonymous gate. A number here would be a
         // bar the client draws against a limit that does not exist.
@@ -92,7 +92,7 @@ class CapabilitiesTest {
 
         CapabilitiesResponse capabilities =
                 new Capabilities(quotas, new CapabilityProperties(List.of("en", "tr", "de")))
-                        .of(Optional.of(SOMEONE));
+                        .of(Optional.of(SOMEONE), null);
 
         assertThat(capabilities.allowedLanguages()).containsExactly("en", "tr", "de");
         assertThat(capabilities.canCustomizeTemplate()).isTrue();
@@ -116,8 +116,8 @@ class CapabilitiesTest {
         stubUsage();
         Capabilities capabilities = capabilities();
 
-        List<String> anonymous = capabilities.of(Optional.empty()).allowedTemplates();
-        List<String> account = capabilities.of(Optional.of(SOMEONE)).allowedTemplates();
+        List<String> anonymous = capabilities.of(Optional.empty(), null).allowedTemplates();
+        List<String> account = capabilities.of(Optional.of(SOMEONE), null).allowedTemplates();
 
         assertThat(anonymous).isEqualTo(account);
         assertThat(anonymous).containsExactly("classic");

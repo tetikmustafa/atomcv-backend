@@ -87,6 +87,11 @@ atomcv:
   # at it, so revoking is a DEL rather than the impossibility it is with a JWT.
   session:
     ttl: ${SESSION_TTL:30d}
+    # Bolum 9's two hours for somebody who has not signed in, and EK D.6.6's
+    # note that they slide: an absolute two hours would cut off a person
+    # working through the review screen, which is the lost effort P8 exists
+    # to prevent.
+    anonymous-ttl: ${ANONYMOUS_SESSION_TTL:2h}
     # How much activity has to pass before the sliding TTL is rewritten. Two
     # orders below the shortest TTL: an active browser stays alive, and a read
     # does not carry a write.
