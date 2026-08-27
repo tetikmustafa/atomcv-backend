@@ -295,6 +295,41 @@ Tip taşıdığı için yanlış store'a gitme hatası **derleme zamanında** ya
 > karşılaştırır. `EPHEMERAL` sabiti, denetimli bir üretim yolu doğana kadar
 > (Aşama 3) bilerek yoktur.
 
+#### 41.3.1 Kararlar (Adım 3.6, dilim 2)
+
+**`EPHEMERAL` geldi, ve kontrollü üretim yolu bir *tip*.** § 41.3 sabitin
+denetimsiz bir üretim yolu olmadan değersiz olduğunu söylüyor; asıl zorluk
+şuydu: `shared` bir iş modülüne bağımlı olamaz (§ 10.2, kural 4), yani
+`ProfileRef` bir `Session`'a bakıp "giriş yapılmış mı" diye soramaz. Bunun
+yerine **`AnonymousSessionId`** alıyor — yalnız *sorabilen* modülün
+üretebildiği bir değer. Elinde düz bir String olan biri kazara anonim kapsama
+ulaşamıyor, ve bunu söyleyen şey derleyici.
+
+**Profil id'si oturumdan türetiliyor, yanına saklanmıyor.** Anonim oturumun tam
+olarak bir profili var ve onu tanımlayan tek şey oturum; ikinci bir tanımlayıcı
+oturum kaydında yaşamak zorunda kalırdı, o da ilk CV yüklendiğinde yeniden
+yazılırdı.
+
+**Tek belge, dört koleksiyon değil.** Kalıcı profil satırlardan oluşuyor çünkü
+insan onu aylar boyunca birer birer düzenliyor; anonim olan iki saat yaşıyor ve
+iki kez yazılıyor. Varlık başına erişim her çağrıda zaten tamamını okuyup
+yeniden yazardı, üstelik tek değerin taşıyamayacağı bir yarış davet ederdi.
+§ 35.7 anonim kullanıcıya zaten daha azını veriyor (atom kontrolleri yok,
+alternatifler yok), yani dar işlem kümesi ürünün şekli, kısayol değil.
+
+**Ağaç `ProfileAssembler.assemble` ile kuruluyor** — kalıcı yolun kullandığı
+aynı statik fonksiyon. Anonim profil böylece çapraz-kiracı satırlara karşı tam
+olarak o kodla kontrol ediliyor, anlaşmazlığa düşebilecek ikinci bir
+uygulamayla değil.
+
+**Okumak pencereyi kaydırıyor**, çünkü okumak etkinliktir (EK D.6.6). Mutlak
+iki saat, gözden geçirme ekranının ortasında birini keserdi.
+
+**Redis cevap veremezse fırlatıyor, boş dönmüyor.** Anonim profilin ikinci bir
+evi yok; "hiçbir şey yüklememişsin" cümlesi, az önce yükleyen birine
+verilebilecek en kötü cevap — ve onu, hâlâ çökük olan bir depoya karşı yeniden
+yüklemeye iter.
+
 ### 41.4 RBAC
 
 Rol yapısı basit: `USER`, `ADMIN`. Asıl mesele rol değil, **kaynak sahipliği** — o da repository katmanında çözülüyor.

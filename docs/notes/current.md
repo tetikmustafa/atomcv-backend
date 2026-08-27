@@ -160,10 +160,22 @@ artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 
 ## Adım 3.6 — anonim mod · 1/3
 
-**Dilim 1 (anonim oturum) indi**; altı karar § 35.7.1'e işlendi.
-**Dilim 2:** `EphemeralProfileStore` + `ProfileRef.Scope.EPHEMERAL` + gizlilik
-testi (DB'ye hiçbir satır yazmamalı). **Dilim 3:** IP bazlı kota ve yükseltme
-akışı.
+**Dilim 1 (anonim oturum) ve dilim 2 (kalıcı olmayan profil) indi**; kararlar
+§ 35.7.1 ve § 41.3.1'de. **Dilim 3:** IP bazlı kota, yükseltme akışı, ve
+kalıcı olmayan profilin ingestion/generation'a bağlanması.
+
+**Aşama 1'den taşınan `EPHEMERAL` kısıtı kalktı** — kontrollü üretim yolu
+`AnonymousSessionId`.
+
+**Canlı — kalıcı olmayan profil hiçbir yere bağlı değil.** `EphemeralProfileStore`
+var ve test edildi, ama `ProfileImportService` ile `ProfileAssembler` hâlâ yalnız
+kalıcı yolu biliyor. **Dilim 3 bunu bağlayacak**; bağlanana kadar anonim
+kullanıcı oturum alıyor ama CV yükleyemiyor.
+
+**Canlı — atom id'leri her içe aktarımda yeniden üretiliyor** (Aşama 2'den
+taşınan bulgu). Yükseltme akışı geçici profili kalıcıya çevirirken tam olarak
+buna çarpacak: id'ler değişirse eşitlik bozulur. İçerikten türetilen bir
+bozucu düzeltir.
 
 **Canlı — anonim oturumun kullanıcı indeksi yok.** Kullanıcısı olmadığı için
 "bu kişinin bütün oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek

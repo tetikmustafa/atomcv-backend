@@ -96,6 +96,7 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | Görev | Dosya |
 |---|---|
 | Auth, oturum, magic link | `spec/10-security.md` § 40 |
+| Anonim mod, kalıcı olmayan profil | `spec/08-api.md` § 35.7.1 · `spec/10-security.md` § 41.3.1 |
 | Rate limit, Turnstile, bot koruması | `spec/10-security.md` § 40.5, § 40.5.1, § 44.4 |
 | Multi-tenant izolasyon, IDOR | `spec/10-security.md` § 41 |
 | Dosya yükleme, SSRF, format injection | `spec/10-security.md` § 42 |
