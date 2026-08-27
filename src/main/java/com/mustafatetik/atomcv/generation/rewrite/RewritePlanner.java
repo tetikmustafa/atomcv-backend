@@ -124,7 +124,7 @@ public final class RewritePlanner {
         return Optional.of(new RewriteCandidate(
                 atom.getId(), wording.getId(), wording.getContent(),
                 atom.getSkills(), atom.getMetrics(), atom.getProperNouns(),
-                score, maxCharsFor(text), intent));
+                score, maxCharsFor(text), intent, atom.getEmbedding()));
     }
 
     /**

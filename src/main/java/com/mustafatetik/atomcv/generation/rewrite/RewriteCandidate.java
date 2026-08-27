@@ -28,6 +28,10 @@ import java.util.UUID;
  * @param score       Faz B's relevance, which decided the intent
  * @param maxChars    Bolum 21.3's ceiling: the original plus five per cent
  * @param intent      how far Faz D may go
+ * @param originalVector the atom's own embedding, which Bolum 21.6's drift
+ *                    check measures the answer against. {@code null} for an
+ *                    atom that has not been embedded yet — a profile imported
+ *                    minutes ago, or an anonymous one, which has none at all
  */
 public record RewriteCandidate(
         UUID atomId,
@@ -38,7 +42,8 @@ public record RewriteCandidate(
         List<String> properNouns,
         double score,
         int maxChars,
-        RewriteIntent intent) {
+        RewriteIntent intent,
+        float[] originalVector) {
 
     public RewriteCandidate {
         skills = List.copyOf(skills);
