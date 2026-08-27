@@ -139,9 +139,10 @@ Dört dilim de indi. Otuz bir kararın hepsi kalıcı çıktı ve `spec/`'e işl
 (normalizasyon), § 31.6.1 (uç, iş, kalıcılaştırma); üçüncü enjeksiyon katmanı
 § 43.1'de, prompt dosyası kontrolü § 53.1'de.
 
-**Ders — bir metodun javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı da
-ara.** `PromptRegistry.validateConfiguredPrompts()` "eksik dosya açılışta
-hata" diyordu ve üretim kodunda hiçbir şey onu çağırmıyordu.
+**İki ders.** *Bir metodun javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı
+da ara* — `validateConfiguredPrompts()` "açılışta hata" diyordu ve kimse onu
+çağırmıyordu. *Düşmeyen bir ihlal denemesi, bir eksik testtir* — 4b'de sıra
+iddiasını hiçbir test tutmuyordu.
 
 ### Hâlâ canlı olanlar
 
@@ -186,8 +187,16 @@ sahiplenici olmayan niceleyiciler (bir eşleme denemesi içinde geri izleme) ve
 ikisini de düşün**; `atexFileBuiltToBacktrackIsStillReadInNoTime` ikisini de
 tutuyor.
 
-### Sonraki dilim (4b)
+### Dilim 4b — arka plan tetiklemesi
 
-Arka planda embedding + ölçüm tetiklemesi (§ 31.6'nın `t=25s` kutusu) ve
-`local-fake` için `make record` ile gerçek bir fixture. Bugün yerelde çıkan
-profil şema şeklinde ama anlamsız.
+Altı kararın hepsi § 31.6.2'ye işlendi. Bir ihlal denemesi hiçbir testi
+düşürmedi — işleri yazmadan *önce* kuyruğa almak bir şey bozmuyordu, çünkü
+sırayı tutan test yoktu. Yazıldı.
+
+**Canlı — `AtomEmbeddingService` `atoms.embedding`'e yazan ilk şey.** Faz B
+bugüne kadar atom vektörü olmadan skorluyordu. `AtomEmbeddingIT` kendi
+bağlamını taşıyor; paylaşılandaki sağlayıcı çalışmayan bir servise bakıyor.
+
+**Açık — `local-fake` fixture'ı yok ve uydurulamaz.** Fixture anahtarı istek
+metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
+ateşlenir. **`make record` geliştiricinin anahtarını istiyor.**

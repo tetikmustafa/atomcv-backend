@@ -1075,6 +1075,40 @@ bilinmeyen kapıdır. Sınır, `shared`'ın iş modülüne bağımlı olamaması
 `spring.servlet.multipart.max-file-size`'dan okunuyor — zaten isteği reddeden
 sayı o.
 
+#### 31.6.2 Kararlar (Adım 3.4, dilim 4b)
+
+**Arka plan kutusu iki iş, iki bekleme değil.** Ekran profil var olur olmaz
+açılıyor; vektörler ve ölçülen yükseklikler altında geliyor. Satır içi
+yapılsaydı, ürünün birine beklemesini söylediği **tek ana** yirmi saniye
+eklerdi, ve ikisi de ilk üretime kadar gerekli değil.
+
+**İşler yazmadan *sonra* kuyruğa giriyor.** `ProfileWriter` kendi
+transaction'ını taşıyor; satırlar commit olmadan bir işçi bunlardan birini
+alsaydı boş bir profil bulup hiçbir şey yapmazdı — bildirebileceği bir hata
+değil, sessizce hiç embed edilmemiş bir profil. Sıra testle sabitlendi.
+
+**Embedding yalnız İngilizce varyanttan.** Türkçe bir cümleyle İngilizce bir
+cümle arasındaki benzerlik eşleşmeyi değil dilleri ölçer (§ 28). **İngilizce
+varyantı olmayan atom atlanıyor**, kaynağından embed edilmiyor: yanlış uzaydaki
+bir vektör, hiç vektör olmamasından kötüdür — çünkü skorlama onu kullanır.
+Karşılaştırma `content_hash` ile, zaman damgasıyla değil (§ 28.2).
+
+**Ölçüm tek özelleştirme için.** `TemplateCustomization.CLASSIC`, tercihleri
+elle değiştirilmemiş bir profilin üreteceği şey. Ötekileri şimdiden ölçmek,
+kimsenin istemediği sayfalar için XeLaTeX koşusu olurdu; onlar istendiğinde
+dolduruluyor.
+
+**İkisinin de başarısızlığı içe aktarmanın başarısızlığı değil.** Skorlama
+embedding'siz çalışmaya düşüyor (§ 28.4), seçim ölçülmemiş için tahmine
+düşüyor ve bunu söylüyor (§ 20.4). İkisi de tekrar edilebilir ve başarana
+kadar görünmez.
+
+**Açık — `local-fake` için kayıtlı fixture hâlâ yok.** `make record` gerçek
+bir anahtar ve gerçek bir CV istiyor; fixture anahtarı istek metninin
+özetinden türediği için elle yazılan bir fixture yalnız tek bir girdide
+ateşlenir, yani uydurulamaz. Yerelde çıkan profil şema şeklinde ve anlamsız —
+**ucun sözleşmesi doğru, içeriği değil.**
+
 ### 31.7 Manuel form
 
 Aşamalı doldurma:

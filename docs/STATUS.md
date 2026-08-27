@@ -11,8 +11,7 @@
 
 | Aşama / Adım | Durum |
 |---|---|
-| Aşama 0 · Aşama 1 — Yürüyen iskelet (1.1-1.9) | ✅ |
-| **Aşama 2 — İlana özel üretim** (2.1-2.7) | ✅ kapanış listesi 8/8 |
+| Aşama 0 · 1 — Yürüyen iskelet · **2 — İlana özel üretim** (2.1-2.7) | ✅ · ✅ 8/8 |
 | **Aşama 3 — hesap ve MVP** · 3.1 dış servis hesapları | 🔄 · ✅ |
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC saati) |
 | 3.3 kimlik doğrulama | ✅ 4/4 — oturum+CSRF, OAuth, magic link, rate limit+Turnstile |
@@ -24,10 +23,11 @@ magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasınd
 açılmaz) ve `FORWARD_HEADERS_STRATEGY=framework` (yoksa IP katmanı tek kova
 olur) — § 46.5. **Çıkarım:** PDF/DOCX/TEX/TXT/MD, dosya hiçbir yere yazılmıyor
 (§ 31.3.1); tek LLM çağrısı iki dil üretiyor (§ 31.4.1); alias sözlüğü
-karşılaştırmanın **iki tarafında da** (§ 31.5.1). **`POST /profile/import`
-telde** — `202` + iş, beş ret senkron (§ 31.6.1); sözleşme **`B-051`**'de.
+karşılaştırmanın iki tarafında da (§ 31.5.1). **`POST /profile/import` telde**
+— `202` + iş, beş ret senkron, embedding ve ölçüm arkada (§ 31.6.1-2);
+sözleşme **`B-051`**'de.
 
-**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 852 birim · 326 entegrasyon · 48 latex — 0 hata, 0 atlanan
+**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 855 birim · 332 entegrasyon · 48 latex — 0 hata, 0 atlanan
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ telde** — `202` + iş, beş ret senkron (§ 31.6.1); sözleşme **`B-051`**'de
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-051`'i alsın** — `B-051` yükleme sözleşmesinin tamamı,
-ve ilk `ACK`'ler `to-frontend.md`'yi (188 satır) sınırın altına indirir.
-Backend: 3.4'ün arka plan tetiklemesi, sonra **Adım 3.5** — çok dillilik.
+**Frontend `B-044`-`B-051`'i alsın**; ilk `ACK`'ler `to-frontend.md`'yi (188
+satır) sınırın altına indirir. Backend **Adım 3.5**'e (çok dillilik) geçiyor.
+**`local-fake` fixture'ı sende:** `make record` senin anahtarını istiyor.
