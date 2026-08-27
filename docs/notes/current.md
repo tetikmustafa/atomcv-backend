@@ -155,39 +155,38 @@ paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
 **Canlı — `SkillNames.canonical` dört çağıranın ortak kuralı**, ve `RunMarking`
 artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 
-## Adım 3.6 — anonim mod · 5/6
+## Adım 3.6 — anonim mod · 6/6 · kapandı
 
-Dilim 1-2 (oturum, kalıcı olmayan profil) § 35.7.1 ve § 41.3.1'de; dilim 3
-(adres kotası) § 44.1.1'de; dilim 4 (işin anonim sahibi) § 41.3.2'de, ve
-`jobs (user_id, idempotency_key)` carry-over'ı `V3` ile kapandı. **Dilim 5
-(anonim yükleme) indi**; kararlar § 31.6.3 ve § 44.2'de. **Dilim 6:** yükseltme
-akışı.
+Kararlar `spec/`'te (§ 35.7.1, § 41.3.1, § 41.3.2, § 41.3.3, § 44.1.1,
+§ 31.6.3, § 44.2); inşa kaydı `archive/stage-3-anonymous.md`'de.
 
 **Ders — entegrasyon testi işleyiciyi çağırmıyorsa işleyiciyi korumuyor.**
-İlk hali `EphemeralProfileWriter`'ı doğrudan çağırıyordu; anonim dalı kalıcı
-yazmaya çevirdiğimde **geçti**. Yazıcı zaten bunu yanlış yapabilecek parça
-değildi. Yalnız LLM aşaması taklit edilerek gerçek işleyici koşturulunca ihlal
-üç testi birden düşürdü. *Ekilen ihlalin hangi testi düşürdüğüne bak; hiçbirini
-düşürmüyorsa test yanlış yerde duruyor.*
+Anonim yükleme testi önce yazıcıyı doğrudan çağırıyordu; dalı kalıcı yazmaya
+çevirdiğimde **geçti**. Yazıcı zaten bunu yanlış yapabilecek parça değildi.
+*Ekilen ihlalin hangi testi düşürdüğüne bak; hiçbirini düşürmüyorsa test yanlış
+yerde duruyor.*
 
-**Bulgu — `AnomalyDetectorIT` § 44.3'ün frenini arkasında bırakıyordu.** Bayrak
-ayarlanmamışken açık sayılıyor; fren çekili kalınca paylaşılan bağlamda ondan
-sonra koşan her üretim 503 alıyordu. On altı hata, dört ilgisiz sınıfta, ve
-kendi testleri geçiyordu. **Önemli olan sınıfın arkasında bıraktığı durum.**
+**Taşınan carry-over kendiliğinden kapandı** — yükseltme yeniden içe
+aktarmıyor, satırları kendi id'leriyle yazıyor. İçe aktarımlar arası id
+kararsızlığı duruyor, yükseltmenin sorunu değil.
 
-**Canlı — atom id'leri her içe aktarımda yeniden üretiliyor.** Yükseltme akışı
-(dilim 6) tam buna çarpacak: id değişirse eşitlik bozulur.
+### Hâlâ canlı
 
-**Canlı — anonim oturumun kullanıcı indeksi yok**, yani "bu kişinin bütün
-oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek şey TTL'i.
+**Hesabın *boş* profil satırı yükseltmeyi engelliyor.** Kontrol "profil satırı
+var mı"; bir kez giriş yapıp uygulamayı açan herkeste boş satır oluşuyor
+(`ProfileResolver.own` tembel yaratıyor). O kişi çıkıp anonim çalışırsa
+`kept_existing` alıyor ve emeği gidiyor. Dar ama **sessiz** bir durum; boşluk
+kontrolü de birleştirme de ürün kararı istiyor.
 
-**Canlı — `profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`
-`local` altında bir profil ekiyor). Anonim gizlilik iddiası bu yüzden "hiç satır
-yok" değil, **"satır sayısı değişmedi"** diye kuruluyor.
+**Anonim işler yükseltmede taşınmıyor.** İş `anon_session_id` ile kapsanıyor;
+giriş sonrası kişi kendi çıkarım işini göremiyor. Bugün zararsız (iş bitmiş
+oluyor), anonim *üretim* inince değişir.
 
-**Canlı — testler kimliksiz duruma çözülmeyen bir çerezle ulaşıyor**, ikinci bir
-bağlamla değil. `local` altında çerezsiz her istek dev kullanıcısı; bayat çerez
-**bilinçli olarak** local-dev isteği sayılmıyor.
+**Anonim oturumun kullanıcı indeksi yok**, yani "bütün oturumlarını iptal et"
+işlemi de yok; onu bitiren tek şey TTL'i.
+
+**`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
+Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
 **Dikkat — `git checkout --` ekilmiş ihlali geri alırken commit edilmemiş
 gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.

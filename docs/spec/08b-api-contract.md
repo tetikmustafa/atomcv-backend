@@ -129,6 +129,14 @@ bir istemciye "internal error"dan iyisini söyleyebilmek için var. Parametresiz
 yapılandırmadan **geri okunuyor** — hatanın doğduğu yerde uydurulan bir sayı,
 sunucunun kendi yapılandırmasını yanlış bildirmesi olurdu.
 
+**Adım 3.6 dilim 6: `POST /auth/verify` artık `204` değil `200`.** Gövde tek
+alan taşıyor — `profileUpgrade` — ve OAuth tarafında aynı şey iniş adresinin
+`profile` parametresi. **Değişikliğin sebebi tek seferlikliği:** anonim
+profilin ne olduğu istemcinin bir kez okuyup davrandığı bir olgu; `/session`'a
+eklenseydi iki hafta boyunca tekrarlanır, istemci de mesajı gösterip
+göstermediğini hatırlamak zorunda kalırdı. Dört değer: `upgraded`, `none`,
+`kept_existing`, `unavailable` (§ 41.3.3).
+
 **Adım 3.6 dilim 5: `POST /profile/import` kimlik istemiyor.** Anonim oturum
 çerezi yeterli; sözleşmenin geri kalanı değişmiyor — aynı `202`, aynı ret
 kümesi, aynı terminal olay. Değişen tek şey `PROFILE_QUOTA_EXCEEDED`'ın kime

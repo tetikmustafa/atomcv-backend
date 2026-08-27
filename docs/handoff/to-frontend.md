@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** on madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> değil:** on bir madde birden açık ve hiçbiri henüz `ACK` almadı, yani
 > taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
 > yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
 
@@ -238,6 +238,32 @@ yükseltme akışı (bir sonraki dilim) inene kadar iki saat sonrası yok.
 skorlama (§ 28.4) ve ölçülmemiş tahmin (§ 20.4) ile çalışıyor — ikisi de zaten
 tarif edilmiş bozulmuş-ama-çalışan yol. Kullanıcıya bunu söylemeyin; söylenecek
 tek şey seçim tahminî olduğunda ekranın zaten gösterdiği not.
+
+### B-054 · Giriş yanıtı değişti: anonim profilin ne olduğunu söylüyor
+**Since:** commit <sha> · Adım 3.6 · **Spec:** `spec/10-security.md` § 41.3.3
+
+**`POST /api/v1/auth/verify` artık `204` değil `200`**, ve gövdesi tek alan:
+`{"profileUpgrade": "..."}`. OAuth tarafında aynı bilgi iniş adresinde:
+`/auth/complete?next=...&profile=...`. **`204` bekleyen istemci kırılır.**
+
+Dört değer, dört farklı cümle:
+
+| Değer | Ne oldu | Ne göstermeli |
+|---|---|---|
+| `none` | Kişi hiçbir şey taşımıyordu — girişlerin çoğu | **Hiçbir şey.** Bu normal giriş |
+| `upgraded` | Anonim profil artık hesabın | Kısa bir onay yeter; profil zaten orada |
+| `kept_existing` | Hesabın zaten profili vardı, anonim olan **taşınmadı** | Kişiye söyleyin: az önce yüklediği CV hesabına geçmedi, mevcut profili duruyor |
+| `unavailable` | Depo okunamadı, çalışma kayboldu | Bunu "taşınacak bir şey yoktu" gibi göstermeyin — bir aksaklık oldu deyin |
+
+**`kept_existing` ve `unavailable`'da anonim profil artık erişilemez.** Çerez
+değişti, ve anonim profil tam olarak o çerezle kapsanıyordu (§ 41.3). Yani bu
+iki durumda kişinin iki saatlik emeği gitmiş oluyor — söylenmesi gereken şey
+bu, "birleştirebilirsin" değil. **Birleştirme akışı yok ve planlanmadı**;
+ürün kararı verilmedi.
+
+**Yükseltilen profil aynı profil.** Atom ve bölüm id'leri değişmiyor, yani
+anonim ekranda tuttuğunuz seçimler ve açık/kapalı durumlar giriş sonrası hâlâ
+geçerli — id'lerle eşleştiriyorsanız yeniden yüklemeniz gerekmiyor.
 
 ---
 

@@ -353,6 +353,36 @@ birbirinden farklı sayıyor, yani § 30.7'nin emdiği çift tıklama iki kez
 geçiyordu. `V3` iki sahip kolonunu `COALESCE`'lıyor. Eski index bırakılmıyor,
 düşürülüyor: tek bir niyet üzerine iki tekil index, muhakeme edilecek iki şey.
 
+#### 41.3.3 Yükseltme (Adım 3.6, dilim 6)
+
+**Girişin içinde koşuyor, ve başka yerde koşamaz.** Giriş yeni bir oturum ve
+yeni bir çerez yazıyor; anonim oturum id'si o tek istek boyunca okunabiliyor ve
+bir daha hiç. Profil de o id'den türeyen bir değerle adresleniyor. Sonradan
+çağrılan bir uç, tarayıcının çoktan attığı bir tanımlayıcıyı isterdi.
+
+**Satırlar kopyalanmıyor, sahipleniliyor.** Profil satırı, anonim profilin
+zaten sahip olduğu id ile yazılıyor; böylece her bölüm, girdi, atom ve varyant
+olduğu gibi kaydediliyor — aynı id, aynı alanlar. Bir kopyalayıcı taşıdığı her
+alanı adıyla sayardı, ve atoma sonradan eklenen ilk alan sessizce düşerdi.
+Profil id'sinin gizli bir oturum id'sinden tek yönlü türemiş olması bunu
+güvenli kılıyor: id'yi bilen, geldiği oturumu bilmiyor.
+
+**Hesabın zaten profili varsa hiçbir şey yazılmıyor** ve hiçbir şey de
+silinmiyor; anonim olan kendi TTL'ine bırakılıyor, kişiye söyleniyor. İki CV'yi
+birleştirmek kimsenin vermediği bir ürün kararı, aylarca düzenlenmiş bir
+profilin üstüne iki saatlik olanı yazmak ise **İlke 8'in tam tersi**.
+
+**Sonuç dört değerli, ikili değil.** "Taşınacak bir şey yoktu" hiçbir cümle
+gerektirmiyor; "hesabında zaten profil vardı" kişinin eksikliğini göreceği bir
+şey ve söylenmeli; "okuyamadık" ise ikisi de değil — az önce CV yükleyen birine
+"taşınacak bir şey yoktu" demek, ürünün kendi kesintisi hakkında söylediği bir
+yalan olurdu.
+
+**Yanıtta taşınıyor, oturumda değil.** Bu tek seferlik bir olgu: istemci
+okuyup davranıyor, çoğu zaman hiçbir şey söylemeyerek. Oturuma yazılsaydı iki
+hafta boyunca her `/session` çağrısında geri dönerdi ve istemci mesajı gösterip
+göstermediğini kendisi hatırlamak zorunda kalırdı.
+
 ### 41.4 RBAC
 
 Rol yapısı basit: `USER`, `ADMIN`. Asıl mesele rol değil, **kaynak sahipliği** — o da repository katmanında çözülüyor.
