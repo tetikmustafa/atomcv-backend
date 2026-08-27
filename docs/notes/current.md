@@ -77,8 +77,7 @@ Aşağıdakiler hâlâ canlı.
 
 **`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Kapı bir
 enjeksiyon tripwire'ı; uslu bir modelle açılmaması beklenen davranış.
-`PlausibilityGateTest` onu kurgulanmış analizle sınıyor. **Bunu "çalışmıyor"
-diye tamir etmeye kalkma.**
+**"Çalışmıyor" diye tamir etmeye kalkma.**
 
 **`citext` kolonu `varchar` parametreyle aranırsa büyük/küçük harf duyarlı
 arar.** UNIQUE index duyarsız korur, JPA'nın türettiği sorgu duyarlı arar;
@@ -86,15 +85,12 @@ arar.** UNIQUE index duyarsız korur, JPA'nın türettiği sorgu duyarlı arar;
 `CAST(:x AS citext)` — **`users.email` ve `email_suppressions.email`'e dokunan
 her yeni sorguda.**
 
-**`LocalDevUser` ve `LocalDevSessions` hâlâ duruyor.** Entegrasyon paketi
-çerezsiz istek atıyor; `LOCAL_DEV_SESSION=false` ile kapatılabiliyor.
-
 **`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını siliyor.**
 Silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
 **Yeni bir kimlik testi yazan bunu unutmasın.**
 
-**`/auth/verify` limitsiz.** Verifier 32 rastgele bayt; Nginx'in `auth` zone'u
-(1r/s) önünde. Bugün koruduğu bir şey yok.
+**`/auth/verify` limitsiz** — verifier 32 rastgele bayt, Nginx'in `auth`
+zone'u önünde. Bugün koruduğu bir şey yok.
 
 ## Adım 3.4 — CV yükleme ve çıkarım · 4/4 · kapandı
 
@@ -115,11 +111,7 @@ tipinin sorusu.
 aktarma bölümleri ikinci kez yazar. `PROFILE_ALREADY_EXISTS` (409) katalogda ve
 **hiçbir şey onu üretmiyor** — ürünün "ikinci CV yüklenirse ne olur" cevabı yok.
 
-**`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
-(§ 31.4.1); alan eklendiğinde üçü birden güncellenmeli.
-
-**`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'un cümlesiyle eşleşiyor**; birini
-değiştiren ötekini de değiştirmeli.
+**`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor** (§ 31.4.1).
 
 **`SkillNames.canonical` dört çağıranın ortak kuralı.** Alias dosyasında sol
 taraf insanların gerçekten yazdığı gibi olmalı, yoksa anahtar eşleşmez.
@@ -183,18 +175,26 @@ gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.
 
 ## Adım 3.8 — Faz D ve cover letter · 1/5
 
-Dilimler: **1 sözcükleme seçimi + eşikler (LLM'siz)** ✅ · 2 rewrite prompt +
-doğrulayıcı · 3 paralel yürütme + boru hattına bağlama · 4 About sentezi ·
+Dilimler: **1 sözcükleme seçimi + eşikler** ✅ · **2 rewrite prompt +
+doğrulayıcı** ✅ · 3 paralel yürütme + boru hattına bağlama · 4 About sentezi ·
 5 cover letter.
 
-**Dilim 1 indi**; kararlar § 21.3.1'de — bir **Düzeltme** (varyantın embedding'i
-yok, seçim dil+tonla yapılıyor) ve bir **Ekleme** ("uzunsa" eşiği 160 karakter).
+Kararlar § 21.3.1 ve § 21.6.1'de: bir **Düzeltme** (varyantın embedding'i yok)
+ve üç **Ekleme** ("uzunsa" eşiği 160 karakter; iddia sözlüğü = ilan becerileri
++ alias sözlüğü; orijinalde geçen teknoloji rewrite'a yazılmıyor).
 
 **Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
 testtir.* Tabanı kaldırdım, paket geçti — çünkü "bağlantısız" testim kısa bir
 maddeydi ve uzunluk kapısına zaten takılmıyordu. Uzun-ve-tabanın-altında bir
 vaka eklenince ihlal düştü.
 
-**Faz D henüz boru hattına bağlı değil.** `RewritePlanner` çağıran yok; § 21.5
-paralel yürütme dilim 3'te. `GenerationPhase` hâlâ "Faz D hiç koşmaz" diyor.
+**Faz D henüz boru hattına bağlı değil.** `RewritePlanner` ile
+`BulletRewriteService`'i çağıran yok; § 21.5 paralel yürütme dilim 3'te.
+`GenerationPhase` hâlâ "Faz D hiç koşmaz" diyor.
+
+**Canlı — `bullet_rewrite` için `local-fake` fixture'ı yok**, `profile_extraction`
+ile aynı sebepten: fixture anahtarı istek metninin özetinden türüyor.
+`SyntheticAnswer` şema şeklinde bir cümle üretiyor, yani yerelde yeniden yazım
+**çalışıyor ama anlamsız** — ve doğrulayıcı onu büyük ihtimalle reddedip
+orijinali bastırıyor. Bu doğru davranış; "bozuk" diye tamir etmeye kalkma.
 

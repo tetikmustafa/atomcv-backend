@@ -151,6 +151,50 @@ public ValidationResult validate(RichContent original, String rewritten, Atom at
 
 Sistem asla doğrulanmamış içerik yayınlamaz. `UNSUPPORTED_CLAIM` için **sıfır tolerans**.
 
+#### 21.6.1 Kararlar (Adım 3.8, dilim 2)
+
+**Servis `Result` değil içerik döndürüyor.** § 21.6'nın kuralı "iki deneme,
+sonra orijinal" — yani bu katmanın çağırana bildirebileceği bir başarısızlık
+yok. Kişi CV istedi; elindeki cümle zaten orada ve onu basmak **bozulmuş değil
+doğru** bir cevap. Sağlayıcı kesintisi de aynı cevabı alıyor: ret değil, yeniden
+yazılmamış bir satır.
+
+**Ekleme — desteklenmeyen iddia sözlüğü ilanın becerileri + alias sözlüğü.**
+§ 21.6 `extractTechnologies(rewritten)` diyor ve bu kod tabanında genel bir
+teknoloji çıkarıcı yok. Asıl korkulan davranış zaten dar: modelin **az önce
+gösterildiği** ilan becerilerini cümleye sokması. Sözlük bu yüzden ilanın
+`requiredSkills` + `preferredSkills`'i, üstüne alias sözlüğünün bildiği adlar.
+Zorunlu ve tercih edilen birlikte: yalnız zorunluları bilen bir doğrulayıcı,
+tercih edilen bir beceriyi denetimsiz bıraktırırdı.
+
+**Ekleme — orijinalde zaten geçen teknoloji rewrite'a yazılmıyor.** § 21.6
+yalnız `atom.skills`'e bakıyor; skills listesi eksik çıkarılmış her atomun her
+yeniden yazımı bu yüzden reddedilirdi — kişi kendi maddesine "Postgres" yazmış,
+çıkarım listelememiş, ve model **korumasını söylediğimiz** kelimeyi koruduğu
+için atılıyor. Kontrol, yeniden yazımın **eklediği** iddia hakkında; bu ayrım
+bir korumayla bir kesintinin arasındaki fark.
+
+**Sorunlar tür olarak taşınıyor, değer olarak değil.** Kaybolan sayıyı ya da
+kayan cümleyi taşıyan bir kayıt, kullanıcının CV'sini loglanan bir değere
+sokardı (mutlak kural 4) — ve hiçbir çağıranın ihtiyacı yok: hepsinin cevabı
+aynı iki adım.
+
+**Ölçülemeyen kontrol geçmiş sayılmıyor.** Embedding servisi kapalıysa beşinci
+kural atlanıyor, diğer dördü duruyor, ve hiçbir yerde ölçülmemiş bir benzerlik
+raporlanmıyor.
+
+**Listeler çitin içinde.** `allowedSkills`, `mustKeep`, `postingWants` —
+üçü de kişinin ya da ilanın içeriği. § 43.1'in sınırı "hangi alan yapılandırılmış
+görünüyor" değil, **verinin nerede başladığı**. Talimat yarısında yalnız bizim
+sayılarımız var: karakter tavanı, niyet, dil, ton.
+
+**Kosinüs tek yerde.** Faz B atomları ilana karşı puanlıyor, Faz D yeniden
+yazımın hâlâ aynı şeyi söyleyip söylemediğine bakıyor; aynı aritmetiğin ikinci
+bir kopyası, ikisinin bir yuvarlama kuralıyla ayrışabileceği bir yer olurdu.
+`shared.math.Vectors`'te duran şey saf matematik; **karşılaştırılamayan vektörle
+ne yapılacağı** çağıranda kalıyor — Faz B nötr yarım puan veriyor (profil
+vektörsüz de sıralanabilsin), Faz D "kontrol edilemedi" diyor.
+
 ### 21.7 About sentezi
 
 About tek atom değil, birden fazla atomdan sentezleniyor:
