@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.identity.api;
 
 import com.mustafatetik.atomcv.identity.api.dto.MagicLinkRequest;
 import com.mustafatetik.atomcv.identity.api.dto.VerifyRequest;
+import com.mustafatetik.atomcv.identity.challenge.Challenge;
 import com.mustafatetik.atomcv.identity.domain.Session;
 import com.mustafatetik.atomcv.identity.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
@@ -38,12 +39,14 @@ public class MagicLinkController {
 
     private final MagicLinkService magicLinks;
     private final SignInRateLimit rateLimit;
+    private final Challenge challenge;
     private final SessionCookies cookies;
 
     MagicLinkController(MagicLinkService magicLinks, SignInRateLimit rateLimit,
-            SessionCookies cookies) {
+            Challenge challenge, SessionCookies cookies) {
         this.magicLinks = magicLinks;
         this.rateLimit = rateLimit;
+        this.challenge = challenge;
         this.cookies = cookies;
     }
 
@@ -55,9 +58,11 @@ public class MagicLinkController {
                     (Bolum 40.4), so the sentence the person reads is the \
                     client's to write and is the same either way.
 
-                    The one other answer it can give is `429 RATE_LIMITED`,
-                    and that reveals nothing either: every layer of Bolum
-                    40.5 counts what this caller has already done.""")
+                    The two other answers it can give reveal nothing either:
+                    `429 RATE_LIMITED`, where every layer of Bolum 40.5
+                    counts what this caller has already done, and
+                    `403 CHALLENGE_FAILED`, which is about the token in the
+                    request and not about the address in it.""")
     @PostMapping("/magic-link")
     public ResponseEntity<Void> request(@Valid @RequestBody MagicLinkRequest body,
             HttpServletRequest request) {
@@ -66,6 +71,9 @@ public class MagicLinkController {
         // three counters are not one call because they do not belong at
         // one place: the address layer has to run behind the challenge.
         rateLimit.checkCaller(ClientIp.of(request));
+        if (!challenge.passed(body.challengeToken())) {
+            throw ApiException.of(ErrorCode.CHALLENGE_FAILED);
+        }
         magicLinks.request(body.email());
         return ResponseEntity.accepted().build();
     }

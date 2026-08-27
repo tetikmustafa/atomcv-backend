@@ -133,6 +133,16 @@ atomcv:
     generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
     profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
 
+  # Bolum 44.4. The other half of what bounds the sign-in endpoint. Absent
+  # locally and in the test suite, where ChallengeConfig warns and waves the
+  # request through; absent under the `prod` profile, where it refuses to
+  # start -- a deployment with no challenge works perfectly and is open, so
+  # nobody would ever find out from the behaviour.
+  turnstile:
+    secret-key: ${TURNSTILE_SECRET_KEY:}
+    # Overridable so a test can point it at a socket it owns.
+    verify-url: ${TURNSTILE_VERIFY_URL:}
+
   # Bolum 40.5. Three layers in front of asking for a sign-in link, because
   # the endpoint sends mail to an address the caller merely typed. The numbers
   # are configuration: the global one is a guess at the sending provider's
