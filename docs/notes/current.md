@@ -157,8 +157,7 @@ duruyor ve **hiçbir şey onu üretmiyor**; ürünün "ikinci CV yüklenirse ne 
 sorusuna cevabı yok. § 31.1 yalnız ilk kullanımı anlatıyor.
 
 **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
-(sebebi § 31.4.1'de). Alan eklendiğinde **üçü birden** güncellenmeli;
-`theContactSchemaAndTheRecordAgree` yalnız şema tarafını tutuyor.
+(§ 31.4.1). Alan eklendiğinde **üçü birden** güncellenmeli.
 
 **`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'un cümlesiyle eşleşiyor** ("0.5'in
 altında puanla"). Birini değiştiren ötekini de değiştirmeli.
@@ -169,9 +168,8 @@ skorlayıcı, Faz F raporu, run işaretleme. Alias dosyası
 insanların gerçekten yazdığı gibi** olmalı, yoksa anahtar hiçbir şeyle
 eşleşmez.
 
-**`ZipSecureFile.setMinInflateRatio` global durum.** `DocxTextExtractor`'ın
-kurucusu her açılışta yeniden yazıyor, çünkü başka bir kütüphane gevşetirse
-zip-bomb koruması sessizce kalkardı (§ 42.1).
+**`ZipSecureFile.setMinInflateRatio` global durum**; `DocxTextExtractor`'ın
+kurucusu her açılışta yeniden yazıyor (§ 42.1).
 
 **`ProfileImportService` ret için fırlatıyor, `Result` döndürmüyor**
 (§ 31.6.1). Uç bu yüzden ince — yeni bir ret servise eklenir, denetleyiciye
