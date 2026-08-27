@@ -98,7 +98,8 @@ public record ExtractedProfile(
             String website,
             String location) {
 
-        static final ExtractedContact EMPTY =
+        /** Public since Bolum 31.5's normaliser and its tests both build one. */
+        public static final ExtractedContact EMPTY =
                 new ExtractedContact(null, null, null, null, null, null, null);
 
         /** Not a JSON property: this record is only ever read, never written. */
