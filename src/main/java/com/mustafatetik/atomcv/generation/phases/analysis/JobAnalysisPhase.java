@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.llm.gateway.LlmResponse;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import com.mustafatetik.atomcv.llm.gateway.ProviderChain;
 import com.mustafatetik.atomcv.llm.gateway.StructuredRequest;
+import com.mustafatetik.atomcv.llm.prompts.FencedPrompt;
 import com.mustafatetik.atomcv.llm.prompts.PromptRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -30,6 +31,9 @@ public class JobAnalysisPhase {
 
     /** Public so a generation record can name the prompt it ran (Bolum 14.7). */
     public static final String PROMPT_ID = "job_analysis";
+
+    /** Bolum 43.1's fence: everything inside it is data, not instructions. */
+    private static final String FENCE_TAG = "job_description";
 
     private static final Logger log = LoggerFactory.getLogger(JobAnalysisPhase.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -109,7 +113,7 @@ public class JobAnalysisPhase {
         }
 
         var prompt = prompts.load(PROMPT_ID, version);
-        var fenced = FencedPrompt.of(prompt);
+        var fenced = FencedPrompt.of(prompt, FENCE_TAG);
 
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, version,
