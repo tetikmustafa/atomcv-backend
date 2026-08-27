@@ -43,6 +43,25 @@ class FakeLlmProviderTest {
      * The point of a fake over a stub: the same input answers the same way
      * every run, so a failing pipeline test failed for a reason.
      */
+    /**
+     * A placeholder that violates the schema it was built from is not a
+     * placeholder, it is a second definition of the contract.
+     *
+     * <p>It had a cost worth naming. An unbounded draw put a {@code 0..1}
+     * confidence anywhere in {@code 0..99.9}, and the few draws that landed
+     * under a gate's floor made {@code make dev} fail for a reason no reader
+     * could see — a flake in the one place a developer has no fixture to
+     * compare against.
+     */
+    @Test
+    void asyntheticNumberStaysInsideTheBoundsTheSchemaDeclares() {
+        for (int i = 0; i < 50; i++) {
+            var analysis = answered(provider(true).callStructured(request("posting " + i)));
+
+            assertThat(analysis.confidence()).isBetween(0.0, 1.0);
+        }
+    }
+
     @Test
     void thesameRequestAnswersIdenticallyEveryTime() {
         var provider = provider(true);
