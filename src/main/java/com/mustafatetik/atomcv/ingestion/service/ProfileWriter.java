@@ -114,16 +114,39 @@ public class ProfileWriter {
         }
     }
 
-    private void writeAtom(Target target, Section section, Entry entry,
+    /**
+     * What an imported atom is, wherever it is about to be kept.
+     *
+     * <p>Shared with {@code EphemeralProfileWriter}: which kind of atom a
+     * section's contents are, and where it came from, are decisions about what
+     * a CV means rather than about where it is stored. Two copies would be two
+     * answers on the day one of them learned something.
+     */
+    static Atom atomOf(UUID profileId, Section section, Entry entry,
             NormalizedProfile.NormalizedAtom normalized, SectionKind kind) {
-        Atom atom = new Atom(target.profileId(), section.getId(), entry.getId(),
-                kindOf(kind), normalized.displayOrder());
+        Atom atom = new Atom(profileId, section.getId(),
+                entry == null ? null : entry.getId(), kindOf(kind), normalized.displayOrder());
         atom.setSkills(normalized.skills());
         atom.setMetrics(normalized.metrics());
         atom.setProperNouns(normalized.properNouns());
         // Bolum 14.1: where an atom came from decides what may be done to it,
         // and these are the person's own sentences rather than a model's.
         atom.setSource(AtomSource.CV_UPLOAD);
+        return atom;
+    }
+
+    /** Likewise: the person wrote it, and Bolum 21.4's staleness reads that. */
+    static AtomVariant variantOf(UUID profileId, Atom atom, RichContent content,
+            String language, boolean primary) {
+        AtomVariant variant = new AtomVariant(profileId, atom.getId(), language, content);
+        variant.setPrimary(primary);
+        variant.setCreatedBy(VariantAuthor.USER);
+        return variant;
+    }
+
+    private void writeAtom(Target target, Section section, Entry entry,
+            NormalizedProfile.NormalizedAtom normalized, SectionKind kind) {
+        Atom atom = atomOf(target.profileId(), section, entry, normalized, kind);
         atoms.save(target.ref(), atom);
 
         // The source wording is primary: it is what the person wrote and what
@@ -139,13 +162,8 @@ public class ProfileWriter {
 
     private void writeVariant(Target target, Atom atom, RichContent content,
             String language, boolean primary) {
-        AtomVariant variant =
-                new AtomVariant(target.profileId(), atom.getId(), language, content);
-        variant.setPrimary(primary);
-        // The person wrote it. A rewrite records itself differently, and
-        // Bolum 21.4's staleness rules read that difference.
-        variant.setCreatedBy(VariantAuthor.USER);
-        variants.save(target.ref(), variant);
+        variants.save(target.ref(),
+                variantOf(target.profileId(), atom, content, language, primary));
     }
 
     /**
@@ -172,7 +190,7 @@ public class ProfileWriter {
      * renders it, and Bolum 31.5 refuses to invent a month for the same reason
      * it would refuse to invent a day.
      */
-    private static LocalDate firstOfMonth(YearMonth month) {
+    static LocalDate firstOfMonth(YearMonth month) {
         return month == null ? null : month.atDay(1);
     }
 
