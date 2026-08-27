@@ -235,7 +235,17 @@ public class AtomService {
             variants.clearPrimary(profile, atomId);
             variant.setPrimary(true);
         }
+        if (Boolean.FALSE.equals(patch.userEdited())) {
+            // Bolum 32.2's "regenerate the English": the person is handing the
+            // wording back. Queued here rather than left for the next edit of
+            // the source, because the source may not be edited again for
+            // months and the wording is stale now.
+            variant.setUserEdited(false);
+        }
         AtomVariant saved = variants.save(profile, variant);
+        if (Boolean.FALSE.equals(patch.userEdited()) && saved.isStale()) {
+            synchronization.regenerate(profile, user, saved);
+        }
         if (patch.content() != null) {
             // Bolum 32.2, and only when the words moved. A promote or a tone
             // change leaves every translation of this wording still accurate.

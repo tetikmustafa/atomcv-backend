@@ -22,5 +22,24 @@ public record VariantPatch(
         RichContent content,
         String language,
         JsonNullable<Tone> tone,
-        Boolean primary) {
+        Boolean primary,
+        Boolean userEdited) {
+
+    /**
+     * <strong>{@code userEdited} may only be cleared, and only on purpose.</strong>
+     *
+     * <p>Bolum 32.2 protects a wording the person wrote from being replaced by
+     * a machine translation. Once the flag is set, something has to be able to
+     * take it back — that is the "regenerate the English" button — but nothing
+     * may do it as a side effect. Sending it {@code false} is the person
+     * saying they are done owning this sentence; sending it {@code true} is
+     * refused, because claiming authorship on somebody's behalf is the one
+     * direction that could hide a machine translation behind a human's name.
+     */
+    public VariantPatch {
+        if (Boolean.TRUE.equals(userEdited)) {
+            throw new IllegalArgumentException(
+                    "userEdited is set by writing words, and may only be cleared here");
+        }
+    }
 }
