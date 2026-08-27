@@ -176,6 +176,16 @@ zip-bomb koruması sessizce kalkardı (§ 42.1).
 (§ 31.6.1). Uç bu yüzden ince — yeni bir ret servise eklenir, denetleyiciye
 değil.
 
+**Canlı — `TexTextExtractor`'ın kalıpları kullanıcının tamamen yazdığı bir
+belge üzerinde koşuyor.** CodeQL dilim 4'te dört yüksek uyarı verdi, ve
+haklıydı: uç inince o metin ilk kez dışarıdan geldi. **İki ayrı kusur vardı** —
+sahiplenici olmayan niceleyiciler (bir eşleme denemesi içinde geri izleme) ve
+"satır sonundaki boşluklar" kalıbının **her karakterde yeniden başlaması**
+(geri izlemesiz ama yine kuadratik). İkincisi negatif geriye-bakışla
+çözüldü. **Yeni bir kalıp eklerken
+ikisini de düşün**; `atexFileBuiltToBacktrackIsStillReadInNoTime` ikisini de
+tutuyor.
+
 ### Sonraki dilim (4b)
 
 Arka planda embedding + ölçüm tetiklemesi (§ 31.6'nın `t=25s` kutusu) ve

@@ -27,7 +27,7 @@ olur) — § 46.5. **Çıkarım:** PDF/DOCX/TEX/TXT/MD, dosya hiçbir yere yazı
 karşılaştırmanın **iki tarafında da** (§ 31.5.1). **`POST /profile/import`
 telde** — `202` + iş, beş ret senkron (§ 31.6.1); sözleşme **`B-051`**'de.
 
-**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 850 birim · 326 entegrasyon · 48 latex — 0 hata, 0 atlanan
+**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 852 birim · 326 entegrasyon · 48 latex — 0 hata, 0 atlanan
 
 ## Frontend — `atomcv-frontend`
 
