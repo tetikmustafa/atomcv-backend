@@ -1,8 +1,5 @@
-package com.mustafatetik.atomcv.ingestion.normalization;
+package com.mustafatetik.atomcv.profile.domain.content;
 
-import com.mustafatetik.atomcv.profile.domain.content.Mark;
-import com.mustafatetik.atomcv.profile.domain.content.RichContent;
-import com.mustafatetik.atomcv.profile.domain.content.Run;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +8,16 @@ import java.util.Locale;
 /**
  * An emphasis list turned into runs, by first match (Bolum 31.5).
  *
- * <p>The model returns the sentence and, beside it, the substrings worth
+ * <p>A model returns the sentence and, beside it, the substrings worth
  * marking. Bolum 12 stores marked text as runs rather than as offsets or
  * markup, so this is where the two meet: each emphasis is located in the
  * sentence and the sentence is cut around what was found.
+ *
+ * <p><strong>In {@code profile.domain.content} because two stages produce
+ * marked text this way</strong> — the import of Bolum 31.5 and the translation
+ * of Bolum 21.8, with Faz D's rewrite to come. A second copy of the first-match
+ * rule would be two definitions of what a bold word is, and they would drift on
+ * the day one of them learned to handle a case the other did not.
  *
  * <p><strong>First match, and overlaps go to whichever starts earlier.</strong>
  * Bolum 31.5 names the rule; the tie-break is the addition, and it is the only
@@ -26,9 +29,9 @@ import java.util.Locale;
  * be the code deciding which words the model meant, and a paraphrase marked as
  * a quotation is worse than no bold at all.
  */
-final class RunBuilder {
+public final class RunMarking {
 
-    private RunBuilder() {
+    private RunMarking() {
     }
 
     /**
@@ -38,7 +41,7 @@ final class RunBuilder {
      * @param metrics     the numbers the sentence claims, likewise
      * @return the sentence as runs; a single unmarked run when nothing matched
      */
-    static RichContent build(String text, List<String> emphasis,
+    public static RichContent mark(String text, List<String> emphasis,
             List<String> skills, List<String> metrics) {
         if (text == null || text.isEmpty()) {
             return RichContent.EMPTY;

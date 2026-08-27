@@ -1,10 +1,7 @@
-package com.mustafatetik.atomcv.ingestion.normalization;
+package com.mustafatetik.atomcv.profile.domain.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.mustafatetik.atomcv.profile.domain.content.Mark;
-import com.mustafatetik.atomcv.profile.domain.content.RichContent;
-import com.mustafatetik.atomcv.profile.domain.content.Run;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -18,14 +15,14 @@ import org.junit.jupiter.api.Test;
  * doubled one, would send a subtly wrong sentence to the renderer and to the
  * embedding, and nothing further down could tell.
  */
-class RunBuilderTest {
+class RunMarkingTest {
 
     private static final String SENTENCE =
             "Engineered ETL pipelines processing 300K rows using Microsoft Fabric";
 
     @Test
     void theRunsAlwaysConcatenateBackToTheSentence() {
-        var content = RunBuilder.build(SENTENCE,
+        var content = RunMarking.mark(SENTENCE,
                 List.of("Microsoft Fabric", "300K rows", "ETL pipelines"),
                 List.of("etl", "microsoft-fabric"), List.of("300K rows"));
 
@@ -39,7 +36,7 @@ class RunBuilderTest {
      */
     @Test
     void emphasisListedOutOfOrderIsStillFound() {
-        var content = RunBuilder.build(SENTENCE,
+        var content = RunMarking.mark(SENTENCE,
                 List.of("Microsoft Fabric", "ETL pipelines"), List.of(), List.of());
 
         assertThat(markedTexts(content)).containsExactly("ETL pipelines", "Microsoft Fabric");
@@ -48,7 +45,7 @@ class RunBuilderTest {
     /** Bolum 31.5's rule, in the case that names it. */
     @Test
     void anEmphasisTakesItsFirstOccurrence() {
-        var content = RunBuilder.build("rows and rows and rows", List.of("rows"),
+        var content = RunMarking.mark("rows and rows and rows", List.of("rows"),
                 List.of(), List.of());
 
         assertThat(content.runs()).hasSize(2);
@@ -64,7 +61,7 @@ class RunBuilderTest {
      */
     @Test
     void twoOverlappingEmphasesResolveToTheOneThatStartsEarlier() {
-        var content = RunBuilder.build(SENTENCE,
+        var content = RunMarking.mark(SENTENCE,
                 List.of("ETL pipelines processing", "pipelines processing 300K"),
                 List.of(), List.of());
 
@@ -79,7 +76,7 @@ class RunBuilderTest {
      */
     @Test
     void anEmphasisThatIsNotInTheSentenceIsDroppedRatherThanApproximated() {
-        var content = RunBuilder.build(SENTENCE,
+        var content = RunMarking.mark(SENTENCE,
                 List.of("ETL workflows", "Microsoft Fabric"), List.of(), List.of());
 
         assertThat(markedTexts(content)).containsExactly("Microsoft Fabric");
@@ -88,7 +85,7 @@ class RunBuilderTest {
 
     @Test
     void aSentenceWithNoEmphasisIsOnePlainRun() {
-        var content = RunBuilder.build(SENTENCE, List.of(), List.of(), List.of());
+        var content = RunMarking.mark(SENTENCE, List.of(), List.of(), List.of());
 
         assertThat(content.runs()).singleElement()
                 .satisfies(run -> assertThat(run.marks()).isEmpty());
@@ -97,15 +94,15 @@ class RunBuilderTest {
 
     @Test
     void anEmptySentenceIsEmptyContent() {
-        assertThat(RunBuilder.build("", List.of("x"), List.of(), List.of()).isEmpty()).isTrue();
-        assertThat(RunBuilder.build(null, List.of(), List.of(), List.of()).isEmpty()).isTrue();
+        assertThat(RunMarking.mark("", List.of("x"), List.of(), List.of()).isEmpty()).isTrue();
+        assertThat(RunMarking.mark(null, List.of(), List.of(), List.of()).isEmpty()).isTrue();
     }
 
     // -- which mark (Bolum 12: semantic, never presentational) --------------
 
     @Test
     void aSpanThatIsOneOfTheMetricsIsMarkedAsOne() {
-        var content = RunBuilder.build(SENTENCE, List.of("300K rows"),
+        var content = RunMarking.mark(SENTENCE, List.of("300K rows"),
                 List.of("etl"), List.of("300K rows"));
 
         assertThat(content.runs().stream().filter(run -> run.hasMark(Mark.METRIC)))
@@ -116,7 +113,7 @@ class RunBuilderTest {
     /** Matched through the alias dictionary, so "Microsoft Fabric" finds "microsoft-fabric". */
     @Test
     void aSpanThatCanonicalisesToOneOfTheSkillsIsMarkedAsTechnology() {
-        var content = RunBuilder.build(SENTENCE, List.of("Microsoft Fabric"),
+        var content = RunMarking.mark(SENTENCE, List.of("Microsoft Fabric"),
                 List.of("microsoft-fabric"), List.of());
 
         assertThat(content.runs().stream().filter(run -> run.hasMark(Mark.TECHNOLOGY)))
@@ -132,7 +129,7 @@ class RunBuilderTest {
      */
     @Test
     void anythingElseIsPlainEmphasis() {
-        var content = RunBuilder.build(SENTENCE, List.of("processing"), List.of(), List.of());
+        var content = RunMarking.mark(SENTENCE, List.of("processing"), List.of(), List.of());
 
         assertThat(content.runs().stream().filter(run -> run.hasMark(Mark.EMPHASIS)))
                 .singleElement()
