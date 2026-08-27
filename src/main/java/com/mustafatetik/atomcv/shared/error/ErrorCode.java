@@ -89,6 +89,18 @@ public enum ErrorCode {
     EXTRACTION_EMPTY(422),
     EXTRACTION_TIMEOUT(504),
     LANGUAGE_UNDETECTED(422, param("detectedCandidates", STRING_ARRAY)),
+
+    /**
+     * A wording could not be regenerated in another language (Adim 3.5).
+     *
+     * <p>Parameterless, and it names no sentence: what a translation dropped
+     * is the user's own content (absolute rule 4). It is also barely a
+     * user-facing code — this arrives on a background job, and what the person
+     * actually sees is the wording still marked stale, which is the true
+     * statement about it. The code exists so that {@code GET /jobs/{id}}
+     * answers something better than "internal error" to a client that asks.
+     */
+    TRANSLATION_FAILED(422),
     PROFILE_QUOTA_EXCEEDED(429, param("limit", INTEGER), param("resetsAt", TIMESTAMP)),
 
     // ── Anonymous mode (EK D.6) ──

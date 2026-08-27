@@ -45,4 +45,17 @@ interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
               and variant.isPrimary = true
             """)
     int clearPrimary(UUID profileId, UUID atomId);
+
+    /**
+     * Every wording derived from one that has just changed (Bolum 32.2).
+     *
+     * <p>Loaded rather than bulk-updated, and that is the difference between
+     * this and {@link #clearPrimary}. Bolum 32.2 does two things with these
+     * rows and only the first is the same for all of them: they all go stale,
+     * but a wording the user wrote themselves must not be queued for
+     * regeneration. A statement cannot answer "which ones were queued", and
+     * the caller has to know.
+     */
+    List<AtomVariant> findByProfileIdAndDerivedFromVariantId(
+            UUID profileId, UUID derivedFromVariantId);
 }

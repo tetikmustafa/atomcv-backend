@@ -116,6 +116,9 @@ public class ErrorPresenter {
             case PipelineError.NothingExtracted ignored -> UserFacingError.of(
                     ErrorCode.EXTRACTION_EMPTY);
 
+            case PipelineError.TranslationRejected ignored -> UserFacingError.of(
+                    ErrorCode.TRANSLATION_FAILED, new Resolution(ResolutionAction.RETRY, null));
+
             case PipelineError.CompilationFailed failed -> {
                 var presented = UserFacingError.with(ErrorCode.COMPILATION_FAILED)
                         // The kind, never the log: the log is built from the

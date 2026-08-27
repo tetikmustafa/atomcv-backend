@@ -226,7 +226,8 @@ public class AtomController {
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
             @Valid @RequestBody VariantPatchRequest request) {
 
-        AtomVariant patched = atoms.patchVariant(profile(), id, variantId, ifMatch,
+        AtomVariant patched = atoms.patchVariant(
+                profile(), currentUser.require(), id, variantId, ifMatch,
                 new VariantPatch(
                         request.content() == null ? null : request.content().toRichContent(),
                         request.language(),
