@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-27** · **3.6 · 2/3 — anonim oturum ve kalıcı olmayan profil indi** · frontend'de açık: **`B-044`**–**`B-052`**, dokuzu da bekliyor
+**2026-08-27** · **3.6 · 3/5 — oturum, kalıcı olmayan profil, adres kotası** · frontend'de açık: **`B-044`**–**`B-052`**, dokuzu da bekliyor
 
 ---
 
@@ -15,7 +15,7 @@
 | **Aşama 3 — hesap ve MVP** · 3.1 dış servis hesapları | 🔄 · ✅ |
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC) · 3.3 kimlik ✅ 4/4 |
 | 3.4 CV yükleme ve çıkarım ✅ 4/4 · 3.5 çok dillilik ✅ 2/2 | ✅ |
-| 3.6 anonim mod | 🔄 2/3 — oturum ✅, kalıcı olmayan profil ✅, kota+yükseltme ⬜ |
+| 3.6 anonim mod | 🔄 3/5 — oturum ✅, profil ✅, kota ✅, yükleme ⬜, yükseltme ⬜ |
 
 **Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
 magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
@@ -27,7 +27,7 @@ karşılaştırmanın iki tarafında da (§ 31.5.1). **`POST /profile/import` te
 — `202` + iş, beş ret senkron, embedding ve ölçüm arkada (§ 31.6.1-2);
 sözleşme **`B-051`**'de.
 
-**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 880 birim · 355 entegrasyon · 48 latex — 0 hata
+**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 880 birim · 359 entegrasyon · 48 latex — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -56,5 +56,5 @@ sözleşme **`B-051`**'de.
 ## Sonraki senkronizasyon noktası
 
 **Frontend `B-044`-`B-052`'yi alsın** — dosya 221 satır ve **tek bir `ACK`
-almadı**; ilk birkaçı onu sınırın altına indirir. Backend 3.6 dilim 3'te (kota + yükseltme).
+almadı**; ilk birkaçı onu sınırın altına indirir. Backend 3.6 dilim 4'te (anonim yükleme).
 **`local-fake` fixture'ı sende:** `make record` senin anahtarını istiyor.
