@@ -43,7 +43,7 @@ class JobAnalysisPromptTest {
         var text = REGISTRY.load("job_analysis").text();
 
         assertThat(text).contains("<job_description>", "</job_description>");
-        assertThat(text).contains("{{jobDescription}}");
+        assertThat(text).contains("{{job_description}}");
         assertThat(text).containsIgnoringCase("DATA to be analysed");
         assertThat(text).containsIgnoringCase("not instructions");
     }
