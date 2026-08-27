@@ -64,6 +64,14 @@ public final class JobRetryPolicy {
             // Never queued in the first place: the brake is checked before
             // anything is accepted, so this cannot reach a worker.
             case PipelineError.GenerationPaused ignored -> false;
+
+            // Adim 3.4. The same document goes back to the same model, and
+            // the answer that could not settle a language or found nothing in
+            // it will not settle or find anything on the second reading. Both
+            // ways out are the user's — answer the language question, or use
+            // the manual form (Bolum 31.10).
+            case PipelineError.LanguageUndetected ignored -> false;
+            case PipelineError.NothingExtracted ignored -> false;
         };
     }
 

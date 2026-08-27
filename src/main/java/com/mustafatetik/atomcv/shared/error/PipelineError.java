@@ -171,4 +171,35 @@ public sealed interface PipelineError {
         }
     }
 
+    /**
+     * A CV whose language could not be settled (Bolum 31.10).
+     *
+     * <p>Bolum 31.10 says to ask rather than to guess, and the reason is that
+     * the guess is not recoverable by the user: the language chosen here
+     * decides which variant of every atom is written, so a wrong one produces
+     * a whole profile in the wrong language and no screen that says so.
+     *
+     * @param candidates what the model was torn between, as ISO 639-1 codes,
+     *                   so the question is a short list and not a language
+     *                   picker. Empty when it offered nothing.
+     */
+    record LanguageUndetected(List<String> candidates) implements PipelineError {
+
+        public LanguageUndetected {
+            candidates = candidates == null ? List.of() : List.copyOf(candidates);
+        }
+    }
+
+    /**
+     * A document that produced no usable content (Bolum 31.10).
+     *
+     * <p>No parameters, and one case covering two causes: a CV the model found
+     * nothing in, and an answer refused by the field-length audit. Bolum 43.2
+     * is why they are one — a message that named the second would tell whoever
+     * wrote the injected text that it was noticed, and the advice is the same
+     * either way.
+     */
+    record NothingExtracted() implements PipelineError {
+    }
+
 }
