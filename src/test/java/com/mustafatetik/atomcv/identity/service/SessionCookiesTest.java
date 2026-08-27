@@ -11,7 +11,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 class SessionCookiesTest {
 
     private static final SessionProperties PRODUCTION =
-            new SessionProperties(Duration.ofDays(30), null, null, "atomcv.example.com", true);
+            new SessionProperties(Duration.ofDays(30), null, null, null, "atomcv.example.com", true);
 
     @Test
     void theSessionCookieCarriesEveryAttributeTheSectionNames() {
@@ -47,7 +47,7 @@ class SessionCookiesTest {
 
     @Test
     void withoutAConfiguredDomainTheCookieIsHostOnly() {
-        var local = new SessionProperties(null, null, null, null, false);
+        var local = new SessionProperties(null, null, null, null, null, false);
 
         ResponseCookie cookie = new SessionCookies(local).issue("a-session-id");
 

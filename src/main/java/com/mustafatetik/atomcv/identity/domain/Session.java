@@ -22,9 +22,12 @@ import java.util.UUID;
  * @param id         the opaque value in the {@code sid} cookie — never a
  *                   {@code UUID}, so that nothing is tempted to treat it as a
  *                   database key
- * @param userId     the row in {@code users}
- * @param role       as of the moment the session was created
- * @param method     how they signed in
+ * @param userId     the row in {@code users}, or null when nobody has signed
+ *                   in — Adim 3.6's anonymous session, whose own id is the
+ *                   identity everything below it is scoped by
+ * @param role       as of the moment the session was created, or null when
+ *                   anonymous
+ * @param method     how they signed in, or null when they did not
  * @param createdAt  when the session began — fixed, and not moved by activity
  * @param lastSeenAt the last request that refreshed the sliding TTL (EK D.6.6)
  */
@@ -38,14 +41,38 @@ public record Session(
 
     public Session {
         Objects.requireNonNull(id, "id");
-        Objects.requireNonNull(userId, "userId");
-        Objects.requireNonNull(role, "role");
-        Objects.requireNonNull(method, "method");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(lastSeenAt, "lastSeenAt");
         if (id.isBlank()) {
             throw new IllegalArgumentException("Session id must not be blank");
         }
+        // The three travel together or not at all. A session with a user and
+        // no role would be one whose authorisation nobody decided, and a
+        // session with a role and no user is a role belonging to nobody —
+        // both are worse than either of the two states this actually has.
+        boolean signedIn = userId != null;
+        if (signedIn != (role != null) || signedIn != (method != null)) {
+            throw new IllegalArgumentException(
+                    "A session is signed in with all three of user, role and method, "
+                            + "or anonymous with none of them");
+        }
+    }
+
+    /**
+     * A session for somebody who has not signed in (Adim 3.6, Bolum 9).
+     *
+     * <p>The same cookie as an account's, deliberately: § 35.7 makes
+     * authentication a question the client asks {@code capabilities} rather
+     * than a second credential to carry. What differs is the TTL — two hours
+     * that slide, against thirty days.
+     */
+    public static Session anonymous(String id, Instant now) {
+        return new Session(id, null, null, null, now, now);
+    }
+
+    /** Whether nobody has signed in on it. */
+    public boolean isAnonymous() {
+        return userId == null;
     }
 
     public static Session beginning(

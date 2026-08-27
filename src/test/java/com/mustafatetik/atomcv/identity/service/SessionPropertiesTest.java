@@ -11,7 +11,7 @@ class SessionPropertiesTest {
 
     @Test
     void anUnconfiguredDeploymentGetsTheDocumentedDefaults() {
-        var properties = new SessionProperties(null, null, null, null, null);
+        var properties = new SessionProperties(null, null, null, null, null, null);
 
         assertThat(properties.ttl()).isEqualTo(Duration.ofDays(30));
         assertThat(properties.touchInterval()).isEqualTo(Duration.ofMinutes(5));
@@ -24,16 +24,16 @@ class SessionPropertiesTest {
 
     @Test
     void aZeroOrNegativeTtlIsNotAcceptedAsAConfiguredValue() {
-        assertThat(new SessionProperties(Duration.ZERO, null, null, null, null).ttl())
+        assertThat(new SessionProperties(Duration.ZERO, null, null, null, null, null).ttl())
                 .isEqualTo(Duration.ofDays(30));
-        assertThat(new SessionProperties(Duration.ofDays(-1), null, null, null, null).ttl())
+        assertThat(new SessionProperties(Duration.ofDays(-1), null, null, null, null, null).ttl())
                 .isEqualTo(Duration.ofDays(30));
     }
 
     @Test
     void anEmptyDomainIsNoDomainRatherThanAnEmptyOne() {
-        assertThat(new SessionProperties(null, null, null, "   ", null).domain()).isNull();
-        assertThat(new SessionProperties(null, null, null, "atomcv.example.com", null).domain())
+        assertThat(new SessionProperties(null, null, null, null, "   ", null).domain()).isNull();
+        assertThat(new SessionProperties(null, null, null, null, "atomcv.example.com", null).domain())
                 .isEqualTo("atomcv.example.com");
     }
 
@@ -44,7 +44,7 @@ class SessionPropertiesTest {
      */
     @Test
     void aDottedDomainIsRefusedAtStartUpAndNotInProduction() {
-        assertThatThrownBy(() -> new SessionProperties(null, null, null, ".example.com", null))
+        assertThatThrownBy(() -> new SessionProperties(null, null, null, null, ".example.com", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("must not start with a dot");
     }

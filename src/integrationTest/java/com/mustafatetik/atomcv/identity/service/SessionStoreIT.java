@@ -152,9 +152,48 @@ class SessionStoreIT extends AbstractIntegrationTest {
         assertThat(store.find(null)).isEmpty();
     }
 
+    /**
+     * Bolum 9's two hours, and the reason the TTL is read from the session
+     * rather than passed in: a sliding window that slid to the account's
+     * length would quietly turn two hours into a month, and nothing about the
+     * session would look wrong.
+     */
+    @Test
+    void anAnonymousSessionLivesForTwoHoursAndAnAccountsForThirtyDays() {
+        SessionStore store = storeAt(NOON);
+
+        Session anonymous = store.createAnonymous();
+        Session account = store.create(UUID.randomUUID(), UserRole.USER, AuthMethod.MAGIC_LINK);
+
+        assertThat(expiryOf(anonymous)).isCloseTo(
+                Duration.ofHours(2).toSeconds(), Offset.offset(5L));
+        assertThat(expiryOf(account)).isCloseTo(TTL.toSeconds(), Offset.offset(5L));
+    }
+
+    @Test
+    void anAnonymousSessionCarriesNoUserAndNoWayIn() {
+        Session anonymous = storeAt(NOON).createAnonymous();
+
+        assertThat(anonymous.isAnonymous()).isTrue();
+        assertThat(anonymous.userId()).isNull();
+        assertThat(anonymous.method()).isNull();
+    }
+
+    /** The window slides on activity, and it slides to two hours again. */
+    @Test
+    void refreshingAnAnonymousSessionKeepsItAtTwoHours() {
+        Session anonymous = storeAt(NOON).createAnonymous();
+
+        Session seen = storeAt(NOON.plus(AGED)).find(anonymous.id()).orElseThrow();
+
+        assertThat(seen.lastSeenAt()).isEqualTo(NOON.plus(AGED));
+        assertThat(expiryOf(seen)).isCloseTo(
+                Duration.ofHours(2).toSeconds(), Offset.offset(5L));
+    }
+
     private SessionStore storeAt(Instant now) {
         return new SessionStore(redis, json,
-                new SessionProperties(TTL, TOUCH_AFTER, null, null, true),
+                new SessionProperties(TTL, null, TOUCH_AFTER, null, null, true),
                 Clock.fixed(now, ZoneOffset.UTC));
     }
 

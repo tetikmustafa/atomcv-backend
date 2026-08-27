@@ -60,6 +60,55 @@ class SessionApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.capabilities.anonymousExpiresAt").doesNotExist());
     }
 
+    /**
+     * Adim 3.6: a caller with no session gets one, and it is anonymous.
+     *
+     * <p>The bogus cookie is how this is reached without a second application
+     * context. Under {@code local} every cookie-less request is the dev user,
+     * but a cookie that does not resolve is deliberately <em>not</em> a
+     * local-dev request — the browser held a session that expired, and
+     * answering as the dev user would hide exactly that. So it arrives here
+     * with no session, which is the state a first-time visitor is in.
+     */
+    @Test
+    void acallerWithNoSessionIsGivenAnAnonymousOneAndToldWhenItRunsOut()
+            throws Exception {
+        var response = mvc.perform(get("/api/v1/auth/session")
+                        .cookie(new Cookie("sid", "not-a-session")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(false))
+                // Bolum 9's limits, not an account's.
+                .andExpect(jsonPath("$.capabilities.canSaveHistory").value(false))
+                .andExpect(jsonPath("$.capabilities.maxAtoms").value(60))
+                .andExpect(jsonPath("$.capabilities.dailyGenerationQuota").value(5))
+                // EK D.6.6: the countdown the client renders.
+                .andExpect(jsonPath("$.capabilities.anonymousExpiresAt").exists())
+                .andReturn();
+
+        // And the cookie is issued, or the session it just minted would be
+        // one nobody could come back to.
+        assertThat(response.getResponse().getCookie("sid")).isNotNull();
+        assertThat(response.getResponse().getCookie("sid").getValue())
+                .isNotEqualTo("not-a-session");
+    }
+
+    /** A caller who already has one is not given a second. */
+    @Test
+    void asecondAskDoesNotMintAnotherSession() throws Exception {
+        var first = mvc.perform(get("/api/v1/auth/session")
+                        .cookie(new Cookie("sid", "not-a-session")))
+                .andExpect(status().isOk()).andReturn();
+        String minted = first.getResponse().getCookie("sid").getValue();
+
+        var second = mvc.perform(get("/api/v1/auth/session").cookie(new Cookie("sid", minted)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(false))
+                .andReturn();
+
+        // Nothing to set: the caller already carries the session.
+        assertThat(second.getResponse().getCookie("sid")).isNull();
+    }
+
     @Test
     void aSessionMintedInTheStoreIsTheActingUserOnTheNextRequest() throws Exception {
         localUser.ensureUserExists();

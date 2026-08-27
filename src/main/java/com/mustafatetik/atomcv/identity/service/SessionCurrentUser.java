@@ -51,9 +51,18 @@ public class SessionCurrentUser implements CurrentUser {
                 ErrorCode.AUTHENTICATION_REQUIRED, Resolution.of(ResolutionAction.SIGN_UP)));
     }
 
+    /**
+     * Who is acting, when somebody is.
+     *
+     * <p>An anonymous session is a session and not a user (Adim 3.6), so it
+     * answers empty here — and {@link #require()} then refuses with
+     * {@code AUTHENTICATION_REQUIRED} and a {@code sign_up} way out, which is
+     * exactly the right answer for a user-scoped endpoint reached without an
+     * account.
+     */
     @Override
     public Optional<UserContext> find() {
-        return session().map(Session::asUserContext);
+        return session().filter(session -> !session.isAnonymous()).map(Session::asUserContext);
     }
 
     /** The session itself, for the endpoint whose subject is the session. */

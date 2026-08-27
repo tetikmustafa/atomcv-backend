@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.identity.CapabilityProperties;
 import com.mustafatetik.atomcv.identity.api.dto.CapabilitiesResponse;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,15 @@ public class Capabilities {
         this.properties = properties;
     }
 
-    public CapabilitiesResponse of(Optional<UserContext> user) {
-        return user.map(this::forAccount).orElseGet(this::forAnonymous);
+    /**
+     * @param anonymousExpiresAt when the anonymous session runs out, or null
+     *                           for an account — EK D.6.6, and § 35.7 says the
+     *                           field is absent rather than null on an account,
+     *                           because a countdown to nothing is a wrong
+     *                           screen
+     */
+    public CapabilitiesResponse of(Optional<UserContext> user, Instant anonymousExpiresAt) {
+        return user.map(this::forAccount).orElseGet(() -> forAnonymous(anonymousExpiresAt));
     }
 
     private CapabilitiesResponse forAccount(UserContext user) {
@@ -73,7 +81,7 @@ public class Capabilities {
      * caller with no session is told, which is the same answer: these are the
      * limits an account would lift.
      */
-    private CapabilitiesResponse forAnonymous() {
+    private CapabilitiesResponse forAnonymous(Instant anonymousExpiresAt) {
         return new CapabilitiesResponse(
                 ANONYMOUS_LANGUAGES,
                 templates(),
@@ -87,9 +95,9 @@ public class Capabilities {
                 0,
                 ANONYMOUS_MAX_ATOMS,
                 // Nothing has been counted, so nothing rolls over. The client
-                // has no sentence to write until a session exists.
+                // has no sentence to write until a counter exists.
                 null,
-                null);
+                anonymousExpiresAt);
     }
 
     /**
