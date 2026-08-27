@@ -23,9 +23,27 @@ import org.springframework.stereotype.Component;
 @Component
 class TexTextExtractor implements TextExtractor {
 
+    /*
+     * Every quantifier below that is followed by something it cannot itself
+     * match is POSSESSIVE, and that is not a micro-optimisation.
+     *
+     * A `.tex` upload is a document an attacker writes in full, and these
+     * patterns run over the whole of it. `\s*(\[…\])?\s*` backtracks
+     * polynomially on a run of whitespace that never reaches the bracket, so a
+     * few hundred kilobytes of tabs — well inside Bolum 42.1's ten megabytes —
+     * pins a request thread for as long as it likes. CodeQL found it the
+     * moment Adim 3.4's endpoint made this reachable from outside, which is
+     * exactly when it became true.
+     *
+     * Possessive is safe here and only here: in each case the quantified class
+     * is disjoint from the token after it (whitespace against `[` or `{`,
+     * `[^\]]` against `]`, `[^{}]` against `}`), so giving characters back
+     * could never have produced a match anyway.
+     */
+
     /** Everything before it is configuration, not content. */
     private static final Pattern DOCUMENT_START =
-            Pattern.compile("\\\\begin\\s*\\{document\\}");
+            Pattern.compile("\\\\begin\\s*+\\{document\\}");
 
     /** An unescaped percent sign to the end of its line. */
     private static final Pattern COMMENT = Pattern.compile("(?<!\\\\)%.*");
@@ -40,25 +58,37 @@ class TexTextExtractor implements TextExtractor {
             "\\\\(usepackage|documentclass|label|ref|cite|includegraphics|input|include"
                     + "|hypersetup|geometry|definecolor|newcommand|renewcommand|bibliography"
                     + "|bibliographystyle|pagestyle|vspace|hspace|setlength)"
-                    + "\\s*(\\[[^\\]]*\\])?\\s*(\\{[^{}]*\\})*");
+                    + "\\s*+(\\[[^\\]]*+\\])?+\\s*+(\\{[^{}]*+\\})*+");
 
     /** An environment's opening and closing marks, which are structure, not words. */
     private static final Pattern ENVIRONMENT_MARKER =
-            Pattern.compile("\\\\(begin|end)\\s*\\{[^{}]*\\}\\s*(\\[[^\\]]*\\])?");
+            Pattern.compile("\\\\(begin|end)\\s*+\\{[^{}]*+\\}\\s*+(\\[[^\\]]*+\\])?+");
 
     /** Any remaining command, keeping whatever it wrapped. */
     private static final Pattern COMMAND_KEEPING_ARGUMENT =
-            Pattern.compile("\\\\[a-zA-Z@]+\\s*(\\[[^\\]]*\\])?\\s*\\{([^{}]*)\\}");
+            Pattern.compile("\\\\[a-zA-Z@]++\\s*+(\\[[^\\]]*+\\])?+\\s*+\\{([^{}]*+)\\}");
 
     /** A command with no argument at all, a line break among them. */
-    private static final Pattern BARE_COMMAND = Pattern.compile("\\\\\\\\|\\\\[a-zA-Z@]+\\*?");
+    private static final Pattern BARE_COMMAND = Pattern.compile("\\\\\\\\|\\\\[a-zA-Z@]++\\*?");
 
     /** What LaTeX escapes, put back as the character a reader sees. */
     private static final Pattern ESCAPED_CHARACTER = Pattern.compile("\\\\([%$&#_{}])");
 
     private static final Pattern BLANK_LINES = Pattern.compile("\n{3,}");
 
-    private static final Pattern TRAILING_SPACE = Pattern.compile("[ \t]+(?=\n)");
+    /**
+     * Trailing blanks, matched only from the first of a run.
+     *
+     * <p>The lookbehind is the whole cost of this pattern. Possessive
+     * quantifiers stop <em>one</em> attempt from backtracking; they do not
+     * stop the engine restarting at every character, and
+     * {@code [ \t]++(?=\n)} against forty thousand tabs is forty thousand
+     * attempts each walking to the end of the run — quadratic, from a
+     * pattern with no backtracking in it at all. Refusing to start anywhere
+     * but the first blank makes every other attempt fail on its first
+     * character.
+     */
+    private static final Pattern TRAILING_SPACE = Pattern.compile("(?<![ \t])[ \t]++(?=\n)");
 
     @Override
     public List<DocumentFormat> formats() {

@@ -320,6 +320,16 @@ public GenerationContent inspect(@PathVariable UUID id) { ... }
 | Yanlış tür | MIME + magic byte doğrulaması |
 | Aşırı büyük | 10 MB sınırı (Nginx + uygulama) |
 
+> **Adım 3.4: `.tex` düzenli ifadeleri ReDoS taşıyordu.** Yükleme ucu inince
+> o metin ilk kez dışarıdan geldi ve CodeQL dört yüksek uyarı verdi. **İki ayrı
+> kusur:** sahiplenici olmayan niceleyiciler (`\s*(\[…\])?\s*` tek denemede
+> polinom geri izliyor) ve motorun **her karakterde yeniden başlaması**
+> (bir "satır sonundaki boşluklar" kalıbı kırk bin sekmeye karşı kırk bin
+> deneme yapıyor, her biri sonuna kadar yürüyor — geri izleme yok, yine
+> kuadratik). Birincisi sahiplenici niceleyiciyle, ikincisi bir negatif
+> geriye-bakışla çözüldü. **Boyut sınırı buna karşı koruma değildir:** on
+> megabaytın çok altındaki bir dosya isteği iş parçacığını istediği kadar tutar.
+
 ### 42.2 SSRF (URL çekme eklenirse)
 
 ```java

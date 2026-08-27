@@ -319,6 +319,43 @@ class DocumentExtractionTest {
         assertThat(text).contains("Ada Lovelace", "1843");
     }
 
+    /**
+     * <strong>The document an attacker writes in full.</strong>
+     *
+     * <p>A {@code .tex} upload is the one input to this system whose every
+     * byte is chosen by whoever sends it, and these patterns run over the
+     * whole of it. Written with greedy quantifiers, {@code \s*(\[…\])?\s*}
+     * backtracks polynomially on a run of whitespace that never reaches the
+     * bracket — a few hundred kilobytes of tabs, well inside Bolum 42.1's ten
+     * megabytes, holds a request thread for as long as the sender likes.
+     *
+     * <p>The timeout is the assertion. A second is thousands of times what
+     * this should take and small enough that the quadratic version cannot
+     * sneak under it.
+     */
+    @Test
+    @org.junit.jupiter.api.Timeout(1)
+    void atexFileBuiltToBacktrackIsStillReadInNoTime() {
+        String pathological = "\\textbf" + "\t".repeat(40_000) + "no closing brace here\n"
+                + "Ada Lovelace wrote the first published algorithm in 1843, in London.";
+
+        String text = extraction.extract("cv.tex", null, bytesOf(pathological)).text();
+
+        assertThat(text).contains("Ada Lovelace");
+    }
+
+    /** And the same shape again, this time against the environment marker. */
+    @Test
+    @org.junit.jupiter.api.Timeout(1)
+    void anEnvironmentMarkerBuiltToBacktrackIsAlsoCheap() {
+        String pathological = "\\begin{itemize}" + " ".repeat(40_000) + "[\n"
+                + "Ada Lovelace wrote the first published algorithm in 1843, in London.";
+
+        String text = extraction.extract("cv.tex", null, bytesOf(pathological)).text();
+
+        assertThat(text).contains("Ada Lovelace");
+    }
+
     // -- TXT and Markdown --------------------------------------------------
 
     /**
