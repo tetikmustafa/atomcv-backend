@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -44,13 +45,16 @@ public class AtomService {
     private final AtomVariantRepository variants;
     private final SectionRepository sections;
     private final EntryRepository entries;
+    private final VariantSynchronization synchronization;
 
     AtomService(AtomRepository atoms, AtomVariantRepository variants,
-            SectionRepository sections, EntryRepository entries) {
+            SectionRepository sections, EntryRepository entries,
+            VariantSynchronization synchronization) {
         this.atoms = atoms;
         this.variants = variants;
         this.sections = sections;
         this.entries = entries;
+        this.synchronization = synchronization;
     }
 
     @Transactional(readOnly = true)
@@ -196,8 +200,16 @@ public class AtomService {
      * boolean rather than the whole sentence.
      */
     @Transactional
-    public AtomVariant patchVariant(ProfileRef profile, UUID atomId, UUID variantId,
-            String ifMatch, VariantPatch patch) {
+    /**
+     * @param user the acting user, and not the same thing as {@code profile}.
+     *             The rows are scoped by profile (absolute rule 3); a job is
+     *             owned by a user, because that is what the queue claims and
+     *             authorises by. They are one person here and two concepts
+     *             everywhere, so both travel rather than one being derived
+     *             from the other.
+     */
+    public AtomVariant patchVariant(ProfileRef profile, UserContext user, UUID atomId,
+            UUID variantId, String ifMatch, VariantPatch patch) {
 
         AtomVariant variant = requireVariant(profile, atomId, variantId);
         EntityTags.requireMatch(ifMatch, variant.getVersion());
@@ -223,7 +235,13 @@ public class AtomService {
             variants.clearPrimary(profile, atomId);
             variant.setPrimary(true);
         }
-        return variants.save(profile, variant);
+        AtomVariant saved = variants.save(profile, variant);
+        if (patch.content() != null) {
+            // Bolum 32.2, and only when the words moved. A promote or a tone
+            // change leaves every translation of this wording still accurate.
+            synchronization.afterEdit(profile, user, saved);
+        }
+        return saved;
     }
 
     /**

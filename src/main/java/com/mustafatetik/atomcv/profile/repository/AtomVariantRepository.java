@@ -31,4 +31,9 @@ public class AtomVariantRepository extends ProfileScopedRepository<AtomVariant> 
     public void clearPrimary(ProfileRef profile, UUID atomId) {
         jpa.clearPrimary(profile.id(), atomId);
     }
+
+    /** The wordings that were translated from this one (Bolum 32.2). */
+    public List<AtomVariant> derivedFrom(ProfileRef profile, UUID variantId) {
+        return jpa.findByProfileIdAndDerivedFromVariantId(profile.id(), variantId);
+    }
 }

@@ -202,4 +202,20 @@ public sealed interface PipelineError {
     record NothingExtracted() implements PipelineError {
     }
 
+    /**
+     * A translation that changed something it was not allowed to (Bolum 21.8).
+     *
+     * <p>A CV is a set of claims about a person, and a language change must not
+     * change any of them. A wording that lost a number or renamed an employer
+     * is refused rather than stored — it is the kind of alteration nobody
+     * proofreads out, because the sentence still reads perfectly.
+     *
+     * <p>No parameters: what was dropped is the user's own content and may not
+     * travel (absolute rule 4). The count reaches the operator through a log
+     * line, and the person sees the wording stay marked stale, which is the
+     * true statement about it.
+     */
+    record TranslationRejected() implements PipelineError {
+    }
+
 }

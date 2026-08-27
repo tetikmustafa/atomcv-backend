@@ -72,6 +72,11 @@ public final class JobRetryPolicy {
             // the manual form (Bolum 31.10).
             case PipelineError.LanguageUndetected ignored -> false;
             case PipelineError.NothingExtracted ignored -> false;
+
+            // Adim 3.5. Unlike the two above, this one is worth repeating: a
+            // model that dropped a number on one call may keep it on the next,
+            // and Bolum 27.3 already treats a schema failure the same way.
+            case PipelineError.TranslationRejected ignored -> true;
         };
     }
 
