@@ -161,16 +161,24 @@ artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 ## Adım 3.6 — anonim mod · 1/3
 
 **Dilim 1 (anonim oturum) ve dilim 2 (kalıcı olmayan profil) indi**; kararlar
-§ 35.7.1 ve § 41.3.1'de. **Dilim 3:** IP bazlı kota, yükseltme akışı, ve
-kalıcı olmayan profilin ingestion/generation'a bağlanması.
+§ 35.7.1 ve § 41.3.1'de. **Dilim 3 (adres bazlı kota) indi**; kararlar § 44.1.1'de.
+**Dilim 4:** kalıcı olmayan profilin ingestion'a bağlanması (anonim yükleme).
+**Dilim 5:** yükseltme akışı.
+
+**Bulgu — `AnomalyDetectorIT` § 44.3'ün frenini çekip arkasında bırakıyordu.**
+Bayrak `feature_flags`'te tek satır ve ayarlanmamış bayrak açık sayılıyor, yani
+fren çekili kalınca paylaşılan bağlamda ondan sonra koşan her üretim 503
+alıyordu. **On altı hata, dört ilgisiz sınıfta, ve bu sınıfın kendi testleri
+geçiyordu.** `@BeforeEach`'te temizlemek yetmiyor: önemli olan sınıfın
+**arkasında bıraktığı** durum. Gizliydi, yeni değil — başka yere test eklemek
+sırayı kaydırınca çıktı.
 
 **Aşama 1'den taşınan `EPHEMERAL` kısıtı kalktı** — kontrollü üretim yolu
 `AnonymousSessionId`.
 
-**Canlı — kalıcı olmayan profil hiçbir yere bağlı değil.** `EphemeralProfileStore`
-var ve test edildi, ama `ProfileImportService` ile `ProfileAssembler` hâlâ yalnız
-kalıcı yolu biliyor. **Dilim 3 bunu bağlayacak**; bağlanana kadar anonim
-kullanıcı oturum alıyor ama CV yükleyemiyor.
+**Canlı — kalıcı olmayan profil hâlâ hiçbir yere bağlı değil.** Depo ve adres
+kotası hazır; `ProfileImportService` ile `ProfileAssembler` yalnız kalıcı yolu
+biliyor. **Anonim kullanıcı oturum alıyor ama CV yükleyemiyor** — dilim 4.
 
 **Canlı — atom id'leri her içe aktarımda yeniden üretiliyor** (Aşama 2'den
 taşınan bulgu). Yükseltme akışı geçici profili kalıcıya çevirirken tam olarak

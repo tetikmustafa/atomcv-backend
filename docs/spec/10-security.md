@@ -475,6 +475,24 @@ Hesaplı (kullanıcı bazlı, günlük):
 
 **İki ayrı sayaç zorunlu:** Tek kota olsaydı, biri hiç üretim yapmadan 20 CV yükleyip en pahalı çağrıyı tüketebilirdi.
 
+#### 44.1.1 Kararlar (Adım 3.6, dilim 3)
+
+**Anonim sayaç adrese göre, oturuma göre değil.** Oturum bir çerez, ve çerez
+herkesin atıp yenisini isteyebileceği bir şey — oturuma göre saymak, çerezini
+temizleyene sınırsız hak verirdi. Bu sayaçların var olma sebebi ürünün
+ücretsiz, arkasındaki çağrıların olmaması.
+
+**Anonim tavanlar hesabınkinden düşük, ve bu bilinçli.** Adres, kimin sorduğu
+hakkında daha zayıf bir iddia — bir ofis yönlendiricisinin arkasındaki herkes
+onu paylaşır — ve parayı harcayan kişinin döndürdüğü şey de o. Tek bir tavan
+ikisinin düşüğü olmak zorunda kalırdı, o da kaydolanları cezalandırır.
+
+**`QuotaService` artık `QuotaSubject` alıyor, `UserContext` değil.** Kozmetik
+bir daraltma değil: her biri için bir aşırı yükleme iyi okunuyordu, ta ki bir
+test birini taklit etmeye çalışana kadar — iki imzayla `any()` hiçbirine
+çözülmüyor. Gerçekten değişen şeyi alan tek bir metot hem daha açık hem test
+edilebilir.
+
 ### 44.2 Kota düşme zamanı
 
 ```
