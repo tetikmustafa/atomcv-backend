@@ -41,6 +41,42 @@ int maxChars = (int)(original.plainText().length() * 1.05);   // %5 tolerans
 
 Prompt'ta belirtilir **ve kodda doğrulanır**.
 
+#### 21.3.1 Kararlar (Adım 3.8, dilim 1)
+
+**Düzeltme — § 21.1 varyantı `similarity(v.embedding(), jdVector)` ile
+sıralıyor, ve varyantın embedding'i yok.** Vektör `atoms` üzerinde ve İngilizce
+sözcüklemeden hesaplanıyor (§ 31.6.2); diller arası karşılaştırmanın istediği
+de bu. Bir cümlenin iki sözcüklemesi zaten neredeyse aynı noktaya gömülüyor,
+yani onları ilana karşı sıralamak gürültü ölçmek olurdu. Aralarını gerçekten
+açan şey kişinin kendi ayarı — **dil ve ton** — ve seçim onunla yapılıyor.
+Kalanı belirlenimci bir eşitlik bozucu: aynı üretim iki kez istendiğinde aynı
+CV çıkmalı (İlke 2).
+
+**Dil tondan önce geliyor, ve ton yalnız bir tercih.** Yanlış dilde bir CV bir
+biçem sorusu değil; istenen tonda sözcüklemesi olmayan atom ise elindekini
+koruyor — § 21.8'in eksik çeviri için yaptığı geri düşüşün aynısı.
+
+**§ 21.1 ilk kez tonu okuyor.** Seçim bugüne kadar `variantIn(language)` ile
+ilk eşleşeni alıyordu; profil editöründe iki sözcükleme tutan kişinin yatırımı
+tam olarak burada karşılık buluyor, ve **hiçbir model çağrılmadan**.
+
+**Ekleme — "uzunsa sıkıştır" eşiği yazılı değildi: 160 karakter.** Yaklaşık iki
+basılı satır. Altında sıkıştırmak birkaç puan sayfa kazandırıp cümlenin anlamını
+riske atıyor; sorun olmayan cümleyi değiştirmenin bedeli var. Karakter cinsinden,
+punto cinsinden değil: karar cümle hakkında, ve yazı tipi boyutu kısa bir maddeyi
+kesmeye değer kılamaz.
+
+**Taban bir eşik, tercih değil.** Kodun bariz şekli "skor yüksekse uyarla, değilse
+uzunsa sıkıştır" — doğru okunuyor ve ilanla ilgisi olmayan maddeleri sessizce
+kısaltıyor. § 21.2'nin üçüncü kademesi **hiç dokunma**: ilgisiz bir cümle
+kısaltılarak iyileşmiyor, sebepsizce değiştirilmiş oluyor. *(Ekilen ihlal ilk
+denemede hiçbir testi düşürmedi; eksik olan testti.)*
+
+**Üst sınır sekiz.** § 21.2 "6-8" diyor. Sınır iki şey için var: maliyet, ve her
+cümlesi ilanın sözcükleriyle doldurulmuş CV. İkincisini zaten taban hallediyor —
+gerçek bağlantısı olmayan atom sınır ne olursa olsun aday değil. Verilen aralıkta
+büyük sayı, gerçekten uyan bir CV'nin daha azını dokunulmadan bırakıyor.
+
 ### 21.4 Prompt
 
 ```
