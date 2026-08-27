@@ -13,6 +13,18 @@ spring:
     enabled: true
     validate-on-migrate: true
 
+  servlet:
+    multipart:
+      # Bolum 42.1's ten megabytes, refused by the container before the bytes
+      # reach a handler. `atomcv.ingestion.max-bytes` restates it one layer in;
+      # both are needed, because only the inner one can name the error the
+      # client renders and only the outer one refuses before buffering.
+      max-file-size: ${UPLOAD_MAX_SIZE:10MB}
+      # A CV upload is one part plus a field or two, so the request cannot be
+      # much larger than the file. Left at the container default it is
+      # unbounded, which makes the file limit above easy to walk around.
+      max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:12MB}
+
 server:
   error:
     include-stacktrace: never
@@ -142,6 +154,14 @@ atomcv:
     secret-key: ${TURNSTILE_SECRET_KEY:}
     # Overridable so a test can point it at a socket it owns.
     verify-url: ${TURNSTILE_VERIFY_URL:}
+
+  # Bolum 31.2's ladder. The size is Bolum 42.1's; the character floor is the
+  # last rung, under which a PDF is taken to be a scan of a page rather than a
+  # page -- there is no way to tell those apart from the text, and no real CV
+  # is a hundred characters long.
+  ingestion:
+    max-bytes: ${UPLOAD_MAX_BYTES:10485760}
+    min-extracted-chars: ${EXTRACTION_MIN_CHARS:100}
 
   # Bolum 40.5. Three layers in front of asking for a sign-in link, because
   # the endpoint sends mail to an address the caller merely typed. The numbers

@@ -55,6 +55,35 @@ public enum ErrorCode {
     GENERATION_PAUSED(503),
 
     // ── Ingestion (Bolum 31.10, coded in EK D.6) ──
+
+    /**
+     * The file is not one of the five Bolum 31.3 can read (Adim 3.4, Ekleme).
+     *
+     * <p>EK D.6 codes Bolum 31.10's table, which starts after a file has been
+     * accepted; the two rungs before it had no codes. This is the first —
+     * raised for an extension we do not read, for a declared media type that
+     * contradicts the extension, and for bytes that contradict both. One code
+     * for all three: what the user does about it is the same in every case,
+     * and a renamed file and an unsupported one are not worth telling apart in
+     * a sentence that has to end "upload a PDF, DOCX, TEX, TXT or MD".
+     *
+     * <p>{@code accepted} is published rather than hardcoded in the client so
+     * the list has one owner. A format added here reaches the file picker's
+     * message without a frontend release.
+     */
+    UNSUPPORTED_DOCUMENT(415, param("accepted", STRING_ARRAY)),
+
+    /**
+     * Over Bolum 42.1's ten megabytes (Adim 3.4, Ekleme).
+     *
+     * <p>Publishes the limit and not the size that was sent. The client knows
+     * what it uploaded and the server's own reading of it is unreliable at the
+     * point this is usually raised — Spring refuses an oversized multipart
+     * before the bytes are counted, and a number that is sometimes right is
+     * worse in an error than no number.
+     */
+    DOCUMENT_TOO_LARGE(413, param("limitBytes", INTEGER)),
+
     PDF_NOT_TEXT_BASED(422),
     PDF_ENCRYPTED(422),
     EXTRACTION_EMPTY(422),
