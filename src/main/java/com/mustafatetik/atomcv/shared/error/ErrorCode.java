@@ -115,6 +115,27 @@ public enum ErrorCode {
      */
     MAGIC_LINK_INVALID(400),
 
+    /**
+     * Too many sign-in requests, from this address or this caller (Bolum 40.5).
+     *
+     * <p><strong>Which of the three layers refused is not published.</strong>
+     * The sentence a user reads is the same either way — wait, then try again
+     * — and naming the global layer would tell somebody probing the service
+     * that their traffic is landing. The layer reaches the operator through a
+     * log line instead.
+     *
+     * <p>It publishes {@code resetsAt} and nothing else, and that is not a
+     * courtesy: {@code ProblemDetailAdvice} derives {@code Retry-After} from
+     * it, which is the only one of the two that is right when the client's
+     * clock is wrong.
+     *
+     * <p>It does not answer Bolum 40.4's question either. The address layer can
+     * only refuse a caller who already spent that window themselves, so what
+     * comes back describes what they did, never whether the address has an
+     * account.
+     */
+    RATE_LIMITED(429, param("resetsAt", TIMESTAMP)),
+
     // ── CRUD and the catch-all, added in Adim 1.2 ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),

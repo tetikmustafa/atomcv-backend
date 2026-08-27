@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +13,7 @@ import com.mustafatetik.atomcv.email.EmailSender;
 import jakarta.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -67,13 +70,31 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     @Autowired
+    private StringRedisTemplate redis;
+
+    @Autowired
     private List<EmailMessage> sent;
 
+    /**
+     * The counters go too, and not as tidiness.
+     *
+     * <p>Bolum 40.5 admits three requests per address in fifteen minutes, and
+     * most of these cases ask for a link as their first line. Left standing,
+     * the windows would carry from one case into the next and the fourth test
+     * in the file would fail on a 429 that has nothing to do with what it is
+     * asserting — a failure that reads as a flake and is not one. The limiter
+     * itself is exercised where it can be seen: {@code RateLimiterIT}, and
+     * {@link #afterThreeTriesAnAddressIsToldToWait} below.
+     */
     @BeforeEach
     void clear() {
         sent.clear();
         jdbc.update("DELETE FROM magic_link_tokens");
         jdbc.update("DELETE FROM users WHERE email LIKE '%@link.test'");
+        Set<String> counters = redis.keys("ratelimit:*");
+        if (counters != null && !counters.isEmpty()) {
+            redis.delete(counters);
+        }
     }
 
     // ── Bolum 40.4 ────────────────────────────────────────────────────────
@@ -214,6 +235,52 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         verify(second[0], second[1]).andExpect(status().isNoContent());
 
         verify(first[0], first[1]).andExpect(status().isBadRequest());
+    }
+
+    // ── Bolum 40.5 ────────────────────────────────────────────────────────
+
+    /**
+     * The fourth request for one address is refused, and the refusal carries
+     * both clocks.
+     *
+     * <p>{@code resetsAt} is an instant the client renders in the user's own
+     * locale; {@code Retry-After} is a duration, and it is the one that is
+     * still right when the client's clock is wrong — which is exactly the
+     * client that would otherwise retry at once and be refused again.
+     *
+     * <p>It answers nothing Bolum 40.4 protects either: this caller spent that
+     * window themselves, so what comes back describes what they did, not
+     * whether the address has an account.
+     */
+    @Test
+    void afterThreeTriesAnAddressIsToldToWait() throws Exception {
+        requestLinkFor("busy@link.test");
+        requestLinkFor("busy@link.test");
+        requestLinkFor("busy@link.test");
+
+        mvc.perform(post("/api/v1/auth/magic-link")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"busy@link.test\"}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("RATE_LIMITED"))
+                .andExpect(jsonPath("$.params.resetsAt").exists())
+                .andExpect(header().exists("Retry-After"));
+
+        // Three links went out, and the fourth request sent nothing: the
+        // brake is on the sending, not only on the answer.
+        assertThat(sent).hasSize(3);
+    }
+
+    /** One address's window is that address's, not the deployment's. */
+    @Test
+    void oneAddressRunningOutDoesNotStopAnother() throws Exception {
+        requestLinkFor("busy@link.test");
+        requestLinkFor("busy@link.test");
+        requestLinkFor("busy@link.test");
+
+        requestLinkFor("quiet@link.test");
+
+        assertThat(sent).hasSize(4);
     }
 
     @Test

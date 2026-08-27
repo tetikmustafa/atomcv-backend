@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.identity.domain.AuthMethod;
 import com.mustafatetik.atomcv.identity.domain.MagicLinkToken;
 import com.mustafatetik.atomcv.identity.domain.Session;
 import com.mustafatetik.atomcv.identity.domain.UserAccount;
+import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
 import com.mustafatetik.atomcv.identity.repository.MagicLinkTokens;
 import com.mustafatetik.atomcv.identity.repository.SignInAccounts;
 import java.net.URLEncoder;
@@ -53,17 +54,19 @@ public class MagicLinkService {
     private final SignInAccounts accounts;
     private final MagicLinkTokens tokens;
     private final SessionStore sessions;
+    private final SignInRateLimit rateLimit;
     private final EmailSender email;
     private final EmailSuppressions suppressions;
     private final MagicLinkProperties properties;
     private final Clock clock;
 
     MagicLinkService(SignInAccounts accounts, MagicLinkTokens tokens, SessionStore sessions,
-            EmailSender email, EmailSuppressions suppressions,
+            SignInRateLimit rateLimit, EmailSender email, EmailSuppressions suppressions,
             MagicLinkProperties properties, Clock clock) {
         this.accounts = accounts;
         this.tokens = tokens;
         this.sessions = sessions;
+        this.rateLimit = rateLimit;
         this.email = email;
         this.suppressions = suppressions;
         this.properties = properties;
@@ -76,10 +79,22 @@ public class MagicLinkService {
      * <p>Returns nothing on purpose. There is no outcome a caller could act on
      * without also being able to report it, and reporting it is exactly what
      * Bolum 40.4 forbids.
+     *
+     * <p><strong>Bolum 40.5's address layer is checked here and not at the
+     * controller</strong>, one line after the address is normalised. Keyed on
+     * anything else, {@code A@x.com} and {@code a@x.com} would be two buckets
+     * against one account and the limit would count double — and the only way
+     * that stays true is for the key and the lookup to be the same string.
+     *
+     * @throws com.mustafatetik.atomcv.shared.error.ApiException
+     *         {@code RATE_LIMITED} when this address has had its share of the
+     *         window. Thrown before the account row is touched, so a refused
+     *         request creates nothing.
      */
     @Transactional
     public void request(String rawEmail) {
         String address = normalise(rawEmail);
+        rateLimit.checkAddress(address);
         UserAccount user = accounts.byEmail(address)
                 .orElseGet(() -> accounts.createAwaitingVerification(address));
 
