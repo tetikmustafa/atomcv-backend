@@ -97,6 +97,25 @@ public class ErrorPresenter {
                     .resolution(ResolutionAction.RETRY)
                     .build();
 
+            /*
+             * Adim 3.4. Neither of these can arise from a generation — they
+             * come from profile extraction — but the presenter is where the
+             * decision "what is the user told" lives for every pipeline
+             * failure, and a second presenter for two cases would be a second
+             * place for the catalogue to drift from.
+             */
+            case PipelineError.LanguageUndetected torn -> UserFacingError
+                    .with(ErrorCode.LANGUAGE_UNDETECTED)
+                    // Language codes, not a line of the CV: the client renders
+                    // them as names in the user's own locale.
+                    .param("detectedCandidates", torn.candidates())
+                    // Nothing to retry and nothing to fix; the way out is the
+                    // manual form, which EK D.6.1 has no action for.
+                    .build();
+
+            case PipelineError.NothingExtracted ignored -> UserFacingError.of(
+                    ErrorCode.EXTRACTION_EMPTY);
+
             case PipelineError.CompilationFailed failed -> {
                 var presented = UserFacingError.with(ErrorCode.COMPILATION_FAILED)
                         // The kind, never the log: the log is built from the

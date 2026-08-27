@@ -76,6 +76,7 @@ atomcv:
   prompts:
     active:
       job_analysis: v1
+      profile_extraction: v1
   # Bolum 28. Self-hosted BGE-M3 behind text-embeddings-inference; the CV
   # content never leaves the deployment.
   embedding:

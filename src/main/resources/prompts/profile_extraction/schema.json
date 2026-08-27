@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["detectedLanguage", "languageConfidence", "contact", "sections", "warnings"],
+  "properties": {
+    "detectedLanguage": { "type": "string" },
+    "languageConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "email", "phone", "linkedin", "github", "website", "location"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "phone": { "type": ["string", "null"] },
+        "linkedin": { "type": ["string", "null"] },
+        "github": { "type": ["string", "null"] },
+        "website": { "type": ["string", "null"] },
+        "location": { "type": ["string", "null"] }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "title", "entries"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["about", "education", "experience", "projects", "skills",
+                     "soft_skills", "languages", "custom"]
+          },
+          "title": { "type": "string" },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "organization", "location", "startDate", "endDate", "atoms"],
+              "properties": {
+                "title": { "type": "string" },
+                "organization": { "type": "string" },
+                "location": { "type": "string" },
+                "startDate": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}$" },
+                "endDate": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}$" },
+                "atoms": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["textSource", "textEn", "emphasisSource", "emphasisEn",
+                                 "skills", "metrics", "properNouns", "tags"],
+                    "properties": {
+                      "textSource": { "type": "string" },
+                      "textEn": { "type": ["string", "null"] },
+                      "emphasisSource": { "type": "array", "items": { "type": "string" } },
+                      "emphasisEn": { "type": "array", "items": { "type": "string" } },
+                      "skills": { "type": "array", "items": { "type": "string" } },
+                      "metrics": { "type": "array", "items": { "type": "string" } },
+                      "properNouns": { "type": "array", "items": { "type": "string" } },
+                      "tags": { "type": "array", "items": { "type": "string" } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "detail", "path"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": ["ambiguous_date", "missing_organization", "unclear_section",
+                     "scrambled_text", "overlapping_dates", "untranslatable_atom"]
+          },
+          "detail": { "type": "string" },
+          "path": { "type": "string" }
+        }
+      }
+    }
+  }
+}
