@@ -77,6 +77,21 @@ public class Profile implements UserOwned {
         this.userId = Objects.requireNonNull(userId, "userId");
     }
 
+    /**
+     * A profile that already has an id (Adim 3.6).
+     *
+     * <p>The one caller is the upgrade from an anonymous session: the rows
+     * below it were built while the profile lived in Redis and each carries
+     * that id, so the row they belong to has to be written with it. Copying
+     * them under a fresh id instead would mean a copier naming every field it
+     * carried across, and the next field added to an atom would be dropped by
+     * it without a word.
+     */
+    public Profile(UUID userId, UUID id) {
+        this(userId);
+        this.id = Objects.requireNonNull(id, "id");
+    }
+
     public UUID getId() {
         return id;
     }
