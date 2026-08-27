@@ -115,6 +115,15 @@ katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
 
+**Adım 3.4 dilim 2: iki kodun ilk kullanıcısı çıktı.** `LANGUAGE_UNDETECTED`
+ve `EXTRACTION_EMPTY` EK D.6'da duruyordu ve hiçbir şey üretmiyordu; artık
+profil çıkarımı ikisini de üretiyor. `EXTRACTION_EMPTY` **iki sebebi birden
+taşıyor** — modelin hiçbir şey bulamadığı CV ve alan uzunluğu denetiminin
+reddettiği cevap — ve bu § 43.2'nin gereği: ikisini ayıran bir mesaj,
+enjeksiyonu yazana fark edildiğini söylerdi. `LANGUAGE_UNDETECTED`'ın
+`detectedCandidates`'ı en fazla tek elemanlı: model bir sıralama değil bir dil
+döndürüyor, ve düşük güvenli tahmin tek aday olarak sunuluyor.
+
 **Adım 3.4 dilim 1'de eklenen iki kod.** EK D.6 § 31.10'un tablosunu
 kodluyor, o da dosya kabul edildikten *sonra* başlıyor; § 31.2'nin ilk iki
 basamağının kodu yoktu.

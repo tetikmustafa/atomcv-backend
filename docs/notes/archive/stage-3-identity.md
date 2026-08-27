@@ -96,3 +96,38 @@ görünüyor — logout'un çalıştığını izlemeye çalışırken kafa karı
 (dilim 4). `LocalDevUser` ve `LocalDevSessions` hâlâ duruyor — entegrasyon
 paketinin 27 sınıfı çerezsiz istek atıyor; onları gerçek oturuma taşımak ayrı
 bir test-altyapısı dilimi.
+
+---
+
+### Adım 3.3 · dilim 3 — magic link
+
+Beş kararın beşi de kalıcı çıktı ve `spec/10-security.md` § 40.4.1'e işlendi:
+hesabın istek anında doğması, tek kullanımın koşullu `UPDATE` ile olması,
+girişin bekleyen diğer bağlantıları harcaması, `EmailSender`'ın üç dallı
+olması, ve bastırılmış adrese gönderilmemesi. Burada yalnız izleri duruyor.
+**"Bu uç üretime açılmamalı" kısıtı kalktı** — freni dilim 4'te indi.
+
+**Tuzak (canlı) — doğrulama sayfası önce bir `GET` yapmalı.** `POST
+/auth/verify` CSRF tokenı istiyor, token da `XSRF-TOKEN` çerezinden okunuyor;
+e-postadan gelen kullanıcının tarayıcısında o çerez henüz yok. Sayfa
+`/auth/session`'ı çağırsın, sonra POST etsin. `B-049`'da yazılı.
+
+### Adım 3.3 · dilim 4 — rate limit ve Turnstile
+
+Altı kararın altısı da kalıcı çıktı ve `spec/10-security.md` § 40.5.1'e
+işlendi: katmanların sırası ve challenge'ın neden aralarında durduğu, adres
+katmanının serviste yaşaması, Bucket4j yerine kayan pencere (§ 02'nin tablosuna
+da), Redis erişilemezken reddetme, `remoteip`'in gönderilmemesi, ve `prod`
+profilinin secret'sız açılmaması. Ters yöndeki tuzak § 46.5'te.
+
+**Canlı — `MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da
+siliyor.** Düzen değil zorunluluk: sınıfın çoğu testi ilk satırında bağlantı
+istiyor ve pencere üçte doluyor. Silinmezse dördüncü test ilgisiz bir 429'da
+düşer ve flake gibi okunur. **Yeni bir kimlik testi yazan bunu unutmasın.**
+
+**Açık — `/auth/verify` limitsiz.** Verifier 32 rastgele bayt, yani tahmin
+edilemez; Nginx'in `auth` zone'u (1r/s) de önünde. Bugün koruduğu bir şey yok.
+
+---
+
+> Dilim 3-4 buraya taşındı (2026-08-27), yine `current.md` sınırı için.

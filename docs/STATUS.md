@@ -56,5 +56,5 @@ yükleme ucu dilim 4'te, **`B-051`** onunla açılacak.
 ## Sonraki senkronizasyon noktası
 
 **Frontend `B-044`-`B-050`'yi alsın**; ilk `ACK`'ler `to-frontend.md`'yi
-sınırın altına indirir. Backend 3.4 dilim 2'ye geçiyor (LLM yapılandırma);
+sınırın altına indirir. Backend 3.4 dilim 3'e geçiyor (normalizasyon);
 yükleme sözleşmesi **`B-051`** olarak dilim 4'te gelecek.

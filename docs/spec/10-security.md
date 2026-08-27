@@ -388,6 +388,14 @@ boolean hasAbnormalFieldLength(JobAnalysis a) {
 }
 ```
 
+> **Adım 3.4: üçüncü katman CV çıkarımında da var.** Yukarıdaki parçacık
+> `JobAnalysis` içindir; `StructuringAudit` aynı işi çıkarılan profil için
+> yapıyor — atom metni 600, beceri adı 60, başlık/kurum 200 karakter. Eşikler
+> **bilinçli olarak cömert:** bu bir tel tuzağı, kalite filtresi değil. Uzun
+> yazan bir kullanıcıyı reddetmek, güvenlik denetimini yanlış bir şey yapmamış
+> insanlara dayatılan bir yazım kuralına çevirirdi. CV, sistemde bir saldırganın
+> uçtan uca kontrol ettiği **tek** belge, o yüzden üç katman da orada.
+
 ### 43.2 Kullanıcı mesajı
 
 Injection tespitinde **özel mesaj verme** — saldırgana bilgi verir:

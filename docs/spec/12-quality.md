@@ -317,6 +317,15 @@ src/main/resources/prompts/
 
 **Neden DB değil:** Prompt ile onu tüketen kod (şema, parse mantığı, doğrulayıcı) birlikte değişir. DB'de tutarsan ayrışırlar.
 
+> **Düzeltme (Adım 3.4).** § 53.1 promptların dosyada olmasını istiyor ve
+> `PromptRegistry.validateConfiguredPrompts()` eksik bir dosyayı **açılışta**
+> hataya çevirmek için yazılmıştı — ama onu üretim kodunda **hiçbir şey
+> çağırmıyordu.** Artık ayrı bir bean `@PostConstruct`'ta çağırıyor;
+> `ApplicationReadyEvent` değil, çünkü o andan sonra port zaten açık ve istek
+> görmüş bir örnek "açılamamış" sayılmaz. Kurucuya konulamıyor: sahte
+> sağlayıcının testleri dosyası olmayan prompt id'leri yapılandırıyor ve kendi
+> kayıt defterini elle kuruyor — ayrı bean tam olarak orada yok.
+
 ### 53.2 Aktif sürüm konfigürasyondan
 
 ```yaml

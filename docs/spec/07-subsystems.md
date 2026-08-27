@@ -891,6 +891,51 @@ bir isim yine isimdir), preamble ise bütünüyle atılır.
 
 **Kritik:** İngilizce karşılık (`text_en`) **aynı çağrıda** üretilir — ayrı çeviri adımı yok. Kaynak dil zaten EN ise ikinci alan istenmez.
 
+#### 31.4.1 Kararlar (Adım 3.4, dilim 2)
+
+**Düzeltme — § 31.4'ün örnek payload'ı iki adlandırma karıştırıyor**
+(`text_source` yanında `properNouns`). Kod camelCase kullanıyor; repodaki
+öteki prompt şeması (`job_analysis`) da öyle, ve tek şemada iki kural modelin
+en kolay yanlış yaptığı şey. Bu yapı hiçbir zaman frontend'e çıkmıyor —
+§ 31.5 onu profil alanlarına çeviriyor.
+
+**`textEn`, kaynak dil İngilizceyse `null`.** § 31.4 "ikinci alan istenmez"
+diyor; bir JSON şeması alanı koşullu yapamaz, o yüzden alan nullable ve ne
+zaman boş bırakılacağını prompt söylüyor.
+
+**`SectionKind` paylaşılıyor, `Contact` paylaşılmıyor.** Bölüm kinds'ı için
+paralel bir sözlük iki listeyi eşzamanlı tutmak demekti; bir şema testi ikisini
+birbirine bağlıyor. `Contact` aynı türden bir paylaşım gibi görünüyor ve değil:
+o bir JSONB kolonu ve **bilinçli olarak** bilinmeyen anahtarı reddediyor —
+geri okurken sessizce düşen bir alan, bir yeniden adlandırmanın veri
+kaybetme şeklidir. Burada kural tersi, ve iletişim bloğu modelin alan
+uydurmaya en yatkın olduğu yer. İki kayıt, ve § 31.5 birini ötekine çeviriyor.
+
+**Uyarı kodları kapalı bir sözlük.** § 31.4 tek kod gösteriyor ve sözlüğün
+kapalı olup olmadığını söylemiyor. Kapalı: frontend tek bir ICU anahtarını
+`select` ile çözüyor, yani görmediği bir kod ham anahtar yerine `other` dalına
+düşüyor (F-016'nın kararı). Şimdilik yalnız **modelin** bildirebileceği altı
+kod var; § 31.5'in normalizasyonu kendi kodlarını getirecek.
+
+**Üç ret, ikisi dışarıdan aynı görünüyor.** Dil çözülemezse **sorulur**
+(§ 31.10), çünkü seçilen dil her atomun hangi varyantının yazılacağına karar
+veriyor — yanlış tahmin, bunu söyleyen hiçbir ekran olmadan bütün profili
+yanlış dilde üretir. Sıfır atom ile **alan uzunluğu denetiminin** reddi ise
+tek cevap: § 43.2 enjeksiyonu yazana fark edildiğini söyleyen bir mesaja izin
+vermiyor. Sağlayıcı kesintisi kendisi olarak yolculuk ediyor — onu okunamayan
+CV'ye çevirmek, kullanıcıyı bir sağlayıcı düştüğü için elle forma yollardı ve
+§ 30.5'in tekrar etmesi gereken bir işi tekrar etmemesine yol açardı.
+
+**Karışık metin notu çitin *içinde*.** Sistem yarısında dursaydı her çağrıda
+duran bir talimat olurdu ve § 27.4'ün indirdiği sabit ön eki bozardı; o, tek
+bir belge hakkında bir not.
+
+**Prompt yer tutucusu artık etiketten türetiliyor** (`{{cv_text}}` ↔
+`<cv_text>`), böylece bir prompt bir çit ilan edip başkasına yazamıyor.
+`job_analysis`'in `{{jobDescription}}`'ı bu yüzden `{{job_description}}` oldu —
+yer tutucu istek kurulmadan önce doldurulduğu için modele giden metin
+birebir aynı, hiçbir eval geçersizleşmiyor.
+
 ### 31.5 Kod tarafı normalizasyon
 
 ```
