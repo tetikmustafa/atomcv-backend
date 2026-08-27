@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.Tag;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.profile.domain.content.RunMarking;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -172,14 +173,14 @@ public class ProfileNormalizer {
         List<String> skills = canonicalSkills(atom.skills());
         List<String> metrics = List.copyOf(atom.metrics());
 
-        RichContent source = RunBuilder.build(
+        RichContent source = RunMarking.mark(
                 atom.textSource(), atom.emphasisSource(), skills, metrics);
         // Empty and not a copy of the source: Bolum 21 reads an absent English
         // variant as "the source is the English", and a duplicate would be a
         // second row to keep in step for no gain.
         RichContent english = atom.textEn() == null || atom.textEn().isBlank()
                 ? RichContent.EMPTY
-                : RunBuilder.build(atom.textEn(), atom.emphasisEn(), skills, metrics);
+                : RunMarking.mark(atom.textEn(), atom.emphasisEn(), skills, metrics);
 
         return new NormalizedProfile.NormalizedAtom(
                 source, english, skills, metrics,
