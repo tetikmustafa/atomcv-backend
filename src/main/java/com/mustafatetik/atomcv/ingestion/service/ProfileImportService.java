@@ -15,7 +15,6 @@ import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
-import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -55,6 +54,15 @@ public class ProfileImportService {
     }
 
     /**
+     * @param owner          who is asking — an account or an anonymous session
+     *                       (Adim 3.6). Both may upload a CV; where the result
+     *                       is kept is the only difference, and the job carries
+     *                       the answer.
+     * @param allowance      whose daily ceiling this spends. An account's is
+     *                       its own; an anonymous caller's is their address,
+     *                       because a session is a cookie and a cookie is
+     *                       something anybody can throw away and ask for
+     *                       another (Bolum 44.1).
      * @param idempotencyKey the request header, or null (Bolum 30.7). An upload
      *                       is the one request a flaky connection makes twice
      *                       most easily, and the second one would spend a
@@ -68,17 +76,17 @@ public class ProfileImportService {
      *         nothing to an upload, and a second presenter at the edge would
      *         be a second place for the catalogue to drift from.
      */
-    public Job importCv(UserContext user, String filename, String contentType,
-            byte[] bytes, String idempotencyKey) {
+    public Job importCv(JobOwner owner, QuotaSubject allowance, String filename,
+            String contentType, byte[] bytes, String idempotencyKey) {
 
-        Optional<Job> already = jobs.findByIdempotencyKey(JobOwner.of(user), idempotencyKey);
+        Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
         if (already.isPresent()) {
             return already.get();
         }
 
-        Result<Void> spent = quotas.consume(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
+        Result<Void> spent = quotas.consume(allowance, QuotaMetric.PROFILE_EXTRACT);
         if (spent.isErr()) {
-            throw spentAllowance(user, ((Result.Err<Void>) spent).error());
+            throw spentAllowance(allowance, ((Result.Err<Void>) spent).error());
         }
 
         // Throws rather than returning: every refusal below is one the user
@@ -89,12 +97,13 @@ public class ProfileImportService {
         try {
             document = extraction.extract(filename, contentType, bytes);
         } catch (RuntimeException refused) {
-            quotas.refund(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
+            quotas.refund(allowance, QuotaMetric.PROFILE_EXTRACT);
             throw refused;
         }
 
-        var job = new Job(JobType.PROFILE_EXTRACT, user.userId(),
-                ProfileExtractionPayload.of(document).asMap(), clock.instant());
+        var job = new Job(JobType.PROFILE_EXTRACT, owner.userId(),
+                ProfileExtractionPayload.of(document, allowance).asMap(), clock.instant());
+        job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);
         return queue.enqueue(job);
     }
@@ -107,12 +116,12 @@ public class ProfileImportService {
      * it, a client renders it, and a number invented at the point of failure
      * would be the server misreporting its own configuration.
      */
-    private ApiException spentAllowance(UserContext user, PipelineError error) {
+    private ApiException spentAllowance(QuotaSubject allowance, PipelineError error) {
         if (!(error instanceof PipelineError.QuotaExceeded spent)) {
             return ApiException.of(ErrorCode.INTERNAL_ERROR);
         }
         return new ApiException(UserFacingError.with(ErrorCode.PROFILE_QUOTA_EXCEEDED)
-                .param("limit", quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT).limit())
+                .param("limit", quotas.usage(allowance, QuotaMetric.PROFILE_EXTRACT).limit())
                 .param("resetsAt", spent.resetsAt())
                 .build());
     }

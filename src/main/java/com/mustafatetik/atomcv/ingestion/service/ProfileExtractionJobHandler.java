@@ -20,6 +20,8 @@ import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
+import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.util.LinkedHashMap;
@@ -63,15 +65,18 @@ public class ProfileExtractionJobHandler implements JobHandler {
     private final ProfileStructuring structuring;
     private final ProfileNormalizer normalizer;
     private final ProfileWriter writer;
+    private final EphemeralProfileWriter ephemeral;
     private final QuotaService quotas;
     private final JobQueue queue;
     private final Clock clock;
 
     ProfileExtractionJobHandler(ProfileStructuring structuring, ProfileNormalizer normalizer,
-            ProfileWriter writer, QuotaService quotas, JobQueue queue, Clock clock) {
+            ProfileWriter writer, EphemeralProfileWriter ephemeral, QuotaService quotas,
+            JobQueue queue, Clock clock) {
         this.structuring = structuring;
         this.normalizer = normalizer;
         this.writer = writer;
+        this.ephemeral = ephemeral;
         this.quotas = quotas;
         this.queue = queue;
         this.clock = clock;
@@ -85,35 +90,74 @@ public class ProfileExtractionJobHandler implements JobHandler {
     @Override
     public JobOutcome handle(Job job, ProgressSink progress) {
         UUID userId = job.getOwnerId();
-        if (userId == null) {
-            // Bolum 9's anonymous flow is a later step and nothing enqueues
-            // one yet. Refusing beats writing a profile that would belong to
-            // nobody and be readable by everybody.
-            log.error("An anonymous extraction reached the queue; job {}", job.getId());
+        String anonSession = job.getAnonSessionId();
+        if (userId == null && (anonSession == null || anonSession.isBlank())) {
+            // A job belonging to nobody. JobOwner makes that unconstructable,
+            // so this is a row written before it existed or by hand — and a
+            // profile written for nobody would be readable by everybody.
+            log.error("An ownerless extraction reached the queue; job {}", job.getId());
             return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
         }
-        UserContext user = UserContext.of(userId);
         var payload = ProfileExtractionPayload.from(job.getPayload());
 
         progress.report(READING);
-        Result<ExtractedProfile> structured =
-                structuring.structure(payload.asExtractedText(), userId.toString());
+        Result<ExtractedProfile> structured = structuring.structure(
+                payload.asExtractedText(), bucketKeyFor(userId, anonSession));
 
         return switch (structured) {
             case Result.Err<ExtractedProfile> failed -> {
-                // Bolum 44.2: no profile came out of it, whatever the cause.
-                quotas.refund(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
+                // Bolum 44.2: no profile came out of it, whatever the cause,
+                // and it goes back to whoever paid — which for an anonymous
+                // upload is an address the worker could not otherwise know.
+                quotas.refund(payload.allowance(), QuotaMetric.PROFILE_EXTRACT);
                 yield refused(failed.error());
             }
             case Result.Ok<ExtractedProfile> ok -> {
                 progress.report(ORGANISING);
                 NormalizedProfile normalized = normalizer.normalize(ok.value());
                 progress.report(SAVING);
-                Profile profile = writer.write(user, normalized);
-                queueBackgroundWork(userId);
-                yield completed(profile, normalized);
+                yield userId == null
+                        ? completedAnonymously(anonSession, normalized)
+                        : completedForAccount(UserContext.of(userId), userId, normalized);
             }
         };
+    }
+
+    /**
+     * Which prompt variant this caller keeps seeing (Bolum 53.3).
+     *
+     * <p>An anonymous caller is bucketed by their profile id and not by the
+     * session id it is derived from. Both are stable for the length of the
+     * session, which is all bucketing asks for — and one of them is the
+     * cookie, which has no business being passed around as an identifier.
+     */
+    private static String bucketKeyFor(UUID userId, String anonSession) {
+        return userId != null
+                ? userId.toString()
+                : ProfileRef.ephemeral(AnonymousSessionId.of(anonSession)).id().toString();
+    }
+
+    /**
+     * Bolum 9: an anonymous person's profile is written to Redis and to
+     * nothing else.
+     *
+     * <p>No background work is queued for it. Embedding and measurement exist
+     * to make the <em>first</em> generation good, and both write to rows this
+     * profile does not have — an anonymous person gets an estimate and a
+     * scoring pass without vectors, which Bolum 20.4 and Bolum 28.4 already
+     * describe as the degraded-but-working path.
+     */
+    private JobOutcome completedAnonymously(String anonSession, NormalizedProfile normalized) {
+        ProfileRef profile = ProfileRef.ephemeral(AnonymousSessionId.of(anonSession));
+        ephemeral.write(profile, normalized);
+        return completed(profile.id(), normalized);
+    }
+
+    private JobOutcome completedForAccount(
+            UserContext user, UUID userId, NormalizedProfile normalized) {
+        Profile profile = writer.write(user, normalized);
+        queueBackgroundWork(userId);
+        return completed(profile.getId(), normalized);
     }
 
     /**
@@ -149,9 +193,9 @@ public class ProfileExtractionJobHandler implements JobHandler {
      * here because Bolum 31.6's screen opens on the sections that have one —
      * the client needs to know whether to before it has fetched anything.
      */
-    private static JobOutcome completed(Profile profile, NormalizedProfile normalized) {
+    private static JobOutcome completed(UUID profileId, NormalizedProfile normalized) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("profileId", profile.getId().toString());
+        result.put("profileId", profileId.toString());
         result.put("sectionCount", normalized.sections().size());
         result.put("atomCount", normalized.atoms().size());
         result.put("warningCount", normalized.warnings().size());
