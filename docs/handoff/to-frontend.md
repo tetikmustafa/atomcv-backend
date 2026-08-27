@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** altı madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> değil:** yedi madde birden açık ve hiçbiri henüz `ACK` almadı, yani
 > taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
 > yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
 
@@ -102,6 +102,34 @@ alır.
 kullanılmış, yanlış ve hiç var olmamış **tek bir cevap**; ayırt edilebilirse
 tahmin yürüten kişi hangi yarının doğru olduğunu öğrenir. Tek bir metin yazın,
 sebep sormayın.
+
+### B-050 · Magic link isteği artık bir Turnstile tokenı istiyor, ve 429 dönebiliyor
+**Since:** commit <sha> · Adım 3.3 dilim 4 · **Spec:** `spec/10-security.md` § 40.5.1
+
+**`B-049`'un ucu değişti.** `POST /auth/magic-link` gövdesi artık
+`{email, challengeToken}`. Turnstile widget'ını o forma koyun ve ürettiği
+tokenı `challengeToken` olarak gönderin; site key sizde, secret bizde.
+
+**Alan adı `challengeToken`, `turnstileToken` değil** — kod tarafında da
+`CHALLENGE_FAILED`. `OTLP_*` kararının aynısı: bu kodu siz render edip mesaj
+kataloğunuzda saklıyorsunuz, Cloudflare'den çıkmak kullanıcıya görünen bir
+cümleyi yalana çevirmemeli.
+
+**İki yeni cevap, ikisi de `202` yerine geçebilir:**
+
+- **`403 CHALLENGE_FAILED`**, parametresiz. Eksik, süresi dolmuş, harcanmış ve
+  sahte token tek bir cevap — çünkü hepsinde yapılacak şey aynı: **widget'ı
+  sıfırlayın ve yeniden sordurun.** Token tek kullanımlık, yani başarısız bir
+  gönderimden sonra eskisini tekrar yollamak da bu hatayı verir.
+- **`429 RATE_LIMITED`**, `params.resetsAt` (mutlak an) + `Retry-After`
+  başlığı (saniye). Sınırlar: adres başına 3/15dk, IP başına 10/sa. **Cümleyi
+  `Retry-After`'dan kurun, `resetsAt`'ten değil** — kullanıcının saati yanlışsa
+  doğru olan tek şey o; `resetsAt`'i yalnız "şu saatte tekrar deneyin" yazacaksanız
+  kullanın. Hangi katmanın reddettiğini yayınlamıyoruz, tek metin yazın.
+
+**Yerelde `challengeToken` göndermeseniz de çalışır** — secret'ı olmayan bir
+dağıtımda challenge kapalı ve istek geçiyor. Bu bir kolaylık, sözleşme değil:
+üretimde alan boşsa istek `403` alır, o yüzden widget'ı en baştan takın.
 
 ---
 

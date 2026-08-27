@@ -96,6 +96,8 @@ yalnızca yerine koyar.
 | `AUTHENTICATION_REQUIRED` | 401 | — |
 | `OAUTH_FAILED` | 400 | `reason: string` |
 | `MAGIC_LINK_INVALID` | 400 | — |
+| `RATE_LIMITED` | 429 | `resetsAt: timestamp` |
+| `CHALLENGE_FAILED` | 403 | — |
 | `RESOURCE_NOT_FOUND` | 404 | — |
 | `VERSION_CONFLICT` | 412 | — |
 | `PRECONDITION_REQUIRED` | 428 | — |
@@ -110,6 +112,22 @@ kaynağın kastedildiğini istemci zaten bilir (isteği o attı), ve advice
 katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
+
+**Adım 3.3 dilim 4'te eklenen iki kod.** Bölüm 40.5 ile 44.4 davranışı
+tanımlıyor, kodu vermiyordu.
+
+`RATE_LIMITED` **hangi katmanın reddettiğini yayınlamaz.** Kullanıcının okuduğu
+cümle üç durumda da aynı — bekle, sonra tekrar dene — ve global katmanı adıyla
+söylemek, servisi yoklayan birine trafiğinin isabet ettiğini bildirir. Katman
+operatöre log satırıyla gider. Bölüm 40.4'ün sorusunu da açmaz: adres katmanı
+yalnızca o pencereyi zaten kendisi harcamış bir çağıranı reddedebilir, yani
+dönen cevap onun ne yaptığını anlatır, adresin hesabı olup olmadığını değil.
+
+`CHALLENGE_FAILED` **satıcının değil işin adını taşır** — `OTLP_*` kararının
+aynısı: bu kodu frontend render ediyor ve mesaj kataloğunda saklıyor,
+Cloudflare'den çıkmak kullanıcıya görünen bir cümleyi yalana çevirmemeli.
+Parametresizdir: eksik, süresi dolmuş, harcanmış ve sahte token istemciye tek
+bir iş bırakır — widget'ı sıfırla, yeniden sor.
 
 **Katalog kodda zorlanıyor, yalnız belgelenmiyor.** `params`, hata nesnesi
 kurulurken bildirime karşı doğrulanır: eksik anahtar, fazladan anahtar ve yanlış

@@ -76,6 +76,8 @@ Satır o ana kadar bir yer tutucudur — ona ait oturum da profil de yoktur.
 **Bunun bedeli açıkça yazılsın:** herhangi biri, sahibi olmadığı bir adres için
 satır yaratabilir ve o adrese e-posta gönderttirebilir. Freni § 40.5'in rate
 limit'i ve Turnstile'dır; **onlar inmeden bu uç üretime açılmamalıdır.**
+İkisi de dilim 4'te indi (§ 40.5.1), yani bu cümle artık bir kısıt değil bir
+kayıt: satır hâlâ doğrulanmadan doğuyor, ama artık sınırsız değil.
 
 **İstek her zaman aynı yanıtı verir: `202`, gövdesiz.** § 40.4'ün gerektirdiği
 şey bu, ve sunucunun cümle yazmaması genel kuralıyla da uyuşuyor — "kayıtlıysa
@@ -118,6 +120,56 @@ herkes için bozar. Token yine de yazılır, iş aynı kalsın diye.
 ```
 
 Turnstile magic link isteğinde zorunlu.
+
+#### 40.5.1 Kararlar (Adım 3.3, dilim 4)
+
+**Üç katman tek çağrı değil, ve sıra kasıtlı: IP → global → Turnstile →
+e-posta.** Adres katmanı üç istekte doluyor, yani insan olduğunu kanıtlamadan
+erişilebilen bir limiter, bir yabancıyı **kendi hesabından kilitlemenin** yolu
+olurdu — frenin kendisi saldırıya dönerdi. Turnstile'ı o katmanın önüne koymak
+bunun bedelini ödetir; öteki ikisinin önüne koymak yalnızca bota bizim
+hesabımıza Cloudflare'e bedava bir gidiş dönüş alırdı. Global katman IP'den
+sonra: ikisi de kabulde artıyor, ve IP katmanının reddedeceği bir istek
+herkesin kotasından bir slot harcamamalı.
+
+**Adres katmanı serviste, denetleyicide değil.** Anahtar, hesabın arandığı
+dizenin ta kendisi olmak zorunda: başka bir şeyle anahtarlanırsa `A@x.com` ile
+`a@x.com` tek hesaba karşı iki pencere olur ve üç, altı sayar. Bu yüzden kontrol
+normalleştirmenin bir satır altında duruyor.
+
+**Sapma — pencere, kova değil.** Bölüm 02'nin tablosu Bucket4j diyor; Bölüm
+40.5 sınırlarını "3 istek / 15 dakika" diye yazıyor, ki bu bir penceredir.
+Dakikada beşte bir istekle dolan bir token kovası, ortalaması aynı çıkan başka
+bir kuraldır. Kararı verense `Retry-After`: bir sonraki slotun ne zaman
+boşaldığını yalnız pencere söyleyebilir, ve tahmin olan bir `Retry-After`
+hiç olmamasından kötüdür. Redis'te sıralı küme; küme en çok `limit` üye tutuyor,
+yani kesinliğin bedeli yok. Sayma, kırpma ve kabul **tek Lua script'inde**:
+Java'dan yürütülseydi aynı anda gelen iki istek son boş slotu birlikte görürdü.
+
+**Redis cevap veremiyorsa reddeder.** Açık düşmek, yabancının yazdığı bir adrese
+posta gönderen bir ucun tek frenini kaldırır ve gönderim alan adının itibarı
+bir dakikalık reddin geri geldiği gibi geri gelmez. Çalışan bir dağıtıma
+maliyeti de yok: oturum aynı Redis'te, ona ulaşamayan bir örnek zaten kimseyi
+içeri alamaz. Dönen `resetsAt` bir pencere kenarı değil, 60 saniyelik bir geri
+çekilmedir — okunacak pencere yoktu.
+
+**`remoteip` Turnstile'a gönderilmiyor.** Cloudflare kabul eder ve token'ı
+adrese bağlar, ama bu sürecin inandığı adres `server.forward-headers-strategy`
+ayarının doğruluğuna bağlı; yanlış bir ayar her girişi, Cloudflare çökmüş gibi
+okunan bir redde çevirirdi. Adres zaten bundan önce koşan katmanın anahtarı,
+yani yanlış yapılandırmanın kesintiye dönüşemeyeceği yerde iş görüyor.
+
+**Turnstile'a ulaşılamıyorsa istek geçer; "başarısız" cevabı gelirse geçmez.**
+Cloudflare'in erişilemez olması kimsenin giriş yapamaması için sebep değil, ve
+korunan şey onsuz da sınırlı: IP ve global sayaçlar bu çağrının önünde koşuyor,
+yani bir kesintinin saldırgana aldığı en fazla şey global penceredir. Kesin bir
+`success: false` başka bir şeydir — o, Cloudflare'in cevap vermesidir.
+
+**Secret yoksa yerelde uyarı, `prod` profilinde açılışta hata.**
+`EmailSenderConfig`'in ihtiyaç duymadığı bir kapı: göndericisi olmayan bir
+dağıtım, bağlantısını hiç alamayan ilk kişiyle anlaşılır; **challenge'ı olmayan
+bir dağıtım kusursuz çalışır ve açıktır.** Kimse davranıştan öğrenemeyeceği
+için başlangıçta söylenmesi gerekiyor.
 
 ### 40.6 OAuth
 
