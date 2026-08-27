@@ -56,8 +56,39 @@ class ProfileRefTest {
                 .toList();
 
         assertThat(factories).isNotEmpty();
-        assertThat(factories)
-                .allSatisfy(factory -> assertThat(parameterTypes(factory)).contains(UserContext.class));
+        // Every way in takes a type that carries the check, and neither of the
+        // two can be conjured from a bare id. Adim 3.6 added the second: an
+        // anonymous scope has no user to compare against, so what stands in
+        // for the comparison is AnonymousSessionId — which only the module
+        // that can see a session is able to make.
+        assertThat(factories).allSatisfy(factory ->
+                assertThat(parameterTypes(factory))
+                        .as("%s", factory.getName())
+                        .containsAnyOf(UserContext.class, AnonymousSessionId.class));
+    }
+
+    /**
+     * And the second one is a real gate rather than a wrapper: it refuses a
+     * blank id, so "no session" cannot become "a scope".
+     */
+    @Test
+    void theAnonymousPathRefusesSomethingThatIsNotASession() {
+        assertThatThrownBy(() -> AnonymousSessionId.of(" "))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ProfileRef.ephemeral(null))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    /** Two anonymous sessions are two profiles, and one session is always the same one. */
+    @Test
+    void theAnonymousScopeIsDerivedFromTheSessionAndIsStable() {
+        var once = ProfileRef.ephemeral(AnonymousSessionId.of("a-session"));
+        var again = ProfileRef.ephemeral(AnonymousSessionId.of("a-session"));
+        var other = ProfileRef.ephemeral(AnonymousSessionId.of("another-session"));
+
+        assertThat(once).isEqualTo(again);
+        assertThat(once).isNotEqualTo(other);
+        assertThat(once.scope()).isEqualTo(ProfileRef.Scope.EPHEMERAL);
     }
 
     @Test
