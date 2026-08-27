@@ -42,8 +42,8 @@
                 "title": { "type": "string" },
                 "organization": { "type": "string" },
                 "location": { "type": "string" },
-                "startDate": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}$" },
-                "endDate": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}$" },
+                "startDate": { "type": ["string", "null"] },
+                "endDate": { "type": ["string", "null"] },
                 "atoms": {
                   "type": "array",
                   "items": {
