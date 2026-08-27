@@ -50,6 +50,19 @@ class ProblemDetailAdviceTest {
     @Autowired
     private MockMvc mvc;
 
+    /**
+     * Adim 3.4. Without this branch an oversized upload reaches the catch-all
+     * and leaves as a 500 — telling the person their CV broke the server
+     * rather than that it was too large for it.
+     */
+    @Test
+    void anOversizedUploadIsAPayloadTooLargeAndNotAServerFailure() throws Exception {
+        mvc.perform(get("/test/too-large"))
+                .andExpect(status().isPayloadTooLarge())
+                .andExpect(jsonPath("$.code").value("DOCUMENT_TOO_LARGE"))
+                .andExpect(jsonPath("$.params.limitBytes").value(10 * 1024 * 1024));
+    }
+
     @Test
     void aNamedErrorLeavesAsTheDocumentedBody() throws Exception {
         mvc.perform(get("/test/conflict"))
@@ -193,6 +206,16 @@ class ProblemDetailAdviceTest {
         void expired() {
             throw ApiException.of(ErrorCode.GENERATION_ARTIFACT_EXPIRED,
                     Resolution.of(ResolutionAction.RETRY));
+        }
+
+        @GetMapping("/test/too-large")
+        void tooLarge() {
+            // What the servlet container throws before any handler is reached.
+            // Thrown here rather than by uploading eleven megabytes: MockMvc
+            // does not run the multipart resolver, so the only honest way to
+            // reach this branch in a slice test is to raise what it raises.
+            throw new org.springframework.web.multipart.MaxUploadSizeExceededException(
+                    10L * 1024 * 1024);
         }
 
         @GetMapping("/test/cross-tenant")

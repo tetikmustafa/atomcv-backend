@@ -21,7 +21,10 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -45,7 +48,19 @@ public class ProblemDetailAdvice {
 
     private final java.time.Clock clock;
 
-    ProblemDetailAdvice(java.time.Clock clock) {
+    /**
+     * The container's own limit, read from the property that enforces it.
+     *
+     * <p>Not from {@code ingestion}: {@code shared} may not depend on a
+     * business module (Bolum 10.2, rule 4), and reading the property is
+     * better anyway — it is the number that actually refused the request,
+     * rather than a second copy of it.
+     */
+    private final DataSize maxUploadSize;
+
+    ProblemDetailAdvice(java.time.Clock clock,
+            @Value("${spring.servlet.multipart.max-file-size:10MB}") DataSize maxUploadSize) {
+        this.maxUploadSize = maxUploadSize;
         this.clock = clock;
     }
 
@@ -175,6 +190,22 @@ public class ProblemDetailAdvice {
             response.allow(allowed.toArray(HttpMethod[]::new));
         }
         return response.body(ProblemDetails.from(error));
+    }
+
+    /**
+     * A multipart the container refused before any handler saw it (Adim 3.4).
+     *
+     * <p>Left alone it reaches the catch-all and leaves as a 500, which tells
+     * the user their upload broke the server rather than that it was too
+     * large. The size is not published — Spring refuses before the bytes are
+     * counted, and the ingestion ladder's own check publishes the same code
+     * with the same single parameter, so the two answers are one answer.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ProblemDetail> handle(MaxUploadSizeExceededException exception) {
+        return respond(UserFacingError.with(ErrorCode.DOCUMENT_TOO_LARGE)
+                .param("limitBytes", (int) maxUploadSize.toBytes())
+                .build());
     }
 
     /**
