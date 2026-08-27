@@ -132,69 +132,52 @@ silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
 zone'u (1r/s) önünde. Bugün koruduğu bir şey yok.
 
 
-## Adım 3.4 — CV yükleme ve çıkarım
+## Adım 3.4 — CV yükleme ve çıkarım · 4/4
 
-**Plan:** § XI-A.6 Adım 3.4, dokuz madde; dört dilime bölündü —
-**1** dosya doğrulama + metin çıkarımı · **2** LLM yapılandırma
-(§ 31.4) · **3** normalizasyon (§ 31.5) · **4** uç + `PROFILE_EXTRACT` işi +
-arka plan tetikleme.
+Dört dilim de indi. Otuz bir kararın hepsi kalıcı çıktı ve `spec/`'e işlendi:
+§ 31.3.1 (doğrulama, çıkarım), § 31.4.1 (LLM yapılandırma), § 31.5.1
+(normalizasyon), § 31.6.1 (uç, iş, kalıcılaştırma); üçüncü enjeksiyon katmanı
+§ 43.1'de, prompt dosyası kontrolü § 53.1'de.
 
-### Dilim 1-2 — doğrulama, çıkarım, yapılandırma
+**Ders — bir metodun javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı da
+ara.** `PromptRegistry.validateConfiguredPrompts()` "eksik dosya açılışta
+hata" diyordu ve üretim kodunda hiçbir şey onu çağırmıyordu.
 
-On beş kararın hepsi kalıcı çıktı: § 31.3.1 ve § 31.4.1'de, üçüncü enjeksiyon
-katmanı § 43.1'de, prompt dosyası kontrolü § 53.1'de. **Ders olarak duran
-bulgu:** `PromptRegistry.validateConfiguredPrompts()` "eksik dosya açılışta
-hata" diyordu ve **üretim kodunda hiçbir şey onu çağırmıyordu** — bir metodun
-javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı da ara. Aşağıdakiler hâlâ
-canlı.
+### Hâlâ canlı olanlar
 
-**Çok büyük multipart'ın `DOCUMENT_TOO_LARGE`'a eşlenmesi dilim 4'e kaldı.**
-Spring `MaxUploadSizeExceededException` fırlatıyor, `ProblemDetailAdvice` onu
-bugün 500'e düşürür. Uç olmadan tetiklenemediği için yazılmadı — hiç düşmemiş
-bir kapı, çalıştığı bilinmeyen kapıdır.
+**`jobs.payload` kullanıcı içeriği taşıyor ve tamamlanmış işleri budayan bir
+şey yok.** Çıkarılan CV metni iş bittikten sonra da orada kalıyor. Dosyayı hiç
+saklamama kararının yanındaki tek gedik. **Saklama süresi her iş tipinin
+sorusu** — `generation` da ilan metnini taşıyor — o yüzden burada çözülmedi.
 
-**`ZipSecureFile.setMinInflateRatio` global durum.** POI'nin statiği;
-`DocxTextExtractor`'ın kurucusu her açılışta yeniden yazıyor, çünkü başka bir
-kütüphane gevşetirse zip-bomb koruması sessizce kalkardı (§ 42.1).
+**`ProfileWriter` mevcut profile *ekliyor*, değiştirmiyor.** İkinci bir içe
+aktarma bölümleri ikinci kez yazar. `PROFILE_ALREADY_EXISTS` (409) katalogda
+duruyor ve **hiçbir şey onu üretmiyor**; ürünün "ikinci CV yüklenirse ne olur"
+sorusuna cevabı yok. § 31.1 yalnız ilk kullanımı anlatıyor.
 
-**`ExtractedContact` ile `Contact` aynı şekle sahip iki kayıt** (sebebi
-§ 31.4.1'de). `ProfileNormalizer` ikisini bağlıyor; **alan eklendiğinde üçü
-birden güncellenmeli** — iki kayıt ve şema.
+**`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
+(sebebi § 31.4.1'de). Alan eklendiğinde **üçü birden** güncellenmeli;
+`theContactSchemaAndTheRecordAgree` yalnız şema tarafını tutuyor.
 
-**`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'la eşleşiyor.** Prompt modele
-"yerleştiremediğin belgeyi 0.5'in altında puanla" diyor; birini değiştiren
-ötekini de değiştirmeli, yoksa talimat yalan olur.
+**`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'un cümlesiyle eşleşiyor** ("0.5'in
+altında puanla"). Birini değiştiren ötekini de değiştirmeli.
 
-**Açık — `local-fake` için kayıtlı fixture yok.** Sahte sağlayıcı şema şeklinde
-bir yer tutucu üretiyor: `make dev` çalışıyor ama çıkan profil anlamsız.
-`make record` ile dilim 4'te, uç inince.
+**`SkillNames.canonical` dört çağıranın ortak kuralı** — ingestion, Faz B
+skorlayıcı, Faz F raporu, run işaretleme. Alias dosyası
+`resources/skills/aliases.txt`; üç özelliği testle tutuluyor ve **soldaki taraf
+insanların gerçekten yazdığı gibi** olmalı, yoksa anahtar hiçbir şeyle
+eşleşmez.
 
-**Frontend'e söylenecek her şey `B-051`'de toplanacak** (dilim 4): iki hata
-kodu, kabul edilen uzantı listesi, ve yükleme ucunun sözleşmesi.
-`to-frontend.md` zaten 145 satır.
+**`ZipSecureFile.setMinInflateRatio` global durum.** `DocxTextExtractor`'ın
+kurucusu her açılışta yeniden yazıyor, çünkü başka bir kütüphane gevşetirse
+zip-bomb koruması sessizce kalkardı (§ 42.1).
 
-### Dilim 3 — normalizasyon
+**`ProfileImportService` ret için fırlatıyor, `Result` döndürmüyor**
+(§ 31.6.1). Uç bu yüzden ince — yeni bir ret servise eklenir, denetleyiciye
+değil.
 
-Dokuz kararın hepsi kalıcı çıktı ve `spec/07-subsystems.md` § 31.5.1'e işlendi.
-Aşağıdakiler yalnız burada yaşıyor.
+### Sonraki dilim (4b)
 
-**Canlı — alias sözlüğü `src/main/resources/skills/aliases.txt`.** Üç özelliği
-testle tutuluyor: kanonik ad kendisi alias olamaz, idempotent, ve her anahtar
-yazım kurallarının ürettiği biçimde olmalı ("React JS" yazılmış bir anahtar
-haritada sonsuza dek durur ve hiçbir şeyle eşleşmez). **Yeni satır eklerken
-soldaki tarafı insanların gerçekten yazdığı gibi yaz.**
-
-**Canlı — `SkillNames.canonical` artık dört çağıranın ortak kuralı**
-(ingestion, Faz B skorlayıcı, Faz F raporu, run işaretleme). Birini
-değiştirmek dördünü birden değiştirir; `SelectedSkillsTest`'in beklentisi bu
-yüzden bu dilimde değişti.
-
-**Canlı — `NormalizedProfile` hâlâ bellekte, hiçbir satır yazılmıyor.**
-§ 31.6'nın gözden geçirme ekranı zorunlu olduğu için, insanın düzelteceği
-şeklin herhangi bir satırdan önce var olması gerekiyor. Dilim 4 onu
-`Profile`/`Section`/`Entry`/`Atom`'a çevirecek.
-
-**Açık — atomsuz entry hâlâ sayfaya çıkamıyor** (Aşama 2'den taşınan bulgu).
-Normalizasyon böyle bir entry'yi koruyor ve sıralıyor; § 20.2'nin seçim modeli
-onu aday bile saymıyor. Dilim 4 bunu değiştirmiyor.
-
+Arka planda embedding + ölçüm tetiklemesi (§ 31.6'nın `t=25s` kutusu) ve
+`local-fake` için `make record` ile gerçek bir fixture. Bugün yerelde çıkan
+profil şema şeklinde ama anlamsız.

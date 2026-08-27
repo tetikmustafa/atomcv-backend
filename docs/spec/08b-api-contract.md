@@ -115,6 +115,13 @@ katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
 
+**Adım 3.4 dilim 4: `POST /profile/import` telde.** `202` + `Location` +
+`jobId`, üretimle birebir aynı kalıp. Beş ret senkron (`415`, `413`, iki `422`,
+`429`), üç ret işten geliyor (`LANGUAGE_UNDETECTED`, `EXTRACTION_EMPTY`,
+`ALL_PROVIDERS_UNAVAILABLE`). `PROFILE_QUOTA_EXCEEDED`'ın `limit`'i
+yapılandırmadan **geri okunuyor** — hatanın doğduğu yerde uydurulan bir sayı,
+sunucunun kendi yapılandırmasını yanlış bildirmesi olurdu.
+
 **Adım 3.4 dilim 2: iki kodun ilk kullanıcısı çıktı.** `LANGUAGE_UNDETECTED`
 ve `EXTRACTION_EMPTY` EK D.6'da duruyordu ve hiçbir şey üretmiyordu; artık
 profil çıkarımı ikisini de üretiyor. `EXTRACTION_EMPTY` **iki sebebi birden

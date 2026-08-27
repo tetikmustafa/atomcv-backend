@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** yedi madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> değil:** sekiz madde birden açık ve hiçbiri henüz `ACK` almadı, yani
 > taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
 > yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
 
@@ -130,6 +130,49 @@ cümleyi yalana çevirmemeli.
 **Yerelde `challengeToken` göndermeseniz de çalışır** — secret'ı olmayan bir
 dağıtımda challenge kapalı ve istek geçiyor. Bu bir kolaylık, sözleşme değil:
 üretimde alan boşsa istek `403` alır, o yüzden widget'ı en baştan takın.
+
+### B-051 · CV yükleme telde — bir uç, beş ret, bir iş
+**Since:** commit <sha> · Adım 3.4 · **Spec:** `spec/07-subsystems.md` § 31.2, § 31.6.1
+
+**`POST /api/v1/profile/import`**, `multipart/form-data`, tek parça: `file`.
+Cevap **`202` + `Location: /api/v1/jobs/{id}`** ve gövdede `jobId` — üretimle
+**birebir aynı kalıp**, yani `AcceptedJobResponse` ve SSE akışı sizde zaten var.
+
+**`Idempotency-Key` gönderin.** Yükleme, kötü bir bağlantının en kolay
+tekrarlattığı istek, ve profil çıkarımının günlük hakkı üründeki **en küçük**
+hak. Aynı anahtarla ikinci istek aynı işi döndürüyor ve ikinci birim
+harcanmıyor.
+
+**Beş ret, hepsi senkron** — dosya hakkında karar verilebilecek her şey 202'den
+önce veriliyor, sekiz saniye sonra düşen bir işle değil:
+
+| Kod | HTTP | Ne yapmalı |
+|---|---|---|
+| `UNSUPPORTED_DOCUMENT` | 415 | **`params.accepted`'ı okuyun** — kabul edilen uzantı listesi orada |
+| `DOCUMENT_TOO_LARGE` | 413 | `params.limitBytes` |
+| `PDF_ENCRYPTED` | 422 | "açık bir kopya yükleyin" |
+| `PDF_NOT_TEXT_BASED` | 422 | "taranmış görsel olabilir; metin tabanlı PDF ya da elle giriş" |
+| `EXTRACTION_EMPTY` | 422 | "bilgi çıkaramadık" → manuel form |
+| `PROFILE_QUOTA_EXCEEDED` | 429 | `params.limit` + `resetsAt`, ve `Retry-After` başlığı |
+
+**Dosya seçicinin `accept` listesini gömmeyin.** `415`'in `params.accepted`'ı
+kabul edilen uzantıları yayınlıyor (`pdf`, `docx`, `tex`, `txt`, `md`); tek
+sahibi sunucu, ve bir biçim eklendiğinde mesajınız sizin sürümünüzü beklemiyor.
+
+**İşin terminal olayı** şunları taşıyor: `profileId`, `sectionCount`,
+`atomCount`, `warningCount`, `detectedLanguage`. `warningCount` orada, çünkü
+§ 31.6'nın gözden geçirme ekranı **sorunlu bölümleri açık** başlatmalı ve bunu
+profili çekmeden önce bilmeniz gerekiyor.
+
+**İş de başarısız olabilir**, ve üçü sizin: `LANGUAGE_UNDETECTED` (422,
+`params.detectedCandidates` — en fazla tek elemanlı; kullanıcıya dili sorun),
+`EXTRACTION_EMPTY` (422 → manuel form), `ALL_PROVIDERS_UNAVAILABLE` (503 →
+tekrar dene; bu **tekrar edilebilir** olan tek ret).
+
+**İki şey henüz yok, ikisi de sizde bir şey değiştirmiyor:** arka plandaki
+embedding ve ölçüm tetiklemesi (§ 31.6'nın `t=25s` kutusu) bir sonraki dilimde;
+`local-fake` için gerçek bir fixture da orada. Bugün yerel geliştirmede çıkan
+profil şema şeklinde ama anlamsız — **ucun sözleşmesi doğru, içeriği değil.**
 
 ---
 
