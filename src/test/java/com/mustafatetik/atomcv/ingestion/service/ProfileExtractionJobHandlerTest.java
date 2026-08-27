@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
 import com.mustafatetik.atomcv.billing.QuotaService;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.ingestion.extraction.DocumentFormat;
 import com.mustafatetik.atomcv.ingestion.extraction.ExtractedText;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
@@ -31,6 +32,9 @@ import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
+import com.mustafatetik.atomcv.shared.security.ProfileRef;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -54,14 +58,24 @@ class ProfileExtractionJobHandlerTest {
 
     private static final UUID USER = UUID.randomUUID();
 
+    private static final QuotaSubject ALLOWANCE =
+            QuotaSubject.of(UserContext.of(USER));
+
+    private static final AnonymousSessionId SESSION =
+            AnonymousSessionId.of("an-anonymous-session");
+
+    private static final QuotaSubject ADDRESS = QuotaSubject.ofAddress("198.51.100.7");
+
     private final ProfileStructuring structuring = mock(ProfileStructuring.class);
     private final ProfileNormalizer normalizer = mock(ProfileNormalizer.class);
     private final ProfileWriter writer = mock(ProfileWriter.class);
     private final QuotaService quotas = mock(QuotaService.class);
     private final JobQueue queue = mock(JobQueue.class);
 
+    private final EphemeralProfileWriter ephemeral = mock(EphemeralProfileWriter.class);
+
     private final ProfileExtractionJobHandler handler = new ProfileExtractionJobHandler(
-            structuring, normalizer, writer, quotas, queue,
+            structuring, normalizer, writer, ephemeral, quotas, queue,
             Clock.fixed(Instant.parse("2026-08-27T09:00:00Z"), ZoneOffset.UTC));
 
     private final List<JobProgress> reported = new ArrayList<>();
@@ -176,7 +190,7 @@ class ProfileExtractionJobHandlerTest {
 
         handler.handle(job(), reported::add);
 
-        verify(quotas).refund(any(), eq(QuotaMetric.PROFILE_EXTRACT));
+        verify(quotas).refund(eq(ALLOWANCE), eq(QuotaMetric.PROFILE_EXTRACT));
         verify(writer, never()).write(any(), any());
         // And nothing is queued to embed a profile that was never written.
         verify(queue, never()).enqueue(any());
@@ -223,26 +237,129 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * Nothing enqueues an anonymous extraction yet. Refusing beats writing a
-     * profile that would belong to nobody and be readable by everybody.
+     * A job belonging to neither an account nor a session. {@code JobOwner}
+     * makes that unconstructable, so a row like this was written before the
+     * type existed or by hand — and a profile written for nobody would be
+     * readable by everybody.
      */
     @Test
-    void anExtractionWithNoOwnerIsRefusedRatherThanGivenOne() {
+    void anExtractionWithNoOwnerAtAllIsRefusedRatherThanGivenOne() {
         var orphan = new Job(JobType.PROFILE_EXTRACT, null,
-                ProfileExtractionPayload.of(document()).asMap(), Instant.EPOCH);
+                ProfileExtractionPayload.of(document(), ALLOWANCE).asMap(), Instant.EPOCH);
 
         var failed = (JobOutcome.Failed) handler.handle(orphan, reported::add);
 
         assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         assertThat(failed.retryable()).isFalse();
         verify(writer, never()).write(any(), any());
+        verify(ephemeral, never()).write(any(), any());
+    }
+
+    // -- the anonymous half (Bolum 9, Adim 3.6) ----------------------------
+
+    /**
+     * <strong>The promise of Bolum 9, at the one line that could break it.</strong>
+     * Somebody who has not signed up gets a profile and leaves no row behind,
+     * and there is exactly one place that decides which of the two writers
+     * runs. A branch that fell through to the persistent one would keep every
+     * visible behaviour and quietly write a stranger's CV into the database.
+     */
+    @Test
+    void ananonymousUploadIsWrittenToTheEphemeralStoreAndNowhereElse() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+
+        JobOutcome outcome = handler.handle(anonymousJob(ADDRESS), reported::add);
+
+        assertThat(outcome).isInstanceOf(JobOutcome.Completed.class);
+        verify(ephemeral).write(eq(ProfileRef.ephemeral(SESSION)), any());
+        verify(writer, never()).write(any(), any());
+    }
+
+    /**
+     * The terminal event is the same event, and it has to be: Bolum 30.6's
+     * client renders one screen from it, and an anonymous profile that
+     * answered without a {@code profileId} would have nowhere to send the
+     * person next.
+     */
+    @Test
+    void ananonymousUploadAnswersWithTheProfileTheStoreHolds() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+
+        var result = ((JobOutcome.Completed)
+                handler.handle(anonymousJob(ADDRESS), reported::add)).result();
+
+        assertThat(result).containsEntry("profileId",
+                ProfileRef.ephemeral(SESSION).id().toString());
+        assertThat(result).containsEntry("atomCount", 5);
+    }
+
+    /**
+     * No embedding, no measurement. Both write to rows an anonymous profile
+     * does not have; queueing them would fail a job that had already
+     * succeeded, and the person would be told their CV did not import.
+     */
+    @Test
+    void nobackgroundWorkIsQueuedForAProfileWithNoRows() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+
+        handler.handle(anonymousJob(ADDRESS), reported::add);
+
+        verify(queue, never()).enqueue(any());
+    }
+
+    /**
+     * <strong>Bolum 44.2, and the reason the payload carries the subject at
+     * all.</strong> An anonymous upload is paid for by an address, which the
+     * worker cannot see — it runs outside the request. Refunding the wrong
+     * subject is worse than not refunding: it credits somebody who never
+     * spent, and leaves the person who did still paying for a failure.
+     */
+    @Test
+    void arefusedAnonymousExtractionGivesTheAddressItsAllowanceBack() {
+        when(structuring.structure(any(), any()))
+                .thenReturn(Result.err(new PipelineError.NothingExtracted()));
+
+        handler.handle(anonymousJob(ADDRESS), reported::add);
+
+        verify(quotas).refund(eq(ADDRESS), eq(QuotaMetric.PROFILE_EXTRACT));
+        verify(ephemeral, never()).write(any(), any());
+    }
+
+    /**
+     * The prompt experiment of Bolum 53.3 buckets by caller, and an anonymous
+     * caller's identifier is the session cookie. It is bucketed by the profile
+     * id derived from it instead — equally stable, and not a credential being
+     * passed around as a name.
+     */
+    @Test
+    void ananonymousCallerIsBucketedByProfileAndNotByTheirCookie() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+
+        handler.handle(anonymousJob(ADDRESS), reported::add);
+
+        var bucketKey = ArgumentCaptor.forClass(String.class);
+        verify(structuring).structure(any(), bucketKey.capture());
+        assertThat(bucketKey.getValue())
+                .isEqualTo(ProfileRef.ephemeral(SESSION).id().toString())
+                .isNotEqualTo(SESSION.value());
     }
 
     // -- fixtures ----------------------------------------------------------
 
     private static Job job() {
         return new Job(JobType.PROFILE_EXTRACT, USER,
-                ProfileExtractionPayload.of(document()).asMap(), Instant.EPOCH);
+                ProfileExtractionPayload.of(document(), ALLOWANCE).asMap(), Instant.EPOCH);
+    }
+
+    private static Job anonymousJob(QuotaSubject allowance) {
+        Job job = new Job(JobType.PROFILE_EXTRACT, null,
+                ProfileExtractionPayload.of(document(), allowance).asMap(), Instant.EPOCH);
+        job.setAnonSessionId(SESSION.value());
+        return job;
     }
 
     private static ExtractedText document() {

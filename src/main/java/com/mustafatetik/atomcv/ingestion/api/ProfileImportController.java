@@ -1,16 +1,21 @@
 package com.mustafatetik.atomcv.ingestion.api;
 
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
+import com.mustafatetik.atomcv.identity.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.ingestion.service.ProfileImportService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -86,15 +91,31 @@ public class ProfileImportController {
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AcceptedJobResponse> importCv(
             @RequestPart("file") MultipartFile file,
-            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            HttpServletRequest request) {
 
-        Job job = imports.importCv(currentUser.require(),
+        JobOwner owner = JobOwner.of(currentUser);
+        Job job = imports.importCv(owner, allowanceFor(owner, request),
                 file.getOriginalFilename(), file.getContentType(), bytesOf(file),
                 idempotencyKey);
 
         return ResponseEntity.accepted()
                 .location(URI.create("/api/v1/jobs/" + job.getId()))
                 .body(AcceptedJobResponse.of(job));
+    }
+
+    /**
+     * Whose daily ceiling this upload spends (Bolum 44.1).
+     *
+     * <p>An account spends its own; an anonymous caller spends their address's.
+     * Not their session's, and Bolum 44.1 decides it: a session is a cookie,
+     * and counting by one would hand an unlimited allowance to whoever clears
+     * theirs.
+     */
+    private static QuotaSubject allowanceFor(JobOwner owner, HttpServletRequest request) {
+        return owner.isAnonymous()
+                ? QuotaSubject.ofAddress(ClientIp.of(request))
+                : QuotaSubject.of(UserContext.of(owner.userId()));
     }
 
     /**

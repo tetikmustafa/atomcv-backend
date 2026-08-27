@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.ingestion.service;
 
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.ingestion.extraction.DocumentFormat;
 import com.mustafatetik.atomcv.ingestion.extraction.ExtractedText;
 import java.util.LinkedHashMap;
@@ -22,15 +23,18 @@ import java.util.Map;
  * the heuristic from the text would give the same answer today and would be a
  * second place for it to be defined.
  */
-record ProfileExtractionPayload(String text, DocumentFormat format, boolean looksScrambled) {
+record ProfileExtractionPayload(
+        String text, DocumentFormat format, boolean looksScrambled, QuotaSubject allowance) {
 
     private static final String TEXT = "text";
     private static final String FORMAT = "format";
     private static final String SCRAMBLED = "looksScrambled";
+    private static final String ALLOWANCE_TYPE = "allowanceType";
+    private static final String ALLOWANCE_ID = "allowanceId";
 
-    static ProfileExtractionPayload of(ExtractedText extracted) {
+    static ProfileExtractionPayload of(ExtractedText extracted, QuotaSubject allowance) {
         return new ProfileExtractionPayload(
-                extracted.text(), extracted.format(), extracted.looksScrambled());
+                extracted.text(), extracted.format(), extracted.looksScrambled(), allowance);
     }
 
     /**
@@ -43,6 +47,14 @@ record ProfileExtractionPayload(String text, DocumentFormat format, boolean look
         payload.put(TEXT, text);
         payload.put(FORMAT, format.name().toLowerCase(Locale.ROOT));
         payload.put(SCRAMBLED, looksScrambled);
+        // Whose ceiling this took, so the worker can give it back.
+        //
+        // Carried rather than recomputed: the allowance was taken at the door
+        // from the caller's address, and the worker has no request to read one
+        // from. Refunding a different subject than the one that paid is worse
+        // than not refunding at all — it credits somebody who never spent.
+        payload.put(ALLOWANCE_TYPE, allowance.type().wireValue());
+        payload.put(ALLOWANCE_ID, allowance.id());
         return payload;
     }
 
@@ -52,7 +64,12 @@ record ProfileExtractionPayload(String text, DocumentFormat format, boolean look
                 DocumentFormat.valueOf(
                         String.valueOf(payload.getOrDefault(FORMAT, "txt"))
                                 .toUpperCase(Locale.ROOT)),
-                Boolean.TRUE.equals(payload.get(SCRAMBLED)));
+                Boolean.TRUE.equals(payload.get(SCRAMBLED)),
+                new QuotaSubject(
+                        QuotaSubject.Type.valueOf(String.valueOf(
+                                payload.getOrDefault(ALLOWANCE_TYPE, "user"))
+                                .toUpperCase(Locale.ROOT)),
+                        String.valueOf(payload.getOrDefault(ALLOWANCE_ID, ""))));
     }
 
     ExtractedText asExtractedText() {
