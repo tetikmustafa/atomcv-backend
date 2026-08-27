@@ -73,64 +73,33 @@ bozucu düzeltir.
 
 ---
 
-## Aşama 3 kayıtları
+## Adım 3.3 — kimlik · kapandı
 
-**`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Frontend
-gerçek uca karşı üç ilanla denedi, üçünde de model uzun beceri adlarını
-normalleştirdi. Kapı bir enjeksiyon tripwire'ı; uslu bir modelle açılmaması
-beklenen davranış. `PlausibilityGateTest` onu kurgulanmış analizle sınıyor.
-**Bunu "çalışmıyor" diye tamir etmeye kalkma.**
+Kayıtlar `archive/stage-3-identity.md`'de; kalıcı kararlar `spec/`'te
+(§ 40.4.1, § 40.5.1, § 40.6.1, § 46.5). **`Contact.linkedin` CV alanı
+LinkedIn girişinin kaldırılmasıyla ilgisiz ve duruyor** — karıştırılmasın.
+Aşağıdakiler hâlâ canlı.
 
-§ 18.4'ün `requiredSkills`/`allSkills()` düzeltmesi `spec/05-pipeline-a-c.md`
-§ 18.4'e işlendi. `F-008`…`F-016` kapandı, kayıtları
-`archive/stage-3-frontend-findings.md`'de (2026-08-25).
+**`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Kapı bir
+enjeksiyon tripwire'ı; uslu bir modelle açılmaması beklenen davranış.
+`PlausibilityGateTest` onu kurgulanmış analizle sınıyor. **Bunu "çalışmıyor"
+diye tamir etmeye kalkma.**
 
-### Adım 3.3 · LinkedIn ve OTLP adlandırması
+**`citext` kolonu `varchar` parametreyle aranırsa büyük/küçük harf duyarlı
+arar.** UNIQUE index duyarsız korur, JPA'nın türettiği sorgu duyarlı arar;
+çelişince var olan satır bulunamaz ve insert 500 verir. Çözüm
+`CAST(:x AS citext)` — **`users.email` ve `email_suppressions.email`'e dokunan
+her yeni sorguda.**
 
-**Sapma — LinkedIn bir kimlik sağlayıcısı değil artık.** `spec/`'in altı
-dosyasına ve `V2`'ye işlendi. **`Contact.linkedin` CV alanı bununla ilgisiz ve
-duruyor** — bir sonraki oturum ikisini karıştırmasın.
+**`LocalDevUser` ve `LocalDevSessions` hâlâ duruyor.** Entegrasyon paketi
+çerezsiz istek atıyor; `LOCAL_DEV_SESSION=false` ile kapatılabiliyor.
 
-**Düzeltme — `spec/11-operations.md` § 46.5 `AXIOM_TOKEN` / `AXIOM_DATASET`
-diyordu, kod `OTLP_*` okuyor.** Kod doğruydu ve spec koda uyduruldu: isim
-satıcının değil telin adı. İki tuzak § 46.5'e yazıldı — `OTLP_AUTHORIZATION`
-kendi `Bearer ` önekini taşır, ve `micrometer-registry-otlp` **metrik**
-gönderdiği için URL sağlayıcının *metrics* ucu olmalı; trace ucuna giden
-metrik sessizce reddedilir, log'a hiçbir şey düşmez.
-
-**`SESSION_SECRET` `.env.example`'dan silindi.** İmzalanan bir şey yok;
-kullanılmayan bir sır yalnızca sızabilecek bir sırdır. Yerine
-`SESSION_COOKIE_DOMAIN` ve `SESSION_COOKIE_SECURE` geldi.
-
-## Aşama 3 · kimlik dilimleri
-
-Dilim 1 (oturum+CSRF) ve dilim 2 (OAuth) kapandı; kayıtları
-`archive/stage-3-identity.md`'de, kalıcı kararları `spec/`'te. Aşağıdakiler
-hâlâ canlı.
-
-**Düzeltme (canlı) — `citext` kolonu `varchar` parametreyle aranırsa
-büyük/küçük harf duyarlı arar.** UNIQUE index duyarsız korur, JPA'nın türettiği
-sorgu duyarlı arar; ikisi çelişince var olan satır bulunamaz ve insert
-`users_email_key`'de 500 verir. Çözüm `CAST(:x AS citext)`. **`users.email` ve
-`email_suppressions.email`'e dokunan her yeni sorguda geçerli.**
-
-**Sapma (canlı) — `LocalDevUser` ve `LocalDevSessions` hâlâ duruyor.**
-Entegrasyon paketinin sınıfları çerezsiz istek atıyor; gerçek oturuma taşımak
-ayrı bir test-altyapısı dilimi. `LOCAL_DEV_SESSION=false` ile kapatılabiliyor.
-
-### Dilim 3-4 — magic link, rate limit, Turnstile
-
-Kapandı; kayıtları `archive/stage-3-identity.md`'de, kalıcı kararları
-`spec/10-security.md` § 40.4.1 ve § 40.5.1'de. İki şey hâlâ canlı:
-
-**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da siliyor.**
-Sınıfın çoğu testi ilk satırında bağlantı istiyor ve pencere üçte doluyor;
-silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
+**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını siliyor.**
+Silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
 **Yeni bir kimlik testi yazan bunu unutmasın.**
 
-**`/auth/verify` limitsiz.** Verifier 32 rastgele bayt; Nginx'in `auth`
-zone'u (1r/s) önünde. Bugün koruduğu bir şey yok.
-
+**`/auth/verify` limitsiz.** Verifier 32 rastgele bayt; Nginx'in `auth` zone'u
+(1r/s) önünde. Bugün koruduğu bir şey yok.
 
 ## Adım 3.4 — CV yükleme ve çıkarım · 4/4 · kapandı
 
@@ -177,22 +146,36 @@ bakılacak yer beşinci bir bağlam, kod değil.**
 metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
 ateşlenir. **`make record` geliştiricinin anahtarını istiyor.**
 
-## Adım 3.5 — çok dillilik · 2/2 · kapandı
+## Adım 3.5 — çok dillilik · kapandı
 
-On iki karar § 32.2.1 ve § 32.3.1'e işlendi.
+On iki karar § 32.2.1 ve § 32.3.1'de; inşa kaydı
+`archive/stage-3-multilingual.md`'de.
 
-**Bulgu — § 32.3'ün sıralaması zaten doğruydu, eksik olan iddiaydı.** Seçim
-hedef dilin varyantından maliyet okuyor ve bunu hiçbir test tutmuyordu; var
-olan test yalnız *hangi varyantın seçildiğini* kontrol ediyordu. **Ders
-tekrarı: doğru davranan kod, korunan kod değildir.**
+**Ders (bu oturumda iki kez):** *doğru davranan kod, korunan kod değildir.*
+§ 32.3'ün sıralaması Aşama 2'den beri doğruydu ve tek bir yanlış satır bütün
+paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
 
-**"Yeniden üret" ucu açıldı:** `PATCH` gövdesinde açık `userEdited: false`.
-`true` reddediliyor — `B-052` güncellenmeli, düğme artık bağlanabilir.
+**Canlı — `SkillNames.canonical` dört çağıranın ortak kuralı**, ve `RunMarking`
+artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 
-**Canlı — hedef dil sistem yarısında.** Ön ek dile göre değişiyor; bu bilinçli
-(§ 32.2.1). **Yeni bir dil eklemek yeni bir cache ön eki demek**, çağrı başına
-bir tane değil.
+## Adım 3.6 — anonim mod · 1/3
 
-**Canlı — `RunMarking` artık `profile.domain.content`'te** ve iki aşama
-kullanıyor. Faz D üçüncüsü olacak.
+**Dilim 1 (anonim oturum) indi**; altı karar § 35.7.1'e işlendi.
+**Dilim 2:** `EphemeralProfileStore` + `ProfileRef.Scope.EPHEMERAL` + gizlilik
+testi (DB'ye hiçbir satır yazmamalı). **Dilim 3:** IP bazlı kota ve yükseltme
+akışı.
+
+**Canlı — anonim oturumun kullanıcı indeksi yok.** Kullanıcısı olmadığı için
+"bu kişinin bütün oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek
+şey kendi TTL'i.
+
+**Canlı — testler kimliksiz duruma çözülmeyen bir çerezle ulaşıyor**, ikinci bir
+bağlamla değil. `local` altında çerezsiz her istek dev kullanıcısı; bayat bir
+çerez ise **bilinçli olarak** local-dev isteği sayılmıyor. Beşinci bir Spring
+bağlamı, CI'ın `NoClassDefFoundError`'ı dönerse ilk şüphelenilecek şey.
+
+**Dikkat — `git checkout --` ekilmiş bir ihlali geri alırken commit edilmemiş
+gerçek değişikliği de alır.** Bu oturumda bir kez oldu ve fark edilmesi
+tesadüftü. **İhlal denemesinden dönerken yedek kopyadan restore et**, git'ten
+değil.
 
