@@ -1303,6 +1303,25 @@ double cost = atom.variantFor(targetLang)
 ℹ Türkçe metinler daha uzun olduğu için bu sürümde 2 madde daha az yer aldı.
 ```
 
+#### 32.3.1 Kararlar (Adım 3.5, dilim 2)
+
+**Sıralama zaten doğruydu; eksik olan iddiaydı.** Seçim hedef dildeki
+sözcüklemeyi alıp **onun kendi ölçülmüş yüksekliğini** okuyor. Var olan test
+doğru varyantın seçildiğini tutuyordu; ötekinin maliyetini yüklemek o testi
+geçerdi — ve bu tam olarak bölümün anlattığı hata: İngilizce maliyetle
+optimize edilmiş, Türkçe render edilince taşan bir sayfa. İki test artık
+ikisini birden tutuyor.
+
+**⚠️ testi: aynı bütçe daha az Türkçe madde tutuyor.** İki dilin farklı
+kümeler seçmesi düzeltilecek bir kusur değil — **madde değil punto** ölçen bir
+sınırın anlamı bu, ve alternatifi taşan bir belgedir.
+
+**`userEdited` yalnız temizlenebilir, ve yalnız bilerek.** § 32.2'nin
+"İngilizceyi yeniden üret" düğmesi bu; temizlemek bayat bir sözcüklemeyi
+**hemen** kuyruğa alıyor, çünkü kaynak aylarca düzenlenmeyebilir ve sözcükleme
+şimdi bayat. `true` göndermek **reddediliyor**: birinin adına yazarlık iddia
+etmek, bir makine çevirisini insan adının arkasına saklayabilecek tek yön.
+
 ### 32.4 Ölçüm
 
 Her dil × her customization için ayrı ölçüm gerekir. **İyi haber:** tek ölçüm derlemesinde tüm dillerin atomları birlikte ölçülebilir (ayrı `\savebox` blokları). 2 dil = 1 derleme, 2× atom.

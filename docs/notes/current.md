@@ -177,16 +177,17 @@ bakılacak yer beşinci bir bağlam, kod değil.**
 metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
 ateşlenir. **`make record` geliştiricinin anahtarını istiyor.**
 
-## Adım 3.5 — çok dillilik · 1/2
+## Adım 3.5 — çok dillilik · 2/2 · kapandı
 
-**Dilim 1 (senkronizasyon + çeviri işi) indi**; dokuz karar § 32.2.1'e işlendi.
-**Dilim 2:** dil-farkındalıklı Faz C (§ 32.3) ve TR uzunluk farkı testi.
+On iki karar § 32.2.1 ve § 32.3.1'e işlendi.
 
-**Açık — "İngilizceyi yeniden üret" düğmesinin ucu yok.** `userEdited` bir kez
-`true` olunca geri alınamıyor: varyant `PATCH`'i içerik yazınca onu set ediyor
-ve sıfırlayan bir yol yok. `B-052` frontend'e "düğmeyi çiz, bağlama" diyor.
-**Dilim 2'de bir uç açılmalı** — muhtemelen `PATCH` gövdesinde açık bir
-`userEdited: false`, çünkü sessizce sıfırlamak § 32.2'nin korumasını delerdi.
+**Bulgu — § 32.3'ün sıralaması zaten doğruydu, eksik olan iddiaydı.** Seçim
+hedef dilin varyantından maliyet okuyor ve bunu hiçbir test tutmuyordu; var
+olan test yalnız *hangi varyantın seçildiğini* kontrol ediyordu. **Ders
+tekrarı: doğru davranan kod, korunan kod değildir.**
+
+**"Yeniden üret" ucu açıldı:** `PATCH` gövdesinde açık `userEdited: false`.
+`true` reddediliyor — `B-052` güncellenmeli, düğme artık bağlanabilir.
 
 **Canlı — hedef dil sistem yarısında.** Ön ek dile göre değişiyor; bu bilinçli
 (§ 32.2.1). **Yeni bir dil eklemek yeni bir cache ön eki demek**, çağrı başına
