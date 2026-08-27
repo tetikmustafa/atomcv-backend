@@ -801,6 +801,54 @@ Metin tabanlı bir PDF yükleyebilir veya bilgilerini elle girebilirsin.
 ```
 OCR kapsam dışı.
 
+#### 31.3.1 Kararlar (Adım 3.4, dilim 1)
+
+**Dosya hiçbir yere yazılmıyor.** § 31 nereye gittiğini hiç söylemiyor; karar
+şu: metin çıkarımı istek içinde koşuyor ve bir sonraki aşamaya yalnız **metin**
+geçiyor. Sebebi § 31.10'un ilk üç satırı — şifreli PDF, taranmış PDF, sıfır
+atom — hepsi kullanıcının hemen davranabileceği şeyler; kuyruğa alınmış bir
+çıkarımda bunlar sekiz saniye sonra düşen bir iş olarak gelirdi. Yan
+kazanç: nesne deposu projeye hiç girmiyor ve CV diske hiç düşmüyor.
+**§ 31.10'un "çıkarım timeout → retry ×3" satırı LLM yapılandırmasına aittir**
+(§ 31.4), PDFBox'a değil.
+
+**Merdivenin sırası tasarımın kendisi.** Uzantı biçimi *seçer*; bildirilen
+medya tipi yalnızca **çelişebilir**; boyut baytları kimse okumadan önce
+bakılır; imza okuyucudan önce bakılır. Tarayıcılar `.tex` ve `.md` için
+rutin olarak `application/octet-stream` gönderdiğinden **tanınmayan bir
+bildirim sessizliktir, itiraz değil** — onu itiraz saymak sorunsuz dosyaları
+reddederdi.
+
+**Metin biçimlerinin imzası yok, yerine NUL baytı var.** İlk kilobaytta bir
+NUL: hiçbir metin dosyasında yok, hemen her ikilide var. Çözmeyi denemek
+değil, çünkü `new String(bytes, UTF_8)` bozuk diziyi hataya değil değiştirme
+karakterine çevirir — bir JPEG'e "evet, metin" der.
+
+**İki yeni hata kodu.** EK D.6 § 31.10'un tablosunu kodluyor, o da dosya
+kabul edildikten *sonra* başlıyor; ilk iki basamağın kodu yoktu.
+`UNSUPPORTED_DOCUMENT` (415) kabul edilen uzantı listesini yayınlıyor —
+liste tek sahipli olsun diye — ve `DOCUMENT_TOO_LARGE` (413) yalnız sınırı
+yayınlıyor, gönderilen boyutu değil: Spring çok büyük bir multipart'ı baytlar
+sayılmadan reddediyor ve bazen doğru olan bir sayı hatada hiç olmamasından
+kötüdür.
+
+**Metinsiz PDF "taranmış", metinsiz başka her şey "boş".** § 31.10 ikisini
+burada ve yalnız burada ayırıyor, ve ayrım kullanıcının okuduğu cümle:
+"bu taranmış bir görsel olabilir, metin tabanlı bir PDF yükle" onu aynı
+dosyayı ikinci kez denemekten alıkoyan şey.
+
+**§ 31.3'ün karışık metin sezgisinin iki terimi de tanımsızdı.**
+`orphanWordRatio` **tek kelimelik satırların oranı** olarak okundu — dizgicinin
+"orphan"ı, ve sütun körü bir çıkarımın ürettiği şeyin tarifi. Sonuç bir
+**not**, ret değil: § 31.3 onu yapılandırma prompt'una bir cümle olarak
+taşıyor, ve sırası bozuk olabileceği söylenmiş bir model CV'yi yine okuyabilir.
+
+**Markdown işaretleri sökülmüyor, LaTeX komutları söküllüyor.** İkisi zıt
+göründüğü için: Markdown bir *taslak* — model `## Deneyim`'i başlık,
+`- yaptım`ı madde olarak okur; LaTeX ise bir dizgi programıdır ve komutları
+prose değildir. LaTeX tarafında argüman korunur, komut atılır (kalın yazılmış
+bir isim yine isimdir), preamble ise bütünüyle atılır.
+
 ### 31.4 LLM ile yapılandırma (tek çağrı)
 
 ```json

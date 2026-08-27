@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-27** · **3.3 kapandı — dilim 4 (rate limit + Turnstile) indi** · frontend'de açık: **`B-044`**–**`B-050`**, yedisi de bekliyor
+**2026-08-27** · **3.3 kapandı; 3.4 başladı — CV metin çıkarımı indi** · frontend'de açık: **`B-044`**–**`B-050`**, yedisi de bekliyor
 
 ---
 
@@ -17,17 +17,17 @@
 | 3.1 dış servis hesapları | ✅ hesaplar açıldı, `.env` dolduruldu |
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC saati) |
 | 3.3 kimlik doğrulama | ✅ 4/4 — oturum+CSRF, OAuth, magic link, rate limit+Turnstile |
+| 3.4 CV yükleme ve çıkarım | 🔄 1/4 — doğrulama+çıkarım ✅, LLM yapılandırma ⬜, normalizasyon ⬜, uç+iş ⬜ |
 
-**Aşama 3 planı:** § XI-A.6; Aşama 2'nin kaydı `notes/archive/stage-2.md`'de.
-**Oturum:** Redis + `HttpOnly` `sid`, kayan TTL, sunucuda iptal, CSRF
-çift-gönderim. **Üç giriş yolu:** Google, GitHub, magic link. `POST
-/auth/magic-link` artık üç katman rate limit + Turnstile arkasında (§ 40.5.1),
-yani § 40.4.1'in üretim kısıtı kalktı. **Üretimde iki değişken zorunlu:**
-`TURNSTILE_SECRET_KEY` (yoksa açılmaz) ve `FORWARD_HEADERS_STRATEGY=framework`
-(yoksa IP katmanı tek kova olur) — § 46.5.
+**Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
+magic link — `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
+(§ 40.5.1) ve § 40.4.1'in üretim kısıtı kalktı. **Üretimde iki değişken
+zorunlu:** `TURNSTILE_SECRET_KEY` (yoksa açılmaz) ve
+`FORWARD_HEADERS_STRATEGY=framework` (yoksa IP katmanı tek kova olur) — § 46.5.
+**Çıkarım:** PDF/DOCX/TEX/TXT/MD, dosya hiçbir yere yazılmıyor (§ 31.3.1);
+yükleme ucu dilim 4'te, **`B-051`** onunla açılacak.
 
-**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok.
-**Test:** 715 birim · 308 entegrasyon · 48 latex — 0 hata, 0 atlanan
+**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 748 birim · 310 entegrasyon · 48 latex — 0 hata, 0 atlanan
 
 ## Frontend — `atomcv-frontend`
 
@@ -35,8 +35,8 @@ yani § 40.4.1'in üretim kısıtı kalktı. **Üretimde iki değişken zorunlu:
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
 
-**`B-044`-`B-050` açık, hiçbiri ACK almadı** — `to-frontend.md` bu yüzden 145
-satır. `/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
+**`B-044`-`B-050` açık, hiçbiri ACK almadı** — `to-frontend.md` bu yüzden 145 satır.
+`/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
 **Test:** 401 birim · 25 e2e · **bundle** profil 250.7 / üretim 214.8 KB.
 **Aşama 2 gerçek uca karşı denetlendi (2026-08-25): 26/26** — yalnız
 `suspicious_output` tetiklenemedi, ve o beklenen sonuç (`notes/current.md`).
@@ -55,6 +55,6 @@ satır. `/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
 
 ## Sonraki senkronizasyon noktası
 
-**Adım 3.3 bitti, magic link üretime açılabilir.** Frontend `B-044`-`B-050`'yi
-alsın; ilk `ACK`'ler `to-frontend.md`'yi sınırın altına indirir. Sonrası
-**Adım 3.4** — CV yükleme ve çıkarım (§ XI-A.6).
+**Frontend `B-044`-`B-050`'yi alsın**; ilk `ACK`'ler `to-frontend.md`'yi
+sınırın altına indirir. Backend 3.4 dilim 2'ye geçiyor (LLM yapılandırma);
+yükleme sözleşmesi **`B-051`** olarak dilim 4'te gelecek.
