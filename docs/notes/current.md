@@ -180,10 +180,8 @@ sırayı kaydırınca çıktı.
 kotası hazır; `ProfileImportService` ile `ProfileAssembler` yalnız kalıcı yolu
 biliyor. **Anonim kullanıcı oturum alıyor ama CV yükleyemiyor** — dilim 4.
 
-**Canlı — atom id'leri her içe aktarımda yeniden üretiliyor** (Aşama 2'den
-taşınan bulgu). Yükseltme akışı geçici profili kalıcıya çevirirken tam olarak
-buna çarpacak: id'ler değişirse eşitlik bozulur. İçerikten türetilen bir
-bozucu düzeltir.
+**Canlı — atom id'leri her içe aktarımda yeniden üretiliyor.** Yükseltme akışı
+(dilim 5) tam olarak buna çarpacak: id'ler değişirse eşitlik bozulur.
 
 **Canlı — anonim oturumun kullanıcı indeksi yok.** Kullanıcısı olmadığı için
 "bu kişinin bütün oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek
