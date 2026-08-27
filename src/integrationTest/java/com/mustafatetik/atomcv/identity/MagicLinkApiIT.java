@@ -10,6 +10,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.email.EmailMessage;
 import com.mustafatetik.atomcv.email.EmailSender;
+import com.mustafatetik.atomcv.identity.service.SessionStore;
+import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
+import com.mustafatetik.atomcv.ingestion.service.EphemeralProfileWriter;
+import com.mustafatetik.atomcv.profile.domain.Contact;
+import com.mustafatetik.atomcv.profile.domain.SectionKind;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
+import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import jakarta.servlet.http.Cookie;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +83,12 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     @Autowired
     private List<EmailMessage> sent;
 
+    @Autowired
+    private SessionStore sessions;
+
+    @Autowired
+    private EphemeralProfileWriter ephemeral;
+
     /**
      * The counters go too, and not as tidiness.
      *
@@ -90,6 +104,8 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     void clear() {
         sent.clear();
         jdbc.update("DELETE FROM magic_link_tokens");
+        jdbc.update("DELETE FROM profiles WHERE user_id IN "
+                + "(SELECT id FROM users WHERE email LIKE '%@link.test')");
         jdbc.update("DELETE FROM users WHERE email LIKE '%@link.test'");
         Set<String> counters = redis.keys("ratelimit:*");
         if (counters != null && !counters.isEmpty()) {
@@ -143,7 +159,10 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         String[] halves = halvesOfTheLastLink();
 
         MvcResult verified = verify(halves[0], halves[1])
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
+                // Adim 3.6: nothing was carried in, and the client is told so
+                // rather than left to guess from a body that is not there.
+                .andExpect(jsonPath("$.profileUpgrade").value("none"))
                 .andReturn();
 
         Cookie sid = verified.getResponse().getCookie("sid");
@@ -179,7 +198,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     void aSecondUseOfTheSameLinkIsRefused() throws Exception {
         requestLinkFor("ada@link.test");
         String[] halves = halvesOfTheLastLink();
-        verify(halves[0], halves[1]).andExpect(status().isNoContent());
+        verify(halves[0], halves[1]).andExpect(status().isOk());
 
         verify(halves[0], halves[1])
                 .andExpect(status().isBadRequest())
@@ -199,7 +218,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.code").value("MAGIC_LINK_INVALID"));
 
         // A failed guess must not burn the real link.
-        verify(halves[0], halves[1]).andExpect(status().isNoContent());
+        verify(halves[0], halves[1]).andExpect(status().isOk());
     }
 
     @Test
@@ -232,7 +251,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         requestLinkFor("ada@link.test");
         String[] second = halvesOfTheLastLink();
 
-        verify(second[0], second[1]).andExpect(status().isNoContent());
+        verify(second[0], second[1]).andExpect(status().isOk());
 
         verify(first[0], first[1]).andExpect(status().isBadRequest());
     }
@@ -296,6 +315,45 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
 
     // ── fixtures ──────────────────────────────────────────────────────────
 
+    // ── Adim 3.6 ──────────────────────────────────────────────────────────
+
+    /**
+     * <strong>The work follows the person in.</strong> Signing in issues a new
+     * session and a new cookie; the anonymous session id is readable during
+     * that one request and never again, so if the handover did not happen here
+     * it could not happen at all.
+     */
+    @Test
+    void aprofileBuiltWithoutAnAccountIsThereAfterSigningIn() throws Exception {
+        var anonymous = sessions.createAnonymous();
+        var anonymousProfile = ephemeral.write(
+                ProfileRef.ephemeral(AnonymousSessionId.of(anonymous.id())), oneBullet());
+
+        requestLinkFor("carrying@link.test");
+        String[] halves = halvesOfTheLastLink();
+        verify(halves[0], halves[1], new Cookie("sid", anonymous.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profileUpgrade").value("upgraded"));
+
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM profiles p JOIN users u ON u.id = p.user_id
+                WHERE u.email = 'carrying@link.test' AND p.id = ?""",
+                Integer.class, anonymousProfile.profileId())).isEqualTo(1);
+    }
+
+    private static NormalizedProfile oneBullet() {
+        var atom = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Designed the first published algorithm for a machine"),
+                RichContent.EMPTY, List.of("algorithms"), List.of(), List.of(), List.of(),
+                (short) 0);
+        var section = new NormalizedProfile.NormalizedSection(
+                SectionKind.EXPERIENCE, "Experience", (short) 0,
+                List.of(new NormalizedProfile.NormalizedEntry(
+                        "Analytical Engine programmer", "Menabrea", "London",
+                        null, null, (short) 0, List.of(atom))));
+        return new NormalizedProfile("en", Contact.EMPTY, List.of(section), List.of());
+    }
+
     private MvcResult requestLinkFor(String email) throws Exception {
         return mvc.perform(post("/api/v1/auth/magic-link")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -306,10 +364,20 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
 
     private org.springframework.test.web.servlet.ResultActions verify(
             String selector, String verifier) throws Exception {
-        return mvc.perform(post("/api/v1/auth/verify")
+        return verify(selector, verifier, null);
+    }
+
+    /** The cookie matters here: an anonymous session is what the handover reads. */
+    private org.springframework.test.web.servlet.ResultActions verify(
+            String selector, String verifier, Cookie carried) throws Exception {
+        var request = post("/api/v1/auth/verify")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"selector\": \"" + selector + "\", \"verifier\": \""
-                        + verifier + "\"}"));
+                        + verifier + "\"}");
+        if (carried != null) {
+            request = request.cookie(carried);
+        }
+        return mvc.perform(request);
     }
 
     private String[] halvesOfTheLastLink() {

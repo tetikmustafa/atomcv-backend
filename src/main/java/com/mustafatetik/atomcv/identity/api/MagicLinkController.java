@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.identity.api;
 
 import com.mustafatetik.atomcv.identity.api.dto.MagicLinkRequest;
+import com.mustafatetik.atomcv.identity.api.dto.SignInResponse;
 import com.mustafatetik.atomcv.identity.api.dto.VerifyRequest;
 import com.mustafatetik.atomcv.identity.challenge.Challenge;
 import com.mustafatetik.atomcv.identity.domain.Session;
@@ -8,8 +9,10 @@ import com.mustafatetik.atomcv.identity.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
 import com.mustafatetik.atomcv.identity.service.MagicLinkService;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
+import com.mustafatetik.atomcv.identity.service.SignInHandover;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.profile.service.ProfileUpgrade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,13 +44,15 @@ public class MagicLinkController {
     private final SignInRateLimit rateLimit;
     private final Challenge challenge;
     private final SessionCookies cookies;
+    private final SignInHandover handover;
 
     MagicLinkController(MagicLinkService magicLinks, SignInRateLimit rateLimit,
-            Challenge challenge, SessionCookies cookies) {
+            Challenge challenge, SessionCookies cookies, SignInHandover handover) {
         this.magicLinks = magicLinks;
         this.rateLimit = rateLimit;
         this.challenge = challenge;
         this.cookies = cookies;
+        this.handover = handover;
     }
 
     @Operation(
@@ -87,13 +92,17 @@ public class MagicLinkController {
                     them apart tells an attacker which half of a guess was \
                     right.""")
     @PostMapping("/verify")
-    public ResponseEntity<Void> verify(@Valid @RequestBody VerifyRequest request) {
+    public ResponseEntity<SignInResponse> verify(@Valid @RequestBody VerifyRequest request) {
         Optional<Session> session = magicLinks.verify(request.selector(), request.verifier());
         if (session.isEmpty()) {
             throw ApiException.of(ErrorCode.MAGIC_LINK_INVALID);
         }
-        return ResponseEntity.noContent()
+        // Before the cookie is replaced: the anonymous session id is readable
+        // up to this line and never afterwards (Adim 3.6).
+        ProfileUpgrade upgrade = handover.follow(session.get());
+        return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookies.issue(session.get().id()).toString())
-                .build();
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(new SignInResponse(upgrade.wireValue()));
     }
 }

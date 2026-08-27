@@ -194,7 +194,7 @@ class OAuthApiIT extends AbstractIntegrationTest {
         // chain that began at the provider, so the client lands here and asks
         // /auth/session with a same-origin fetch before routing on.
         assertThat(callback.getResponse().getHeader("Location"))
-                .isEqualTo("http://app.test/auth/complete?next=%2Fprofile");
+                .isEqualTo("http://app.test/auth/complete?next=%2Fprofile&profile=none");
 
         String sid = sessionCookieOf(callback);
         assertThat(sid).isNotBlank();
