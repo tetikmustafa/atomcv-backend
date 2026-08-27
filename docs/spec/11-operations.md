@@ -101,6 +101,8 @@ OAUTH_GOOGLE_CLIENT_ID=      OAUTH_GOOGLE_CLIENT_SECRET=
 OAUTH_GITHUB_CLIENT_ID=      OAUTH_GITHUB_CLIENT_SECRET=
 TURNSTILE_SECRET_KEY=        NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 SESSION_COOKIE_DOMAIN=       SESSION_COOKIE_SECURE=true
+FORWARD_HEADERS_STRATEGY=framework
+RATE_LIMIT_SIGN_IN_GLOBAL=200
 
 # Servisler
 RESEND_API_KEY=
@@ -116,6 +118,20 @@ DAILY_BUDGET_USD=40
 256 bitlik opak bir değer ve Redis'te duruyor; imzalanan hiçbir şey yok,
 dolayısıyla imzalayacak bir sır da yok. Kullanılmayan bir sır, yalnızca
 sızabilecek bir sırdır.
+
+**`FORWARD_HEADERS_STRATEGY` üretimde `framework`, ve bu bir tercih değil.**
+Bölüm 40.5'in IP katmanı çağıranın adresine göre kova seçiyor; Nginx'in arkasında
+`getRemoteAddr()` Nginx'i döner. Ayar yapılmazsa **bütün dağıtım tek kovayı
+paylaşır** — yapılandırılmış görünen, testlerini geçen, ve onuncu giriş
+isteğinde herkesi kilitleyen bir limiter. `framework`, Spring'in
+`ForwardedHeaderFilter`'ının isteği başlıklardan yeniden yazmasını sağlar; yalnız
+başlığı proxy koyduğu için güvenlidir. **Porta doğrudan ulaşılabilen hiçbir yerde
+`framework` yazılmaz** — orada başlık istemcinin uydurabileceği bir şeydir ve
+her istemci kendi kovasını seçer. Yerelin varsayılanı bu yüzden `none`.
+
+**`TURNSTILE_SECRET_KEY` üretimde zorunlu ve yokluğunda uygulama açılmaz**
+(§ 40.5.1). Bu değişkeni unutmuş bir dağıtım kusursuz çalışır ve magic link ucu
+korumasız durur; davranıştan anlaşılmayan tek eksik, açılışta söylenmek zorunda.
 
 **Gözlemlenebilirlik değişkenleri `AXIOM_*` değil `OTLP_*`.** Kod
 `management.otlp.metrics.export.*` altından okuyor, ve isim satıcının değil

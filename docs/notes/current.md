@@ -22,8 +22,10 @@ bekliyor.
 `UserContext` tutan fazlardan çağrılıyor ama aşağı geçirmiyor. Günlük toplam
 (bütçe freni) bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
 
-**Sıkılaştırılacak rate limiter yok.** § 44.3 anormal kullanıcı için bunu
-istiyor; anomali sinyalleri şimdilik yalnız raporluyor.
+**Sıkılaştırılacak rate limiter hâlâ yok — ama artık bir limiter var.**
+Dilim 4'ün getirdiği `RateLimiter` genel: katman adı, konu, sınır ve pencere
+alıyor. § 44.3'ün istediği şey ağır kullanıcının **üretim** hakkını kısmak, ve
+onu bağlayacak yer `QuotaService`. Anomali sinyalleri hâlâ yalnız raporluyor.
 
 ## Aşama 1'den taşınan kısıtlar — hâlâ açık
 
@@ -129,28 +131,55 @@ ayrı bir test-altyapısı dilimi. `LOCAL_DEV_SESSION=false` ile kapatılabiliyo
 
 ### Dilim 3 — magic link
 
-**Ekleme — magic link hesap da yaratıyor, ve satır doğrulanmadan önce
-doğuyor.** Ürün dokümanı onu hesap oluşturma yolu sayıyor, ve
-`magic_link_tokens.user_id` `NOT NULL` olduğu için kullanıcı satırı istek
-anında var olmak zorunda. `email_verified = false` ile duruyor; bağlantıyı
-açmak kanıt, ve doğrulama o an düşüyor. **Sonucu:** herhangi biri, sahibi
-olmadığı bir adres için satır yaratabiliyor. Zararsız (o satıra ait oturum,
-profil yok) ama sınırsız — freni Bölüm 40.5'in rate limit'i, yani dilim 4.
-**O inene kadar bu uç üretime açılmamalı.**
+Beş kararın beşi de kalıcı çıktı ve `spec/10-security.md` § 40.4.1'e işlendi:
+hesabın istek anında doğması, tek kullanımın koşullu `UPDATE` ile olması,
+girişin bekleyen diğer bağlantıları harcaması, `EmailSender`'ın üç dallı
+olması, ve bastırılmış adrese gönderilmemesi. Burada yalnız izleri duruyor.
+**"Bu uç üretime açılmamalı" kısıtı kalktı** — freni dilim 4'te indi.
 
-**Ekleme — tek kullanım koşullu `UPDATE` ile.** `used_at` okuyup yazmak, aynı
-anda gelen iki isteğin ikisinin de girmesine izin verirdi. `WHERE used_at IS
-NULL` ve etkilenen satır sayısı kararı veritabanına bırakıyor.
+**Tuzak (canlı) — doğrulama sayfası önce bir `GET` yapmalı.** `POST
+/auth/verify` CSRF tokenı istiyor, token da `XSRF-TOKEN` çerezinden okunuyor;
+e-postadan gelen kullanıcının tarayıcısında o çerez henüz yok. Sayfa
+`/auth/session`'ı çağırsın, sonra POST etsin. `B-049`'da yazılı.
 
-**Ekleme — giriş, hesabın bekleyen diğer bağlantılarını da harcıyor.** § 40.2
-istemiyor; pencereyi yine de kapatıyor.
+### Dilim 4 — rate limit ve Turnstile
 
-**Ekleme — `EmailSender` üç dallı.** Resend anahtarı varsa HTTP API; yoksa
-`spring.mail` varsa SMTP (yerelde Mailpit); ikisi de yoksa **açılışta WARN** ve
-hiçbir şey gitmiyor. Üçüncü dal `LlmPricingAudit`'in mantığıyla: sessizce sıfır
-davranmaktansa adıyla söylensin.
+**Sapma — Bucket4j alınmadı, yerine Redis'te kayan pencere.** Kalıcı olduğu için
+`spec/02-tech-stack.md`'nin tablosuna ve § 40.5.1'e işlendi, burada yalnız izi
+duruyor. Gerekçe `Retry-After`: bir sonraki slotun ne zaman boşaldığını yalnız
+pencere söyleyebilir.
 
-**Tuzak — doğrulama sayfası önce bir `GET` yapmalı.** `POST /auth/verify` CSRF
-tokenı istiyor, token da `XSRF-TOKEN` çerezinden okunuyor; e-postadan gelen
-kullanıcının tarayıcısında o çerez henüz yok. Sayfa `/auth/session`'ı çağırsın,
-sonra POST etsin. `B-049`'da yazılı.
+**Ekleme — üç katman tek çağrı değil: IP → global → Turnstile → e-posta.**
+Adres katmanı üç istekte doluyor; challenge'ın önünde olsaydı bir yabancıyı
+kendi hesabından kilitlemek üç isteğe mal olurdu. § 40.5.1'de.
+
+**Ekleme — adres katmanı `MagicLinkService`'te, denetleyicide değil.** Anahtar
+hesabın arandığı dizenin ta kendisi olmalı; başka türlü `A@x.com` ile `a@x.com`
+tek hesaba karşı iki pencere olur. `theAddressLayerIsCountedUnderTheNormalisedAddress`
+onu orada tutuyor.
+
+**Tuzak — `server.forward-headers-strategy` ayarlanmazsa IP katmanı tek kova
+olur.** Yerelde `none`, üretimde `framework`. § 46.5'e yazıldı, ve
+`.env.example`'a `FORWARD_HEADERS_STRATEGY` olarak. **Porta doğrudan
+ulaşılabilen hiçbir yerde `framework` yazılmaz** — başlık orada istemcinin
+uydurabileceği bir şeydir.
+
+**Ekleme — `remoteip` Turnstile'a gönderilmiyor**, ve Turnstile'a ulaşılamazsa
+istek geçiyor. İkisinin de gerekçesi § 40.5.1'de; ikisi de yanlış
+yapılandırmanın ya da üçüncü tarafın kesintisinin **bizim** kesintimize
+dönmemesi için.
+
+**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını da siliyor.**
+Düzen değil zorunluluk: sınıfın çoğu testi ilk satırında bağlantı istiyor ve
+pencere üçte doluyor; silinmezse dördüncü test, ilgisiz bir 429'da düşer ve
+flake gibi okunur.
+
+**İki koruma kasıtlı ihlale karşı denendi.** ZSET üyesini yalnız varış anıyla
+adlandırmak (`ZADD` upsert'tür) sekiz testten ikisini düşürdü; Redis
+erişilemezken `admit()` dönmek üçüncüsünü. Challenge tarafında kontrolü
+`magicLinks.request()`'in **arkasına** almak `ChallengeApiIT`'nin iki ret
+testini düşürdü — hesap satırı hayatta kalıyor, ki § 40.4.1'in asıl derdi o.
+
+**Açık kalan — `/auth/verify` limitsiz.** Verifier 32 rastgele bayt, yani
+tahmin edilemez; Nginx'in `auth` zone'u (1r/s) de onun önünde. Bir katman
+eklemek gerekirse yer belli, ama bugün koruduğu bir şey yok.

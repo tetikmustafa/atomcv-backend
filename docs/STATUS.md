@@ -3,8 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**Son güncelleme:** 2026-08-26 · **3.3 dilim 3 (magic link) indi** ·
-frontend'de açık: **`B-044`** – **`B-049`** (altısı da bekliyor)
+**2026-08-27** · **3.3 kapandı — dilim 4 (rate limit + Turnstile) indi** · frontend'de açık: **`B-044`**–**`B-050`**, yedisi de bekliyor
 
 ---
 
@@ -17,17 +16,18 @@ frontend'de açık: **`B-044`** – **`B-049`** (altısı da bekliyor)
 | **Aşama 3 — hesap ve MVP** | 🔄 |
 | 3.1 dış servis hesapları | ✅ hesaplar açıldı, `.env` dolduruldu |
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC saati) |
-| 3.3 kimlik doğrulama | 🔄 3/4 — oturum+CSRF ✅, OAuth ✅, magic link ✅, rate limit+Turnstile ⬜ |
+| 3.3 kimlik doğrulama | ✅ 4/4 — oturum+CSRF, OAuth, magic link, rate limit+Turnstile |
 
 **Aşama 3 planı:** § XI-A.6; Aşama 2'nin kaydı `notes/archive/stage-2.md`'de.
 **Oturum:** Redis + `HttpOnly` `sid`, kayan TTL, sunucuda iptal, CSRF
-çift-gönderim, `/auth/session` + `/auth/logout`. **Üç giriş yolu:** Google,
-GitHub, ve magic link (selector/verifier, POST doğrulama, tek kullanım).
-E-posta Resend ya da SMTP/Mailpit. **`POST /auth/magic-link` rate limit'siz —
-dilim 4 inmeden üretime açılmamalı** (§ 40.4.1). Kararlar § 40.4.1, § 40.6.1.
+çift-gönderim. **Üç giriş yolu:** Google, GitHub, magic link. `POST
+/auth/magic-link` artık üç katman rate limit + Turnstile arkasında (§ 40.5.1),
+yani § 40.4.1'in üretim kısıtı kalktı. **Üretimde iki değişken zorunlu:**
+`TURNSTILE_SECRET_KEY` (yoksa açılmaz) ve `FORWARD_HEADERS_STRATEGY=framework`
+(yoksa IP katmanı tek kova olur) — § 46.5.
 
 **Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok.
-**Test:** 702 birim · 295 entegrasyon · 48 latex — 0 hata, 0 atlanan
+**Test:** 715 birim · 308 entegrasyon · 48 latex — 0 hata, 0 atlanan
 
 ## Frontend — `atomcv-frontend`
 
@@ -35,8 +35,8 @@ dilim 4 inmeden üretime açılmamalı** (§ 40.4.1). Kararlar § 40.4.1, § 40.
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
 
-**`B-044`-`B-049` açık, hiçbiri ACK almadı** — bu yüzden `to-frontend.md`
-100 satırın üstünde. `/auth/complete`, `/auth/error`, `/verify` sizde.
+**`B-044`-`B-050` açık, hiçbiri ACK almadı** — `to-frontend.md` bu yüzden 145
+satır. `/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
 **Test:** 401 birim · 25 e2e · **bundle** profil 250.7 / üretim 214.8 KB.
 **Aşama 2 gerçek uca karşı denetlendi (2026-08-25): 26/26** — yalnız
 `suspicious_output` tetiklenemedi, ve o beklenen sonuç (`notes/current.md`).
@@ -55,5 +55,6 @@ dilim 4 inmeden üretime açılmamalı** (§ 40.4.1). Kararlar § 40.4.1, § 40.
 
 ## Sonraki senkronizasyon noktası
 
-**Üç giriş yolu da telde** — frontend `B-044`-`B-049`'u alsın; üç rota onlarda.
-Sonrası dilim 4: rate limit + Turnstile, ki magic link'i üretime açan şey o.
+**Adım 3.3 bitti, magic link üretime açılabilir.** Frontend `B-044`-`B-050`'yi
+alsın; ilk `ACK`'ler `to-frontend.md`'yi sınırın altına indirir. Sonrası
+**Adım 3.4** — CV yükleme ve çıkarım (§ XI-A.6).
