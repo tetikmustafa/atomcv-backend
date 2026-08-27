@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.scoring;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.shared.math.Vectors;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.HashSet;
 import java.util.List;
@@ -98,18 +99,11 @@ public final class RelevanceScorer {
         if (left == null || right == null || left.length != right.length) {
             return 0.5;
         }
-        double dot = 0;
-        double leftNorm = 0;
-        double rightNorm = 0;
-        for (int index = 0; index < left.length; index++) {
-            dot += (double) left[index] * right[index];
-            leftNorm += (double) left[index] * left[index];
-            rightNorm += (double) right[index] * right[index];
-        }
-        if (leftNorm == 0 || rightNorm == 0) {
-            return 0.5;
-        }
-        return clamp((dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm)) + 1.0) / 2.0);
+        // The arithmetic is shared with Faz D's drift check; what is not
+        // shared is this line. A cosine runs from -1 to 1 and a score from 0
+        // to 1, and a vector with no direction lands on the same neutral half
+        // as an orthogonal one — which is the right answer for both.
+        return clamp((Vectors.cosine(left, right) + 1.0) / 2.0);
     }
 
     /** Bolum 19.2: the profile's vocabulary against the posting's. */
