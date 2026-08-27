@@ -155,44 +155,39 @@ paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
 **Canlı — `SkillNames.canonical` dört çağıranın ortak kuralı**, ve `RunMarking`
 artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
 
-## Adım 3.6 — anonim mod · 1/3
+## Adım 3.6 — anonim mod · 5/6
 
-**Dilim 1 (anonim oturum) ve dilim 2 (kalıcı olmayan profil) indi**; kararlar
-§ 35.7.1 ve § 41.3.1'de. **Dilim 3 (adres bazlı kota) indi**; kararlar § 44.1.1'de.
-**Dilim 4 (işin anonim sahibi) indi**; kararlar § 41.3.2'de, ve
-`jobs (user_id, idempotency_key)` carry-over'ı `V3` ile kapandı.
-**Dilim 5:** kalıcı olmayan profilin ingestion'a bağlanması (anonim yükleme).
-**Dilim 6:** yükseltme akışı.
+Dilim 1-2 (oturum, kalıcı olmayan profil) § 35.7.1 ve § 41.3.1'de; dilim 3
+(adres kotası) § 44.1.1'de; dilim 4 (işin anonim sahibi) § 41.3.2'de, ve
+`jobs (user_id, idempotency_key)` carry-over'ı `V3` ile kapandı. **Dilim 5
+(anonim yükleme) indi**; kararlar § 31.6.3 ve § 44.2'de. **Dilim 6:** yükseltme
+akışı.
 
-**Bulgu — `AnomalyDetectorIT` § 44.3'ün frenini çekip arkasında bırakıyordu.**
-Bayrak `feature_flags`'te tek satır ve ayarlanmamış bayrak açık sayılıyor, yani
-fren çekili kalınca paylaşılan bağlamda ondan sonra koşan her üretim 503
-alıyordu. **On altı hata, dört ilgisiz sınıfta, ve bu sınıfın kendi testleri
-geçiyordu.** `@BeforeEach`'te temizlemek yetmiyor: önemli olan sınıfın
-**arkasında bıraktığı** durum. Gizliydi, yeni değil — başka yere test eklemek
-sırayı kaydırınca çıktı.
+**Ders — entegrasyon testi işleyiciyi çağırmıyorsa işleyiciyi korumuyor.**
+İlk hali `EphemeralProfileWriter`'ı doğrudan çağırıyordu; anonim dalı kalıcı
+yazmaya çevirdiğimde **geçti**. Yazıcı zaten bunu yanlış yapabilecek parça
+değildi. Yalnız LLM aşaması taklit edilerek gerçek işleyici koşturulunca ihlal
+üç testi birden düşürdü. *Ekilen ihlalin hangi testi düşürdüğüne bak; hiçbirini
+düşürmüyorsa test yanlış yerde duruyor.*
 
-**Aşama 1'den taşınan `EPHEMERAL` kısıtı kalktı** — kontrollü üretim yolu
-`AnonymousSessionId`.
-
-**Canlı — kalıcı olmayan profil hâlâ hiçbir yere bağlı değil.** Depo ve adres
-kotası hazır; `ProfileImportService` ile `ProfileAssembler` yalnız kalıcı yolu
-biliyor. **Anonim kullanıcı oturum alıyor ama CV yükleyemiyor** — dilim 4.
+**Bulgu — `AnomalyDetectorIT` § 44.3'ün frenini arkasında bırakıyordu.** Bayrak
+ayarlanmamışken açık sayılıyor; fren çekili kalınca paylaşılan bağlamda ondan
+sonra koşan her üretim 503 alıyordu. On altı hata, dört ilgisiz sınıfta, ve
+kendi testleri geçiyordu. **Önemli olan sınıfın arkasında bıraktığı durum.**
 
 **Canlı — atom id'leri her içe aktarımda yeniden üretiliyor.** Yükseltme akışı
-(dilim 5) tam olarak buna çarpacak: id'ler değişirse eşitlik bozulur.
+(dilim 6) tam buna çarpacak: id değişirse eşitlik bozulur.
 
-**Canlı — anonim oturumun kullanıcı indeksi yok.** Kullanıcısı olmadığı için
-"bu kişinin bütün oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek
-şey kendi TTL'i.
+**Canlı — anonim oturumun kullanıcı indeksi yok**, yani "bu kişinin bütün
+oturumlarını iptal et" diye bir işlem de yok; onu bitiren tek şey TTL'i.
+
+**Canlı — `profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`
+`local` altında bir profil ekiyor). Anonim gizlilik iddiası bu yüzden "hiç satır
+yok" değil, **"satır sayısı değişmedi"** diye kuruluyor.
 
 **Canlı — testler kimliksiz duruma çözülmeyen bir çerezle ulaşıyor**, ikinci bir
-bağlamla değil. `local` altında çerezsiz her istek dev kullanıcısı; bayat bir
-çerez ise **bilinçli olarak** local-dev isteği sayılmıyor. Beşinci bir Spring
-bağlamı, CI'ın `NoClassDefFoundError`'ı dönerse ilk şüphelenilecek şey.
+bağlamla değil. `local` altında çerezsiz her istek dev kullanıcısı; bayat çerez
+**bilinçli olarak** local-dev isteği sayılmıyor.
 
-**Dikkat — `git checkout --` ekilmiş bir ihlali geri alırken commit edilmemiş
-gerçek değişikliği de alır.** Bu oturumda bir kez oldu ve fark edilmesi
-tesadüftü. **İhlal denemesinden dönerken yedek kopyadan restore et**, git'ten
-değil.
-
+**Dikkat — `git checkout --` ekilmiş ihlali geri alırken commit edilmemiş
+gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.

@@ -1109,6 +1109,38 @@ bir anahtar ve gerçek bir CV istiyor; fixture anahtarı istek metninin
 ateşlenir, yani uydurulamaz. Yerelde çıkan profil şema şeklinde ve anlamsız —
 **ucun sözleşmesi doğru, içeriği değil.**
 
+#### 31.6.3 Kararlar (Adım 3.6, dilim 5 — anonim yükleme)
+
+**Aynı iş, son satırda ayrılıyor.** İçe aktarım anonim bir kişi için de aynı
+üç aşamayı koşuyor — oku, yapılandır, normalize et — ve yalnız yazma yeri
+değişiyor: dört tablo yerine tek bir Redis belgesi (§ 41.3). Ayrımın *nerede*
+yapıldığı önemli: `EphemeralProfileWriter`, `ProfileWriter`'ın eşleme
+kararlarını (bir bölümün içeriğinin hangi atom türü olduğu, ayın nasıl tarihe
+döndüğü) tekrar etmiyor, çağırıyor. Bunlar **CV'nin ne demek olduğuna** dair
+kararlar, nerede saklandığına dair değil; ikinci bir kopya iki ayrı CV modeli
+demek olurdu.
+
+**Transaction yok, çünkü yapacak bir şey yok.** Anonim profil tek bir yazma;
+yarım yazılamaz, dolayısıyla yarım okunamaz da. Deponun seçilme sebebi buydu.
+
+**Anonim tamamlanmada arka plan işi kuyruğa girmiyor.** Embedding ve ölçüm
+(§ 31.6.2) bu profilin sahip olmadığı satırlara yazıyor; kuyruğa verilseydi
+zaten başarmış bir iş sonradan düşer, kişiye CV'sinin içe aktarılamadığı
+söylenirdi. Anonim kişi vektörsüz tahmin ve skorlama alıyor — § 20.4 ile
+§ 28.4'ün zaten tarif ettiği, **bozulmuş ama çalışan** yol.
+
+**İade edilecek özne yükün içinde taşınıyor.** Anonim yükleme adresin kotasını
+harcıyor (§ 44.1) ve işçi isteğin dışında koşuyor: adresi göremez. § 44.2'nin
+iadesi bu yüzden `jobs.payload`'daki özneye yapılıyor, işçinin tahmin ettiği
+bir özneye değil. **Yanlış özneye iade, hiç iade etmemekten kötüdür** — hiç
+harcamamış birini alacaklandırır ve harcayan kişi başarısız bir denemenin
+bedelini ödemeye devam eder.
+
+**Prompt deneyi (§ 53.3) anonim çağıranı profil id'siyle kovalıyor**, oturum
+id'siyle değil. İkisi de oturum boyunca sabit — kovalamanın istediği tek şey
+bu — ama biri çerezin kendisi, ve çerezin bir tanımlayıcı olarak elden ele
+dolaşmakta işi yok.
+
 ### 31.7 Manuel form
 
 Aşamalı doldurma:

@@ -540,6 +540,13 @@ iter ve kimsenin istemediği bedava kota dağıtır.
 **Kota kuyruğa alırken düşer, ama idempotency aramasından sonra.** Zaten var olan
 bir işi döndürmek ikinci bir birime mal olmamalı.
 
+**İade edilecek özne işin yükünde taşınır** (Adım 3.6). İşçi isteğin dışında
+koşuyor: anonim bir yüklemeyi ödeyen adresi göremez, ve kullanıcıdan türetmeye
+çalışan bir işçi anonim işte hiç kimseye iade eder. **Yanlış özneye iade, hiç
+iade etmemekten kötüdür** — harcamamış birini alacaklandırır ve harcayanı
+başarısız bir denemenin bedeliyle bırakır. Bu yüzden özne kuyruğa alan istekte
+yazılıyor ve iş boyunca değişmiyor.
+
 ### 44.3 Anomali tespiti ve kill switch
 
 ```java

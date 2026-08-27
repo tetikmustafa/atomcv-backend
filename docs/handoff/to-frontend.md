@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** dokuz madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> değil:** on madde birden açık ve hiçbiri henüz `ACK` almadı, yani
 > taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
 > yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
 
@@ -207,6 +207,37 @@ satır bayat kalır. Bu doğru davranış, eksik değil.
 **Yenileme başarısız olabilir** ve bu da sessiz: iş `TRANSLATION_FAILED` (422,
 parametresiz) ile düşerse sözcükleme **bayat kalır**. Ekranınız zaten doğru
 şeyi gösteriyor olur; ayrıca bir hata bildirimi göstermeyin.
+
+### B-053 · Anonim kullanıcı artık CV yükleyebiliyor — aynı uç, aynı kalıp
+**Since:** commit <sha> · Adım 3.6 · **Spec:** `spec/07-subsystems.md` § 31.6.3
+
+`POST /api/v1/profile/import` **hesap istemiyor**. `GET /api/v1/session` ile
+alınan anonim oturum çerezi yeterli; `B-051`'in her satırı aynen geçerli —
+`202`, `Location`, `Idempotency-Key`, beş senkron ret, aynı terminal olay.
+**Ayrı bir uç, ayrı bir akış yok**; hesabı olan ve olmayan için tek kod yolu
+yazın.
+
+**İşin `jobId`'sini anonim çağıran da izleyebiliyor.** `GET /api/v1/jobs/{id}`
+ve SSE akışı oturumla yetkilendiriliyor — çerez giderse iş de erişilemez olur,
+ki § 41.3'ün bilinçli tercihi bu.
+
+**Üç fark, üçü de sizde bir şey değiştirebilir:**
+
+| Ne | Anonimde | Hesapta |
+|---|---|---|
+| Günlük hak | **adrese** göre sayılıyor, oturuma göre değil (§ 44.1) | kullanıcıya göre |
+| `PROFILE_QUOTA_EXCEEDED` | aynı ofisten başkası harcamış olabilir — mesaj "hakkınız doldu" demesin, "şu an bu ağdan daha fazla deneme yapılamıyor" desin | kişiye ait |
+| Profilin ömrü | oturumun TTL'i (etkinlikle kayan iki saat) | kalıcı |
+
+**Anonim profil hiçbir tabloda satır değil** — Redis'te tek bir belge. Bunun
+sizin için tek pratik sonucu: **profil ekranında "kaydedildi" demeyin.** § 9'un
+sözü tam olarak bu; kaydolmadan çalışan kişi arkasında bir şey bırakmıyor, ve
+yükseltme akışı (bir sonraki dilim) inene kadar iki saat sonrası yok.
+
+**Anonim içe aktarımda embedding ve ölçüm koşmuyor.** İlk üretim vektörsüz
+skorlama (§ 28.4) ve ölçülmemiş tahmin (§ 20.4) ile çalışıyor — ikisi de zaten
+tarif edilmiş bozulmuş-ama-çalışan yol. Kullanıcıya bunu söylemeyin; söylenecek
+tek şey seçim tahminî olduğunda ekranın zaten gösterdiği not.
 
 ---
 
