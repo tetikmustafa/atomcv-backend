@@ -176,3 +176,22 @@ bakılacak yer beşinci bir bağlam, kod değil.**
 **Açık — `local-fake` fixture'ı yok ve uydurulamaz.** Fixture anahtarı istek
 metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
 ateşlenir. **`make record` geliştiricinin anahtarını istiyor.**
+
+## Adım 3.5 — çok dillilik · 1/2
+
+**Dilim 1 (senkronizasyon + çeviri işi) indi**; dokuz karar § 32.2.1'e işlendi.
+**Dilim 2:** dil-farkındalıklı Faz C (§ 32.3) ve TR uzunluk farkı testi.
+
+**Açık — "İngilizceyi yeniden üret" düğmesinin ucu yok.** `userEdited` bir kez
+`true` olunca geri alınamıyor: varyant `PATCH`'i içerik yazınca onu set ediyor
+ve sıfırlayan bir yol yok. `B-052` frontend'e "düğmeyi çiz, bağlama" diyor.
+**Dilim 2'de bir uç açılmalı** — muhtemelen `PATCH` gövdesinde açık bir
+`userEdited: false`, çünkü sessizce sıfırlamak § 32.2'nin korumasını delerdi.
+
+**Canlı — hedef dil sistem yarısında.** Ön ek dile göre değişiyor; bu bilinçli
+(§ 32.2.1). **Yeni bir dil eklemek yeni bir cache ön eki demek**, çağrı başına
+bir tane değil.
+
+**Canlı — `RunMarking` artık `profile.domain.content`'te** ve iki aşama
+kullanıyor. Faz D üçüncüsü olacak.
+

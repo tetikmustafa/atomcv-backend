@@ -98,6 +98,7 @@ yalnızca yerine koyar.
 | `AUTHENTICATION_REQUIRED` | 401 | — |
 | `OAUTH_FAILED` | 400 | `reason: string` |
 | `MAGIC_LINK_INVALID` | 400 | — |
+| `TRANSLATION_FAILED` | 422 | — |
 | `RATE_LIMITED` | 429 | `resetsAt: timestamp` |
 | `CHALLENGE_FAILED` | 403 | — |
 | `RESOURCE_NOT_FOUND` | 404 | — |
@@ -114,6 +115,12 @@ kaynağın kastedildiğini istemci zaten bilir (isteği o attı), ve advice
 katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
 
 **`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
+
+**Adım 3.5: `TRANSLATION_FAILED` (422).** Arka plan işinden geliyor ve
+neredeyse hiç kullanıcıya çıkmıyor — kişinin gördüğü şey sözcüklemenin **hâlâ
+bayat işaretli** kalması, ki o da doğru cümle. Kod, `GET /jobs/{id}`'ye soran
+bir istemciye "internal error"dan iyisini söyleyebilmek için var. Parametresiz:
+çevirinin düşürdüğü şey kullanıcının kendi içeriği (mutlak kural 4).
 
 **Adım 3.4 dilim 4: `POST /profile/import` telde.** `202` + `Location` +
 `jobId`, üretimle birebir aynı kalıp. Beş ret senkron (`415`, `413`, iki `422`,

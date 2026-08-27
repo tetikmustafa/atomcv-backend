@@ -1239,6 +1239,45 @@ public void onVariantUpdated(VariantUpdatedEvent e) {
   [ İngilizceyi yeniden üret ] [ Benim halimi koru ]
 ```
 
+#### 32.2.1 Kararlar (Adım 3.5, dilim 1)
+
+**Kural iki yarım, ve ikisini birleştirmek hata.** Düzenlenen bir sözcüklemeden
+türeyen **her şey bayatlar** — kim yazmış olursa olsun, çünkü kişi ikisinin
+ayrıştığını bilmeye hak sahibi. **Yalnız kişinin yazmadıkları kuyruğa girer**:
+birinin kendi cümlesini, o kişi Türkçede bir yazım hatası düzeltti diye makine
+çevirisiyle değiştirmek, ürünün onu sessizce ezmesidir. Ekran seçimi ona
+bırakıyor.
+
+**Sapma — § 32.2 bunu bir olay dinleyicisi olarak yazıyor, kod doğrudan çağrı
+yapıyor.** Tek yayıncı ve tek abone var; araya olay koymak, önemli olan tek
+şeyi maliyet olarak çıkarırdı: **işaretleme düzenlemeyle aynı transaction'da
+oluyor.** Commit sonrası tetiklenen bir dinleyici kaçırılabilir, ve kaynağı
+değiştikten sonra taze kalmış bir sözcükleme, kimsenin haberdar edilmediği
+yanlış bir çeviridir.
+
+**Sözcükler değişmediyse hiçbir şey olmuyor.** Birincil yapma ya da ton
+değişikliği, o sözcüklemenin her çevirisini hâlâ doğru bırakır.
+
+**Hedef dil sistem yarısına yazılıyor, çitin içine değil.** Maddelerinden
+birine "Target language: en" yazan bir CV, aksi hâlde emri kendisi verirdi.
+Ön ek böylece dile göre değişiyor — gerçek bir maliyeti yok, çünkü çağrı başına
+değil **dil başına** bir ön ek var (§ 27.4).
+
+**§ 21.8'in dördüncü adımı: sayılar rakam olarak karşılaştırılıyor.** Yereller
+aynı niceliği `300,000` ve `300.000` diye yazar; ayıracı reddeden bir kontrol
+**her doğru Türkçe çeviriyi** reddederdi — bir kapının kapatılma biçimi tam
+olarak budur. Rakamlar iddia, noktalama dizgi. Özel isimler `Locale.ROOT` ile
+katlanarak karşılaştırılıyor (mutlak kural 7).
+
+**Rakamsız bir metrik yargılanmıyor.** "ekibin dörtte biri" sözcüklemesiyle
+taşınıyor ve karşılaştırılacak bir şey yok; bu denetim **kaybolduğunu
+kanıtlayabildiğini** reddeder, kontrol edemediğini değil.
+
+**Yapacak iş olmamasının üç yolu var ve hiçbiri başarısızlık değil:**
+sözcükleme silinmiş, kişi düzenlemiş, ya da kaynağı boşalmış. Kuyruk bir
+profile dokunan tek şey değil, ve dünya ilerlediği için başarısızlık bildiren
+bir iş, aslında bitmiş bir şey için ekrana kırmızı işaret koyar.
+
 ### 32.3 ⚠️ Kritik: Türkçe metin İngilizceden uzun
 
 Türkçe, aynı içerik için tipik olarak **%10-20 daha uzun** metin üretir (sondan eklemeli yapı).
