@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.jobs.api;
 
 import com.mustafatetik.atomcv.jobs.api.dto.JobStatusResponse;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.jobs.sse.SseRegistry;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
@@ -71,7 +72,7 @@ public class JobController {
     })
     @GetMapping("/{jobId}")
     public ResponseEntity<JobStatusResponse> status(@PathVariable UUID jobId) {
-        Job job = jobs.findById(currentUser.require(), jobId)
+        Job job = jobs.findById(JobOwner.of(currentUser), jobId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         return ResponseEntity.ok()
@@ -102,7 +103,7 @@ public class JobController {
         // The ownership check comes first and it is the whole IDOR defense on
         // this endpoint (Bolum 30.6): a stream carries the job's error, which
         // names what a profile is missing.
-        Job job = jobs.findById(currentUser.require(), jobId)
+        Job job = jobs.findById(JobOwner.of(currentUser), jobId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         return streams.subscribe(job);

@@ -14,4 +14,10 @@ interface JobJpaRepository extends JpaRepository<Job, UUID> {
     List<Job> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     Optional<Job> findByUserIdAndIdempotencyKey(UUID userId, String idempotencyKey);
+
+    /** The same two, for a caller who has not signed up (Adim 3.6). */
+    List<Job> findByAnonSessionIdOrderByCreatedAtDesc(String anonSessionId);
+
+    Optional<Job> findByAnonSessionIdAndIdempotencyKey(
+            String anonSessionId, String idempotencyKey);
 }

@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionPreflight;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
@@ -79,7 +80,7 @@ public class GenerationEnqueueService {
             String language,
             String idempotencyKey) {
 
-        Optional<Job> already = jobs.findByIdempotencyKey(user, idempotencyKey);
+        Optional<Job> already = jobs.findByIdempotencyKey(JobOwner.of(user), idempotencyKey);
         if (already.isPresent()) {
             // Answered with the job that already exists, not with a conflict:
             // the caller asked for one generation and there is one.
