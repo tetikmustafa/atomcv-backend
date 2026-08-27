@@ -45,13 +45,19 @@ class SelectedSkillsTest {
         // Absolute rule 7. The column holds whatever normalization produced,
         // and "SQL" under a Turkish locale becomes "sqı" — the report would
         // then call a skill missing that Faz B had counted.
+        //
+        // Adim 3.4 added Bolum 31.5's alias dictionary to that same rule, so
+        // "PostgreSQL" now reduces to "postgres" here as well. That it changed
+        // this assertion is the point: a dictionary applied on one side of a
+        // comparison and not the other would break exactly the pairs it was
+        // added to fix.
         var fixture = new Fixture();
         var section = fixture.section();
         Atom printed = fixture.looseAtom(section, "Query tuning", List.of("  SQL  ", "PostgreSQL"));
 
         var skills = SelectedSkills.onThePage(fixture.tree(), selecting(printed));
 
-        assertThat(skills).containsExactlyInAnyOrder("sql", "postgresql");
+        assertThat(skills).containsExactlyInAnyOrder("sql", "postgres");
     }
 
     @Test

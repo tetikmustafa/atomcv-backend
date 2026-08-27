@@ -1,0 +1,74 @@
+# Bolum 31.5's alias dictionary: alias = canonical
+#
+# Applied by SkillNames to BOTH sides of every comparison — the skills read
+# out of a CV and the skills read out of a posting. An entry that only ever
+# fires on one side is worse than no entry, so add the spelling people
+# actually write, not the one you wish they wrote.
+#
+# The left side is compared after case-folding and after whitespace becomes a
+# hyphen, so "Machine Learning" arrives here as "machine-learning". Only add a
+# line when spelling alone cannot join the two names.
+
+# JavaScript and its ecosystem
+react.js = react
+reactjs = react
+react-js = react
+node.js = node
+nodejs = node
+node-js = node
+vue.js = vue
+vuejs = vue
+next.js = nextjs
+js = javascript
+ts = typescript
+angularjs = angular
+
+# Languages
+golang = go
+c-sharp = csharp
+c# = csharp
+c++ = cpp
+cplusplus = cpp
+.net = dotnet
+dotnet-core = dotnet
+py = python
+
+# Data stores
+postgresql = postgres
+postgre = postgres
+psql = postgres
+mongo = mongodb
+ms-sql = mssql
+sql-server = mssql
+elastic = elasticsearch
+elastic-search = elasticsearch
+
+# Infrastructure
+k8s = kubernetes
+amazon-web-services = aws
+google-cloud-platform = gcp
+gcloud = gcp
+microsoft-azure = azure
+ci/cd = cicd
+ci-cd = cicd
+
+# Data and machine learning
+ml = machine-learning
+dl = deep-learning
+nlp = natural-language-processing
+scikit-learn = sklearn
+tensorflow2 = tensorflow
+apache-spark = spark
+pyspark = spark
+apache-airflow = airflow
+power-bi = powerbi
+
+# Java ecosystem
+springboot = spring-boot
+hibernate-orm = hibernate
+
+# Practices
+rest-api = rest
+restful = rest
+tdd = test-driven-development
+oop = object-oriented-programming
