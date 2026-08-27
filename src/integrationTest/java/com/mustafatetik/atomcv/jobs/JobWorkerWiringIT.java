@@ -75,6 +75,7 @@ class JobWorkerWiringIT {
                 // application learns to enqueue a type, and the types it does
                 // not enqueue yet are deliberately absent — a handler for one
                 // of those would be a bean nothing can reach.
-                .contains(JobType.GENERATION, JobType.PROFILE_EXTRACT);
+                .contains(JobType.GENERATION, JobType.PROFILE_EXTRACT,
+                        JobType.EMBEDDING, JobType.MEASUREMENT);
     }
 }

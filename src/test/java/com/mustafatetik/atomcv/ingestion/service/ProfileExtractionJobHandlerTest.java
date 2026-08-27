@@ -3,8 +3,10 @@ package com.mustafatetik.atomcv.ingestion.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +22,7 @@ import com.mustafatetik.atomcv.ingestion.structuring.ProfileStructuring;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
+import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.Profile;
@@ -28,11 +31,15 @@ import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 /**
  * The job behind Bolum 31.4 and 31.5, with the three stages stubbed.
@@ -51,9 +58,11 @@ class ProfileExtractionJobHandlerTest {
     private final ProfileNormalizer normalizer = mock(ProfileNormalizer.class);
     private final ProfileWriter writer = mock(ProfileWriter.class);
     private final QuotaService quotas = mock(QuotaService.class);
+    private final JobQueue queue = mock(JobQueue.class);
 
-    private final ProfileExtractionJobHandler handler =
-            new ProfileExtractionJobHandler(structuring, normalizer, writer, quotas);
+    private final ProfileExtractionJobHandler handler = new ProfileExtractionJobHandler(
+            structuring, normalizer, writer, quotas, queue,
+            Clock.fixed(Instant.parse("2026-08-27T09:00:00Z"), ZoneOffset.UTC));
 
     private final List<JobProgress> reported = new ArrayList<>();
 
@@ -113,6 +122,47 @@ class ProfileExtractionJobHandlerTest {
         assertThat(reported).extracting(JobProgress::pct).isSorted();
     }
 
+    /**
+     * Bolum 31.6's background box. The screen opens the moment the profile
+     * exists and these arrive underneath it — done inline they would add
+     * twenty seconds to the one moment the product asks anybody to wait.
+     */
+    @Test
+    void theVectorsAndTheHeightsAreQueuedRatherThanWaitedFor() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(writer.write(any(), any())).thenReturn(new Profile(USER));
+
+        handler.handle(job(), reported::add);
+
+        var queued = ArgumentCaptor.forClass(Job.class);
+        verify(queue, times(2)).enqueue(queued.capture());
+        assertThat(queued.getAllValues()).extracting(Job::getType)
+                .containsExactly(JobType.EMBEDDING, JobType.MEASUREMENT);
+    }
+
+    /**
+     * And after the write, which is not a detail.
+     *
+     * <p>{@code ProfileWriter} owns its own transaction; a worker that picked
+     * one of these up before it committed would find an empty profile and do
+     * nothing — not a failure it could report, just a profile quietly never
+     * embedded. The ordering is the whole guard, so it is asserted rather than
+     * left to the order the lines happen to be in.
+     */
+    @Test
+    void theBackgroundWorkIsQueuedOnlyOnceThereIsAProfileToDoItTo() {
+        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(writer.write(any(), any())).thenReturn(new Profile(USER));
+
+        handler.handle(job(), reported::add);
+
+        InOrder order = inOrder(writer, queue);
+        order.verify(writer).write(any(), any());
+        order.verify(queue, times(2)).enqueue(any());
+    }
+
     // -- when a stage refuses ----------------------------------------------
 
     /**
@@ -128,6 +178,8 @@ class ProfileExtractionJobHandlerTest {
 
         verify(quotas).refund(any(), eq(QuotaMetric.PROFILE_EXTRACT));
         verify(writer, never()).write(any(), any());
+        // And nothing is queued to embed a profile that was never written.
+        verify(queue, never()).enqueue(any());
     }
 
     @Test
