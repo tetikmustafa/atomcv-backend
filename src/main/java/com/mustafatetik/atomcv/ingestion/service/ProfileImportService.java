@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.ingestion.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.ingestion.extraction.DocumentExtraction;
 import com.mustafatetik.atomcv.ingestion.extraction.ExtractedText;
@@ -74,7 +75,7 @@ public class ProfileImportService {
             return already.get();
         }
 
-        Result<Void> spent = quotas.consume(user, QuotaMetric.PROFILE_EXTRACT);
+        Result<Void> spent = quotas.consume(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
         if (spent.isErr()) {
             throw spentAllowance(user, ((Result.Err<Void>) spent).error());
         }
@@ -87,7 +88,7 @@ public class ProfileImportService {
         try {
             document = extraction.extract(filename, contentType, bytes);
         } catch (RuntimeException refused) {
-            quotas.refund(user, QuotaMetric.PROFILE_EXTRACT);
+            quotas.refund(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
             throw refused;
         }
 
@@ -110,7 +111,7 @@ public class ProfileImportService {
             return ApiException.of(ErrorCode.INTERNAL_ERROR);
         }
         return new ApiException(UserFacingError.with(ErrorCode.PROFILE_QUOTA_EXCEEDED)
-                .param("limit", quotas.usage(user, QuotaMetric.PROFILE_EXTRACT).limit())
+                .param("limit", quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT).limit())
                 .param("resetsAt", spent.resetsAt())
                 .build());
     }

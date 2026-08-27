@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.billing.FeatureFlags;
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionPreflight;
 import com.mustafatetik.atomcv.jobs.queue.Job;
@@ -91,7 +92,7 @@ public class GenerationEnqueueService {
             return Result.err(new PipelineError.GenerationPaused());
         }
 
-        Result<Void> spent = quotas.consume(user, QuotaMetric.GENERATION);
+        Result<Void> spent = quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
         if (spent.isErr()) {
             return spent.map(ignored -> null);
         }
@@ -100,7 +101,7 @@ public class GenerationEnqueueService {
         if (refused.isErr()) {
             // Bolum 44.2: nothing was generated, so nothing was spent. Without
             // this a user could burn a day's allowance on typos.
-            quotas.refund(user, QuotaMetric.GENERATION);
+            quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
             return refused.map(ignored -> null);
         }
 

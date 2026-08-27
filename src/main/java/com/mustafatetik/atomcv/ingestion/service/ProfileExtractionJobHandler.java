@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.ingestion.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
 import com.mustafatetik.atomcv.ingestion.normalization.ProfileNormalizer;
@@ -101,7 +102,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
         return switch (structured) {
             case Result.Err<ExtractedProfile> failed -> {
                 // Bolum 44.2: no profile came out of it, whatever the cause.
-                quotas.refund(user, QuotaMetric.PROFILE_EXTRACT);
+                quotas.refund(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
                 yield refused(failed.error());
             }
             case Result.Ok<ExtractedProfile> ok -> {

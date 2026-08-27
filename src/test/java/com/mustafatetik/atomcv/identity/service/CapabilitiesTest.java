@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.identity.CapabilityProperties;
 import com.mustafatetik.atomcv.identity.api.dto.CapabilitiesResponse;
@@ -60,9 +61,9 @@ class CapabilitiesTest {
      */
     @Test
     void anAccountReadsItsQuotaFromTheServiceThatEnforcesIt() {
-        when(quotas.usage(eq(SOMEONE), eq(QuotaMetric.GENERATION)))
+        when(quotas.usage(eq(QuotaSubject.of(SOMEONE)), eq(QuotaMetric.GENERATION)))
                 .thenReturn(new QuotaService.Usage("generation", 3, 3, 20, 17, MIDNIGHT));
-        when(quotas.usage(eq(SOMEONE), eq(QuotaMetric.PROFILE_EXTRACT)))
+        when(quotas.usage(eq(QuotaSubject.of(SOMEONE)), eq(QuotaMetric.PROFILE_EXTRACT)))
                 .thenReturn(new QuotaService.Usage("profile_extract", 1, 1, 5, 4, MIDNIGHT));
 
         CapabilitiesResponse capabilities = capabilities().of(Optional.of(SOMEONE), null);
@@ -129,9 +130,9 @@ class CapabilitiesTest {
     }
 
     private void stubUsage() {
-        when(quotas.usage(eq(SOMEONE), eq(QuotaMetric.GENERATION)))
+        when(quotas.usage(eq(QuotaSubject.of(SOMEONE)), eq(QuotaMetric.GENERATION)))
                 .thenReturn(new QuotaService.Usage("generation", 0, 0, 20, 20, MIDNIGHT));
-        when(quotas.usage(eq(SOMEONE), eq(QuotaMetric.PROFILE_EXTRACT)))
+        when(quotas.usage(eq(QuotaSubject.of(SOMEONE)), eq(QuotaMetric.PROFILE_EXTRACT)))
                 .thenReturn(new QuotaService.Usage("profile_extract", 0, 0, 5, 5, MIDNIGHT));
     }
 }
