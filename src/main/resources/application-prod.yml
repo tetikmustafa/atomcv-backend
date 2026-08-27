@@ -13,6 +13,14 @@ spring:
   jpa:
     show-sql: false
 
+# Nginx terminates TLS and is the only way in (Bolum 11.2), so the forwarded
+# headers are the proxy's word and not the caller's. Without this every caller
+# arrives as the proxy's address and Bolum 40.5's per-IP layer becomes one
+# bucket shared by everybody — a limiter that looks configured and locks the
+# deployment out on the tenth sign-in request.
+server:
+  forward-headers-strategy: framework
+
 # The schema is a build-time artefact for the frontend's type generation
 # (Bölüm XI-B.9.1), not something production has to serve. Serving it publishes
 # every endpoint and payload shape to anyone who asks.

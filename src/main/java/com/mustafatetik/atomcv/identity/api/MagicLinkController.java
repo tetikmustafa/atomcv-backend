@@ -3,12 +3,15 @@ package com.mustafatetik.atomcv.identity.api;
 import com.mustafatetik.atomcv.identity.api.dto.MagicLinkRequest;
 import com.mustafatetik.atomcv.identity.api.dto.VerifyRequest;
 import com.mustafatetik.atomcv.identity.domain.Session;
+import com.mustafatetik.atomcv.identity.ratelimit.ClientIp;
+import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
 import com.mustafatetik.atomcv.identity.service.MagicLinkService;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Optional;
 import org.springframework.http.HttpHeaders;
@@ -34,10 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class MagicLinkController {
 
     private final MagicLinkService magicLinks;
+    private final SignInRateLimit rateLimit;
     private final SessionCookies cookies;
 
-    MagicLinkController(MagicLinkService magicLinks, SessionCookies cookies) {
+    MagicLinkController(MagicLinkService magicLinks, SignInRateLimit rateLimit,
+            SessionCookies cookies) {
         this.magicLinks = magicLinks;
+        this.rateLimit = rateLimit;
         this.cookies = cookies;
     }
 
@@ -47,10 +53,20 @@ public class MagicLinkController {
                     Always 202, and always with no body. Whether the address \
                     has an account is exactly what this must not reveal \
                     (Bolum 40.4), so the sentence the person reads is the \
-                    client's to write and is the same either way.""")
+                    client's to write and is the same either way.
+
+                    The one other answer it can give is `429 RATE_LIMITED`,
+                    and that reveals nothing either: every layer of Bolum
+                    40.5 counts what this caller has already done.""")
     @PostMapping("/magic-link")
-    public ResponseEntity<Void> request(@Valid @RequestBody MagicLinkRequest request) {
-        magicLinks.request(request.email());
+    public ResponseEntity<Void> request(@Valid @RequestBody MagicLinkRequest body,
+            HttpServletRequest request) {
+        // The caller's two layers here, the address's layer inside the
+        // service one line after the address is normalised. Bolum 40.5's
+        // three counters are not one call because they do not belong at
+        // one place: the address layer has to run behind the challenge.
+        rateLimit.checkCaller(ClientIp.of(request));
+        magicLinks.request(body.email());
         return ResponseEntity.accepted().build();
     }
 

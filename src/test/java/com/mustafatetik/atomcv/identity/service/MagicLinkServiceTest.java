@@ -1,9 +1,11 @@
 package com.mustafatetik.atomcv.identity.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -16,8 +18,12 @@ import com.mustafatetik.atomcv.identity.domain.AuthMethod;
 import com.mustafatetik.atomcv.identity.domain.MagicLinkToken;
 import com.mustafatetik.atomcv.identity.domain.Session;
 import com.mustafatetik.atomcv.identity.domain.UserAccount;
+import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
 import com.mustafatetik.atomcv.identity.repository.MagicLinkTokens;
 import com.mustafatetik.atomcv.identity.repository.SignInAccounts;
+import com.mustafatetik.atomcv.shared.error.ApiException;
+import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -34,6 +40,7 @@ class MagicLinkServiceTest {
     private final SignInAccounts accounts = mock(SignInAccounts.class);
     private final MagicLinkTokens tokens = mock(MagicLinkTokens.class);
     private final SessionStore sessions = mock(SessionStore.class);
+    private final SignInRateLimit rateLimit = mock(SignInRateLimit.class);
     private final EmailSender email = mock(EmailSender.class);
     private final EmailSuppressions suppressions = mock(EmailSuppressions.class);
 
@@ -41,7 +48,8 @@ class MagicLinkServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new MagicLinkService(accounts, tokens, sessions, email, suppressions,
+        service = new MagicLinkService(accounts, tokens, sessions, rateLimit, email,
+                suppressions,
                 new MagicLinkProperties("https://app.test", "/verify"),
                 Clock.fixed(NOW, ZoneOffset.UTC));
         when(email.send(any())).thenReturn(true);
@@ -93,6 +101,47 @@ class MagicLinkServiceTest {
         service.request("  ADA@Example.COM  ");
 
         verify(accounts).byEmail("ada@example.com");
+    }
+
+    /**
+     * And the limiter is keyed on that same string.
+     *
+     * <p>Keyed on the raw one, {@code A@x.com} and {@code a@x.com} would be
+     * two windows against one account and Bolum 40.5's three would count as
+     * six. The check is one line below the normalisation for exactly this
+     * reason, and this is the assertion that keeps it there.
+     */
+    @Test
+    void theAddressLayerIsCountedUnderTheNormalisedAddress() {
+        when(accounts.byEmail("ada@example.com")).thenReturn(Optional.empty());
+        when(accounts.createAwaitingVerification("ada@example.com"))
+                .thenReturn(UserAccount.awaitingVerification("ada@example.com"));
+
+        service.request("  ADA@Example.COM  ");
+
+        verify(rateLimit).checkAddress("ada@example.com");
+    }
+
+    /**
+     * Bolum 40.5 in front of the row, not behind it.
+     *
+     * <p>A refused request must not leave an account, a token or an email
+     * behind: the endpoint creates a row for any address anyone types, and the
+     * limiter is the whole of what bounds that.
+     */
+    @Test
+    void aRefusedAddressCreatesNothingAndSendsNothing() {
+        doThrow(new ApiException(UserFacingError.with(ErrorCode.RATE_LIMITED)
+                        .param("resetsAt", NOW.plusSeconds(600)).build()))
+                .when(rateLimit).checkAddress("ada@example.com");
+
+        assertThatThrownBy(() -> service.request("ada@example.com"))
+                .isInstanceOf(ApiException.class);
+
+        verify(accounts, never()).byEmail(anyString());
+        verify(accounts, never()).createAwaitingVerification(anyString());
+        verify(tokens, never()).save(any());
+        verify(email, never()).send(any());
     }
 
     /**

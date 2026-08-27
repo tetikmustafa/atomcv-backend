@@ -17,6 +17,13 @@ server:
   error:
     include-stacktrace: never
     include-message: never
+  # Adim 3.3, dilim 4. Who the caller is decides which rate limit bucket they
+  # land in, and behind a proxy `getRemoteAddr()` is the proxy. `framework`
+  # lets Spring's ForwardedHeaderFilter rewrite the request from the headers
+  # the proxy sets; `none` keeps them ignored, which is the only safe reading
+  # when anything can reach this port directly. Production sets it, and the
+  # trap it avoids is written down in spec/11-operations.md Bolum 46.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
 
 management:
   endpoints:
@@ -125,6 +132,23 @@ atomcv:
   quota:
     generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
     profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
+
+  # Bolum 40.5. Three layers in front of asking for a sign-in link, because
+  # the endpoint sends mail to an address the caller merely typed. The numbers
+  # are configuration: the global one is a guess at the sending provider's
+  # tolerance, and a guess that needs a release to correct is a guess nobody
+  # corrects.
+  rate-limit:
+    sign-in:
+      per-email:
+        limit: ${RATE_LIMIT_SIGN_IN_PER_EMAIL:3}
+        window: ${RATE_LIMIT_SIGN_IN_PER_EMAIL_WINDOW:15m}
+      per-ip:
+        limit: ${RATE_LIMIT_SIGN_IN_PER_IP:10}
+        window: ${RATE_LIMIT_SIGN_IN_PER_IP_WINDOW:1h}
+      global:
+        limit: ${RATE_LIMIT_SIGN_IN_GLOBAL:200}
+        window: ${RATE_LIMIT_SIGN_IN_GLOBAL_WINDOW:1h}
 
   # Bolum 44.3. Reports, does not act: there is no rate limiter to tighten and
   # the brake stops everybody, so an operator decides.
