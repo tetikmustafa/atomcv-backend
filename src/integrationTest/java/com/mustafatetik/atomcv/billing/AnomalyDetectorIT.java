@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,25 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
         detector = new AnomalyDetector(jdbc, properties, flags,
                 new io.micrometer.core.instrument.simple.SimpleMeterRegistry(), clock);
         today = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
+    }
+
+    /**
+     * <strong>The brake is global, and this class pulls it.</strong>
+     *
+     * <p>Bolum 44.3's brake is one row in {@code feature_flags} and an unset
+     * flag reads as on, so leaving it pulled turns every generation in the
+     * shared context into a 503 — for whichever class Gradle happens to run
+     * next. It cost a run to find, and it read as sixteen unrelated failures
+     * rather than as this: the cases here passed, and four other classes did
+     * not.
+     *
+     * <p>Cleaning up in {@code @BeforeEach} was not enough for the same
+     * reason. What matters is the state this class leaves behind, not the one
+     * it starts from.
+     */
+    @AfterEach
+    void releaseTheBrake() {
+        jdbc.update("DELETE FROM feature_flags");
     }
 
     /**
