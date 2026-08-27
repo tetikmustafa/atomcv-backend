@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.shared.security;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,7 +26,20 @@ public final class ProfileRef {
      * deliberately absent until there is a checked way to produce one.
      */
     public enum Scope {
-        PERSISTENT
+        PERSISTENT,
+
+        /**
+         * A profile that lives only in Redis, for the length of an anonymous
+         * session (Bolum 9, Adim 3.6).
+         *
+         * <p>Absent until Adim 3.6 for the reason § 41.3 gives: the constant
+         * is worthless without a checked way to produce one, and a scope
+         * anybody could construct would be a way around the ownership check
+         * rather than a part of it. {@link #ephemeral} is that way — it takes
+         * a session that is <em>already known to be anonymous</em>, so the
+         * only thing that can produce this scope is the thing it belongs to.
+         */
+        EPHEMERAL
     }
 
     private final UUID id;
@@ -51,6 +65,28 @@ public final class ProfileRef {
             throw new CrossTenantAccessException("The profile belongs to a different user");
         }
         return new ProfileRef(profileId, Scope.PERSISTENT);
+    }
+
+    /**
+     * The scope of an anonymous session's own profile (Adim 3.6).
+     *
+     * <p><strong>The id is derived from the session id, not stored beside
+     * it.</strong> An anonymous session has exactly one profile and the
+     * session is the only thing that identifies it, so a second identifier
+     * would be a second thing to keep in step — and the one place it could
+     * live is the session record, which would then have to be rewritten the
+     * first time somebody uploaded a CV.
+     *
+     * <p>The parameter is {@link AnonymousSessionId} and not a String on
+     * purpose. § 41.3 says the constant is worthless without a checked way to
+     * produce one; {@code shared} cannot look at a session and check, so it
+     * takes a value only the module that <em>can</em> check is able to make.
+     */
+    public static ProfileRef ephemeral(AnonymousSessionId sessionId) {
+        Objects.requireNonNull(sessionId, "sessionId");
+        return new ProfileRef(
+                UUID.nameUUIDFromBytes(sessionId.value().getBytes(StandardCharsets.UTF_8)),
+                Scope.EPHEMERAL);
     }
 
     public UUID id() {
