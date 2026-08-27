@@ -79,6 +79,14 @@ dependencies {
     // The published schema is the API contract: the frontend generates its
     // types from it, so enums and headers have to reach it, not only payloads.
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    // Bolum 31.3. PDFBox reads the text out of a PDF and, unlike the
+    // alternatives, executes nothing while doing it (Bolum 42.1) -- no
+    // JavaScript, no embedded action. Versions pinned because Spring Boot's
+    // BOM manages neither: an unpinned coordinate does not resolve.
+    implementation("org.apache.pdfbox:pdfbox:3.0.5")
+    // Likewise for DOCX, and for the same reason: POI's text API reads
+    // document parts and never runs a macro.
+    implementation("org.apache.poi:poi-ooxml:5.4.1")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
