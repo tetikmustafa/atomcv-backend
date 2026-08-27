@@ -129,6 +129,13 @@ bir istemciye "internal error"dan iyisini söyleyebilmek için var. Parametresiz
 yapılandırmadan **geri okunuyor** — hatanın doğduğu yerde uydurulan bir sayı,
 sunucunun kendi yapılandırmasını yanlış bildirmesi olurdu.
 
+**Adım 3.6 dilim 5: `POST /profile/import` kimlik istemiyor.** Anonim oturum
+çerezi yeterli; sözleşmenin geri kalanı değişmiyor — aynı `202`, aynı ret
+kümesi, aynı terminal olay. Değişen tek şey `PROFILE_QUOTA_EXCEEDED`'ın kime
+ait olduğu: anonim çağıranda hak **adrese** göre sayılıyor (§ 44.1), yani aynı
+ağdan başka biri harcamış olabilir ve mesaj kişiye ait bir hak gibi
+okunmamalı.
+
 **Adım 3.4 dilim 2: iki kodun ilk kullanıcısı çıktı.** `LANGUAGE_UNDETECTED`
 ve `EXTRACTION_EMPTY` EK D.6'da duruyordu ve hiçbir şey üretmiyordu; artık
 profil çıkarımı ikisini de üretiyor. `EXTRACTION_EMPTY` **iki sebebi birden
