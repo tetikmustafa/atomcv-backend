@@ -67,10 +67,14 @@ class JobWorkerWiringIT {
      * like a broken pipeline rather than a missing bean.
      */
     @Test
-    void theworkerCanRunTheJobTypeThisApplicationEnqueues() {
+    void theworkerCanRunEveryJobTypeThisApplicationEnqueues() {
         assertThat(context.getBeansOfType(
                 com.mustafatetik.atomcv.jobs.queue.JobHandler.class).values())
                 .extracting(com.mustafatetik.atomcv.jobs.queue.JobHandler::type)
-                .contains(JobType.GENERATION);
+                // Adim 3.4 added the second one. The list grows as the
+                // application learns to enqueue a type, and the types it does
+                // not enqueue yet are deliberately absent — a handler for one
+                // of those would be a bean nothing can reach.
+                .contains(JobType.GENERATION, JobType.PROFILE_EXTRACT);
     }
 }
