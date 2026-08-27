@@ -151,6 +151,11 @@ atomcv:
   quota:
     generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
     profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
+    # Bolum 44.1's anonymous pair, and lower on purpose: an address is a
+    # weaker claim about who is asking than an account, and it is what
+    # somebody spending our money rotates.
+    generations-per-ip: ${QUOTA_GENERATIONS_PER_IP:5}
+    profile-extracts-per-ip: ${QUOTA_PROFILE_EXTRACTS_PER_IP:3}
 
   # Bolum 44.4. The other half of what bounds the sign-in endpoint. Absent
   # locally and in the test suite, where ChallengeConfig warns and waves the

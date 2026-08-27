@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.identity.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.identity.CapabilityProperties;
 import com.mustafatetik.atomcv.identity.api.dto.CapabilitiesResponse;
@@ -55,8 +56,8 @@ public class Capabilities {
     }
 
     private CapabilitiesResponse forAccount(UserContext user) {
-        QuotaService.Usage generations = quotas.usage(user, QuotaMetric.GENERATION);
-        QuotaService.Usage profiles = quotas.usage(user, QuotaMetric.PROFILE_EXTRACT);
+        QuotaService.Usage generations = quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        QuotaService.Usage profiles = quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
         return new CapabilitiesResponse(
                 properties.accountLanguages(),
                 templates(),

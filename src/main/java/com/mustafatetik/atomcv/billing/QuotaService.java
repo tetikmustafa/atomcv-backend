@@ -2,7 +2,6 @@ package com.mustafatetik.atomcv.billing;
 
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
-import com.mustafatetik.atomcv.shared.security.UserContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Clock;
 import java.time.Instant;
@@ -47,10 +46,16 @@ public class QuotaService {
      * over their limit hammer the endpoint with the counter never moving past
      * the ceiling. It is capped by the increment itself, not by the caller.
      */
-    public Result<Void> consume(UserContext user, QuotaMetric metric) {
-        QuotaSubject subject = QuotaSubject.of(user);
+    /**
+     * <p><strong>The subject and not a user</strong> (Adim 3.6). An account and
+     * an anonymous address are both things an allowance belongs to, and an
+     * overload for each read well until a test tried to stub one: with two
+     * signatures, {@code any()} resolves to neither. One method that takes the
+     * thing that actually varies is both clearer and testable.
+     */
+    public Result<Void> consume(QuotaSubject subject, QuotaMetric metric) {
         int used = counters.increment(subject, metric);
-        int limit = limits.dailyLimit(metric);
+        int limit = limits.dailyLimit(metric, subject.type());
 
         if (used > limit) {
             // The subject and the numbers, never anything they wrote.
@@ -71,15 +76,14 @@ public class QuotaService {
      * must not do is refund a success, and the only caller is the failure
      * path.
      */
-    public void refund(UserContext user, QuotaMetric metric) {
-        counters.refund(QuotaSubject.of(user), metric);
+    public void refund(QuotaSubject subject, QuotaMetric metric) {
+        counters.refund(subject, metric);
     }
 
     /** What {@code GET /account/usage} and {@code capabilities} publish. */
-    public Usage usage(UserContext user, QuotaMetric metric) {
-        QuotaSubject subject = QuotaSubject.of(user);
+    public Usage usage(QuotaSubject subject, QuotaMetric metric) {
         return Usage.of(metric.wireValue(), counters.used(subject, metric),
-                limits.dailyLimit(metric), resetsAt());
+                limits.dailyLimit(metric, subject.type()), resetsAt());
     }
 
     /**

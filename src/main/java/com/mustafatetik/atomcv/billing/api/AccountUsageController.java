@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.billing.api;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,7 @@ public class AccountUsageController {
                 // the user believes they still have.
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(List.of(
-                        quotas.usage(user, QuotaMetric.GENERATION),
-                        quotas.usage(user, QuotaMetric.PROFILE_EXTRACT)));
+                        quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION),
+                        quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT)));
     }
 }

@@ -59,9 +59,9 @@ class QuotaIT extends AbstractIntegrationTest {
 
     @Test
     void thefirstUseCountsOneAndIsAllowed() {
-        assertThat(quotas.consume(user, QuotaMetric.GENERATION).isErr()).isFalse();
+        assertThat(quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION).isErr()).isFalse();
 
-        var usage = quotas.usage(user, QuotaMetric.GENERATION);
+        var usage = quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION);
         assertThat(usage.used()).isEqualTo(1);
         assertThat(usage.limit()).isEqualTo(limits.generationsPerUser());
         assertThat(usage.remaining()).isEqualTo(limits.generationsPerUser() - 1);
@@ -70,11 +70,11 @@ class QuotaIT extends AbstractIntegrationTest {
     @Test
     void theallowanceRunsOutAtTheLimitAndNotBefore() {
         for (int use = 1; use <= limits.generationsPerUser(); use++) {
-            assertThat(quotas.consume(user, QuotaMetric.GENERATION).isErr())
+            assertThat(quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION).isErr())
                     .as("use %d of %d", use, limits.generationsPerUser()).isFalse();
         }
 
-        assertThat(quotas.consume(user, QuotaMetric.GENERATION).isErr()).isTrue();
+        assertThat(quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION).isErr()).isTrue();
     }
 
     /**
@@ -120,10 +120,10 @@ class QuotaIT extends AbstractIntegrationTest {
     void refusedRequestsShowUpAsAttemptsAndNotAsConsumption() {
         int limit = limits.profileExtractsPerUser();
         for (int i = 0; i < limit + 2; i++) {
-            quotas.consume(user, QuotaMetric.PROFILE_EXTRACT);
+            quotas.consume(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
         }
 
-        var usage = quotas.usage(user, QuotaMetric.PROFILE_EXTRACT);
+        var usage = quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT);
         assertThat(counters.used(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT))
                 .as("the row keeps counting; that is the abuse brake")
                 .isEqualTo(limit + 2);
@@ -135,30 +135,73 @@ class QuotaIT extends AbstractIntegrationTest {
     /** Bolum 44.1: one limit would let extraction eat the whole of it. */
     @Test
     void thetwoMetricsAreCountedApart() {
-        quotas.consume(user, QuotaMetric.GENERATION);
-        quotas.consume(user, QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
-        assertThat(quotas.usage(user, QuotaMetric.GENERATION).used()).isEqualTo(2);
-        assertThat(quotas.usage(user, QuotaMetric.PROFILE_EXTRACT).used()).isZero();
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).used()).isEqualTo(2);
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.PROFILE_EXTRACT).used()).isZero();
     }
 
     @Test
     void onepersonsUseIsNotAnothers() {
         var stranger = UserContext.of(UUID.randomUUID());
-        quotas.consume(user, QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
-        assertThat(quotas.usage(stranger, QuotaMetric.GENERATION).used()).isZero();
+        assertThat(quotas.usage(QuotaSubject.of(stranger), QuotaMetric.GENERATION).used()).isZero();
+    }
+
+    /**
+     * Bolum 44.1's anonymous pair, and they are lower on purpose: an address
+     * is a weaker claim about who is asking than an account, and it is what
+     * somebody spending our money rotates.
+     */
+    @Test
+    void anaddressHasItsOwnSmallerAllowance() {
+        var caller = QuotaSubject.ofAddress("203.0.113.7");
+
+        assertThat(quotas.usage(caller, QuotaMetric.GENERATION).limit()).isEqualTo(5);
+        assertThat(quotas.usage(caller, QuotaMetric.PROFILE_EXTRACT).limit()).isEqualTo(3);
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).limit())
+                .isEqualTo(20);
+    }
+
+    @Test
+    void anaddressRunsOutAtItsOwnCeiling() {
+        var caller = QuotaSubject.ofAddress("203.0.113.8");
+
+        for (int i = 0; i < 3; i++) {
+            assertThat(quotas.consume(caller, QuotaMetric.PROFILE_EXTRACT).isErr()).isFalse();
+        }
+
+        assertThat(quotas.consume(caller, QuotaMetric.PROFILE_EXTRACT).isErr()).isTrue();
+    }
+
+    /** One office router is not one person, but two addresses are two subjects. */
+    @Test
+    void twoAddressesAreTwoAllowances() {
+        quotas.consume(QuotaSubject.ofAddress("203.0.113.9"), QuotaMetric.GENERATION);
+
+        assertThat(quotas.usage(QuotaSubject.ofAddress("203.0.113.10"), QuotaMetric.GENERATION)
+                .used()).isZero();
+    }
+
+    /** An address and an account are different subjects even if one becomes the other. */
+    @Test
+    void anaddressAndAnAccountDoNotShareACounter() {
+        quotas.consume(QuotaSubject.ofAddress("203.0.113.11"), QuotaMetric.GENERATION);
+
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).used()).isZero();
     }
 
     /** Bolum 44.2: a failure the user got no document out of is given back. */
     @Test
     void arefundGivesTheUnitBack() {
-        quotas.consume(user, QuotaMetric.GENERATION);
-        quotas.consume(user, QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
-        quotas.refund(user, QuotaMetric.GENERATION);
+        quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
-        assertThat(quotas.usage(user, QuotaMetric.GENERATION).used()).isEqualTo(1);
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).used()).isEqualTo(1);
     }
 
     /**
@@ -168,12 +211,12 @@ class QuotaIT extends AbstractIntegrationTest {
      */
     @Test
     void refundsNeverGoBelowZero() {
-        quotas.refund(user, QuotaMetric.GENERATION);
-        quotas.consume(user, QuotaMetric.GENERATION);
-        quotas.refund(user, QuotaMetric.GENERATION);
-        quotas.refund(user, QuotaMetric.GENERATION);
+        quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
-        assertThat(quotas.usage(user, QuotaMetric.GENERATION).used()).isZero();
+        assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).used()).isZero();
     }
 
     /**
@@ -200,7 +243,7 @@ class QuotaIT extends AbstractIntegrationTest {
     /** And what is written is what {@code today()} says. */
     @Test
     void thestoredPeriodIsThatSameDay() {
-        quotas.consume(user, QuotaMetric.GENERATION);
+        quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
         LocalDate stored = jdbc.queryForObject(
                 "SELECT period FROM usage_counters LIMIT 1", LocalDate.class);
@@ -250,7 +293,7 @@ class QuotaIT extends AbstractIntegrationTest {
     /** The counter resets at UTC midnight, and resetsAt says exactly when. */
     @Test
     void theresetIsAnAbsoluteInstantAtUtcMidnight() {
-        var usage = quotas.usage(user, QuotaMetric.GENERATION);
+        var usage = quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION);
 
         assertThat(usage.resetsAt())
                 .isEqualTo(counters.today().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC));

@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.domain.EngineVersion;
 import com.mustafatetik.atomcv.generation.domain.Generation;
@@ -105,7 +106,7 @@ public class GenerationJobHandler implements JobHandler {
                 // Bolum 44.2: the unit was taken when this was queued and no
                 // document came out of it. User error or system error, the
                 // section refunds both.
-                quotas.refund(user, QuotaMetric.GENERATION);
+                quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
                 yield failed(failed.error());
             }
         };
