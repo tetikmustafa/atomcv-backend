@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-27** · **3.4 kapandı — CV yükleme telde** · frontend'de açık: **`B-044`**–**`B-051`**, sekizi de bekliyor
+**2026-08-27** · **3.5 · 1/2 — varyant senkronizasyonu ve çeviri işi indi** · frontend'de açık: **`B-044`**–**`B-052`**, dokuzu da bekliyor
 
 ---
 
@@ -13,9 +13,9 @@
 |---|---|
 | Aşama 0 · 1 — Yürüyen iskelet · **2 — İlana özel üretim** (2.1-2.7) | ✅ · ✅ 8/8 |
 | **Aşama 3 — hesap ve MVP** · 3.1 dış servis hesapları | 🔄 · ✅ |
-| 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC saati) |
-| 3.3 kimlik doğrulama | ✅ 4/4 — oturum+CSRF, OAuth, magic link, rate limit+Turnstile |
-| 3.4 CV yükleme ve çıkarım | ✅ 4/4 — doğrulama+çıkarım, yapılandırma, normalizasyon, uç+iş |
+| 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC) · 3.3 kimlik ✅ 4/4 |
+| 3.4 CV yükleme ve çıkarım | ✅ 4/4 |
+| 3.5 çok dillilik | 🔄 1/2 — senkronizasyon+çeviri ✅, dil-farkındalıklı Faz C ⬜ |
 
 **Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
 magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
@@ -27,7 +27,7 @@ karşılaştırmanın iki tarafında da (§ 31.5.1). **`POST /profile/import` te
 — `202` + iş, beş ret senkron, embedding ve ölçüm arkada (§ 31.6.1-2);
 sözleşme **`B-051`**'de.
 
-**Aşama 1-2:** `F-001`…`F-016` kapandı, açık `F-nnn` yok. **Test:** 855 birim · 332 entegrasyon · 48 latex — 0 hata, 0 atlanan
+**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 876 birim · 337 entegrasyon · 48 latex — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -35,7 +35,7 @@ sözleşme **`B-051`**'de.
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
 
-**`B-044`-`B-050` açık, hiçbiri ACK almadı** — `to-frontend.md` bu yüzden 145 satır.
+**`B-044`-`B-052` açık, hiçbiri ACK almadı** — `to-frontend.md` bu yüzden 221 satır.
 `/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
 **Test:** 401 birim · 25 e2e · **bundle** profil 250.7 / üretim 214.8 KB.
 **Aşama 2 gerçek uca karşı denetlendi (2026-08-25): 26/26** — yalnız
@@ -55,6 +55,6 @@ sözleşme **`B-051`**'de.
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-051`'i alsın**; ilk `ACK`'ler `to-frontend.md`'yi (188
-satır) sınırın altına indirir. Backend **Adım 3.5**'e (çok dillilik) geçiyor.
+**Frontend `B-044`-`B-052`'yi alsın** — dosya 221 satır ve **tek bir `ACK`
+almadı**; ilk birkaçı onu sınırın altına indirir. Backend 3.5 dilim 2'de.
 **`local-fake` fixture'ı sende:** `make record` senin anahtarını istiyor.

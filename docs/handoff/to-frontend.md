@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** sekiz madde birden açık ve hiçbiri henüz `ACK` almadı, yani
+> değil:** dokuz madde birden açık ve hiçbiri henüz `ACK` almadı, yani
 > taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
 > yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
 
@@ -173,6 +173,39 @@ tekrar dene; bu **tekrar edilebilir** olan tek ret).
 embedding ve ölçüm tetiklemesi (§ 31.6'nın `t=25s` kutusu) bir sonraki dilimde;
 `local-fake` için gerçek bir fixture da orada. Bugün yerel geliştirmede çıkan
 profil şema şeklinde ama anlamsız — **ucun sözleşmesi doğru, içeriği değil.**
+
+### B-052 · Bir sözcüklemeyi düzenlemek ötekileri bayatlatıyor — ekranı siz kuruyorsunuz
+**Since:** commit <sha> · Adım 3.5 · **Spec:** `spec/07-subsystems.md` § 32.2, § 32.2.1
+
+Kullanıcı Türkçe maddeyi düzenleyince İngilizcesi **bayat** işaretleniyor.
+Sunucu ne yapacağına kendi karar vermiyor — **siz soruyorsunuz.**
+
+**Varyant nesnesi artık iki bayrak taşıyor**, ve uyarı ikisinin **çiftinden**
+kuruluyor:
+
+| `stale` | `userEdited` | Ne demek | Ekranda |
+|---|---|---|---|
+| `false` | — | Güncel | — |
+| `true` | `false` | Kaynağı değişti, **arka planda yenileniyor** | "güncelleniyor" göstergesi yeter |
+| `true` | `true` | Kaynağı değişti **ama bu sözcüklemeyi sen yazdın** | § 32.2'nin iki düğmesi |
+
+Üçüncü satır maddenin tamamı. Sunucu, kullanıcının kendi yazdığı bir
+sözcüklemeyi **asla** kendiliğinden yenilemiyor; onu yalnız işaretleyip
+bırakıyor. § 32.2'nin metni:
+
+> ⚠ Bu maddenin Türkçe hali güncellendi, İngilizce halini sen düzenlemiştin.
+>   [ İngilizceyi yeniden üret ] [ Benim halimi koru ]
+
+**"Yeniden üret" için ayrı bir uç yok** — o düğme, İngilizce varyanta bir
+`PATCH` ile `userEdited`'ı geri almalı. **Bunu şimdilik yapamazsınız:** varyant
+`PATCH`'i içerik yazınca `userEdited`'ı `true` yapıyor ve geri almanın yolu yok.
+Bir sonraki dilimde bir uç açacağım — **düğmeyi çizin, bağlamayın.**
+"Benim halimi koru" ise sunucuya hiçbir şey sormuyor: kullanıcı uyarıyı
+kapatır, satır bayat kalır. Bu doğru davranış, eksik değil.
+
+**Yenileme başarısız olabilir** ve bu da sessiz: iş `TRANSLATION_FAILED` (422,
+parametresiz) ile düşerse sözcükleme **bayat kalır**. Ekranınız zaten doğru
+şeyi gösteriyor olur; ayrıca bir hata bildirimi göstermeyin.
 
 ---
 
