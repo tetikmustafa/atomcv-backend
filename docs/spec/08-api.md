@@ -406,6 +406,35 @@ Sayılar `QuotaService`'ten okunur, yapılandırmadan ikinci kez değil: kullan�
 birazdan alacağı 429 ile çelişen bir yetenek ekranı, hiç yetenek ekranı
 olmamasından kötüdür.
 
+#### 35.7.1 Kararlar (Adım 3.6, dilim 1)
+
+**Anonim oturum aynı çerezi kullanıyor** — § 35.7'nin tasarımı bu, kısayol
+değil: kimlik doğrulama, istemcinin `capabilities`'e sorduğu bir soruya
+dönüşüyor, taşınacak ikinci bir kimlik bilgisine değil. Farklı olan pencere:
+**kayan iki saat**, otuz güne karşı. Giriş yapmamış birinin geri döneceği
+saklanmış bir şeyi yok, o yüzden uzun bir pencere yalnızca daha uzun ömürlü bir
+kimlik bilgisi olurdu.
+
+**Oturum ya üçünü birden taşır ya hiçbirini** (kullanıcı, rol, yöntem).
+Kullanıcısı olup rolü olmayan bir oturum, yetkilendirmesine kimsenin karar
+vermediği bir oturumdur; rolü olup kullanıcısı olmayan bir oturum, kimseye ait
+olmayan bir roldür. İkisi de bu iki durumdan kötü.
+
+**TTL oturumdan okunuyor, parametre olarak geçmiyor.** Tazeleme ile oluşturma
+böylece anlaşmazlığa düşemiyor: hesabın uzunluğuna kayan bir pencere, iki saati
+sessizce bir aya çevirirdi ve oturumda yanlış görünen hiçbir şey olmazdı.
+
+**Anonim oturum bir oturumdur, kullanıcı değil.** `CurrentUser.find()` boş
+dönüyor, yani kullanıcı kapsamlı bir uç hâlâ `AUTHENTICATION_REQUIRED` +
+`sign_up` ile reddediyor — hesap isteyen bir yerde doğru cevap bu.
+
+**`anonymousExpiresAt` `lastSeenAt`'ten hesaplanıyor, `createdAt`'ten değil.**
+Pencere kayıyor; ötekini söylemek istemciyi sürekli ilerleyen bir ana geri
+saydırırdı.
+
+**Uç oturumu kendisi basıyor.** İstemci ilk olarak burayı çağırıyor; aksi hâlde
+"henüz yok" diye bir durumu ele alması gerekirdi.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:
