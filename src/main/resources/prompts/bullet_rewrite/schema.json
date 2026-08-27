@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["text", "emphasis"],
+  "properties": {
+    "text": { "type": "string" },
+    "emphasis": { "type": "array", "items": { "type": "string" } }
+  }
+}
