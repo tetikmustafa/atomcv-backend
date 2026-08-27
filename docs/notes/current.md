@@ -29,7 +29,6 @@ kullanıcının **üretim** hakkını kısmak istiyor; yeri `QuotaService`.
 
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
-| `ProfileRef.Scope` yalnız `PERSISTENT` | Aşama 3 | `EPHEMERAL`'ı anonim akıştan önce eklemek, üretmenin denetimli yolu yokken sahiplik kontrolünün etrafından dolaşmanın yolu olurdu |
 | ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı: PDFBox 3.4 dilim 1'de geldi. `FitReport` `F-008`'de indi — kalan yarısı üretilen PDF'i geri okumak |
 | `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
@@ -61,9 +60,8 @@ bozucu düzeltir.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
-- **Kılavuz "tablo" dediğinde önce `V1`'e bak.** Beş kez var olan bir tablo için
-  migration istedi (2.4 pgvector, 2.6 `jobs` ve `generations`, 2.7
-  `usage_counters` ve `feature_flags`).
+- **Kılavuz "tablo" dediğinde önce `V1`'e bak** — beş kez var olan bir tablo
+  için migration istedi.
 - **Toplu JPQL `update` `@Version`'ı atlar** ve **okuma, yakalanmak istenen
   bayatlığı onarır** — etag'i **önceki yazmanın yanıtından** al. Aşama 3'ün
   başvuru izlemesi ikisine de çarpacak.
@@ -104,10 +102,8 @@ Otuz yedi kararın hepsi `spec/`'e işlendi (§ 31.3.1, § 31.4.1, § 31.5.1,
 § 31.6.1, § 31.6.2; ayrıca § 43.1 ve § 53.1). İnşa kaydı
 `archive/stage-3-ingestion.md`'de.
 
-**İki ders.** *Bir metodun javadoc'u ne zaman çalıştığını söylüyorsa, çağıranı
-da ara* — `validateConfiguredPrompts()` "açılışta hata" diyordu ve kimse onu
-çağırmıyordu. *Düşmeyen bir ihlal denemesi, bir eksik testtir* — arka plan
-işlerinin sırasını hiçbir test tutmuyordu.
+**Ders:** *bir metodun javadoc'u ne zaman çalıştığını söylüyorsa çağıranı da
+ara* — `validateConfiguredPrompts()` "açılışta hata" diyordu, çağıranı yoktu.
 
 ### Hâlâ canlı olanlar
 
@@ -119,25 +115,19 @@ tipinin sorusu.
 aktarma bölümleri ikinci kez yazar. `PROFILE_ALREADY_EXISTS` (409) katalogda ve
 **hiçbir şey onu üretmiyor** — ürünün "ikinci CV yüklenirse ne olur" cevabı yok.
 
-**Embedding yalnız İngilizce varyanttan** (§ 31.6.2), ve İngilizce varyantı
-olmayan atom atlanıyor. **Adım 3.5 tam olarak buraya dokunuyor.**
-
 **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
 (§ 31.4.1); alan eklendiğinde üçü birden güncellenmeli.
 
 **`MIN_LANGUAGE_CONFIDENCE = 0.5` prompt'un cümlesiyle eşleşiyor**; birini
 değiştiren ötekini de değiştirmeli.
 
-**`SkillNames.canonical` dört çağıranın ortak kuralı** — ingestion, Faz B
-skorlayıcı, Faz F raporu, run işaretleme. Alias dosyasında soldaki taraf
-insanların gerçekten yazdığı gibi olmalı, yoksa anahtar hiçbir şeyle eşleşmez.
+**`SkillNames.canonical` dört çağıranın ortak kuralı.** Alias dosyasında sol
+taraf insanların gerçekten yazdığı gibi olmalı, yoksa anahtar eşleşmez.
 
 **İzlenecek — CI bir kez `PGVectorTypeContributor`'da `NoClassDefFoundError`
-verdi; aynı ağaç tekrar koşuşta geçti** (2026-08-27, run 33091345512).
-Paylaşılan dâhil dört bağlam birden düştü, yerelde hiç düşmedi. Tek makul
-açıklama **bağlam sayısı**: entegrasyon paketi artık dört Spring bağlamı
-kuruyor, her biri kendi `EntityManagerFactory`'siyle. **Tekrarlarsa ilk
-bakılacak yer beşinci bir bağlam, kod değil.**
+verdi, aynı ağaç tekrar koşuşta geçti** (2026-08-27, run 33091345512): dört
+bağlam birden, yerelde hiç. **Tekrarlarsa ilk bakılacak yer bağlam sayısı,
+kod değil.**
 
 **Açık — `local-fake` fixture'ı yok ve uydurulamaz.** Fixture anahtarı istek
 metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
@@ -190,3 +180,21 @@ Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor
 
 **Dikkat — `git checkout --` ekilmiş ihlali geri alırken commit edilmemiş
 gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.
+
+## Adım 3.8 — Faz D ve cover letter · 1/5
+
+Dilimler: **1 sözcükleme seçimi + eşikler (LLM'siz)** ✅ · 2 rewrite prompt +
+doğrulayıcı · 3 paralel yürütme + boru hattına bağlama · 4 About sentezi ·
+5 cover letter.
+
+**Dilim 1 indi**; kararlar § 21.3.1'de — bir **Düzeltme** (varyantın embedding'i
+yok, seçim dil+tonla yapılıyor) ve bir **Ekleme** ("uzunsa" eşiği 160 karakter).
+
+**Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
+testtir.* Tabanı kaldırdım, paket geçti — çünkü "bağlantısız" testim kısa bir
+maddeydi ve uzunluk kapısına zaten takılmıyordu. Uzun-ve-tabanın-altında bir
+vaka eklenince ihlal düştü.
+
+**Faz D henüz boru hattına bağlı değil.** `RewritePlanner` çağıran yok; § 21.5
+paralel yürütme dilim 3'te. `GenerationPhase` hâlâ "Faz D hiç koşmaz" diyor.
+
