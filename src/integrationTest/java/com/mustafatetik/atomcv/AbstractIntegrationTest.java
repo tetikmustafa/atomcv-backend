@@ -42,7 +42,11 @@ import org.testcontainers.utility.DockerImageName;
         "atomcv.jobs.worker.enabled=false",
         // Likewise: a detector firing on the schedule would report on rows
         // other tests are still writing. AnomalyDetectorIT calls it directly.
-        "atomcv.anomaly.enabled=false"})
+        "atomcv.anomaly.enabled=false",
+        // And the retention sweep, for the same reason twice over: it clears
+        // the payloads and postings other tests wrote. RetentionSweeperIT
+        // calls it directly.
+        "atomcv.retention.enabled=false"})
 @ActiveProfiles("local")
 @Import(AbstractIntegrationTest.CsrfOnEveryRequest.class)
 public abstract class AbstractIntegrationTest {
