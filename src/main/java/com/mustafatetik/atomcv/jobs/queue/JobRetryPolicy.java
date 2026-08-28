@@ -77,6 +77,11 @@ public final class JobRetryPolicy {
             // model that dropped a number on one call may keep it on the next,
             // and Bolum 27.3 already treats a schema failure the same way.
             case PipelineError.TranslationRejected ignored -> true;
+
+            // Adim 3.8. Same reasoning, and the letter is the cheaper call of
+            // the two: a draft that named something the page does not carry is
+            // a model being sloppy once, and the next draft is a new one.
+            case PipelineError.CoverLetterRejected ignored -> true;
         };
     }
 

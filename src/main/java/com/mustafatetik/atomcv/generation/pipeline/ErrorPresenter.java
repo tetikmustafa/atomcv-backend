@@ -119,6 +119,16 @@ public class ErrorPresenter {
             case PipelineError.TranslationRejected ignored -> UserFacingError.of(
                     ErrorCode.TRANSLATION_FAILED, new Resolution(ResolutionAction.RETRY, null));
 
+            case PipelineError.CoverLetterRejected refused -> UserFacingError
+                    .with(ErrorCode.COVER_LETTER_REJECTED)
+                    // Kinds, not the letter. The screen turns these into a
+                    // sentence; the draft itself was never stored.
+                    .param("issues", refused.issues())
+                    // Another draft is a different draft: these failures are
+                    // largely a model being sloppy, and the letter is cheap.
+                    .resolution(ResolutionAction.RETRY)
+                    .build();
+
             case PipelineError.CompilationFailed failed -> {
                 var presented = UserFacingError.with(ErrorCode.COMPILATION_FAILED)
                         // The kind, never the log: the log is built from the

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["greeting", "opening", "body", "closing", "signature"],
+  "properties": {
+    "greeting": { "type": "string" },
+    "opening": { "type": "string" },
+    "body": { "type": "string" },
+    "closing": { "type": "string" },
+    "signature": { "type": "string" }
+  }
+}

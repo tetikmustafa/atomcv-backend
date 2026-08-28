@@ -218,4 +218,27 @@ public sealed interface PipelineError {
     record TranslationRejected() implements PipelineError {
     }
 
+    /**
+     * Bolum 34.4 refused the letter twice, and there is nothing to print
+     * instead.
+     *
+     * <p><strong>The only phase in Faz D that reports a failure.</strong> A
+     * refused rewrite prints the sentence the person wrote and a refused
+     * summary prints the paragraph they wrote; a covering letter has no
+     * original behind it. Producing one that claims something the page does
+     * not support is the single outcome this subsystem exists to prevent, so
+     * the remaining answer is to say so.
+     *
+     * @param issues the kinds that fired, never a line of the letter
+     *               (absolute rule 4). The user is told what was wrong with
+     *               it, because "it did not work" is not something a person
+     *               can act on
+     */
+    record CoverLetterRejected(List<String> issues) implements PipelineError {
+
+        public CoverLetterRejected {
+            issues = List.copyOf(issues);
+        }
+    }
+
 }
