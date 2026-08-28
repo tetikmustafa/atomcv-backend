@@ -58,12 +58,21 @@ class LocalProfileConfigTest {
         });
     }
 
-    /** The base configuration, for contrast: the adapter that exists. */
+    /**
+     * The base configuration, for contrast: the real adapters, in order.
+     *
+     * <p>Two of them, and the order is the fallback (Bolum 27.3). It said
+     * {@code openrouter} alone until the second adapter existed — the chain
+     * mechanism was built, tested and had exactly one link, so a single
+     * vendor's outage stopped the product.
+     */
     @Test
-    void withoutTheFakeProfileTheChainNamesTheRealAdapter() {
-        run("local", context ->
-                assertThat(context.getBean(LlmProperties.class).chainFor(ModelTier.CHEAP))
-                        .containsExactly("openrouter"));
+    void withoutTheFakeProfileTheChainNamesTheRealAdapters() {
+        run("local", context -> {
+            var llm = context.getBean(LlmProperties.class);
+            assertThat(llm.chainFor(ModelTier.CHEAP)).containsExactly("openrouter", "gemini");
+            assertThat(llm.chainFor(ModelTier.MID)).containsExactly("openrouter", "gemini");
+        });
     }
 
     /**
