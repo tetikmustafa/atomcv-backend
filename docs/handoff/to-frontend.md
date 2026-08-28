@@ -344,6 +344,44 @@ Silmeden sonra çerez temizlendiği için istemci **anonim** duruma düşüyor �
 `GET /auth/session` yeni bir anonim oturum verir. Kullanıcıyı ana sayfaya
 atmak doğru davranış.
 
+### B-058 · Geri bildirim telde — bir başparmak, ve 48 saatlik bir izin
+**Since:** commit <sha> · Adım 3.9 · **Spec:** `spec/11-operations.md` § 48.4
+
+`POST /api/v1/generations/{id}/feedback` → `200`.
+
+```jsonc
+{ "rating": 1,                 // 1 | -1, ZORUNLU, başka değer 400
+  "category": "density",       // selection|writing|format|density|other, ops.
+  "comment": "...",            // ops., en fazla 4000
+  "contentGranted": false }    // ops.
+```
+
+**Yalnız başparmak zorunlu.** Sebep sormadan önce yargıyı kabul eden bir form
+daha çok ve daha iyi yargı toplar — kategori ile yorum, söyleyecek şeyi olanlar
+için.
+
+**Üretim başına tek yargı.** Öbür başparmağa basmak fikrini değiştirmek; ikinci
+bir satır açılmıyor, var olan güncelleniyor. Ekranda "geri bildirimini
+gönderdin" yerine **mevcut seçimi göstermek** doğru davranış.
+
+**`contentGranted` § 48.4'ün rızası ve asıl dikkat isteyen yer.** Bu üründe
+başka her şey şekillerden teşhis ediliyor (karakter sayısı, satır sayısı,
+render maliyeti); bu, içeriğe açılan **tek kapı**. İşaretlemek 48 saat açıyor,
+`false` göndermek **geri alıyor**. Yanıt grant'i geri yolluyor:
+
+```jsonc
+"contentGrant": { "open": true, "expiresAt": "...",
+                  "accessedAt": null, "revokedAt": null }
+```
+
+**`accessedAt` biri gerçekten bakana kadar `null`** — ve kişiye gösterilmeli.
+Kontrol edilemeyen bir onay kutudan ibaret. Ekranda "izin verdin, henüz
+bakılmadı / şu tarihte bakıldı" cümlesi bu alandan kuruluyor. İkinci bir "evet"
+pencereyi ileri **itmiyor**; 48 saat ilk kabulden başlıyor.
+
+**Yorum geri yollanmıyor** (mutlak kural 4 ile aynı sebep: kişi onu zaten
+yazdı, elinde). Saklanıyor ama loglanmıyor.
+
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir

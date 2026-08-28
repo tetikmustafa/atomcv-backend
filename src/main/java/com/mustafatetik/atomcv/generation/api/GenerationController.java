@@ -3,6 +3,8 @@ package com.mustafatetik.atomcv.generation.api;
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
 import com.mustafatetik.atomcv.generation.api.dto.CoverLetterRequest;
 import com.mustafatetik.atomcv.generation.api.dto.CoverLetterResponse;
+import com.mustafatetik.atomcv.generation.api.dto.FeedbackRequest;
+import com.mustafatetik.atomcv.generation.api.dto.FeedbackResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
@@ -11,6 +13,7 @@ import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterDraft;
 import com.mustafatetik.atomcv.generation.service.CoverLetterRegenerationService;
+import com.mustafatetik.atomcv.generation.service.FeedbackService;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
@@ -32,6 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -74,6 +78,8 @@ public class GenerationController {
     private final GenerationRepository generations;
     private final CoverLetterRegenerationService coverLetters;
     private final RateLimiter rateLimiter;
+    private final FeedbackService feedback;
+    private final Clock clock;
     private final ErrorPresenter errors;
 
     /**
@@ -86,7 +92,8 @@ public class GenerationController {
     GenerationController(CurrentUser currentUser,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
-            RateLimiter rateLimiter, ErrorPresenter errors) {
+            RateLimiter rateLimiter, FeedbackService feedback, Clock clock,
+            ErrorPresenter errors) {
 
         this.currentUser = currentUser;
         this.enqueue = enqueue;
@@ -94,6 +101,8 @@ public class GenerationController {
         this.generations = generations;
         this.coverLetters = coverLetters;
         this.rateLimiter = rateLimiter;
+        this.feedback = feedback;
+        this.clock = clock;
         this.errors = errors;
     }
 
@@ -272,6 +281,51 @@ public class GenerationController {
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(new CoverLetterResponse(
                         generationId, draft.plainText(), asked.styleOrDefault()));
+    }
+
+    @Operation(
+            summary = "Say what you thought of a generation",
+            description = """
+                    A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.
+
+                    `contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     including `accessedAt`, which is null until somebody                     actually looks. Sending `contentGranted: false` later                     withdraws a grant that is still open.
+
+                    The comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Recorded"),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — rating is 1 or -1",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{generationId}/feedback", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FeedbackResponse> feedback(
+            @PathVariable UUID generationId,
+            @Valid @RequestBody FeedbackRequest request) {
+
+        if (!request.hasValidRating()) {
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", java.util.List.of("rating"))
+                    .build());
+        }
+
+        // Scoped, and it is the IDOR defense here too: a verdict on somebody
+        // else's generation answers 404 (absolute rule 3).
+        feedback.find(currentUser.require(), generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        var recorded = feedback.record(currentUser.require(), generationId,
+                request.rating(), request.domainCategory(), request.comment(),
+                request.granted());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(FeedbackResponse.of(generationId, recorded.verdict(),
+                        recorded.grant(), clock.instant()));
     }
 
     /**

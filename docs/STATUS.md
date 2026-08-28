@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-28** · **3.9 · 1/2 — hesap silme telde** · frontend'de açık: **`B-044`**–**`B-057`**, on dördü de bekliyor
+**2026-08-28** · **3.9 · 2/2 — backend'in MVP payı bitti** · frontend'de açık: **`B-044`**–**`B-058`**, on beşi de bekliyor
 
 ---
 
@@ -16,7 +16,7 @@
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC) · 3.3 kimlik ✅ 4/4 |
 | 3.4 CV yükleme ve çıkarım ✅ 4/4 · 3.5 çok dillilik ✅ 2/2 | ✅ |
 | 3.6 anonim mod ✅ 6/6 · 3.7 profil editörü **frontend'de** | ✅ |
-| 3.8 Faz D ve cover letter ✅ 5/5 · 3.9 hukuki 🔄 1/2 — silme ✅, geri bildirim ⬜ | ✅ |
+| 3.8 Faz D ✅ 5/5 · 3.9 hukuki ✅ 2/2 — silme, geri bildirim · **kalan: 3.2 DNS** | ✅ |
 
 **Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
 magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
@@ -31,7 +31,7 @@ istemiyor, hak adrese göre, profil hiçbir tabloda satır değil (§ 31.6.3) �
 varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gövde —
 **`B-054`**.
 
-**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 989 birim · 388 entegrasyon — 0 hata · **latex 44/48** (dört test fixture'sız düşüyor, 3.8 öncesi de)
+**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 989 birim · 396 entegrasyon — 0 hata · **latex 44/48** (dört test fixture'sız düşüyor, 3.8 öncesi de)
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gö
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-057`'yi alsın** — 358 satır, tek bir `ACK` almadı. **`B-054`
-kırıcı**, **`B-056`** cover letter ucu, **`B-057`** hesap silme (onay ekranı
-sizde). Backend 3.9'un ikinci diliminde. **`local-fake` fixture'ı sende.**
+**Frontend `B-044`-`B-058`'i alsın** — 15 madde, tek bir `ACK` almadı ve dosya
+390 satır. Backend'in MVP payı bitti; **sırada 3.7 profil editörü ve bu maddeler
+sizde.** Backend'de kalan tek iş 3.2 (DNS + DMARC, geliştiricide).
