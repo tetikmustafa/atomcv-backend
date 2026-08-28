@@ -116,7 +116,7 @@ class JobSpecificGenerationServiceTest {
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
-        verify(analysis, never()).analyse(anyString(), anyBoolean(), anyString());
+        verify(analysis, never()).analyse(anyString(), anyBoolean(), anyString(), any());
     }
 
     /**
@@ -127,7 +127,7 @@ class JobSpecificGenerationServiceTest {
     @Test
     void anunreadablePostingCostsNoCompilation() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
@@ -150,7 +150,7 @@ class JobSpecificGenerationServiceTest {
         ProfileTree tree = aprofileWithOneBullet();
         UUID atomId = tree.sections().get(0).entries().get(0).atoms().get(0).atom().getId();
         when(assembler.load(ref)).thenReturn(tree);
-        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any())).thenReturn(new RelevanceScores(
                 List.of(new ScoredAtom(atomId, 0.77, 0.5,
@@ -175,13 +175,13 @@ class JobSpecificGenerationServiceTest {
     @Test
     void thepromptBucketIsTheUser() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
         service.generateForJob(user(), POSTING, true, null, null, false, ProgressSink.NONE);
 
-        verify(analysis).analyse(POSTING, true, USER.toString());
+        verify(analysis).analyse(POSTING, true, USER.toString(), USER);
     }
 
     private static UserContext user() {
@@ -199,7 +199,7 @@ class JobSpecificGenerationServiceTest {
     void thepipelineIsHandedAFazDThatKnowsThisPosting() {
         ProfileTree tree = aprofileWithOneBullet();
         when(assembler.load(ref)).thenReturn(tree);
-        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
@@ -232,7 +232,7 @@ class JobSpecificGenerationServiceTest {
 
         service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
 
-        verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any());
+        verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -243,18 +243,18 @@ class JobSpecificGenerationServiceTest {
     @Test
     void acoverLetterIsWrittenWhenItWasAskedForAndNeverFailsTheCv() {
         aGenerationThatReachesThePipeline();
-        when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any()))
+        when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(null);
 
         service.generateForJob(user(), POSTING, false, null, null, true, ProgressSink.NONE);
 
-        verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any());
+        verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     /** Everything up to the pipeline's door, so the letter is the only variable. */
     private void aGenerationThatReachesThePipeline() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));

@@ -1105,14 +1105,37 @@ Resend'de `mail.atomcv.mustafatetik.com` alt alanını ekle, verdiği kayıtlar�
 
 | Tip | Ad | İçerik | Proxy |
 |---|---|---|---|
-| MX | `mail.atomcv` | `feedback-smtp.eu-west-1.amazonses.com` | ⚪ DNS only |
-| TXT | `mail.atomcv` | `v=spf1 include:amazonses.com ~all` | ⚪ |
+| MX | `send.mail.atomcv` | `feedback-smtp.<bölge>.amazonses.com` | ⚪ DNS only |
+| TXT | `send.mail.atomcv` | `v=spf1 include:amazonses.com ~all` | ⚪ |
 | TXT | `resend._domainkey.mail.atomcv` | (Resend verir) | ⚪ |
-| TXT | `_dmarc.mail.atomcv` | `v=DMARC1; p=none; rua=mailto:...` | ⚪ |
+| TXT | `_dmarc.mail.atomcv` | `v=DMARC1; p=none; rua=mailto:...; fo=1` | ⚪ |
 
 > **⚠️ E-posta kayıtlarında proxy KAPALI olmalı** (gri bulut).
 
+> **Düzeltme (2026-08-28, telde doğrulandı).** Bu tablo önce MX ve SPF'i
+> `mail.atomcv`'ye koyuyor ve bölgeyi `eu-west-1` diye sabitliyordu; Resend
+> ikisini de **`send.` önekli alt alana** yazıyor ve bölge hesabın bölgesidir
+> (bu kurulumda `ap-northeast-1`). İkisi **ayrı alan adı ve bu doğru**:
+>
+> - **Gönderen alan** `mail.atomcv...` — `From:` buradan çıkar, DKIM (`d=`)
+>   burada yayınlanır. **`EMAIL_FROM` bu alanda olmak zorunda.**
+> - **Return-Path / bounce alanı** `send.mail.atomcv...` — SPF *burada*
+>   denetlenir, MX bounce'ları toplar. Resend yönetir, `EMAIL_FROM` **bu alan
+>   değildir.**
+>
+> DMARC hizalaması için birinin hizalaması yeter; burada DKIM birebir, SPF de
+> gevşek hizalamayla (aynı organizasyon alanı) hizalanıyor.
+
 **DMARC kademeli sertleştirme:** `p=none` (2-4 hafta) → `p=quarantine` → `p=reject`
+
+**DMARC'ı alt alana yaz, apex'e değil.** Apex'teki (`_dmarc.mustafatetik.com`)
+bir politika organizasyon alanı geri düşüşüyle alt alanı da kapsar, yani
+teslimat açısından yeterlidir — ama `p=reject`'e çıktığın gün **apex'in bütün
+postasını** (portfolyo dahil) kapsar. `_dmarc.mail.atomcv` daha spesifiktir ve
+kazanır, böylece ürünün postası bağımsız sertleştirilir.
+
+**`rua=` olmadan sertleştirme yapma.** Rapor gelmeyen bir `p=none` hiçbir şey
+öğretmez; `quarantine`'e geçiş körlemesine olur.
 
 ### Adım 3.3 — Kimlik doğrulama
 

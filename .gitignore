@@ -26,3 +26,22 @@ Thumbs.db
 # Cookie jars from scripts/dev-signin.sh. They hold a live session id.
 .dev-jar.txt
 .dev-anon.txt
+
+# Recorded LLM fixtures, minus the three that carry a real person.
+#
+# `job_analysis` answers describe a job advertisement and are committed: they
+# are what stops latexTest falling back to a synthetic analysis the plausibility
+# gate then refuses, and they identify nobody.
+#
+# The other three are the developer's own CV, structured. A `profile_extraction`
+# answer *is* the CV -- name, email, phone, every link -- and this repository is
+# public, so committing one would publish that permanently and irreversibly.
+# `about_synthesis` and `cover_letter` are written from the same content.
+# FixtureStore's "the file holds the answer, never the prompt" does not cover
+# these: here the answer is the personal data.
+#
+# Nothing is lost. Every prompt still replays for whoever recorded it, and a
+# fresh clone synthesises a schema-shaped answer (local-fake, synthesize: true).
+src/test/resources/fixtures/llm/profile_extraction/
+src/test/resources/fixtures/llm/about_synthesis/
+src/test/resources/fixtures/llm/cover_letter/

@@ -144,13 +144,27 @@ Sadece oturum çerezi (zorunlu) + çerezsiz analitik → **çerez izni banner'ı
 ├── PostgreSQL          (ON DELETE CASCADE ile otomatik)
 ├── Redis oturumları    (session invalidation)
 ├── Redis anonim veri   (varsa)
-├── R2'deki PDF'ler     (pdf_key ile)
+├── R2'deki PDF'ler     (pdf_key ile) ⚠️ HENÜZ YOK — aşağıya bak
 ├── Embedding'ler       (atoms tablosunda, cascade)
 ├── OAuth bağlantıları  (revoke + cascade)
 └── Silme kaydı loglanır (içerik olmadan, yasal kanıt)
 ```
 
 **Kullanıcıya bildirilmeli:** LLM sağlayıcıları kendi taraflarında kısa süreli log tutabilir.
+
+> **⚠️ R2 bu listede var, kodda yok (2026-08-28 denetimi).** Bu repoda hiçbir R2
+> istemcisi yok: PDF saklanmıyor, her indirmede saklanan anlık görüntüden
+> yeniden derleniyor, ve `generations.pdf_key` her satırda NULL. Yani bugün
+> **silinecek bir PDF yok** — liste yanlış değil, henüz karşılıksız.
+>
+> **MVP'ye depolama girmiyor** (2026-08-28 kararı): yeniden derlemek çalışıyor
+> ve bir nesne deposu, silme yolu ile gizlilik politikasına aynı anda eklenmesi
+> gereken bir bileşen.
+>
+> **Depolama indiği gün silme yolunun oradan da geçmesi gerekir**, ve bunu
+> hatırlatacak tek şey bu paragraftır: `AccountDeletionIT` tabloları
+> `information_schema`'dan okuyor, yani veritabanına eklenen her tabloyu kendisi
+> yakalar — **ama veritabanında olmayan bir nesne deposunu göremez.**
 
 #### 57.4.1 Kararlar (Adım 3.9, dilim 1)
 

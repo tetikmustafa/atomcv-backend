@@ -12,10 +12,36 @@
 
 ## OPEN
 
-> **Dosya şu an 100 satır sınırının üstünde, ve sebebi arşivleme gecikmesi
-> değil:** on bir madde birden açık ve hiçbiri henüz `ACK` almadı, yani
-> taşınacak bir şey yok. Gerekçelerin kalıcı olanı `spec/`'e işlendi, burada
-> yalnız *ne yapman lazım* duruyor. İlk `ACK`'lerle sınırın altına düşecek.
+> **Dosya 100 satır sınırının dört katı, ve sebebi arşivleme gecikmesi değil:**
+> **on yedi madde açık ve hiçbiri `ACK` almadı**, yani taşınacak bir şey yok.
+> Sınır bir okunabilirlik kuralı; onu delen şey burada bir belge sorunu değil,
+> **bir koordinasyon sorunu.** Bir madde `ACK` aldığı gün `resolved/`'a taşınır
+> ve dosya kendiliğinden küçülür.
+>
+> Bu arada gezinebilir olsun diye aşağıda bir dizin var. Gerekçelerin kalıcı
+> olanı `spec/`'e işlendi; burada yalnız *ne yapman lazım* duruyor.
+
+### Dizin — açık maddeler
+
+| ID | Konu | Ne yapman lazım, tek cümlede |
+|---|---|---|
+| `B-044` | CSRF | Her yazma isteği `X-XSRF-TOKEN` taşımalı; değeri aynı isteğin çerezinden. |
+| `B-045` | `AUTHENTICATION_REQUIRED` | Yeni 401 kodu — giriş ekranına götüren tek yol. |
+| `B-046` | Oturum ve yetenekler | `/auth/session` ve `/auth/logout`; yetenek kümesi ekranı sürüyor. |
+| `B-047` | LinkedIn | Giriş sağlayıcısı olarak kaldırıldı; düğmeyi silin. |
+| `B-048` | OAuth | İki rota: `/auth/complete` ve `/auth/error`. |
+| `B-049` | Magic link | Bir rota (`/verify`) ve bir tuzak: bağlantı GET'tir, giriş POST'tur. |
+| `B-050` | Turnstile + 429 | Link isteği bir widget tokenı istiyor ve 429 dönebiliyor. |
+| `B-051` | CV yükleme | Bir uç, beş senkron ret, bir iş — ekran kurulacak. |
+| `B-052` | Bayat varyant | Bir sözcüklemeyi düzenlemek ötekileri bayatlatıyor; uyarıyı siz gösterin. |
+| `B-053` | Anonim yükleme | Aynı uç, aynı kalıp, hesap yok. |
+| `B-054` | Yükseltme yanıtı | `/auth/verify` artık anonim profile ne olduğunu söylüyor. |
+| `B-055` | `REWRITING` | Üretim akışında yeni bir faz görünüyor. |
+| `B-056` | Cover letter | Bir bayrak, bir uç, ve reddedilebilir. |
+| `B-057` | Hesap silme | `DELETE /api/v1/account`. |
+| `B-058` | Geri bildirim | Bir başparmak ve 48 saatlik bir içerik izni. |
+| `B-059` | Gizlilik Politikası | Alt işleyen listesine Resend + AWS SES (Tokyo). **Yayın öncesi zorunlu.** |
+| `B-060` | İkinci CV | `409 PROFILE_ALREADY_EXISTS`, iki resolution, `?mode=replace`. |
 
 ### B-044 · Her yazma isteği bir CSRF token taşıyor
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6.6
@@ -381,6 +407,47 @@ pencereyi ileri **itmiyor**; 48 saat ilk kabulden başlıyor.
 
 **Yorum geri yollanmıyor** (mutlak kural 4 ile aynı sebep: kişi onu zaten
 yazdı, elinde). Saklanıyor ama loglanmıyor.
+
+### B-059 · Gizlilik Politikası'na iki alt işleyen ve bir bölge
+**Since:** Adım 3.2 · **Spec:** `spec/14-build-guide.md` § 3.2, `spec/16-cost-legal.md`
+**Action:** Politika sayfasındaki alt işleyen listesine e-posta yolunu ekleyin —
+bugün orada yok.
+
+Giriş bağlantıları **Resend** üzerinden gidiyor, Resend de altta **AWS SES**
+kullanıyor. Bu kurulumun bölgesi **`ap-northeast-1` (Tokyo)** ve öyle kalıyor
+(2026-08-28 kararı) — yani e-posta adresi ve gönderim üstverisi **AB dışında**
+işleniyor. Politika "veriler AB'de işlenir" gibi bir cümle taşıyorsa yanlış;
+taşımıyorsa bile liste eksik.
+
+Yazılacak asgari şey: *e-posta teslimatı — Resend (AWS SES, Tokyo)*.
+
+EK C.1'in "Gizlilik Politikası yayında ve sağlayıcı listesi doğru" maddesi
+yayından önce bunu istiyor. **Bu maddeyi kapatmadan MVP yayına alınmamalı.**
+
+### B-060 · İkinci CV artık 409 dönüyor — iki yeni resolution, bir query parametresi
+**Since:** Adım 3.4 · **Spec:** `spec/08b-api-contract.md` (409 satırı), `spec/07-subsystems.md` § 31.6.2
+**Action:** `POST /api/v1/profile/import` yeni bir senkron ret üretiyor ve
+**resolution sözlüğü ikiye büyüdü** — ICU mesajı olmayan bir action ham anahtar
+olarak ekrana düşer.
+
+Hesabın **içeriği olan** bir profili varken yükleme **`409
+PROFILE_ALREADY_EXISTS`** alıyor. Gövdedeki `resolutions`:
+
+| action | ne yapmalı |
+|---|---|
+| `replace_profile` | Aynı isteği `?mode=replace` ile tekrar gönderin. Mevcut profil silinir, CV yenisi olur. |
+| `keep_existing_profile` | İsteği bırakın. Profil olduğu gibi kalır. |
+
+**Üçüncü bir seçenek yok ve olmayacak — birleştirme sunmayın.** Atom düzeyinde
+tekilleştirme demek (Bölüm 7) ve Aşama 4 işi; şimdi sunmak ya yapamayacağınız
+bir eylemi adlandırır ya da içeriği sessizce çoğaltır (P8).
+
+**"Profil var mı" değil, "içinde bir şey var mı".** Bir kez giriş yapıp
+uygulamayı açan herkeste boş bir profil satırı oluşuyor; boş satır 409
+üretmiyor, ilk yükleme sorunsuz geçiyor.
+
+**`mode` yalnız `replace` değerini tanıyor**; başka her şey yokmuş gibi
+okunuyor — bir yazım hatası onay yerine geçmesin diye.
 
 ---
 
