@@ -62,6 +62,19 @@ public class FixtureStore {
         }
     }
 
+    /**
+     * Removes a recording, for an answer the pipeline refused.
+     *
+     * @return whether there was one to remove
+     */
+    public boolean remove(StructuredRequest<?> request) {
+        try {
+            return Files.deleteIfExists(pathFor(request));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not withdraw fixture " + pathFor(request), e);
+        }
+    }
+
     /** {@code {root}/{promptId}/{version}-{hash}.json} */
     Path pathFor(StructuredRequest<?> request) {
         return root.resolve(request.promptId())

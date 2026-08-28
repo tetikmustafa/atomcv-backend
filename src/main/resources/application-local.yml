@@ -22,6 +22,15 @@ spring:
       hibernate:
         format_sql: true
 
+# Swagger UI is how the API is driven by hand locally (notes/manual-test-*.md),
+# and every write has been CSRF-protected since Adim 3.3 — without this the UI
+# reads no XSRF-TOKEN cookie, sends no header, and every "Try it out" on a POST
+# answers 403. Production disables the UI entirely, so this is local-only.
+springdoc:
+  swagger-ui:
+    csrf:
+      enabled: true
+
 logging:
   level:
     org.flywaydb: debug
@@ -33,6 +42,27 @@ atomcv:
     # here and nowhere else — application.yml keeps it on, and prod overrides
     # nothing.
     secure: false
+
+  # Production keys reach this process: the Makefile includes and exports .env
+  # so compose can read it, which means a key put there for a deployment is
+  # also on the backend's environment. Two of them change local behaviour
+  # silently, so both are re-read here from a local-only name.
+  #
+  # The sender: with RESEND_API_KEY set, EmailSenderConfig prefers Resend over
+  # SMTP and the magic link leaves for the internet instead of Mailpit — from
+  # `no-reply@localhost`, which Resend rejects. Sign-in then fails locally for
+  # a reason nothing in the log connects to the inbox that stayed empty.
+  email:
+    resend-key: ${LOCAL_RESEND_API_KEY:}
+
+  # The challenge: with TURNSTILE_SECRET_KEY set, a sign-in request needs a
+  # token from a widget, and the widget is on a frontend page that does not
+  # exist yet. TurnstileChallenge refuses a blank token before it calls
+  # Cloudflare, so `POST /auth/magic-link` answers 403 CHALLENGE_FAILED and no
+  # link is ever sent. Empty here means ChallengeConfig hands out the open
+  # challenge, which warns on every start-up.
+  turnstile:
+    secret-key: ${LOCAL_TURNSTILE_SECRET_KEY:}
 
   # The stand-in acting user for a request with no cookie. Turn it off to try a
   # real sign-in end to end: with it on, signing out drops back to the dev user
