@@ -9,7 +9,6 @@ import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.Preferences;
 import com.mustafatetik.atomcv.profile.domain.Profile;
-import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;

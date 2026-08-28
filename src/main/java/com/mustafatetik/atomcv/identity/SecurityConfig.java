@@ -4,10 +4,12 @@ import com.mustafatetik.atomcv.identity.service.SessionProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 /**
  * The filter chain, and what Spring Security is here for (EK D.6.6).
@@ -19,8 +21,9 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * and refused, if at all, by the endpoint asking for a user it does not get.
  * A second list of protected paths would be a list that drifts from the first.
  *
- * <p>What is left is the part Spring Security does better than we would: the
- * double-submit CSRF filter of EK D.6.6.
+ * <p>What is left is two things Spring Security does better than we would: the
+ * double-submit CSRF filter of EK D.6.6, and the response headers EK C.1 asks
+ * to see verified.
  */
 @Configuration
 public class SecurityConfig {
@@ -31,8 +34,19 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfCookies(sessions))
-                        .csrfTokenRequestHandler(eagerTokens()))
+                        .csrfTokenRequestHandler(eagerTokens())
+                        // The one exception, and it is narrow on purpose.
+                        // A provider's webhook has no session and no token to
+                        // double-submit, so CSRF cannot apply to it -- and it
+                        // does not need to: CSRF defends a request that rides
+                        // on a cookie, and this one has none. What stands in
+                        // its place is the signature, which is stronger,
+                        // because it authenticates the *sender* rather than
+                        // merely proving the caller could read a cookie.
+                        // See ResendSignature; an unverified delivery is 401.
+                        .ignoringRequestMatchers("/api/v1/webhooks/**"))
                 .exceptionHandling(handling -> handling.accessDeniedHandler(csrfProblems))
+                .headers(SecurityConfig::responseHeaders)
                 // Ownership is the gate (Bolum 41.4). Paths listed here would
                 // be a second, drifting copy of that decision.
                 .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
@@ -48,6 +62,49 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .logout(logout -> logout.disable())
                 .build();
+    }
+
+    /**
+     * EK C.1's header row, and what each one is doing on a JSON API.
+     *
+     * <p>{@code X-Content-Type-Options: nosniff} and {@code X-Frame-Options:
+     * DENY} are Spring Security's own defaults and are not repeated here — a
+     * re-declaration that matched the default would hide the day it stopped
+     * matching. {@code SecurityHeadersIT} asserts them anyway, so the day an
+     * upgrade drops one is the day a test says so.
+     *
+     * <p><strong>HSTS</strong> is on with a year and subdomains. Nginx
+     * terminates TLS (Bolum 11.2) and could send it instead, but a header the
+     * application depends on for its own safety should not live in a file the
+     * application does not ship. It is skipped on a plain-http request, so
+     * {@code make dev} is unaffected.
+     *
+     * <p><strong>CSP</strong> is the one Spring does not send. This API serves
+     * JSON, and the two exceptions are Swagger UI — disabled in production —
+     * and an error page. So the policy denies everything and then allows only
+     * what a same-origin document needs: nothing loads from another host, no
+     * inline script runs, and no page may frame this one. It is a second lock
+     * on {@code frame-ancestors} because {@code X-Frame-Options} has no
+     * standard behaviour for a nested frame.
+     *
+     * <p><strong>Referrer-Policy</strong> matters more here than it looks:
+     * Bolum 40.3's sign-in link carries the verifier in a query string, and a
+     * full referrer would hand it to every host an image on that page came
+     * from. The frontend owns that page, but a redirect through this API must
+     * not be the leak either.
+     */
+    private static void responseHeaders(HeadersConfigurer<HttpSecurity> headers) {
+        headers.httpStrictTransportSecurity(hsts -> hsts
+                        .includeSubDomains(true)
+                        .maxAgeInSeconds(31_536_000))
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                        "default-src 'self'; "
+                        + "frame-ancestors 'none'; "
+                        + "base-uri 'none'; "
+                        + "form-action 'self'; "
+                        + "object-src 'none'"))
+                .referrerPolicy(referrer -> referrer.policy(
+                        ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER));
     }
 
     /**

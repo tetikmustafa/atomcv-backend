@@ -65,6 +65,26 @@ management:
       application: atomcv-backend
       environment: ${DEPLOY_ENV:local}
 
+# ── Errors (EK C.1) ───────────────────────────────────────────────────────
+# Absent unless a DSN is given, which is every profile but prod: the SDK is a
+# no-op with an empty DSN, so a developer's stack traces stay on the developer's
+# machine and no test ever posts to a vendor.
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${DEPLOY_ENV:local}
+  # Absolute rule 4 reaches the error tracker too. On, this attaches request
+  # bodies, headers, cookies and the caller's address to every event -- a job
+  # description and a CV among them. The stack trace and the request line are
+  # what a fix needs; the content is not.
+  send-default-pii: false
+  # Errors only. Sentry's performance tracing would sample the request path,
+  # and the numbers that answer "how slow is a generation" already go to Axiom
+  # over OTLP -- a second, differently-sampled copy would just disagree.
+  traces-sample-rate: 0
+  logging:
+    minimum-event-level: error
+    minimum-breadcrumb-level: info
+
 # ── LLM (Bolum 27.3) ──────────────────────────────────────────────────────
 # Model ids are environment variables, never literals: vendors rename models
 # faster than a release cycle (Bolum 5.4). A provider with no key is skipped
@@ -114,6 +134,10 @@ atomcv:
     from-name: ${EMAIL_FROM_NAME:AtomCV}
     reply-to: ${EMAIL_REPLY_TO:}
     resend-key: ${RESEND_API_KEY:}
+    # The endpoint secret from Resend's dashboard, `whsec_...`. Empty refuses
+    # every delivery, deliberately: see EmailWebhooks.
+    webhook:
+      secret: ${RESEND_WEBHOOK_SECRET:}
 
   # Bolum 40.3. The link points at a page on the frontend, not at this API:
   # mail scanners follow links, and a one-shot token spent by a scanner is a
@@ -159,6 +183,11 @@ atomcv:
     # somebody spending our money rotates.
     generations-per-ip: ${QUOTA_GENERATIONS_PER_IP:5}
     profile-extracts-per-ip: ${QUOTA_PROFILE_EXTRACTS_PER_IP:3}
+    # Bolum 44.3's tightening. A daily ceiling says how much and never how
+    # fast: a subject can spend the whole day in four minutes, and the detector
+    # runs every fifteen. These two are what its alarm now does about that.
+    tightened-per-hour: ${QUOTA_TIGHTENED_PER_HOUR:2}
+    tighten-for: ${QUOTA_TIGHTEN_FOR:6h}
 
   # Bolum 44.4. The other half of what bounds the sign-in endpoint. Absent
   # locally and in the test suite, where ChallengeConfig warns and waves the
@@ -195,8 +224,9 @@ atomcv:
         limit: ${RATE_LIMIT_SIGN_IN_GLOBAL:200}
         window: ${RATE_LIMIT_SIGN_IN_GLOBAL_WINDOW:1h}
 
-  # Bolum 44.3. Reports, does not act: there is no rate limiter to tighten and
-  # the brake stops everybody, so an operator decides.
+  # Bolum 44.3. The brake still stops everybody and still waits for a person;
+  # the heavy-user branch now narrows the one subject it was about, which is
+  # what the section's snippet asked for and what was missing.
   anomaly:
     enabled: ${ANOMALY_DETECTION_ENABLED:true}
     baseline-factor: ${ANOMALY_BASELINE_FACTOR:5.0}
@@ -204,6 +234,16 @@ atomcv:
     # The brake. Low on purpose: an ordinary day costs cents, and raising a
     # threshold that fired beats a bill nobody saw coming.
     daily-budget-usd: ${ANOMALY_DAILY_BUDGET_USD:10}
+
+  # Bolum 57's retention promise, made true. Clears free text and keeps the
+  # rows: a job's history is what retries and the anomaly detector count, and a
+  # generation is what a download re-renders from. Runs after the nightly
+  # backup so the last copy of a cleared row is at most a day old.
+  retention:
+    enabled: ${RETENTION_ENABLED:true}
+    cron: ${RETENTION_CRON:0 30 3 * * *}
+    job-payload: ${RETENTION_JOB_PAYLOAD:7d}
+    job-description: ${RETENTION_JOB_DESCRIPTION:30d}
 
   # Bolum 30.4. Every instance works the queue and every instance reclaims
   # stale jobs, including its own — the condition is the heartbeat, not the
@@ -234,17 +274,25 @@ atomcv:
           cached: 0
     chain:
       # Comma-separated, so the order is deployable without a release
-      # (Bolum 5.4, "env-driven fallback"). Bolum 27.3's fuller order arrives
-      # with the other adapters: naming one that does not exist yet only logs
-      # a warning, but an order listing nothing runnable fails every
-      # generation, so the default names the adapter that exists.
-      cheap: ${LLM_CHAIN_CHEAP:openrouter}
-      mid:   ${LLM_CHAIN_MID:openrouter}
+      # (Bolum 5.4, "env-driven fallback"). Naming an adapter that does not
+      # exist only logs a warning, but an order listing nothing runnable fails
+      # every generation.
+      #
+      # Two vendors and not two models at one: Bolum 27.3's point is that the
+      # links do not fail together, and OpenRouter is itself a broker -- a
+      # second model behind it shares the broker's outage.
+      cheap: ${LLM_CHAIN_CHEAP:openrouter,gemini}
+      mid:   ${LLM_CHAIN_MID:openrouter,gemini}
     models:
       openrouter: ${OPENROUTER_MODEL:}
+      gemini: ${GEMINI_MODEL:}
     call-timeout: 30s
     # Bolum 27.3 retries a schema mismatch on the same provider. One catches a
     # model that wandered; more pays repeatedly for a prompt that is wrong.
     schema-retries: 1
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      base-url: ${GEMINI_BASE_URL:}
+
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}

@@ -1,0 +1,64 @@
+# Bolum 54.5's second smoke test: compile a CV through a real XeLaTeX
+# container and check a PDF comes out.
+#
+# Its own workflow rather than a job in ci.yml, because it is the only lane
+# that builds a two-gigabyte image and it must not be paid on a documentation
+# change. CLAUDE.md says to run `latexTest` when docker/latex changes "and when
+# anything it exercises changes" — the paths below are that sentence, made
+# executable.
+name: LaTeX
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docker/latex/**'
+      - 'src/main/java/com/mustafatetik/atomcv/rendering/**'
+      - 'src/main/java/com/mustafatetik/atomcv/compilation/**'
+      - 'src/main/java/com/mustafatetik/atomcv/generation/render/**'
+      - 'src/main/resources/templates.yaml'
+      - 'src/test/resources/fixtures/**'
+      - 'src/integrationTest/**'
+      - 'build.gradle.kts'
+      - '.github/workflows/latex.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docker/latex/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: latex-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latex:
+    name: Real compiler round trip
+    runs-on: ubuntu-latest
+    # The image build dominates; the task itself carries a 20-minute cap.
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - uses: gradle/actions/setup-gradle@v6.3.0
+
+      - name: LaTeX round trip
+        run: ./gradlew latexTest
+
+      # Same reason as ci.yml: a lane that ran zero tests reports success too.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: latex-test-reports
+          path: |
+            build/reports/tests/
+            build/test-results/
+          retention-days: 7
