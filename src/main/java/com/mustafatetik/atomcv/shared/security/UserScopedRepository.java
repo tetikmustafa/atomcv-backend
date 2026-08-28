@@ -49,6 +49,24 @@ public abstract class UserScopedRepository<T extends UserOwned> {
         delegate().delete(entity);
     }
 
+    /**
+     * Sends pending statements to the database without ending the transaction.
+     *
+     * <p>Ownership takes no part here, which is why it takes no user: this
+     * orders work already authorised, and reads nothing.
+     *
+     * <p>It exists for one shape and is worth naming, because the failure is
+     * not obvious: deleting a row and inserting another that collides with it
+     * on a unique constraint, inside one transaction. Hibernate orders inserts
+     * before deletes regardless of the order they were called in, so the
+     * insert hits a row the delete was about to remove. Adim 3.6's upgrade
+     * over an empty profile row is exactly that, and this is the flush between
+     * the two halves.
+     */
+    public void flush() {
+        delegate().flush();
+    }
+
     private void requireOwnership(UserContext user, T entity) {
         requireUser(user);
         if (entity == null) {

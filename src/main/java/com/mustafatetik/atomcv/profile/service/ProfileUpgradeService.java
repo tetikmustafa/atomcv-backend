@@ -46,6 +46,7 @@ public class ProfileUpgradeService {
     private static final Logger log = LoggerFactory.getLogger(ProfileUpgradeService.class);
 
     private final EphemeralProfileStore store;
+    private final ProfileResolver resolver;
     private final ProfileRepository profiles;
     private final SectionRepository sections;
     private final EntryRepository entries;
@@ -54,10 +55,12 @@ public class ProfileUpgradeService {
     private final JobQueue queue;
     private final Clock clock;
 
-    ProfileUpgradeService(EphemeralProfileStore store, ProfileRepository profiles,
+    ProfileUpgradeService(EphemeralProfileStore store, ProfileResolver resolver,
+            ProfileRepository profiles,
             SectionRepository sections, EntryRepository entries, AtomRepository atoms,
             AtomVariantRepository variants, JobQueue queue, Clock clock) {
         this.store = store;
+        this.resolver = resolver;
         this.profiles = profiles;
         this.sections = sections;
         this.entries = entries;
@@ -89,12 +92,20 @@ public class ProfileUpgradeService {
         if (stored.isEmpty()) {
             return ProfileUpgrade.NONE;
         }
-        if (profiles.findOwn(user).isPresent()) {
-            // The account brought its own. Nothing is written and nothing is
-            // deleted; the anonymous one runs out on its TTL.
+        Optional<Profile> existing = profiles.findOwn(user);
+        if (existing.isPresent() && resolver.hasContent(user)) {
+            // The account brought real work of its own. Nothing is written and
+            // nothing is deleted; the anonymous one runs out on its TTL.
             log.info("An account with a profile signed in from an anonymous session");
             return ProfileUpgrade.KEPT_EXISTING;
         }
+        existing.ifPresent(empty -> {
+            profiles.delete(user, empty);
+            // Before the adopted row is written, not after: one profile per
+            // user is a unique constraint and Hibernate would otherwise order
+            // the insert first. See UserScopedRepository.flush.
+            profiles.flush();
+        });
 
         adopt(user, stored.get());
         store.discard(anonymous);

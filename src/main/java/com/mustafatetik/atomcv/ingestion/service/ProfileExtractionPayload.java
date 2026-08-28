@@ -24,17 +24,20 @@ import java.util.Map;
  * second place for it to be defined.
  */
 record ProfileExtractionPayload(
-        String text, DocumentFormat format, boolean looksScrambled, QuotaSubject allowance) {
+        String text, DocumentFormat format, boolean looksScrambled, QuotaSubject allowance,
+        boolean replace) {
 
     private static final String TEXT = "text";
     private static final String FORMAT = "format";
     private static final String SCRAMBLED = "looksScrambled";
     private static final String ALLOWANCE_TYPE = "allowanceType";
     private static final String ALLOWANCE_ID = "allowanceId";
+    private static final String REPLACE = "replace";
 
-    static ProfileExtractionPayload of(ExtractedText extracted, QuotaSubject allowance) {
-        return new ProfileExtractionPayload(
-                extracted.text(), extracted.format(), extracted.looksScrambled(), allowance);
+    static ProfileExtractionPayload of(
+            ExtractedText extracted, QuotaSubject allowance, boolean replace) {
+        return new ProfileExtractionPayload(extracted.text(), extracted.format(),
+                extracted.looksScrambled(), allowance, replace);
     }
 
     /**
@@ -55,6 +58,10 @@ record ProfileExtractionPayload(
         // than not refunding at all — it credits somebody who never spent.
         payload.put(ALLOWANCE_TYPE, allowance.type().wireValue());
         payload.put(ALLOWANCE_ID, allowance.id());
+        // The answer the caller already gave to the 409, carried to the worker
+        // that acts on it. Asking again at write time would mean asking
+        // somebody who is no longer on the other end of a request.
+        payload.put(REPLACE, replace);
         return payload;
     }
 
@@ -69,7 +76,8 @@ record ProfileExtractionPayload(
                         QuotaSubject.Type.valueOf(String.valueOf(
                                 payload.getOrDefault(ALLOWANCE_TYPE, "user"))
                                 .toUpperCase(Locale.ROOT)),
-                        String.valueOf(payload.getOrDefault(ALLOWANCE_ID, ""))));
+                        String.valueOf(payload.getOrDefault(ALLOWANCE_ID, ""))),
+                Boolean.TRUE.equals(payload.get(REPLACE)));
     }
 
     ExtractedText asExtractedText() {

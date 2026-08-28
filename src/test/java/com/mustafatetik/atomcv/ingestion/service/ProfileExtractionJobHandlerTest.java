@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.ingestion.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -90,14 +91,14 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void aReadableCvIsStructuredNormalisedAndWritten() {
         var profile = new Profile(USER);
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 1));
-        when(writer.write(any(), any())).thenReturn(profile);
+        when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
         JobOutcome outcome = handler.handle(job(), reported::add);
 
         assertThat(outcome).isInstanceOf(JobOutcome.Completed.class);
-        verify(writer).write(any(), any());
+        verify(writer).write(any(), any(), anyBoolean());
     }
 
     /**
@@ -109,9 +110,9 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void theTerminalEventCarriesCountsAndNoneOfTheCv() {
         var profile = new Profile(USER);
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 1));
-        when(writer.write(any(), any())).thenReturn(profile);
+        when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
         var result = ((JobOutcome.Completed) handler.handle(job(), reported::add)).result();
 
@@ -125,9 +126,9 @@ class ProfileExtractionJobHandlerTest {
 
     @Test
     void theProgressSaysWhichStageItIsOnAndInOrder() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
-        when(writer.write(any(), any())).thenReturn(new Profile(USER));
+        when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
 
@@ -143,9 +144,9 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void theVectorsAndTheHeightsAreQueuedRatherThanWaitedFor() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
-        when(writer.write(any(), any())).thenReturn(new Profile(USER));
+        when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
 
@@ -166,14 +167,14 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void theBackgroundWorkIsQueuedOnlyOnceThereIsAProfileToDoItTo() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
-        when(writer.write(any(), any())).thenReturn(new Profile(USER));
+        when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
 
         InOrder order = inOrder(writer, queue);
-        order.verify(writer).write(any(), any());
+        order.verify(writer).write(any(), any(), anyBoolean());
         order.verify(queue, times(2)).enqueue(any());
     }
 
@@ -185,20 +186,20 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void aRefusedExtractionGivesTheAllowanceBack() {
-        when(structuring.structure(any(), any()))
+        when(structuring.structure(any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         handler.handle(job(), reported::add);
 
         verify(quotas).refund(eq(ALLOWANCE), eq(QuotaMetric.PROFILE_EXTRACT));
-        verify(writer, never()).write(any(), any());
+        verify(writer, never()).write(any(), any(), anyBoolean());
         // And nothing is queued to embed a profile that was never written.
         verify(queue, never()).enqueue(any());
     }
 
     @Test
     void aCvThatYieldedNothingIsNotWorthAnotherAttempt() {
-        when(structuring.structure(any(), any()))
+        when(structuring.structure(any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -211,7 +212,7 @@ class ProfileExtractionJobHandlerTest {
 
     @Test
     void aLanguageThatCouldNotBeSettledBecomesAQuestionCarryingItsGuess() {
-        when(structuring.structure(any(), any())).thenReturn(
+        when(structuring.structure(any(), any(), any())).thenReturn(
                 Result.err(new PipelineError.LanguageUndetected(List.of("tr"))));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -227,7 +228,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void aProviderOutageIsRetryableAndSaysWhoWasTried() {
-        when(structuring.structure(any(), any())).thenReturn(
+        when(structuring.structure(any(), any(), any())).thenReturn(
                 Result.err(new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -245,13 +246,13 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void anExtractionWithNoOwnerAtAllIsRefusedRatherThanGivenOne() {
         var orphan = new Job(JobType.PROFILE_EXTRACT, null,
-                ProfileExtractionPayload.of(document(), ALLOWANCE).asMap(), Instant.EPOCH);
+                ProfileExtractionPayload.of(document(), ALLOWANCE, false).asMap(), Instant.EPOCH);
 
         var failed = (JobOutcome.Failed) handler.handle(orphan, reported::add);
 
         assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         assertThat(failed.retryable()).isFalse();
-        verify(writer, never()).write(any(), any());
+        verify(writer, never()).write(any(), any(), anyBoolean());
         verify(ephemeral, never()).write(any(), any());
     }
 
@@ -266,14 +267,14 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousUploadIsWrittenToTheEphemeralStoreAndNowhereElse() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
 
         JobOutcome outcome = handler.handle(anonymousJob(ADDRESS), reported::add);
 
         assertThat(outcome).isInstanceOf(JobOutcome.Completed.class);
         verify(ephemeral).write(eq(ProfileRef.ephemeral(SESSION)), any());
-        verify(writer, never()).write(any(), any());
+        verify(writer, never()).write(any(), any(), anyBoolean());
     }
 
     /**
@@ -284,7 +285,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousUploadAnswersWithTheProfileTheStoreHolds() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
 
         var result = ((JobOutcome.Completed)
@@ -302,7 +303,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void nobackgroundWorkIsQueuedForAProfileWithNoRows() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
@@ -319,7 +320,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void arefusedAnonymousExtractionGivesTheAddressItsAllowanceBack() {
-        when(structuring.structure(any(), any()))
+        when(structuring.structure(any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
@@ -336,13 +337,13 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousCallerIsBucketedByProfileAndNotByTheirCookie() {
-        when(structuring.structure(any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
 
         var bucketKey = ArgumentCaptor.forClass(String.class);
-        verify(structuring).structure(any(), bucketKey.capture());
+        verify(structuring).structure(any(), bucketKey.capture(), any());
         assertThat(bucketKey.getValue())
                 .isEqualTo(ProfileRef.ephemeral(SESSION).id().toString())
                 .isNotEqualTo(SESSION.value());
@@ -352,12 +353,12 @@ class ProfileExtractionJobHandlerTest {
 
     private static Job job() {
         return new Job(JobType.PROFILE_EXTRACT, USER,
-                ProfileExtractionPayload.of(document(), ALLOWANCE).asMap(), Instant.EPOCH);
+                ProfileExtractionPayload.of(document(), ALLOWANCE, false).asMap(), Instant.EPOCH);
     }
 
     private static Job anonymousJob(QuotaSubject allowance) {
         Job job = new Job(JobType.PROFILE_EXTRACT, null,
-                ProfileExtractionPayload.of(document(), allowance).asMap(), Instant.EPOCH);
+                ProfileExtractionPayload.of(document(), allowance, false).asMap(), Instant.EPOCH);
         job.setAnonSessionId(SESSION.value());
         return job;
     }

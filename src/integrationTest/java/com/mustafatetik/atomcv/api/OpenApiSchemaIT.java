@@ -60,7 +60,8 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                                 // Adim 2.3, handoff B-037: Bolum 18.1 offers
                                 // three ways past a preflight refusal and the
                                 // vocabulary named only two of them.
-                                "continue_anyway", "retry")));
+                                "continue_anyway", "retry",
+                        "replace_profile", "keep_existing_profile")));
     }
 
     @Test

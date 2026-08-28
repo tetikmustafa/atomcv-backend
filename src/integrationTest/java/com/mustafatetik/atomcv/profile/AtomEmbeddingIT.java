@@ -188,7 +188,7 @@ class AtomEmbeddingIT extends AbstractIntegrationTest {
                                 List.of(
                                         atom("300 bin satiri tasidim", "Moved 300K rows"),
                                         atom("Gece isini kisalttim", "Cut the nightly batch")))))),
-                List.of()));
+                List.of()), false);
         return profiles.resolve(user);
     }
 
@@ -199,7 +199,7 @@ class AtomEmbeddingIT extends AbstractIntegrationTest {
                         List.of(new NormalizedProfile.NormalizedEntry(
                                 "Data Engineer", "Brisa", "Istanbul", null, null, (short) 0,
                                 List.of(atom("300 bin satiri tasidim", null)))))),
-                List.of()));
+                List.of()), false);
         return profiles.resolve(user);
     }
 

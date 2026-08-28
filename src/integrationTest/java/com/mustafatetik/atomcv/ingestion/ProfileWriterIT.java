@@ -46,9 +46,57 @@ class ProfileWriterIT extends AbstractIntegrationTest {
         user = UserContext.of(userId);
     }
 
+    /**
+     * Bolum 08b's {@code replace}, and the behaviour it replaced.
+     *
+     * <p>Writing twice used to leave two of everything, because the writer only
+     * ever added. The person's answer to {@code PROFILE_ALREADY_EXISTS} is what
+     * decides now, and this is the half of it that happens after the door.
+     */
+    @Test
+    void writingWithReplaceLeavesOneCvRatherThanTwo() {
+        var profile = writer.write(user, cv(), false);
+        int sections = count("sections", profile.getId());
+        int atoms = count("atoms", profile.getId());
+        assertThat(sections).isPositive();
+        assertThat(atoms).isPositive();
+
+        writer.write(user, cv(), true);
+
+        assertThat(count("sections", profile.getId())).isEqualTo(sections);
+        assertThat(count("atoms", profile.getId())).isEqualTo(atoms);
+        assertThat(count("entries", profile.getId())).isPositive();
+        assertThat(count("atom_variants", profile.getId())).isPositive();
+    }
+
+    /**
+     * And without it the old behaviour is still there, deliberately: an
+     * anonymous upgrade and any caller that has nothing to overwrite go through
+     * this path, and it must not start deleting on their behalf.
+     */
+    @Test
+    void writingWithoutReplaceStillAdds() {
+        var profile = writer.write(user, cv(), false);
+        int sections = count("sections", profile.getId());
+
+        writer.write(user, cv(), false);
+
+        assertThat(count("sections", profile.getId())).isEqualTo(sections * 2);
+    }
+
+    /** The profile row itself survives: generations point at it, and so does the contact block. */
+    @Test
+    void replacingKeepsTheProfileRowAndItsId() {
+        var profile = writer.write(user, cv(), false);
+
+        var again = writer.write(user, cv(), true);
+
+        assertThat(again.getId()).isEqualTo(profile.getId());
+    }
+
     @Test
     void aWholeCvArrivesAsRowsUnderTheUsersOwnProfile() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         assertThat(count("sections", profile.getId())).isEqualTo(2);
         assertThat(count("entries", profile.getId())).isEqualTo(2);
@@ -61,7 +109,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
 
     @Test
     void theContactBlockAndTheLanguageReachTheProfileRow() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         assertThat(profile.getContact().name()).isEqualTo("Ada Lovelace");
         assertThat(profile.getSourceLanguage()).isEqualTo("tr");
@@ -74,7 +122,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      */
     @Test
     void aMonthSurvivesTheDateColumnAsTheFirstOfThatMonth() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         var start = jdbc.queryForObject(
                 "SELECT start_date FROM entries WHERE profile_id = ? AND title = ?",
@@ -90,7 +138,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
 
     @Test
     void theRunStructureSurvivesItsJsonbColumn() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         var content = jdbc.queryForObject("""
                 SELECT v.content::text FROM atom_variants v
@@ -108,7 +156,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      */
     @Test
     void thePlainTextAndTheHashAreWrittenAlongsideTheRuns() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         var row = jdbc.queryForMap("""
                 SELECT plain_text, content_hash FROM atom_variants
@@ -122,7 +170,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     /** Bolum 13: the section a bullet sits under says what kind of atom it is. */
     @Test
     void anAtomTakesItsKindFromTheSectionAboveIt() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM atoms WHERE profile_id = ? AND kind = 'skill'",
@@ -138,7 +186,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      */
     @Test
     void everyImportedAtomSaysItCameFromAnUpload() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM atoms WHERE profile_id = ? AND source <> 'cv_upload'",
@@ -152,7 +200,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      */
     @Test
     void anAtomWithNoSecondWordingGetsOneVariant() {
-        var profile = writer.write(user, cv());
+        var profile = writer.write(user, cv(), false);
 
         var wordings = jdbc.queryForObject("""
                 SELECT count(*) FROM atom_variants v
@@ -165,12 +213,12 @@ class ProfileWriterIT extends AbstractIntegrationTest {
 
     @Test
     void oneUsersImportIsInvisibleToAnother() {
-        var mine = writer.write(user, cv());
+        var mine = writer.write(user, cv(), false);
 
         UUID otherId = UUID.randomUUID();
         jdbc.update("INSERT INTO users (id, email, email_verified) VALUES (?, ?, true)",
                 otherId, otherId + "@writer.test");
-        var theirs = writer.write(UserContext.of(otherId), cv());
+        var theirs = writer.write(UserContext.of(otherId), cv(), false);
 
         assertThat(theirs.getId()).isNotEqualTo(mine.getId());
         assertThat(count("atoms", mine.getId())).isEqualTo(3);

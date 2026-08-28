@@ -250,7 +250,7 @@ class AnonymousImportIT extends AbstractIntegrationTest {
     }
 
     private JobOutcome runTheExtraction(Job job, Result<ExtractedProfile> structured) {
-        when(structuring.structure(any(), any())).thenReturn(structured);
+        when(structuring.structure(any(), any(), any())).thenReturn(structured);
         return handler.handle(job, progress -> { });
     }
 
