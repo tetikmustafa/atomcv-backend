@@ -1,6 +1,5 @@
 package com.mustafatetik.atomcv.jobs.queue;
 
-import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserScopedRepository;
 import java.util.List;
 import java.util.Optional;

@@ -1,9 +1,5 @@
 package com.mustafatetik.atomcv.profile.seed;
 
-import com.mustafatetik.atomcv.profile.domain.Atom;
-import com.mustafatetik.atomcv.profile.domain.AtomVariant;
-import com.mustafatetik.atomcv.profile.domain.Entry;
-import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

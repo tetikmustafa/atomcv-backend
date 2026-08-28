@@ -4,6 +4,8 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 import org.springframework.data.repository.Repository;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
@@ -11,6 +13,7 @@ import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
 import static com.tngtech.archunit.core.domain.properties.HasName.Predicates.nameMatching;
 import static com.tngtech.archunit.core.domain.properties.HasParameterTypes.Predicates.rawParameterTypes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
@@ -28,7 +31,8 @@ class ArchitectureTest {
 
     private static final String BUSINESS_MODULES =
             "..identity..|..profile..|..ingestion..|..generation..|..rendering..|..llm.."
-                    + "|..embedding..|..compilation..|..jobs..|..tracking..|..billing..|..email..";
+                    + "|..embedding..|..compilation..|..jobs..|..tracking..|..billing..|..email.."
+                    + "|..retention..";
 
     @ArchTest
     static final ArchRule noCycles = slices()
@@ -171,4 +175,35 @@ class ArchitectureTest {
     static final ArchRule noLocaleSensitiveCase = noClasses()
             .should().callMethod(String.class, "toLowerCase")
             .orShould().callMethod(String.class, "toUpperCase");
+
+    /**
+     * EK C.1: "Dev endpoint'leri prod profilinde yok (test ile dogrulandi)."
+     *
+     * <p>Four beans exist only to make development possible and every one of
+     * them is a hole if it ever reaches production: {@code LocalDevUser} and
+     * {@code LocalDevSessions} answer "who is acting" without a credential,
+     * {@code DevSeeder} writes somebody's golden profile into the database, and
+     * {@code FakeLlmProvider} answers every prompt without calling a model.
+     *
+     * <p>The rule is on the annotation rather than on a context, because what
+     * has to be guarded is the annotation: all four carry {@code @Profile}
+     * today and are correct today. What is missing is anything that fails on
+     * the day one is deleted — or on the day a fifth such bean is written
+     * without one. A test listing the four by name would pass forever on the
+     * fifth; matching on where they live catches it.
+     *
+     * <p>Verified against a planted violation by removing {@code @Profile}
+     * from {@code DevSeeder}: the rule failed, naming the class.
+     */
+    @ArchTest
+    static final ArchRule developmentOnlyBeansNameTheProfileTheyBelongTo = classes()
+            .that().areMetaAnnotatedWith(Component.class)
+            .and(describe("named or placed as a development stand-in",
+                    clazz -> clazz.getSimpleName().startsWith("LocalDev")
+                            || clazz.getSimpleName().startsWith("Fake")
+                            || clazz.getPackageName().endsWith(".seed")))
+            .should().beAnnotatedWith(Profile.class)
+            .because("a bean that stands in for a user, a session, a model or a "
+                    + "database row is a hole in any deployment that is not a "
+                    + "developer's machine (EK C.1)");
 }

@@ -4,6 +4,10 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
+    // Bolum 47.1 runs `spotlessCheck` and nothing configured a formatter, so
+    // there was no format gate at all. Deliberately narrow -- see the
+    // `spotless` block below.
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 group = "com.mustafatetik"
@@ -87,6 +91,13 @@ dependencies {
     // Likewise for DOCX, and for the same reason: POI's text API reads
     // document parts and never runs a macro.
     implementation("org.apache.poi:poi-ooxml:5.4.1")
+    // EK C.1 asks that errors reach somewhere a person looks. Axiom takes the
+    // logs and the metrics; a stack trace with the request that produced it is
+    // a different question and this answers it. Inert with no DSN, which is
+    // every profile but prod -- so nothing is shipped from a developer's
+    // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
+    // request body, no headers, no address reaches the vendor.
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.9.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
@@ -106,6 +117,27 @@ dependencies {
 // Turkish Windows machine and UTF-8 on the CI runner. Source files carry
 // Turkish text, so leaving this unset would make the same file compile into
 // two different string constants.
+// A whitespace gate, not a formatter. A full reformatter (google-java-format,
+// palantir) would rewrite every file in the repository in one commit and take
+// `git blame` with it -- and the thing being bought is consistency the review
+// already enforces. What is left is the class of diff nobody should have to
+// mention in a review: a trailing space, a missing final newline, tabs, an
+// import that no longer resolves to anything.
+spotless {
+    java {
+        target("src/*/java/**/*.java")
+        trimTrailingWhitespace()
+        endWithNewline()
+        indentWithSpaces(4)
+        removeUnusedImports()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }

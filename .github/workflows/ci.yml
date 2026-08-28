@@ -26,6 +26,11 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6.3.0
 
+      # Bolum 47.1's format gate. First, because a failure here is a one-line
+      # fix and finding it after a twelve-minute test run wastes the run.
+      - name: Format
+        run: ./gradlew spotlessCheck
+
       - name: Compile
         run: ./gradlew build -x test
 

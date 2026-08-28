@@ -6,7 +6,6 @@ import com.mustafatetik.atomcv.identity.domain.OAuthAccount;
 import com.mustafatetik.atomcv.identity.domain.OAuthProvider;
 import java.net.URI;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
