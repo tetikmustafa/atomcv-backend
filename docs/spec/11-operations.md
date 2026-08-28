@@ -383,6 +383,36 @@ CREATE TABLE support_grants ( ... );   -- Bölüm 13
 
 **Erişim denetim kaydı:** Sen içeriğe baktığında `accessed_at` yazılır ve kullanıcı bunu görebilir.
 
+#### 48.4.1 Kararlar (Adım 3.9, dilim 2)
+
+**Ekleme — izin geri alınabilir, ve aynı formdan.** § 48.4 kutuyu ve denetim
+kaydını tarif ediyor, geri almayı söylemiyor; `revoked_at` kolonu zaten orada
+duruyordu. `contentGranted: false` göndermek açık bir izni kapatıyor. Geri
+alınamayan bir onay, onay değil bir anahtardır.
+
+**Ekleme — ikinci "evet" pencereyi ileri itmiyor.** Kırk sekiz saat kişinin
+ilk kabulünden başlıyor; iki kez kaydedilen bir form, kimse istemeden sonu
+ötelerdi. Açık bir grant varken yeni satır açılmıyor.
+
+**Ekleme — grant satırı kalıyor, silinmiyor.** Geri almak da erişimin
+geçmişinin parçası: kişiye "izin vermiştin, sonra geri aldın" diyebilmenin tek
+yolu o satır.
+
+**Ekleme — yanıt grant'i geri yolluyor** (`open`, `expiresAt`, `accessedAt`,
+`revokedAt`). § 48.4 kişinin içeriğine bakıldığını görebilmesini istiyor;
+`accessedAt` biri gerçekten bakana kadar null. Kontrol edilemeyen bir onay
+kutudan ibarettir.
+
+**Ekleme — üretim başına tek bir yargı** (`V4` unique index). Öbür başparmağa
+basmak fikrini değiştirmek, ikinci bir görüş bildirmek değil; ikisini de sayan
+bir oran tıklama sayardı. Tablo `user_id`'yi nullable tutuyor ve Postgres
+NULL'ları farklı sayıyor, yani kısıt yalnız hesapları kapsıyor — anonim üretim
+indiğinde kendi öznesi için kendi cevabını isteyecek.
+
+**Yorum saklanıyor, loglanmıyor, geri de yollanmıyor.** Kişi onu bize okumamız
+için yazdı; bu, bir teşhiste görünmesiyle aynı şey değil (mutlak kural 4). Geri
+yollamak da kendi sözlerinin sebepsiz yolculuğu olurdu.
+
 ### 48.5 Replay
 
 ```bash

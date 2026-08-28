@@ -83,9 +83,6 @@ enjeksiyon tripwire'ı; uslu bir modelle açılmaması beklenen davranış.
 Silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
 **Yeni bir kimlik testi yazan bunu unutmasın.**
 
-**`/auth/verify` limitsiz** — verifier 32 rastgele bayt, Nginx'in `auth`
-zone'u önünde. Bugün koruduğu bir şey yok.
-
 ## Adım 3.4 — CV yükleme ve çıkarım · 4/4 · kapandı
 
 Otuz yedi kararın hepsi `spec/`'e işlendi (§ 31.3.1, § 31.4.1, § 31.5.1,
@@ -145,20 +142,24 @@ kontrolü de birleştirme de ürün kararı istiyor.
 giriş sonrası kişi kendi çıkarım işini göremiyor. Bugün zararsız (iş bitmiş
 oluyor), anonim *üretim* inince değişir.
 
-**Anonim oturumun kullanıcı indeksi yok**, yani "bütün oturumlarını iptal et"
-işlemi de yok; onu bitiren tek şey TTL'i.
+**Anonim oturumun kullanıcı indeksi yok** — toplu iptali de yok, onu bitiren
+TTL'i.
 
 **`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
 Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
-## Adım 3.9 — hukuki ve kapanış · 1/2
+## Adım 3.9 — hukuki ve kapanış · 2/2 · backend payı kapandı
 
-Kılavuzun altı maddesinden backend'e ikisi düşüyor: **hesap silme** (dilim 1 ✅)
-ve **geri bildirim + `support_grants`** (dilim 2). Veri export (§ 57.5) zaten
+Kılavuzun altı maddesinden backend'e ikisi düşüyordu: **hesap silme** ✅ ve
+**geri bildirim + `support_grants`** ✅. Veri export (§ 57.5) zaten
 `/profile/export`'ta duruyordu; gizlilik/şartlar sayfaları, i18n ve a11y
 frontend'in.
 
-Kararlar § 57.4.1'de. Frontend aksiyonu **`B-057`**.
+Kararlar § 57.4.1 ve § 48.4.1'de. Frontend aksiyonları **`B-057`**, **`B-058`**.
+
+**`support_grants` yazılıyor ama hiçbir şey `accessed_at`'i yazmıyor** — kolon
+operatör içeriğe baktığı anda dolmalı ve bu repoda operatör arayüzü yok. **Erişim
+aracı gelirse ilk işi o kolonu yazmak olmalı**, yoksa § 48.4'ün sözü boş kalır.
 
 **Test şemadan okuyor.** `AccountDeletionIT` tabloları `information_schema`'dan
 alıyor: `user_id`, `profile_id` ya da `subject_id` taşıyan her tablo bu kişiden
@@ -195,5 +196,5 @@ yazılmaz". Reddin kendisi `CoverLetterServiceTest`'te sabitli.
 
 **`bullet_rewrite` ve `about_synthesis` için `local-fake` fixture'ı yok.**
 `SyntheticAnswer` şema şeklinde bir cümle üretiyor: yerelde bu fazlar
-**çalışıyor ama anlamsız**, doğrulayıcı reddedip orijinali bastırıyor. Doğru
-davranış; "bozuk" diye tamir etmeye kalkma.
+**çalışıyor ama anlamsız**, doğrulayıcı reddedip orijinali bastırıyor — doğru
+davranış, "bozuk" diye tamir etmeye kalkma.

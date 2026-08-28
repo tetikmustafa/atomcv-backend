@@ -131,3 +131,9 @@ edilemez; Nginx'in `auth` zone'u (1r/s) de önünde. Bugün koruduğu bir şey y
 ---
 
 > Dilim 3-4 buraya taşındı (2026-08-27), yine `current.md` sınırı için.
+
+## Karar: `/auth/verify` limitsiz (notlardan taşındı, 2026-08-28)
+
+Verifier 32 rastgele bayt ve uç, Nginx'in `auth` zone'unun (1r/s) arkasında.
+Uygulama katmanında ayrı bir limit, bugün koruduğu bir şey olmadan bir kova
+daha eklerdi.
