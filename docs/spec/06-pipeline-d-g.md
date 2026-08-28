@@ -252,6 +252,47 @@ Kural:  Yalnızca girdideki becerilerden ve metriklerden bahset
 
 Doğrulama: About'ta geçen her teknoloji, seçilmiş atomların `skills` birleşiminde olmalı.
 
+#### 21.7.1 Kararlar (Adım 3.8, dilim 4)
+
+**Ekleme — About yalnız zaten varsa yazılıyor.** § 21.7 paragrafın nasıl
+yazılacağını söylüyor, nereye gideceği hakkında sessiz. Yoktan yaratılamaz:
+seçim yalnız seçtiği atomları ücretlendirdi ve sayfa sınırını onun üstüne söz
+verdi; hiçbir bölümün taşımadığı bir paragraf, bütçenin hiç hesaba katmadığı
+bir blok olurdu. About'unu kapatmış ya da bütçeye kurban vermiş biri zaten
+cevabını vermiş oluyor. Kod, seçimin **sayfada tuttuğu** `ABOUT` atomunu
+arıyor; bulamazsa Faz D o iş için hiç çalışmıyor.
+
+**Ekleme — girdi profil değil, sayfa.** Beceriler ve sayılar seçilmiş
+atomlardan toplanıyor. Bütçeye kurban gitmiş bir beceriyi öne çıkaran bir özet,
+işverenin elinde olmayan bir CV'yi anlatır.
+
+**Ekleme — tavan min(65 kelime, orijinal × 1.05).** § 21.3 burada da bağlayıcı:
+sayfa, About'un **şu anki** metnine göre ölçüldü. § 21.7'nin ~65 kelimesi bu
+yüzden bir tavan, bir ödenek değil; hangisi küçükse o kazanıyor.
+
+**Ekleme — üç kontrol, iki tanesi kasten yok.** § 21.6'nın "korunması gereken"
+kuralları burada anlamsız (sentez tek bir cümlenin yeniden yazımı değil), ve
+**anlamsal kayma kontrolü yok**: paragraf bilerek eskisinden farklı, eskisine
+karşı ölçmek tam da faz çalıştığında düşen bir kural olurdu. Kalanlar
+§ 21.7'nin kendi kuralı (andığı her teknoloji sayfada var), **uydurulmuş sayı
+yok** (`NUMBER_INVENTED` — özet, "üç yıl" ile "dört yıl"ın "on yıl" olduğu
+yerdir) ve tavan. Sayı kontrolü rakam okuyor: kişinin "sekiz yıl"ı modelin
+"8 yıl"ı olarak dönerse reddediliyor, çünkü yazıyla sayıyı her dilde doğru
+okumanın yolu yok — bedeli bir paragrafın kişinin kendi metnine düşmesi, ve
+prompt bunu yapmamayı söylüyor.
+
+**Ekleme — sözcük dağarcığı tek yerde, ve alias sözlüğünün iki yarısı da
+içinde.** `ClaimVocabulary`: dosya `k8s = kubernetes` diyor, yani yalnız sol
+tarafı okuyan bir doğrulayıcı modelin **gerçekten yazdığı** adı hiç görmüyor.
+Bu gerçek bir açıktı ve iki doğrulayıcıyı birden ilgilendiriyordu.
+
+**Ekleme — ilanın becerileri değil sorumlulukları gösteriliyor.** § 18'in
+`keywords`'ü ilanın söz dağarcığı, yani doldurulmuş bir özetin çekeceği yer.
+Doğrulayıcı sonucu zaten reddederdi; prompt'a hiç göstermemek daha iyi.
+
+**About maddelerle aynı fan-out'ta.** Sayfanın tamamı verildiği için en yavaş
+görev o; maddelerden sonra koşmak gecikmesini onlarınkine eklerdi.
+
 ### 21.8 Dil yönetimi
 
 ```

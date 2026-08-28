@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
+import com.mustafatetik.atomcv.generation.rewrite.AboutSynthesisService;
 import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
 import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
@@ -189,8 +190,8 @@ public class JobSpecificGenerationService {
         // Faz D, inside the compile loop because that is where a selection
         // exists. It reports itself when it runs: general mode never gets
         // here, and even here there may be nothing worth rewriting.
-        var context = RewriteContext.of(posting, options.language(),
-                head.getPreferences().writingStyle().tone(), bucketKey);
+        var context = RewriteContext.of(posting, head.getSelfDescription(),
+                options.language(), head.getPreferences().writingStyle().tone(), bucketKey);
         var rewritten = new AtomicReference<>(RewrittenContent.none());
         var announced = new AtomicBoolean();
         ContentRewriter rewriter = (state, carried) -> {
@@ -225,16 +226,23 @@ public class JobSpecificGenerationService {
     }
 
     /**
-     * The versions that actually ran (Bolum 53.3). Faz D's is recorded only
+     * The versions that actually ran (Bolum 53.3). Faz D's are recorded only
      * when Faz D changed something: a record naming a rewrite prompt for a
      * generation that printed the profile verbatim would send anybody reading
      * it back to the wrong prompt.
+     *
+     * <p>The two prompts are recorded together rather than separately. Telling
+     * them apart needs the About atom's id, which is a fact about one profile,
+     * and the question a record like this answers is "which prompts could have
+     * written this" — both could.
      */
     private Map<String, String> promptVersions(String bucketKey, RewrittenContent rewritten) {
         var versions = new LinkedHashMap<String, String>();
         versions.put(JobAnalysisPhase.PROMPT_ID, analysis.promptVersionFor(bucketKey));
         if (!rewritten.isEmpty()) {
             versions.put(BulletRewriteService.PROMPT_ID, rewrites.promptVersionFor(bucketKey));
+            versions.put(AboutSynthesisService.PROMPT_ID,
+                    rewrites.aboutPromptVersionFor(bucketKey));
         }
         return versions;
     }

@@ -83,6 +83,12 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+-- KURAL: bir CITEXT kolonu VARCHAR parametreyle aranırsa Postgres
+-- karşılaştırmayı büyük/küçük harf DUYARLI yapar. UNIQUE index duyarsız
+-- korur, JPA'nın türettiği sorgu duyarlı arar; ikisi çelişince var olan satır
+-- bulunamaz ve insert 500 verir. `users.email` ya da `email_suppressions.email`
+-- üstündeki HER yeni sorgu `CAST(:x AS citext)` yazar.
+
 -- ─────────────────────────────── KİMLİK ───────────────────────────────
 
 CREATE TABLE users (

@@ -14,6 +14,13 @@ public enum RewriteIssue {
     /** A number the sentence claimed is not in the answer. */
     NUMBER_LOST,
 
+    /**
+     * A number the page does not carry is in the answer (Bolum 21.7). The
+     * mirror image of {@link #NUMBER_LOST}, and it belongs to the summary: a
+     * synthesis is where three years here and four there become "a decade".
+     */
+    NUMBER_INVENTED,
+
     /** A name that may not be reworded is not in the answer. */
     PROPER_NOUN_LOST,
 

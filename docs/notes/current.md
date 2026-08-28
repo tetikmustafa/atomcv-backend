@@ -79,12 +79,6 @@ Aşağıdakiler hâlâ canlı.
 enjeksiyon tripwire'ı; uslu bir modelle açılmaması beklenen davranış.
 **"Çalışmıyor" diye tamir etmeye kalkma.**
 
-**`citext` kolonu `varchar` parametreyle aranırsa büyük/küçük harf duyarlı
-arar.** UNIQUE index duyarsız korur, JPA'nın türettiği sorgu duyarlı arar;
-çelişince var olan satır bulunamaz ve insert 500 verir. Çözüm
-`CAST(:x AS citext)` — **`users.email` ve `email_suppressions.email`'e dokunan
-her yeni sorguda.**
-
 **`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını siliyor.**
 Silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
 **Yeni bir kimlik testi yazan bunu unutmasın.**
@@ -167,17 +161,23 @@ işlemi de yok; onu bitiren tek şey TTL'i.
 **`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
 Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
-## Adım 3.8 — Faz D ve cover letter · 3/5
+## Adım 3.8 — Faz D ve cover letter · 4/5
 
 Dilimler: **1 sözcükleme + eşikler** ✅ · **2 prompt + doğrulayıcı** ✅ ·
-**3 paralel yürütme + boru hattı** ✅ · 4 About sentezi · 5 cover letter.
+**3 paralel yürütme + boru hattı** ✅ · **4 About sentezi** ✅ · 5 cover letter.
 
-Kararlar `spec/`'te: § 21.3.1, § 21.6.1, § 21.5.1 ve § 21.1'in altındaki not.
-**Faz D ilana özel üretimde koşuyor**, genel modda koşmuyor; frontend'in
-aksiyonu **`B-055`** (`generation.phase.REWRITING`).
+Kararlar `spec/`'te: § 21.3.1, § 21.6.1, § 21.5.1, § 21.7.1 ve § 21.1'in
+altındaki not. **Faz D ilana özel üretimde koşuyor**, genel modda koşmuyor;
+frontend'in aksiyonu **`B-055`** (`generation.phase.REWRITING`) ve About için
+yeni bir aksiyon yok — var olan bir atomun metni değişiyor.
 
 **Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
-testtir.* Dilim 3'te dört ihlal ekildi, dördü de doğru testi düşürdü.
+testtir.* Yedi ihlal ekildi, yedisi de doğru testi düşürdü.
+
+**Dilim 4'te bir açık kapandı:** `ClaimVocabulary` iki doğrulayıcının ortak
+sözlüğü, ve alias dosyasının **iki yarısını** da okuyor. Önce yalnız sol taraf
+okunuyordu; `k8s = kubernetes` satırı yüzünden "Kubernetes" hiçbir kontrole
+takılmıyordu — madde yeniden yazımında da.
 
 ### Canlı olanlar
 
