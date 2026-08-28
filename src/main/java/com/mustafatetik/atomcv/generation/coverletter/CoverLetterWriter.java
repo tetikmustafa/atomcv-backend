@@ -54,12 +54,13 @@ public class CoverLetterWriter {
             JobAnalysis posting,
             String companyNote,
             CoverLetterStyle style,
-            String bucketKey) {
+            String bucketKey,
+            java.util.UUID userId) {
 
         CoverLetterInput input = CoverLetterPlanner.plan(
                 profile, tree, selection, posting, companyNote,
                 languageFor(profile, posting), toneOf(profile), LocalDate.now(clock));
-        return letters.write(input, style, bucketKey);
+        return letters.write(input, style, bucketKey, userId);
     }
 
     /**
@@ -76,10 +77,11 @@ public class CoverLetterWriter {
             JobAnalysis posting,
             String companyNote,
             CoverLetterStyle style,
-            String bucketKey) {
+            String bucketKey,
+            java.util.UUID userId) {
 
-        Result<CoverLetterDraft> written =
-                write(profile, tree, selection, posting, companyNote, style, bucketKey);
+        Result<CoverLetterDraft> written = write(
+                profile, tree, selection, posting, companyNote, style, bucketKey, userId);
         return switch (written) {
             case Result.Ok<CoverLetterDraft> ok -> ok.value().plainText();
             case Result.Err<CoverLetterDraft> refused -> {

@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * One structured call, provider-independent (Bolum 27.1).
@@ -24,7 +25,15 @@ import java.time.Duration;
  * @param resultType    what the answer is parsed into
  * @param preferredTier which chain to walk (Bolum 27.3)
  * @param timeout       per provider, not for the chain as a whole
+ * @param userId        whose work this call is doing, or {@code null} for an
+ *                      anonymous caller and for the calls no user asked for.
+ *                      Bolum 27.5's {@code llm_invocations.user_id}: the daily
+ *                      total already answers "what did today cost", and this
+ *                      is the column that answers "for whom" — which cannot be
+ *                      reconstructed afterwards, so it is written or it is
+ *                      lost. Never used to *reach* anything, only to attribute
  */
+
 public record StructuredRequest<T>(
         String promptId,
         String promptVersion,
@@ -33,7 +42,29 @@ public record StructuredRequest<T>(
         JsonSchema outputSchema,
         Class<T> resultType,
         ModelTier preferredTier,
-        Duration timeout) {
+        Duration timeout,
+        UUID userId) {
+
+    /**
+     * The same call with nobody attributed.
+     *
+     * <p>Kept so that adding attribution did not mean editing fourteen
+     * construction sites, most of which are tests that have no user and want
+     * none. A caller that knows whose work it is says so with
+     * {@link #forUser(UUID)}.
+     */
+    public StructuredRequest(String promptId, String promptVersion, String systemPrompt,
+            String userPrompt, JsonSchema outputSchema, Class<T> resultType,
+            ModelTier preferredTier, Duration timeout) {
+        this(promptId, promptVersion, systemPrompt, userPrompt, outputSchema, resultType,
+                preferredTier, timeout, null);
+    }
+
+    /** This call, attributed. */
+    public StructuredRequest<T> forUser(UUID userId) {
+        return new StructuredRequest<>(promptId, promptVersion, systemPrompt, userPrompt,
+                outputSchema, resultType, preferredTier, timeout, userId);
+    }
 
     public StructuredRequest {
         requireText(promptId, "promptId");

@@ -102,7 +102,7 @@ public class BulletRewriteService {
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
                 fenced.userPromptFor(fencedData(candidate, context)),
-                prompt.schema(), RewrittenBullet.class, ModelTier.MID, TIMEOUT));
+                prompt.schema(), RewrittenBullet.class, ModelTier.MID, TIMEOUT, context.userId()));
 
         if (answer instanceof Result.Err<LlmResponse<RewrittenBullet>>) {
             // An outage is not a rewrite failure, but the answer is the same

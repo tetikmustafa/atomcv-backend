@@ -63,7 +63,8 @@ public class CoverLetterRegenerationService {
 
         Result<CoverLetterDraft> written = letters.write(
                 head, tree, generation.getSelectionState().toSelectionState(),
-                generation.getJdAnalysis(), companyNote, style, user.userId().toString());
+                generation.getJdAnalysis(), companyNote, style, user.userId().toString(),
+                user.userId());
 
         if (written instanceof Result.Ok<CoverLetterDraft> ok) {
             generation.setCoverLetter(ok.value().plainText());

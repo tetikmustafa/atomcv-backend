@@ -44,7 +44,7 @@ class CoverLetterServiceTest {
     void agoodLetterIsWhatComesBack() {
         answering(draft("Dear Acme,", padded("Ran Postgres in production.")));
 
-        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user");
+        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null);
 
         assertThat(written.orElseThrow().greeting()).isEqualTo("Dear Acme,");
     }
@@ -59,7 +59,7 @@ class CoverLetterServiceTest {
         answering(draft("Dear Acme,",
                 padded("Ran Postgres and Kubernetes in production.")));
 
-        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user");
+        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null);
 
         assertThat(written.isErr()).isTrue();
         var error = (PipelineError.CoverLetterRejected)
@@ -75,7 +75,7 @@ class CoverLetterServiceTest {
                 .thenReturn(answer(draft("Dear Acme,", padded("Ran Kubernetes."))))
                 .thenReturn(answer(draft("Dear Acme,", padded("Ran Postgres."))));
 
-        assertThat(service.write(input(), CoverLetterStyle.DEFAULT, "a-user").isErr())
+        assertThat(service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null).isErr())
                 .isFalse();
         verify(providers, times(2)).call(any());
     }
@@ -90,7 +90,7 @@ class CoverLetterServiceTest {
         when(providers.call(request())).thenReturn(Result.err(
                 new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
-        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user");
+        var written = service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null);
 
         assertThat(((Result.Err<CoverLetterDraft>) written).error())
                 .isInstanceOf(PipelineError.AllProvidersUnavailable.class);
@@ -102,7 +102,7 @@ class CoverLetterServiceTest {
     void thestyleIsAnInstructionAndTheCvIsNot() {
         answering(draft("Dear Acme,", padded("Ran Postgres in production.")));
 
-        service.write(input(), CoverLetterStyle.SHORTER, "a-user");
+        service.write(input(), CoverLetterStyle.SHORTER, "a-user", null);
 
         var request = ArgumentCaptor.forClass(StructuredRequest.class);
         verify(providers).call(request.capture());
@@ -124,7 +124,7 @@ class CoverLetterServiceTest {
     void thewholeOfTheCvTravelsInsideTheFence() {
         answering(draft("Dear Acme,", padded("Ran Postgres in production.")));
 
-        service.write(input(), CoverLetterStyle.DEFAULT, "a-user");
+        service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null);
 
         var request = ArgumentCaptor.forClass(StructuredRequest.class);
         verify(providers).call(request.capture());
