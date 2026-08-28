@@ -91,7 +91,7 @@ public class AboutSynthesisService {
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
                 fenced.userPromptFor(fencedData(candidate)),
-                prompt.schema(), SynthesisedAbout.class, ModelTier.MID, TIMEOUT));
+                prompt.schema(), SynthesisedAbout.class, ModelTier.MID, TIMEOUT, context.userId()));
 
         if (answer instanceof Result.Err<LlmResponse<SynthesisedAbout>>) {
             // An outage is not a failed synthesis, but the answer is the same:

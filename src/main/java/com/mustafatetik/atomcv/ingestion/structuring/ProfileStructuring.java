@@ -85,7 +85,15 @@ public class ProfileStructuring {
      * @param bucketKey the user id, so an A/B experiment keeps one person on
      *                  one prompt version (Bolum 53.3)
      */
-    public Result<ExtractedProfile> structure(ExtractedText document, String bucketKey) {
+    /**
+     * @param userId whose upload this is, or {@code null} — and null is the
+     *               ordinary case here rather than an omission. An anonymous
+     *               import (§ 31.6.3) has no account to bill, which is exactly
+     *               why {@code bucketKey} is a session id for it and why the
+     *               two are separate arguments
+     */
+    public Result<ExtractedProfile> structure(
+            ExtractedText document, String bucketKey, java.util.UUID userId) {
         String version = prompts.selectVersion(PROMPT_ID, bucketKey);
         var prompt = prompts.load(PROMPT_ID, version);
         var fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -94,7 +102,7 @@ public class ProfileStructuring {
                 PROMPT_ID, version,
                 fenced.system(),
                 fenced.userPromptFor(withScrambleNote(document)),
-                prompt.schema(), ExtractedProfile.class, ModelTier.MID, TIMEOUT));
+                prompt.schema(), ExtractedProfile.class, ModelTier.MID, TIMEOUT, userId));
 
         return switch (answer) {
             // An outage is an outage. Restating it as an unreadable CV would

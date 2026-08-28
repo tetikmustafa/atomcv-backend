@@ -98,7 +98,7 @@ public class TranslationJobHandler implements JobHandler {
         }
 
         Result<AtomVariant> retranslated = translations.retranslate(
-                profile, variantId, source.get(), atom.get(), userId.toString());
+                profile, variantId, source.get(), atom.get(), userId.toString(), userId);
 
         return switch (retranslated) {
             case Result.Ok<AtomVariant> ok -> JobOutcome.completed(Map.of(

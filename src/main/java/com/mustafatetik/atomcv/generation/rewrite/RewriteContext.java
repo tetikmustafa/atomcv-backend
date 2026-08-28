@@ -34,7 +34,14 @@ public record RewriteContext(
         String ownWords,
         String language,
         String tone,
-        String bucketKey) {
+        String bucketKey,
+        java.util.UUID userId) {
+
+    /** Unattributed, for the tests and for any caller with no user in hand. */
+    public RewriteContext(List<String> postingSkills, List<String> postingFocus,
+            String ownWords, String language, String tone, String bucketKey) {
+        this(postingSkills, postingFocus, ownWords, language, tone, bucketKey, null);
+    }
 
     public RewriteContext {
         postingSkills = List.copyOf(postingSkills);
@@ -52,6 +59,16 @@ public record RewriteContext(
      */
     public static RewriteContext of(JobAnalysis posting, String ownWords,
             String language, Tone tone, String bucketKey) {
+        return of(posting, ownWords, language, tone, bucketKey, null);
+    }
+
+    /**
+     * @param userId whose generation this is (Bolum 27.5). Not the same thing
+     *               as {@code bucketKey}, which is an experiment bucket and is
+     *               a session id for an anonymous caller
+     */
+    public static RewriteContext of(JobAnalysis posting, String ownWords,
+            String language, Tone tone, String bucketKey, java.util.UUID userId) {
 
         var skills = new LinkedHashSet<String>();
         posting.requiredSkills().forEach(skill -> skills.add(canonical(skill)));
@@ -67,7 +84,7 @@ public record RewriteContext(
         focus.remove("");
 
         return new RewriteContext(List.copyOf(skills), List.copyOf(focus), ownWords,
-                language, tone == null ? null : tone.wireValue(), bucketKey);
+                language, tone == null ? null : tone.wireValue(), bucketKey, userId);
     }
 
     private static String canonical(JobAnalysis.Skill skill) {

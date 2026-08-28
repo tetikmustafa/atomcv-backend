@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.llm.telemetry;
 import com.mustafatetik.atomcv.llm.gateway.LlmResponse;
 import com.mustafatetik.atomcv.llm.gateway.StructuredRequest;
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * One provider call, as something to count (Bolum 27.5).
@@ -28,6 +29,9 @@ import java.time.Instant;
  * @param cachedTokens  the discounted subset of {@code inputTokens}
  * @param latencyMs     measured around the call
  * @param occurredAt    when, from the injected clock
+ * @param userId        whose work this was, or null. Bolum 44.3's brake reads
+ *                      the daily total and does not need it; "which user cost
+ *                      what" has no other source and cannot be backfilled
  */
 public record LlmInvocationEvent(
         String promptId,
@@ -39,7 +43,8 @@ public record LlmInvocationEvent(
         int outputTokens,
         int cachedTokens,
         long latencyMs,
-        Instant occurredAt) {
+        Instant occurredAt,
+        UUID userId) {
 
     /** The values {@code llm_invocations.outcome} allows, verbatim from V1. */
     public enum Outcome {
@@ -55,7 +60,7 @@ public record LlmInvocationEvent(
                 request.promptId(), request.promptVersion(),
                 response.provider(), response.model(), Outcome.SUCCESS,
                 response.inputTokens(), response.outputTokens(), response.cachedTokens(),
-                response.latencyMs(), at);
+                response.latencyMs(), at, request.userId());
     }
 
     public static LlmInvocationEvent failed(
@@ -63,6 +68,6 @@ public record LlmInvocationEvent(
             Outcome outcome, long latencyMs, Instant at) {
         return new LlmInvocationEvent(
                 request.promptId(), request.promptVersion(), provider, model, outcome,
-                0, 0, 0, latencyMs, at);
+                0, 0, 0, latencyMs, at, request.userId());
     }
 }

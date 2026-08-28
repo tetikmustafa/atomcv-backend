@@ -89,7 +89,7 @@ public class VariantTranslationService {
      */
     @Transactional
     public Result<AtomVariant> retranslate(ProfileRef profile, UUID variantId,
-            AtomVariant source, Atom atom, String bucketKey) {
+            AtomVariant source, Atom atom, String bucketKey, UUID userId) {
 
         AtomVariant target = variants.findById(profile, variantId).orElseThrow(
                 () -> new IllegalStateException("The wording was checked and then vanished"));
@@ -100,7 +100,7 @@ public class VariantTranslationService {
                 PROMPT_ID, prompt.version(),
                 fenced.system().replace(TARGET_LANGUAGE, target.getLanguage()),
                 fenced.userPromptFor(source.getPlainText()),
-                prompt.schema(), AtomTranslation.class, ModelTier.CHEAP, TIMEOUT));
+                prompt.schema(), AtomTranslation.class, ModelTier.CHEAP, TIMEOUT, userId));
 
         return switch (answer) {
             case Result.Err<LlmResponse<AtomTranslation>> failed -> Result.err(failed.error());
