@@ -1,5 +1,8 @@
 package com.mustafatetik.atomcv.identity.ratelimit;
 
+import com.mustafatetik.atomcv.shared.ratelimit.RateLimitDecision;
+import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
+
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;

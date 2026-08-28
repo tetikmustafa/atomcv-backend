@@ -48,13 +48,18 @@ public class AnomalyDetector {
     private final JdbcTemplate jdbc;
     private final AnomalyProperties properties;
     private final FeatureFlags flags;
+    private final TightenedSubjects tightened;
+    private final QuotaProperties quotas;
     private final MeterRegistry meters;
     private final Clock clock;
 
     AnomalyDetector(JdbcTemplate jdbc, AnomalyProperties properties, FeatureFlags flags,
+            TightenedSubjects tightened, QuotaProperties quotas,
             MeterRegistry meters, Clock clock) {
 
         this.flags = flags;
+        this.tightened = tightened;
+        this.quotas = quotas;
         this.jdbc = jdbc;
         this.properties = properties;
         this.meters = meters;
@@ -151,10 +156,24 @@ public class AnomalyDetector {
      * tighten, and pulling the brake over one busy user would stop everybody —
      * that is a decision for whoever reads this.
      */
+    /**
+     * Bolum 44.3's heavy-user branch, both halves of it.
+     *
+     * <p>It reported and did nothing until now, and the section said so. The
+     * snippet's second line is {@code rateLimiter.tighten(userId, 6h)} — a
+     * narrowing of the one subject the numbers were about, which is a
+     * different act from the brake beside it. The brake stops everybody and
+     * stays a person's decision; six hours of an hourly cap for one heavy
+     * subject does not need one.
+     *
+     * <p>The alarm still fires. Tightening is not a substitute for somebody
+     * reading it: a real leak looks exactly like this on the first pass.
+     */
     private void report(HeavyUser user) {
         meters.counter("anomaly.heavy_user").increment();
         log.warn("Unusual usage: subject {} generated {} today against a baseline of {}",
                 user.subjectId(), user.today(), String.format("%.1f", user.baseline()));
+        tightened.tighten(user.subjectId(), quotas.tightenFor());
     }
 
     /** @param baseline the user's own average over the previous week */

@@ -1,4 +1,4 @@
-package com.mustafatetik.atomcv.identity.ratelimit;
+package com.mustafatetik.atomcv.shared.ratelimit;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

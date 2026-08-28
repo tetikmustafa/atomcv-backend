@@ -41,6 +41,9 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
      * cron cannot fire, and a disabled component has no bean. The same
      * arrangement {@code JobWorkerIT} uses, and for the same reason.
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    private TightenedSubjects tightened;
+
     private AnomalyDetector detector;
     private AnomalyProperties properties;
     private LocalDate today;
@@ -51,7 +54,8 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
         jdbc.update("DELETE FROM llm_invocations");
         jdbc.update("DELETE FROM feature_flags");
         properties = new AnomalyProperties(true, 5.0, 50, java.math.BigDecimal.TEN);
-        detector = new AnomalyDetector(jdbc, properties, flags,
+        detector = new AnomalyDetector(jdbc, properties, flags, tightened,
+                new com.mustafatetik.atomcv.billing.QuotaProperties(0, 0, 0, 0, 0, null),
                 new io.micrometer.core.instrument.simple.SimpleMeterRegistry(), clock);
         today = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC);
     }

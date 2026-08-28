@@ -5,7 +5,7 @@ import com.mustafatetik.atomcv.identity.api.dto.SignInResponse;
 import com.mustafatetik.atomcv.identity.api.dto.VerifyRequest;
 import com.mustafatetik.atomcv.identity.challenge.Challenge;
 import com.mustafatetik.atomcv.identity.domain.Session;
-import com.mustafatetik.atomcv.identity.ratelimit.ClientIp;
+import com.mustafatetik.atomcv.shared.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.identity.ratelimit.SignInRateLimit;
 import com.mustafatetik.atomcv.identity.service.MagicLinkService;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
