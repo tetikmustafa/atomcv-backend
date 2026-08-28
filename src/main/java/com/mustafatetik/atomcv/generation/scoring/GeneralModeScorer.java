@@ -34,6 +34,12 @@ public final class GeneralModeScorer {
     /** Bolum 19.4: a bullet with a number in it says more than one without. */
     static final double IMPACT_WITHOUT_METRICS = 0.3;
 
+    /** Bolum 19.4's four weights. They add up to one. */
+    static final double RECENCY_WEIGHT = 0.35;
+    static final double IMPORTANCE_WEIGHT = 0.30;
+    static final double IMPACT_WEIGHT = 0.20;
+    static final double VERIFIED_WEIGHT = 0.15;
+
     private GeneralModeScorer() {
     }
 
@@ -46,10 +52,26 @@ public final class GeneralModeScorer {
         // Clamped: the weights add up to one, but four rounded doubles can add
         // up to 1.0000000000000002, and AtomCandidate refuses a score above
         // one — a defect that would only appear for a perfect atom.
-        return clamp(0.35 * recency(entry, today)
-                + 0.30 * clamp(atom.getImportance())
-                + 0.20 * impact(atom)
-                + 0.15 * (atom.isVerified() ? 1.0 : 0.0));
+        return clamp(RECENCY_WEIGHT * recency(entry, today)
+                + IMPORTANCE_WEIGHT * clamp(atom.getImportance())
+                + IMPACT_WEIGHT * impact(atom)
+                + VERIFIED_WEIGHT * (atom.isVerified() ? 1.0 : 0.0));
+    }
+
+    /**
+     * An entry with no atoms under it, on the same scale (Bolum 20.2).
+     *
+     * <p>Two of the four components above are properties of a sentence: a
+     * heading carries no metric and is not verified. Dropping them and leaving
+     * the other two at their own weights would cap a degree line at 0.65 and
+     * make it lose every comparison it should win, so what survives is
+     * renormalised — the <em>ratio</em> Bolum 19.4 gives between recency and
+     * importance is what matters, and it is kept exactly.
+     */
+    public static double scoreOfEntry(Entry entry, LocalDate today) {
+        double total = RECENCY_WEIGHT + IMPORTANCE_WEIGHT;
+        return clamp((RECENCY_WEIGHT * recency(entry, today)
+                + IMPORTANCE_WEIGHT * clamp(entry.getImportance())) / total);
     }
 
     static double recency(Entry entry, LocalDate today) {

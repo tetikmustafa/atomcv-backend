@@ -323,6 +323,111 @@ class SelectionRequestBuilderTest {
                 assertThat(candidate.entryId()).isEqualTo(entry.getId()));
     }
 
+    // ── an entry with nothing under it ────────────────────────────────────
+
+    /**
+     * Bolum 20.2: a diploma line has no bullets, and asking the person to
+     * invent one is asking them to pad.
+     */
+    @Test
+    void anEntryWithNoAtomsIsOfferedAsItsOwnHeading() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EDUCATION, 0);
+        var degree = profile.entry(section, 0);
+
+        var plan = build(profile).request().sections().get(0).entries().get(0);
+
+        assertThat(plan.entryId()).isEqualTo(degree.getId());
+        assertThat(plan.atoms()).singleElement().satisfies(candidate -> {
+            assertThat(candidate.headerOnly()).isTrue();
+            assertThat(candidate.entryId()).isEqualTo(degree.getId());
+            // Nothing of its own: the heading is furniture, and SelectionPhase
+            // is what charges for it.
+            assertThat(candidate.renderCostPt()).isZero();
+            assertThat(candidate.active()).isTrue();
+        });
+    }
+
+    @Test
+    void anEntryThatHasBulletsIsNotOfferedAHeadingAsWell() {
+        // The two together would open the entry without paying for the list
+        // the bullets are printed in, and the page would overflow by that much.
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EXPERIENCE, 0);
+        var entry = profile.entry(section, 0);
+        profile.bullet(section, entry, "Built ETL pipelines");
+
+        var plan = build(profile).request().sections().get(0).entries().get(0);
+
+        assertThat(plan.atoms()).noneMatch(AtomCandidate::headerOnly);
+    }
+
+    /**
+     * The score of a heading comes from the entry, so a stale qualification
+     * ranks below a current one — and the source, not the builder, decides.
+     */
+    @Test
+    void aHeadingIsScoredFromItsEntryRatherThanFromAnyAtom() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EDUCATION, 0);
+        var recent = profile.entry(section, 0);
+        recent.setEndDate(TODAY);
+        var old = profile.entry(section, 1);
+        old.setEndDate(TODAY.minusYears(20));
+
+        var entries = build(profile).request().sections().get(0).entries();
+
+        assertThat(headingOf(entries, recent).score())
+                .isGreaterThan(headingOf(entries, old).score());
+    }
+
+    @Test
+    void twoReadsOfOneProfileBreakAHeadingTieTheSameWay() {
+        // Entry ids are minted per import, so a tie-break that used one would
+        // reorder two identical degree lines between two reads of one CV
+        // (Bolum 20.3).
+        var first = withOneDegree();
+        var second = withOneDegree();
+
+        assertThat(headingOf(first, 0).atomId()).isNotEqualTo(headingOf(second, 0).atomId());
+        assertThat(headingOf(first, 0).tieBreak()).isEqualTo(headingOf(second, 0).tieBreak());
+    }
+
+    @Test
+    void twoDifferentDegreeLinesDoNotShareATieBreak() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EDUCATION, 0);
+        profile.entry(section, 0).setOrganization("University of Manchester");
+        profile.entry(section, 1).setOrganization("Trafford College");
+
+        var entries = build(profile).request().sections().get(0).entries();
+
+        assertThat(headingOf(entries, 0).tieBreak())
+                .isNotEqualTo(headingOf(entries, 1).tieBreak());
+    }
+
+    private static List<SelectionRequest.EntryPlan> withOneDegree() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.EDUCATION, 0);
+        var degree = profile.entry(section, 0);
+        degree.setOrganization("University of Manchester");
+        degree.setLocation("Manchester");
+        return build(profile).request().sections().get(0).entries();
+    }
+
+    private static AtomCandidate headingOf(List<SelectionRequest.EntryPlan> entries, int index) {
+        return entries.get(index).atoms().get(0);
+    }
+
+    private static AtomCandidate headingOf(
+            List<SelectionRequest.EntryPlan> entries, Entry entry) {
+
+        return entries.stream()
+                .filter(plan -> plan.entryId().equals(entry.getId()))
+                .findFirst().orElseThrow()
+                .atoms().get(0);
+    }
+
     @Test
     void theSameProfileBuildsTheSameRequest() {
         var profile = new Fixture();

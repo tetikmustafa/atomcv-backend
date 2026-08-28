@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,9 +69,19 @@ public final class SelectionPhase {
         private final Map<UUID, UUID> sectionOfAtom = new HashMap<>();
 
         private final Set<UUID> openSections = new HashSet<>();
-        private final Set<UUID> openEntries = new HashSet<>();
+
+        // Ordered, and not for tidiness: upgradeFirstEntryOf walks this and
+        // charges the entry it reaches first, so a salted iteration order
+        // moves points between entries and changes what a removal refunds.
+        private final Set<UUID> openEntries = new LinkedHashSet<>();
         private final Set<UUID> openSectionLists = new HashSet<>();
         private final Map<UUID, Integer> takenFromEntry = new HashMap<>();
+
+        /**
+         * Entries on the page with no bullets under them. Ordered, because it
+         * leaves here for a JSONB column and a response.
+         */
+        private final Set<UUID> headerOnly = new LinkedHashSet<>();
 
         /** What each open entry's heading and list were charged when opened. */
         private final Map<UUID, Double> entryFurniturePt = new HashMap<>();
@@ -117,11 +128,21 @@ public final class SelectionPhase {
             improveBySwapping();
             rejectWhatIsLeft();
 
+            // The heading candidates leave by their own door. They travel
+            // through the algorithm as candidates because that is what makes
+            // them compete for the page on the same terms, but they are not
+            // atoms, and a caller that read one out of `selected` would look
+            // up an atom id that belongs to an entry.
+            List<SelectedAtom> atoms = selected.values().stream()
+                    .filter(atom -> !headerOnly.contains(atom.atomId()))
+                    .toList();
+
             return Result.ok(new SelectionState(
-                    List.copyOf(selected.values()),
+                    atoms,
                     List.copyOf(rejected),
                     new BudgetBreakdown(totalBudgetPt, structurePt,
-                            totalBudgetPt - structurePt, contentPt)));
+                            totalBudgetPt - structurePt, contentPt),
+                    List.copyOf(headerOnly)));
         }
 
         /** An atom the user switched off is not a candidate at all (constraint 3). */
@@ -206,6 +227,12 @@ public final class SelectionPhase {
          */
         private void enforceEntryMinimums() {
             for (UUID entryId : List.copyOf(openEntries)) {
+                if (headerOnly.contains(entryId)) {
+                    // The minimum is a statement about bullets, and this entry
+                    // has none to reach it with. Applying it here would delete
+                    // exactly the line this exists to print.
+                    continue;
+                }
                 topUpToMinimum(entryId, false);
 
                 EntryPlan entry = entries.get(entryId);
@@ -250,6 +277,14 @@ public final class SelectionPhase {
 
         private void rejectWhatIsLeft() {
             for (AtomCandidate atom : pool.values()) {
+                if (atom.headerOnly()) {
+                    // No rejection for a heading that did not fit: every
+                    // RejectedAtom names an atom, and this one would name an
+                    // entry. Bolum 20.5's list is what the user is shown
+                    // atom by atom, and an id in it that resolves to nothing
+                    // is worse than the silence.
+                    continue;
+                }
                 rejected.add(new RejectedAtom(
                         atom.atomId(), atom.score(), RejectionReason.BUDGET));
             }
@@ -265,6 +300,10 @@ public final class SelectionPhase {
         /**
          * What an atom costs right now: its own height, plus the furniture it
          * would open. Constraint (5) — the reason this is not a knapsack.
+         *
+         * <p>A heading candidate is the same sum with both halves empty: it has
+         * no height of its own, and it opens no list, because there are no
+         * bullets to put in one.
          */
         private double effectiveCostOf(AtomCandidate atom) {
             double cost = atom.renderCostPt();
@@ -278,10 +317,22 @@ public final class SelectionPhase {
                     cost += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
                 }
             } else if (!openEntries.contains(atom.entryId())) {
-                cost += entryHeaderCost(sectionId)
-                        + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
+                cost += entryFurnitureCost(atom, sectionId);
             }
             return cost;
+        }
+
+        /**
+         * What opening this atom's entry costs: the heading, and the list the
+         * atom is the first bullet of. A heading candidate pays the first and
+         * not the second (Bolum 20.2, constraint 5).
+         */
+        private double entryFurnitureCost(AtomCandidate atom, UUID sectionId) {
+            double furniture = entryHeaderCost(sectionId);
+            if (!atom.headerOnly()) {
+                furniture += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
+            }
+            return furniture;
         }
 
         /**
@@ -318,8 +369,10 @@ public final class SelectionPhase {
             double furniture = effectiveCostOf(atom) - atom.renderCostPt();
 
             if (atom.entryId() != null && !openEntries.contains(atom.entryId())) {
-                entryFurniturePt.put(atom.entryId(), entryHeaderCost(sectionId)
-                        + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
+                entryFurniturePt.put(atom.entryId(), entryFurnitureCost(atom, sectionId));
+                if (atom.headerOnly()) {
+                    headerOnly.add(atom.entryId());
+                }
             }
 
             if (sectionId != null) {
@@ -354,16 +407,27 @@ public final class SelectionPhase {
             double difference = capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST)
                     - capacity.fixedCost(CapacityModel.ENTRY_HEADER);
             for (UUID entryId : openEntries) {
+                Double charged = entryFurniturePt.get(entryId);
                 if (sectionId.equals(sectionOfEntry.get(entryId))
-                        && entryFurniturePt.get(entryId) != null
-                        && entryFurniturePt.get(entryId)
-                                < capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST)
-                                        + capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD)) {
+                        && charged != null
+                        // Still at the cheaper heading, so it has not been
+                        // moved yet. The ceiling differs by kind: an entry
+                        // opened by its heading alone never paid for a list.
+                        && charged < ceilingFor(entryId)) {
                     entryFurniturePt.merge(entryId, difference, Double::sum);
                     return difference;
                 }
             }
             return 0.0;
+        }
+
+        /** What this entry's furniture comes to once it sits after a list. */
+        private double ceilingFor(UUID entryId) {
+            double ceiling = capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST);
+            if (!headerOnly.contains(entryId)) {
+                ceiling += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
+            }
+            return ceiling;
         }
 
         private void remove(SelectedAtom atom) {
@@ -377,6 +441,7 @@ public final class SelectionPhase {
                     // Exactly what it was charged, which is not always the
                     // same number (EK D.8.10).
                     structurePt -= entryFurniturePt.remove(original.entryId());
+                    headerOnly.remove(original.entryId());
                 }
             }
             pool.put(original.atomId(), original);

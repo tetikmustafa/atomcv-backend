@@ -13,11 +13,25 @@ import java.util.UUID;
 public record SelectionState(
         List<SelectedAtom> selected,
         List<RejectedAtom> rejected,
-        BudgetBreakdown budget) {
+        BudgetBreakdown budget,
+        List<UUID> headerOnlyEntries) {
 
     public SelectionState {
         selected = List.copyOf(selected);
         rejected = List.copyOf(rejected);
+        // Null rather than empty is what a snapshot written before this field
+        // existed deserialises to, and those rows still have to be renderable
+        // (EK D.6.3).
+        headerOnlyEntries = headerOnlyEntries == null
+                ? List.of()
+                : List.copyOf(headerOnlyEntries);
+    }
+
+    /** A selection with no atomless entry on it, which is most of them. */
+    public SelectionState(
+            List<SelectedAtom> selected, List<RejectedAtom> rejected, BudgetBreakdown budget) {
+
+        this(selected, rejected, budget, List.of());
     }
 
     public record SelectedAtom(
@@ -58,7 +72,14 @@ public record SelectionState(
         }
     }
 
+    /**
+     * Nothing was chosen at all.
+     *
+     * <p>An entry printed by its heading alone counts: it is a line on the
+     * page, so a selection carrying one is not an empty CV even though no atom
+     * survived.
+     */
     public boolean isEmpty() {
-        return selected.isEmpty();
+        return selected.isEmpty() && headerOnlyEntries.isEmpty();
     }
 }

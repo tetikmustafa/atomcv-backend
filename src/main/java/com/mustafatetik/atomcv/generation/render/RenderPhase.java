@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -75,6 +76,8 @@ public final class RenderPhase {
             chosenVariant.put(atom.atomId(), atom.variantId());
         }
 
+        Set<UUID> openedWithoutAtoms = Set.copyOf(selection.headerOnlyEntries());
+
         List<RenderRequest.RenderableSection> sections = new ArrayList<>();
         for (SectionNode section : tree.sections()) {
             List<RichContent> loose = contentOf(section.atoms(), chosenVariant, rewrites);
@@ -82,14 +85,19 @@ public final class RenderPhase {
             List<RenderRequest.RenderableEntry> entries = new ArrayList<>();
             for (EntryNode entry : section.entries()) {
                 List<RichContent> bullets = contentOf(entry.atoms(), chosenVariant, rewrites);
-                if (!bullets.isEmpty()) {
+                // What selection opened is what is printed. A heading with
+                // nothing under it reaches the page only where selection said
+                // so and paid for it; one it never opened would spend points
+                // the budget never accounted for. A degree line is the case
+                // this exists for — no bullets, and nothing dishonest about
+                // that (Bolum 20.2).
+                if (!bullets.isEmpty() || openedWithoutAtoms.contains(entry.entry().getId())) {
                     entries.add(renderable(entry.entry(), bullets, language));
                 }
             }
 
-            // A heading with nothing under it is not printed. Selection only
-            // charged for the ones it opened, so printing an empty one would
-            // spend points the budget never accounted for.
+            // A section heading with nothing under it is not printed, for the
+            // same reason: nothing charged for it.
             if (!loose.isEmpty() || !entries.isEmpty()) {
                 sections.add(new RenderRequest.RenderableSection(
                         section.section().getTitle(), entries, loose));

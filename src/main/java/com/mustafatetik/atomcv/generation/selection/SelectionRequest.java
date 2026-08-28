@@ -84,6 +84,16 @@ public record SelectionRequest(
             if (minAtoms < 0) {
                 throw new IllegalArgumentException("minAtoms is not negative");
             }
+            // A heading candidate exists only where there is nothing else to
+            // open the entry with. Alongside a real atom it would be a defect
+            // with a page in it: the heading opens the entry without paying
+            // ITEMIZE_OVERHEAD, the atom that follows finds the entry already
+            // open and is not charged for the list either, and the renderer
+            // prints one nobody paid for.
+            if (atoms.stream().anyMatch(AtomCandidate::headerOnly) && atoms.size() > 1) {
+                throw new IllegalArgumentException(
+                        "An entry opened by its heading has no bullets to open it");
+            }
             // The atom has to agree about which entry it is in. When it does
             // not, selection charges nothing for the entry heading and the
             // budget silently gains 22.76 points per entry — a page that
@@ -103,6 +113,9 @@ public record SelectionRequest(
      *
      * @param renderCostPt what it occupies, measured or estimated
      * @param alwaysInclude the user's lock: it goes in whatever the score says
+     * @param headerOnly this is not an atom at all but the offer to print an
+     *                   entry that has none — see
+     *                   {@link #forEntryHeader(UUID, double, String)}
      */
     public record AtomCandidate(
             UUID atomId,
@@ -112,7 +125,8 @@ public record SelectionRequest(
             double renderCostPt,
             boolean alwaysInclude,
             boolean active,
-            String contentKey) {
+            String contentKey,
+            boolean headerOnly) {
 
         /**
          * A candidate with nothing to break a tie by, for callers that build
@@ -124,10 +138,47 @@ public record SelectionRequest(
             this(atomId, variantId, entryId, score, renderCostPt, alwaysInclude, active, "");
         }
 
+        /** An ordinary atom: everything here is a bullet unless it says otherwise. */
+        public AtomCandidate(UUID atomId, UUID variantId, UUID entryId, double score,
+                double renderCostPt, boolean alwaysInclude, boolean active, String contentKey) {
+            this(atomId, variantId, entryId, score, renderCostPt, alwaysInclude, active,
+                    contentKey, false);
+        }
+
+        /**
+         * The offer to print an entry that has no bullets under it at all.
+         *
+         * <p>A diploma line has no achievements to list, and until this existed
+         * selection worked atom by atom: no atom meant no candidate, and
+         * "2019-2023, Yildiz Teknik Universitesi, Computer Engineering" could
+         * not reach the page by any route. The alternative — asking the person
+         * to invent a bullet for their degree — is asking them to pad, which is
+         * the opposite of what this product is for.
+         *
+         * <p>It carries the entry's own id as its atom id: there is no atom to
+         * name it by, and the entry is exactly what would be printed. Its cost
+         * is zero because everything it occupies is furniture — the entry
+         * heading, and no list at all (Bolum 20.2, constraint 5).
+         */
+        public static AtomCandidate forEntryHeader(
+                UUID entryId, double score, String contentKey) {
+
+            return new AtomCandidate(entryId, null, entryId, score, 0.0, false, true,
+                    contentKey, true);
+        }
+
         public AtomCandidate {
             Objects.requireNonNull(atomId, "atomId");
             contentKey = contentKey == null ? "" : contentKey;
-            if (renderCostPt <= 0) {
+            if (headerOnly) {
+                if (entryId == null) {
+                    throw new IllegalArgumentException("An entry heading belongs to an entry");
+                }
+                if (renderCostPt != 0) {
+                    throw new IllegalArgumentException(
+                            "An entry heading is furniture, not content, and costs nothing here");
+                }
+            } else if (renderCostPt <= 0) {
                 throw new IllegalArgumentException("An atom occupies some space");
             }
             if (score < 0 || score > 1) {
