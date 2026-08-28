@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
+import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -118,7 +119,9 @@ public class CvGenerationService {
 
         progress.report(GenerationPhase.RENDERING.at(70));
 
-        return pipeline.run(head, tree, built.request(),
+        // No posting, so no Faz D: Bolum 21.2's tiers are Faz B scores, and
+        // there is nothing here to be relevant to (Bolum 19.4).
+        return pipeline.run(head, tree, built.request(), ContentRewriter.none(),
                         options.customization(), options.locale())
                 // No posting and no Faz B: both are null, and the record says
                 // so rather than pretending a comparison happened (Bolum 19.4).

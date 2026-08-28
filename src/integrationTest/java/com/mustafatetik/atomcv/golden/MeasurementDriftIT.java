@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.mustafatetik.atomcv.compilation.CompilationProperties;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
 import com.mustafatetik.atomcv.generation.render.RenderPhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
@@ -96,7 +97,7 @@ class MeasurementDriftIT {
         var client = compiler();
         String source = new LatexDocumentRenderer().renderFinal(RenderPhase.build(
                 golden.profile(), golden.tree(), state,
-                TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
 
         assertThat(client.compile(source).pageCount())
                 .as("%s fills one page and not two", name)
@@ -113,7 +114,7 @@ class MeasurementDriftIT {
     private double heightOnThePage(GoldenProfile golden, SelectionState state) {
         String source = new LatexDocumentRenderer().renderFinal(RenderPhase.build(
                         golden.profile(), golden.tree(), state,
-                        TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
+                        RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
 
         String probed = source.replace("\\end{document}",
                 "\\par\\typeout{CALIB|pagetotal|\\the\\pagetotal}\n\\end{document}");

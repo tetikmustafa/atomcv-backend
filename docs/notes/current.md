@@ -134,9 +134,6 @@ On iki karar § 32.2.1 ve § 32.3.1'de; inşa kaydı
 § 32.3'ün sıralaması Aşama 2'den beri doğruydu ve tek bir yanlış satır bütün
 paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
 
-**Canlı — `SkillNames.canonical` dört çağıranın ortak kuralı**, ve `RunMarking`
-artık `profile.domain.content`'te (Faz D üçüncü çağıran olacak).
-
 ## Adım 3.6 — anonim mod · 6/6 · kapandı
 
 Kararlar `spec/`'te (§ 35.7.1, § 41.3.1, § 41.3.2, § 41.3.3, § 44.1.1,
@@ -170,31 +167,33 @@ işlemi de yok; onu bitiren tek şey TTL'i.
 **`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
 Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
-**Dikkat — `git checkout --` ekilmiş ihlali geri alırken commit edilmemiş
-gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.
+## Adım 3.8 — Faz D ve cover letter · 3/5
 
-## Adım 3.8 — Faz D ve cover letter · 1/5
+Dilimler: **1 sözcükleme + eşikler** ✅ · **2 prompt + doğrulayıcı** ✅ ·
+**3 paralel yürütme + boru hattı** ✅ · 4 About sentezi · 5 cover letter.
 
-Dilimler: **1 sözcükleme seçimi + eşikler** ✅ · **2 rewrite prompt +
-doğrulayıcı** ✅ · 3 paralel yürütme + boru hattına bağlama · 4 About sentezi ·
-5 cover letter.
-
-Kararlar § 21.3.1 ve § 21.6.1'de: bir **Düzeltme** (varyantın embedding'i yok)
-ve üç **Ekleme** ("uzunsa" eşiği 160 karakter; iddia sözlüğü = ilan becerileri
-+ alias sözlüğü; orijinalde geçen teknoloji rewrite'a yazılmıyor).
+Kararlar `spec/`'te: § 21.3.1, § 21.6.1, § 21.5.1 ve § 21.1'in altındaki not.
+**Faz D ilana özel üretimde koşuyor**, genel modda koşmuyor; frontend'in
+aksiyonu **`B-055`** (`generation.phase.REWRITING`).
 
 **Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
-testtir.* Tabanı kaldırdım, paket geçti — çünkü "bağlantısız" testim kısa bir
-maddeydi ve uzunluk kapısına zaten takılmıyordu. Uzun-ve-tabanın-altında bir
-vaka eklenince ihlal düştü.
+testtir.* Dilim 3'te dört ihlal ekildi, dördü de doğru testi düşürdü.
 
-**Faz D henüz boru hattına bağlı değil.** `RewritePlanner` ile
-`BulletRewriteService`'i çağıran yok; § 21.5 paralel yürütme dilim 3'te.
-`GenerationPhase` hâlâ "Faz D hiç koşmaz" diyor.
+### Canlı olanlar
 
-**Canlı — `bullet_rewrite` için `local-fake` fixture'ı yok**, `profile_extraction`
-ile aynı sebepten: fixture anahtarı istek metninin özetinden türüyor.
-`SyntheticAnswer` şema şeklinde bir cümle üretiyor, yani yerelde yeniden yazım
-**çalışıyor ama anlamsız** — ve doğrulayıcı onu büyük ihtimalle reddedip
-orijinali bastırıyor. Bu doğru davranış; "bozuk" diye tamir etmeye kalkma.
+**`latexTest` bu makinede 44/48** ve sebebi Faz D değil:
+`src/test/resources/fixtures/llm` **yok**, `job_analysis` sentetik cevap alıyor,
+`confidence` kapının altına düşüyor → `LOW_CONFIDENCE` → iş `failed`. Dört
+`JobSpecificCvIT` testi **`ce9483e`'de de düşüyor**; STATUS'un "48 · 0 hata"
+satırı fixture'lar yerelde varken ölçülmüş. Düzeltmesi `make record`, kod değil.
 
+**Faz D bir üretimde sekize kadar eşzamanlı çağrı yapıyor**, ve her çağrının
+sonunda `LlmInvocationRecorder` `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10,
+işçi eşzamanlılığı 2 → tepede 16 kısa ödünç. Bugün sorun değil (bağlantı LLM
+çağrısından *sonra*, milisaniyeler için), ama **havuz büyütülmeden işçi
+eşzamanlılığı artırılmamalı.**
+
+**`bullet_rewrite` için de `local-fake` fixture'ı yok.** `SyntheticAnswer` şema
+şeklinde bir cümle üretiyor: yerelde yeniden yazım **çalışıyor ama anlamsız**,
+doğrulayıcı onu reddedip orijinali bastırıyor. Doğru davranış; "bozuk" diye
+tamir etmeye kalkma.

@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.render;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.BudgetBreakdown;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -57,6 +59,40 @@ class RenderPhaseTest {
                 .containsExactly("Built ETL pipelines", "Cut build times in half");
     }
 
+    /**
+     * <strong>Faz D reaches the page here and nowhere else.</strong> The
+     * profile is untouched — what the person wrote is theirs, and a rewrite is
+     * true of one generation and one posting.
+     */
+    @Test
+    void arewrittenBulletIsPrintedInPlaceOfTheOriginal() {
+        var fixture = twoBulletsInOneJob();
+
+        var request = build(fixture, selection(fixture.first, fixture.second),
+                new RewrittenContent(Map.of(fixture.first.getId(),
+                        RichContent.plain("Rebuilt the ingest path on Postgres"))));
+
+        assertThat(plain(request.sections().get(0).entries().get(0).atoms()))
+                .containsExactly("Rebuilt the ingest path on Postgres", "Cut build times in half");
+    }
+
+    /**
+     * And it cannot put a line on a page selection did not pay for: the
+     * selection gate comes first, so a rewrite of an atom that was dropped for
+     * budget is dropped with it.
+     */
+    @Test
+    void arewriteOfAnAtomThatWasNotSelectedIsNotPrinted() {
+        var fixture = twoBulletsInOneJob();
+
+        var request = build(fixture, selection(fixture.first),
+                new RewrittenContent(Map.of(fixture.second.getId(),
+                        RichContent.plain("A sentence the budget had no room for"))));
+
+        assertThat(plain(request.sections().get(0).entries().get(0).atoms()))
+                .containsExactly("Built ETL pipelines");
+    }
+
     @Test
     void anEntryWithNothingSelectedIsNotPrinted() {
         var fixture = twoBulletsInOneJob();
@@ -78,7 +114,7 @@ class RenderPhaseTest {
 
         var request = RenderPhase.build(profile(), tree,
                 state(new SelectedAtom(skill.getId(), wording.getId(), 0.9, 20, false)),
-                TemplateCustomization.CLASSIC, Locale.ENGLISH);
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
 
         // The empty Experience heading is gone; Skills carries its atom.
         assertThat(request.sections()).hasSize(1);
@@ -109,7 +145,7 @@ class RenderPhaseTest {
         profile.setHeadline("Backend engineer");
 
         var request = RenderPhase.build(profile, tree(fixture), selection(fixture.first),
-                TemplateCustomization.CLASSIC, Locale.ENGLISH);
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
 
         assertThat(request.header().name()).isEqualTo("Ada Lovelace");
         assertThat(request.header().headline()).isEqualTo("Backend engineer");
@@ -174,7 +210,13 @@ class RenderPhaseTest {
     }
 
     private static RenderRequest build(Fixture fixture, SelectionState selection) {
-        return RenderPhase.build(profile(), tree(fixture), selection,
+        return build(fixture, selection, RewrittenContent.none());
+    }
+
+    private static RenderRequest build(
+            Fixture fixture, SelectionState selection, RewrittenContent rewritten) {
+
+        return RenderPhase.build(profile(), tree(fixture), selection, rewritten,
                 TemplateCustomization.CLASSIC, Locale.ENGLISH);
     }
 

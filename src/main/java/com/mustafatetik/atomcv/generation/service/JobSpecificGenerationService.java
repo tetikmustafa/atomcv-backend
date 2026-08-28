@@ -3,7 +3,12 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
+import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
+import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
+import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
@@ -23,8 +28,11 @@ import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -60,6 +68,7 @@ public class JobSpecificGenerationService {
     private final JobAnalysisPhase analysis;
     private final RelevanceScoringService relevance;
     private final RenderCostService renderCosts;
+    private final RewritePhase rewrites;
     private final GenerationPipeline pipeline;
 
     JobSpecificGenerationService(
@@ -69,6 +78,7 @@ public class JobSpecificGenerationService {
             JobAnalysisPhase analysis,
             RelevanceScoringService relevance,
             RenderCostService renderCosts,
+            RewritePhase rewrites,
             GenerationPipeline pipeline) {
 
         this.profiles = profiles;
@@ -77,6 +87,7 @@ public class JobSpecificGenerationService {
         this.analysis = analysis;
         this.relevance = relevance;
         this.renderCosts = renderCosts;
+        this.rewrites = rewrites;
         this.pipeline = pipeline;
     }
 
@@ -170,18 +181,39 @@ public class JobSpecificGenerationService {
                     built.estimatedAtoms(), built.withoutWording());
         }
 
-        progress.report(GenerationPhase.RENDERING.at(70));
-
-        // Faz F reads the tree the selection was made from, so the reference
-        // has to survive the lambda — measurement may have reloaded it above.
+        // Faz D and Faz F both read the tree the selection was made from, so
+        // the reference has to survive the lambdas — measurement may have
+        // reloaded it above.
         ProfileTree rendered = tree;
 
-        return pipeline.run(head, tree, built.request(),
+        // Faz D, inside the compile loop because that is where a selection
+        // exists. It reports itself when it runs: general mode never gets
+        // here, and even here there may be nothing worth rewriting.
+        var context = RewriteContext.of(posting, options.language(),
+                head.getPreferences().writingStyle().tone(), bucketKey);
+        var rewritten = new AtomicReference<>(RewrittenContent.none());
+        var announced = new AtomicBoolean();
+        ContentRewriter rewriter = (state, carried) -> {
+            // Once, however many times the compile loop goes round. A bar
+            // that walked back from seventy to sixty would be reporting a
+            // retry the user was never told about.
+            boolean first = announced.compareAndSet(false, true);
+            if (first) {
+                progress.report(GenerationPhase.REWRITING.at(60));
+            }
+            RewrittenContent done = rewrites.rewrite(rendered, state, context, carried);
+            rewritten.set(done);
+            if (first) {
+                progress.report(GenerationPhase.RENDERING.at(70));
+            }
+            return done;
+        };
+
+        return pipeline.run(head, tree, built.request(), rewriter,
                         options.customization(), options.locale())
                 .map(document -> new GeneratedGeneration(
                         profile.id(), posting, options, scores.weights(),
-                        Map.of(JobAnalysisPhase.PROMPT_ID,
-                                analysis.promptVersionFor(bucketKey)),
+                        promptVersions(bucketKey, rewritten.get()),
                         document,
                         // Bolum 23.3, and it is measured on what the page
                         // prints rather than on what Faz B ranked: selection
@@ -190,5 +222,20 @@ public class JobSpecificGenerationService {
                         // skill that never made it onto the document.
                         FitReport.of(posting,
                                 SelectedSkills.onThePage(rendered, document.selection()))));
+    }
+
+    /**
+     * The versions that actually ran (Bolum 53.3). Faz D's is recorded only
+     * when Faz D changed something: a record naming a rewrite prompt for a
+     * generation that printed the profile verbatim would send anybody reading
+     * it back to the wrong prompt.
+     */
+    private Map<String, String> promptVersions(String bucketKey, RewrittenContent rewritten) {
+        var versions = new LinkedHashMap<String, String>();
+        versions.put(JobAnalysisPhase.PROMPT_ID, analysis.promptVersionFor(bucketKey));
+        if (!rewritten.isEmpty()) {
+            versions.put(BulletRewriteService.PROMPT_ID, rewrites.promptVersionFor(bucketKey));
+        }
+        return versions;
     }
 }

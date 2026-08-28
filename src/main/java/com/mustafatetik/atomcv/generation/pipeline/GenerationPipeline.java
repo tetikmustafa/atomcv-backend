@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.compilation.CompiledDocument;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
 import com.mustafatetik.atomcv.generation.render.RenderPhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
@@ -23,6 +24,12 @@ import org.springframework.stereotype.Service;
 
 /**
  * Faz C to Faz F: choose, render, compile, and check the result (Bolum 20-23).
+ *
+ * <p>Faz D sits between the choosing and the rendering, and it is asked once
+ * per atom however many times the loop goes round: a document that came out
+ * too long selects again from a smaller budget, and the atoms that survive
+ * that are the ones already rewritten. Paying for them twice would be paying
+ * for the same sentences twice.
  *
  * <p>The page limit is a promise, and measurement alone cannot keep it: a
  * font's metrics are exact but a paragraph's line breaks are the compiler's
@@ -55,6 +62,8 @@ public class GenerationPipeline {
 
     /**
      * @param request what selection may choose from, already scored and costed
+     * @param rewriter Faz D, or {@link ContentRewriter#none()} in general mode
+     *                 where there is no posting to write towards
      * @param maxPages the promise being kept — the same number the request was
      *                 built with, and the one the compiled document is checked
      *                 against
@@ -63,12 +72,14 @@ public class GenerationPipeline {
             Profile profile,
             ProfileTree tree,
             SelectionRequest request,
+            ContentRewriter rewriter,
             TemplateCustomization customization,
             Locale contentLanguage) {
 
         int maxPages = request.maxPages();
         double factor = 1.0;
         int lastPageCount = 0;
+        RewrittenContent rewritten = RewrittenContent.none();
 
         for (int attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
             Result<SelectionState> selection =
@@ -78,8 +89,12 @@ public class GenerationPipeline {
             }
             SelectionState state = selection.orElseThrow();
 
-            RenderRequest renderRequest =
-                    RenderPhase.build(profile, tree, state, customization, contentLanguage);
+            // Faz D. It answers with a CV whatever happens to it, so there is
+            // no branch here for a rewrite that failed (Bolum 21.5).
+            rewritten = rewriter.rewrite(state, rewritten);
+
+            RenderRequest renderRequest = RenderPhase.build(
+                    profile, tree, state, rewritten, customization, contentLanguage);
 
             CompiledDocument document;
             try {

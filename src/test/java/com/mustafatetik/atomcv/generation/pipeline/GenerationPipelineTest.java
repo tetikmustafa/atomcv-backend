@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.compilation.CompiledDocument;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.AtomCandidate;
@@ -142,11 +143,54 @@ class GenerationPipelineTest {
         assertThat(document.selection().rejected()).isNotEmpty();
     }
 
+    /**
+     * <strong>Faz D is asked once per atom, not once per attempt.</strong>
+     * A document that ran long selects again from a smaller budget, and this
+     * is the second time round: what the first pass produced comes back in,
+     * so the implementation can answer for it without paying again. Losing
+     * this is not a broken CV — it is a bill nobody sees.
+     */
+    @Test
+    void therewriterIsHandedBackWhatTheEarlierAttemptProduced() {
+        var fixture = profileOf(40);
+        when(compiler.compile(anyString())).thenReturn(pdf(2), pdf(1));
+        var handedIn = new ArrayList<RewrittenContent>();
+        UUID rewrittenAtom = fixture.tree.sections().get(0).atoms().get(0).atom().getId();
+        RewrittenContent produced = new RewrittenContent(
+                java.util.Map.of(rewrittenAtom, RichContent.plain("A rewritten line")));
+
+        pipeline.run(fixture.profile, fixture.tree, fixture.request,
+                (selection, carried) -> {
+                    handedIn.add(carried);
+                    return produced;
+                },
+                TemplateCustomization.CLASSIC, Locale.ENGLISH).orElseThrow();
+
+        assertThat(handedIn).containsExactly(RewrittenContent.none(), produced);
+    }
+
+    /** And what it produced is what the document is made of. */
+    @Test
+    void therewrittenLineIsWhatReachesTheRenderer() {
+        var fixture = profileOf(1);
+        when(compiler.compile(anyString())).thenReturn(pdf(1));
+        UUID atomId = fixture.tree.sections().get(0).atoms().get(0).atom().getId();
+
+        var document = pipeline.run(fixture.profile, fixture.tree, fixture.request,
+                (selection, carried) -> new RewrittenContent(java.util.Map.of(
+                        atomId, RichContent.plain("Rebuilt the ingest path"))),
+                TemplateCustomization.CLASSIC, Locale.ENGLISH).orElseThrow();
+
+        assertThat(document.rendered().sections().get(0).atoms())
+                .extracting(RichContent::plainText)
+                .containsExactly("Rebuilt the ingest path");
+    }
+
     // ── fixtures ──────────────────────────────────────────────────────────
 
     private Result<GeneratedDocument> run(Fixture fixture) {
         return pipeline.run(fixture.profile, fixture.tree, fixture.request,
-                TemplateCustomization.CLASSIC, Locale.ENGLISH);
+                ContentRewriter.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
     }
 
     private record Fixture(Profile profile, ProfileTree tree, SelectionRequest request) {
