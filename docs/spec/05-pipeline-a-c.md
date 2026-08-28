@@ -416,12 +416,35 @@ kısıtlar:
   (1) Σ (maliyet_i × seçildi_i) ≤ serbest_bütçe
   (2) seçildi_i = 1    ∀i ∈ AlwaysInclude
   (3) seçildi_i = 0    ∀i ∈ Inactive ∪ UserExcluded
-  (4) Σ_{i ∈ entry_e} seçildi_i ≥ min_e    ∀e ∈ VisibleEntries
-  (5) Bir entry'nin atomu seçilirse entry başlığı maliyeti eklenir
+  (4) Σ_{i ∈ entry_e} seçildi_i ≥ min_e    ∀e ∈ VisibleEntries, atomu olanlar
+  (5) Bir entry açılırsa entry başlığı maliyeti eklenir; atomu da seçildiyse
+      liste maliyeti (ITEMIZE_OVERHEAD) de eklenir
   (6) Kronolojik sıra korunur
 ```
 
 Kısıt (5), problemi saf knapsack olmaktan çıkarır.
+
+**Bir entry, altında hiç madde olmadan da açılabilir.** Bir diploma satırının
+maddesi olmaz; seçim atom atom çalıştığı sürece "2019-2023, Yıldız Teknik
+Üniversitesi, Bilgisayar Mühendisliği" sayfaya hiçbir yoldan giremiyordu, ve
+alternatifi — her entry'ye zorunlu bir madde yazdırmak — kullanıcıya şişirme
+yaptırırdı. Hiç atom adayı olmayan bir entry için **başlık-adayı** üretilir:
+
+- **Maliyeti** `ENTRY_HEADER` (listeden sonra geliyorsa `ENTRY_HEADER_AFTER_LIST`).
+  **`ITEMIZE_OVERHEAD` ödemez** — madde yok, liste yok.
+- **Skoru** entry'nin kendisinden gelir, hiçbir atomdan değil: genel modda
+  güncellik ile önem (§ 19.4'ün ikisi arasındaki oranı korunarak yeniden
+  normalize edilir), ilana özel modda entry'nin `importance` değeri — Faz B
+  wording skorlar, bu entry'nin ise wording'i yoktur.
+- **Kısıt (4) ona uygulanmaz**: minimum, madde hakkında bir cümledir ve bu
+  entry'nin ulaşacak maddesi yoktur.
+- **Sığmazsa `RejectedAtom` üretilmez.** O liste kullanıcıya atom atom
+  gösterilir; içindeki, hiçbir atoma çözülmeyen bir entry id'si sessizlikten
+  kötüdür.
+- `selection_state` bunları `headerOnlyEntries` alanında taşır; Faz E bir
+  başlığı yalnız seçim onu açtıysa basar. Alan eski anlık görüntülerde yoktur
+  ve **boş liste olarak okunur** — EK D.6.3'ün "PDF her zaman yeniden
+  üretilebilir" sözü eski satırlar için de geçerli kalır.
 
 ### 20.3 Üç aşamalı algoritma
 

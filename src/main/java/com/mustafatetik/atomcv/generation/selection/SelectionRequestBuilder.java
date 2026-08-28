@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
 import com.mustafatetik.atomcv.profile.domain.Tone;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostEstimator;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
@@ -104,7 +105,10 @@ public final class SelectionRequestBuilder {
                 }
                 List<AtomCandidate> candidates = run.candidates(entry.atoms(), entry.entry());
                 if (candidates.isEmpty()) {
-                    continue;
+                    // No bullets to offer, so the entry itself is the offer.
+                    // Until this existed the loop skipped it and a degree line
+                    // could not reach the page at all (Bolum 20.2).
+                    candidates = List.of(run.heading(entry.entry()));
                 }
                 short minAtoms = entry.entry().getMinAtoms();
                 if (entry.entry().isAlwaysInclude()) {
@@ -161,7 +165,7 @@ public final class SelectionRequestBuilder {
     private static AtomCandidate pin(AtomCandidate candidate) {
         return new AtomCandidate(candidate.atomId(), candidate.variantId(), candidate.entryId(),
                 candidate.score(), candidate.renderCostPt(), true, candidate.active(),
-                candidate.contentKey());
+                candidate.contentKey(), candidate.headerOnly());
     }
 
     /** One build, and the counters it fills in as it goes. */
@@ -218,6 +222,36 @@ public final class SelectionRequestBuilder {
                         variant.getContentHash()));
             }
             return candidates;
+        }
+
+        /**
+         * The entry as its own candidate, for one that has no bullets at all
+         * (Bolum 20.2).
+         *
+         * <p>Its score comes from the entry rather than from any atom, because
+         * there is no atom — see {@link AtomScoreSource#scoreOfEntry}. Its
+         * tie-break is a digest of the heading, for the same reason every other
+         * tie-break here is derived from content: entry ids are minted fresh on
+         * every import, and two degree lines that score and cost the same would
+         * otherwise swap places between two reads of one CV (Bolum 20.3).
+         */
+        AtomCandidate heading(Entry entry) {
+            return AtomCandidate.forEntryHeader(entry.getId(), scores.scoreOfEntry(entry),
+                    RichContent.plain(headingText(entry)).contentHash());
+        }
+
+        /** Everything the heading prints, which is exactly what identifies it. */
+        private static String headingText(Entry entry) {
+            return String.join("|",
+                    orEmpty(entry.getTitle()),
+                    orEmpty(entry.getOrganization()),
+                    orEmpty(entry.getLocation()),
+                    String.valueOf(entry.getStartDate()),
+                    String.valueOf(entry.getEndDate()));
+        }
+
+        private static String orEmpty(String value) {
+            return value == null ? "" : value;
         }
 
         private double costOf(AtomVariant variant) {

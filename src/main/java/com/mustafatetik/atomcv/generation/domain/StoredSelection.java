@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * {@code generations.selection_state} as Bolum 14.5 defines it.
@@ -34,23 +35,44 @@ public record StoredSelection(
         TemplateCustomization customization,
         SelectionState.BudgetBreakdown budget,
         List<SelectionState.SelectedAtom> selected,
-        List<SelectionState.RejectedAtom> rejected) {
+        List<SelectionState.RejectedAtom> rejected,
+        /**
+         * The entries printed by their heading alone. Absent from every
+         * snapshot written before they could be, which is why it defaults to
+         * empty rather than being required: an old row re-renders into exactly
+         * the document it produced then.
+         */
+        List<UUID> headerOnlyEntries) {
 
     public StoredSelection {
         language = language == null ? "" : language;
         selected = selected == null ? List.of() : List.copyOf(selected);
         rejected = rejected == null ? List.of() : List.copyOf(rejected);
+        headerOnlyEntries = headerOnlyEntries == null
+                ? List.of()
+                : List.copyOf(headerOnlyEntries);
+    }
+
+    /** The shape before an entry could reach the page without atoms. */
+    public StoredSelection(
+            String language,
+            TemplateCustomization customization,
+            SelectionState.BudgetBreakdown budget,
+            List<SelectionState.SelectedAtom> selected,
+            List<SelectionState.RejectedAtom> rejected) {
+
+        this(language, customization, budget, selected, rejected, List.of());
     }
 
     public static StoredSelection of(
             SelectionState state, String language, TemplateCustomization customization) {
 
         return new StoredSelection(language, customization, state.budget(),
-                state.selected(), state.rejected());
+                state.selected(), state.rejected(), state.headerOnlyEntries());
     }
 
     /** Back to what the pipeline works on, for a regenerated download. */
     public SelectionState toSelectionState() {
-        return new SelectionState(selected, rejected, budget);
+        return new SelectionState(selected, rejected, budget, headerOnlyEntries);
     }
 }

@@ -103,6 +103,41 @@ class RenderPhaseTest {
         assertThat(request.sections()).isEmpty();
     }
 
+    /**
+     * The other half of the same rule (Bolum 20.2): an entry selection opened
+     * without atoms <em>is</em> printed, because it paid for its heading.
+     */
+    @Test
+    void anEntryOpenedWithoutAtomsIsPrintedAsItsHeadingAlone() {
+        var fixture = twoBulletsInOneJob();
+
+        var request = build(fixture, new SelectionState(
+                List.of(), List.of(), new BudgetBreakdown(700, 50, 650, 0),
+                List.of(fixture.entry.getId())));
+
+        var entry = request.sections().get(0).entries().get(0);
+        assertThat(entry.title()).isEqualTo("Senior Engineer");
+        assertThat(entry.organization()).isEqualTo("Acme");
+        assertThat(entry.dateRange()).isNotEmpty();
+        assertThat(entry.atoms()).as("a heading and nothing under it").isEmpty();
+    }
+
+    /**
+     * And it opens no door for the bullets under it. Selection charged for a
+     * heading and no list; printing the bullets anyway would spend points
+     * nothing accounted for.
+     */
+    @Test
+    void anEntryOpenedWithoutAtomsPrintsNoneOfItsUnselectedBullets() {
+        var fixture = twoBulletsInOneJob();
+
+        var request = build(fixture, new SelectionState(
+                List.of(), List.of(), new BudgetBreakdown(700, 50, 650, 0),
+                List.of(fixture.entry.getId())));
+
+        assertThat(plain(request.sections().get(0).entries().get(0).atoms())).isEmpty();
+    }
+
     @Test
     void aSectionKeepsItsLooseAtoms() {
         var experience = new Section(PROFILE, SectionKind.EXPERIENCE, "Experience", (short) 0);

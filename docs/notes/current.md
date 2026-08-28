@@ -32,16 +32,6 @@ kullanıcının **üretim** hakkını kısmak istiyor; yeri `QuotaService`.
 | ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı: PDFBox 3.4 dilim 1'de geldi. `FitReport` `F-008`'de indi — kalan yarısı üretilen PDF'i geri okumak |
 | `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
-## Isırmadan önce ele alınacak iki bulgu
-
-**Atomsuz entry sayfaya hiç çıkmıyor.** Seçim atom atom çalışıyor; altında
-madde olmayan bir diploma satırı aday bile değil. Çözümü § 20.2'nin modelini
-değiştiriyor.
-
-**Eşitlik atom id'siyle bozuluyor**, id'ler her içe aktarımda yeniden üretiliyor:
-aynı skor *ve* maliyetteki iki atom yer değiştiriyor. İçerikten türetilen bir
-bozucu düzeltir.
-
 ## Aşama 3'e taşınanlar
 
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
@@ -58,9 +48,26 @@ düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
 kodda yok), § 3.2 (Resend `send.` öneki ve bölge), § 51.7 (testin kendisi
 hakkındaki dört kural, CLAUDE.md'den taşındı).
 
-**Açık kalan tek kod maddesi: atomsuz entry.** Sayfa sınırı garantisine
-dokunduğu için ayrı bir oturuma bırakıldı —
-`sonraki-oturum-atomsuz-entry.md` ne yapılacağını satır satır taşıyor.
+**Son açık kod maddesi de indi: atomsuz entry** (2026-08-28, ayrı oturum).
+Kaydı `kapanis-denetimi.md` § "Atomsuz entry indi"de; kalıcı kararı
+`spec/05-pipeline-a-c.md` § 20.2'ye işlendi.
+
+**Düzeltme (§ 20.2, kısıt 4-5).** Doküman "bir entry'nin atomu seçilirse entry
+başlığı maliyeti eklenir" diyordu ve entry'yi açmanın tek yolunun bir atom
+olduğunu varsayıyordu. Artık bir entry **atomsuz da açılabiliyor**: başlığını
+öder, `ITEMIZE_OVERHEAD` ödemez, ve kısıt (4) ona uygulanmaz. Spec düzeltildi.
+
+**Ekleme.** Sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor — o liste
+kullanıcıya atom atom gösteriliyor ve içindeki, hiçbir atoma çözülmeyen bir
+entry id'si sessizlikten kötü. Bu, golden'daki "her atom ya seçilir ya bir
+sebep alır" sayımının başlık-adaylarını dışlamasının da sebebi.
+
+**Düzeltme (yol üstünde bulundu).** `SelectionPhase.openEntries` bir `HashSet`'ti
+ve `upgradeFirstEntryOf` onu gezip **ilk ulaştığını** ücretlendiriyor;
+`Set` iterasyonu JVM başına tuzlandığı için bir kaldırmanın ne kadar iade
+ettiği koşudan koşuya değişebiliyordu. `LinkedHashSet` oldu. CLAUDE.md'nin
+`Set.copyOf` uyarısı burada da geçerliymiş — **iterasyon sırası bir sayıya
+dönüşüyorsa `Linked*` gerekiyor.**
 
 **Geliştiricide:** yeni model seçilince fiyat tablosu — **o güne kadar günlük
 bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep

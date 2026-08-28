@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.selection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -180,6 +181,82 @@ class SelectionPhaseTest {
                         + CAPACITY.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
     }
 
+    // ── an entry with nothing under it ────────────────────────────────────
+
+    @Test
+    void anEntryOpenedByItsHeadingPaysForTheHeadingAndNoList() {
+        var state = select(oneEntry(heading(0.7))).orElseThrow();
+
+        assertThat(state.budget().fixedPt()).isEqualTo(
+                CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK)
+                        + CAPACITY.fixedCost(CapacityModel.SECTION_HEADER)
+                        + CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER));
+        assertThat(state.budget().usedPt()).as("a heading is furniture, not content").isZero();
+    }
+
+    @Test
+    void anEntryOpenedByItsHeadingIsReportedAsAnEntryAndNotAsAnAtom() {
+        var candidate = heading(0.7);
+
+        var state = select(oneEntry(candidate)).orElseThrow();
+
+        assertThat(state.headerOnlyEntries()).containsExactly(candidate.entryId());
+        assertThat(idsOf(state)).as("it is not an atom and must not read as one").isEmpty();
+        assertThat(state.rejected()).isEmpty();
+        assertThat(state.isEmpty()).as("a line on the page is not an empty CV").isFalse();
+    }
+
+    /**
+     * Constraint (4) is a statement about bullets. Applied to an entry that has
+     * none it would delete exactly the line this exists to print.
+     */
+    @Test
+    void aMinimumNoBulletCanReachDoesNotDropTheHeading() {
+        UUID entryId = UUID.randomUUID();
+        var request = new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(new EntryPlan(entryId, (short) 3,
+                                List.of(AtomCandidate.forEntryHeader(entryId, 0.7, "degree")))),
+                        List.of())),
+                1, CAPACITY);
+
+        assertThat(select(request).orElseThrow().headerOnlyEntries()).containsExactly(entryId);
+    }
+
+    @Test
+    void aHeadingThatDoesNotFitIsNotOnThePageAndIsNotRejectedEither() {
+        // Bullets worth far more per point take the page first, and what is
+        // left over is less than the heading costs.
+        var atoms = new ArrayList<AtomCandidate>();
+        for (int index = 0; index < 8; index++) {
+            atoms.add(atom(0.9, BULLET_PT, false));
+        }
+        UUID entryId = UUID.randomUUID();
+        var request = new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(new EntryPlan(entryId, (short) 0,
+                                List.of(AtomCandidate.forEntryHeader(entryId, 0.1, "degree")))),
+                        atoms)),
+                1, smallCapacity());
+
+        var state = select(request).orElseThrow();
+
+        assertThat(state.headerOnlyEntries()).isEmpty();
+        // No RejectedAtom either: it names an atom, and this one would name an
+        // entry the user cannot resolve to anything.
+        assertThat(state.rejected()).noneMatch(rejection -> rejection.atomId().equals(entryId));
+    }
+
+    @Test
+    void aHeadingCandidateCannotShareItsEntryWithBullets() {
+        UUID entryId = UUID.randomUUID();
+        var bullet = new AtomCandidate(UUID.randomUUID(), UUID.randomUUID(), entryId,
+                0.5, BULLET_PT, false, true);
+
+        assertThatIllegalArgumentException().isThrownBy(() -> new EntryPlan(entryId, (short) 1,
+                List.of(AtomCandidate.forEntryHeader(entryId, 0.7, "degree"), bullet)));
+    }
+
     /** Bolum 20.3: without decay one strong entry can take the whole page. */
     @Test
     void oneEntryDoesNotTakeTheWholePage() {
@@ -210,7 +287,11 @@ class SelectionPhaseTest {
 
         int total = request.sections().stream()
                 .mapToInt(section -> section.atoms().size()
-                        + section.entries().stream().mapToInt(entry -> entry.atoms().size()).sum())
+                        + section.entries().stream()
+                                .mapToInt(entry -> (int) entry.atoms().stream()
+                                        .filter(atom -> !atom.headerOnly())
+                                        .count())
+                                .sum())
                 .sum();
 
         assertThat(state.selected().size() + state.rejected().size()).isEqualTo(total);
@@ -254,6 +335,19 @@ class SelectionPhaseTest {
     private static AtomCandidate atom(double score, double costPt, boolean locked) {
         return new AtomCandidate(UUID.randomUUID(), UUID.randomUUID(), null,
                 score, costPt, locked, true);
+    }
+
+    private static AtomCandidate heading(double score) {
+        UUID entryId = UUID.randomUUID();
+        return AtomCandidate.forEntryHeader(entryId, score, "degree-" + entryId);
+    }
+
+    private static SelectionRequest oneEntry(AtomCandidate only) {
+        return new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(new EntryPlan(only.entryId(), (short) 0, List.of(only))),
+                        List.of())),
+                1, CAPACITY);
     }
 
     private static EntryPlan entry(int minAtoms, int atomCount, double score) {
