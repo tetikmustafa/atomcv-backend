@@ -1,0 +1,31 @@
+# Everything the build does not need, and two things it must never receive.
+#
+# `.env` is the first: the Makefile keeps real credentials there, and a build
+# context that carries it puts them in an image layer where `docker history`
+# reads them back. gitleaks watches the repository, not the build context.
+.env
+.env.*
+!.env.example
+
+# The second is `build/` -- a host build directory copied in would shadow the
+# one the container produces, and `COPY --from=build /src/build/libs/*.jar`
+# would ship whatever happened to be on the developer's machine.
+build/
+.gradle/
+out/
+bin/
+
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+
+docs/
+scripts/
+*.md
+!README.md
+
+# The LaTeX image builds from its own context (docker/latex) and is a separate
+# service in compose; it has no business in this one.
+docker/
