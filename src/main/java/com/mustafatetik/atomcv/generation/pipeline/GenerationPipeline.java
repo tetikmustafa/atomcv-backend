@@ -13,9 +13,10 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.rendering.DocumentRenderer;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
-import com.mustafatetik.atomcv.shared.error.CompilationFailureKind;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
+import com.mustafatetik.atomcv.generation.validation.AtsCheck;
+import com.mustafatetik.atomcv.generation.validation.AtsReport;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Locale;
 import org.slf4j.Logger;
@@ -107,6 +108,7 @@ public class GenerationPipeline {
             lastPageCount = document.pageCount();
 
             if (document.pageCount() <= maxPages) {
+                reportAts(document.pdf(), renderRequest);
                 return Result.ok(new GeneratedDocument(
                         document.pdf(), document.pageCount(), state, renderRequest,
                         attempt, factor));
@@ -121,5 +123,28 @@ public class GenerationPipeline {
         }
 
         return Result.err(new PipelineError.PageLimitExceeded(lastPageCount, maxPages));
+    }
+
+    /**
+     * Bolum 23.2, and it is watched rather than acted on.
+     *
+     * <p>The page is already paid for and already fits; anything this finds is
+     * a defect in our template or our fonts, and taking the document away from
+     * the person would be answering our own bug with their loss. What it is
+     * for is the counter: a rate that moves after a template change means that
+     * change broke machine readability, and nothing upstream would have said
+     * so — the budget, the fit report and the validators all measure the CV
+     * before it is a PDF.
+     *
+     * <p>Counts only in the log line. A section heading is the user's own
+     * wording (absolute rule 4).
+     */
+    private void reportAts(byte[] pdf, RenderRequest rendered) {
+        AtsReport ats = AtsCheck.of(pdf, rendered);
+        meters.counter(ats.clean() ? "generation.ats.clean" : "generation.ats.defect")
+                .increment();
+        if (!ats.clean()) {
+            log.warn("The generated PDF does not read back cleanly: {}", ats);
+        }
     }
 }

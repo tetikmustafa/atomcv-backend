@@ -65,18 +65,27 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles({"local", "local-fake"})
 class JobSpecificCvIT extends AbstractLatexTest {
 
-    private static final String POSTING = """
-            We are seeking a senior backend engineer to join our payments team.
-
-            Responsibilities: design and operate distributed services in Go,
-            own the reliability of a high throughput ledger, and mentor other
-            engineers as the team grows.
-
-            Requirements: several years of production experience with Go and
-            PostgreSQL, comfort with observability tooling, and a track record
-            of shipping. Preferred qualifications include Kubernetes and
-            Terraform. Apply with a short note about the systems you have run.
-            """;
+    /**
+     * A file rather than a text block, and the reason is the fixture key.
+     *
+     * <p>{@code FixtureStore} names a recording after a digest of the prompt it
+     * answered, so a recorded {@code job_analysis} is found again only for
+     * <em>byte-identical</em> input. While this posting lived in a constant,
+     * recording a fixture for it meant retyping it into
+     * {@code scripts/dev-record.sh} and hoping the two never drifted — and a
+     * drift would not fail loudly, it would quietly miss the fixture and fall
+     * back to a synthetic answer the plausibility gate then refuses.
+     *
+     * <p>One file, read by the test and passed to the recorder, cannot drift:
+     *
+     * <pre>{@code
+     * ./scripts/dev-record.sh <cv> src/integrationTest/resources/postings/senior-backend-go.txt
+     * }</pre>
+     *
+     * <p>{@code .gitattributes} normalises the repository to LF, so the digest
+     * is the same on this machine and on the runner.
+     */
+    private static final String POSTING = posting("senior-backend-go.txt");
 
     @Autowired
     private MockMvc mvc;
@@ -98,6 +107,9 @@ class JobSpecificCvIT extends AbstractLatexTest {
 
     @Autowired
     private Clock clock;
+
+    @Autowired
+    private io.micrometer.core.instrument.MeterRegistry meters;
 
     @PersistenceContext
     private EntityManager em;
@@ -127,6 +139,19 @@ class JobSpecificCvIT extends AbstractLatexTest {
 
         assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
         assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
+
+        // Bolum 23.2, and this lane is the only place it can be asked: a real
+        // XeLaTeX run with the real fonts. Everything else in this repository
+        // measures the CV before it is a PDF, so a template that lays out
+        // beautifully and carries no text layer would pass every other test in
+        // the suite and reach an applicant tracking system as an empty page.
+        //
+        // Asserted through the counter the pipeline itself increments rather
+        // than by rebuilding the render request here: a reconstruction would
+        // be a second opinion about what was printed, and the one that matters
+        // is the pipeline's own.
+        assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
+        assertThat(atsChecks()).as("the check actually ran").isPositive();
     }
 
     /**
@@ -218,6 +243,18 @@ class JobSpecificCvIT extends AbstractLatexTest {
 
     // ── fixtures ─────────────────────────────────────────────────────────
 
+    /** Read as bytes and decoded explicitly: the digest must not depend on a default charset. */
+    private static String posting(String name) {
+        try (var in = JobSpecificCvIT.class.getResourceAsStream("/postings/" + name)) {
+            if (in == null) {
+                throw new IllegalStateException("No posting resource /postings/" + name);
+            }
+            return new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+    }
+
     private String enqueue() throws Exception {
         String accepted = mvc.perform(post("/api/v1/generations")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -235,6 +272,19 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 .as("the job finished; a failure here carries its own error")
                 .isEqualTo("completed");
         return JsonPath.read(status, "$.generationId");
+    }
+
+    private double atsChecks() {
+        return counter("generation.ats.clean") + counter("generation.ats.defect");
+    }
+
+    private double atsDefects() {
+        return counter("generation.ats.defect");
+    }
+
+    private double counter(String name) {
+        var counter = meters.find(name).counter();
+        return counter == null ? 0 : counter.count();
     }
 
     private byte[] download(String generationId) throws Exception {
