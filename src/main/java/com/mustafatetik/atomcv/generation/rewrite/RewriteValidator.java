@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
 import com.mustafatetik.atomcv.shared.math.Vectors;
+import com.mustafatetik.atomcv.shared.text.ClaimVocabulary;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -114,42 +115,19 @@ public final class RewriteValidator {
         Set<String> allowed = new LinkedHashSet<>(candidate.skills());
 
         for (String term : ClaimVocabulary.of(postingSkills)) {
-            if (!mentions(foldedAnswer, term)) {
+            if (!ClaimVocabulary.mentions(foldedAnswer, term)) {
                 continue;
             }
             if (allowed.contains(SkillNames.canonical(term))) {
                 continue;
             }
-            if (mentions(foldedOriginal, term)) {
+            if (ClaimVocabulary.mentions(foldedOriginal, term)) {
                 // The person's own word. Not this phase's argument to have.
                 continue;
             }
             return true;
         }
         return false;
-    }
-
-    /**
-     * Whole words only, and the boundary has to admit the names people
-     * actually write: {@code .NET}, {@code Node.js} and {@code C++} all end or
-     * begin in a character a naive {@code \b} would call a boundary in the
-     * wrong place, so the guard is written against word characters and hyphens
-     * directly.
-     */
-    private static boolean mentions(String foldedText, String term) {
-        String spelled = term.strip().toLowerCase(Locale.ROOT);
-        if (spelled.isEmpty()) {
-            return false;
-        }
-        // A canonical skill is hyphenated where the writing has a space.
-        String written = spelled.replace('-', ' ');
-        return contains(foldedText, spelled) || contains(foldedText, written);
-    }
-
-    private static boolean contains(String foldedText, String term) {
-        Matcher matcher = Pattern.compile(
-                "(?<![\\w-])" + Pattern.quote(term) + "(?![\\w-])").matcher(foldedText);
-        return matcher.find();
     }
 
     private static List<String> digitsOf(String value) {

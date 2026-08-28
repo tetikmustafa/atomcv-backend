@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
+import com.mustafatetik.atomcv.shared.text.ClaimVocabulary;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -91,10 +92,10 @@ public final class AboutValidator {
                 .toLowerCase(Locale.ROOT);
 
         for (String term : ClaimVocabulary.of(postingSkills)) {
-            if (!mentions(foldedAnswer, term)) {
+            if (!ClaimVocabulary.mentions(foldedAnswer, term)) {
                 continue;
             }
-            if (allowed.contains(SkillNames.canonical(term)) || mentions(foldedOwn, term)) {
+            if (allowed.contains(SkillNames.canonical(term)) || ClaimVocabulary.mentions(foldedOwn, term)) {
                 continue;
             }
             return true;
@@ -118,25 +119,6 @@ public final class AboutValidator {
         known.addAll(digitsOf(candidate.ownWords()));
         known.addAll(digitsOf(candidate.originalText()));
         return !known.containsAll(digitsOf(answer));
-    }
-
-    /**
-     * Whole words only, with the same boundary Bolum 21.6's check uses: the
-     * names people write end in characters a naive word boundary reads wrong
-     * ({@code .NET}, {@code Node.js}, {@code C++}).
-     */
-    private static boolean mentions(String foldedText, String term) {
-        String spelled = term.strip().toLowerCase(Locale.ROOT);
-        if (spelled.isEmpty()) {
-            return false;
-        }
-        return contains(foldedText, spelled) || contains(foldedText, spelled.replace('-', ' '));
-    }
-
-    private static boolean contains(String foldedText, String term) {
-        Matcher matcher = Pattern.compile(
-                "(?<![\\w-])" + Pattern.quote(term) + "(?![\\w-])").matcher(foldedText);
-        return matcher.find();
     }
 
     private static List<String> digitsOf(String value) {
