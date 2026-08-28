@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.phases.analysis;
 
+import com.mustafatetik.atomcv.llm.gateway.AnswerRecorder;
 import com.mustafatetik.atomcv.llm.gateway.LlmResponse;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import com.mustafatetik.atomcv.llm.gateway.ProviderChain;
@@ -9,6 +10,8 @@ import com.mustafatetik.atomcv.llm.prompts.PromptRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import java.time.Duration;
+import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -41,12 +44,15 @@ public class JobAnalysisPhase {
     private final PromptRegistry prompts;
     private final ProviderChain providers;
     private final JobAnalysisCache cache;
+    private final Optional<AnswerRecorder> recorder;
 
     public JobAnalysisPhase(
-            PromptRegistry prompts, ProviderChain providers, JobAnalysisCache cache) {
+            PromptRegistry prompts, ProviderChain providers, JobAnalysisCache cache,
+            Optional<AnswerRecorder> recorder) {
         this.prompts = prompts;
         this.providers = providers;
         this.cache = cache;
+        this.recorder = recorder;
     }
 
     /**
@@ -80,8 +86,17 @@ public class JobAnalysisPhase {
         return prompts.selectVersion(PROMPT_ID, bucketKey);
     }
 
-    public Result<JobAnalysis> analyse(
-            String jobDescription, boolean preflightAcknowledged, String bucketKey) {
+    /**
+     * @param userId whose generation this is, for Bolum 27.5's
+     *               {@code llm_invocations.user_id}. Separate from
+     *               {@code bucketKey} on purpose: the two are the same value in
+     *               a generation and are <em>not</em> in ingestion, where an
+     *               anonymous upload buckets by session and has no user at all.
+     *               Collapsing them would have written a session id into a
+     *               column that means "which account spent this"
+     */
+    public Result<JobAnalysis> analyse(String jobDescription, boolean preflightAcknowledged,
+            String bucketKey, UUID userId) {
 
         if (jobDescription == null || jobDescription.isBlank()) {
             throw new IllegalArgumentException(
@@ -115,11 +130,12 @@ public class JobAnalysisPhase {
         var prompt = prompts.load(PROMPT_ID, version);
         var fenced = FencedPrompt.of(prompt, FENCE_TAG);
 
-        var answer = providers.call(new StructuredRequest<>(
+        var request = new StructuredRequest<>(
                 PROMPT_ID, version,
                 fenced.system(),
                 fenced.userPromptFor(jobDescription),
-                prompt.schema(), JobAnalysis.class, ModelTier.CHEAP, TIMEOUT));
+                prompt.schema(), JobAnalysis.class, ModelTier.CHEAP, TIMEOUT, userId);
+        var answer = providers.call(request);
 
         return switch (answer) {
             // AllProvidersUnavailable travels as it is: the chain already said
@@ -127,13 +143,13 @@ public class JobAnalysisPhase {
             // blame the user for an outage.
             case Result.Err<LlmResponse<JobAnalysis>> failed -> Result.err(failed.error());
             case Result.Ok<LlmResponse<JobAnalysis>> ok ->
-                    gate(ok.value().data(), jobDescription, version);
+                    gate(ok.value().data(), request, jobDescription, version);
         };
     }
 
     /** Bolum 18.4. A refusal here means Faz B is never entered, so no more is spent. */
-    private Result<JobAnalysis> gate(
-            JobAnalysis analysis, String jobDescription, String version) {
+    private Result<JobAnalysis> gate(JobAnalysis analysis, StructuredRequest<JobAnalysis> request,
+            String jobDescription, String version) {
         var verdict = PlausibilityGate.check(analysis);
         if (verdict.isAccepted()) {
             // Only what passed. Caching a refusal would freeze it for a week,
@@ -142,6 +158,11 @@ public class JobAnalysisPhase {
             return Result.ok(analysis);
         }
         log.info("Plausibility gate refused an analysis: {}", verdict);
+        // And the same sentence applies to the recording the chain has just
+        // made. A refusal frozen in the cache lasts a week; one written to a
+        // fixture lasts forever, and every clone replays it as a pipeline
+        // that cannot analyse a posting. Absent outside local-record.
+        recorder.ifPresent(r -> r.discard(request));
         // The two numbers describe LOW_CONFIDENCE and TOO_FEW_SKILLS and
         // nothing else. They still travel — the catalogue declares them — but
         // the verdict travels beside them, so a SUSPICIOUS_OUTPUT refusal is

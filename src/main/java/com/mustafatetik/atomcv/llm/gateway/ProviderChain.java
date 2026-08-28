@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,14 +38,17 @@ public class ProviderChain {
     private final LlmProperties properties;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final Optional<AnswerRecorder> recorder;
 
     public ProviderChain(List<LlmProvider> providers, LlmProperties properties,
-                         ApplicationEventPublisher events, Clock clock) {
+                         ApplicationEventPublisher events, Clock clock,
+                         Optional<AnswerRecorder> recorder) {
         this.providers = providers.stream().collect(LinkedHashMap::new,
                 (map, provider) -> map.put(provider.id(), provider), Map::putAll);
         this.properties = properties;
         this.events = events;
         this.clock = clock;
+        this.recorder = recorder;
     }
 
     public <T> Result<LlmResponse<T>> call(StructuredRequest<T> request) {
@@ -70,6 +74,10 @@ public class ProviderChain {
             tried.add(providerId);
             var outcome = attempt(provider, request);
             if (outcome instanceof LlmOutcome.Answered<T> answered) {
+                // Bolum 54.2's recording run, and the only place the answer
+                // and the request that earned it are both in scope. Absent in
+                // every profile but local-record.
+                recorder.ifPresent(r -> r.record(request, answered.response().data()));
                 return Result.ok(answered.response());
             }
 

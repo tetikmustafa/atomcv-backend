@@ -22,3 +22,7 @@ Thumbs.db
 # Temporary
 *.log
 /tmp/
+
+# Cookie jars from scripts/dev-signin.sh. They hold a live session id.
+.dev-jar.txt
+.dev-anon.txt

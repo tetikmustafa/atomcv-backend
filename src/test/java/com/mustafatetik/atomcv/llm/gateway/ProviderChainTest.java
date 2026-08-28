@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,10 @@ class ProviderChainTest {
             Clock.fixed(Instant.parse("2026-08-21T09:00:00Z"), ZoneOffset.UTC);
 
     private final List<LlmInvocationEvent> published = new ArrayList<>();
+    private final List<Object> recorded = new ArrayList<>();
+
+    /** Absent unless a test asks for it, as it is absent outside local-record. */
+    private AnswerRecorder recorder;
 
     @Test
     void theFirstProviderThatAnswersWins() {
@@ -151,6 +156,49 @@ class ProviderChainTest {
                 .isEqualTo(LlmInvocationEvent.Outcome.SCHEMA_ERROR);
     }
 
+    /**
+     * Bolum 54.2. The recorder was written, documented as used by
+     * {@code local-record}, and never called — so {@code make record} paid for
+     * real answers and kept none. This is the test that would have said so.
+     */
+    @Test
+    void aRecordingRunKeepsTheAnswerAProviderGave() {
+        recorder = keeping();
+
+        chain(List.of(answering("gemini"))).call(request());
+
+        assertThat(recorded).containsExactly("answer");
+    }
+
+    /** There is no answer to keep, and a recorded failure would replay as one. */
+    @Test
+    void nothingIsRecordedWhenTheChainRunsOut() {
+        recorder = keeping();
+
+        chain(List.of(failing("gemini", LlmFailure.Kind.RATE_LIMITED))).call(request());
+
+        assertThat(recorded).isEmpty();
+    }
+
+    /**
+     * The chain only ever records. Withdrawing is Bolum 18.4's gate, which
+     * sits a layer above and has its own tests — so this one fails loudly if
+     * the chain ever starts doing it.
+     */
+    private AnswerRecorder keeping() {
+        return new AnswerRecorder() {
+            @Override
+            public void record(StructuredRequest<?> request, Object answer) {
+                recorded.add(answer);
+            }
+
+            @Override
+            public void discard(StructuredRequest<?> request) {
+                throw new AssertionError("the chain does not judge an answer");
+            }
+        };
+    }
+
     // ── fixtures ──────────────────────────────────────────────────────────
 
     private ProviderChain chain(List<LlmProvider> providers) {
@@ -162,7 +210,8 @@ class ProviderChainTest {
                 Map.of(ModelTier.CHEAP, order), Map.of("gemini", "some-model"),
                 Duration.ofSeconds(30), retries);
         return new ProviderChain(providers, properties,
-                event -> published.add((LlmInvocationEvent) event), CLOCK);
+                event -> published.add((LlmInvocationEvent) event), CLOCK,
+                Optional.ofNullable(recorder));
     }
 
     private static LlmResponse<String> ok(Result<LlmResponse<String>> result) {
