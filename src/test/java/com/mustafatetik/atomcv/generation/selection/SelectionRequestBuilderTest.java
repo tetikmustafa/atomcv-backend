@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
@@ -190,10 +191,40 @@ class SelectionRequestBuilderTest {
         profile.variants.add(turkish);
 
         var built = SelectionRequestBuilder.build(profile.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", TODAY);
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", Tone.FORMAL, TODAY);
 
         assertThat(built.request().sections().get(0).atoms().get(0).variantId())
                 .isEqualTo(turkish.getId());
+    }
+
+    /**
+     * <strong>Bolum 21.1's choice, and it is made here.</strong>
+     *
+     * <p>The spec puts the tone in Faz D, after selection has run. It cannot
+     * live there: this is where a wording is charged to the budget, and a Faz D
+     * that swapped in the other one afterwards would print a line whose height
+     * nothing had measured — the page limit is only a guarantee because every
+     * line on the page was costed.
+     */
+    @Test
+    void theWordingInTheProfilesToneIsBothChosenAndCharged() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        var atom = profile.looseAtom(section, "Built ETL pipelines");
+        String costKey = TemplateCustomization.CLASSIC.costKey();
+        profile.variants.get(0).recordRenderCost(costKey, 40.0, java.time.Instant.now());
+        var technical = new AtomVariant(PROFILE, atom.getId(), "en",
+                RichContent.plain("Stood the ETL DAGs up on their own scheduler"));
+        technical.setTone(Tone.TECHNICAL);
+        technical.recordRenderCost(costKey, 47.0, java.time.Instant.now());
+        profile.variants.add(technical);
+
+        var built = SelectionRequestBuilder.build(profile.tree(),
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "en", Tone.TECHNICAL, TODAY);
+
+        var candidate = built.request().sections().get(0).atoms().get(0);
+        assertThat(candidate.variantId()).isEqualTo(technical.getId());
+        assertThat(candidate.renderCostPt()).isEqualTo(47.0);
     }
 
     /**
@@ -219,7 +250,7 @@ class SelectionRequestBuilderTest {
         profile.variants.add(turkish);
 
         var built = SelectionRequestBuilder.build(profile.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", TODAY);
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "tr", Tone.FORMAL, TODAY);
 
         assertThat(built.request().sections().get(0).atoms().get(0).renderCostPt())
                 .isEqualTo(47.0);
@@ -259,7 +290,7 @@ class SelectionRequestBuilderTest {
         }
 
         var built = SelectionRequestBuilder.build(profile.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1, language, TODAY);
+                TemplateCustomization.CLASSIC, CAPACITY, 1, language, Tone.FORMAL, TODAY);
 
         return built.request().sections().stream()
                 .flatMap(sec -> sec.atoms().stream())
@@ -326,7 +357,7 @@ class SelectionRequestBuilderTest {
         var second = fixture.bullet(section, entry, "Ran the on-call rota");
 
         var built = SelectionRequestBuilder.build(fixture.tree(), TemplateCustomization.CLASSIC,
-                CAPACITY, 1, "en",
+                CAPACITY, 1, "en", Tone.FORMAL,
                 (atom, parent) -> atom.getId().equals(first.getId()) ? 0.9 : 0.1);
 
         var candidates = built.request().sections().get(0).entries().get(0).atoms();
@@ -351,7 +382,7 @@ class SelectionRequestBuilderTest {
         var wanted = fixture.bullet(section, entry, "Ran the on-call rota");
 
         var built = SelectionRequestBuilder.build(fixture.tree(), TemplateCustomization.CLASSIC,
-                CAPACITY, 1, "en",
+                CAPACITY, 1, "en", Tone.FORMAL,
                 (atom, parent) -> atom.getId().equals(wanted.getId()) ? 0.9 : 0.1);
 
         var candidates = built.request().sections().get(0).entries().get(0).atoms();
@@ -367,7 +398,7 @@ class SelectionRequestBuilderTest {
 
     private static SelectionRequestBuilder.BuiltRequest build(Fixture fixture) {
         return SelectionRequestBuilder.build(fixture.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1, "en", TODAY);
+                TemplateCustomization.CLASSIC, CAPACITY, 1, "en", Tone.FORMAL, TODAY);
     }
 
     /** A profile under construction, flat, the way the repositories return it. */

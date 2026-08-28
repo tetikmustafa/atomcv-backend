@@ -100,7 +100,8 @@ public class CvGenerationService {
         }
 
         var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
-                options.maxPages(), options.language(), LocalDate.now(clock));
+                options.maxPages(), options.language(),
+                head.getPreferences().writingStyle().tone(), LocalDate.now(clock));
 
         if (built.request().sections().isEmpty()) {
             // Everything was inactive, or nothing had a wording. Either way

@@ -1,4 +1,4 @@
-package com.mustafatetik.atomcv.generation.rewrite;
+package com.mustafatetik.atomcv.generation.selection;
 
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
@@ -25,6 +25,14 @@ import java.util.Optional;
  * actually separates them is what the person set — the language and the tone —
  * so that is what this filters on, and the rest is a deterministic tie-break.
  * The same generation asked for twice must not come out differently.
+ *
+ * <p><strong>Sapma — it runs in front of Faz C, not inside Faz D.</strong>
+ * Bolum 21.1 puts this after selection, and there it would be a second
+ * wording choice: selection charges the budget for the variant it costed, so a
+ * Faz D that swapped in another one afterwards would print a line the page
+ * guarantee never accounted for. The choice is made once, here, and everything
+ * downstream — the cost, the printed line, and the sentence Faz D rewrites —
+ * reads the same variant id off {@link SelectionState}.
  */
 public final class AlternativeWording {
 

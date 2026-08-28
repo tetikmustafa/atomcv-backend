@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostEstimator;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
@@ -58,13 +59,18 @@ public final class SelectionRequestBuilder {
             CapacityModel capacity,
             int maxPages,
             String language,
+            Tone tone,
             LocalDate today) {
 
-        return build(tree, customization, capacity, maxPages, language,
+        return build(tree, customization, capacity, maxPages, language, tone,
                 AtomScoreSource.generalMode(today));
     }
 
     /**
+     * @param tone   how the profile asked to sound (Bolum 21.1). It belongs
+     *               here rather than in Faz D because the wording it chooses
+     *               is the one this charges the budget for: a tone applied
+     *               after selection would print a line nothing had costed
      * @param scores where each atom's score comes from — Faz B against a
      *               posting, or the general-mode scorer when there is none.
      *               It is the only difference between the two modes: the
@@ -77,9 +83,10 @@ public final class SelectionRequestBuilder {
             CapacityModel capacity,
             int maxPages,
             String language,
+            Tone tone,
             AtomScoreSource scores) {
 
-        var run = new Run(customization, capacity, language, scores);
+        var run = new Run(customization, capacity, language, tone, scores);
         List<SectionPlan> sections = new ArrayList<>();
 
         for (SectionNode section : tree.sections()) {
@@ -163,26 +170,29 @@ public final class SelectionRequestBuilder {
         private final CapacityModel capacity;
         private final String costKey;
         private final String language;
+        private final Tone tone;
         private final AtomScoreSource scores;
 
         private int estimated;
         private int withoutWording;
 
         Run(TemplateCustomization customization, CapacityModel capacity,
-                String language, AtomScoreSource scores) {
+                String language, Tone tone, AtomScoreSource scores) {
 
             this.customization = customization;
             this.capacity = capacity;
             this.costKey = customization.costKey();
             this.language = language;
+            this.tone = tone;
             this.scores = scores;
         }
 
         List<AtomCandidate> candidates(List<AtomNode> atoms, Entry entry) {
             List<AtomCandidate> candidates = new ArrayList<>();
             for (AtomNode node : atoms) {
-                Optional<AtomVariant> wording = node.variantIn(language)
-                        .or(node::primaryVariant);
+                // Bolum 21.1's choice, made here so that the variant costed is
+                // the variant printed and the variant Faz D rewrites.
+                Optional<AtomVariant> wording = AlternativeWording.pick(node, language, tone);
                 if (wording.isEmpty()) {
                     // Nothing to render and nothing to measure. Counted rather
                     // than silently dropped: it means an atom was written
