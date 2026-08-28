@@ -152,6 +152,35 @@ Sadece oturum çerezi (zorunlu) + çerezsiz analitik → **çerez izni banner'ı
 
 **Kullanıcıya bildirilmeli:** LLM sağlayıcıları kendi taraflarında kısa süreli log tutabilir.
 
+#### 57.4.1 Kararlar (Adım 3.9, dilim 1)
+
+**Düzeltme — `usage_counters` cascade'e takılmıyor.** § 57.4 "PostgreSQL
+(ON DELETE CASCADE ile otomatik)" diyor; o tablo `(subject_type, subject_id)`
+ile anahtarlı ve `users`'a foreign key'i **yok**, çünkü özne bir adres ya da
+anonim oturum da olabiliyor. Hesap silinince satırları kalıyordu: yanında bir
+sayı olan bir kimlik, tam da silmenin kaldırması gereken şey. `UsageCounters.forget`
+onları siliyor, ve `AccountDeletionIT` bunu şemadan okuyarak denetliyor —
+tabloları elle sayan bir test, kimsenin haberi olmadan eklenen tabloda sonsuza
+kadar geçerdi.
+
+**Ekleme — silme uç noktası ek bir onay alanı istemiyor.** `DELETE` zaten
+oturum çerezi ve CSRF tokenının arkasında, yani başka bir sitenin
+tetikleyebileceği bir şey değil. "Emin misin" ekranı, neyin kaybolacağını
+söyleyecek yeri olan tarafta — frontend'te. Gövdeye konacak ikinci bir kutu,
+API'nin anlamını zorlayamadığı bir kutu olurdu.
+
+**Ekleme — ikinci basış da `204`.** Silinmiş bir hesabı tekrar silmek hata
+değil; kullanıcının istediği şey zaten olmuş durumda.
+
+**Ekleme — `email_suppressions` hayatta kalıyor.** Adrese göre anahtarlı bir
+teslimat kaydı, hesaba değil; silmek, hard bounce etmiş ya da şikâyet etmiş bir
+adrese yeniden posta atmamıza izin verirdi.
+
+**Açık — R2'deki PDF'ler.** § 57.4 listesinde var ama bu repoda R2 istemcisi
+henüz hiç yok (`generations.pdf_key` her zaman NULL; indirme, saklanan
+anlık görüntüden yeniden render ediliyor). Depolama indiğinde silme yolunun da
+oradan geçmesi gerekecek.
+
 ### 57.5 Veri export
 
 ```

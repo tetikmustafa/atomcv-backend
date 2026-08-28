@@ -55,3 +55,15 @@ bağlamla değil. `local` altında çerezsiz her istek dev kullanıcısı; bayat
 
 **Dikkat — `git checkout --` ekilmiş ihlali geri alırken commit edilmemiş
 gerçek değişikliği de alır.** İhlal denemesinden **yedek kopyadan** dön.
+
+## Dersler (notlardan taşındı, 2026-08-28)
+
+**Entegrasyon testi işleyiciyi çağırmıyorsa işleyiciyi korumuyor.** Anonim
+yükleme testi önce yazıcıyı doğrudan çağırıyordu; dalı kalıcı yazmaya
+çevirdiğimde **geçti**. Yazıcı zaten bunu yanlış yapabilecek parça değildi.
+*Ekilen ihlalin hangi testi düşürdüğüne bak; hiçbirini düşürmüyorsa test yanlış
+yerde duruyor.*
+
+**Taşınan carry-over kendiliğinden kapandı** — yükseltme yeniden içe
+aktarmıyor, satırları kendi id'leriyle yazıyor. İçe aktarımlar arası id
+kararsızlığı duruyor, yükseltmenin sorunu değil.

@@ -103,6 +103,26 @@ public class SignInAccounts {
         identities.save(OAuthIdentity.binding(userId, provider, providerUid));
     }
 
+    /**
+     * Bolum 57.4: the account, and by cascade everything hanging off it.
+     *
+     * <p>Another id-taking method, and it is safe for a narrower reason than
+     * {@link #byId}: the id is the acting user's own, taken from their
+     * session and never from a request body. It also answers nothing — a
+     * caller who guessed somebody else's id would learn only whether a row
+     * existed, and the endpoint in front of this does not let them try.
+     *
+     * @return false when there was no such row, so a second press is not an
+     *         error
+     */
+    public boolean deleteById(UUID userId) {
+        if (!users.existsById(userId)) {
+            return false;
+        }
+        users.deleteById(userId);
+        return true;
+    }
+
     public void seen(UserAccount account, Instant now) {
         account.seenAt(now);
         users.save(account);

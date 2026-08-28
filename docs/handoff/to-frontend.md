@@ -322,6 +322,28 @@ söylemek için orada.
 üretilen bir CV'de mektup yazılamadıysa iş yine `completed` oluyor ve
 `GET /generations/{id}` mektup alanını taşımıyor — düğmeyle tekrar istenebilir.
 
+### B-057 · Hesap silme telde — `DELETE /api/v1/account`
+**Since:** commit <sha> · Adım 3.9 · **Spec:** `spec/16-cost-legal.md` § 57.4
+
+`DELETE /api/v1/account` → **`204`**, ve yanıt `Set-Cookie` ile oturum çerezini
+temizliyor. Gövde yok, onay alanı yok: uç zaten oturum + CSRF arkasında.
+**"Emin misin" ekranı sizde** — ve neyin gittiğini saymalı, çünkü geri dönüşü
+yok: profil, atomlar, bütün üretimler ve belgeleri, kuyruk işleri, sayaçlar,
+e-posta tercihleri.
+
+İki şey **bilerek kalıyor** ve gizlilik metninde de böyle yazmalı: maliyet
+geçmişi (kullanıcı bağı koparılmış olarak — artık kimseyi göstermiyor) ve
+hard bounce/şikâyet etmiş bir adresin suppression kaydı (adrese ait, hesaba
+değil; silmek o adrese yeniden posta atmamıza izin verirdi). Ayrıca **LLM
+sağlayıcıları kendi taraflarında kısa süreli log tutabiliyor** — § 57.4 bunun
+kullanıcıya söylenmesini istiyor, yeri gizlilik politikası.
+
+**İkinci basış da `204`.** Silinmiş hesabı tekrar silmek hata değil; idempotent.
+
+Silmeden sonra çerez temizlendiği için istemci **anonim** duruma düşüyor —
+`GET /auth/session` yeni bir anonim oturum verir. Kullanıcıyı ana sayfaya
+atmak doğru davranış.
+
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
