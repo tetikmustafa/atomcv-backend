@@ -1,7 +1,6 @@
 package com.mustafatetik.atomcv.ingestion.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
-import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
 import com.mustafatetik.atomcv.ingestion.normalization.ProfileNormalizer;
@@ -102,7 +101,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
 
         progress.report(READING);
         Result<ExtractedProfile> structured = structuring.structure(
-                payload.asExtractedText(), bucketKeyFor(userId, anonSession));
+                payload.asExtractedText(), bucketKeyFor(userId, anonSession), userId);
 
         return switch (structured) {
             case Result.Err<ExtractedProfile> failed -> {
@@ -118,7 +117,8 @@ public class ProfileExtractionJobHandler implements JobHandler {
                 progress.report(SAVING);
                 yield userId == null
                         ? completedAnonymously(anonSession, normalized)
-                        : completedForAccount(UserContext.of(userId), userId, normalized);
+                        : completedForAccount(UserContext.of(userId), userId, normalized,
+                                payload.replace());
             }
         };
     }
@@ -153,9 +153,9 @@ public class ProfileExtractionJobHandler implements JobHandler {
         return completed(profile.id(), normalized);
     }
 
-    private JobOutcome completedForAccount(
-            UserContext user, UUID userId, NormalizedProfile normalized) {
-        Profile profile = writer.write(user, normalized);
+    private JobOutcome completedForAccount(UserContext user, UUID userId,
+            NormalizedProfile normalized, boolean replace) {
+        Profile profile = writer.write(user, normalized, replace);
         queueBackgroundWork(userId);
         return completed(profile.getId(), normalized);
     }

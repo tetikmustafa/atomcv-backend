@@ -145,9 +145,18 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
 
     // -- fixtures ----------------------------------------------------------
 
+    /**
+     * {@code mode=replace}, and it is not incidental: {@code DevSeeder} gives
+     * the acting user a golden profile at start-up, so every upload here is by
+     * definition a second one and would be refused with 409 (Bolum 08b). These
+     * cases are about the door — the format ladder, the allowance, the
+     * idempotency key — and the second-CV rule has {@code SecondImportIT} to
+     * itself. Nothing is actually overwritten: the worker is off in this
+     * suite, so the job is queued and never run.
+     */
     private static org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
             upload(String filename, String contentType, byte[] bytes) {
-        var builder = multipart("/api/v1/profile/import");
+        var builder = multipart("/api/v1/profile/import?mode=replace");
         builder.file(new MockMultipartFile("file", filename, contentType, bytes));
         return builder;
     }

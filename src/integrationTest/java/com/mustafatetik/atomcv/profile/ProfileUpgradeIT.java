@@ -158,13 +158,8 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
      */
     @Test
     void anaccountThatAlreadyHasAProfileKeepsIt() {
-        UUID existing = jdbc.queryForObject("""
-                INSERT INTO profiles (id, user_id, contact, preferences, source_language,
-                                      enabled_languages, completeness, created_at, updated_at,
-                                      version)
-                VALUES (gen_random_uuid(), ?, '{}'::jsonb, '{}'::jsonb, 'en',
-                        ARRAY['en'], 0, now(), now(), 0)
-                RETURNING id""", UUID.class, user.userId());
+        UUID existing = emptyProfileRow();
+        withASection(existing);
         anonymousProfile();
 
         assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.KEPT_EXISTING);
@@ -176,7 +171,50 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
         assertThat(store.find(ProfileRef.ephemeral(session))).isPresent();
     }
 
+    /**
+     * The narrow, silent case this check exists for.
+     *
+     * <p>{@code ProfileResolver.own} creates the row lazily, so signing in once
+     * and opening the application is enough to have one. Before this, that
+     * person's next anonymous CV was answered with {@code KEPT_EXISTING} and
+     * the work was left to expire — an empty row outranking two hours of it.
+     */
+    @Test
+    void anEmptyProfileRowIsNotAProfileAndIsOverwritten() {
+        UUID placeholder = emptyProfileRow();
+        var anonymous = anonymousProfile();
+
+        assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.UPGRADED);
+
+        assertThat(profileIdOf(user))
+                .isEqualTo(anonymous.profileId())
+                .isNotEqualTo(placeholder);
+        assertThat(count("atoms", anonymous.profileId())).isPositive();
+        // One row per user is a unique constraint, so the placeholder is gone
+        // rather than orphaned beside the adopted one.
+        assertThat(count("profiles")).isEqualTo(1);
+    }
+
     // -- fixtures ----------------------------------------------------------
+
+    /** What signing in once and opening the application leaves behind. */
+    private UUID emptyProfileRow() {
+        return jdbc.queryForObject("""
+                INSERT INTO profiles (id, user_id, contact, preferences, source_language,
+                                      enabled_languages, completeness, created_at, updated_at,
+                                      version)
+                VALUES (gen_random_uuid(), ?, '{}'::jsonb, '{}'::jsonb, 'en',
+                        ARRAY['en'], 0, now(), now(), 0)
+                RETURNING id""", UUID.class, user.userId());
+    }
+
+    /** Enough to make the row real: nothing below a section can exist without one. */
+    private void withASection(UUID profileId) {
+        jdbc.update("""
+                INSERT INTO sections (profile_id, kind, title, display_order)
+                VALUES (?, 'experience', 'Deneyim', 0)
+                """, profileId);
+    }
 
     private EphemeralProfile anonymousProfile() {
         return ephemeral.write(ProfileRef.ephemeral(session), cv());

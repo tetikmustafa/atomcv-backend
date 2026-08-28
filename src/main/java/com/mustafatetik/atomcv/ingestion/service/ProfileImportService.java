@@ -10,11 +10,15 @@ import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -42,14 +46,16 @@ public class ProfileImportService {
     private final JobQueue queue;
     private final JobRepository jobs;
     private final QuotaService quotas;
+    private final ProfileResolver profiles;
     private final Clock clock;
 
     ProfileImportService(DocumentExtraction extraction, JobQueue queue, JobRepository jobs,
-            QuotaService quotas, Clock clock) {
+            QuotaService quotas, ProfileResolver profiles, Clock clock) {
         this.extraction = extraction;
         this.queue = queue;
         this.jobs = jobs;
         this.quotas = quotas;
+        this.profiles = profiles;
         this.clock = clock;
     }
 
@@ -77,12 +83,14 @@ public class ProfileImportService {
      *         be a second place for the catalogue to drift from.
      */
     public Job importCv(JobOwner owner, QuotaSubject allowance, String filename,
-            String contentType, byte[] bytes, String idempotencyKey) {
+            String contentType, byte[] bytes, String idempotencyKey, boolean replace) {
 
         Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
         if (already.isPresent()) {
             return already.get();
         }
+
+        refuseASecondProfile(owner, replace);
 
         Result<Void> spent = quotas.consume(allowance, QuotaMetric.PROFILE_EXTRACT);
         if (spent.isErr()) {
@@ -102,10 +110,42 @@ public class ProfileImportService {
         }
 
         var job = new Job(JobType.PROFILE_EXTRACT, owner.userId(),
-                ProfileExtractionPayload.of(document, allowance).asMap(), clock.instant());
+                ProfileExtractionPayload.of(document, allowance, replace).asMap(),
+                clock.instant());
         job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);
         return queue.enqueue(job);
+    }
+
+    /**
+     * The sixth synchronous refusal (Bolum 31.6.2), and the one that had been
+     * missing.
+     *
+     * <p>{@code PROFILE_ALREADY_EXISTS} was in the catalogue and nothing
+     * produced it: a second CV was <em>added</em> to the profile that was
+     * already there, so the sections arrived twice and the person found out in
+     * the editor. Refusing here rather than in the worker matters — a 202
+     * followed by a failed job is a worse answer than a 409, and the caller
+     * still has the file in hand.
+     *
+     * <p>Two resolutions and no third, as Bolum 08b's table says: replace or
+     * keep. A merge would be atom-level de-duplication and is Stage 4 work;
+     * offering it now would either name an action the server cannot perform or
+     * ship the silent duplication this refusal exists to stop.
+     *
+     * <p><strong>Accounts only.</strong> An anonymous upload writes the whole
+     * ephemeral document at once (§ 31.6.3), so a second one replaces rather
+     * than doubles and there is nothing to warn about.
+     */
+    private void refuseASecondProfile(JobOwner owner, boolean replace) {
+        if (replace || owner.isAnonymous()) {
+            return;
+        }
+        if (profiles.hasContent(UserContext.of(owner.userId()))) {
+            throw ApiException.of(ErrorCode.PROFILE_ALREADY_EXISTS,
+                    Resolution.of(ResolutionAction.REPLACE_PROFILE),
+                    Resolution.of(ResolutionAction.KEEP_EXISTING_PROFILE));
+        }
     }
 
     /**

@@ -69,10 +69,20 @@ public class ProfileWriter {
      * @param normalized what Bolum 31.5 produced; never partially written
      * @return the profile the CV was written into
      */
+    /**
+     * @param replace what the caller answered to {@code PROFILE_ALREADY_EXISTS}
+     *                (Bolum 08b): the profile that is there is discarded first,
+     *                so the CV becomes the profile rather than being added to
+     *                it. Without it a second import wrote its sections beside
+     *                the first import's, and the person found out in the editor
+     */
     @Transactional
-    public Profile write(UserContext user, NormalizedProfile normalized) {
+    public Profile write(UserContext user, NormalizedProfile normalized, boolean replace) {
         var owned = profiles.owned(user);
         Profile profile = owned.profile();
+        if (replace) {
+            clear(owned.ref());
+        }
         String language = normalized.language().isBlank()
                 ? profile.getSourceLanguage() : normalized.language();
 
@@ -87,6 +97,22 @@ public class ProfileWriter {
         // Counts and a language, never a line of the CV (absolute rule 4).
         log.info("Wrote an imported profile: {}", normalized.shape());
         return profile;
+    }
+
+    /**
+     * Everything under the profile, in the order the foreign keys allow —
+     * variants before atoms, atoms before entries, entries before sections,
+     * which is the reverse of the order they are written in.
+     *
+     * <p>The profile row itself stays. Its id is referenced by generations and
+     * by the contact block the person did not ask to lose, and deleting it
+     * would cascade into history that is not part of this CV.
+     */
+    private void clear(ProfileRef ref) {
+        variants.findAll(ref).forEach(variant -> variants.delete(ref, variant));
+        atoms.findAll(ref).forEach(atom -> atoms.delete(ref, atom));
+        entries.findAll(ref).forEach(entry -> entries.delete(ref, entry));
+        sections.findAll(ref).forEach(section -> sections.delete(ref, section));
     }
 
     private void writeSection(Target target, NormalizedProfile.NormalizedSection normalized) {

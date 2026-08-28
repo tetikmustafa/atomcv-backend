@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.profile.service;
 
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.repository.ProfileRepository;
+import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,38 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileResolver {
 
     private final ProfileRepository profiles;
+    private final SectionRepository sections;
 
-    ProfileResolver(ProfileRepository profiles) {
+    ProfileResolver(ProfileRepository profiles, SectionRepository sections) {
         this.profiles = profiles;
+        this.sections = sections;
+    }
+
+    /**
+     * Whether there is anything in the acting user's profile, and the one
+     * definition of that.
+     *
+     * <p>"Is there a row" is not the question, and answering it was a bug in
+     * two places: {@link #own} creates the row lazily, so everybody who has
+     * ever signed in and opened the application has one. Adim 3.6's upgrade
+     * used to lose an anonymous CV to it, and Adim 3.4's second import would
+     * refuse against it.
+     *
+     * <p>Sections are the test because nothing below one can exist without it:
+     * an entry names a section and an atom names an entry. The contact block
+     * does not count — it is filled from signing in and would make every row
+     * look occupied.
+     *
+     * <p>Creates nothing. A question about whether a profile has content must
+     * not be the thing that brings one into being.
+     */
+    @Transactional(readOnly = true)
+    public boolean hasContent(UserContext user) {
+        return profiles.findOwn(user)
+                .map(profile -> !sections.findAll(
+                        ProfileRef.persistent(user, profile.getId(), profile.getOwnerId()))
+                        .isEmpty())
+                .orElse(false);
     }
 
     /**

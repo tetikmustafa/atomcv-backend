@@ -169,7 +169,7 @@ class ErrorCatalogueTest {
     // ─── the action vocabulary (EK D.6) ───
 
     @Test
-    void theActionVocabularyIsTheAgreedTen() {
+    void theActionVocabularyIsTheAgreedTwelve() {
         // EK D.6.1's closed set. It is closed against the frontend, which
         // writes one ICU message per action: a value added here without a
         // handoff item renders as a raw key to a user.
@@ -182,7 +182,11 @@ class ErrorCatalogueTest {
                         // preflight refusal and only two of them had a name
                         // (handoff B-037).
                         "continue_anyway",
-                        "retry");
+                        "retry",
+                        // Bolum 08b: a second CV is refused and the answer is
+                        // replace or keep. Never a merge -- that is atom-level
+                        // de-duplication and Stage 4 work (handoff B-060).
+                        "replace_profile", "keep_existing_profile");
     }
 
     @Test

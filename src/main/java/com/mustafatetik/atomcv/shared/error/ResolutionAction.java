@@ -18,6 +18,21 @@ public enum ResolutionAction {
     /** Raise the page limit to {@code params.maxPages} and submit again. */
     INCREASE_PAGE_LIMIT,
 
+    /**
+     * Send the upload again with {@code ?mode=replace}: the profile that is
+     * there is discarded and the CV becomes the new one.
+     *
+     * <p>Offered with {@link #KEEP_EXISTING_PROFILE} and never with a merge.
+     * Merging is atom-level de-duplication (Bolum 7, Jaro-Winkler plus
+     * embeddings) and belongs to Stage 4; naming it here would either bind the
+     * endpoint to work it cannot do or ship a merge that silently duplicates
+     * content, which design principle 8 forbids.
+     */
+    REPLACE_PROFILE,
+
+    /** Abandon the upload. The profile that is there is left exactly as it is. */
+    KEEP_EXISTING_PROFILE,
+
     /** Open the pinned-content review, filtered to pins. */
     REVIEW_PINS,
 
