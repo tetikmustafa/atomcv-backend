@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
@@ -207,7 +208,7 @@ class GoldenSelectionTest {
 
     private static SelectionRequest request(GoldenProfile golden, String language, int pages) {
         return SelectionRequestBuilder.build(golden.tree(), TemplateCustomization.CLASSIC,
-                CAPACITY, pages, language, TODAY).request();
+                CAPACITY, pages, language, Tone.FORMAL, TODAY).request();
     }
 
     private static List<UUID> idsOf(SelectionState state) {

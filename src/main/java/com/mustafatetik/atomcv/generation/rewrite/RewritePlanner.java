@@ -6,23 +6,26 @@ import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
-import com.mustafatetik.atomcv.profile.domain.Tone;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Faz D's decisions, all of them made without an LLM (Bolum 21.1-21.3).
+ * Faz D's decisions, all of them made without an LLM (Bolum 21.2-21.3).
  *
  * <p>Pure and static, like {@code RenderPhase}: a tree and a selection go in,
  * a plan comes out. Everything here is a promise the product makes about what
  * it will and will not do to somebody's sentences, and each one is a line that
  * can be asserted against on its own.
+ *
+ * <p>Bolum 21.1's step is not here: the wording was chosen before the budget
+ * was spent on it ({@code AlternativeWording}), and this reads the variant id
+ * selection recorded. Choosing again would be a second opinion about which
+ * sentence is on the page, and only one of the two would have been costed.
  */
 public final class RewritePlanner {
 
@@ -61,15 +64,13 @@ public final class RewritePlanner {
     }
 
     /**
-     * @param tone what the profile asked to sound like; {@code null} means the
-     *             person expressed no preference, and the wordings they marked
-     *             primary are then the answer
+     * @param selection what Faz C chose, and with it the wording it costed for
+     *                  each atom — the sentence that is going on the page and
+     *                  therefore the only one worth rewriting
      */
-    public static RewritePlan plan(
-            ProfileTree tree, SelectionState selection, String language, Tone tone) {
+    public static RewritePlan plan(ProfileTree tree, SelectionState selection) {
 
         Map<UUID, AtomNode> nodes = index(tree);
-        Map<UUID, UUID> wordings = new LinkedHashMap<>();
         List<RewriteCandidate> candidates = new ArrayList<>();
 
         for (SelectedAtom selected : selection.selected()) {
@@ -79,14 +80,9 @@ public final class RewritePlanner {
                 // print and nothing to rewrite; the renderer skips it too.
                 continue;
             }
-            AtomVariant wording = AlternativeWording.pick(node, language, tone)
-                    .orElse(null);
-            if (wording == null) {
-                continue;
-            }
-            wordings.put(selected.atomId(), wording.getId());
-
-            candidateFor(node.atom(), wording, selected.score())
+            wordingOf(node, selected.variantId())
+                    .flatMap(wording ->
+                            candidateFor(node.atom(), wording, selected.score()))
                     .ifPresent(candidates::add);
         }
 
@@ -94,8 +90,21 @@ public final class RewritePlanner {
                 // Score ties are common at the top and a run must not depend
                 // on which order the tree happened to be walked in.
                 .thenComparing(candidate -> candidate.atomId().toString()));
-        return new RewritePlan(wordings,
+        return new RewritePlan(
                 candidates.subList(0, Math.min(MAX_CANDIDATES, candidates.size())));
+    }
+
+    /**
+     * The wording selection recorded, and the same fallback the renderer makes
+     * for an id that no longer resolves: the primary one, or nothing at all.
+     * Rewriting a sentence the renderer would not print is worse than not
+     * rewriting — it is paid for and thrown away.
+     */
+    private static Optional<AtomVariant> wordingOf(AtomNode node, UUID variantId) {
+        return node.variants().stream()
+                .filter(variant -> variant.getId().equals(variantId))
+                .findFirst()
+                .or(node::primaryVariant);
     }
 
     /**

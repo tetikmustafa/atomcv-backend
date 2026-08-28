@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.measurement.TexLogParser;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
@@ -71,7 +72,7 @@ class MeasurementDriftIT {
         GoldenProfile golden = GoldenProfileReader.read(name, UUID.randomUUID());
         var request = SelectionRequestBuilder.build(golden.tree(),
                 TemplateCustomization.CLASSIC, CAPACITY, 1,
-                golden.profile().getSourceLanguage(), TODAY).request();
+                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
         SelectionState state = SelectionPhase.select(request).orElseThrow();
 
         double predictedPt = state.budget().fixedPt() + state.budget().usedPt();
@@ -89,7 +90,7 @@ class MeasurementDriftIT {
         GoldenProfile golden = GoldenProfileReader.read(name, UUID.randomUUID());
         var request = SelectionRequestBuilder.build(golden.tree(),
                 TemplateCustomization.CLASSIC, CAPACITY, 1,
-                golden.profile().getSourceLanguage(), TODAY).request();
+                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
         SelectionState state = SelectionPhase.select(request).orElseThrow();
 
         var client = compiler();

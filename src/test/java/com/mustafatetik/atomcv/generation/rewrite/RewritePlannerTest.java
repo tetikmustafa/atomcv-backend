@@ -14,7 +14,6 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
-import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +55,9 @@ class RewritePlannerTest {
 
         var plan = planFor(List.of(scored(atom, 0.39)), atom);
 
-        assertThat(plan.candidates()).isEmpty();
         // Still printed, though — not being rewritten is not being dropped.
-        assertThat(plan.wordings()).containsKey(atom.atom().getId());
+        // Which wording is printed was settled before Faz D ran, in selection.
+        assertThat(plan.candidates()).isEmpty();
     }
 
     /**
@@ -119,17 +118,15 @@ class RewritePlannerTest {
         var plan = planFor(List.of(scored(atom, 0.95)), atom);
 
         assertThat(plan.candidates()).isEmpty();
-        assertThat(plan.wordings()).containsKey(atom.atom().getId());
     }
 
     @Test
-    void anatomWithNoWordingAtAllIsNeitherPrintedNorRewritten() {
+    void anatomWithNoWordingAtAllIsNotRewritten() {
         var atom = new AtomNode(atomRow(List.of()), List.of());
 
         var plan = planFor(List.of(scored(atom, 0.90)), atom);
 
         assertThat(plan.candidates()).isEmpty();
-        assertThat(plan.wordings()).isEmpty();
     }
 
     // -- Bolum 21.2's cap --------------------------------------------------
@@ -214,62 +211,55 @@ class RewritePlannerTest {
         });
     }
 
-    // -- Bolum 21.1 --------------------------------------------------------
+    // -- Bolum 21.1, from the other side ----------------------------------
 
     /**
-     * The investment somebody made in the profile editor, paying off: two
-     * wordings, and the one in the tone this profile asked for is printed. No
-     * model was called to get it.
+     * <strong>The sentence rewritten is the sentence selection costed.</strong>
+     * Bolum 21.1's choice is made in front of the budget now
+     * ({@code AlternativeWording}), so this reads the variant id off the
+     * selection instead of choosing again. Picking here would be a second
+     * opinion about which wording is on the page — and Faz C charged for one
+     * of the two, measured it, and promised a page limit on the strength of it.
      */
     @Test
-    void thewordingInTheRequestedToneIsTheOneChosen() {
+    void thewordingSelectionCostedIsTheOneRewritten() {
         Atom row = atomRow(List.of("java"));
-        AtomVariant formal = wording(row, "en", RichContent.plain("Led the migration"), true);
-        AtomVariant technical = wording(row, "en",
-                RichContent.plain("Cut over the cluster in place"), false);
-        technical.setTone(Tone.TECHNICAL);
-        var atom = new AtomNode(row, List.of(formal, technical));
+        AtomVariant printed = wording(row, "en", RichContent.plain("Led the migration"), true);
+        AtomVariant other = wording(row, "en",
+                RichContent.plain("Cut over the cluster in place, twice"), false);
+        var atom = new AtomNode(row, List.of(printed, other));
 
-        var plan = plan(tree(atom), selection(List.of(scored(atom, 0.10))), "en", Tone.TECHNICAL);
+        var plan = RewritePlanner.plan(tree(atom), selection(List.of(
+                new SelectionState.SelectedAtom(
+                        row.getId(), other.getId(), 0.90, 12.0, false))));
 
-        assertThat(plan.wordings()).containsEntry(row.getId(), technical.getId());
+        assertThat(plan.candidates()).singleElement()
+                .extracting(RewriteCandidate::originalText)
+                .isEqualTo("Cut over the cluster in place, twice");
     }
 
-    /** No wording in that tone is not a reason to print nothing (Bolum 21.8). */
+    /**
+     * And a variant id that no longer resolves falls back the same way the
+     * renderer does, rather than dropping the atom: the two must not disagree
+     * about what is on the page.
+     */
     @Test
-    void anatomWithNoWordingInThatToneKeepsTheOneItHas() {
+    void avariantThatNoLongerExistsFallsBackToThePrimaryWording() {
         var atom = bullet("Led the migration", List.of("java"));
 
-        var plan = plan(tree(atom), selection(List.of(scored(atom, 0.10))), "en", Tone.CASUAL);
+        var plan = RewritePlanner.plan(tree(atom), selection(List.of(
+                new SelectionState.SelectedAtom(
+                        atom.atom().getId(), UUID.randomUUID(), 0.90, 12.0, false))));
 
-        assertThat(plan.wordings()).containsEntry(
-                atom.atom().getId(), atom.variants().get(0).getId());
-    }
-
-    /** And the language comes first: a CV in the wrong one is not a style question. */
-    @Test
-    void thelanguageIsChosenBeforeTheTone() {
-        Atom row = atomRow(List.of("java"));
-        AtomVariant turkish = wording(row, "tr", RichContent.plain("Gecisi yonettim"), true);
-        AtomVariant english = wording(row, "en", RichContent.plain("Led the migration"), false);
-        english.setTone(Tone.FORMAL);
-        var atom = new AtomNode(row, List.of(turkish, english));
-
-        var plan = plan(tree(atom), selection(List.of(scored(atom, 0.10))), "tr", Tone.FORMAL);
-
-        assertThat(plan.wordings()).containsEntry(row.getId(), turkish.getId());
+        assertThat(plan.candidates()).singleElement()
+                .extracting(RewriteCandidate::originalText).isEqualTo("Led the migration");
     }
 
     // -- fixtures ----------------------------------------------------------
 
     private static RewritePlan planFor(
             List<SelectionState.SelectedAtom> selected, AtomNode... atoms) {
-        return plan(tree(atoms), selection(selected), "en", Tone.FORMAL);
-    }
-
-    private static RewritePlan plan(
-            ProfileTree tree, SelectionState selection, String language, Tone tone) {
-        return RewritePlanner.plan(tree, selection, language, tone);
+        return RewritePlanner.plan(tree(atoms), selection(selected));
     }
 
     private static SelectionState selection(List<SelectionState.SelectedAtom> selected) {

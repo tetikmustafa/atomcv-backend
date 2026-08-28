@@ -156,7 +156,8 @@ public class JobSpecificGenerationService {
                 relevance.scoreAgainst(tree, tags.labelsByAtom(profile), posting);
 
         var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
-                options.maxPages(), options.language(), scores);
+                options.maxPages(), options.language(),
+                head.getPreferences().writingStyle().tone(), scores);
 
         if (built.request().sections().isEmpty()) {
             // Everything was inactive, or nothing had a wording. Either way
