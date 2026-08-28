@@ -1,0 +1,99 @@
+# Adim V.7. Builds the backend image and asks the server to take it.
+#
+# Only the backend: the frontend repository has its own workflow doing exactly
+# this for its own image, and the two carry separate tags because they deploy
+# independently (Bolum 47.3).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # The tag is already built and pushed; a re-run only has to ask the server
+  # again. Useful when a deploy failed for a reason that has since been fixed
+  # on the server rather than in the code.
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA to deploy (defaults to this ref)'
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+# Never two deploys at once against one server, and no cancelling one halfway:
+# `deploy.sh` writes a tag file and rolls back on failure, and interrupting it
+# between those two leaves the tag pointing at a version that is not running.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, push, deploy
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve the SHA
+        id: target
+        run: echo "sha=${{ inputs.sha || github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          # Loaded rather than pushed: the scan below runs on the image, and an
+          # image that fails it must never have existed in the registry.
+          load: true
+          tags: ghcr.io/tetikmustafa/atomcv-backend:${{ steps.target.outputs.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The image scan the audit found missing. ci.yml's Trivy job reads the
+      # repository and sees Dockerfiles; this one reads what the Dockerfile
+      # produced -- the base image and every OS package in it, which is where
+      # a CVE actually lives.
+      - name: Scan the image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ghcr.io/tetikmustafa/atomcv-backend:${{ steps.target.outputs.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Push
+        run: docker push ghcr.io/tetikmustafa/atomcv-backend:${{ steps.target.outputs.sha }}
+
+      - uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # StrictHostKeyChecking is off for the first connection only in the
+      # build guide's snippet; pinning the key is better and costs one secret.
+      # SSH_HOST_KEY is `ssh-keyscan <host>` run once, by hand, from a machine
+      # you trust.
+      - name: Trust the host
+        run: |
+          mkdir -p ~/.ssh
+          if [ -n "${{ secrets.SSH_HOST_KEY }}" ]; then
+            echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+            echo "::warning::SSH_HOST_KEY is not set; the host key was accepted unverified"
+          fi
+
+      - name: Deploy
+        run: |
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "cd /opt/atomcv && ./scripts/deploy.sh backend ${{ steps.target.outputs.sha }}"

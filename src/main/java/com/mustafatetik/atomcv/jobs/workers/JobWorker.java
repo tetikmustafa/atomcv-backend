@@ -70,10 +70,29 @@ public class JobWorker {
      * caught, because every test either switches the worker off or builds it
      * by hand. {@code JobWorkerWiringIT} now starts a context with it on.
      */
+    /**
+     * {@code ThreadLocalRandom} and not {@link RandomGenerator#getDefault()},
+     * and the difference is deployment rather than taste.
+     *
+     * <p>The default algorithm is {@code L32X64MixRandom}, which lives in the
+     * {@code jdk.random} module — and that module is not part of {@code java.se},
+     * so it is absent from every JRE image. The application started perfectly on
+     * a developer's JDK and died on the first container that ran it:
+     *
+     * <pre>No implementation of the random number generator algorithm
+     * "L32X64MixRandom" is available</pre>
+     *
+     * <p>Nothing upstream could have said so. The tests run on a JDK, and the
+     * failure appears at construction — so it needed an image to exist and be
+     * run before anything noticed. What this random does is jitter a retry
+     * backoff (Bolum 30.5); any sound generator will do, and one from
+     * {@code java.base} cannot go missing.
+     */
     @org.springframework.beans.factory.annotation.Autowired
     public JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
             JobWorkerProperties properties, Clock clock) {
-        this(queue, events, handlers, properties, clock, RandomGenerator.getDefault());
+        this(queue, events, handlers, properties, clock,
+                java.util.concurrent.ThreadLocalRandom.current());
     }
 
     JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
