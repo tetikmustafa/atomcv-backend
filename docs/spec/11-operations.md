@@ -301,7 +301,24 @@ jobs:
 
 **Her iki repoda da aynı GitHub Secrets tanımlanır:** `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_USER`. Aynı deploy anahtarı kullanılabilir; `deploy.sh` hangi bileşenin güncelleneceğini ilk argümandan alır.
 
-> **Migration'ın yeri — açık karar.** Yukarıdaki backend deploy job'ında ayrı bir migration adımı yoktur; Flyway şu an üretimde de uygulama açılışında çalışır (EK D.1). Bu, tek uygulama örneğiyle güvenlidir. Yatay ölçeklemeye geçilirse iki örnek aynı anda migration çalıştırmaya kalkabilir — o noktada Flyway CLI imajıyla ayrı bir deploy adımı gerekir. Karar o zamana ertelenmiştir.
+> **Migration'ın yeri — karara bağlandı (2026-08-28).** Ayrı bir migration adımı
+> **yoktur ve olmayacak**: Flyway üretimde de uygulama açılışında çalışır.
+>
+> **Düzeltme.** Bu bölümün daha önce gösterdiği `--spring.flyway.migrate-only=true`
+> **diye bir Spring Boot özelliği yoktur** (EK D.1). İki gerçek seçenek vardı —
+> Flyway CLI imajıyla ayrı bir adım, ya da açılışta bırakıp tek örnekle deploy
+> etmek — ve ikincisi seçildi.
+>
+> **Güvenli kılan şey tek örnek, kilit değil.** Flyway zaten kendi kilidini alır,
+> yani risk iki migrator değil: **tek şemaya karşı iki uygulama sürümü.**
+> `scripts/deploy.sh` bileşeni `--no-deps` ile yerinde değiştirir, yani bir anda
+> bir sürüm çalışır. Yatay ölçeklemeye geçilirse bu tekrar açılır ve o noktada
+> ayrı bir migration adımı gerekir.
+>
+> Bunun pratik sonucu **geri almada** görünür: `deploy.sh` imajı geri alır,
+> **migration'ı geri almaz**. Bu yüzden mutlak kural 2 (uygulanmış bir migration
+> asla değiştirilmez) ve geriye dönük uyumlu şema değişikliği aynı şeyin iki
+> yüzüdür — yeni sürüm düşerse eski sürüm yeni şemayla çalışabilmelidir.
 
 ### 47.2 Kritik kurallar
 

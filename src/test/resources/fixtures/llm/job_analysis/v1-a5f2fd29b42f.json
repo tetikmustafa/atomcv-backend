@@ -1,0 +1,118 @@
+{
+  "role" : {
+    "title" : "Software Developer",
+    "seniority" : "mid",
+    "domain" : "Information Technology / Software Development",
+    "employmentType" : "full_time",
+    "workMode" : "onsite"
+  },
+  "company" : {
+    "name" : "Unknown",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "jsf",
+    "canonical" : "jsf",
+    "importance" : "high"
+  }, {
+    "name" : "jpa",
+    "canonical" : "jpa",
+    "importance" : "high"
+  }, {
+    "name" : "web technologies",
+    "canonical" : "web technologies",
+    "importance" : "medium"
+  }, {
+    "name" : "spring boot",
+    "canonical" : "spring boot",
+    "importance" : "critical"
+  }, {
+    "name" : "spring data",
+    "canonical" : "spring data",
+    "importance" : "critical"
+  }, {
+    "name" : "spring mvc",
+    "canonical" : "spring mvc",
+    "importance" : "critical"
+  }, {
+    "name" : "relational databases",
+    "canonical" : "relational databases",
+    "importance" : "high"
+  }, {
+    "name" : "multi-tier architecture",
+    "canonical" : "multi-tier architecture",
+    "importance" : "high"
+  }, {
+    "name" : "object-oriented programming",
+    "canonical" : "object-oriented programming",
+    "importance" : "high"
+  }, {
+    "name" : "web services",
+    "canonical" : "web services",
+    "importance" : "critical"
+  }, {
+    "name" : "soap",
+    "canonical" : "soap",
+    "importance" : "high"
+  }, {
+    "name" : "rest",
+    "canonical" : "rest",
+    "importance" : "high"
+  }, {
+    "name" : "sql",
+    "canonical" : "sql",
+    "importance" : "critical"
+  }, {
+    "name" : "nosql",
+    "canonical" : "nosql",
+    "importance" : "high"
+  }, {
+    "name" : "react",
+    "canonical" : "react",
+    "importance" : "high"
+  }, {
+    "name" : "microservices architecture",
+    "canonical" : "microservices architecture",
+    "importance" : "high"
+  }, {
+    "name" : "git",
+    "canonical" : "git",
+    "importance" : "high"
+  }, {
+    "name" : "maven",
+    "canonical" : "maven",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "software development",
+    "canonical" : "software development",
+    "importance" : null
+  }, {
+    "name" : "team management",
+    "canonical" : "team management",
+    "importance" : null
+  }, {
+    "name" : "mentoring",
+    "canonical" : "mentoring",
+    "importance" : null
+  }, {
+    "name" : "financial industry experience",
+    "canonical" : "financial industry experience",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Perform software development tasks according to analysis requirements", "Create technical designs and document processes", "Develop high-performance software in accordance with quality standards and deliver on time", "Participate in code reviews, adhere to coding standards, and perform testing", "Support team management and contribute proactively to team activities", "Identify continuous improvement areas in processes and suggest project enhancements", "Investigate, resolve, and maintain systems with permanent solutions", "Stay updated with new technologies and contribute to development processes", "Communicate project priorities and updates to senior management periodically" ],
+  "keywords" : [ "Java", "Spring Boot", "Microservices", "Web Development", "React", "SQL", "NoSQL", "SOAP", "REST" ],
+  "experienceYears" : {
+    "min" : 5,
+    "max" : 9
+  },
+  "languageRequirements" : [ "Turkish" ],
+  "companyTone" : "professional",
+  "jdLanguage" : "tr",
+  "confidence" : 0.9,
+  "extractionNotes" : [ ]
+}

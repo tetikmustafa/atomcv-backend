@@ -9,12 +9,12 @@ fabricated content**. The core insight: a person's professional history is not
 a CV file, it is a **structured dataset**, and a CV is a transient *view*
 rendered from it.
 
-This repository contains **only the backend**. The frontend lives in a
-separate repository (`atomcv-frontend`, Next.js). Never add frontend code here.
+This repository contains **only the backend**. The frontend lives in
+`atomcv-frontend` (Next.js). Never add frontend code here.
 
 ## Documentation Layout
 
-Documentation is split by **access pattern**, not by topic. Read accordingly.
+Split by **access pattern**, not by topic.
 
 ### Read every session (~600 lines total)
 
@@ -27,15 +27,11 @@ Documentation is split by **access pattern**, not by topic. Read accordingly.
 
 ### Read on demand — never in full
 
-`docs/spec/**` is the full specification in 18 files, ~8,500 lines. **Never
-read one end to end.** Route with `docs/INDEX.md`, then `rg -n "<term>"
+`docs/spec/**` is the full specification in 18 files, ~8,500 lines. **Never read
+one end to end.** Route with `docs/INDEX.md`, then `rg -n "<term>"
 docs/spec/<file>.md` and read only the matching range — the right file is
 200-1,100 lines, so reading it all costs 15-40x the tokens and buries the part
-you needed.
-
-### Never read routinely
-
-`docs/notes/archive/**` (closed stages, archaeology only) and
+you needed. **Never routinely:** `docs/notes/archive/**` (closed stages) and
 `docs/handoff/resolved/**` (settled cross-repo items).
 
 ### Ownership
@@ -49,18 +45,16 @@ you needed.
 
 ## Recording Deviations
 
-When implementation departs from the spec, record it in `docs/notes/current.md`:
+When implementation departs from the spec, record it in `docs/notes/current.md`
+as **Sapma** (spec says X, we do Y — with the reason), **Ekleme** (spec was
+silent, we decided) or **Düzeltme** (spec is wrong, here is the correct
+statement).
 
-- **Sapma** — spec says X, we do Y, with reason
-- **Ekleme** — spec was silent, we decided
-- **Düzeltme** — spec is wrong, here is the correct statement
-
-Rules:
-- `notes/current.md` **must stay under 200 lines.** When a stage closes, move it to
-  `notes/archive/stage-<n>.md` and start empty.
-- If a deviation is **permanent**, write it into the relevant `docs/spec/` file and
-  delete it from notes. Notes are a rolling log, not a second specification.
-- If it affects the frontend, also add an item to `docs/handoff/to-frontend.md`.
+- `notes/current.md` **must stay under 200 lines.** When a stage closes, move it
+  to `notes/archive/stage-<n>.md` and start empty.
+- **A permanent deviation goes into `docs/spec/` and is deleted from notes.**
+  Notes are a rolling log, not a second specification.
+- If it affects the frontend, add a `B-nnn` item too.
 
 ## Cross-Repo Communication
 
@@ -72,23 +66,20 @@ Rules:
 **Action:** what the frontend must do
 ```
 
-- IDs are never reused.
-- Move items to `## ACK` when the other side confirms; archive to `handoff/resolved/`
-  when the file approaches 100 lines.
-- **OpenAPI schema is authoritative for API shape.** The handoff file carries *why it
-  changed and what to do*, not the shape itself.
+IDs are never reused. Items move to `## ACK` when the other side confirms and
+to `handoff/resolved/` from there — **so an unACKed backlog cannot be archived,
+and a file over its limit for that reason is a coordination problem rather than
+a filing one.** The OpenAPI schema is authoritative for API *shape*; this file
+carries why it changed and what to do.
 
 ## Where the Standing Answers Live
 
 Specified, not summarised here — a second copy would drift.
 
-| Question | File |
-|---|---|
-| The eight design principles every decision traces back to | `spec/01-foundations.md` § 4 |
-| Why this technology and not that one | `spec/02-tech-stack.md` |
-| Module layout, package boundaries | `spec/03-architecture.md` § 10 |
-| Test strategy, the tests that matter most | `spec/12-quality.md` § 51 |
-| Anything else | `docs/INDEX.md` routes it |
+The eight design principles are `spec/01-foundations.md` § 4; technology
+choices `spec/02-tech-stack.md`; module boundaries `spec/03-architecture.md`
+§ 10; test strategy `spec/12-quality.md` § 51. **Anything else:
+`docs/INDEX.md` routes it.**
 
 Java 21, Spring Boot 3.x, PostgreSQL 17 + pgvector, Flyway, Redis, XeLaTeX in an
 isolated container, BGE-M3 self-hosted. **No Lombok** — records for value
@@ -100,12 +91,11 @@ objects, plain constructors elsewhere.
    never `create`. Schema is owned solely by Flyway.
 2. **Never modify an applied Flyway migration.** Write a new one.
 3. **All data access goes through a scoped repository.** `UserScopedRepository`
-   for tables with `user_id`, `ProfileScopedRepository` for tables with only
-   `profile_id`, and a `ProfileRef` is producible only by comparing the acting
-   user against the profile's owner. Never call a raw `JpaRepository` from a
+   for tables with `user_id`, `ProfileScopedRepository` for those with only
+   `profile_id`; a `ProfileRef` is producible only by comparing the acting user
+   against the profile's owner. Never call a raw `JpaRepository` from a
    controller or service handling user data. This is the IDOR defense, enforced
-   by ArchUnit across `..api..` and `..service..` plus a per-module rule keeping
-   raw repositories inside `..repository..`.
+   by ArchUnit per module.
 4. **Never log user content** — no `RichContent`, atom text, job description
    or email body. Log statistics instead (`ContentShape`, or a stage's own).
 5. **Never put secrets in code.** Environment variables only.
@@ -139,35 +129,54 @@ Spring profiles: `local,local-fake` (daily work, no real LLM calls),
 
 ### What this machine needs you to know
 
-Facts that are true here and nowhere in the architecture documents. Each one
-cost a debugging round to find.
+True here and nowhere in the architecture documents; each cost a debugging round.
 
-- **Run `make` from Git Bash.** The Makefile refuses `cmd.exe` and PowerShell,
-  and its recipes call `sh ./gradlew`: GNU Make runs a metacharacter-free
-  recipe line straight through `CreateProcess`, and `./gradlew` is not a
-  Windows executable.
-- **The Makefile includes and exports `.env`.** Compose reads it, Spring does
-  not — without the include a changed `POSTGRES_PASSWORD` breaks `make dev`
-  with an authentication failure that looks like a code bug.
+- **Run `make` from Git Bash** — the Makefile refuses `cmd.exe` and PowerShell,
+  and its recipes call `sh ./gradlew` because GNU Make runs a
+  metacharacter-free line straight through `CreateProcess` and `./gradlew` is
+  not a Windows executable. **PowerShell's `curl` is `Invoke-WebRequest`** and
+  takes none of curl's flags, so every recipe in `notes/manual-test-*.md` is
+  Git Bash too; `jq` is not installed here, `python` is.
+- **`scripts/dev-signin.sh` and `scripts/dev-record.sh`** drive the sign-in and
+  fixture-recording tours end to end, so neither has to be typed by hand.
+- **The Makefile includes and `export`s `.env`, so Spring sees it too** — not
+  only compose. Without the include a changed `POSTGRES_PASSWORD` breaks
+  `make dev` with what looks like a code bug; *with* it, a production key left
+  in `.env` changes local behaviour silently. Two did: `RESEND_API_KEY` sent
+  sign-in mail to the internet instead of Mailpit, and `TURNSTILE_SECRET_KEY`
+  made every `POST /auth/magic-link` a 403. `application-local.yml` now reads
+  both from `LOCAL_*` names; **add any new production secret there the same
+  way.**
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner.** The source
   encoding is pinned in `build.gradle.kts`; do not remove it.
 - **`Set.copyOf` / `Map.copyOf` iterate in an order salted per JVM run** — three
   runs of one three-element set gave three orders. Order reaching a JSON column,
   a response or an assertion needs `Collections.unmodifiable*` over a `Linked*`.
   Passed here, failed on the runner; reads as a flake, is not one.
-- **`gradlew` must stay mode 100755**, or every Linux runner fails.
-- Gradle directly: `sh ./gradlew test` (fast, no Docker), `sh ./gradlew
-  integrationTest` (needs Docker Desktop), `--tests '*SomeTest'` to narrow.
+- **`gradlew` must stay mode 100755**, or every Linux runner fails. Directly:
+  `sh ./gradlew test` (fast, no Docker), `sh ./gradlew integrationTest` (needs
+  Docker Desktop), `--tests '*SomeTest'` to narrow.
 - **`make dev-full` rebuilds the LaTeX image on purpose (`--build`)** and runs
   only the containers, not the backend. Compose reuses the last image
-  otherwise, and a stale one answers without `X-Page-Count` — a generation that
-  fails with the container healthy.
+  otherwise, and a stale one answers without `X-Page-Count`.
 - **`gradlew latexTest` compiles through a real LaTeX image**, is excluded from
   `integrationTest` (minutes), and is the only lane with a real compiler and a
-  real profile round trip — it caught two bugs the others could not see. Run it
-  when `docker/latex` changes **and when anything it exercises changes**.
+  real profile round trip — it caught three bugs the others could not. Run it
+  when anything it exercises changes; `latex.yml` does the same on those paths.
 - A `pre-commit` gitleaks hook runs on every commit; a commit that printed
   nothing about secrets did not run it.
+- **The tests run on a JDK and the product ships on a JRE, and that gap hides
+  faults.** `RandomGenerator.getDefault()` needs the `jdk.random` module, which
+  is not in `java.se` and is absent from every JRE image: the application
+  started fine locally and died on the first container built from it. Prefer
+  `java.base`. More generally, **`docker build` plus one `docker run` is the
+  only thing that sees this class of fault** — worth doing when a dependency or
+  a base image moves.
+- **`@SpringBootTest(properties = …)` on a subclass replaces the parent's
+  attributes, it does not add to them.** Declaring `properties` in an IT that
+  extends `AbstractIntegrationTest` silently drops the worker, anomaly and
+  retention switches; the worker then claims rows another class asserts on, and
+  that other class is where the failure appears. Re-declare all three by hand.
 - **A shell heredoc here halves backslashes**, quoted delimiter or not, so a
   Java regex written with four arrives with two and `"\\s+"` arrives as
   `"\s+"`. **Write any file containing a backslash with the editor tool, not
@@ -175,36 +184,12 @@ cost a debugging round to find.
 
 ## Testing Requirements
 
-`spec/12-quality.md` § 51 lists what to write and Bölüm 51.2 names the four
-tests worth the most. These rules live here because no spec file enforces them:
-
-**A guard that has never failed is not known to work.** Every rule that catches
-something was confirmed against a deliberate violation — ArchUnit against a
-planted dependency, schema validation against a renamed column, the query
-counter against a lower bound, gitleaks against a real token. Do the same for
-the next one, and **undo the plant from a copy: `git checkout --` takes
-uncommitted work with it.** Four probes report a **false pass**: the AWS docs
-example keys (gitleaks allowlists them); an ArchUnit probe on a compile-time
-constant (javac inlines it — plant a method call); `@Array(length)` against
-`vector(1024)` (DDL only, so 512 validates clean); and a test asserting **no
-duplicate claim**, which passes with `SKIP LOCKED` removed — that clause buys
-**liveness**, so hold a lock and assert the rival claim returns *at once*.
-
-**A component the whole suite switches off has unverified wiring.** The worker
-is off in every test so its scheduler cannot claim rows others assert on, and
-the tests that use it build it by hand — so nothing asked Spring to create the
-bean and `make dev` failed on a second constructor. Hold one context with it on.
-
-**Report test counts, not "the suite is green"** — a suite that runs zero tests reports success too.
-
-**CSRF is on in every integration test, and no test carries a token by hand.**
-`AbstractIntegrationTest` supplies one via a `MockMvcBuilderCustomizer`
-(`defaultRequest(get("/").with(csrf()))`), and `CsrfRejectionIT` builds a
-MockMvc without it to watch the guard refuse. Two traps: a nested
-`@TestConfiguration` is found only on the class being run, never on a base
-class — hence the `@Import`, without which every write answers 403; and a
-`@WebMvcTest` now builds its own chain, hence `addFilters = false` in
-`ProblemDetailAdviceTest`.
+`spec/12-quality.md` § 51 lists what to write, § 51.2 names the four tests worth
+the most, and **§ 51.7 holds the four rules about testing itself** — a guard is
+not known to work until it has been seen to fail, a component the whole suite
+switches off has unverified wiring, report counts rather than "green", and
+nothing built on `AbstractIntegrationTest`'s `MockMvc` proves anything about
+CSRF. Read § 51.7 before writing a guard.
 
 ## How We Ship
 
@@ -215,8 +200,11 @@ class — hence the `@Import`, without which every write answers 403; and a
    after verifying the trees matched.
 3. **Split commits by logical unit**, not by file. Conventional Commits
    (`feat(scope):`, ...); the body says *why*, in English, and names its Bölüm.
-4. **The developer decides when to merge.** Open the PR, wait for all five
-   checks (`gh pr checks <n> --watch`), report, and ask. On approval:
+4. **The developer decides when to merge.** Open the PR, wait for the checks
+   (`gh pr checks <n> --watch`), report, and ask. There are six now — format,
+   build, integration, CodeQL, misconfiguration, secrets — plus **LaTeX**, which
+   only runs when a path it exercises changed, and **Deploy**, which runs on
+   `main` and not on a PR at all. On approval:
    `gh pr merge <n> --rebase --delete-branch`, then `git checkout main` and
    `git reset --hard origin/main`. History stays linear.
 5. **Deviations go into `docs/notes/current.md` in the same PR as the code**,
@@ -254,27 +242,29 @@ class — hence the `@Import`, without which every write answers 403; and a
 
 ## Current Stage — and How to Resume
 
-**Stage 3 — account and MVP.** Stages 0-2 closed; Stage 2's record is in
-`docs/notes/archive/stage-2.md`.
+**Stages 0-3 are closed as built, and were audited end to end on 2026-08-28.**
+The audit's record — every gap found, thirteen decisions with their reasons,
+and what is left for the developer — is `docs/notes/kapanis-denetimi.md`. One
+code item is deliberately outstanding: `docs/notes/sonraki-oturum-atomsuz-entry.md`.
 
-A session resuming starts here, in order. Nothing below is summarised here: it
-is not synced to the frontend, and a second copy would drift from the real one.
+A session resuming reads these, in order. None of it is summarised here; a
+second copy would drift from the real one.
 
 1. **`docs/STATUS.md`** — where both repos are, the open decisions, the next
    sync point.
 2. **`docs/handoff/to-backend.md`** — open `F-nnn` items. **Handle first.**
 3. **`docs/notes/current.md`** — deliberate gaps that must not be "fixed"
-   without asking, and the carry-overs. Clear the ones the step depends on.
-4. **The step's plan** — `docs/INDEX.md` routes it; Stage 3 is
-   `spec/14-build-guide.md` § XI-A.6 and its reasoning `spec/13-development.md`
-   § 55. Search the file, read the range. **A build-guide step is not a slice**
-   — see *How We Ship* — so split it before starting, not halfway through.
+   without asking, and the carry-overs.
+4. **The step's plan** — `docs/INDEX.md` routes it; the build guide is
+   `spec/14-build-guide.md`, its reasoning `spec/13-development.md` § 55. Search
+   the file, read the range. **A build-guide step is not a slice** — see *How We
+   Ship* — so split it before starting, not halfway through.
 
-Then close the step the way *Recording Deviations*, *Cross-Repo Communication*
-and *How We Ship* describe: a record in `docs/notes/current.md`, a `B-nnn` item
-if the frontend must act, `STATUS.md` marked, all in the PR with the code.
+Close a step the way *Recording Deviations*, *Cross-Repo Communication* and
+*How We Ship* describe: a record in `docs/notes/current.md`, a `B-nnn` item if
+the frontend must act, `STATUS.md` marked, all in the PR with the code.
 
 **When a stage closes** (or a rolling file outgrows its limit — see
 `scripts/check-doc-sizes.sh`): move the closed step's records to
 `docs/notes/archive/`, keep the live indexes, and write the permanent decisions
-into the `docs/spec/` files they belong to.
+into `docs/spec/`.

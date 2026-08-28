@@ -1,0 +1,42 @@
+{
+  "role" : {
+    "title" : "backend engineer",
+    "seniority" : "senior",
+    "domain" : "payments",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "go",
+    "canonical" : "go",
+    "importance" : "critical"
+  }, {
+    "name" : "postgresql",
+    "canonical" : "postgres",
+    "importance" : "critical"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "kubernetes",
+    "canonical" : "kubernetes",
+    "importance" : null
+  }, {
+    "name" : "terraform",
+    "canonical" : "terraform",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "design and operate distributed services in Go", "own the reliability of a high throughput ledger", "mentor other engineers as the team grows" ],
+  "keywords" : [ ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "",
+  "jdLanguage" : "en",
+  "confidence" : 0.9,
+  "extractionNotes" : [ ]
+}

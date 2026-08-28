@@ -47,16 +47,24 @@ bozucu düzeltir.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
   demeli (§ 9), sahibi frontend.
 
-## Devredilen açık kararlar
+## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
-- **Üretimde migration nasıl çalışacak.** `spec/11-operations.md` § 47 dağıtım
-  öncesi `--spring.flyway.migrate-only=true` gösteriyor; bu gerçek bir Spring
-  Boot property'si değil. Flyway şu an üretimde de açılışta çalışıyor.
-- **CI'a imaj taraması.** Trivy Dockerfile'ı görüyor, derlenen imajı görmüyor.
-- **Spotless eklenecek mi.** § 47.1 `spotlessCheck` çalıştırıyor ama
-  yapılandırılmış formatlayıcı yok — bugün CI'da biçim kapısı yok.
-- **V1 bazı enum benzeri kolonlara `CHECK` koyuyor, bazılarına koymuyor.** § 13'ü
-  bilinçli yansıtıyor; eksikleri sonradan eklemek ucuz bir migration.
+Aşama 0-3 baştan tarandı, on üç karar alındı ve uygulandı. **Tam kayıt
+`kapanis-denetimi.md`'de**: her bulgu, her kararın gerekçesi, ve geliştiriciye
+düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
+
+**Kalıcı olanlar `spec/`'e işlendi:** § 47 (migration açılışta kalıyor,
+`--spring.flyway.migrate-only` diye bir property yok), § 57.4 (R2 listede var,
+kodda yok), § 3.2 (Resend `send.` öneki ve bölge), § 51.7 (testin kendisi
+hakkındaki dört kural, CLAUDE.md'den taşındı).
+
+**Açık kalan tek kod maddesi: atomsuz entry.** Sayfa sınırı garantisine
+dokunduğu için ayrı bir oturuma bırakıldı —
+`sonraki-oturum-atomsuz-entry.md` ne yapılacağını satır satır taşıyor.
+
+**Geliştiricide:** yeni model seçilince fiyat tablosu — **o güne kadar günlük
+bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
+sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
@@ -68,133 +76,76 @@ bozucu düzeltir.
 
 ---
 
-## Adım 3.3 — kimlik · kapandı
+## Kapanan adımların arşiv haritası
 
-Kayıtlar `archive/stage-3-identity.md`'de; kalıcı kararlar `spec/`'te
-(§ 40.4.1, § 40.5.1, § 40.6.1, § 46.5). **`Contact.linkedin` CV alanı
-LinkedIn girişinin kaldırılmasıyla ilgisiz ve duruyor** — karıştırılmasın.
-Aşağıdakiler hâlâ canlı.
+| Adım | İnşa kaydı | Kalıcı kararlar |
+|---|---|---|
+| 3.3 kimlik | `archive/stage-3-identity.md` | § 40.4.1, § 40.5.1, § 40.6.1, § 46.5 |
+| 3.4 çıkarım | `archive/stage-3-ingestion.md` | § 31.3.1, § 31.4.1, § 31.5.1, § 31.6.1-2, § 43.1, § 53.1 |
+| 3.5 çok dillilik | `archive/stage-3-multilingual.md` | § 32.2.1, § 32.3.1 |
+| 3.6 anonim | `archive/stage-3-anonymous.md` | § 35.7.1, § 41.3.1-3, § 44.1.1, § 44.2, § 31.6.3 |
+| 3.8 Faz D | `archive/stage-3-faz-d.md` | § 21.1 notu, § 21.3.1, § 21.5.1-7.1, § 34.4.1 |
+| 3.9 hukuki | — | § 57.4.1, § 48.4.1 |
 
-**`suspicious_output` telde hiç görülmedi — ve bu bir eksik değil.** Kapı bir
-enjeksiyon tripwire'ı; uslu bir modelle açılmaması beklenen davranış.
-**"Çalışmıyor" diye tamir etmeye kalkma.**
+Frontend aksiyonları: `B-055`-`B-058`.
 
-**`MagicLinkApiIT` her testten önce `ratelimit:*` anahtarlarını siliyor.**
-Silinmezse dördüncü test ilgisiz bir 429'da düşer ve flake gibi okunur.
-**Yeni bir kimlik testi yazan bunu unutmasın.**
+## Kapanan adımlardan hâlâ canlı olanlar
 
-## Adım 3.4 — CV yükleme ve çıkarım · 4/4 · kapandı
+**Tamir etmeye kalkma — ikisi de beklenen davranış:**
+- **`suspicious_output` telde hiç görülmedi.** Bir enjeksiyon tripwire'ı; uslu
+  bir modelle açılmaması doğru sonuç.
+- **`bullet_rewrite` / `about_synthesis` yerelde anlamsız çalışıyor.**
+  Fixture yokken `SyntheticAnswer` şema şeklinde bir cümle üretiyor,
+  doğrulayıcı reddedip orijinali bastırıyor. Fixture inince düzelir.
 
-Otuz yedi kararın hepsi `spec/`'e işlendi (§ 31.3.1, § 31.4.1, § 31.5.1,
-§ 31.6.1, § 31.6.2; ayrıca § 43.1 ve § 53.1). İnşa kaydı
-`archive/stage-3-ingestion.md`'de.
+**Test yazarken:**
+- **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.** Silmeyen bir
+  kimlik testi dördüncü sırada ilgisiz bir 429'da düşer, flake gibi okunur.
+- **`profiles` entegrasyon paketinde hiç boş değil** (`DevSeeder`) — anonim
+  gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
+- **`local` profilinde yapılandırılmış LLM sağlayıcısı yok**, entegrasyon
+  lane'inde her çağrı `ALL_PROVIDERS_UNAVAILABLE` alır. `CoverLetterApiIT`
+  bunu kasten öyle kuruyor.
+- **`AccountDeletionIT` tablo listesini `information_schema`'dan okuyor** —
+  elle yazılmış bir liste, sonradan eklenen tabloda sonsuza kadar geçerdi.
 
-**Ders:** *bir metodun javadoc'u ne zaman çalıştığını söylüyorsa çağıranı da
-ara* — `validateConfiguredPrompts()` "açılışta hata" diyordu, çağıranı yoktu.
+**Sınırlar ve açıklar:**
+- **`latexTest` 44/48**, sebebi fixture yokluğu (`job_analysis` → `LOW_CONFIDENCE`
+  → `failed`), Faz D değil. `ce9483e`'de de düşüyordu. Düzeltmesi `make record`.
+- **Faz D bir üretimde sekize kadar eşzamanlı çağrı yapıyor**, her biri
+  `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10, işçi eşzamanlılığı 2 → tepede
+  16 kısa ödünç. **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
+- **`support_grants.accessed_at`'i hiçbir şey yazmıyor** — operatör arayüzü bu
+  repoda yok. **Erişim aracı gelirse ilk işi o kolonu yazmak olmalı.**
+- **R2'deki PDF'ler** § 57.4'ün silme listesinde, R2 istemcisi ise hiç yok
+  (7. karar: MVP'ye girmiyor, cümle işaretlenecek).
+- **Anonim işler yükseltmede taşınmıyor** (`anon_session_id` ile kapsanıyor);
+  bugün zararsız, anonim *üretim* inince değişir. **Anonim oturumun kullanıcı
+  indeksi yok** — toplu iptali de yok, onu bitiren TTL'i.
+- **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
+  (§ 31.4.1). **`SkillNames.canonical` dört çağıranın ortak kuralı** — alias
+  dosyasında sol taraf insanların yazdığı gibi olmalı, yoksa anahtar eşleşmez.
+- **`Contact.linkedin` CV alanı**, LinkedIn *girişinin* kaldırılmasıyla ilgisiz
+  ve duruyor — karıştırılmasın.
+- **İzlenecek:** CI bir kez `PGVectorTypeContributor`'da `NoClassDefFoundError`
+  verdi, aynı ağaç tekrar koşuşta geçti (2026-08-27, run 33091345512).
+  **Tekrarlarsa ilk bakılacak yer bağlam sayısı, kod değil.**
 
-### Hâlâ canlı olanlar
+**Ders (Adım 3.4, ve dilim 1'de ikinci kez):** *bir metodun javadoc'u ne zaman
+çalıştığını söylüyorsa çağıranı da ara.*
+**Ders (Adım 3.5):** *doğru davranan kod, korunan kod değildir.*
 
-**`jobs.payload` kullanıcı içeriği taşıyor ve tamamlanmış işleri budayan bir
-şey yok.** `generation` da ilan metnini taşıyor, yani saklama süresi her iş
-tipinin sorusu.
+---
 
-**`ProfileWriter` mevcut profile *ekliyor*, değiştirmiyor.** İkinci bir içe
-aktarma bölümleri ikinci kez yazar. `PROFILE_ALREADY_EXISTS` (409) katalogda ve
-**hiçbir şey onu üretmiyor** — ürünün "ikinci CV yüklenirse ne olur" cevabı yok.
+## Dilim kayıtları
 
-**`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor** (§ 31.4.1).
+Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da: ne bulundu, ne
+yazıldı, hangi muhafız hangi ihlalle düşürüldü. Buraya kopyalanmadı — ikinci
+bir kopya ayrışır.
 
-**`SkillNames.canonical` dört çağıranın ortak kuralı.** Alias dosyasında sol
-taraf insanların gerçekten yazdığı gibi olmalı, yoksa anahtar eşleşmez.
-
-**İzlenecek — CI bir kez `PGVectorTypeContributor`'da `NoClassDefFoundError`
-verdi, aynı ağaç tekrar koşuşta geçti** (2026-08-27, run 33091345512): dört
-bağlam birden, yerelde hiç. **Tekrarlarsa ilk bakılacak yer bağlam sayısı,
-kod değil.**
-
-**Açık — `local-fake` fixture'ı yok ve uydurulamaz.** Fixture anahtarı istek
-metninin özetinden türüyor; elle yazılan bir fixture yalnız tek bir CV'de
-ateşlenir. **`make record` geliştiricinin anahtarını istiyor.**
-
-## Adım 3.5 — çok dillilik · kapandı
-
-On iki karar § 32.2.1 ve § 32.3.1'de; inşa kaydı
-`archive/stage-3-multilingual.md`'de.
-
-**Ders (bu oturumda iki kez):** *doğru davranan kod, korunan kod değildir.*
-§ 32.3'ün sıralaması Aşama 2'den beri doğruydu ve tek bir yanlış satır bütün
-paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
-
-## Adım 3.6 — anonim mod · 6/6 · kapandı
-
-Kararlar `spec/`'te (§ 35.7.1, § 41.3.1, § 41.3.2, § 41.3.3, § 44.1.1,
-§ 31.6.3, § 44.2); inşa kaydı `archive/stage-3-anonymous.md`'de.
-
-### Hâlâ canlı
-
-**Hesabın *boş* profil satırı yükseltmeyi engelliyor.** Kontrol "profil satırı
-var mı"; bir kez giriş yapıp uygulamayı açan herkeste boş satır oluşuyor
-(`ProfileResolver.own` tembel yaratıyor). O kişi çıkıp anonim çalışırsa
-`kept_existing` alıyor ve emeği gidiyor. Dar ama **sessiz** bir durum; boşluk
-kontrolü de birleştirme de ürün kararı istiyor.
-
-**Anonim işler yükseltmede taşınmıyor.** İş `anon_session_id` ile kapsanıyor;
-giriş sonrası kişi kendi çıkarım işini göremiyor. Bugün zararsız (iş bitmiş
-oluyor), anonim *üretim* inince değişir.
-
-**Anonim oturumun kullanıcı indeksi yok** — toplu iptali de yok, onu bitiren
-TTL'i.
-
-**`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
-Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
-
-## Adım 3.9 — hukuki ve kapanış · 2/2 · backend payı kapandı
-
-Kılavuzun altı maddesinden backend'e ikisi düşüyordu: **hesap silme** ✅ ve
-**geri bildirim + `support_grants`** ✅. Veri export (§ 57.5) zaten
-`/profile/export`'ta duruyordu; gizlilik/şartlar sayfaları, i18n ve a11y
-frontend'in.
-
-Kararlar § 57.4.1 ve § 48.4.1'de. Frontend aksiyonları **`B-057`**, **`B-058`**.
-
-**`support_grants` yazılıyor ama hiçbir şey `accessed_at`'i yazmıyor** — kolon
-operatör içeriğe baktığı anda dolmalı ve bu repoda operatör arayüzü yok. **Erişim
-aracı gelirse ilk işi o kolonu yazmak olmalı**, yoksa § 48.4'ün sözü boş kalır.
-
-**Test şemadan okuyor.** `AccountDeletionIT` tabloları `information_schema`'dan
-alıyor: `user_id`, `profile_id` ya da `subject_id` taşıyan her tablo bu kişiden
-boş olmalı. Elle yazılmış bir tablo listesi, kimsenin haberi olmadan eklenen
-tabloda sonsuza kadar geçerdi — ve "hesap silme her yerden siliyor" yayın
-kontrol listesinde tam bu yüzden var.
-
-**Ve ilk koşuşta bir şey buldu:** `usage_counters` cascade'e takılmıyor
-(§ 57.4.1, Düzeltme). Silme servisi artık onu açıkça siliyor.
-
-**Açık — R2'deki PDF'ler.** § 57.4 listede sayıyor, ama R2 istemcisi bu repoda
-hiç yok. Depolama indiğinde silme yolunun oradan da geçmesi gerekecek.
-
-## Adım 3.8 — Faz D ve cover letter · 5/5 · kapandı
-
-İnşa kaydı `archive/stage-3-faz-d.md`'de; kalıcı kararlar `spec/`'te (§ 21.1
-altındaki not, § 21.3.1, § 21.5.1, § 21.6.1, § 21.7.1, § 34.4.1). Frontend
-aksiyonları **`B-055`** ve **`B-056`**. Aşağıdakiler hâlâ canlı.
-
-**`latexTest` bu makinede 44/48** ve sebebi Faz D değil:
-`src/test/resources/fixtures/llm` **yok**, `job_analysis` sentetik cevap alıyor,
-`confidence` kapının altına düşüyor → `LOW_CONFIDENCE` → iş `failed`. Aynı dört
-test **`ce9483e`'de de düşüyor**. Düzeltmesi `make record`, kod değil.
-
-**Faz D bir üretimde sekize kadar eşzamanlı çağrı yapıyor**, ve her çağrının
-sonunda `LlmInvocationRecorder` `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10,
-işçi eşzamanlılığı 2 → tepede 16 kısa ödünç. Bugün sorun değil, ama **havuz
-büyütülmeden işçi eşzamanlılığı artırılmamalı.**
-
-**`local` profilinde yapılandırılmış LLM sağlayıcısı yok**, yani entegrasyon
-lane'inde her LLM çağrısı `ALL_PROVIDERS_UNAVAILABLE` alıyor. `CoverLetterApiIT`
-bunu kasten öyle kuruyor; kanıtladığı şey "denetlenmemiş hiçbir şey satıra
-yazılmaz". Reddin kendisi `CoverLetterServiceTest`'te sabitli.
-
-**`bullet_rewrite` ve `about_synthesis` için `local-fake` fixture'ı yok.**
-`SyntheticAnswer` şema şeklinde bir cümle üretiyor: yerelde bu fazlar
-**çalışıyor ama anlamsız**, doğrulayıcı reddedip orijinali bastırıyor — doğru
-davranış, "bozuk" diye tamir etmeye kalkma.
+**Bu oturumda üç kez tekrarlanan ve tekrar edecek olan ders:** *bir muhafızın
+düştüğünü görmeden yazıldı sayma.* Üçü de yeşil görünüyordu ve üçü de bir şey
+kanıtlamıyordu — `make record`'un hiç kaydetmemesi, `@SpringBootTest`'in taban
+sınıfın anahtarlarını düşürmesi, ve CSRF muafiyeti sökülüyken geçen webhook
+testi. Sonuncusunu CLAUDE.md zaten yazmıştı ve yine düşüldü; kural artık
+§ 51.7'de.

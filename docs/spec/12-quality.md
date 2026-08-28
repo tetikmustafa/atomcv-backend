@@ -182,6 +182,41 @@ void anonymousGenerationWritesNothingToDatabase() {
 
 Gizlilik vaadi, dokümanda yazan bir cümle değil, **CI'da zorlanan bir kural.**
 
+### 51.7 Testin kendisi hakkındaki dört kural
+
+> Bunlar `CLAUDE.md`'de yaşıyordu ve oraya "hiçbir spec dosyası zorlamıyor" diye
+> yazılmıştı. Zorlayan hâlâ yok — ama yerleri burası: § 51 test stratejisidir ve
+> ikinci bir kopya kaçınılmaz olarak ayrışır. (2026-08-28 denetimi, **Ekleme**.)
+
+**1. Düşmediği görülmemiş bir muhafız, çalıştığı bilinen muhafız değildir.**
+Bir şey yakalayan her kural kastî bir ihlale karşı doğrulandı: ArchUnit'e
+ekilmiş bağımlılık, şema doğrulamasına yeniden adlandırılmış kolon, gitleaks'e
+gerçek bir token. Sonrakinde de aynısını yap, ve **ekileni kopyadan geri al:
+`git checkout --` commit'lenmemiş işi de götürür.**
+
+Dört sonda **yanlış geçiş** verir: AWS dokümanlarının örnek anahtarları
+(gitleaks onları allowlist'ler); derleme zamanı sabitine ekilen ArchUnit sondası
+(javac inline eder — metot çağrısı ek); `vector(1024)`'e karşı `@Array(length)`
+(yalnız DDL, 512 de temiz doğrular); ve **mükerrer talep yok** diyen bir test —
+`SKIP LOCKED` sökülünce de geçer, çünkü o cümle **canlılık** satın alır: kilidi
+tut ve rakip talebin *anında* döndüğünü doğrula.
+
+**2. Bütün suite'in kapattığı bir bileşenin bağlantısı doğrulanmamıştır.**
+İşçi her testte kapalı (zamanlayıcısı başkalarının denetlediği satırları
+talep etmesin diye) ve onu kullanan testler elle kuruyor — yani Spring'den
+bean'i yaratması hiç istenmedi ve `make dev` ikinci bir kurucuda düştü. **Açık
+hâliyle bir bağlam tut.**
+
+**3. Test sayısını raporla, "suite yeşil" deme** — sıfır test koşan bir suite de
+başarı raporlar.
+
+**4. CSRF her entegrasyon testinde açık ve hiçbir test tokenı elle taşımıyor.**
+`AbstractIntegrationTest` onu bir `MockMvcBuilderCustomizer` ile veriyor, yani
+**onun `MockMvc`'si üzerine kurulan hiçbir şey CSRF hakkında bir şey
+kanıtlamaz** — onun üzerine yazılmış bir webhook testi, muafiyet silinmişken de
+geçti. Muhafızın reddettiğini görmek için kendi `MockMvc`'ni kur
+(`webAppContextSetup(context).apply(springSecurity())`).
+
 ---
 
 ## 52. Performans Bütçeleri

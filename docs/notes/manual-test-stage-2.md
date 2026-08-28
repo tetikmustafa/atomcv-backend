@@ -3,6 +3,10 @@
 > Repo-yerel, senkronlanmaz. Aşama 2 kapandığında yazıldı; uçlar değiştikçe
 > güncellenir ya da silinir.
 
+> ⚠️ **Bu dosya Aşama 2'de yazıldı ve bir yeri eskidi.** Adım 3.3 CSRF'i açtı:
+> aşağıdaki çıplak `curl -X POST` komutları bugün **403** alır. Çerez kavanozlu
+> hali ve Aşama 3'ün turu `manual-test-stage-3.md` § 0'da. Swagger UI etkilenmez.
+
 Her şey **Git Bash**'ten. `local` profilinde kimlik doğrulama başlığı gerekmez —
 `LocalDevCurrentUser` sabit bir geliştirici kullanıcısı döndürür — ve `DevSeeder`
 açılışta `senior_backend_tr` golden profilini ekler. Yani "profil oluştur"

@@ -1,7 +1,6 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
-import com.mustafatetik.atomcv.generation.coverletter.CoverLetterService;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterStyle;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
@@ -134,7 +133,8 @@ public class JobSpecificGenerationService {
         progress.report(GenerationPhase.ANALYSING.at(10));
         String bucketKey = user.userId().toString();
         Result<JobAnalysis> analysed =
-                analysis.analyse(jobDescription, preflightAcknowledged, bucketKey);
+                analysis.analyse(jobDescription, preflightAcknowledged, bucketKey,
+                        user.userId());
         if (analysed instanceof Result.Err<JobAnalysis> refused) {
             return Result.err(refused.error());
         }
@@ -202,7 +202,8 @@ public class JobSpecificGenerationService {
         // exists. It reports itself when it runs: general mode never gets
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
-                options.language(), head.getPreferences().writingStyle().tone(), bucketKey);
+                options.language(), head.getPreferences().writingStyle().tone(), bucketKey,
+                user.userId());
         var rewritten = new AtomicReference<>(RewrittenContent.none());
         var announced = new AtomicBoolean();
         ContentRewriter rewriter = (state, carried) -> {
@@ -241,7 +242,7 @@ public class JobSpecificGenerationService {
                 .map(made -> coverLetter
                         ? made.withCoverLetter(letters.writeQuietly(
                                 head, rendered, made.document().selection(), posting,
-                                "", CoverLetterStyle.DEFAULT, bucketKey))
+                                "", CoverLetterStyle.DEFAULT, bucketKey, user.userId()))
                         : made);
     }
 
