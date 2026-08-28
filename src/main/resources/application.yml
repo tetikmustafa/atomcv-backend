@@ -79,6 +79,7 @@ atomcv:
       profile_extraction: v1
       translation: v1
       bullet_rewrite: v1
+      about_synthesis: v1
   # Bolum 28. Self-hosted BGE-M3 behind text-embeddings-inference; the CV
   # content never leaves the deployment.
   embedding:

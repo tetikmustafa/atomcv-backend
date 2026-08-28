@@ -113,7 +113,7 @@ public final class RewriteValidator {
         String foldedOriginal = candidate.originalText().toLowerCase(Locale.ROOT);
         Set<String> allowed = new LinkedHashSet<>(candidate.skills());
 
-        for (String term : vocabulary(postingSkills)) {
+        for (String term : ClaimVocabulary.of(postingSkills)) {
             if (!mentions(foldedAnswer, term)) {
                 continue;
             }
@@ -127,25 +127,6 @@ public final class RewriteValidator {
             return true;
         }
         return false;
-    }
-
-    /**
-     * What a keyword-stuffed answer would reach for.
-     *
-     * <p>The posting's own skills first, because that is where the temptation
-     * comes from — the prompt has just been shown them. The alias dictionary
-     * second: it is the only list of technology names this codebase has, and
-     * a name nobody ever wrote an alias for is one nobody writes either way.
-     */
-    private static Set<String> vocabulary(List<String> postingSkills) {
-        Set<String> terms = new LinkedHashSet<>();
-        for (String skill : postingSkills) {
-            if (skill != null && !skill.isBlank()) {
-                terms.add(skill.toLowerCase(Locale.ROOT));
-            }
-        }
-        terms.addAll(SkillNames.aliases().keySet());
-        return terms;
     }
 
     /**

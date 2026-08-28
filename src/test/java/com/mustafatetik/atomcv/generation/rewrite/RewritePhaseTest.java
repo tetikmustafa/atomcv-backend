@@ -45,7 +45,7 @@ class RewritePhaseTest {
     @Test
     void eightBulletsAreRewrittenAtTheSameTimeAndNotOneAfterTheOther() {
         var arrivals = new CountDownLatch(8);
-        var phase = new RewritePhase(new StubRewriter(candidate -> {
+        var phase = phaseOf(new StubRewriter(candidate -> {
             arrivals.countDown();
             try {
                 // Every task has to be inside the phase at once for this to
@@ -78,7 +78,7 @@ class RewritePhaseTest {
     void abulletThatThrowsDoesNotTakeTheOthersWithIt() {
         var fixture = strongMatches(4);
         UUID doomed = fixture.selected.get(0).atomId();
-        var phase = new RewritePhase(new StubRewriter(candidate -> {
+        var phase = phaseOf(new StubRewriter(candidate -> {
             if (candidate.atomId().equals(doomed)) {
                 throw new IllegalStateException("the provider fell over");
             }
@@ -100,7 +100,7 @@ class RewritePhaseTest {
     @Test
     void abulletThatKeptItsOriginalIsNotRecordedAsRewritten() {
         var fixture = strongMatches(2);
-        var phase = new RewritePhase(new StubRewriter(RewriteCandidate::original));
+        var phase = phaseOf(new StubRewriter(RewriteCandidate::original));
 
         var rewritten = phase.rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
@@ -117,7 +117,7 @@ class RewritePhaseTest {
     void asecondPassDoesNotAskAgainForWhatIsAlreadyRewritten() {
         var fixture = strongMatches(3);
         var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
-        var phase = new RewritePhase(stub);
+        var phase = phaseOf(stub);
 
         var first = phase.rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
@@ -137,10 +137,11 @@ class RewritePhaseTest {
     void apostingWithNoSkillsIsNotWrittenTowardsAtAll() {
         var fixture = strongMatches(3);
         var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
-        var phase = new RewritePhase(stub);
+        var phase = phaseOf(stub);
 
         var rewritten = phase.rewrite(fixture.tree(), fixture.selection(),
-                new RewriteContext(List.of(), "en", Tone.FORMAL.wireValue(), "bucket"),
+                new RewriteContext(List.of(), List.of(), "", "en",
+                        Tone.FORMAL.wireValue(), "bucket"),
                 RewrittenContent.none());
 
         assertThat(stub.calls.get()).isZero();
@@ -153,18 +154,64 @@ class RewritePhaseTest {
         var fixture = weakMatches(3);
         var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
 
-        var rewritten = new RewritePhase(stub).rewrite(
+        var rewritten = phaseOf(stub).rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
 
         assertThat(stub.calls.get()).isZero();
         assertThat(rewritten.isEmpty()).isTrue();
     }
 
+    /**
+     * <strong>Bolum 21.7 travels in the same fan-out.</strong> The summary is
+     * given the whole page, so it is the slowest task here; running it after
+     * the bullets would add its latency to theirs for nothing.
+     */
+    @Test
+    void theaboutIsWrittenAlongsideTheBulletsAndNotAfterThem() {
+        var fixture = strongMatches(3);
+        var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
+        var about = new RecordingAbout(RichContent.plain("A synthesised summary."));
+        var phase = new RewritePhase(stub, about);
+
+        var rewritten = phase.rewrite(
+                fixture.treeWithAbout(), fixture.selectionWithAbout(), context(),
+                RewrittenContent.none());
+
+        assertThat(about.calls.get()).isEqualTo(1);
+        assertThat(rewritten.byAtom()).hasSize(4);
+        assertThat(rewritten.orOriginal(fixture.aboutId(), RichContent.EMPTY).plainText())
+                .isEqualTo("A synthesised summary.");
+    }
+
+    /** And it is not asked for twice when the compile loop goes round again. */
+    @Test
+    void theaboutIsNotSynthesisedAgainOnASecondPass() {
+        var fixture = strongMatches(1);
+        var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
+        var about = new RecordingAbout(RichContent.plain("A synthesised summary."));
+        var phase = new RewritePhase(stub, about);
+
+        var first = phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(),
+                context(), RewrittenContent.none());
+        phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(), context(), first);
+
+        assertThat(about.calls.get()).isEqualTo(1);
+    }
+
     // -- fixtures ----------------------------------------------------------
 
+    /**
+     * The phase with its About half stubbed out to answer with the original.
+     * Bolum 21.7 has its own tests; here it would be a ninth task nothing in
+     * the fixture has a paragraph for.
+     */
+    private static RewritePhase phaseOf(BulletRewriteService rewriter) {
+        return new RewritePhase(rewriter, new StubAbout());
+    }
+
     private static RewriteContext context() {
-        return new RewriteContext(
-                List.of("java", "postgres"), "en", Tone.FORMAL.wireValue(), "bucket");
+        return new RewriteContext(List.of("java", "postgres"), List.of(), "",
+                "en", Tone.FORMAL.wireValue(), "bucket");
     }
 
     /** Atoms that score well above Bolum 21.2's ceiling, so all are candidates. */
@@ -193,19 +240,85 @@ class RewritePhaseTest {
         return new Fixture(nodes, selected);
     }
 
-    private record Fixture(List<AtomNode> nodes, List<SelectedAtom> selected) {
+    private record Fixture(List<AtomNode> nodes, List<SelectedAtom> selected, AtomNode about) {
+
+        Fixture(List<AtomNode> nodes, List<SelectedAtom> selected) {
+            this(nodes, selected, aboutNode());
+        }
 
         ProfileTree tree() {
-            Section section =
-                    new Section(PROFILE, SectionKind.EXPERIENCE, "Experience", (short) 0);
-            Entry entry = new Entry(PROFILE, section.getId(), "Data Engineer", (short) 0);
-            return new ProfileTree(PROFILE, List.of(new SectionNode(
-                    section, List.of(new EntryNode(entry, nodes)), List.of())));
+            return new ProfileTree(PROFILE, List.of(experience()));
+        }
+
+        /** The same profile, with an About section the person actually has. */
+        ProfileTree treeWithAbout() {
+            Section section = new Section(PROFILE, SectionKind.ABOUT, "About", (short) 1);
+            return new ProfileTree(PROFILE, List.of(experience(),
+                    new SectionNode(section, List.of(), List.of(about))));
+        }
+
+        UUID aboutId() {
+            return about.atom().getId();
         }
 
         SelectionState selection() {
             return new SelectionState(selected, List.of(),
                     new SelectionState.BudgetBreakdown(600, 100, 500, 300));
+        }
+
+        SelectionState selectionWithAbout() {
+            var withAbout = new ArrayList<>(selected);
+            withAbout.add(new SelectedAtom(about.atom().getId(),
+                    about.variants().get(0).getId(), 0.5, 12.0, false));
+            return new SelectionState(withAbout, List.of(),
+                    new SelectionState.BudgetBreakdown(600, 100, 500, 300));
+        }
+
+        private SectionNode experience() {
+            Section section =
+                    new Section(PROFILE, SectionKind.EXPERIENCE, "Experience", (short) 0);
+            Entry entry = new Entry(PROFILE, section.getId(), "Data Engineer", (short) 0);
+            return new SectionNode(section, List.of(new EntryNode(entry, nodes)), List.of());
+        }
+
+        private static AtomNode aboutNode() {
+            Atom row = new Atom(PROFILE, UUID.randomUUID(), null,
+                    AtomKind.ABOUT_PARAGRAPH, (short) 0);
+            var wording = new AtomVariant(PROFILE, row.getId(), "en",
+                    RichContent.plain("Backend engineer, mostly on data platforms."));
+            wording.setPrimary(true);
+            return new AtomNode(row, List.of(wording));
+        }
+    }
+
+    /** An About service that keeps the person's paragraph, whatever it is. */
+    private static final class StubAbout extends AboutSynthesisService {
+
+        StubAbout() {
+            super(null, null);
+        }
+
+        @Override
+        public RichContent synthesise(AboutCandidate candidate, RewriteContext context) {
+            return candidate.original();
+        }
+    }
+
+    /** One that answers, and counts how often it was asked. */
+    private static final class RecordingAbout extends AboutSynthesisService {
+
+        private final RichContent answer;
+        private final AtomicInteger calls = new AtomicInteger();
+
+        RecordingAbout(RichContent answer) {
+            super(null, null);
+            this.answer = answer;
+        }
+
+        @Override
+        public RichContent synthesise(AboutCandidate candidate, RewriteContext context) {
+            calls.incrementAndGet();
+            return answer;
         }
     }
 

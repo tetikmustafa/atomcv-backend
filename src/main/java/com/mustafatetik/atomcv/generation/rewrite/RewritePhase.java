@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -41,14 +42,21 @@ public class RewritePhase {
     private static final Logger log = LoggerFactory.getLogger(RewritePhase.class);
 
     private final BulletRewriteService rewriter;
+    private final AboutSynthesisService about;
 
-    RewritePhase(BulletRewriteService rewriter) {
+    RewritePhase(BulletRewriteService rewriter, AboutSynthesisService about) {
         this.rewriter = rewriter;
+        this.about = about;
     }
 
     /** Which version of the rewrite prompt this bucket is on (Bolum 53.3). */
     public String promptVersionFor(String bucketKey) {
         return rewriter.promptVersionFor(bucketKey);
+    }
+
+    /** Which version of the About prompt this bucket is on (Bolum 53.3). */
+    public String aboutPromptVersionFor(String bucketKey) {
+        return about.promptVersionFor(bucketKey);
     }
 
     /**
@@ -75,38 +83,55 @@ public class RewritePhase {
         }
 
         RewritePlan plan = RewritePlanner.plan(tree, selection);
-        List<RewriteCandidate> todo = plan.candidates().stream()
+        List<Task> todo = new ArrayList<>();
+        for (RewriteCandidate candidate : plan.candidates()) {
+            if (!carried.covers(candidate.atomId())) {
+                todo.add(new Task(candidate.atomId(), candidate.original(),
+                        () -> rewriter.rewrite(candidate, context)));
+            }
+        }
+        // Bolum 21.7's paragraph, in the same fan-out. It is the slowest task
+        // here — it is given the whole page — so running it after the bullets
+        // would add its latency to theirs for no reason.
+        AboutSynthesis.plan(tree, selection, context)
                 .filter(candidate -> !carried.covers(candidate.atomId()))
-                .toList();
+                .ifPresent(candidate -> todo.add(new Task(
+                        candidate.atomId(), candidate.original(),
+                        () -> about.synthesise(candidate, context))));
+
         if (todo.isEmpty()) {
             return carried;
         }
-        log.info("Faz D: {} (already rewritten {})", plan.shape(), carried.byAtom().size());
+        log.info("Faz D: {} tasks={} (already rewritten {})",
+                plan.shape(), todo.size(), carried.byAtom().size());
 
-        return carried.and(runAll(todo, context));
+        return carried.and(runAll(todo));
+    }
+
+    /** One thing to ask a model for, and what stands if the answer does not. */
+    private record Task(UUID atomId, RichContent original, Supplier<RichContent> work) {
     }
 
     /**
      * All of them at once, and every answer collected — including the ones
      * that came back as the original.
      */
-    private Map<UUID, RichContent> runAll(
-            List<RewriteCandidate> candidates, RewriteContext context) {
+    private Map<UUID, RichContent> runAll(List<Task> tasks) {
 
         var accepted = new LinkedHashMap<UUID, RichContent>();
         try (ExecutorService threads = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Future<RichContent>> answers = new ArrayList<>(candidates.size());
-            for (RewriteCandidate candidate : candidates) {
-                answers.add(threads.submit(() -> rewriter.rewrite(candidate, context)));
+            List<Future<RichContent>> answers = new ArrayList<>(tasks.size());
+            for (Task task : tasks) {
+                answers.add(threads.submit(task.work()::get));
             }
-            for (int i = 0; i < candidates.size(); i++) {
-                RewriteCandidate candidate = candidates.get(i);
-                RichContent answer = answerOf(answers.get(i), candidate);
-                // The service answers with the original when it kept the
+            for (int i = 0; i < tasks.size(); i++) {
+                Task task = tasks.get(i);
+                RichContent answer = answerOf(answers.get(i), task.atomId());
+                // A service answers with the original when it kept the
                 // original, and there is no point recording that: an atom
                 // absent from the map is printed from the profile anyway.
-                if (answer != null && !answer.equals(candidate.original())) {
-                    accepted.put(candidate.atomId(), answer);
+                if (answer != null && !answer.equals(task.original())) {
+                    accepted.put(task.atomId(), answer);
                 }
             }
         } catch (RuntimeException wentWrong) {
@@ -120,8 +145,8 @@ public class RewritePhase {
         return accepted;
     }
 
-    /** @return the rewrite, or null when this one task did not come back */
-    private static RichContent answerOf(Future<RichContent> answer, RewriteCandidate candidate) {
+    /** @return the answer, or null when this one task did not come back */
+    private static RichContent answerOf(Future<RichContent> answer, UUID atomId) {
         try {
             return answer.get();
         } catch (InterruptedException interrupted) {
@@ -131,7 +156,7 @@ public class RewritePhase {
             // One bullet, and it costs that bullet its rewrite and nothing
             // more. The id is the log; the sentence is the user's (rule 4).
             log.warn("A rewrite of atom {} did not come back: {}",
-                    candidate.atomId(), failed.getClass().getSimpleName());
+                    atomId, failed.getClass().getSimpleName());
             return null;
         }
     }

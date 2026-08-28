@@ -44,7 +44,7 @@ class BulletRewriteServiceTest {
             new BulletRewriteService(prompts, providers, embeddings);
 
     private final RewriteContext context = new RewriteContext(
-            List.of("kubernetes", "microsoft-fabric"), "en", "formal", "a-user");
+            List.of("kubernetes", "microsoft-fabric"), List.of(), "", "en", "formal", "a-user");
 
     @BeforeEach
     void aLoadedPrompt() {
