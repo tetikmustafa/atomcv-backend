@@ -1,6 +1,6 @@
 {
   "name": "junior_frontend_en",
-  "description": "Thin: two school projects and no job. The page has room to spare, which is the opposite failure mode from the senior profile.",
+  "description": "Thin: two school projects and no job. The page has room to spare, which is the opposite failure mode from the senior profile. Its A Levels entry carries no atoms at all, which is the only route an entry has to the page without one.",
   "headline": "Frontend Developer",
   "sourceLanguage": "en",
   "maxPages": 1,
@@ -81,6 +81,14 @@
               "verified": true
             }
           ]
+        },
+        {
+          "title": "A Levels: Maths, Physics, Computer Science",
+          "organization": "Trafford College",
+          "location": "Manchester",
+          "startDate": "2020-09-01",
+          "endDate": "2022-06-01",
+          "importance": 0.3
         }
       ]
     }

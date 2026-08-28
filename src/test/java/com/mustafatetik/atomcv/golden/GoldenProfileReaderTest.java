@@ -86,6 +86,13 @@ class GoldenProfileReaderTest {
         assertThat(edge.atoms()).anySatisfy(atom -> assertThat(atom.isActive()).isFalse());
         assertThat(edge.sections()).anySatisfy(section ->
                 assertThat(section.isActive()).isFalse());
+        // Bolum 20.2: an entry with no atoms at all reaches the page by the one
+        // route that does not go through an atom. Without a fixture carrying
+        // one, that route is never exercised by anything.
+        assertThat(junior.tree().sections().stream()
+                .flatMap(section -> section.entries().stream()))
+                .as("a fixture with a line nobody can write a bullet for")
+                .anySatisfy(entry -> assertThat(entry.atoms()).isEmpty());
         assertThat(changer.entries()).anySatisfy(entry ->
                 assertThat(entry.isAlwaysInclude()).isTrue());
         assertThat(changer.atoms()).anySatisfy(atom ->

@@ -74,12 +74,84 @@ class GoldenSelectionTest {
         var request = request(golden, language, pages);
         var state = SelectionPhase.select(request).orElseThrow();
 
+        // Heading candidates are left out on both sides of the count. They are
+        // not atoms: one that reaches the page is reported as an opened entry
+        // and one that does not is reported as nothing at all, because a
+        // RejectedAtom naming an entry would be an id the user cannot resolve.
         int candidates = request.sections().stream()
                 .mapToInt(section -> section.atoms().size()
-                        + section.entries().stream().mapToInt(entry -> entry.atoms().size()).sum())
+                        + section.entries().stream()
+                                .mapToInt(entry -> (int) entry.atoms().stream()
+                                        .filter(atom -> !atom.headerOnly())
+                                        .count())
+                                .sum())
                 .sum();
 
         assertThat(state.selected().size() + state.rejected().size()).isEqualTo(candidates);
+    }
+
+    /**
+     * The line a person cannot write a bullet for (Bolum 20.2).
+     *
+     * <p>A diploma has no achievements under it, and selection works atom by
+     * atom: no atom meant no candidate, and the entry could not reach the page
+     * by any route. Asserted on the fixture that has one rather than on all
+     * five, because only one profile is supposed to have one — a test that
+     * skipped every profile without an atomless entry would also pass on a
+     * fixture set that lost the case entirely.
+     */
+    @Test
+    void anEntryWithNoAtomsStillReachesThePage() {
+        var golden = GoldenProfileReader.read("junior_frontend_en", OWNER);
+        UUID atomless = atomlessEntryOf(golden);
+
+        for (int pages : new int[] {1, 2}) {
+            var state = select(golden, "en", pages).orElseThrow();
+            assertThat(state.headerOnlyEntries())
+                    .as("the A Levels line is on the page at %d page(s)", pages)
+                    .contains(atomless);
+        }
+    }
+
+    /** And the page still holds: what it opened, it paid for. */
+    @Test
+    void anAtomlessEntryIsChargedItsHeadingAndNoList() {
+        var golden = GoldenProfileReader.read("junior_frontend_en", OWNER);
+        var withEntry = select(golden, "en", 1).orElseThrow();
+
+        var withoutEntry = SelectionPhase.select(
+                withoutTheAtomlessEntry(request(golden, "en", 1))).orElseThrow();
+
+        double charged = withEntry.budget().fixedPt() - withoutEntry.budget().fixedPt();
+        // The heading follows the bullets of the degree above it, so it is the
+        // dearer of the two headings — and no ITEMIZE_OVERHEAD, because a line
+        // with no bullets opens no list (EK D.8.10).
+        assertThat(charged)
+                .isEqualTo(CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST));
+    }
+
+    private static UUID atomlessEntryOf(GoldenProfile golden) {
+        return golden.tree().sections().stream()
+                .flatMap(section -> section.entries().stream())
+                .filter(entry -> entry.atoms().isEmpty())
+                .map(entry -> entry.entry().getId())
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "the fixture no longer carries an entry without atoms"));
+    }
+
+    /** The same request as it would have been before this entry existed. */
+    private static SelectionRequest withoutTheAtomlessEntry(SelectionRequest request) {
+        var sections = request.sections().stream()
+                .map(section -> new SelectionRequest.SectionPlan(
+                        section.sectionId(), section.alwaysInclude(),
+                        section.entries().stream()
+                                .filter(entry -> entry.atoms().stream()
+                                        .noneMatch(SelectionRequest.AtomCandidate::headerOnly))
+                                .toList(),
+                        section.atoms()))
+                .toList();
+        return new SelectionRequest(sections, request.maxPages(), request.capacity());
     }
 
     @Test

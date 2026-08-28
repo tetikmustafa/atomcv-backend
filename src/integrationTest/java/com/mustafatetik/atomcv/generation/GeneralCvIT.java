@@ -22,6 +22,9 @@ import jakarta.persistence.PersistenceContext;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -115,6 +118,35 @@ class GeneralCvIT extends AbstractLatexTest {
     }
 
     /**
+     * A degree line, all the way through to the paper (Bolum 20.2).
+     *
+     * <p>Nobody writes a bullet under a diploma, and until selection could open
+     * an entry without one this line could not reach the page by any route.
+     * Everything below it is arithmetic that unit tests can check; that TeX
+     * really sets a heading with no list under it, and that the words come back
+     * out of the compiled PDF, is only visible here.
+     */
+    @Test
+    void anEntryWithNoBulletsIsPrintedAndReadsBackOutOfThePdf() throws Exception {
+        seedCareer(2, 3);
+        seedAtomlessDegree();
+
+        String text = textOf(generateAndDownload());
+
+        assertThat(text).contains("BSc Computer Engineering");
+        assertThat(text).contains("Yildiz Teknik Universitesi");
+        assertThat(text).as("its section heading came with it").contains("Education");
+    }
+
+    private static String textOf(byte[] pdf) throws Exception {
+        try (PDDocument document = Loader.loadPDF(pdf)) {
+            var stripper = new PDFTextStripper();
+            stripper.setSortByPosition(true);
+            return stripper.getText(document);
+        }
+    }
+
+    /**
      * This user's wordings only. Counting the whole table passes alone and
      * fails in the suite, because the measurement tests share the database and
      * leave their own rows behind.
@@ -162,6 +194,26 @@ class GeneralCvIT extends AbstractLatexTest {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
                         .header().string("Content-Type", MediaType.APPLICATION_PDF_VALUE))
                 .andReturn().getResponse().getContentAsByteArray();
+    }
+
+    /** An entry with a heading, dates, and nothing at all underneath it. */
+    private void seedAtomlessDegree() {
+        tx.executeWithoutResult(status -> {
+            UUID profileId = jdbc.queryForObject(
+                    "SELECT id FROM profiles WHERE user_id = ?",
+                    UUID.class, LocalDevUser.DEV_USER_ID);
+
+            var section = new Section(profileId, SectionKind.EDUCATION, "Education", (short) 1);
+            em.persist(section);
+
+            var entry = new Entry(profileId, section.getId(),
+                    "BSc Computer Engineering", (short) 0);
+            entry.setOrganization("Yildiz Teknik Universitesi");
+            entry.setLocation("Istanbul");
+            entry.setStartDate(LocalDate.of(2019, 9, 1));
+            entry.setEndDate(LocalDate.of(2023, 6, 1));
+            em.persist(entry);
+        });
     }
 
     private void seedCareer(int jobs, int bulletsPerJob) {
