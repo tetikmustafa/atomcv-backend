@@ -133,16 +133,6 @@ paketi geçerdi. Aynı şey `userEdited`'ın önkoşulunda da oldu.
 Kararlar `spec/`'te (§ 35.7.1, § 41.3.1, § 41.3.2, § 41.3.3, § 44.1.1,
 § 31.6.3, § 44.2); inşa kaydı `archive/stage-3-anonymous.md`'de.
 
-**Ders — entegrasyon testi işleyiciyi çağırmıyorsa işleyiciyi korumuyor.**
-Anonim yükleme testi önce yazıcıyı doğrudan çağırıyordu; dalı kalıcı yazmaya
-çevirdiğimde **geçti**. Yazıcı zaten bunu yanlış yapabilecek parça değildi.
-*Ekilen ihlalin hangi testi düşürdüğüne bak; hiçbirini düşürmüyorsa test yanlış
-yerde duruyor.*
-
-**Taşınan carry-over kendiliğinden kapandı** — yükseltme yeniden içe
-aktarmıyor, satırları kendi id'leriyle yazıyor. İçe aktarımlar arası id
-kararsızlığı duruyor, yükseltmenin sorunu değil.
-
 ### Hâlâ canlı
 
 **Hesabın *boş* profil satırı yükseltmeyi engelliyor.** Kontrol "profil satırı
@@ -161,40 +151,49 @@ işlemi de yok; onu bitiren tek şey TTL'i.
 **`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
 Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
+## Adım 3.9 — hukuki ve kapanış · 1/2
+
+Kılavuzun altı maddesinden backend'e ikisi düşüyor: **hesap silme** (dilim 1 ✅)
+ve **geri bildirim + `support_grants`** (dilim 2). Veri export (§ 57.5) zaten
+`/profile/export`'ta duruyordu; gizlilik/şartlar sayfaları, i18n ve a11y
+frontend'in.
+
+Kararlar § 57.4.1'de. Frontend aksiyonu **`B-057`**.
+
+**Test şemadan okuyor.** `AccountDeletionIT` tabloları `information_schema`'dan
+alıyor: `user_id`, `profile_id` ya da `subject_id` taşıyan her tablo bu kişiden
+boş olmalı. Elle yazılmış bir tablo listesi, kimsenin haberi olmadan eklenen
+tabloda sonsuza kadar geçerdi — ve "hesap silme her yerden siliyor" yayın
+kontrol listesinde tam bu yüzden var.
+
+**Ve ilk koşuşta bir şey buldu:** `usage_counters` cascade'e takılmıyor
+(§ 57.4.1, Düzeltme). Silme servisi artık onu açıkça siliyor.
+
+**Açık — R2'deki PDF'ler.** § 57.4 listede sayıyor, ama R2 istemcisi bu repoda
+hiç yok. Depolama indiğinde silme yolunun oradan da geçmesi gerekecek.
+
 ## Adım 3.8 — Faz D ve cover letter · 5/5 · kapandı
 
-Kararlar `spec/`'te: § 21.3.1, § 21.5.1, § 21.6.1, § 21.7.1, § 34.4.1 ve
-§ 21.1'in altındaki not. Frontend aksiyonları **`B-055`** (yeni faz anahtarı)
-ve **`B-056`** (cover letter sözleşmesi).
-
-**Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
-testtir.* On bir ihlal ekildi, on biri de doğru testi düşürdü.
-
-**Bir açık kapandı:** `ClaimVocabulary` üç doğrulayıcının ortak sözlüğü ve
-alias dosyasının **iki yarısını** da okuyor. Önce yalnız sol taraf okunuyordu;
-`k8s = kubernetes` satırı yüzünden "Kubernetes" hiçbir kontrole takılmıyordu.
-
-### Canlı olanlar
+İnşa kaydı `archive/stage-3-faz-d.md`'de; kalıcı kararlar `spec/`'te (§ 21.1
+altındaki not, § 21.3.1, § 21.5.1, § 21.6.1, § 21.7.1, § 34.4.1). Frontend
+aksiyonları **`B-055`** ve **`B-056`**. Aşağıdakiler hâlâ canlı.
 
 **`latexTest` bu makinede 44/48** ve sebebi Faz D değil:
 `src/test/resources/fixtures/llm` **yok**, `job_analysis` sentetik cevap alıyor,
-`confidence` kapının altına düşüyor → `LOW_CONFIDENCE` → iş `failed`. Dört
-`JobSpecificCvIT` testi **`ce9483e`'de de düşüyor**; STATUS'un "48 · 0 hata"
-satırı fixture'lar yerelde varken ölçülmüş. Düzeltmesi `make record`, kod değil.
+`confidence` kapının altına düşüyor → `LOW_CONFIDENCE` → iş `failed`. Aynı dört
+test **`ce9483e`'de de düşüyor**. Düzeltmesi `make record`, kod değil.
 
 **Faz D bir üretimde sekize kadar eşzamanlı çağrı yapıyor**, ve her çağrının
 sonunda `LlmInvocationRecorder` `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10,
-işçi eşzamanlılığı 2 → tepede 16 kısa ödünç. Bugün sorun değil (bağlantı LLM
-çağrısından *sonra*, milisaniyeler için), ama **havuz büyütülmeden işçi
-eşzamanlılığı artırılmamalı.**
+işçi eşzamanlılığı 2 → tepede 16 kısa ödünç. Bugün sorun değil, ama **havuz
+büyütülmeden işçi eşzamanlılığı artırılmamalı.**
 
-**Cover letter entegrasyon lane'inde hiç yazılamıyor** — `local` profilinde
-yapılandırılmış LLM sağlayıcısı yok, yani `CoverLetterApiIT` her çağrıda
-`ALL_PROVIDERS_UNAVAILABLE` alıyor. Test bunu **kasten** öyle kuruyor: kanıtı
-"denetlenmemiş hiçbir şey satıra yazılmaz", ve ret de kesinti de aynı yolu
-sınıyor. Reddin kendisi `CoverLetterServiceTest`'te sabitli.
+**`local` profilinde yapılandırılmış LLM sağlayıcısı yok**, yani entegrasyon
+lane'inde her LLM çağrısı `ALL_PROVIDERS_UNAVAILABLE` alıyor. `CoverLetterApiIT`
+bunu kasten öyle kuruyor; kanıtladığı şey "denetlenmemiş hiçbir şey satıra
+yazılmaz". Reddin kendisi `CoverLetterServiceTest`'te sabitli.
 
-**`bullet_rewrite` için de `local-fake` fixture'ı yok.** `SyntheticAnswer` şema
-şeklinde bir cümle üretiyor: yerelde yeniden yazım **çalışıyor ama anlamsız**,
-doğrulayıcı onu reddedip orijinali bastırıyor. Doğru davranış; "bozuk" diye
-tamir etmeye kalkma.
+**`bullet_rewrite` ve `about_synthesis` için `local-fake` fixture'ı yok.**
+`SyntheticAnswer` şema şeklinde bir cümle üretiyor: yerelde bu fazlar
+**çalışıyor ama anlamsız**, doğrulayıcı reddedip orijinali bastırıyor. Doğru
+davranış; "bozuk" diye tamir etmeye kalkma.

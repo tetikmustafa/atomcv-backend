@@ -83,6 +83,26 @@ public class UsageCounters {
     }
 
     /**
+     * Everything ever counted against this subject, in every period.
+     *
+     * <p><strong>Düzeltme — Bolum 57.4 says the cascade handles this, and it
+     * does not.</strong> The table is keyed by {@code (subject_type,
+     * subject_id)} rather than by a foreign key, because a subject may be an
+     * address or an anonymous session as easily as an account. No
+     * {@code ON DELETE} reaches it, so a deleted account would leave its
+     * counters behind: an identifier with a number beside it, surviving the
+     * erasure that was meant to remove it.
+     *
+     * @return how many rows went, for the deletion record
+     */
+    @Transactional
+    public int forget(QuotaSubject subject) {
+        return jdbc.update(
+                "DELETE FROM usage_counters WHERE subject_type = ? AND subject_id = ?",
+                subject.type().wireValue(), subject.id());
+    }
+
+    /**
      * What has been used today.
      *
      * <p>{@code query} rather than {@code queryForObject}: no row is the
