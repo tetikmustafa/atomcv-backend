@@ -290,6 +290,38 @@ denetimden geçmezse kişinin kendi cümlesi basılıyor; ne bir hata kodu ne bi
 uyarı iniyor. Kullanıcıya "yeniden yazıldı/yazılmadı" diye bir şey göstermeyin
 — CV zaten doğru CV.
 
+### B-056 · Cover letter telde — bir bayrak, bir uç, ve reddedilebilir
+**Since:** commit <sha> · Adım 3.8 · **Spec:** `spec/07-subsystems.md` § 34
+
+**İki yol var ve ikisi de sizde.**
+
+1. `POST /api/v1/generations` gövdesine **`"coverLetter": true`** — CV ile
+   birlikte yazılır. **Varsayılan `false`**, çünkü ikinci bir LLM çağrısı.
+2. **`POST /api/v1/generations/{id}/cover-letter/regenerate`** — sonradan, ya da
+   yeniden. Gövde tamamen opsiyonel:
+   `{"style": "default|shorter|more_formal", "companyNote": "..."}`.
+   Boş gövde (`{}`) geçerli bir istek.
+
+Yanıt: `{"generationId", "coverLetter", "style"}`. `GET /generations/{id}` de
+artık **`coverLetter`** alanı taşıyor (yazılmadıysa alan yok). **Düz metin**,
+paragraflar arası boş satırla — § 34.7 belge üretmiyor, çünkü mektup bir forma
+ya da e-postaya yapıştırılıyor.
+
+**Yeni ve önemli: bu uç reddedebilir.** `422 COVER_LETTER_REJECTED`,
+`params.issues` bir dizi (`unsupported_claim`, `number_invented`,
+`experience_overstated`, `wrong_company`, `length_out_of_range`, `cliche`),
+çözüm eylemi `retry`. Sebebi: mektubun arkasında **orijinal yok** — CV'de
+reddedilen bir cümlenin yerine kişinin kendi cümlesi basılıyor, mektupta
+basılacak bir şey yok. **Bunu bir hata ekranı gibi göstermeyin**; "bu taslak
+denetimden geçmedi, tekrar dene" doğru cümle. `issues` kullanıcıya ne olduğunu
+söylemek için orada.
+
+`429 RATE_LIMITED` da mümkün: saatte on mektup. `params.resetsAt` var.
+
+**Üretim sırasında istenen mektup CV'yi düşürmez.** `coverLetter: true` ile
+üretilen bir CV'de mektup yazılamadıysa iş yine `completed` oluyor ve
+`GET /generations/{id}` mektup alanını taşımıyor — düğmeyle tekrar istenebilir.
+
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir

@@ -37,6 +37,11 @@ import java.util.UUID;
  * @param contentLanguage the BCP 47 tag the document was written in
  * @param postingLanguage absent in general mode, and absent when Faz A did not
  *                        name a language for the posting
+ * @param coverLetter     Bolum 34's letter when one was written, and absent
+ *                        otherwise — it is opt-in, and a letter that could not
+ *                        be written honestly is not written at all. Plain
+ *                        text: Bolum 34.7 renders no document, because a
+ *                        covering letter is pasted into a form or an email
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "A generation that was made")
@@ -57,7 +62,11 @@ public record GenerationResponse(
         @Schema(description = """
                 The language Faz A read the posting as. When it differs from                 contentLanguage the CV was written in the profile's language                 instead: the profile has no wording for every atom in the                 posting's language, and one document is written in one                 language.""",
                 example = "en")
-        String postingLanguage) {
+        String postingLanguage,
+
+        @Schema(description = "The covering letter, as plain text with blank lines "
+                + "between its parts")
+        String coverLetter) {
 
     public static GenerationResponse of(Generation generation) {
         return new GenerationResponse(
@@ -69,7 +78,8 @@ public record GenerationResponse(
                 blankToNull(generation.getSelectionState() == null
                         ? null : generation.getSelectionState().language()),
                 blankToNull(generation.getJdAnalysis() == null
-                        ? null : generation.getJdAnalysis().jdLanguage()));
+                        ? null : generation.getJdAnalysis().jdLanguage()),
+                blankToNull(generation.getCoverLetter()));
     }
 
     /**

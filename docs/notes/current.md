@@ -161,23 +161,18 @@ işlemi de yok; onu bitiren tek şey TTL'i.
 **`profiles` tablosu entegrasyon paketinde hiç boş değil** (`DevSeeder`).
 Anonim gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
 
-## Adım 3.8 — Faz D ve cover letter · 4/5
+## Adım 3.8 — Faz D ve cover letter · 5/5 · kapandı
 
-Dilimler: **1 sözcükleme + eşikler** ✅ · **2 prompt + doğrulayıcı** ✅ ·
-**3 paralel yürütme + boru hattı** ✅ · **4 About sentezi** ✅ · 5 cover letter.
-
-Kararlar `spec/`'te: § 21.3.1, § 21.6.1, § 21.5.1, § 21.7.1 ve § 21.1'in
-altındaki not. **Faz D ilana özel üretimde koşuyor**, genel modda koşmuyor;
-frontend'in aksiyonu **`B-055`** (`generation.phase.REWRITING`) ve About için
-yeni bir aksiyon yok — var olan bir atomun metni değişiyor.
+Kararlar `spec/`'te: § 21.3.1, § 21.5.1, § 21.6.1, § 21.7.1, § 34.4.1 ve
+§ 21.1'in altındaki not. Frontend aksiyonları **`B-055`** (yeni faz anahtarı)
+ve **`B-056`** (cover letter sözleşmesi).
 
 **Ders tekrar etti:** *ekilen ihlal hiçbir testi düşürmüyorsa eksik olan
-testtir.* Yedi ihlal ekildi, yedisi de doğru testi düşürdü.
+testtir.* On bir ihlal ekildi, on biri de doğru testi düşürdü.
 
-**Dilim 4'te bir açık kapandı:** `ClaimVocabulary` iki doğrulayıcının ortak
-sözlüğü, ve alias dosyasının **iki yarısını** da okuyor. Önce yalnız sol taraf
-okunuyordu; `k8s = kubernetes` satırı yüzünden "Kubernetes" hiçbir kontrole
-takılmıyordu — madde yeniden yazımında da.
+**Bir açık kapandı:** `ClaimVocabulary` üç doğrulayıcının ortak sözlüğü ve
+alias dosyasının **iki yarısını** da okuyor. Önce yalnız sol taraf okunuyordu;
+`k8s = kubernetes` satırı yüzünden "Kubernetes" hiçbir kontrole takılmıyordu.
 
 ### Canlı olanlar
 
@@ -192,6 +187,12 @@ sonunda `LlmInvocationRecorder` `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10,
 işçi eşzamanlılığı 2 → tepede 16 kısa ödünç. Bugün sorun değil (bağlantı LLM
 çağrısından *sonra*, milisaniyeler için), ama **havuz büyütülmeden işçi
 eşzamanlılığı artırılmamalı.**
+
+**Cover letter entegrasyon lane'inde hiç yazılamıyor** — `local` profilinde
+yapılandırılmış LLM sağlayıcısı yok, yani `CoverLetterApiIT` her çağrıda
+`ALL_PROVIDERS_UNAVAILABLE` alıyor. Test bunu **kasten** öyle kuruyor: kanıtı
+"denetlenmemiş hiçbir şey satıra yazılmaz", ve ret de kesinti de aynı yolu
+sınıyor. Reddin kendisi `CoverLetterServiceTest`'te sabitli.
 
 **`bullet_rewrite` için de `local-fake` fixture'ı yok.** `SyntheticAnswer` şema
 şeklinde bir cümle üretiyor: yerelde yeniden yazım **çalışıyor ama anlamsız**,

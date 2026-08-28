@@ -98,7 +98,8 @@ public class GenerationJobHandler implements JobHandler {
                         progress)
                 : generations.generateForJob(
                         user, payload.jobDescription(), payload.preflightAcknowledged(),
-                        payload.maxPages(), payload.language(), progress);
+                        payload.maxPages(), payload.language(), payload.coverLetter(),
+                        progress);
 
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
@@ -157,6 +158,10 @@ public class GenerationJobHandler implements JobHandler {
         record.setPageCount(document.pageCount());
         record.setFitReport(generated.fitReport());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
+        // Absent when it was not asked for, and absent when it was asked for
+        // and refused — Bolum 34 does not print a letter it could not check,
+        // and the CV is what the person came for.
+        record.setCoverLetter(generated.coverLetter());
         record.setTrace(trace(generated));
 
         return records.save(user, record);

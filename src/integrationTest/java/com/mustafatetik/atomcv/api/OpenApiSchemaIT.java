@@ -251,7 +251,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(4)))
+                        .value(Matchers.aMapWithSize(5)))
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -259,7 +259,13 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
-                        + ".properties.language").exists());
+                        + ".properties.language").exists())
+                // Bolum 34, opt-in. The count above is what makes this a
+                // guard: a fifth property nobody meant to publish fails here.
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.coverLetter").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.wantsCoverLetter").doesNotExist());
     }
 
     @Test

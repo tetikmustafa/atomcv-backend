@@ -1,6 +1,9 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
+import com.mustafatetik.atomcv.generation.coverletter.CoverLetterService;
+import com.mustafatetik.atomcv.generation.coverletter.CoverLetterStyle;
+import com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
@@ -70,6 +73,7 @@ public class JobSpecificGenerationService {
     private final RelevanceScoringService relevance;
     private final RenderCostService renderCosts;
     private final RewritePhase rewrites;
+    private final CoverLetterWriter letters;
     private final GenerationPipeline pipeline;
 
     JobSpecificGenerationService(
@@ -80,6 +84,7 @@ public class JobSpecificGenerationService {
             RelevanceScoringService relevance,
             RenderCostService renderCosts,
             RewritePhase rewrites,
+            CoverLetterWriter letters,
             GenerationPipeline pipeline) {
 
         this.profiles = profiles;
@@ -89,6 +94,7 @@ public class JobSpecificGenerationService {
         this.relevance = relevance;
         this.renderCosts = renderCosts;
         this.rewrites = rewrites;
+        this.letters = letters;
         this.pipeline = pipeline;
     }
 
@@ -96,6 +102,10 @@ public class JobSpecificGenerationService {
      * @param jobDescription        the pasted posting
      * @param preflightAcknowledged the user chose {@code continue_anyway}
      *                              after Bolum 18.1 refused (EK D.6.1)
+     * @param coverLetter           Bolum 34's letter was asked for. Off by
+     *                              default and a second call when it is on;
+     *                              a letter that cannot be written honestly
+     *                              does not fail the CV
      * @param maxPages              null to take the profile's own default
      * @param language              null to let the profile decide, which for
      *                              {@code auto} means following the posting
@@ -106,6 +116,7 @@ public class JobSpecificGenerationService {
             boolean preflightAcknowledged,
             Integer maxPages,
             String language,
+            boolean coverLetter,
             ProgressSink progress) {
 
         var owned = profiles.owned(user);
@@ -222,7 +233,16 @@ public class JobSpecificGenerationService {
                         // built from the ranking would credit the user for a
                         // skill that never made it onto the document.
                         FitReport.of(posting,
-                                SelectedSkills.onThePage(rendered, document.selection()))));
+                                SelectedSkills.onThePage(rendered, document.selection())),
+                        null))
+                // Bolum 34, and it comes last on purpose: the CV is what the
+                // person asked for, and a letter that could not be written
+                // honestly must not take the document down with it.
+                .map(made -> coverLetter
+                        ? made.withCoverLetter(letters.writeQuietly(
+                                head, rendered, made.document().selection(), posting,
+                                "", CoverLetterStyle.DEFAULT, bucketKey))
+                        : made);
     }
 
     /**

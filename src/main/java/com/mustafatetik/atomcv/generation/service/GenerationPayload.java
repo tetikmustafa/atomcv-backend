@@ -20,12 +20,14 @@ public record GenerationPayload(
         String jobDescription,
         boolean preflightAcknowledged,
         Integer maxPages,
-        String language) {
+        String language,
+        boolean coverLetter) {
 
     private static final String JOB_DESCRIPTION = "jobDescription";
     private static final String PREFLIGHT_ACKNOWLEDGED = "preflightAcknowledged";
     private static final String MAX_PAGES = "maxPages";
     private static final String LANGUAGE = "language";
+    private static final String COVER_LETTER = "coverLetter";
 
     /**
      * Ordered, because the map becomes a JSONB column and the JDK's immutable
@@ -37,6 +39,7 @@ public record GenerationPayload(
         payload.put(PREFLIGHT_ACKNOWLEDGED, preflightAcknowledged);
         payload.put(MAX_PAGES, maxPages);
         payload.put(LANGUAGE, language);
+        payload.put(COVER_LETTER, coverLetter);
         return payload;
     }
 
@@ -45,7 +48,11 @@ public record GenerationPayload(
                 string(payload, JOB_DESCRIPTION),
                 Boolean.TRUE.equals(payload.get(PREFLIGHT_ACKNOWLEDGED)),
                 integer(payload, MAX_PAGES),
-                string(payload, LANGUAGE));
+                string(payload, LANGUAGE),
+                // Absent on a job queued by the release before this one, and
+                // absent reads as "no letter" — which is what those jobs were
+                // asked for.
+                Boolean.TRUE.equals(payload.get(COVER_LETTER)));
     }
 
     private static String string(Map<String, Object> payload, String key) {

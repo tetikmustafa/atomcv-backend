@@ -12,7 +12,11 @@ import static org.mockito.Mockito.when;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
+import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
+import com.mustafatetik.atomcv.rendering.model.RenderRequest;
+import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
 import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
@@ -70,6 +74,7 @@ class JobSpecificGenerationServiceTest {
     private com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService relevance;
     private RenderCostService renderCosts;
     private RewritePhase rewrites;
+    private CoverLetterWriter letters;
     private GenerationPipeline pipeline;
     private JobSpecificGenerationService service;
 
@@ -87,8 +92,9 @@ class JobSpecificGenerationServiceTest {
         pipeline = mock(GenerationPipeline.class);
         rewrites = mock(RewritePhase.class);
         when(rewrites.rewrite(any(), any(), any(), any())).thenReturn(RewrittenContent.none());
-        service = new JobSpecificGenerationService(
-                profiles, assembler, tags, analysis, relevance, renderCosts, rewrites, pipeline);
+        letters = mock(CoverLetterWriter.class);
+        service = new JobSpecificGenerationService(profiles, assembler, tags, analysis,
+                relevance, renderCosts, rewrites, letters, pipeline);
 
         head = new Profile(USER);
         ref = ProfileRef.persistent(UserContext.of(USER), UUID.randomUUID(), USER);
@@ -105,7 +111,7 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
+        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
@@ -125,7 +131,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
+        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
@@ -153,7 +159,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
@@ -173,7 +179,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(user(), POSTING, true, null, null, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, true, null, null, false, ProgressSink.NONE);
 
         verify(analysis).analyse(POSTING, true, USER.toString());
     }
@@ -200,7 +206,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
 
         var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
         verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
@@ -213,6 +219,57 @@ class JobSpecificGenerationServiceTest {
         assertThat(context.getValue().postingSkills()).containsExactly("go");
         assertThat(context.getValue().language()).isEqualTo("en");
         assertThat(context.getValue().bucketKey()).isEqualTo(USER.toString());
+    }
+
+    /**
+     * <strong>Design principle 5, as a default.</strong> A covering letter is
+     * a second LLM call, and most people asking for a CV want a CV. Nobody
+     * pays for one they did not ask for.
+     */
+    @Test
+    void nocoverLetterIsWrittenUnlessItWasAskedFor() {
+        aGenerationThatReachesThePipeline();
+
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+
+        verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    /**
+     * And when it was asked for, a letter that could not be written honestly
+     * does not take the CV with it — {@code writeQuietly} answers with nothing
+     * and the document is unaffected.
+     */
+    @Test
+    void acoverLetterIsWrittenWhenItWasAskedForAndNeverFailsTheCv() {
+        aGenerationThatReachesThePipeline();
+        when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(null);
+
+        service.generateForJob(user(), POSTING, false, null, null, true, ProgressSink.NONE);
+
+        verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    /** Everything up to the pipeline's door, so the letter is the only variable. */
+    private void aGenerationThatReachesThePipeline() {
+        when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
+        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+                .thenReturn(Result.ok(posting()));
+        when(relevance.scoreAgainst(any(), any(), any()))
+                .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
+        when(pipeline.run(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Result.ok(aDocument()));
+    }
+
+    /** The thinnest thing the pipeline can answer with: one page, nothing on it. */
+    private static GeneratedDocument aDocument() {
+        var selection = new SelectionState(List.of(), List.of(),
+                new SelectionState.BudgetBreakdown(648.0, 142.0, 506.0, 0.0));
+        var rendered = new RenderRequest(
+                new RenderRequest.ProfileHeader("Ada Lovelace", null, List.of()),
+                List.of(), TemplateCustomization.CLASSIC, java.util.Locale.ENGLISH);
+        return new GeneratedDocument(new byte[] {1}, 1, selection, rendered, 1, 1.0);
     }
 
     private static JobAnalysis posting() {

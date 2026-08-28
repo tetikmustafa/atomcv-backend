@@ -27,6 +27,10 @@ import java.util.UUID;
  * @param promptVersions the versions that actually ran, which under an A/B
  *                       experiment is not the same as the configured defaults
  *                       (Bolum 53.3)
+ * @param coverLetter    Bolum 34's letter, or null — it was not asked for, or
+ *                       it was asked for and could not be written honestly.
+ *                       The CV is unaffected either way: a person who asked
+ *                       for both and got one has the one they came for
  * @param fitReport      Faz F's coverage counts, or null in general mode.
  *                       Computed where the posting and the finished selection
  *                       are both in hand, which is here and nowhere later:
@@ -40,15 +44,22 @@ public record GeneratedGeneration(
         ScoringWeights weights,
         Map<String, String> promptVersions,
         GeneratedDocument document,
-        FitReport fitReport) {
+        FitReport fitReport,
+        String coverLetter) {
 
-    /** General mode: no posting, no report (Bolum 19.4). */
+    /** General mode: no posting, no report, and no letter (Bolum 19.4). */
     public GeneratedGeneration(
             UUID profileId, JobAnalysis posting, GenerationOptions options,
             ScoringWeights weights, Map<String, String> promptVersions,
             GeneratedDocument document) {
 
-        this(profileId, posting, options, weights, promptVersions, document, null);
+        this(profileId, posting, options, weights, promptVersions, document, null, null);
+    }
+
+    /** The same generation, with the letter that was written for it. */
+    public GeneratedGeneration withCoverLetter(String letter) {
+        return new GeneratedGeneration(profileId, posting, options, weights,
+                promptVersions, document, fitReport, letter);
     }
 
     public GeneratedGeneration {

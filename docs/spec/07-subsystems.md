@@ -1490,6 +1490,53 @@ validate(coverLetter, selectedAtoms, profile):
 "Thank you for considering my application"
 ```
 
+#### 34.4.1 Kararlar (Adım 3.8, dilim 5)
+
+**Ekleme — mektup Faz D'nin başarısızlığı bildirebilen tek parçası.** Reddedilen
+bir yeniden yazım kişinin kendi cümlesini, reddedilen bir About kendi
+paragrafını bastırıyor; mektubun arkasında bir orijinal yok. İki sonuç kalıyor:
+dürüst bir mektup ya da bildirilen bir ret. Yeni kod `COVER_LETTER_REJECTED`
+(422, `params.issues`), çözüm eylemi `retry`, ve kuyruk onu tekrar denemeye
+değer sayıyor.
+
+**Ekleme — mektup istenirse yazılıyor, hem de iki yoldan.** `POST /generations`
+gövdesinde `coverLetter: true` (varsayılan kapalı — ilke 5: mektup ikinci bir
+LLM çağrısı ve CV isteyenlerin çoğu mektup istemiyor), ya da sonradan
+`POST /generations/{id}/cover-letter/regenerate`. **Üretim sırasında yazılan
+mektubun reddi CV'yi düşürmüyor**: kişi belgeyi istedi, belge çıktı, mektup
+düğmeyle tekrar istenebilir.
+
+**Ekleme — "deneyim süresi" kariyerin *aralığı*, entry'lerin toplamı değil.**
+Aynı anda tutulan iki iş, iki satır ve tek bir hayat dilimi; toplamak
+§ 34.4'ün "en sık uydurma" dediği şeyi **bizim** yapmamız olurdu. Tarihsiz
+entry hiçbir şey katmıyor.
+
+**Ekleme — "şirket adı doğru mu" kapalı küme olarak yanıtlanıyor.** Genel bir
+kurum sözlüğü yok ve buradaki yanlış pozitif **bütün mektubu** kaybettiriyor.
+Cevaplanabilen şey asıl gerçekleşen hata: az önce bu kişinin CV'sini okumuş bir
+modelin mektubu orada gördüğü işverene hitap etmesi. Selamlama bu yüzden
+kişinin **kendi** kurumlarına karşı kontrol ediliyor; yazılan şirket olmayan
+birini anmak reddediliyor.
+
+**Ekleme — sayı kontrolü rakam okuyor.** Cevaptaki her rakam dizisi sayfada
+(metriklerde, alıntılanan cümlelerde ya da kişinin şirket notunda) geçmeli;
+yıl iddiaları önce tarihlere karşı denetleniyor ve o rakamlar ikinci kez
+"uydurma" diye raporlanmıyor.
+
+**Ekleme — `auto` mektup dili ilanı izliyor, CV'yi değil.** § 5.4 `jdLanguage`'ı
+zaten bunun için saklıyor. `F-013` CV'nin dilini profilin her atom için
+sözcüklemesi olmasına bağladı; mektup sıfırdan yazıldığı için o kısıt onu
+bağlamıyor. Türkçe profili İngilizce ilana başvuran biri Türkçe CV ve İngilizce
+mektup alıyor, ve ikisi de doğru.
+
+**Ekleme — uç nokta saatte on mektupla sınırlı.** § 34.6 kişinin birkaç taslak
+denemesini istiyor; tavanı olmayan bir LLM ucu ise faturayı başkasının yazdığı
+bir şey. `RateLimiter`'ın `cover_letter` katmanı, kullanıcı başına 10/saat.
+
+**Klişe listesi iki dilde.** § 34.4 İngilizce dört madde veriyor; ürünün
+gönderdiği iki dilin ikisi de listeleniyor, çünkü aynı boş cümle Türkçe de
+yazılıyor.
+
 ### 34.5 Şirket bilgisi eksikliği
 
 ```

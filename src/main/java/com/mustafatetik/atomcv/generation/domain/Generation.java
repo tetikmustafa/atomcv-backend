@@ -216,6 +216,15 @@ public class Generation implements UserOwned {
         return coverLetter;
     }
 
+    /**
+     * Bolum 34. Written on request and rewritten on request, so unlike the
+     * rest of this row it is not written once — the three buttons of Bolum
+     * 34.6 all land here.
+     */
+    public void setCoverLetter(String coverLetter) {
+        this.coverLetter = coverLetter;
+    }
+
     public FitReport getFitReport() {
         return fitReport;
     }

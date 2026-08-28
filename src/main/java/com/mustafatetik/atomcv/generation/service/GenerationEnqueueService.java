@@ -78,6 +78,7 @@ public class GenerationEnqueueService {
             boolean preflightAcknowledged,
             Integer maxPages,
             String language,
+            boolean coverLetter,
             String idempotencyKey) {
 
         Optional<Job> already = jobs.findByIdempotencyKey(JobOwner.of(user), idempotencyKey);
@@ -107,8 +108,8 @@ public class GenerationEnqueueService {
         }
 
         var job = new Job(JobType.GENERATION, user.userId(),
-                new GenerationPayload(jobDescription, preflightAcknowledged, maxPages, language)
-                        .toMap(),
+                new GenerationPayload(jobDescription, preflightAcknowledged, maxPages,
+                        language, coverLetter).toMap(),
                 clock.instant());
         job.setIdempotencyKey(idempotencyKey);
         return Result.ok(queue.enqueue(job));
