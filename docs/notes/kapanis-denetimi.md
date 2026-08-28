@@ -28,7 +28,7 @@
 |---|---|
 | **ATS metin çıkarma (§ 23.2) yarım.** `FitReport` indi; **üretilen PDF geri okunmuyor** — "kendi çıktımızı PDFBox ile oku, atomlar metinde çıkıyor mu" yarısı yok. PDFBox 3.0.5 zaten bağımlılıkta | **Dilim 5** |
 | **Determinizm atom id'sine bağlı.** Aynı skor *ve* aynı maliyetteki iki atom, her içe aktarımda yeniden üretilen id yüzünden yer değiştiriyor. Mevcut determinizm testi tek profil üzerinde koştuğu için yakalamıyor | **Dilim 5** |
-| **Atomsuz entry sayfaya hiç çıkamıyor.** Seçim atom atom çalışıyor; altında madde olmayan bir diploma satırı aday bile değil | **Dilim 5** (karar 2) |
+| **Atomsuz entry sayfaya hiç çıkamıyor.** Seçim atom atom çalışıyor; altında madde olmayan bir diploma satırı aday bile değil | **Dilim 5** (karar 2) — ✅ indi |
 | `UserScopedRepository.findAll` yok | Bilinçli, kapandı sayıldı |
 
 ### VPS (§ XI-A.4)
@@ -118,7 +118,7 @@ Geliştirici kararı: **dilimler biriktirilecek, tek PR açılacak.**
 | 2 | Yayın sertleştirme | Sentry, güvenlik header'ları, prod-profil testi, `latexTest` → CI, Spotless | ✅ **bitti** |
 | 3 | Saklama işi | `jobs.payload` 7 gün, ilan metni 30 gün, gecelik iş | ✅ **bitti** |
 | 4 | Küçük kararlar | `user_id`, § 44.3 limiti, `409` + mod, boş profil ezme | ✅ **bitti** |
-| 5 | Model kararları | Atomsuz entry adayı, determinizm bozucusu, ATS geri okuma | 🔄 determinizm ✅, ATS ✅, **atomsuz entry ayri oturuma** |
+| 5 | Model kararları | Atomsuz entry adayı, determinizm bozucusu, ATS geri okuma | ✅ **bitti** — atomsuz entry 2026-08-28 ayrı bir oturumda indi |
 | 6 | Deploy altyapısı | `Dockerfile`, `docker-compose.prod.yml`, nginx, `deploy.sh`, `deploy.yml`, yedek + restore, Trivy | ✅ **bitti** |
 | 7 | Sağlayıcı ve e-posta | Gemini adaptörü, Resend webhook + suppression yazımı | ✅ **bitti** |
 | 8 | Dokümanlar | § 47, § 57.4, § 3.2 düzeltmeleri · § 51.7 · `STATUS.md` · `CLAUDE.md` | ✅ **bitti** |
@@ -512,26 +512,43 @@ ve `toString()`'e girebiliyor ve mutlak kural 4'un deger nesnesi istisnasi yok.
 acikca kaydediyordu. Artik **ayni sozcuklemeler, ayni sirada** diyor. Eski
 tie-break geri konarak test dusuruldu: **gercekten dusuyor.**
 
-### Atomsuz entry — tasarim hazir, kapsam olculdu
+### Atomsuz entry indi (§ 20.2)
 
-Yapilabilir ve engel yok: **renderer atomsuz entry'yi zaten basiyor**
-(`bullets(...)` bos listede erken donuyor) ve olcum dokumani
-`afterSecondEntry`'yi zaten olcuyor, yani maliyet biliniyor.
+Dort dokunma noktasinin dordu de yazildi, ve olculen sey degismedi: renderer
+atomsuz entry'yi zaten basiyordu, maliyet zaten olculmustu.
 
-Degismesi gerekenler:
-1. `SelectionRequestBuilder` atomsuz entry icin bir aday uretmeli,
-2. maliyet yolu `ENTRY_HEADER` odemeli ama **`ITEMIZE_OVERHEAD` odememeli**
-   (madde yok) — bu `AtomCandidate`'e bir tur ayrimi ekliyor,
-3. `SelectionState` hangi entry'lerin atomsuz acildigini tasimali,
-4. `RenderPhase`'in `if (!bullets.isEmpty())` filtresi gevsemeli — **ve oradaki
-   yorum degismesi gereken sozlesmeyi tam olarak soyluyor**: "secim yalnizca
-   actiklarini ucretlendirdi, bos birini basmak butcenin hesaplamadigi puani
-   harcar".
+- **`AtomCandidate.headerOnly`** — `forEntryHeader(...)` ile uretiliyor,
+  `atomId` entry'nin kendi id'si, `renderCostPt` sifir. `EntryPlan` artik bir
+  kural daha dogruluyor: **baslik-adayi entry'de yalnizdir.** Yanina bir gercek
+  atom girseydi entry baslik-adayiyla acilir, sonraki atom `ITEMIZE_OVERHEAD`
+  odemez ve renderer odenmemis bir liste basardi — sayfanin sessizce tastigi
+  tek yol buydu.
+- **Skor** entry'den geliyor: genel modda guncellik ile onem, § 19.4'un
+  ikisi arasindaki oranini koruyarak yeniden normalize edilerek. Bunu yapmasak
+  bir diploma satiri 0.65'te tavan yapip kazanmasi gereken her karsilastirmayi
+  kaybederdi. Ilana ozel modda entry'nin `importance` degeri — Faz B wording
+  skorlar, bu entry'nin wording'i yok.
+- **Kisit (4) uygulanmiyor** — minimum madde hakkinda bir cumle. Fixture'daki
+  entry'nin `minAtoms`'u kasten varsayilanda (2) birakildi, boylece bu atlama
+  gercekten sinaniyor.
+- **Sigmayan baslik `rejected`'a girmiyor**, cunku o liste kullaniciya atom
+  atom gosteriliyor.
+- **`selection_state`'e `headerOnlyEntries` eklendi**, eski satirlarda yok ve
+  bos liste okunuyor.
 
-**Neden ayri bir parca:** dordu de **sayfa siniri garantisinin** uzerinden
-geciyor ve `selection_state` saklanan bir JSONB anlik goruntusu — sekli
-degistirmek eski uretimlerin yeniden render'ini de ilgilendiriyor. Urunun tek
-matematiksel vaadi bu; uzun bir oturumun sonunda aceleye getirilecek yer degil.
+**Yol ustunde bulunan bir determinizm acigi:** `openEntries` bir `HashSet`'ti ve
+`upgradeFirstEntryOf` onu gezip **ilk ulastigi** entry'yi ucretlendiriyor. JVM
+basina tuzlanan sira, bir kaldirmanin ne kadar iade ettigini degistiriyordu.
+`LinkedHashSet` oldu.
+
+**Fixture'da atomsuz entry yoktu**, yani yeni yol hicbir sey tarafindan
+sinanmayacakti: `junior_frontend_en`'e maddesiz bir A Levels satiri eklendi.
+Varyant eklemedigi icin `*.costs.json` etkilenmedi.
+
+**Yedi muhafizin yedisi de dusurulup dustugu goruldu** — aday uretimi, render
+filtresi, `ITEMIZE_OVERHEAD` muafiyeti, minimum atlamasi, ret atlamasi,
+`EntryPlan` kurali ve JSONB null varsayilani. Sonuncusundan once: derleyicili
+lane'de de dusuruldu, `GeneralCvIT` gercek PDF'te satiri bulamadi.
 
 ### ATS geri okumasi indi (§ 23.2)
 
