@@ -44,10 +44,27 @@ public record GenerationRequest(
                 + "Omitted, the profile decides — and its `auto` follows the posting.",
                 example = "en", pattern = "^[a-z]{2}$")
         @Pattern(regexp = "^[a-z]{2}$")
-        String language) {
+        String language,
+
+        @Schema(description = "Write a covering letter alongside the CV (Bolum 34). "
+                + "Off by default: it is a second LLM call, and most generations "
+                + "do not want one. It can be asked for afterwards instead, at "
+                + "POST /generations/{id}/cover-letter/regenerate.",
+                defaultValue = "false")
+        Boolean coverLetter) {
 
     public boolean acknowledged() {
         return Boolean.TRUE.equals(acknowledgePreflight);
+    }
+
+    /**
+     * <strong>Opt-in, and design principle 5 is the reason.</strong> A letter
+     * is a call this product would otherwise make for everybody who only
+     * wanted a CV. General mode ignores it: Bolum 34.2 writes the letter
+     * against a posting, and there is none.
+     */
+    public boolean wantsCoverLetter() {
+        return Boolean.TRUE.equals(coverLetter);
     }
 
     /**

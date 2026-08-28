@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-28** · **3.8 · 4/5 — About da Faz D'nin içinde** · frontend'de açık: **`B-044`**–**`B-055`**, on ikisi de bekliyor
+**2026-08-28** · **3.8 kapandı (5/5) — Faz D ve cover letter telde** · frontend'de açık: **`B-044`**–**`B-056`**, on üçü de bekliyor
 
 ---
 
@@ -16,7 +16,7 @@
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC) · 3.3 kimlik ✅ 4/4 |
 | 3.4 CV yükleme ve çıkarım ✅ 4/4 · 3.5 çok dillilik ✅ 2/2 | ✅ |
 | 3.6 anonim mod ✅ 6/6 · 3.7 profil editörü **frontend'de** | ✅ |
-| 3.8 Faz D ve cover letter | 🔄 4/5 — sözcükleme, eşikler, rewrite, doğrulama, paralel yürütme, About ✅; cover ⬜ |
+| 3.8 Faz D ve cover letter ✅ 5/5 · **sıradaki: 3.9 hukuki ve kapanış** | ✅ |
 
 **Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
 magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
@@ -31,7 +31,7 @@ istemiyor, hak adrese göre, profil hiçbir tabloda satır değil (§ 31.6.3) �
 varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gövde —
 **`B-054`**.
 
-**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 961 birim · 381 entegrasyon — 0 hata · **latex 44/48** (dört test fixture'sız düşüyor, 3.8 öncesi de)
+**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 989 birim · 384 entegrasyon — 0 hata · **latex 44/48** (dört test fixture'sız düşüyor, 3.8 öncesi de)
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gö
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-055`'i alsın** — 304 satır, tek bir `ACK` almadı. **`B-054`
-kırıcı** (`/auth/verify` artık `204` değil), **`B-055` küçük** (yeni faz anahtarı
-`REWRITING`). Backend 3.8'de. **`local-fake` fixture'ı sende, latex onsuz kırmızı.**
+**Frontend `B-044`-`B-056`'yı alsın** — 336 satır, tek bir `ACK` almadı. **`B-054`
+kırıcı** (`/auth/verify` artık `204` değil), **`B-056` yeni yüzey** (cover letter
+ucu, reddedebilir). Backend 3.9'a geçiyor. **`local-fake` fixture'ı sende.**

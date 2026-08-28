@@ -1,12 +1,16 @@
 package com.mustafatetik.atomcv.generation.api;
 
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
+import com.mustafatetik.atomcv.generation.api.dto.CoverLetterRequest;
+import com.mustafatetik.atomcv.generation.api.dto.CoverLetterResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.generation.coverletter.CoverLetterDraft;
+import com.mustafatetik.atomcv.generation.service.CoverLetterRegenerationService;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
@@ -16,7 +20,10 @@ import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
+import com.mustafatetik.atomcv.identity.ratelimit.RateLimitDecision;
+import com.mustafatetik.atomcv.identity.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
@@ -64,16 +72,28 @@ public class GenerationController {
     private final GenerationEnqueueService enqueue;
     private final GenerationDownloadService downloads;
     private final GenerationRepository generations;
+    private final CoverLetterRegenerationService coverLetters;
+    private final RateLimiter rateLimiter;
     private final ErrorPresenter errors;
+
+    /**
+     * Bolum 34.6 wants a person to be able to try a few drafts, and an LLM
+     * endpoint with no ceiling at all is a bill somebody else writes. Ten an
+     * hour is several tries per generation and no loop.
+     */
+    private static final int LETTERS_PER_HOUR = 10;
 
     GenerationController(CurrentUser currentUser,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
-            GenerationRepository generations, ErrorPresenter errors) {
+            GenerationRepository generations, CoverLetterRegenerationService coverLetters,
+            RateLimiter rateLimiter, ErrorPresenter errors) {
 
         this.currentUser = currentUser;
         this.enqueue = enqueue;
         this.downloads = downloads;
         this.generations = generations;
+        this.coverLetters = coverLetters;
+        this.rateLimiter = rateLimiter;
         this.errors = errors;
     }
 
@@ -99,7 +119,8 @@ public class GenerationController {
 
         Result<Job> queued = enqueue.enqueue(
                 currentUser.require(), request.jobDescription(), request.acknowledged(),
-                request.maxPages(), request.language(), idempotencyKey);
+                request.maxPages(), request.language(), request.wantsCoverLetter(),
+                idempotencyKey);
 
         Job job = switch (queued) {
             case Result.Ok<Job> ok -> ok.value();
@@ -185,6 +206,72 @@ public class GenerationController {
                         "attachment; filename=\"" + filename() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(bytes);
+    }
+
+    @Operation(
+            summary = "Write a covering letter for a generation, or another one",
+            description = """
+                    Bolum 34. The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.
+
+                    Off the main generation path on purpose: it is a second                     LLM call and most people want a CV. Ask for it here, or                     set `coverLetter: true` when generating.
+
+                    Three variants (`default`, `shorter`, `more_formal`),                     and each press replaces the stored letter — trying                     another draft leaves one letter, not three.
+
+                    **It can refuse.** A letter has no original to fall back                     on, so a draft that claims a skill the page does not carry,                     overstates the experience, or greets the wrong company is                     thrown away twice and then reported as                     `COVER_LETTER_REJECTED`. Another press is a different                     draft.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The letter"),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "422",
+                    description = "COVER_LETTER_REJECTED — nothing honest could be written",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "429",
+                    description = "RATE_LIMITED — ten letters an hour",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{generationId}/cover-letter/regenerate",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CoverLetterResponse> coverLetter(
+            @PathVariable UUID generationId,
+            @Valid @RequestBody(required = false) CoverLetterRequest request) {
+
+        CoverLetterRequest asked = request == null
+                ? new CoverLetterRequest(null, null)
+                : request;
+
+        // Scoped, and it is the IDOR defense on this endpoint too: someone
+        // else's generation answers 404, because that an id exists is itself
+        // information (absolute rule 3).
+        Generation generation = coverLetters.find(currentUser.require(), generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        RateLimitDecision allowed = rateLimiter.check("cover_letter",
+                currentUser.require().userId().toString(),
+                LETTERS_PER_HOUR, Duration.ofHours(1));
+        if (!allowed.allowed()) {
+            throw new ApiException(UserFacingError.with(ErrorCode.RATE_LIMITED)
+                    .param("resetsAt", allowed.resetsAt())
+                    .build());
+        }
+
+        Result<CoverLetterDraft> written = coverLetters.rewrite(
+                currentUser.require(), generation, asked.styleOrDefault(),
+                asked.companyNoteOrBlank());
+
+        CoverLetterDraft draft = switch (written) {
+            case Result.Ok<CoverLetterDraft> ok -> ok.value();
+            case Result.Err<CoverLetterDraft> refused -> throw new ApiException(
+                    errors.present(refused.error(), pageHeightPt()));
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(new CoverLetterResponse(
+                        generationId, draft.plainText(), asked.styleOrDefault()));
     }
 
     /**

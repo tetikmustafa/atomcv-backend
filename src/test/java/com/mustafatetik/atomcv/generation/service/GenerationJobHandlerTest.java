@@ -76,7 +76,7 @@ class GenerationJobHandlerTest {
 
     @Test
     void asuccessfulRunIsWrittenDownAndItsIdComesBack() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.ok(generated()));
 
         JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
@@ -97,7 +97,7 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thesnapshotCarriesEnoughToDrawThePageAgain() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -114,7 +114,7 @@ class GenerationJobHandlerTest {
     /** The same hash the analysis cache keys on, so the two can be matched. */
     @Test
     void thepostingIsRecordedWithTheHashTheCacheUses() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -133,7 +133,7 @@ class GenerationJobHandlerTest {
      */
     @Test
     void theengineVersionNamesWhatActuallyRan() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.WITHOUT_EMBEDDING, "v7")));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -153,7 +153,7 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thetraceCarriesOnlyThePhasesThatAreInstrumented() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -169,7 +169,7 @@ class GenerationJobHandlerTest {
     /** Bolum 30.5: the world outside may have changed by the next attempt. */
     @Test
     void aprovideroutageComesBackRetryableAndWritesNoRecord() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
@@ -188,7 +188,7 @@ class GenerationJobHandlerTest {
     /** The next attempt reads the same thin profile and reaches the same answer. */
     @Test
     void athinProfileComesBackFinal() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.InsufficientProfile(10, List.of("atoms"))));
 
@@ -213,7 +213,7 @@ class GenerationJobHandlerTest {
             assertThat(failed.retryable()).isFalse();
             assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         });
-        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), any());
+        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), anyBoolean(), any());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ class GenerationJobHandlerTest {
     }
 
     private static Map<String, Object> payload() {
-        return new GenerationPayload(POSTING, false, 1, "en").toMap();
+        return new GenerationPayload(POSTING, false, 1, "en", false).toMap();
     }
 
     private static GeneratedGeneration generated() {

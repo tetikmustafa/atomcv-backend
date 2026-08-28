@@ -88,7 +88,7 @@ class GenerationEnqueueServiceTest {
      */
     @Test
     void apostingIsCheckedBeforeTheProfileIsLoaded() {
-        var result = service.enqueue(user(), "hire me plz", false, null, null, null);
+        var result = service.enqueue(user(), "hire me plz", false, null, null, false, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<Job>) result).error())
@@ -102,7 +102,7 @@ class GenerationEnqueueServiceTest {
     void anemptyProfileIsRefusedBeforeTheQueue() {
         when(assembler.load(profile)).thenReturn(new ProfileTree(profile.id(), List.of()));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, null);
+        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
@@ -114,7 +114,7 @@ class GenerationEnqueueServiceTest {
     void anacknowledgedPostingSkipsTheTextCheckButNotTheProfileOne() {
         when(assembler.load(profile)).thenReturn(new ProfileTree(profile.id(), List.of()));
 
-        var result = service.enqueue(user(), "hire me plz", true, null, null, null);
+        var result = service.enqueue(user(), "hire me plz", true, null, null, false, null);
 
         // Past the text gate — it reached the profile gate, and failed there.
         assertThat(((Result.Err<Job>) result).error())
@@ -131,7 +131,7 @@ class GenerationEnqueueServiceTest {
         var existing = new Job(JobType.GENERATION, USER, java.util.Map.of(), Instant.EPOCH);
         when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.of(existing));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, "key-1");
+        var result = service.enqueue(user(), POSTING, false, null, null, false, "key-1");
 
         assertThat(result.orElseThrow()).isEqualTo(existing);
         verify(profiles, never()).owned(any());
@@ -146,7 +146,7 @@ class GenerationEnqueueServiceTest {
     void thekeyIsStoredOnTheJobItMade() {
         when(assembler.load(profile)).thenReturn(profileWithOneAtom());
 
-        service.enqueue(user(), POSTING, false, 2, "tr", "key-1");
+        service.enqueue(user(), POSTING, false, 2, "tr", false, "key-1");
 
         var queued = ArgumentCaptor.forClass(Job.class);
         verify(queue).enqueue(queued.capture());
@@ -154,7 +154,7 @@ class GenerationEnqueueServiceTest {
         assertThat(queued.getValue().getType()).isEqualTo(JobType.GENERATION);
         assertThat(queued.getValue().getOwnerId()).isEqualTo(USER);
         assertThat(GenerationPayload.from(queued.getValue().getPayload()))
-                .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr"));
+                .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr", false));
     }
 
     /**
@@ -165,7 +165,7 @@ class GenerationEnqueueServiceTest {
     void thebrakeStopsGenerationWithoutSpendingAnything() {
         when(flags.isEnabled(any())).thenReturn(false);
 
-        var result = service.enqueue(user(), POSTING, false, null, null, null);
+        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.GenerationPaused.class);
@@ -183,7 +183,7 @@ class GenerationEnqueueServiceTest {
         when(quotas.consume(any(), any())).thenReturn(Result.err(
                 new PipelineError.QuotaExceeded("generation", Instant.EPOCH)));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, null);
+        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.QuotaExceeded.class);
@@ -197,7 +197,7 @@ class GenerationEnqueueServiceTest {
      */
     @Test
     void arefusedRequestGivesTheUnitBack() {
-        service.enqueue(user(), "hire me plz", false, null, null, null);
+        service.enqueue(user(), "hire me plz", false, null, null, false, null);
 
         verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
     }
@@ -208,7 +208,7 @@ class GenerationEnqueueServiceTest {
         var existing = new Job(JobType.GENERATION, USER, java.util.Map.of(), Instant.EPOCH);
         when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.of(existing));
 
-        service.enqueue(user(), POSTING, false, null, null, "key-1");
+        service.enqueue(user(), POSTING, false, null, null, false, "key-1");
 
         verify(quotas, never()).consume(any(), any());
     }
