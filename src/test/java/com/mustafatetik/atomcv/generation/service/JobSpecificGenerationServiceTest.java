@@ -11,10 +11,15 @@ import static org.mockito.Mockito.when;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
+import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
+import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.ScoredAtom;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
+import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
 import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Atom;
@@ -64,6 +69,7 @@ class JobSpecificGenerationServiceTest {
     private JobAnalysisPhase analysis;
     private com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService relevance;
     private RenderCostService renderCosts;
+    private RewritePhase rewrites;
     private GenerationPipeline pipeline;
     private JobSpecificGenerationService service;
 
@@ -79,8 +85,10 @@ class JobSpecificGenerationServiceTest {
         relevance = mock(com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService.class);
         renderCosts = mock(RenderCostService.class);
         pipeline = mock(GenerationPipeline.class);
+        rewrites = mock(RewritePhase.class);
+        when(rewrites.rewrite(any(), any(), any(), any())).thenReturn(RewrittenContent.none());
         service = new JobSpecificGenerationService(
-                profiles, assembler, tags, analysis, relevance, renderCosts, pipeline);
+                profiles, assembler, tags, analysis, relevance, renderCosts, rewrites, pipeline);
 
         head = new Profile(USER);
         ref = ProfileRef.persistent(UserContext.of(USER), UUID.randomUUID(), USER);
@@ -142,13 +150,13 @@ class JobSpecificGenerationServiceTest {
                 List.of(new ScoredAtom(atomId, 0.77, 0.5,
                         new ScoredAtom.Components(0.5, 0.5, 0.5, 0.5))),
                 ScoringWeights.DEFAULT));
-        when(pipeline.run(any(), any(), any(), any(), any()))
+        when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
         service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
-        verify(pipeline).run(any(), any(), request.capture(), any(), any());
+        verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
         assertThat(request.getValue().sections().get(0).entries().get(0).atoms())
                 .singleElement()
                 .satisfies(atom -> assertThat(atom.score()).isEqualTo(0.77));
@@ -172,6 +180,39 @@ class JobSpecificGenerationServiceTest {
 
     private static UserContext user() {
         return UserContext.of(USER);
+    }
+
+    /**
+     * <strong>Faz D is wired, and it is wired to this posting.</strong> The
+     * pipeline is handed a rewriter rather than a phase, so the thing worth
+     * asserting is what that rewriter does when the pipeline calls it: Bolum
+     * 21.6's guard vocabulary is the posting's skills, and getting the wrong
+     * posting in here would be a validator checking against somebody else's.
+     */
+    @Test
+    void thepipelineIsHandedAFazDThatKnowsThisPosting() {
+        ProfileTree tree = aprofileWithOneBullet();
+        when(assembler.load(ref)).thenReturn(tree);
+        when(analysis.analyse(anyString(), anyBoolean(), anyString()))
+                .thenReturn(Result.ok(posting()));
+        when(relevance.scoreAgainst(any(), any(), any()))
+                .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
+        when(pipeline.run(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
+
+        service.generateForJob(user(), POSTING, false, null, null, ProgressSink.NONE);
+
+        var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
+        verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
+        var selection = new SelectionState(List.of(), List.of(),
+                new SelectionState.BudgetBreakdown(600, 100, 500, 300));
+        rewriter.getValue().rewrite(selection, RewrittenContent.none());
+
+        var context = ArgumentCaptor.forClass(RewriteContext.class);
+        verify(rewrites).rewrite(any(), any(), context.capture(), any());
+        assertThat(context.getValue().postingSkills()).containsExactly("go");
+        assertThat(context.getValue().language()).isEqualTo("en");
+        assertThat(context.getValue().bucketKey()).isEqualTo(USER.toString());
     }
 
     private static JobAnalysis posting() {

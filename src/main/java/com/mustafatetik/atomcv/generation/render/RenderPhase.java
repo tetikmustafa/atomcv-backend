@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.render;
 
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
@@ -34,6 +35,12 @@ import java.util.UUID;
  * <p>Order comes from the profile, never from the selection. Selection ranks
  * by score; a CV that printed its bullets in score order would read as if it
  * had been shuffled.
+ *
+ * <p>Faz D reaches it as a map of replacements rather than as an edit to the
+ * profile: what the person wrote is theirs, and a rewrite is true of one
+ * generation. An atom missing from that map is printed as written, which is
+ * how Bolum 21.6's "then use the original" becomes something the renderer
+ * cannot get wrong.
  */
 public final class RenderPhase {
 
@@ -53,12 +60,14 @@ public final class RenderPhase {
             Profile profile,
             ProfileTree tree,
             SelectionState selection,
+            RewrittenContent rewritten,
             TemplateCustomization customization,
             Locale contentLanguage) {
 
         Objects.requireNonNull(profile, "profile");
         Objects.requireNonNull(tree, "tree");
         Objects.requireNonNull(selection, "selection");
+        RewrittenContent rewrites = rewritten == null ? RewrittenContent.none() : rewritten;
         Locale language = contentLanguage == null ? Locale.ENGLISH : contentLanguage;
 
         Map<UUID, UUID> chosenVariant = new HashMap<>();
@@ -68,11 +77,11 @@ public final class RenderPhase {
 
         List<RenderRequest.RenderableSection> sections = new ArrayList<>();
         for (SectionNode section : tree.sections()) {
-            List<RichContent> loose = contentOf(section.atoms(), chosenVariant);
+            List<RichContent> loose = contentOf(section.atoms(), chosenVariant, rewrites);
 
             List<RenderRequest.RenderableEntry> entries = new ArrayList<>();
             for (EntryNode entry : section.entries()) {
-                List<RichContent> bullets = contentOf(entry.atoms(), chosenVariant);
+                List<RichContent> bullets = contentOf(entry.atoms(), chosenVariant, rewrites);
                 if (!bullets.isEmpty()) {
                     entries.add(renderable(entry.entry(), bullets, language));
                 }
@@ -121,24 +130,29 @@ public final class RenderPhase {
 
     /**
      * The atoms of one node, in profile order, with the wording selection
-     * chose for each.
+     * chose for each — or the rewrite of it, where Faz D produced one.
      */
     private static List<RichContent> contentOf(
-            List<AtomNode> atoms, Map<UUID, UUID> chosenVariant) {
+            List<AtomNode> atoms, Map<UUID, UUID> chosenVariant, RewrittenContent rewritten) {
 
         List<RichContent> content = new ArrayList<>();
         for (AtomNode node : atoms) {
+            UUID atomId = node.atom().getId();
             // containsKey, not get: a selected atom whose variant was left
             // unset falls back to the primary wording rather than vanishing.
-            if (!chosenVariant.containsKey(node.atom().getId())) {
+            if (!chosenVariant.containsKey(atomId)) {
                 continue;
             }
-            UUID variantId = chosenVariant.get(node.atom().getId());
+            UUID variantId = chosenVariant.get(atomId);
             node.variants().stream()
                     .filter(variant -> variant.getId().equals(variantId))
                     .findFirst()
                     .or(node::primaryVariant)
                     .map(AtomVariant::getContent)
+                    // An atom that was not selected is not rewritten either,
+                    // so the gate above comes first: a rewrite can never put
+                    // a line on the page that selection did not pay for.
+                    .map(original -> rewritten.orOriginal(atomId, original))
                     .ifPresent(content::add);
         }
         return content;

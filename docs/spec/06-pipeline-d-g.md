@@ -19,6 +19,13 @@ Optional<AtomVariant> pickExisting(Atom atom, String targetLang, String tone) {
 
 Uygun varyant varsa **maliyet sıfır** — kullanıcının profil editöründe yaptığı yatırım burada karşılık buluyor.
 
+**Bu adım Faz D'nin içinde değil, Faz C'nin önünde koşuyor** (Adım 3.8, dilim 3
+— § 21.5.1). Seçim, seçtiği varyantın **ölçülmüş** maliyetini bütçeye yazıyor;
+sözcüklemeyi sonradan değiştiren bir Faz D, sayfaya yüksekliği hiç ölçülmemiş
+bir satır bastırırdı. Kod `AlternativeWording.pick` olarak seçim paketinde
+duruyor, Faz D de yeniden seçmek yerine seçimin kaydettiği varyant id'sini
+okuyor.
+
 ### 21.2 Adım 2 — Üç kademeli müdahale eşiği
 
 | Skor | Müdahale | Gerekçe |
@@ -114,6 +121,43 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
     return Result.ok(RewrittenContent.fallbackToOriginals(state));
 }
 ```
+
+#### 21.5.1 Kararlar (Adım 3.8, dilim 3)
+
+**Sapma — `StructuredTaskScope` kullanılmıyor, ve asıl sebep preview API
+olması değil.** § 21.5'in kapsamı bir `ShutdownOnFailure`: bir görev
+başarısız olunca kardeşlerini iptal ediyor. Bu faz için yanlış kural, çünkü
+§ 21.6 başarısız bir yeniden yazımın ne demek olduğunu zaten söylüyor —
+orijinal cümle kalır. Bir maddenin tökezlemesi, parası ödenmiş yedi cevabı
+çöpe atmanın gerekçesi değil. Yerine sanal iplik başına bir görev
+(`newVirtualThreadPerTaskExecutor`): aynı dağılım, aynı buluşma, ve bir
+görevin başarısızlığı bir görevin başarısızlığı olarak kalıyor.
+
+**Ekleme — yeniden yazım üretim başına bir kez, deneme başına değil.** § 23.1
+uzun çıkan belgeyi küçülen bütçeyle yeniden seçtiriyor; ayakta kalan atomlar
+zaten yeniden yazılmış olanlar. Boru hattı bu yüzden kabul edilen yeniden
+yazımları denemeler arasında taşıyor. Kaybı bozuk bir CV değil, kimsenin
+görmediği bir fatura.
+
+**Ekleme — ilan hiçbir beceri adı taşımıyorsa Faz D koşmuyor.** Maliyet için
+değil: § 21.6'nın desteklenmeyen iddia kontrolü ilanın sözlüğüne karşı ölçülüyor
+(§ 21.6.1), ve boş bir sözlükle yeniden yazım herhangi bir teknolojiyi
+adlandırıp her kontrolü geçebilirdi. Bu bir dürüstlük kapısı.
+
+**Ekleme — genel CV modunda Faz D hiç koşmuyor.** § 21.2'nin kademeleri Faz B
+skorları, ve genel modda karşısında bir ilan yok (§ 19.4). Boru hattı Faz D'yi
+bir parametre olarak alıyor; genel mod hiçbir şey yapmayanı geçiyor.
+
+**Yeniden yazım profile yazılmıyor.** Faz E'ye atom id'sinden içeriğe bir
+eşleme olarak ulaşıyor: kişinin yazdığı cümle onun, yeniden yazım tek bir
+üretimin doğrusu. Eşlemede olmayan atom yazıldığı gibi basılıyor — § 21.6'nın
+"sonra orijinali kullan" kuralı böylece render'ın yanlış yapamayacağı bir şey
+oluyor. Kalıcılık ayrıca bir iş istemiyor: `generations.content_snapshot`
+zaten render girdisini kopyalıyor (§ 22.2).
+
+**Prompt sürümü yalnız Faz D bir şey değiştirdiğinde kayda giriyor.** Profili
+harfiyen basmış bir üretimin kaydında yeniden yazım prompt'unun adı, onu
+okuyanı yanlış prompt'a gönderirdi (§ 53.3).
 
 ### 21.6 Doğrulama katmanı
 

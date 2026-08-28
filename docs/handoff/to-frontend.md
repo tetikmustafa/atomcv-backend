@@ -265,6 +265,31 @@ bu, "birleştirebilirsin" değil. **Birleştirme akışı yok ve planlanmadı**;
 anonim ekranda tuttuğunuz seçimler ve açık/kapalı durumlar giriş sonrası hâlâ
 geçerli — id'lerle eşleştiriyorsanız yeniden yüklemeniz gerekmiyor.
 
+### B-055 · Üretim akışında yeni bir faz görünüyor: `REWRITING`
+**Since:** commit <sha> · Adım 3.8 · **Spec:** `spec/06-pipeline-d-g.md` § 21
+
+İlana özel üretim artık Faz D'yi koşuyor: seçilen maddelerin en fazla sekizi
+ilana göre yeniden yazılıyor. SSE ilerleme akışında bunun karşılığı **yeni bir
+faz anahtarı**:
+
+```
+{"phase":"D","labelKey":"generation.phase.REWRITING","pct":60}
+```
+
+**Yapmanız gereken tek şey `generation.phase.REWRITING` çevirisini eklemek**
+(TR/EN). Anahtarı tanımayan bir ekran bugün ya boş bir satır ya da ham anahtarı
+gösterir — kırılmaz, ama %60'ta okunmaz bir şey yazar.
+
+Sıra: `ANALYSING` (10) → `MEASURING` (30) → `SCORING` (50) → **`REWRITING`
+(60)** → `RENDERING` (70). Faz D **her üretimde görünmez**: genel CV modunda
+hiç koşmuyor, ve ilan hiçbir beceri adı taşımıyorsa atlanıyor. Yani bu fazı
+görmemek bir hata değil, ve ilerleme çubuğu 50'den 70'e atlayabilir.
+
+**Yeniden yazma sessizce başarısız olabilir ve bu doğru davranış.** Bir madde
+denetimden geçmezse kişinin kendi cümlesi basılıyor; ne bir hata kodu ne bir
+uyarı iniyor. Kullanıcıya "yeniden yazıldı/yazılmadı" diye bir şey göstermeyin
+— CV zaten doğru CV.
+
 ---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir

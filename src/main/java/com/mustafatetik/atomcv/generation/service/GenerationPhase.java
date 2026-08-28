@@ -11,10 +11,11 @@ import com.mustafatetik.atomcv.jobs.queue.JobProgress;
  * sentence here would be shipped in one language and re-shipped for every new
  * one, and the progress line is the most-seen text in the product.
  *
- * <p>Only the phases this pipeline can honestly say it reached. Faz D never
- * runs — Stage 2 does not rewrite — and Faz F's own steps are inside one
- * compile loop, so the last thing reported before the terminal event is that
- * rendering started.
+ * <p>Only the phases this pipeline can honestly say it reached. Faz D is
+ * reported when it actually runs and not before: general mode has no posting
+ * to write towards, and even against one there may be nothing worth
+ * rewriting. Faz F's own steps are inside one compile loop, so the last thing
+ * reported before the terminal event is that rendering started.
  */
 public enum GenerationPhase {
 
@@ -26,6 +27,9 @@ public enum GenerationPhase {
 
     /** Faz B: scoring the profile against the posting. */
     SCORING("B"),
+
+    /** Faz D: rewriting the bullets that are worth it (Bolum 21.2). */
+    REWRITING("D"),
 
     /** Faz C to F: choosing, rendering, compiling, checking the page count. */
     RENDERING("C");

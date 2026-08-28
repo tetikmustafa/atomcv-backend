@@ -78,7 +78,7 @@ class GenerationPipelineIT {
         var fixture = careerOf(3, 4, 25.0);
 
         var document = pipeline().run(fixture.profile, fixture.tree, fixture.request,
-                TemplateCustomization.CLASSIC, Locale.ENGLISH).orElseThrow();
+                ContentRewriter.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH).orElseThrow();
 
         assertThat(document.pageCount()).isEqualTo(1);
         assertThat(document.attempts()).isEqualTo(1);
@@ -98,7 +98,7 @@ class GenerationPipelineIT {
         var fixture = careerOf(6, 10, 5.0);
 
         var result = pipeline().run(fixture.profile, fixture.tree, fixture.request,
-                TemplateCustomization.CLASSIC, Locale.ENGLISH);
+                ContentRewriter.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
 
         assertThat(result.isErr()).isTrue();
         var error = (PipelineError.PageLimitExceeded)

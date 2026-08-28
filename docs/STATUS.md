@@ -3,7 +3,7 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-28** · **3.8 · 2/5 — Faz D yazıyor ve yazdığını denetliyor** · frontend'de açık: **`B-044`**–**`B-054`**, on biri de bekliyor
+**2026-08-28** · **3.8 · 3/5 — Faz D telde ve boru hattında** · frontend'de açık: **`B-044`**–**`B-055`**, on ikisi de bekliyor
 
 ---
 
@@ -16,7 +16,7 @@
 | 3.2 e-posta domain | 🔄 geliştiricide (DNS + DMARC) · 3.3 kimlik ✅ 4/4 |
 | 3.4 CV yükleme ve çıkarım ✅ 4/4 · 3.5 çok dillilik ✅ 2/2 | ✅ |
 | 3.6 anonim mod ✅ 6/6 · 3.7 profil editörü **frontend'de** | ✅ |
-| 3.8 Faz D ve cover letter | 🔄 2/5 — sözcükleme, eşikler, rewrite, doğrulama ✅; paralel/About/cover ⬜ |
+| 3.8 Faz D ve cover letter | 🔄 3/5 — sözcükleme, eşikler, rewrite, doğrulama, paralel yürütme ✅; About/cover ⬜ |
 
 **Aşama 3 planı:** § XI-A.6. **Kimlik:** Redis oturum + CSRF, Google/GitHub,
 magic link; `POST /auth/magic-link` üç katman rate limit + Turnstile arkasında
@@ -31,7 +31,7 @@ istemiyor, hak adrese göre, profil hiçbir tabloda satır değil (§ 31.6.3) �
 varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gövde —
 **`B-054`**.
 
-**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 919 birim · 381 entegrasyon · 48 latex — 0 hata
+**`F-001`…`F-016` kapandı, açık `F-nnn` yok.** **Test:** 936 birim · 381 entegrasyon — 0 hata · **latex 44/48** (dört test fixture'sız düşüyor, 3.8 öncesi de)
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ varsa yazılmıyor ve söyleniyor (§ 41.3.3), `/auth/verify` artık `200` + gö
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-054`'ü alsın** — dosya 279 satır, tek bir `ACK` almadı;
-**`B-054` kırıcı**: `/auth/verify` artık `204` değil. Backend 3.8'de (Faz D),
-3.7 sizde. **`local-fake` fixture'ı sende.**
+**Frontend `B-044`-`B-055`'i alsın** — 304 satır, tek bir `ACK` almadı. **`B-054`
+kırıcı** (`/auth/verify` artık `204` değil), **`B-055` küçük** (yeni faz anahtarı
+`REWRITING`). Backend 3.8'de. **`local-fake` fixture'ı sende, latex onsuz kırmızı.**

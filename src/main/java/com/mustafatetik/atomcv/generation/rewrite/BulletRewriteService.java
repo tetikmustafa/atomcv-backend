@@ -64,6 +64,11 @@ public class BulletRewriteService {
         this.embeddings = embeddings;
     }
 
+    /** Which version of the prompt this bucket is on (Bolum 53.3). */
+    public String promptVersionFor(String bucketKey) {
+        return prompts.selectVersion(PROMPT_ID, bucketKey);
+    }
+
     /**
      * @param candidate what the planner admitted, carrying its own constraints
      * @param context   the posting's words and the profile's voice

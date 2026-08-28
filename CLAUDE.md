@@ -179,16 +179,16 @@ cost a debugging round to find.
 tests worth the most. These rules live here because no spec file enforces them:
 
 **A guard that has never failed is not known to work.** Every rule that catches
-something was confirmed against a deliberate violation before being trusted —
-ArchUnit against a planted dependency, schema validation against a renamed
-column, the query counter against a lower bound, gitleaks against a real token.
-Do the same for the next one. Four probes that report a **false pass**: the AWS
-documentation example keys (gitleaks allowlists them); an ArchUnit probe reading
-a compile-time constant (javac inlines it — plant a method call);
-`@Array(length)` against `vector(1024)` (DDL generation only, so 512 validates
-clean); and a test asserting **no duplicate claim**, which passes with `SKIP
-LOCKED` removed — that clause buys **liveness**, so hold a lock and assert the
-rival claim returns *at once*.
+something was confirmed against a deliberate violation — ArchUnit against a
+planted dependency, schema validation against a renamed column, the query
+counter against a lower bound, gitleaks against a real token. Do the same for
+the next one, and **undo the plant from a copy: `git checkout --` takes
+uncommitted work with it.** Four probes report a **false pass**: the AWS docs
+example keys (gitleaks allowlists them); an ArchUnit probe on a compile-time
+constant (javac inlines it — plant a method call); `@Array(length)` against
+`vector(1024)` (DDL only, so 512 validates clean); and a test asserting **no
+duplicate claim**, which passes with `SKIP LOCKED` removed — that clause buys
+**liveness**, so hold a lock and assert the rival claim returns *at once*.
 
 **A component the whole suite switches off has unverified wiring.** The worker
 is off in every test so its scheduler cannot claim rows others assert on, and
