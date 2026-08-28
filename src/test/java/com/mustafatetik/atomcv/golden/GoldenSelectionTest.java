@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import java.util.Map;
 
 /**
  * Three of the four tests Bolum 51.2 calls the most valuable ones, run across
@@ -109,26 +111,50 @@ class GoldenSelectionTest {
     }
 
     /**
-     * Ids are minted as the fixture is read, and Bolum 19.6 breaks ties by id
-     * — so a re-read can swap two atoms that score and cost exactly the same.
-     * What may not move is how much of the page is used and how many atoms it
-     * took (EK D.8.9).
+     * A re-read is a re-import, and it used to change the answer.
+     *
+     * <p>Ids are minted as the fixture is read and Bolum 19.6 broke ties by id,
+     * so two atoms that scored <em>and</em> cost exactly the same swapped
+     * places between reads: the same CV uploaded twice produced two different
+     * pages. This case was written around that defect — it asserted only that
+     * the page was as full and held as many atoms, which was all that could be
+     * asserted at the time (EK D.8.9).
+     *
+     * <p>The tie-break is the wording's own digest now, so the honest assertion
+     * is available: the same wordings, in the same order. Ids still differ
+     * between reads by design and are still the wrong thing to compare.
      */
     @Test
-    void rereadingTheFixtureFillsThePageTheSameWay() {
+    void rereadingTheFixtureSelectsTheSameWordingsInTheSameOrder() {
         for (String name : GoldenProfileReader.NAMES) {
-            var first = select(GoldenProfileReader.read(name, OWNER), "en", 1).orElseThrow();
+            var goldenFirst = GoldenProfileReader.read(name, OWNER);
+            var first = select(goldenFirst, "en", 1).orElseThrow();
 
             for (int run = 0; run < 5; run++) {
-                var again = select(GoldenProfileReader.read(name, UUID.randomUUID()), "en", 1)
-                        .orElseThrow();
+                var goldenAgain = GoldenProfileReader.read(name, UUID.randomUUID());
+                var again = select(goldenAgain, "en", 1).orElseThrow();
 
                 assertThat(again.selected().size()).as("%s, run %d", name, run)
                         .isEqualTo(first.selected().size());
                 assertThat(again.budget().usedPt()).as("%s, run %d", name, run)
                         .isEqualTo(first.budget().usedPt());
+                assertThat(wordingsOf(goldenAgain, again)).as("%s, run %d", name, run)
+                        .isEqualTo(wordingsOf(goldenFirst, first));
             }
         }
+    }
+
+    /**
+     * What was selected, named by content rather than by id — the only
+     * comparison that means anything across two reads of one fixture.
+     */
+    private static List<String> wordingsOf(GoldenProfile golden, SelectionState state) {
+        Map<UUID, String> byVariant = golden.variants().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        AtomVariant::getId, AtomVariant::getPlainText));
+        return state.selected().stream()
+                .map(selected -> byVariant.getOrDefault(selected.variantId(), ""))
+                .toList();
     }
 
     // ── 4. locks and structural constraints ───────────────────────────────

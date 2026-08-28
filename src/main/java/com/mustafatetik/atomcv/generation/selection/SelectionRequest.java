@@ -111,16 +111,47 @@ public record SelectionRequest(
             double score,
             double renderCostPt,
             boolean alwaysInclude,
-            boolean active) {
+            boolean active,
+            String contentKey) {
+
+        /**
+         * A candidate with nothing to break a tie by, for callers that build
+         * one directly. Selection then falls back to the atom id, which is what
+         * it did everywhere before {@code contentKey} existed.
+         */
+        public AtomCandidate(UUID atomId, UUID variantId, UUID entryId, double score,
+                double renderCostPt, boolean alwaysInclude, boolean active) {
+            this(atomId, variantId, entryId, score, renderCostPt, alwaysInclude, active, "");
+        }
 
         public AtomCandidate {
             Objects.requireNonNull(atomId, "atomId");
+            contentKey = contentKey == null ? "" : contentKey;
             if (renderCostPt <= 0) {
                 throw new IllegalArgumentException("An atom occupies some space");
             }
             if (score < 0 || score > 1) {
                 throw new IllegalArgumentException("A score is between 0 and 1, was " + score);
             }
+        }
+
+        /**
+         * What separates two candidates that tie on everything measurable.
+         *
+         * <p>Bolum 20.3 wants selection to be deterministic, and it was — for
+         * one profile. Across imports it was not: the tie-break was the atom
+         * id, ids are minted fresh on every import, and two atoms with the
+         * same score <em>and</em> the same cost swapped places. The same CV
+         * uploaded twice produced two different pages, which is exactly the
+         * property the determinism test exists to hold and could not see,
+         * because it re-ran one profile rather than re-importing one.
+         *
+         * <p>A digest and not the text. This record travels through logs and
+         * {@code toString()}, and absolute rule 4 does not make an exception
+         * for a value object — twelve hex characters carry nothing back.
+         */
+        public String tieBreak() {
+            return contentKey.isEmpty() ? atomId.toString() : contentKey;
         }
     }
 }

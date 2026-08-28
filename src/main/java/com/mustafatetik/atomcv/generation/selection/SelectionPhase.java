@@ -183,10 +183,11 @@ public final class SelectionPhase {
                     }
                     double efficiency = adjustedScoreOf(atom) / cost;
                     if (best == null || efficiency > bestEfficiency
-                            // Determinism: an id decides a tie, never insertion
-                            // order or a hash (Bolum 20.3).
+                            // Determinism: the wording decides a tie, never
+                            // insertion order (Bolum 20.3). The id is only the
+                            // last resort, and it is not stable across imports.
                             || (efficiency == bestEfficiency
-                                && atom.atomId().toString().compareTo(best.atomId().toString()) < 0)) {
+                                && atom.tieBreak().compareTo(best.tieBreak()) < 0)) {
                         best = atom;
                         bestEfficiency = efficiency;
                     }
@@ -482,6 +483,10 @@ public final class SelectionPhase {
             List<AtomCandidate> sorted = new ArrayList<>();
             atoms.forEach(sorted::add);
             sorted.sort(Comparator.comparingDouble(AtomCandidate::score).reversed()
+                    // The wording decides a tie, not the id: ids are minted
+                    // fresh on every import and the same CV would otherwise
+                    // order two equal atoms differently each time (Bolum 20.3).
+                    .thenComparing(AtomCandidate::tieBreak)
                     .thenComparing(atom -> atom.atomId().toString()));
             return sorted;
         }
