@@ -21,19 +21,31 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                               rotates.
  * @param profileExtractsPerIp   three, and the same reasoning again against
  *                               the most expensive call in the product
+ * @param tightenedPerHour       what a subject the anomaly detector flagged is
+ *                               allowed while the flag lasts (Bolum 44.3). A
+ *                               narrowing and not a stop: the daily ceiling
+ *                               still applies, this only takes away the burst
+ * @param tightenFor             how long the narrowing lasts. Bolum 44.3's
+ *                               snippet says six hours
  */
 @ConfigurationProperties(prefix = "atomcv.quota")
 public record QuotaProperties(
         int generationsPerUser,
         int profileExtractsPerUser,
         int generationsPerIp,
-        int profileExtractsPerIp) {
+        int profileExtractsPerIp,
+        int tightenedPerHour,
+        java.time.Duration tightenFor) {
 
     public QuotaProperties {
         generationsPerUser = generationsPerUser < 1 ? 20 : generationsPerUser;
         profileExtractsPerUser = profileExtractsPerUser < 1 ? 5 : profileExtractsPerUser;
         generationsPerIp = generationsPerIp < 1 ? 5 : generationsPerIp;
         profileExtractsPerIp = profileExtractsPerIp < 1 ? 3 : profileExtractsPerIp;
+        tightenedPerHour = tightenedPerHour < 1 ? 2 : tightenedPerHour;
+        tightenFor = tightenFor == null || tightenFor.isZero() || tightenFor.isNegative()
+                ? java.time.Duration.ofHours(6)
+                : tightenFor;
     }
 
     /**

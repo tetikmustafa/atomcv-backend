@@ -1,9 +1,11 @@
 package com.mustafatetik.atomcv.billing;
 
+import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -30,11 +32,16 @@ public class QuotaService {
 
     private final UsageCounters counters;
     private final QuotaProperties limits;
+    private final TightenedSubjects tightened;
+    private final RateLimiter limiter;
     private final Clock clock;
 
-    QuotaService(UsageCounters counters, QuotaProperties limits, Clock clock) {
+    QuotaService(UsageCounters counters, QuotaProperties limits, TightenedSubjects tightened,
+            RateLimiter limiter, Clock clock) {
         this.counters = counters;
         this.limits = limits;
+        this.tightened = tightened;
+        this.limiter = limiter;
         this.clock = clock;
     }
 
@@ -54,6 +61,14 @@ public class QuotaService {
      * thing that actually varies is both clearer and testable.
      */
     public Result<Void> consume(QuotaSubject subject, QuotaMetric metric) {
+        // Before the counter moves, because a request this refuses must not
+        // spend the day's allowance -- the same ordering Bolum 44.3 gives the
+        // brake against the quota.
+        Result<Void> narrowed = whileTightened(subject, metric);
+        if (narrowed.isErr()) {
+            return narrowed;
+        }
+
         int used = counters.increment(subject, metric);
         int limit = limits.dailyLimit(metric, subject.type());
 
@@ -65,6 +80,36 @@ public class QuotaService {
                     metric.wireValue(), resetsAt()));
         }
         return Result.ok(null);
+    }
+
+    /**
+     * Bolum 44.3's tightening, read on the hot path.
+     *
+     * <p>A daily ceiling says how much, never how fast. A subject can spend a
+     * whole day's generations in four minutes, and the anomaly detector runs
+     * every fifteen -- so by the time it notices, the spending it would have
+     * reported is over. This is what its alarm now does about that: for the
+     * next six hours the flagged subject gets an hourly cap as well.
+     *
+     * <p>Only where the detector looks, which is generations. Extraction has
+     * its own low daily ceiling and no equivalent baseline.
+     */
+    private Result<Void> whileTightened(QuotaSubject subject, QuotaMetric metric) {
+        if (metric != QuotaMetric.GENERATION || !tightened.isTightened(subject.id())) {
+            return Result.ok(null);
+        }
+        var decision = limiter.check("generation", RateLimiter.subjectOf(subject.id()),
+                limits.tightenedPerHour(), Duration.ofHours(1));
+        if (decision.allowed()) {
+            return Result.ok(null);
+        }
+        log.info("Tightened subject {} is over the hourly cap of {}",
+                subject.type(), limits.tightenedPerHour());
+        // The quota error and not a new code: what the caller has to do is the
+        // same, and `resetsAt` carries the difference -- an hour rather than
+        // midnight, which is the honest answer to "when can I try again".
+        return Result.err(new PipelineError.QuotaExceeded(
+                metric.wireValue(), decision.resetsAt()));
     }
 
     /**
