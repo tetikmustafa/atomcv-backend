@@ -160,7 +160,8 @@ public final class SelectionRequestBuilder {
 
     private static AtomCandidate pin(AtomCandidate candidate) {
         return new AtomCandidate(candidate.atomId(), candidate.variantId(), candidate.entryId(),
-                candidate.score(), candidate.renderCostPt(), true, candidate.active());
+                candidate.score(), candidate.renderCostPt(), true, candidate.active(),
+                candidate.contentKey());
     }
 
     /** One build, and the counters it fills in as it goes. */
@@ -208,7 +209,13 @@ public final class SelectionRequestBuilder {
                         scores.scoreOf(node.atom(), entry),
                         costOf(variant),
                         node.atom().isAlwaysInclude(),
-                        node.atom().isActive()));
+                        node.atom().isActive(),
+                        // Bolum 20.3's tie-break, derived from the wording
+                        // rather than from an id that is minted fresh on every
+                        // import. The column is already there and already a
+                        // digest of exactly this content -- nothing new is
+                        // computed and nothing readable travels.
+                        variant.getContentHash()));
             }
             return candidates;
         }
