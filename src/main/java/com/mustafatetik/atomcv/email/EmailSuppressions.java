@@ -43,4 +43,46 @@ public class EmailSuppressions {
                 Integer.class, email);
         return count != null && count > 0;
     }
+
+    /**
+     * Stops writing to an address, for good.
+     *
+     * <p>The write half, which this class was missing: the guard was put in
+     * first on the reasoning the architecture rules were, and the rows were to
+     * arrive from Resend's webhooks. Until they did, a hard bounce meant
+     * nothing — the next sign-in attempt sent to the same dead address again,
+     * and the sending domain paid for it.
+     *
+     * <p>Idempotent, because a webhook is delivered at least once and a
+     * retried delivery must not be an error. The first reason wins: an address
+     * that hard-bounced and later produced a complaint is still suppressed for
+     * the bounce, and the distinction is a diagnostic rather than a decision.
+     */
+    public void suppress(String email, Reason reason) {
+        jdbc.update("""
+                INSERT INTO email_suppressions (email, reason)
+                VALUES (CAST(? AS citext), ?)
+                ON CONFLICT (email) DO NOTHING
+                """, email, reason.wireValue());
+    }
+
+    /** The three values {@code email_suppressions.reason} allows, verbatim from V1. */
+    public enum Reason {
+
+        /** The address does not exist. Nothing will ever make it deliverable. */
+        HARD_BOUNCE,
+
+        /**
+         * Somebody pressed "this is spam". Worse than a bounce for the sending
+         * domain, and the one signal a provider will not let you argue with.
+         */
+        COMPLAINT,
+
+        /** An operator decided. Not produced by anything automatic. */
+        MANUAL;
+
+        String wireValue() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
 }
