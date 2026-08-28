@@ -244,8 +244,9 @@ CSRF. Read § 51.7 before writing a guard.
 
 **Stages 0-3 are closed as built, and were audited end to end on 2026-08-28.**
 The audit's record — every gap found, thirteen decisions with their reasons,
-and what is left for the developer — is `docs/notes/kapanis-denetimi.md`. One
-code item is deliberately outstanding: `docs/notes/sonraki-oturum-atomsuz-entry.md`.
+and what is left for the developer — is `docs/notes/kapanis-denetimi.md`. All
+eight slices are down; **no code item is outstanding**, and what remains is the
+developer's own list in that file (price table, VPS, restore test).
 
 A session resuming reads these, in order. None of it is summarised here; a
 second copy would drift from the real one.

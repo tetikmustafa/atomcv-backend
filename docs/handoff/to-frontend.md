@@ -13,7 +13,7 @@
 ## OPEN
 
 > **Dosya 100 satır sınırının dört katı, ve sebebi arşivleme gecikmesi değil:**
-> **on yedi madde açık ve hiçbiri `ACK` almadı**, yani taşınacak bir şey yok.
+> **on sekiz madde açık ve hiçbiri `ACK` almadı**, yani taşınacak bir şey yok.
 > Sınır bir okunabilirlik kuralı; onu delen şey burada bir belge sorunu değil,
 > **bir koordinasyon sorunu.** Bir madde `ACK` aldığı gün `resolved/`'a taşınır
 > ve dosya kendiliğinden küçülür.
@@ -42,6 +42,7 @@
 | `B-058` | Geri bildirim | Bir başparmak ve 48 saatlik bir içerik izni. |
 | `B-059` | Gizlilik Politikası | Alt işleyen listesine Resend + AWS SES (Tokyo). **Yayın öncesi zorunlu.** |
 | `B-060` | İkinci CV | `409 PROFILE_ALREADY_EXISTS`, iki resolution, `?mode=replace`. |
+| `B-061` | Maddesiz entry | Altında madde olmayan bir entry artık CV'ye çıkabiliyor — editörde engellemeyin. |
 
 ### B-044 · Her yazma isteği bir CSRF token taşıyor
 **Since:** commit <sha> · Adım 3.3 · **Spec:** `spec/08b-api-contract.md` § EK D.6.6
@@ -448,6 +449,38 @@ uygulamayı açan herkeste boş bir profil satırı oluşuyor; boş satır 409
 
 **`mode` yalnız `replace` değerini tanıyor**; başka her şey yokmuş gibi
 okunuyor — bir yazım hatası onay yerine geçmesin diye.
+
+---
+
+### B-061 · Maddesiz bir entry artık CV'ye çıkabiliyor
+**Since:** commit <sha> · kapanış denetimi dilim 5 · **Spec:** `spec/05-pipeline-a-c.md` § 20.2
+
+Bugüne kadar seçim atom atom çalışıyordu: altında hiç madde olmayan bir entry
+aday bile değildi, yani **"2019-2023, Yıldız Teknik Üniversitesi, Bilgisayar
+Mühendisliği" satırı üretilen CV'ye hiçbir yoldan giremiyordu.** Bir diplomanın
+maddesi olmaz; alternatif — her entry'ye zorunlu bir madde yazdırmak — tam da
+bu ürünün karşı durduğu şeyi, şişirmeyi yaptırırdı.
+
+**Aksiyonunuz:**
+
+1. **Profil editöründe maddesiz entry'yi engellemeyin** ve maddesiz bırakmayı
+   caydıran bir metin varsa kaldırın. "Bu entry CV'ye çıkmaz" diyen bir uyarı
+   varsa artık yanlış.
+2. **Boş bir entry, boş bir entry'dir.** Başlığı (`title`) olmayan bir satır
+   hâlâ anlamsız — o doğrulama kalsın; kalkan yalnız *madde* zorunluluğu.
+3. `minAtoms`, maddesi olan entry'ler için geçerli; maddesiz bir entry ona
+   takılmıyor. Editörde `minAtoms` kutusunu maddesiz bir entry'de göstermeye
+   gerek yok.
+
+**Telde ne değişti:** `selection_state` içinde yeni bir alan var —
+`headerOnlyEntries: UUID[]`, sayfaya maddesiz çıkan entry'lerin id'leri. Eski
+üretimlerde yok ve **boş liste olarak okunur**, yani mevcut ekranların hiçbiri
+kırılmıyor. Bir "neden bu satır çıktı" görünümü kuracaksanız bakacağınız yer
+burası: o entry `selected` listesinde **görünmez**, çünkü seçilmiş bir atomu
+yok.
+
+**Bütçe tarafı:** böyle bir entry başlığının maliyetini öder, madde listesinin
+maliyetini ödemez. Sayfa sınırı garantisi aynen duruyor.
 
 ---
 
