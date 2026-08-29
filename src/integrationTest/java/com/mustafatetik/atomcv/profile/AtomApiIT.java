@@ -329,6 +329,47 @@ class AtomApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.tone").doesNotExist());
     }
 
+    /**
+     * Claiming authorship on somebody's behalf is refused, and refused as the
+     * client's mistake (F-021).
+     *
+     * <p>{@code VariantPatch}'s own constructor has always thrown, and
+     * {@code VariantSynchronizationIT} has always watched it throw — but it
+     * watched the constructor, and nothing watched the endpoint. The advice
+     * has no handler for {@code IllegalArgumentException}, so the refusal
+     * reached the catch-all and left as a 500: the server telling a user their
+     * request broke it. The rule is right and the answer was wrong, which is
+     * the shape a test that never crosses the wire cannot see.
+     */
+    @Test
+    void claimingAWordingAsYourOwnIsRefusedAsTheClientsMistake() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+        String variantId = atom.get("variants").get(0).get("id").asText();
+
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/" + variantId)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"userEdited\": true }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields").value(contains("userEdited")));
+    }
+
+    /** The other direction is the "regenerate" button, and it is allowed. */
+    @Test
+    void handingAWordingBackIsAccepted() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+        String atomId = atom.get("id").asText();
+        String variantId = atom.get("variants").get(0).get("id").asText();
+
+        mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/" + variantId)
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"userEdited\": false }"))
+                .andExpect(status().isOk());
+    }
+
     @Test
     void anAtomKeepsAWordingAndADefaultAmongThem() throws Exception {
         JsonNode atom = createAtom(ETL_CONTENT);

@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,16 +17,20 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.repository.ProfileRepository;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -58,16 +63,70 @@ class CoverLetterApiIT extends AbstractIntegrationTest {
     @Autowired
     private ProfileRepository profiles;
 
+    @Autowired
+    private RateLimiter rateLimiter;
+
+    @Autowired
+    private StringRedisTemplate redis;
+
     private UUID generationId;
 
+    /**
+     * The counters go too, for the reason {@code MagicLinkApiIT} records: ten
+     * letters an hour is a window that outlives a test method, and
+     * {@link #arefusedLetterCarriesRetryAfterAsWellAsResetsAt} spends the
+     * whole of it. Left standing it would refuse a neighbouring case that has
+     * nothing to do with rate limiting, and that failure reads as a flake.
+     */
     @BeforeEach
     void agenerationToWriteAbout() {
         localUser.ensureUserExists();
         jdbc.update("DELETE FROM generations WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
+        Set<String> counters = redis.keys("ratelimit:*");
+        if (counters != null && !counters.isEmpty()) {
+            redis.delete(counters);
+        }
         // Whatever profile this user has, and one if they have none: the
         // seeder gives them one and a neighbouring test deletes it, so
         // reading it is a dependency on which test ran first.
         generationId = generations.save(user(), record(profileId())).getId();
+    }
+
+    /**
+     * F-021: the frontend read {@code resetsAt} alone and built the vaguer
+     * sentence, having no header to derive a duration from.
+     *
+     * <p>The header was in fact already sent — {@code ProblemDetailAdvice}
+     * derives it from any 429 whose params carry an {@code Instant}, and this
+     * endpoint's refusal goes through the advice like every other. What was
+     * missing was a test saying so and an {@code @ApiResponse} publishing it,
+     * and between them that is indistinguishable from the header being absent:
+     * the one other place this was claimed without being asserted, the manual
+     * test guide, turned out to be claiming something untrue.
+     *
+     * <p>The window is spent through the limiter rather than through ten
+     * requests. Same layer, same subject, same numbers as the controller —
+     * a bucket filled by another route would prove nothing about this one.
+     */
+    @Test
+    void arefusedLetterCarriesRetryAfterAsWellAsResetsAt() throws Exception {
+        for (int spent = 0; spent < 10; spent++) {
+            rateLimiter.check("cover_letter", LocalDevUser.DEV_USER_ID.toString(),
+                    10, Duration.ofHours(1));
+        }
+
+        mvc.perform(post("/api/v1/generations/" + generationId + "/cover-letter/regenerate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("RATE_LIMITED"))
+                .andExpect(jsonPath("$.params.resetsAt").exists())
+                .andExpect(header().exists("Retry-After"));
+
+        assertThat(jdbc.queryForObject(
+                "SELECT cover_letter FROM generations WHERE id = ?", String.class, generationId))
+                .as("a refused request writes no letter")
+                .isNull();
     }
 
     @Test

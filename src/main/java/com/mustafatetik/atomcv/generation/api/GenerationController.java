@@ -29,6 +29,7 @@ import com.mustafatetik.atomcv.shared.ratelimit.RateLimitDecision;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -89,6 +90,21 @@ public class GenerationController {
      */
     private static final int LETTERS_PER_HOUR = 10;
 
+    /**
+     * Published on every 429 here, because a header nobody documented is a
+     * header nobody reads (F-021).
+     *
+     * <p>{@code ProblemDetailAdvice} has always derived it from the same
+     * {@code resetsAt} the body carries, so this describes what was already
+     * being sent rather than adding anything — but the frontend built the
+     * vaguer "try again shortly" sentence off the schema, and the schema was
+     * the only place that did not say so.
+     */
+    private static final String RETRY_AFTER_DESCRIPTION =
+            "Seconds to wait, rounded up and never zero. The same moment as "
+                    + "`params.resetsAt`, as a duration: it is the one of the two "
+                    + "that is still right when the client's own clock is wrong.";
+
     GenerationController(CurrentUser currentUser,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
@@ -118,6 +134,13 @@ public class GenerationController {
             @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
             @ApiResponse(responseCode = "422",
                     description = "UNPARSEABLE_JOB_DESCRIPTION or INSUFFICIENT_PROFILE",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "429",
+                    description = "QUOTA_EXCEEDED — the day's generations are spent",
+                    headers = @Header(name = HttpHeaders.RETRY_AFTER,
+                            description = RETRY_AFTER_DESCRIPTION,
+                            schema = @Schema(type = "integer")),
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
@@ -239,6 +262,9 @@ public class GenerationController {
                             schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "429",
                     description = "RATE_LIMITED — ten letters an hour",
+                    headers = @Header(name = HttpHeaders.RETRY_AFTER,
+                            description = RETRY_AFTER_DESCRIPTION,
+                            schema = @Schema(type = "integer")),
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
