@@ -11,42 +11,7 @@
 
 ## OPEN
 
-> **Beş maddenin dördü indi** (`F-017`, `F-019`, `F-020`, `F-021` — `ACK`'te).
-> Açık kalan tek madde **`F-018`**, ve § 31.6'nın yarısını bloke eden o.
-
-### F-018 · İçe aktarma işinin sonucu yalnız akışta var, ve uyarılar sayılabiliyor ama gösterilemiyor
-**Since:** frontend, Aşama 3 dilim 3a · **Spec:** `spec/07-subsystems.md` § 31.6, `spec/08-api.md`
-
-**İki ayrı şey, ikisi de aynı yerden çıkıyor: `JobStatusResponse`.**
-
-**1. Terminal olayın alanları şemada yok.** `B-051` içe aktarma işinin
-`profileId`, `sectionCount`, `atomCount`, `warningCount` ve `detectedLanguage`
-taşıdığını söylüyor; `JobStatusResponse` ise yalnız `generationId` ve
-`pageCount` yayımlıyor. Yani **`GET /jobs/{id}` bir içe aktarma işinin sonucunu
-hiç söyleyemiyor** — sayfa yenilenirse sonuç yok. Bu `pageCount`'ın `B-041`
-öncesi hâlinin aynısı ve çözümü de aynı olabilir: alanları status yanıtına da
-koymak, ya da `JobStatusResponse`'a iş tipine göre dolan bir `result` nesnesi
-eklemek. **Bugün SSE yükünü tipsiz taşıyoruz** ve `contracts.ts`'te elle bir
-tip duruyor — `gen:api` onu kaldıramıyor, çünkü karşılığı yayımlanmamış.
-
-**2. Ve asıl engelleyen bu: § 31.6'nın iki tasarım kuralı uygulanamıyor.**
-Bölüm "sorunlu olanlar otomatik açık" ve "kritik uyarılar çözülmeden Onayla
-aktif olmaz" diyor. İkisi de **hangi** bölümün sorunlu olduğunu bilmeyi
-gerektiriyor; telde yalnız bir **sayı** var. § 31.4.1 zaten "bu yapı hiçbir
-zaman frontend'e çıkmıyor" diyor — yani `warnings[]` bilinçli olarak
-gizleniyor, ama o zaman § 31.6'nın iki kuralı yazıldıkları hâliyle
-uygulanamaz.
-
-**İstenen:** ya uyarıların **yeri** yayımlansın (en az `path` ya da bir
-`sectionId`, ve kritik olup olmadığı), ya da § 31.6 bu iki kuralı
-sayı-tabanlı bir nota indirsin. İkincisi de kabul edilebilir bir cevap —
-bugün yaptığımız şey o: bölümler kapalı, "şu kadar konuda emin olamadık"
-notu, ve Onayla hep aktif.
-
-**Bir de küçük bir soru:** içe aktarma işi `phase`/`label` gönderiyor mu?
-Gönderiyorsa anahtarlar ne? Kataloğumuzda `generation.phase.*` var; içe
-aktarma için bir şey uydurmadık, mock yalnız `pct` gönderiyor ve ekran kendi
-cümlesini yazıyor. Anahtar gönderiyorsanız çeviriyi yazalım.
+*(şu an açık madde yok — `F-017`-`F-021`'in beşi de `ACK`'te)*
 
 ### F-001 · Kısa başlık
 **Since:** frontend commit <sha> · Adım <n>
@@ -58,6 +23,42 @@ cümlesini yazıyor. Anahtar gönderiyorsanız çeviriyi yazalım.
 ---
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
+
+### F-018 · İkisi de indi, ve biri "yayımla" değil "önce düzelt" çıktı
+**1. Terminal olayın alanları `GET /jobs/{id}`'de.** `profileId`,
+`sectionCount`, `atomCount`, `warningCount`, `detectedLanguage`, ve
+`warnings[]`. Teşhisiniz doğruydu ve şu haliyle de doğru: bu, `pageCount`'ın
+`B-041` öncesi hâlinin **aynısı** — sonucu yalnız akış taşıyordu.
+
+**2. Uyarıların yeri yayımlanıyor. Ama önce yanlıştı.** İstediğiniz şeyi
+yayımlamaya kalkınca `path`'in iki ayrı hatası çıktı: **bölüm indeksi hiç
+yoktu** (her bölüm sıfırdan başlıyor, Eğitim'in ilk satırıyla Deneyim'in ilk
+satırı aynı yer diye kaydediliyordu) ve taşıdığı indeks **sıralama
+öncesiydi** — `newestFirst` bir satır sonra entry'leri yeniden diziyor. Yani
+tek bölümlü bir CV'de bile yanlış satırı gösterebiliyordu. Sormasaydınız
+kusur, üstüne bir ekran kurulana kadar duracaktı.
+
+**Konum id değil `display_order`** — ve bu bilinçli: `sectionOrder` ile
+`entryOrder`, `GET /profile`'ın ikisinde de yayımladığı `displayOrder`. Yani
+uyarıyı **elinizdeki** profile karşı çözüyorsunuz, bu uç satırları adlandırmak
+için geri okumuyor. `detail` gitmiyor: operatör İngilizcesi, çevrilemez, ve
+mesajı kurduğunuz şey `code`.
+
+**3. "Kritik uyarı" kuralını kaldırdık, uygulamadık.** İkinci seçeneğinizi de
+tam olarak almadık — kural sayı-tabanlı bir nota inmedi, **silindi.** Sebebi:
+kapalı sözlükteki altı kodun altısı da ekranda düzeltilebilir bir alanı tarif
+ediyor, ve kodun kendi belgesi *"bir uyarı bir ret değildir; düzeltilemeyen
+şey çıkarımı bitirir"* diyor. Yani engelleyici bir uyarı sınıfı **hiç var
+olmadı** ve kural yazıldığı gün de boştu. Bir `critical` bayrağı uydurmak, bir
+vakayı değil bir cümleyi tatmin etmek olurdu. **Onayla hep aktif — bugün
+yaptığınız şey doğruydu.**
+
+**4. Küçük sorunuz: hayır, içe aktarma `phase`/`label` göndermiyor.** Yalnız
+`pct`. Ekranın kendi cümlesini yazması doğru davranış; uydurulmuş bir anahtar
+kümesi, çevrilecek ama hiç değişmeyecek altı satır olurdu. Çeviri yazmayın.
+
+Kalıcı kararlar `spec/07-subsystems.md` § 31.6.4'te. **Aksiyonunuz var —
+`B-067`.**
 
 ### F-020 · `GET /api/v1/generations` indi, ve `total` ile birlikte
 İkisini birden aldınız çünkü ikisi de gerekiyordu: liste

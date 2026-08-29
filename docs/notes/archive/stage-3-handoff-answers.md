@@ -89,3 +89,61 @@ okuyor ve yine `["rating"]` yazıyor. Mevcut test değişmeden geçti.
 
 Frontend aksiyonu: `B-065`.
 
+
+---
+
+## Aşama 3 · dilim 11 — `F-020` (2026-08-29)
+
+`GET /api/v1/generations`. Sözleşme `spec/08-api.md` § 35.3'e işlendi; burada
+yalnız iki tuzak.
+
+**`limit + 1` çekip fazlasını atmak, ikinci bir sorgudan iyi.** "Sonraki sayfa
+var mı" sorusunu sayarak cevaplamak, bu sorgunun zaten bildiği bir şeyi ikinci
+kez ve **başka bir anda** sormaktı. `total` ayrı bir `count` olarak duruyor
+çünkü o başka bir soru — sayfanın değil hesabın sayısı.
+
+**Cursor sıralama anahtarının tamamını taşımak zorunda.** `created_at DESC,
+id DESC` sıralı bir listede yalnız zaman damgası taşıyan bir cursor, eşit
+damgalı grubun kalanını ya atlıyor ya iki kez veriyor — karşılaştırmanın hangi
+yöne yaslandığına göre. Üçüncü seçenek yok: **bir satırı tanımlamayan anahtar
+bir satırdan devam edemez.** `rowsSharingATimestampAreNotSkipped` bunu tutuyor.
+
+**Bilinçli boşluk — satırda başlık yok.** Bir geçmiş satırı bugün "1 sayfa ·
+tarih · strong" diyor ve on üretimi olan biri için okunması güç. Etiket
+(rol, şirket) **ilandan** okunur ve `GenerationResponse` ilanı baştan beri
+döndürmüyor (mutlak kural 4). Buraya `jdAnalysis.role.title` koymak o kuralın
+sınırını **kazara** çizmek olurdu. **Tamir etmeye kalkma** — frontend'e soruldu
+(`B-066`), cevabı bir spec kararı olacak.
+
+**`spotlessCheck` yerelde CRLF'e düşüyor** — editör aracı ve python'un metin
+modu Windows'ta CRLF yazıyor; git commit'te normalleştirdiği için CI geçiyor,
+yerel kontrol düşüyor. **Yeni dosya yazdıktan sonra `sh ./gradlew
+spotlessApply`.** (CLAUDE.md'nin heredoc uyarısının kardeşi: bu notun kendisi
+`\r\n` yazmaya çalışırken heredoc'ta gerçek bir satır sonuna dönüştü.)
+
+Frontend aksiyonu: `B-066` — ve içinde cevaplanacak bir soru var.
+
+## Aşama 3 · dilim 12 — `F-018` (2026-08-29)
+
+Kalıcı kararlar `spec/07-subsystems.md` § 31.6.4'te. Burada iki şey.
+
+**Ders — "yayımla" isteği önce bir kusur buldurdu.** Frontend uyarıların
+*yerini* istedi; yayımlamaya kalkınca yerin **yanlış** olduğu çıktı, iki ayrı
+biçimde. `path` ne bölümü taşıyordu ne de sıralama sonrası satırı, ve düzeltme
+`ProfileNormalizer`'ın içindeydi. **Bir alanı yayımlamak, onu ilk kez
+okumaktır** — dilim 9'un `Retry-After`'ının tersi: orada iddia doğruydu ve
+kanıtı yoktu, burada alan vardı ve yanlıştı.
+
+**Tamir etmeye kalkma — "kritik uyarı" yok, ve `critical` bayrağı da yok.**
+`ExtractionWarningCode` kapalı ve altı değerinin altısı da düzeltilebilir bir
+alanı tarif ediyor. § 31.6'nın üçüncü tasarım kuralı **silindi**, sayıya
+indirilmedi: kural yazıldığı gün de boştu ve bir bayrak uydurmak bir vakayı
+değil bir cümleyi tatmin etmek olurdu. Yedinci bir kod gerçekten engelleyici
+olursa karar § 31.6.4'te açıkça verilecek.
+
+**Konum `display_order`, id değil** — `GET /profile` ikisini de yayımlıyor, o
+yüzden uç satırları adlandırmak için geri okumuyor ve writer imzaları
+değişmedi. İd'ye çözmek gerekseydi iki writer'ın da dönüş tipi değişecekti.
+
+Frontend aksiyonu: `B-067`.
+
