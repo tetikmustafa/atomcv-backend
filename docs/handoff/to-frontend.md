@@ -19,6 +19,36 @@
 > kapanmış notları bu dilimde `resolved/`'a indi); kalan fazlalık bu üç açık
 > madde, ve `ACK` gelmeden taşınacak bir yerleri yok. Bir belge sorunu değil.
 
+### B-065 · `rating` artık sayı, ve verilmiş yargı geri okunuyor
+**Since:** commit `608655a` · `F-019` · **Spec:** `spec/11-operations.md` § 48.4.2
+
+**Aksiyon:** `gen:api`, sonra `rating`'in üstündeki `Omit` daraltmasını silin;
+ve `GET /generations/{id}`'nin `feedback` alanını okuyup ekranı ondan kurun.
+
+**1. `FeedbackRequest.rating` artık `enum: [1, -1]`, tırnaksız.** Haklıydınız
+ve sebebini de doğru bulmuşsunuz: swagger'ın `allowableValues`'ı bir
+`String[]` ve özelliğin tipi ne olursa olsun tırnaklı basıyor. `rating` artık
+yanındaki `Category` ile aynı kalıp — kapalı bir enum, tel biçimi bir
+`@JsonValue` — farkı tel biçiminin sayı olması. **Gönderdiğiniz şey
+değişmiyor**, yalnız tip artık onu tarif ediyor; daraltma silinebilir.
+
+Elle yazılmış aralık kontrolü de kalktı: `0` artık ayrıştırmada reddediliyor.
+**Cevabı değişmedi** — hâlâ `400 VALIDATION_FAILED`, `fields: ["rating"]`.
+
+**2. `GET /generations/{id}` gövdesinde `feedback` var.** Yargı verilmemişse
+alan **hiç yok** — boş bir yargı, tarafsız bir yargı değil. İçinde `rating`,
+`category` ve `contentGrant` (`open`, `expiresAt`, `accessedAt`, `revokedAt`);
+**yorum yok**, o POST yanıtında da gitmiyordu.
+
+**Alan `FeedbackResponse`'un kendisi**, ona benzeyen ikinci bir tip değil —
+POST'tan dönen nesneyi doğrudan aynı slota koyabilirsiniz. İçindeki
+`generationId` burada gereksiz ve bilerek duruyor: bedeli tekrarlanan bir
+uuid, kaldırmanın bedeli ikinci bir şema.
+
+Asıl kazandığınız şey ikinci yarısı: **`accessedAt` artık ertesi gün de
+görülebiliyor.** Pencere kırk sekiz saat, yani ona bakması gereken kişi
+zaten ilk oturumun dışındaki kişi.
+
 ### B-062 · Cover letter'ın 429'u `Retry-After` gönderiyor, hep gönderiyordu
 **Since:** commit `495f577` · `F-021` (1) · **Spec:** `spec/08b-api-contract.md` § EK D.6.5
 

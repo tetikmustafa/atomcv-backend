@@ -11,10 +11,9 @@
 
 ## OPEN
 
-> **Beş maddenin ikisi indi** (`F-017`, `F-021` — `ACK`'te), üçü açık.
-> Kalanların aciliyet sırası: **`F-018`** § 31.6'nın yarısını bloke ediyor,
-> **`F-020`** yayımlanmış bir yeteneği karşılıksız bırakıyor, **`F-019`** iki
-> küçük düzeltme.
+> **Beş maddenin üçü indi** (`F-017`, `F-019`, `F-021` — `ACK`'te), ikisi
+> açık: **`F-018`** § 31.6'nın yarısını bloke ediyor, **`F-020`** yayımlanmış
+> bir yeteneği karşılıksız bırakıyor.
 
 ### F-020 · `canSaveHistory` var, geçmişi okuyacak uç yok
 **Since:** frontend, Aşama 3 dilim 7 · **Spec:** `spec/08-api.md` § 35.7
@@ -33,29 +32,6 @@ sayı, hiç sayı olmamasından kötü. Bugün cümle onları saymadan adlandır
 **İstenen:** `GET /api/v1/generations` (sayfalı olabilir), ya da en azından
 hesapta bir toplam. İlki `canSaveHistory`'yi anlamlı kılar; ikincisi yalnız
 silme ekranını doğrular.
-
-### F-019 · Geri bildirim: `rating` metin geliyor, ve geri okunamıyor
-**Since:** frontend, Aşama 3 dilim 7a · **Spec:** `spec/11-operations.md` § 48.4
-
-**İki şey, aynı uç.**
-
-**1. `FeedbackRequest.rating` üretilen tipte `"1" | "-1"` — metin.** Aynı
-şemada `format: int32` yazıyor, açıklama "1 for good, -1 for bad" diyor, ve
-`FeedbackResponse.rating` `number` olarak dönüyor. openapi-typescript bir
-tam sayı enum'unu ancak değerler şemada tırnaklıysa böyle basar. Biz **sayı**
-gönderiyoruz ve tipi `Omit` ile daraltıyoruz; bugün bir şey bozulmuyor, ama
-daraltma tam olarak "şemayı düzeltmeyi bekleyen kod" ve öyle işaretli.
-**İstenen:** `enum` değerleri tırnaksız olsun — `[1, -1]`.
-
-**2. Verilmiş bir yargı geri okunamıyor.** `GET /generations/{id}` geri
-bildirimi taşımıyor ve başka bir uç da vermiyor. Maddeniz "geri bildirimini
-gönderdin yerine **mevcut seçimi** göstermek doğru davranış" diyor — bunu
-yalnız oturum boyunca yapabiliyoruz; sayfa yenilenince ekran hangi başparmağın
-basıldığını bilmiyor ve boş başlıyor. Aynı şey `contentGrant` için de geçerli,
-ve orası daha önemli: **`accessedAt` gösterilmeli** diyorsunuz, ama izni
-verdikten bir gün sonra dönen kullanıcı ona bakamıyor.
-**İstenen:** `GET /generations/{id}` gövdesinde `feedback` (rating, category,
-`contentGrant`) — yorum hariç, o zaten geri yollanmıyor.
 
 ### F-018 · İçe aktarma işinin sonucu yalnız akışta var, ve uyarılar sayılabiliyor ama gösterilemiyor
 **Since:** frontend, Aşama 3 dilim 3a · **Spec:** `spec/07-subsystems.md` § 31.6, `spec/08-api.md`
@@ -101,6 +77,28 @@ cümlesini yazıyor. Anahtar gönderiyorsanız çeviriyi yazalım.
 ---
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
+
+### F-019 · İkisi de indi, ve ikincisi asıl olanmış
+**1. `rating` artık `enum: [1, -1]`.** Teşhisiniz tam isabetti: swagger'ın
+`allowableValues`'ı bir `String[]` ve özelliğin tipi ne olursa olsun tırnaklı
+basıyor. `rating` artık yanındaki `Category` ile aynı kalıp — kapalı bir enum,
+tel biçimi bir `@JsonValue`, farkı tel biçiminin sayı olması. Gönderdiğiniz
+şey değişmiyor; `Omit` daraltması silinebilir. Elle yazılmış aralık kontrolü
+de kalktı, cevabı değişmeden.
+
+**2. `GET /generations/{id}` `feedback` taşıyor.** İstediğiniz alanlar, yorum
+hariç. Yargı verilmemişse alan hiç yok.
+
+**`contentGrant`'in daha önemli olduğunu söylemiştiniz ve öyleymiş.** Dilim
+2'nin § 48.4 kaydı "kontrol edilemeyen bir onay kutudan ibarettir" diyordu, ve
+grant'i **yalnız yazma yanıtında** döndürüyordu — yani o cümle yalnız oturum
+boyunca doğruydu. Pencere kırk sekiz saat, yani `accessedAt`'e bakması gereken
+kişi zaten ertesi gün dönen kişi. Bu bir eksik değil, § 48.4'ün kendi
+iddiasının yarısıydı; `spec/11-operations.md` § 48.4.2'ye **Düzeltme** olarak
+yazıldı.
+
+Alan `FeedbackResponse`'un kendisi — POST'tan döneni doğrudan aynı slota
+koyabilirsiniz. **Aksiyonunuz var — `B-065`.**
 
 ### F-021 · Üç sorunun üçü de cevaplandı, ve ikisinde tahmininiz yanlıştı
 **1. `Retry-After` eksik değildi — hep gidiyordu.** `ProblemDetailAdvice` onu
