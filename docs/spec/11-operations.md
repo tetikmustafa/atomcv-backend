@@ -430,6 +430,46 @@ indiğinde kendi öznesi için kendi cevabını isteyecek.
 için yazdı; bu, bir teşhiste görünmesiyle aynı şey değil (mutlak kural 4). Geri
 yollamak da kendi sözlerinin sebepsiz yolculuğu olurdu.
 
+#### 48.4.2 Kararlar (`F-019`)
+
+**Düzeltme — verilmiş bir yargı geri okunabiliyor.** Dilim 2 grant'i yalnız
+**yazma yanıtında** döndürüyordu, ve yukarıdaki "kontrol edilemeyen bir onay
+kutudan ibarettir" cümlesi o hâliyle **yalnız oturum boyunca** doğruydu: sayfa
+yenilenince ekran hangi başparmağın basıldığını bilmiyordu, ve `accessedAt`'e
+bakması gereken kişi — izni verdikten bir gün sonra dönen kişi — ona hiçbir
+yoldan ulaşamıyordu. Pencere kırk sekiz saat, yani ihtiyacın çoğu ilk
+oturumun dışında.
+
+`GET /generations/{id}` gövdesinde artık bir `feedback` alanı var: yargı
+verilmemişse **hiç yok** (boş bir yargı, tarafsız bir yargı değildir).
+
+**Alan `FeedbackResponse`'un kendisi, ona benzeyen ikinci bir tip değil.**
+Yargıyı az önce kaydeden ekranla onu yükleyen ekran aynı şeyi gösteriyor; iki
+tip, ilk değişiklikte ayrışan iki ICU bağlaması olurdu. İçindeki
+`generationId` burada gereksiz ve yine de duruyor — bedeli tekrarlanan bir
+uuid, kaldırmanın bedeli ikinci bir şema.
+
+**Yorum burada da gitmiyor.** Aynı sebep: kişi onu yazdı, onda duruyor.
+
+**Düzeltme — `rating` şemada tam sayı olarak yayımlanıyor.** Swagger'ın
+`allowableValues`'ı bir `String[]` ve özelliğin tipi ne olursa olsun tırnaklı
+basıyordu: aynı şema `format: int32` derken `enum: ["1", "-1"]` diyordu.
+openapi-typescript enum'a inanıyor, yani üretilen istek tipi alanı metin
+sanıyordu ve istemci — doğru olarak — sayı gönderip farkı bir `Omit` ile
+kapatıyordu.
+
+`rating` artık `Category`'nin yanındaki kalıp: **kapalı bir enum, tel biçimi
+bir `@JsonValue`**, farkı tel biçiminin sayı olması. İki değerin şemadan
+ayrışmasını artık derleyici engelliyor, ve elle yazılmış aralık kontrolü
+kalktı — `0` ayrıştırmada reddediliyor, yani uca hiç ulaşamıyor. Cevabı
+değişmedi: `400 VALIDATION_FAILED`, `fields: ["rating"]`.
+
+**Not — şemanın tam sayı enum basması için tipin `@Schema`'da açıkça
+yazılması gerekiyor.** `@Schema(type = "integer", format = "int32",
+allowableValues = {"1", "-1"})` enum bildiriminin üstünde; tip yazılmadan
+swagger değerleri yine tırnaklıyor, tip yazılıp `allowableValues` yazılmadan
+enum tamamen düşüyor. Üçü birden gerekiyor, ve bunu `OpenApiSchemaIT` tutuyor.
+
 ### 48.5 Replay
 
 ```bash

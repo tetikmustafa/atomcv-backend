@@ -62,58 +62,34 @@ düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
 bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
 sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
-## Aşama 3 · dilim 9 — `F-017` ve `F-021` (2026-08-29)
+## Aşama 3 · dilim 9-10 — `F-017`, `F-019`, `F-021` (2026-08-29)
 
-Frontend Aşama 3'ü kapatırken beş madde yazdı; bu dilim ikisini indirdi.
-**Üç sorunun ikisinde tahminleri yanlıştı, ve yanlış olan taraf bizdi.**
+Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları
+EK D.6 ile `spec/11-operations.md` § 48.4.2'de. Frontend aksiyonları
+`B-062`-`B-065`.
 
-**Düzeltme — `{"userEdited": true}` `500` dönüyordu.** `VariantPatch`'in
-compact constructor'ı doğru davranıyor, ama `ProblemDetailAdvice`'ta
-`IllegalArgumentException` işleyicisi yok: ihlal son çareye düşüp
-`INTERNAL_ERROR` oluyordu. Kapı artık `VariantPatchRequest.userEdited`
-üstünde bir `@AssertFalse` — `null` onun altında geçerli kalıyor ("dokunma"
-trafiğin çoğu), ve reddi mevcut `MethodArgumentNotValidException` işleyicisi
-yazdığı için `fields` binding result'tan geliyor, ikinci bir yerde tutulan
-addan değil. Constructor'daki muhafız duruyor: o servis çağıranı için.
+**Buradan taşınmayan tek şey, çünkü başka hiçbir yerde yazmıyor:**
 
-**Ders, ve bu oturumda dördüncü kez:** *muhafızı düşerken görmediysen ne
-kanıtladığını bilmiyorsun.* `VariantSynchronizationIT` bu kuralı yıllardır
-test ediyordu — **constructor'ı çağırarak**. Telden geçen hiçbir şey yoktu, ve
-telde yanlış olan şey tam olarak oydu. § 51.7'nin dördüncü kuralının kardeşi:
-bir kuralın doğru olması, cevabının doğru olduğunu söylemiyor.
+**Springdoc'ta tam sayı enum'u üç şeyi birden istiyor** — `@Schema(type =
+"integer", format = "int32", allowableValues = {"1", "-1"})`, ve **enum
+bildiriminin üstünde**, özelliğin üstünde değil.
 
-**Ekleme — `ErrorCatalogueSpecTest`.** EK D.6'nın tablosunu okuyup
-`ErrorCode`'a karşı doğruluyor: kod, HTTP durumu, parametre adları, tipleri ve
-**sıraları**, iki yönde de. Bir birim testi ve `docs/`'tan dosya okuyor —
-Gradle testleri proje dizininden koştuğu için yol göreli, ve yolun bozulması
-`theTableWasActuallyFound`'ı düşürüyor: bulunamayan bir tablo, sessizce iki
-boş haritayı karşılaştırmaya dönüşmemeli.
+| Ne denendi | Ne çıktı |
+|---|---|
+| `Short` + `allowableValues` | `type: integer`, `enum: ["1","-1"]` — tırnaklı |
+| aynısı + özellikte `type` | aynı, tırnaklı |
+| enum + `@JsonValue short` | `type: string`, enum düştü |
+| enum + `@Schema(type=integer)` | `type: integer`, **enum tamamen yok** |
+| enum + `type` + `allowableValues` | ✅ `enum: [1,-1]` |
 
-**Neden yazıldı:** frontend'in katalog testi `params`'ı **o tablodan** okuyor,
-yani satırı olmayan bir kodun ICU mesajı yanlış argümanla yazılsa da iki repoda
-da yeşil kalıyor. Bildirilen bir eksik satır vardı; muhafız **beş** buldu —
-`COVER_LETTER_REJECTED`, `GENERATION_PAUSED`, ve D.6.8'de "katalogda" yazıp
-EK D.6'ya hiç geçmemiş üç protokol kodu. *İki tablo bir kataloğun tamamı
-değil.*
+`allowableValues` bir `String[]`; swagger onu ancak tip **açıkça** integer
+yazılmışsa sayıya çeviriyor, ve tipi yazıp `allowableValues` yazmamak enum'u
+tamamen düşürüyor. `@JsonValue` tek başına yetmiyor. `OpenApiSchemaIT` üçünü
+de tutuyor.
 
-**`Retry-After` eksik değildi.** Advice onu `resetsAt`'i `Instant` taşıyan her
-429'dan türetiyor. Eksik olan test ve şema girişiydi — ve **ikisinin yokluğu
-başlığın yokluğundan ayırt edilemez**: bu iddianın test edilmeden yazıldığı tek
-öbür yer (elle test kılavuzu) yanlış çıkmıştı, `QueuedGenerationApiIT`'in
-javadoc'u onu kaydediyor.
-
-**`CoverLetterApiIT` artık `ratelimit:*`'ı siliyor.** Yeni test on mektuplu
-pencerenin tamamını harcıyor; silmeyen bir sınıfta komşu bir vaka ilgisiz bir
-429'da düşerdi. `MagicLinkApiIT`'in aynı sebeple yaptığı şey — **bu dosyada
-ikinci kez.**
-
-**Açık bırakıldı — `selection_state` telde yok.** `rejected` ve
-`headerOnlyEntries` yalnız `generations` satırında; hiçbir uç yayımlamıyor.
-Frontend "neden bu satır çıktı" görünümünü kurmadı ve istemedi, biz de
-tüketicisi olmayan bir yapıyı yayımlamadık — ilk ekran çizildiğinde yanlış
-şekli olmuş bir sözleşme sürdürmek olurdu. **Görünüm gelirse yayımlanacak.**
-
-Frontend aksiyonları: `B-062`, `B-063`, `B-064`.
+**Ders, bu oturumda dört kez:** *bir muhafızın düştüğünü görmeden yazıldı
+sayma.* `{"userEdited": true}` yıllardır test ediliyordu — **constructor
+çağrılarak**; telde `500` dönüyordu ve telden geçen hiçbir test yoktu.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
