@@ -1031,7 +1031,7 @@ yeni satır değildir.
 **Tasarım kuralları:**
 - Bölümler varsayılan **kapalı** (200 atomu birden görmek bunaltır)
 - Sorunlu olanlar otomatik açık
-- Kritik uyarılar çözülmeden "Onayla" aktif olmaz
+- ~~Kritik uyarılar çözülmeden "Onayla" aktif olmaz~~ — **kaldırıldı, § 31.6.4**
 - Inline düzenleme (ayrı moda geçme yok)
 
 **Arka planda paralel çalışanlar:**
@@ -1041,6 +1041,49 @@ t=8s   Çıkarım bitti → ekran açılır
        └── XeLaTeX ölçümü (~15s)
 t=25s  Her şey hazır (kullanıcı hâlâ inceliyor)
 ```
+
+#### 31.6.4 Kararlar (`F-018`) — uyarının yeri, ve olmayan "kritik" kavramı
+
+**Düzeltme — "kritik uyarı" diye bir şey yok, ve olamaz.** Yukarıdaki üçüncü
+tasarım kuralı uygulanabilir değildi: `ExtractionWarningCode` **kapalı** ve
+altı değerinin altısı da kişinin ekranda düzeltebileceği bir alanı tarif
+ediyor. Kodun kendi belgesi bunu zaten söylüyordu — *"bir uyarı bir ret
+değildir; düzeltilemeyen şey — dil yok, içerik yok — çıkarımı bitirir"*
+(§ 31.10). Yani "çözülmeden Onayla'yı kapalı tutan" bir uyarı sınıfı hiç var
+olmadı, ve kural yazıldığı gün de boştu.
+
+Kural **kaldırıldı**, bir "kritik" bayrağı uydurulmadı. Yedinci bir kod
+gerçekten engelleyici olursa o karar burada açıkça verilir; bugün **Onayla hep
+aktif**, ki frontend'in zaten yaptığı şey o.
+
+**Ekleme — uyarının yeri yayımlanıyor, ve düzeltilerek.** İkinci kural
+("sorunlu olanlar otomatik açık") *hangi* bölümün sorunlu olduğunu bilmeyi
+gerektiriyor ve telde yalnız bir sayı vardı. Artık `GET /jobs/{id}` bir
+`warnings[]` taşıyor: her biri `code`, `sectionOrder` ve `entryOrder`.
+
+**Bu, yayımlanabilir hâle getirmeden önce bir kusurun düzeltilmesini
+gerektirdi.** Uyarının `path`'i `sections.entries[i]` diye kuruluyordu ve iki
+ayrı biçimde yanlıştı: **bölüm indeksi hiç yoktu** (her bölüm sıfırdan
+başlıyor, yani Eğitim'in ilk satırıyla Deneyim'in ilk satırı aynı yer diye
+kaydediliyordu), ve taşıdığı indeks **sıralama öncesiydi** — `newestFirst` bir
+satır sonra entry'leri yeniden diziyor ve `display_order`'ı yeni konumlardan
+yazıyor. Yani tek bölümlü bir CV'de bile uyarı yanlış satırı gösterebiliyordu.
+*Hangi satır olduğunu söyleyemeyen bir uyarı, üstüne süs takılmış bir sayıdır.*
+
+**Konum id değil `display_order`, ve bu bir eksiklik değil.** İkisi de
+`GET /profile`'ın `sections[].displayOrder` ve `entries[].displayOrder`
+alanları — yani istemci uyarıyı **elindeki** profile karşı çözüyor, ve bu uç
+satırları adlandırmak için geri okumuyor.
+
+**`detail` gitmiyor.** Operatör için yazılmış İngilizce bir not; çevrilemez, ve
+frontend'in ICU mesajını kurduğu şey `code`. Hiçbir entry adlamayan bir uyarı
+(modelin kendi kaldırdıklarından bazıları) kodu ile ve konumsuz gidiyor —
+"bu belge hakkında bir şey" hâlâ sayılmaya değer.
+
+**Cevap — içe aktarma işi `phase`/`label` göndermiyor.** Üretimin
+`generation.phase.*` kataloğunun karşılığı yok; iş yalnız `pct` gönderiyor ve
+ekranın kendi cümlesini yazması **doğru davranış**. Uydurulmuş bir anahtar
+kümesi, çevrilecek ama hiç değişmeyecek altı satır olurdu.
 
 #### 31.6.1 Kararlar (Adım 3.4, dilim 4)
 

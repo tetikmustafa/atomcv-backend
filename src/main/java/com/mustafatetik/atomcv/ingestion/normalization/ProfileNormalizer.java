@@ -75,24 +75,40 @@ public class ProfileNormalizer {
         return normalized;
     }
 
+    /**
+     * An entry and whatever could not be settled about it, before either has a
+     * position (F-018).
+     *
+     * <p>The warnings travel with their entry through the sort rather than
+     * being written down against the index the model happened to use. That
+     * index does not survive: {@code newestFirst} reorders the entries a line
+     * later, and {@code display_order} is rewritten from the new positions.
+     */
+    private record Located(
+            NormalizedProfile.NormalizedEntry entry, List<ExtractionWarning> warnings) {
+    }
+
     private NormalizedProfile.NormalizedSection normalizeSection(
             ExtractedProfile.ExtractedSection section, short order,
             List<ExtractionWarning> warnings) {
 
-        List<NormalizedProfile.NormalizedEntry> entries = new ArrayList<>();
-        for (int i = 0; i < section.entries().size(); i++) {
-            entries.add(normalizeEntry(
-                    section.entries().get(i), section.kind(), i, warnings));
+        List<Located> located = new ArrayList<>();
+        for (var raw : section.entries()) {
+            located.add(normalizeEntry(raw, section.kind()));
         }
         if (NEWEST_FIRST.contains(section.kind())) {
-            entries.sort(newestFirst());
+            located.sort(Comparator.comparing(Located::entry, newestFirst()));
         }
         // After the sort, never before: display_order is the order a reader
         // sees, and writing it first would record the order the model
-        // happened to answer in.
+        // happened to answer in. The paths are written here for the same
+        // reason -- a warning pointing at the model's order points at nothing.
         List<NormalizedProfile.NormalizedEntry> ordered = new ArrayList<>();
-        for (short i = 0; i < entries.size(); i++) {
-            ordered.add(withOrder(entries.get(i), i));
+        for (short i = 0; i < located.size(); i++) {
+            ordered.add(withOrder(located.get(i).entry(), i));
+            String path = EntryPath.of(order, i);
+            located.get(i).warnings().forEach(warning -> warnings.add(
+                    new ExtractionWarning(warning.code(), warning.detail(), path)));
         }
         return new NormalizedProfile.NormalizedSection(
                 section.kind(), section.title().strip(), order, ordered);
@@ -112,22 +128,23 @@ public class ProfileNormalizer {
                 Comparator.nullsLast(Comparator.reverseOrder()));
     }
 
-    private NormalizedProfile.NormalizedEntry normalizeEntry(
-            ExtractedProfile.ExtractedEntry entry, SectionKind kind, int index,
-            List<ExtractionWarning> warnings) {
+    private Located normalizeEntry(
+            ExtractedProfile.ExtractedEntry entry, SectionKind kind) {
 
-        String path = "sections.entries[" + index + "]";
-        YearMonth start = dateOf(entry.startDate(), path, "startDate", warnings);
-        YearMonth end = dateOf(entry.endDate(), path, "endDate", warnings);
+        // Raised without a path and given one after the sort: where this entry
+        // ends up is not known yet, and the model's own order is not where.
+        List<ExtractionWarning> warnings = new ArrayList<>();
+        YearMonth start = dateOf(entry.startDate(), "startDate", warnings);
+        YearMonth end = dateOf(entry.endDate(), "endDate", warnings);
 
         if (entry.organization().isBlank() && !entry.atoms().isEmpty()
                 && kind != SectionKind.ABOUT && kind != SectionKind.SKILLS) {
             warnings.add(new ExtractionWarning(ExtractionWarningCode.MISSING_ORGANIZATION,
-                    "an entry has content but no organization", path));
+                    "an entry has content but no organization", ""));
         }
         if (start != null && end != null && end.isBefore(start)) {
             warnings.add(new ExtractionWarning(ExtractionWarningCode.OVERLAPPING_DATES,
-                    "an entry ends before it starts", path));
+                    "an entry ends before it starts", ""));
         }
 
         List<NormalizedProfile.NormalizedAtom> atoms = new ArrayList<>();
@@ -135,9 +152,9 @@ public class ProfileNormalizer {
         for (var atom : entry.atoms()) {
             atoms.add(normalizeAtom(atom, order++));
         }
-        return new NormalizedProfile.NormalizedEntry(
+        return new Located(new NormalizedProfile.NormalizedEntry(
                 entry.title().strip(), entry.organization().strip(), entry.location().strip(),
-                start, end, (short) 0, atoms);
+                start, end, (short) 0, atoms), List.copyOf(warnings));
     }
 
     /**
@@ -147,7 +164,7 @@ public class ProfileNormalizer {
      * date is saying the person is still there, and a warning on every current
      * job would train people to click past the one that matters.
      */
-    private static YearMonth dateOf(String written, String path, String field,
+    private static YearMonth dateOf(String written, String field,
             List<ExtractionWarning> warnings) {
         if (written == null || written.isBlank()) {
             return null;
@@ -163,7 +180,7 @@ public class ProfileNormalizer {
                 PartialDates.isYearOnly(written)
                         ? field + " gave a year with no month"
                         : field + " could not be read as a date",
-                path));
+                ""));
         return null;
     }
 
