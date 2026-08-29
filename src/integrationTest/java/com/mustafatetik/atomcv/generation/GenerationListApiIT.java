@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.generation.domain.EngineVersion;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
+import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.profile.domain.Profile;
@@ -110,6 +111,60 @@ class GenerationListApiIT extends AbstractIntegrationTest {
                 // Whether there is one is a boolean; the letter itself is not
                 // list material even though it is the person's own.
                 .andExpect(jsonPath("$.items[0].hasCoverLetter").value(false));
+    }
+
+    /**
+     * F-022: the row is labelled, and by the two fields Faz A read rather than
+     * by the posting.
+     *
+     * <p>The list shipped without a label on purpose — every label a history
+     * screen wants is read out of the posting, and putting one here would have
+     * answered absolute rule 4's question by accident instead of on the record.
+     * The frontend built the screen, saw that a row saying "one page · a date ·
+     * strong" tells nobody which application it was, and asked. Bolum 57 now
+     * says where the exception stops, and this is the half of it that runs.
+     */
+    @Test
+    void arowIsLabelledByWhatFazAReadAndNotByThePosting() throws Exception {
+        Generation generation = save();
+        generation.recordPosting("A long posting nobody should ever see again",
+                "hash", analysis("Backend Engineer", "Atlas Yazilim"));
+        generations.save(user(), generation);
+
+        mvc.perform(get("/api/v1/generations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].roleTitle").value("Backend Engineer"))
+                .andExpect(jsonPath("$.items[0].companyName").value("Atlas Yazilim"))
+                // The line Bolum 57 draws: enough to name the row, never the
+                // posting it was named from.
+                .andExpect(jsonPath("$.items[0].jobDescription").doesNotExist());
+    }
+
+    /**
+     * Absent rather than empty, and the two are independent.
+     *
+     * <p>{@code JobAnalysis} normalises a missing title or company to {@code ""},
+     * so without {@code blankToNull} a general-mode row would carry two empty
+     * strings and the screen would render a label that says nothing. F-022
+     * asked for the field to be gone in that case, which is also F-010's rule.
+     */
+    @Test
+    void arowWithNothingToNameItCarriesNoLabelRatherThanAnEmptyOne() throws Exception {
+        save();
+        Generation named = save();
+        named.recordPosting("A posting that never says who is offering the work",
+                "hash", analysis("Backend Engineer", null));
+        generations.save(user(), named);
+
+        mvc.perform(get("/api/v1/generations"))
+                .andExpect(status().isOk())
+                // Newest first: the one that named the work but not the company.
+                .andExpect(jsonPath("$.items[0].roleTitle").value("Backend Engineer"))
+                .andExpect(jsonPath("$.items[0].companyName").doesNotExist())
+                // General mode. There was no posting, so there is nothing to
+                // read a label out of.
+                .andExpect(jsonPath("$.items[1].roleTitle").doesNotExist())
+                .andExpect(jsonPath("$.items[1].companyName").doesNotExist());
     }
 
     /**
@@ -258,6 +313,15 @@ class GenerationListApiIT extends AbstractIntegrationTest {
         return StoredSelection.of(new SelectionState(List.of(), List.of(),
                         new SelectionState.BudgetBreakdown(648.0, 142.0, 506.0, 0.0)),
                 "en", TemplateCustomization.CLASSIC);
+    }
+
+    private static JobAnalysis analysis(String title, String company) {
+        return new JobAnalysis(
+                new JobAnalysis.Role(title, null, null, null, null),
+                new JobAnalysis.Company(company, null),
+                List.of(), List.of(), List.of(), List.of(),
+                new JobAnalysis.ExperienceYears(null, null),
+                List.of(), null, "en", 0.9, List.of());
     }
 
     private static EngineVersion engine() {
