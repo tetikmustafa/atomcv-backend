@@ -66,9 +66,28 @@ public record GenerationResponse(
 
         @Schema(description = "The covering letter, as plain text with blank lines "
                 + "between its parts")
-        String coverLetter) {
+        String coverLetter,
 
+        @Schema(description = "What this person already said about it, and the "
+                + "48-hour diagnostic permission if they opened one. Absent "
+                + "when they have not judged it.")
+        FeedbackResponse feedback) {
+
+    /**
+     * <strong>The same type the feedback endpoint answers with</strong>, not a
+     * second one shaped like it (F-019).
+     *
+     * <p>A screen that has just recorded a verdict and a screen that has just
+     * loaded one are showing the same thing, and two types would be two ICU
+     * bindings drifting apart at the first change. The {@code generationId}
+     * inside is redundant here and kept anyway: the price of it is a duplicated
+     * uuid, and the price of removing it is a second schema.
+     */
     public static GenerationResponse of(Generation generation) {
+        return of(generation, null);
+    }
+
+    public static GenerationResponse of(Generation generation, FeedbackResponse feedback) {
         return new GenerationResponse(
                 generation.getId(),
                 generation.getStatus(),
@@ -79,7 +98,8 @@ public record GenerationResponse(
                         ? null : generation.getSelectionState().language()),
                 blankToNull(generation.getJdAnalysis() == null
                         ? null : generation.getJdAnalysis().jdLanguage()),
-                blankToNull(generation.getCoverLetter()));
+                blankToNull(generation.getCoverLetter()),
+                feedback);
     }
 
     /**

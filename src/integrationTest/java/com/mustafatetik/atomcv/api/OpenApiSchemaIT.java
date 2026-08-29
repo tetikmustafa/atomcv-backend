@@ -64,6 +64,30 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         "replace_profile", "keep_existing_profile")));
     }
 
+    /**
+     * F-019: an integer enum has to be published as integers.
+     *
+     * <p>The column allows two values and springdoc was publishing them as the
+     * strings {@code "1"} and {@code "-1"}, beside a {@code format: int32} on
+     * the same schema and a {@code number} coming back in the response.
+     * openapi-typescript believes the enum, so the generated request type said
+     * the field was a string literal while the client — correctly — sent a
+     * number, and the frontend was carrying an {@code Omit} to paper over the
+     * difference.
+     *
+     * <p>Asserted as numbers rather than as anything: {@code value(1)} against
+     * a JSON string fails, which is the whole point of the case.
+     */
+    @Test
+    void anIntegerEnumIsPublishedAsIntegersAndNotAsStrings() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.FeedbackRequest"
+                        + ".properties.rating.type").value("integer"))
+                .andExpect(jsonPath("$.components.schemas.FeedbackRequest"
+                        + ".properties.rating.enum")
+                        .value(Matchers.containsInAnyOrder(1, -1)));
+    }
+
     @Test
     void theErrorCodeVocabularyIsPublishedAsAnEnum() throws Exception {
         mvc.perform(get("/v3/api-docs"))

@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -178,6 +179,87 @@ class FeedbackApiIT extends AbstractIntegrationTest {
         assertThat(jdbc.queryForObject(
                 "SELECT comment FROM generation_feedback WHERE generation_id = ?",
                 String.class, generationId)).isEqualTo("The dates were wrong");
+    }
+
+    // ── reading a verdict back (F-019) ───────────────────────────────────
+
+    /**
+     * A verdict that cannot be read back is a verdict the screen forgets.
+     *
+     * <p>Bolum 13's rule is that pressing a thumb again shows the standing
+     * selection rather than a thank-you, and until this landed a client could
+     * only honour that for as long as the tab stayed open: nothing published
+     * the answer, so a reload started blank and offered to collect the same
+     * verdict a second time.
+     */
+    @Test
+    void averdictComesBackOnTheGeneration() throws Exception {
+        mvc.perform(feedback("{\"rating\":-1,\"category\":\"density\"}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feedback.rating").value(-1))
+                .andExpect(jsonPath("$.feedback.category").value("density"));
+    }
+
+    /** No thumb pressed, no field: an absent verdict is not a neutral one. */
+    @Test
+    void agenerationNobodyJudgedCarriesNoVerdict() throws Exception {
+        mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feedback").doesNotExist());
+    }
+
+    /**
+     * The sharper half of F-019, and the reason it is not merely convenient.
+     *
+     * <p>Bolum 48.4 promises the person can see when their content was
+     * actually read. {@code accessedAt} is that promise, and the grant is open
+     * for forty-eight hours — so the one who most needs to look is the one who
+     * comes back tomorrow, and until this landed they had no way to.
+     */
+    @Test
+    void agrantAndItsAuditTrailComeBackToo() throws Exception {
+        mvc.perform(feedback("{\"rating\":-1,\"contentGranted\":true}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feedback.contentGrant.open").value(true))
+                .andExpect(jsonPath("$.feedback.contentGrant.expiresAt").exists())
+                // Null until somebody looks, and this is what makes the
+                // consent checkable rather than decorative.
+                .andExpect(jsonPath("$.feedback.contentGrant.accessedAt").doesNotExist());
+    }
+
+    /** A withdrawn grant is still shown: the person asked what became of it. */
+    @Test
+    void awithdrawnGrantIsStillReadable() throws Exception {
+        mvc.perform(feedback("{\"rating\":-1,\"contentGranted\":true}"))
+                .andExpect(status().isOk());
+        mvc.perform(feedback("{\"rating\":-1,\"contentGranted\":false}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feedback.contentGrant.open").value(false))
+                .andExpect(jsonPath("$.feedback.contentGrant.revokedAt").exists());
+    }
+
+    /**
+     * The comment does not travel here either, for the reason it does not
+     * travel back from the POST: they wrote it, they have it (absolute rule 4).
+     */
+    @Test
+    void thecommentIsNotOnTheGenerationEither() throws Exception {
+        mvc.perform(feedback("{\"rating\":-1,\"comment\":\"The dates were wrong\"}"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/v1/generations/" + generationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.feedback.rating").value(-1))
+                .andExpect(jsonPath("$.feedback.comment").doesNotExist());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────

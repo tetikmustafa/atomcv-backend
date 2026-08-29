@@ -61,6 +61,35 @@ public class FeedbackService {
     }
 
     /**
+     * What this person already said about this generation (F-019).
+     *
+     * <p><strong>A verdict that cannot be read back is one the screen
+     * forgets.</strong> Bolum 13 wants a second press to show the standing
+     * selection rather than a thank-you, and nothing published the answer:
+     * a client could honour that only for as long as the tab stayed open, and
+     * a reload offered to collect the same verdict again.
+     *
+     * <p>The grant comes with it and is the half that matters more. Bolum 48.4
+     * promises the person can see when their content was read; the window is
+     * forty-eight hours, so the one who most needs to look is the one who
+     * comes back the next day.
+     *
+     * <p>Both reads are scoped, and both take the acting user rather than
+     * trusting the generation that was already found — the id reaches a
+     * browser, so nothing downstream of it may be read on its authority alone
+     * (absolute rule 3).
+     *
+     * @return empty when they have not judged it; the grant inside may be null
+     *         when they judged it without opening the door
+     */
+    @Transactional(readOnly = true)
+    public Optional<Recorded> read(UserContext user, UUID generationId) {
+        return feedback.findFor(user, generationId)
+                .map(verdict -> new Recorded(
+                        verdict, grants.findFor(user, generationId).orElse(null)));
+    }
+
+    /**
      * @param rating         {@code 1} or {@code -1}
      * @param category       one of Bolum 13's five, or null
      * @param comment        what they wrote, or null. Stored, never logged
