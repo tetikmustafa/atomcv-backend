@@ -11,27 +11,8 @@
 
 ## OPEN
 
-> **Beş maddenin üçü indi** (`F-017`, `F-019`, `F-021` — `ACK`'te), ikisi
-> açık: **`F-018`** § 31.6'nın yarısını bloke ediyor, **`F-020`** yayımlanmış
-> bir yeteneği karşılıksız bırakıyor.
-
-### F-020 · `canSaveHistory` var, geçmişi okuyacak uç yok
-**Since:** frontend, Aşama 3 dilim 7 · **Spec:** `spec/08-api.md` § 35.7
-
-**Neden:** `capabilities.canSaveHistory` yayımlanmış bir yetenek ve hesapta
-`true` — yani ürün kullanıcıya üretimlerinin saklandığını söylüyor. Ama
-`GET /api/v1/generations` yok: tekil `GET /generations/{id}` var, liste yok,
-sayı yok. Kullanıcı kendi geçmişine hiçbir yoldan bakamıyor, ve biz de
-yeteneği doğrulayan bir ekran çizemiyoruz.
-
-**Somut olarak nerede ısırdı:** hesap silme onayı (`B-057`) "neyin gittiğini
-saymalı" diyor. Bölüm ve madde sayısını profilden alıyoruz; **üretim sayısını
-veremiyoruz** ve tahmin de etmiyoruz — geri alınamayan tek yerde yanlış bir
-sayı, hiç sayı olmamasından kötü. Bugün cümle onları saymadan adlandırıyor.
-
-**İstenen:** `GET /api/v1/generations` (sayfalı olabilir), ya da en azından
-hesapta bir toplam. İlki `canSaveHistory`'yi anlamlı kılar; ikincisi yalnız
-silme ekranını doğrular.
+> **Beş maddenin dördü indi** (`F-017`, `F-019`, `F-020`, `F-021` — `ACK`'te).
+> Açık kalan tek madde **`F-018`**, ve § 31.6'nın yarısını bloke eden o.
 
 ### F-018 · İçe aktarma işinin sonucu yalnız akışta var, ve uyarılar sayılabiliyor ama gösterilemiyor
 **Since:** frontend, Aşama 3 dilim 3a · **Spec:** `spec/07-subsystems.md` § 31.6, `spec/08-api.md`
@@ -77,6 +58,27 @@ cümlesini yazıyor. Anahtar gönderiyorsanız çeviriyi yazalım.
 ---
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
+
+### F-020 · `GET /api/v1/generations` indi, ve `total` ile birlikte
+İkisini birden aldınız çünkü ikisi de gerekiyordu: liste
+`canSaveHistory`'yi anlamlı kılıyor, `total` da silme ekranını doğruluyor.
+**İkinciyi yürüyerek elde edilebilecek bir sayı sanmayın** — sayfaları
+yürüyerek sayılan bir sayı, yürüyüş bitene kadar başka bir sayı olurdu; bu bir
+`count`. `GET /generations?limit=1` yeter.
+
+Uç kaynak haritasında (§ 35.3) baştan beri varmış ve hiç yazılmamış — yani
+"yayımlanmış yeteneği karşılıksız bırakıyor" teşhisiniz tam olarak doğruydu.
+
+Sayfalama EK D.8.7'nin şekli: `{ items, nextCursor, total }`, cursor'lı.
+Cursor **sıralama anahtarının tamamını** taşıyor (`created_at` + `id`), çünkü
+aynı zaman damgasını paylaşan satırlar id'ye göre sıralı ve yalnız zamanı
+taşıyan bir cursor eşit grubun kalanını ya atlar ya iki kez verir. Testte var.
+
+**Bir şeyi kasten yapmadık ve sizden cevap bekliyor: satırda başlık yok.**
+Bugün bir satır "1 sayfa · tarih · strong" diyor ve okunması güç. Etiket
+ilandan okunur, ilan ise mutlak kural 4 gereği geri dönmüyor; buraya
+`role.title` koymak o kuralın sınırını kazara çizmek olurdu.
+**Aksiyonunuz var — `B-066`, ve içinde bir soru var.**
 
 ### F-019 · İkisi de indi, ve ikincisi asıl olanmış
 **1. `rating` artık `enum: [1, -1]`.** Teşhisiniz tam isabetti: swagger'ın
