@@ -43,35 +43,77 @@ Aşama 0-3 baştan tarandı, on üç karar alındı ve uygulandı. **Tam kayıt
 `kapanis-denetimi.md`'de**: her bulgu, her kararın gerekçesi, ve geliştiriciye
 düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
 
-**Kalıcı olanlar `spec/`'e işlendi:** § 47 (migration açılışta kalıyor,
-`--spring.flyway.migrate-only` diye bir property yok), § 57.4 (R2 listede var,
-kodda yok), § 3.2 (Resend `send.` öneki ve bölge), § 51.7 (testin kendisi
-hakkındaki dört kural, CLAUDE.md'den taşındı).
+**Kalıcı olanlar `spec/`'e işlendi ve buradan silindi** (kural gereği): § 47,
+§ 57.4, § 3.2, § 51.7, ve atomsuz entry'nin § 20.2'si. Gerekçeleri
+`kapanis-denetimi.md`'de.
 
-**Son açık kod maddesi de indi: atomsuz entry** (2026-08-28, ayrı oturum).
-Kaydı `kapanis-denetimi.md` § "Atomsuz entry indi"de; kalıcı kararı
-`spec/05-pipeline-a-c.md` § 20.2'ye işlendi.
+**Hâlâ canlı olan iki kayıt:**
 
-**Düzeltme (§ 20.2, kısıt 4-5).** Doküman "bir entry'nin atomu seçilirse entry
-başlığı maliyeti eklenir" diyordu ve entry'yi açmanın tek yolunun bir atom
-olduğunu varsayıyordu. Artık bir entry **atomsuz da açılabiliyor**: başlığını
-öder, `ITEMIZE_OVERHEAD` ödemez, ve kısıt (4) ona uygulanmaz. Spec düzeltildi.
-
-**Ekleme.** Sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor — o liste
-kullanıcıya atom atom gösteriliyor ve içindeki, hiçbir atoma çözülmeyen bir
-entry id'si sessizlikten kötü. Bu, golden'daki "her atom ya seçilir ya bir
-sebep alır" sayımının başlık-adaylarını dışlamasının da sebebi.
-
-**Düzeltme (yol üstünde bulundu).** `SelectionPhase.openEntries` bir `HashSet`'ti
-ve `upgradeFirstEntryOf` onu gezip **ilk ulaştığını** ücretlendiriyor;
-`Set` iterasyonu JVM başına tuzlandığı için bir kaldırmanın ne kadar iade
-ettiği koşudan koşuya değişebiliyordu. `LinkedHashSet` oldu. CLAUDE.md'nin
-`Set.copyOf` uyarısı burada da geçerliymiş — **iterasyon sırası bir sayıya
-dönüşüyorsa `Linked*` gerekiyor.**
+- **Sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor** — o liste
+  kullanıcıya atom atom gösteriliyor ve hiçbir atoma çözülmeyen bir entry
+  id'si sessizlikten kötü. Golden'daki "her atom ya seçilir ya bir sebep alır"
+  sayımının başlık-adaylarını dışlamasının sebebi bu.
+- **`SelectionPhase.openEntries` `LinkedHashSet` olmak zorunda.** `HashSet`
+  iken `upgradeFirstEntryOf` "ilk ulaştığını" ücretlendiriyordu ve iterasyon
+  JVM başına tuzlandığı için bir kaldırmanın iadesi koşudan koşuya
+  değişiyordu. **İterasyon sırası bir sayıya dönüşüyorsa `Linked*` gerekiyor.**
 
 **Geliştiricide:** yeni model seçilince fiyat tablosu — **o güne kadar günlük
 bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
 sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
+
+## Aşama 3 · dilim 9 — `F-017` ve `F-021` (2026-08-29)
+
+Frontend Aşama 3'ü kapatırken beş madde yazdı; bu dilim ikisini indirdi.
+**Üç sorunun ikisinde tahminleri yanlıştı, ve yanlış olan taraf bizdi.**
+
+**Düzeltme — `{"userEdited": true}` `500` dönüyordu.** `VariantPatch`'in
+compact constructor'ı doğru davranıyor, ama `ProblemDetailAdvice`'ta
+`IllegalArgumentException` işleyicisi yok: ihlal son çareye düşüp
+`INTERNAL_ERROR` oluyordu. Kapı artık `VariantPatchRequest.userEdited`
+üstünde bir `@AssertFalse` — `null` onun altında geçerli kalıyor ("dokunma"
+trafiğin çoğu), ve reddi mevcut `MethodArgumentNotValidException` işleyicisi
+yazdığı için `fields` binding result'tan geliyor, ikinci bir yerde tutulan
+addan değil. Constructor'daki muhafız duruyor: o servis çağıranı için.
+
+**Ders, ve bu oturumda dördüncü kez:** *muhafızı düşerken görmediysen ne
+kanıtladığını bilmiyorsun.* `VariantSynchronizationIT` bu kuralı yıllardır
+test ediyordu — **constructor'ı çağırarak**. Telden geçen hiçbir şey yoktu, ve
+telde yanlış olan şey tam olarak oydu. § 51.7'nin dördüncü kuralının kardeşi:
+bir kuralın doğru olması, cevabının doğru olduğunu söylemiyor.
+
+**Ekleme — `ErrorCatalogueSpecTest`.** EK D.6'nın tablosunu okuyup
+`ErrorCode`'a karşı doğruluyor: kod, HTTP durumu, parametre adları, tipleri ve
+**sıraları**, iki yönde de. Bir birim testi ve `docs/`'tan dosya okuyor —
+Gradle testleri proje dizininden koştuğu için yol göreli, ve yolun bozulması
+`theTableWasActuallyFound`'ı düşürüyor: bulunamayan bir tablo, sessizce iki
+boş haritayı karşılaştırmaya dönüşmemeli.
+
+**Neden yazıldı:** frontend'in katalog testi `params`'ı **o tablodan** okuyor,
+yani satırı olmayan bir kodun ICU mesajı yanlış argümanla yazılsa da iki repoda
+da yeşil kalıyor. Bildirilen bir eksik satır vardı; muhafız **beş** buldu —
+`COVER_LETTER_REJECTED`, `GENERATION_PAUSED`, ve D.6.8'de "katalogda" yazıp
+EK D.6'ya hiç geçmemiş üç protokol kodu. *İki tablo bir kataloğun tamamı
+değil.*
+
+**`Retry-After` eksik değildi.** Advice onu `resetsAt`'i `Instant` taşıyan her
+429'dan türetiyor. Eksik olan test ve şema girişiydi — ve **ikisinin yokluğu
+başlığın yokluğundan ayırt edilemez**: bu iddianın test edilmeden yazıldığı tek
+öbür yer (elle test kılavuzu) yanlış çıkmıştı, `QueuedGenerationApiIT`'in
+javadoc'u onu kaydediyor.
+
+**`CoverLetterApiIT` artık `ratelimit:*`'ı siliyor.** Yeni test on mektuplu
+pencerenin tamamını harcıyor; silmeyen bir sınıfta komşu bir vaka ilgisiz bir
+429'da düşerdi. `MagicLinkApiIT`'in aynı sebeple yaptığı şey — **bu dosyada
+ikinci kez.**
+
+**Açık bırakıldı — `selection_state` telde yok.** `rejected` ve
+`headerOnlyEntries` yalnız `generations` satırında; hiçbir uç yayımlamıyor.
+Frontend "neden bu satır çıktı" görünümünü kurmadı ve istemedi, biz de
+tüketicisi olmayan bir yapıyı yayımlamadık — ilk ekran çizildiğinde yanlış
+şekli olmuş bir sözleşme sürdürmek olurdu. **Görünüm gelirse yayımlanacak.**
+
+Frontend aksiyonları: `B-062`, `B-063`, `B-064`.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 

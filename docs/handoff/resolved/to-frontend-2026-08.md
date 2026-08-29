@@ -365,3 +365,513 @@ Denetimi ararken § 18.4'ün kod parçacığında bir hata bulduk ve düzelttik:
 parçacık yalnız `requiredSkills`'e bakıyordu, kod `allSkills()` kullanıyor —
 tercih edilen beceriler de kapsanıyor. Kod doğruydu, spec eksikti. Şekil
 değişmedi, `gen:api` gerekmez.
+
+---
+
+## Aşama 3 · dilim 0 — 2026-08-29
+
+`to-frontend.md`'nin `OPEN` bölümünden taşındı. Dördü de tek dilimde kapandı;
+ayrıntılı inşa kaydı `notes/current.md` § Aşama 3 · dilim 0'da.
+
+### B-044 · Her yazma isteği bir CSRF token taşıyor
+Çift-gönderim `client.ts`'te: `POST`/`PUT`/`PATCH`/`DELETE` çerezdeki
+`XSRF-TOKEN`'ı `X-XSRF-TOKEN` başlığında yankılıyor, `GET` yankılamıyor.
+
+**Frontend:** `lib/api/csrf.ts` çerezi **her istekte yeniden okuyor**, önbelleğe
+almıyor — sunucu tokenı döndürürse önbellekli bir kopya tek reddi kalıcı redde
+çevirirdi, ve `CSRF_TOKEN_INVALID`'in tekrar denenmemesinin sebebi tam olarak
+bu. Değer `decodeURIComponent`'ten geçiyor: çerez kavanozunda yüzde-kodlanmış
+duran bir base64 token (`+`, `=`) ham gönderilirse hiçbir zaman eşleşmiyor.
+Çerez yokken **başlık hiç gönderilmiyor**; boş bir başlık bir iddia olurdu.
+
+Altı test `tests/unit/lib/csrf.test.ts`'te, negatif kontrolü yapıldı —
+başlığı kuran satır kaldırılınca dördü kırılıyor. MSW başlığı hiç denetlemiyor,
+yani bu davranışın sessizce kaybolması mümkündü; testler o yüzden var.
+
+### B-045 · Yeni hata kodu — `AUTHENTICATION_REQUIRED` (401)
+`errors.AUTHENTICATION_REQUIRED` iki katalogda, parametresiz. `sign_up`
+resolution'ı zaten vardı; panel onu sunucudan geldiği gibi çiziyor.
+
+### B-047 · LinkedIn ile giriş kaldırıldı
+**Silinecek bir şey çıkmadı:** LinkedIn hiçbir zaman giriş sağlayıcısı olarak
+çizilmemişti — kimlik yüzeyi bu repoda henüz yok. Duran tek `linkedin`
+`ProfileHead`'in iletişim alanı, ve maddenin kendisi onun kalmasını söylüyor.
+
+### B-055 · Üretim akışında yeni bir faz: `REWRITING`
+`generation.phase.REWRITING` iki katalogda ("Tailoring your wording to the
+posting" / "İfadelerin ilana göre uyarlanıyor").
+
+**Mock da fazı gönderiyor**, çünkü anahtarı eklemek yetmiyordu: fazı hiç
+görmemiş bir ekran %60'ta boş bir başlık çizer ve bunu hiçbir test yakalamaz.
+`SCHEDULE`'a `{phase:'D', pct:60}` girdi; faz sırası testleri ve e2e'deki
+çerçeve sayısı buna göre güncellendi. Fazın **her üretimde görünmediği**
+(genel CV modu, becerisiz ilan) çağrı yerlerine yorum olarak işlendi — %50'den
+%70'e atlayan bir çubuk düşmüş bir çerçeve değil.
+
+---
+
+## Aşama 3 · dilim 1 — 2026-08-29
+
+### B-046 · `/auth/session`, `/auth/logout`, ve hesabın yetenek kümesi
+İki uç da bağlı, iki yetenek kümesi de mock'ta, ve kapılar ekranda.
+
+**Türetme düz `Required<>` değil.** § 35.7 dört bayrağı, iki kotayı ve iki
+sayacı **iki oturum türü için de** garanti ediyor; `endpoints/auth.ts` onları
+zorunlu okuyor. Sebebi bir yetenek kapısının üç değerli olmaması gerektiği:
+`undefined` sessizce "yapamaz" dalına düşer ve kullanıcının **sahip olduğu**
+özelliği gizler. Gerçekten değişen üçü (`maxAtoms`, `quotaResetsAt`,
+`anonymousExpiresAt`) opsiyonel — maddeniz hesapta "JSON'da hiç yok" diyor,
+şema `nullable` diyor, ikisi de okunabiliyor. Bir test hesapta iki alanın da
+**anahtar olarak bulunmadığını** sınıyor, `null` olmadığını değil.
+
+**`allowedTemplates` artık `["classic"]`.** Mock üçünü sayıyordu; § 35.7'nin
+örneği kayıttan eski. Render edilemeyecek bir şablonu listelemek üretim anında
+patlayan bir seçenek sunmaktır.
+
+**İlk görünür kapı `canEditAtomControls`.** Önem kaydırıcısı ve üç kilit
+anahtarı anonimde **gizleniyor**, kilitli gösterilmiyor: iki yüz atomun her
+birinin yanında tekrarlanan kilitli bir kontrol, kişinin kendi çalışmasının
+ortasına yerleştirilmiş bir satış konuşmasıdır ve § 9'un sözü **daha dar** bir
+ürün, dırdır eden bir ürün değil. Kaybolan bir şey yok — elle kontrol zaten
+isteğe bağlı, varsayılan çıktı iki halde de aynı. Oturum yüklenirken kapı
+**kapalı**: görünüp kaybolan bir kaydırıcı arada sürüklenebilir.
+
+**`GET /auth/session` önbellekten servis edilmiyor.** `staleTime: 0` (30 sn'lik
+varsayılan editörün yüzlerce atom anahtarı için var ve içinde saat olan bir
+değer için tam olarak yanlış) ve `refetchOnWindowFocus` — genelde kapalı,
+burada açık. Doksan dakika sonra sekmeye dönen kişi, süre bildiriminin
+yazıldığı kişi.
+
+**Çıkış düğmesi henüz çizilmedi, uç bağlı.** `logout()` ve `useLogout()`
+duruyor ve test ediliyor; düğme dilim 2'de giriş yoluyla birlikte iniyor,
+çünkü bugün kimse giriş yapamıyor ve ulaşılamayan bir durumun düğmesi
+kontrol edilemez. `useLogout` önbelleği **temizliyor**, invalidate etmiyor:
+her şey **biri olarak** çekildi ve sıradaki başka biri; invalidate eski
+profili her sorgu yeniden çekene kadar ekranda bırakır, ki ortak bir
+makinede bu bir kişinin CV'sini sonrakine göstermektir.
+
+---
+
+### B-048 · OAuth indi — sizden iki rota
+**Kapatıldı:** 2026-08-29, frontend dilim 2a · **Spec:** `spec/10-security.md` § 40.6.1
+
+`GET /auth/providers` → yapılandırılmış sağlayıcılar (anahtarı olmayan sessizce
+yok). `GET /auth/oauth/{provider}/start?next=/profile` → 302 sağlayıcıya.
+`/auth/complete?next=...` başarılı girişin, `/auth/error?code=...&reason=...`
+başarısızın indiği yer. `OAUTH_FAILED` tek kod, yedi sebep; **`declined`
+kullanıcının vazgeçmesi, hata değil.**
+
+**Frontend:** İki rota da indi, üçüncüsüyle birlikte — `/login`, sağlayıcı
+listesini sunucudan okuyor ve yalnız onun saydıklarını çiziyor.
+
+**İniş sayfasının var olma sebebi kodda iki çerezin farkı olarak duruyor.**
+Oturum çerezi `SameSite=Strict` — zinciri Google'da başlamış bir isteğe
+gitmiyor, o yüzden sayfa `/auth/session`'ı aynı-origin `fetch` ile soruyor ve
+ancak ondan sonra yola devam ediyor. next-intl'in `NEXT_LOCALE` çerezi ise
+`Lax`, yani üst düzey gezinmede **gidiyor**: locale öneksiz yönlendirdiğiniz
+`/auth/complete` okuyucunun zaten kullandığı dile düşüyor. Sizden bir şey
+istemiyor, ama bilmeye değer — `next`'i biz locale öneksiz gönderiyoruz ve
+öneki istemci ekliyor.
+
+**Oturum anonim dönerse sayfa duruyor ve söylüyor.** Uydurulmuş bir hata kodu
+yok; sunucu bir şeyin bozulduğunu söylemedi, bu istemcinin kendi cümlesi.
+
+**`declined` kırmızı panelle çizilmiyor** — `role="alert"` taşımayan nötr bir
+satır. Kalan altı sebep ve tanımadığımız bir yedincisi normal hata paneline
+gidiyor; sekizinci bir sebep eklerseniz ICU `other` dalına düşer, ekrana
+anahtar basılmaz.
+
+**`next` istemcide bir kez daha doğrulanıyor.** Sizinki yönlendirmeyi koruyor,
+bizimki iniş sayfasının yaptığı gezinmeyi — elle kurulmuş bir
+`/auth/complete?next=…` sunucudan hiç geçmiyor. Protokol-göreli (`//host`),
+ters eğik çizgili (`/\host`) ve şemalı adresler reddediliyor, gerisi `/`.
+
+**OAuth sıçraması mock'lanamıyor ve mock'lanmadı.** Buton bir üst düzey
+gezinme; MSW service worker'ı `request.mode === 'navigate'` olan istekleri
+bilerek atlıyor. Sahte bir sağlayıcı ekranı uydurmak yerine dikiş gerçek
+olduğu yere çizildi: butonun `href`'i ve `/auth/complete`'e doğrudan iniş.
+**Sizden bir şey gerekmiyor**, ama yerelde gerçek uca karşı denenmedi — Google
+ve GitHub anahtarları olan bir dağıtımda ilk kez orada görülecek.
+
+---
+
+### B-049 · Magic link indi — bir rota ve bir tuzak
+**Kapatıldı:** 2026-08-29, frontend dilim 2b · **Spec:** `spec/10-security.md` § 40.4.1
+
+`POST /auth/magic-link` her zaman `202`, gövdesiz; "kayıtlıysa gönderildi"
+cümlesini istemci yazıyor ve iki halde de aynı. `/verify?s=..&v=..` bir düğme
+gösteriyor, düğme `POST /auth/verify` yapıyor. Tuzak: sayfa önce
+`/auth/session`'ı çağırmazsa CSRF çerezi olmadığı için her giriş 403 alır.
+
+**Frontend:** Rota indi ve tuzağa düşmedi. `useSession` mount'ta koşuyor,
+düğme `session.isPending` boyunca **kapalı** duruyor.
+
+**Ölçülen ince nokta, sizi de ilgilendirebilir:** "önce GET, sonra POST"
+iddiasını sıra kontrolüyle test etmek yetmiyor — `useSession` bir hook, GET
+zaten her zaman önce görünür. Davranışı gerçekten tutan şey düğmenin kapalı
+başlaması; negatif kontrol de yalnız oradan kırılıyor.
+
+**Bir ret sonrası ikinci basış sunulmuyor.** Çift tek kullanımlık, yani hangi
+hata dönmüş olursa olsun aynı çifti yeniden göndermek çalışamaz; ekran
+"yeniden dene" yerine "yeni bağlantı iste" gösteriyor. Bu bir hata koduna göre
+dallanma değil.
+
+**`MAGIC_LINK_INVALID` tek cümle, sebep sorulmuyor** — maddenizin istediği gibi.
+
+**Bir de bağlantının yarısıyla gelen durum var ve ona kod atamadık:** posta
+uygulamaları uzun bağlantıları kırpıyor, `?s=` var `?v=` yok. Ekran bunu
+"bağlantının bir parçası eksik" diye söylüyor ve **hiçbir şey harcamıyor** —
+başarısız bir giriş değil, hiç kurulmamış bir istek.
+
+### B-050 · Turnstile + 429
+**Kapatıldı:** 2026-08-29, frontend dilim 2b · **Spec:** `spec/10-security.md` § 40.5.1
+
+Widget `POST /auth/magic-link` formunda, tokenı `challengeToken` olarak
+gidiyor. Site key `NEXT_PUBLIC_TURNSTILE_SITE_KEY`'de; boşsa widget
+**çizilmiyor**, ki bu sizin "secret'ı olmayan dağıtımda challenge kapalı"
+halinizin istemci karşılığı.
+
+**Widget her retten sonra sıfırlanıyor, yalnız `CHALLENGE_FAILED`'dan sonra
+değil.** Gerekçe doğrudan sizin cümleniz: hangi katmanın reddettiğini
+yayımlamıyorsunuz, yani tokenı harcayan bir retle harcamayanı ayırt etmenin
+yolu yok. Taze token her zaman çalışıyor; atılan iyi bir token bir saniyeye mal
+oluyor.
+
+**Cümle artık `Retry-After`'dan kuruluyor.** `ApiError` başlığı ayrı bir alanda
+taşıyor — gövdeye yazmadık, çünkü `params` sizin yazdığınız şey ve bu bir
+başlık. Dakikaya **yukarı** yuvarlanıyor (tekrar reddedilecek bir denemeyi
+davet etmemek için) ve en az bir dakika. `resetsAt` hâlâ okunuyor ama
+`RATE_LIMITED`'ın cümlesinde kullanılmıyor; iki kota kodunda kullanılmaya devam
+ediyor, çünkü onlar "ne zaman yenileniyor" diyor.
+
+**Alan gövdede yoksa hiç gönderilmiyor**, boş string olarak değil: boş bir
+değer sizin reddetmek zorunda kalacağınız bir *değer*.
+
+**Yerelde gerçek uca karşı denenmedi** — site key'i olan bir dağıtım
+gerekiyor. Bugün doğrulanan şey mock'a karşı: 403 widget'ı sıfırlatıyor, 429
+başlıktan cümle kuruyor.
+
+### B-054 · Giriş yanıtı: `profileUpgrade`
+**Kapatıldı:** 2026-08-29, frontend dilim 2a (OAuth yarısı) ve 2b (`/auth/verify`)
+**Spec:** `spec/10-security.md` § 41.3.3
+
+Dört değer, üçü cümle alıyor; `none` **hiçbir şey** göstermiyor ve doğrudan
+`next`'e gidiyor. Aynı üç cümle iki taşıyıcıda tek bir bileşenden çiziliyor —
+OAuth'ta iniş URL'inin `profile` parametresi, magic link'te `200` gövdesi.
+
+**`204` bekleyen istemci kırılmadı**, çünkü uç ilk kez burada bağlandı.
+
+**Tanımadığımız bir beşinci değer sessiz geçiyor.** İyi mi kötü mü haber
+olduğunu bilmenin yolu yok ve elimizdeki iki cümlenin ikisi de iddia taşıyor;
+çerez etkilenmediği için giriş yine tamamlanıyor.
+
+**Giriş sonrası sorgu önbelleği tamamen temizleniyor.** `upgraded`'da id'lerin
+korunduğu sözünüz doğru, ama `kept_existing` ve `unavailable`'da aynı
+anahtarların arkasındaki profil **başka bir profil** — ve yanıtta bunları
+ayırt edecek bir şey yok, o yüzden üçü de aynı muameleyi görüyor.
+
+---
+
+### B-051 · CV yükleme telde — bir uç, beş ret, bir iş
+**Kapatıldı:** 2026-08-29, frontend dilim 3a · **Spec:** `spec/07-subsystems.md` § 31.2, § 31.6.1
+
+`POST /api/v1/profile/import`, multipart, tek parça `file`, `202` + iş.
+`Idempotency-Key`, beş senkron ret, terminal olayda beş alan.
+
+**Frontend:** Uç, ekran ve iş takibi indi. `/onboarding` yükleme, ilerleme ve
+retleri; `/onboarding/review` § 31.6'nın geçidi.
+
+**`Content-Type`'ı biz yazmıyoruz** ve bunun bir testi var. Multipart başlığı
+**boundary** taşıyor; elle yazmak, parçaları tam olan bir gövdeden "eksik
+parça" 400'ü aldırırdı. Negatif kontrol: elle yazınca on altı testin on altısı
+kırılıyor.
+
+**`accept` listesi hiçbir yerde gömülü değil.** Dosya seçici **hiçbir şeyi
+filtrelemiyor**; kabul edilen biçimleri yalnız sizin `415`'iniz söylüyor. Yeni
+bir biçim eklediğinizde bizim sürümümüzü beklemiyor — istediğiniz düzen bu ve
+uygulandı.
+
+**Retler sizin sıranızda deneniyor ve o sıra testte sabitlendi:** on iki
+megabaytlık bir PNG **415** alıyor, **413** değil. Ters sıra kullanıcıyı hiç
+okumayacağımız bir dosyayı küçültmeye yollardı.
+
+**İşin `label` göndermediğini varsaydık.** Yayımlanmış bir faz anahtarı yok,
+biz de uydurmadık: mock yalnız `pct` gönderiyor, ekran kendi cümlesini yazıyor.
+Anahtar gönderiyorsanız `F-018`'de sorduk.
+
+**`F-018` açıldı ve bir kısmı bu maddeden çıkıyor:** terminal olayın beş alanı
+`JobStatusResponse`'ta yok, yani `GET /jobs/{id}` bir içe aktarmanın sonucunu
+söyleyemiyor ve sayfa yenilenince kayboluyor. `pageCount`'ın `B-041` öncesi
+hâli.
+
+### B-053 · Anonim kullanıcı da yükleyebiliyor
+**Kapatıldı:** 2026-08-29, frontend dilim 3a · **Spec:** `spec/07-subsystems.md` § 31.6.3
+
+Aynı uç, aynı kalıp, hesap yok. Üç fark: hak adrese göre, kota mesajı farklı,
+profilin ömrü oturumun.
+
+**Frontend:** Tek kod yolu yazıldı; ekran kimin yüklediğini hiç sormuyor.
+
+**Kota cümlesi ikiye ayrıldı ve ayrımı istemci yapıyor.** Sizin
+`PROFILE_QUOTA_EXCEEDED`'iniz iki farklı şey demek ve gövdede bunu ayıracak bir
+alan yok — olmasını da istemiyoruz, çünkü sunucu kimin okuduğunu bilmiyor.
+İstemci oturumdan biliyor: `caller` diye bir argüman ICU'ya veriliyor ve mesaj
+üç dala ayrılıyor — hesap ("bugünkü sınırına ulaştın"), anonim ("şu an bu ağdan
+daha fazla CV okunamıyor; hak ağ başına sayılıyor"), ve **oturum henüz
+bilinmiyorken** ikisinden de kaçınan üçüncü bir cümle.
+
+**"Kaydedildi" demiyoruz** — § 9'un sözü. Profil ekranı zaten böyleydi, bu
+dilim bir şey eklemedi.
+
+### B-060 · İkinci CV — `409` ve iki resolution
+**Kapatıldı:** 2026-08-29, frontend dilim 3a · **Spec:** `spec/08b-api-contract.md`, `spec/07-subsystems.md` § 31.6.2
+
+`409 PROFILE_ALREADY_EXISTS`, `replace_profile` + `keep_existing_profile`,
+`?mode=replace`.
+
+**Frontend:** İki düğme de bağlı, üçüncüsü yok ve olmayacak.
+`replace_profile` **aynı isteği** `?mode=replace` ile tekrar gönderiyor;
+`keep_existing_profile` **hiçbir şey göndermiyor** ve kişiyi profiline
+götürüyor — az önce vazgeçtiği yükleme formunda bırakmak yanlış yer olurdu.
+
+**`Idempotency-Key` iki istekte de aynı**, ve bu bilinçli: bir reddi
+yanıtlamak aynı dosyaya yapılan aynı denemenin bir soru sonrası hâli, ve
+reddin arkasında çarpışacak bir iş yok. Test bunu sabitliyor.
+
+**`mode` başka hiçbir yerde gönderilmiyor** — yalnız sizin sunduğunuz düğmeye
+basıldığında. Rıza, varsayılan değil.
+
+---
+
+### B-056 · Cover letter — bir bayrak, bir uç, ve reddedilebilir
+**Kapatıldı:** 2026-08-29, frontend dilim 4 · **Spec:** `spec/07-subsystems.md` § 34
+
+`POST /generations` gövdesinde `coverLetter: true`, ya da sonradan
+`POST /generations/{id}/cover-letter/regenerate`. `422 COVER_LETTER_REJECTED`,
+`429 RATE_LIMITED` (saatte on).
+
+**Frontend:** İki yol da bağlı. Üretim formunda bir anahtar (varsayılan
+kapalı, sizin varsayılanınızla aynı), sonuç ekranında üslup seçimi, şirket
+notu ve "başka bir taslak dene".
+
+**Reddi hata ekranı gibi göstermiyoruz** — istediğiniz gibi. Nötr bir satır,
+`role="alert"` yok, ve yol gösteren düğme zaten ekranda duran düğme. Bu bir
+`switch (code)` değil: panelin var olma sebebi sunucunun ne sunulacağına karar
+vermesi, ve burada gönderdiğiniz tek resolution `retry`.
+
+**`Retry-After` göndermediğinizi fark ettik ve bir şey istemiyoruz.** İki kota
+kapınız hem `resetsAt` hem başlık gönderiyor; bu uç yalnız `resetsAt`. Dilim
+2b'de `RATE_LIMITED` cümlesini başlıktan kurmaya geçmiştik, o yüzden burada
+"birazdan tekrar deneyebilirsin" dalına düşüyor — doğru cümle, ve o dalın
+gerçekten kullanıldığı tek yer. Başlığı eklerseniz cümle kendiliğinden
+süreyi söylemeye başlar; eklemezseniz de bir şey bozulmuyor.
+
+**`issues` hâlâ sayılmıyor** — `F-017`'nin cevabını bekliyor. Sözlük kapalıysa
+altısını ICU'da adlandıracağız.
+
+**Bir de küçük bir şema notu, aksiyon değil:** bu ucun gövdesi bütünüyle
+opsiyonel olduğu için `requestBody?` ilan ediliyor, ve bizim `Accepts<>`
+yardımcımız yalnız `requestBody:` ile eşleşiyordu — tip `never`e düşüyordu.
+Bizde düzeltildi. Şemada bir sorun yok; kaydı, benzer bir uç geldiğinde
+tanıyalım diye burada.
+
+---
+
+### B-052 · Bayat sözcükleme — ekranı biz kurduk
+**Kapatıldı:** 2026-08-29, frontend dilim 5 · **Spec:** `spec/07-subsystems.md` § 32.2, § 32.2.1
+
+`stale` + `userEdited` çifti, üç satırlık tablo, ve § 32.2'nin iki düğmesi.
+"Yeniden üret" → `PATCH` varyant `{"userEdited": false}`.
+
+**Frontend:** Üçü de indi, ve mesaj **çiftten** kuruluyor — tek bayraktan
+değil. Bileşen sekme şeridinin içinde değil, sözcükleme alanının yanında: tek
+sözcüklemeli bir atomun şeridi hiç çizilmiyor, orada kalsaydı böyle bir atom
+bayat olduğunu söyleyemezdi.
+
+**"Yeniden yaz" ikinci uyarıya dönüşüyor.** Bayrağı temizliyorsunuz ama satır
+bayat kalıyor — yenileme arka plan işi — yani kullanıcı "yazılıyor"
+göstergesini görüyor, bitmiş bir cümle değil. Mock'umuz da `stale`'i
+temizlemiyor; temizleseydi ekranın mesajı olan tek durum atlanırdı.
+
+**"Benim halimi koru" hiçbir şey göndermiyor** ve sayfa yenilenince uyarı geri
+geliyor. Bunu eksik saymıyoruz: satır gerçekten hâlâ bayat.
+
+**`TRANSLATION_FAILED` için hiçbir şey çizmiyoruz** — dediğiniz gibi. Ekran
+zaten doğru şeyi gösteriyor.
+
+**Bir soru, aksiyon değil:** `{"userEdited": true}`'ün **hangi kodla**
+reddedildiği yayımlanmamış. İstemci hiç göndermiyor, ama mock'umuz reddi
+kodluyor (kabul eden bir mock istemciye çalıştığını öğretirdi) ve şekli tahmin
+ettik: `400 VALIDATION_FAILED`, `fields: ["userEdited"]`. Yanlışsa söyleyin;
+hiçbir şey ona bağlı değil.
+
+---
+
+### B-061 · Maddesiz entry — engellenecek bir şey yoktu
+**Kapatıldı:** 2026-08-29, frontend dilim 6 · **Spec:** `spec/05-pipeline-a-c.md` § 20.2
+
+Altında madde olmayan bir entry artık CV'ye çıkabiliyor; editörde
+engellenmemesi, caydırıcı metnin kaldırılması, `minAtoms` kutusunun maddesiz
+entry'de gösterilmemesi isteniyordu.
+
+**Frontend: üç maddenin ikisi zaten öyleydi.** Editör maddesiz bir entry'yi
+hiç engellemiyordu — atomlar entry'den ayrı ekleniyor ve hiçbir doğrulama
+madde istemiyor — ve **`minAtoms` diye bir kutu hiç çizilmemişti**. `B-047`
+gibi: silinmedi, hiç yoktu.
+
+**Değişen tek şey bir cümle.** Boş bir entry'nin altında "Nothing under this
+one **yet**" yazıyordu; "yet" maddenin beklendiğini ima ediyor, ve § 20.2'den
+sonra bir diplomanın maddesi olmaması bitmişliktir. Cümle artık eksiklik ima
+etmiyor. "Madde ekle" kontrolü duruyor — seçenek, yükümlülük değil.
+
+**Başlık doğrulaması duruyor**, dediğiniz gibi: başlıksız bir satır hâlâ
+anlamsız.
+
+**Bir şey söylememiz gereken yer var: `selection_state` telde yok.** Madde
+"neden bu satır çıktı" görünümü kuracaksak `headerOnlyEntries`'e bakmamızı
+söylüyor, ama şema `selection_state`'i hiç yayımlamıyor —
+`GenerationResponse` onu taşımıyor ve başka bir uç da vermiyor. Böyle bir
+görünüm kurmadığımız için **açık madde yapmadık**; kuracak olursak
+yayımlanması gerekecek. Kayıt burada dursun.
+
+---
+
+### B-058 · Geri bildirim — bir başparmak, ve 48 saatlik bir izin
+**Kapatıldı:** 2026-08-29, frontend dilim 7a · **Spec:** `spec/11-operations.md` § 48.4
+
+Başparmak zorunlu, kategori/yorum/`contentGranted` opsiyonel; üretim başına tek
+yargı; `contentGrant` yanıtta dönüyor ve `accessedAt` gösterilmeli.
+
+**Frontend:** Sonuç ekranının altında. **Sıra sizin dediğiniz gibi:** kategori,
+yorum ve izin kutusu ancak başparmağa basıldıktan sonra açılıyor. Ekran
+"gönderdin" demiyor, **duran seçimi** gösteriyor (`aria-pressed`), ve öbür
+başparmak onu değiştiriyor.
+
+**Her istek yargının tamamını taşıyor**, çünkü `contentGranted` bir anahtar:
+izin açıldıktan sonra basılan bir başparmak alanı atlarsa pencereyi sessizce
+kapatırdı.
+
+**`accessedAt` çizili.** Cümle o alandan kuruluyor: "izin açık, henüz kimse
+bakmadı" ya da "şu tarihte okundu".
+
+**İki şey soracağız, ikisi de kırıcı değil:**
+
+1. **`rating` şemada metin literalleri olarak geliyor.** `FeedbackRequest.rating`
+   üretilen tipte `"1" | "-1"`; `format: int32` ve açıklama tam sayı diyor, ve
+   `FeedbackResponse.rating` zaten `number`. Biz **sayı** gönderiyoruz ve tipi
+   türetip daraltıyoruz. Şemadaki `enum` değerleri tırnaklıysa düzeltilmesi
+   bizde bir satır tasarruf ettirir; bugün bir şey bozmuyor.
+2. **Geri bildirim okunamıyor.** `GET /generations/{id}` yargıyı taşımıyor ve
+   başka bir uç da vermiyor, yani sayfa yenilenince ekran hangi başparmağın
+   basıldığını bilmiyor. Bugün boş başlıyor — tahmin etmektense doğrusu bu —
+   ama "mevcut seçimi göster" kuralı ancak oturum boyunca tutulabiliyor.
+
+---
+
+### B-057 · Hesap silme — `DELETE /api/v1/account`
+**Kapatıldı:** 2026-08-29, frontend dilim 7b · **Spec:** `spec/16-cost-legal.md` § 57.4
+
+`204`, gövdesiz, oturum + CSRF arkasında; "emin misin" ekranı bizde ve neyin
+gittiğini saymalı. İkinci basış da `204`. Sonrasında istemci anonime düşüyor.
+
+**Frontend:** `/settings` altında, ve **nav'da bir bağlantısı var** — yalnız
+URL ile ulaşılan bir rota ulaşılabilir değil, ve § 57.4 silmenin ulaşılabilir
+olmasını istiyor.
+
+**Onay metni sayıyor**, ve **saymadığı bir şeyi uydurmuyor**: bölüm ve madde
+sayısı profilin kendisinden geliyor, ama **üretim sayısı verilmiyor** çünkü onu
+yayımlayan bir uç yok. Geri alınamayan tek yerde yanlış bir sayı, hiç sayı
+olmamasından kötü. İsterseniz `GET /generations` ya da hesapta bir toplam
+yayımlayın; bugün cümle onları saymadan adlandırıyor.
+
+**Kalan iki şey ekranda da yazıyor**, yalnız politikada değil: maliyet kaydı
+bağı koparılmış olarak, ve suppression kaydı adrese ait olduğu için. Sağlayıcı
+loglarına da bir cümle ayrıldı ve politikaya yönlendiriyor.
+
+**Kapı `capabilities` değil `authenticated`.** Anonim birinin bu özelliğin dar
+bir sürümü yok; yetenek kümesine bir bayrak eklemenizi istemiyoruz.
+
+**Mock anonim çağırana `401 AUTHENTICATION_REQUIRED` veriyor** — ekran oraya
+hiç ulaşmıyor ama kapı kalkarsa bir yerde yakalansın diye.
+
+### B-059 · Gizlilik Politikası'na alt işleyen ve bölge
+**Kapatıldı:** 2026-08-29, frontend dilim 7b · **Spec:** `spec/16-cost-legal.md`, `spec/14-build-guide.md` § 3.2
+
+**Frontend:** Yazıldı. "Veriler AB'de işlenir" diyen bir cümle **yoktu** —
+eksik olan listeydi. Şimdi e-posta teslimatı adıyla sayılıyor: **Resend, altta
+AWS SES `ap-northeast-1` (Tokyo)**, ve adresin ile gönderim üstverisinin **AB
+dışında** işlendiği açıkça yazıyor. Yanına öteki işleyiciler de girdi:
+Cloudflare R2, ve tercih edilirse Google/GitHub ile giriş.
+
+**Silme bölümü de § 57.4'ün istediğini söylüyor:** neyin gittiği, kalan iki
+şey ve nedenleri, ve LLM sağlayıcılarının kendi taraflarında kısa ömürlü kayıt
+tutabildiği.
+
+**Bir şey hâlâ eksik ve bizde değil:** sağlayıcı listesinin kendisi. Metin
+"güncel sağlayıcı listesi, her birine ne gönderildiği ve ücretsiz bir katmanın
+bu veriyi eğitimde kullanıp kullanamayacağı burada açıkça yazılmalı" diyor —
+model seçimi ürün kararı olarak beklediği için o paragraf hâlâ bir yer tutucu.
+**EK C.1'in maddesi bu haliyle kapanmaz;** model seçildiğinde bir satır
+yazılacak.
+
+---
+
+### B-057 · Hesap silme — `DELETE /api/v1/account`
+**Kapatıldı:** 2026-08-29, frontend dilim 7b · **Spec:** `spec/16-cost-legal.md` § 57.4
+
+`204`, gövdesiz, oturum + CSRF arkasında; "emin misin" ekranı bizde ve neyin
+gittiğini saymalı. İkinci basış da `204`. Sonrasında istemci anonime düşüyor.
+
+**Frontend:** `/settings` altında, ve **nav'da bir bağlantısı var** — yalnız
+URL ile ulaşılan bir rota ulaşılabilir değil, ve § 57.4 silmenin ulaşılabilir
+olmasını istiyor.
+
+**Onay metni sayıyor**, ve **saymadığı bir şeyi uydurmuyor**: bölüm ve madde
+sayısı profilin kendisinden geliyor, ama **üretim sayısı verilmiyor** çünkü onu
+yayımlayan bir uç yok. Geri alınamayan tek yerde yanlış bir sayı, hiç sayı
+olmamasından kötü. İsterseniz `GET /generations` ya da hesapta bir toplam
+yayımlayın; bugün cümle onları saymadan adlandırıyor.
+
+**Kalan iki şey ekranda da yazıyor**, yalnız politikada değil: maliyet kaydı
+bağı koparılmış olarak, ve suppression kaydı adrese ait olduğu için. Sağlayıcı
+loglarına da bir cümle ayrıldı ve politikaya yönlendiriyor.
+
+**Kapı `capabilities` değil `authenticated`.** Anonim birinin bu özelliğin dar
+bir sürümü yok; yetenek kümesine bir bayrak eklemenizi istemiyoruz.
+
+**Mock anonim çağırana `401 AUTHENTICATION_REQUIRED` veriyor** — ekran oraya
+hiç ulaşmıyor ama kapı kalkarsa bir yerde yakalansın diye.
+
+### B-059 · Gizlilik Politikası'na alt işleyen ve bölge
+**Kapatıldı:** 2026-08-29, frontend dilim 7b · **Spec:** `spec/16-cost-legal.md`, `spec/14-build-guide.md` § 3.2
+
+**Frontend:** Yazıldı. "Veriler AB'de işlenir" diyen bir cümle **yoktu** —
+eksik olan listeydi. Şimdi e-posta teslimatı adıyla sayılıyor: **Resend, altta
+AWS SES `ap-northeast-1` (Tokyo)**, ve adresin ile gönderim üstverisinin **AB
+dışında** işlendiği açıkça yazıyor. Yanına öteki işleyiciler de girdi:
+Cloudflare R2, ve tercih edilirse Google/GitHub ile giriş.
+
+**Silme bölümü de § 57.4'ün istediğini söylüyor:** neyin gittiği, kalan iki
+şey ve nedenleri, ve LLM sağlayıcılarının kendi taraflarında kısa ömürlü kayıt
+tutabildiği.
+
+**Bir şey hâlâ eksik ve bizde değil:** sağlayıcı listesinin kendisi. Metin
+"güncel sağlayıcı listesi, her birine ne gönderildiği ve ücretsiz bir katmanın
+bu veriyi eğitimde kullanıp kullanamayacağı burada açıkça yazılmalı" diyor —
+model seçimi ürün kararı olarak beklediği için o paragraf hâlâ bir yer tutucu.
+**EK C.1'in maddesi bu haliyle kapanmaz;** model seçildiğinde bir satır
+yazılacak.
+
+---
+
+## Kapanmış maddelerin üstüne düşülen notlar — 2026-08-29
+
+`to-frontend.md`'nin `ACK` bölümünden taşındı (dosya sınırı). İkisi de kapalı
+maddeler üstüne frontend'in düştüğü not; canlı olan üçü kanalda kaldı.
+
+**`B-047`'de yapılacak bir şey çıkmadı:** LinkedIn hiçbir zaman giriş
+sağlayıcısı olarak çizilmemişti. Silinmedi, hiç yoktu — madde yine de kapalı.
+
+**`B-046`'nın ertelenen yarısı indi:** çıkış düğmesi artık çizili, ve giriş
+yoluyla birlikte geldi — ulaşılamayan bir durumun düğmesi olmasın diye
+beklemişti.
