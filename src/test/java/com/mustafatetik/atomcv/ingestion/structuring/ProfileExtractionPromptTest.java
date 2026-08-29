@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.ingestion.structuring;
 
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;

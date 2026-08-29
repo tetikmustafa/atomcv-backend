@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.ingestion.structuring;
 
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;

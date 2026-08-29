@@ -19,7 +19,7 @@ import com.mustafatetik.atomcv.ingestion.extraction.ExtractedText;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
 import com.mustafatetik.atomcv.ingestion.normalization.ProfileNormalizer;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile;
-import com.mustafatetik.atomcv.ingestion.structuring.ExtractionWarningCode;
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.mustafatetik.atomcv.ingestion.structuring.ProfileStructuring;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
