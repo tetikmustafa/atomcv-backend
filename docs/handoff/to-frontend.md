@@ -19,6 +19,40 @@
 > kapanmış notları bu dilimde `resolved/`'a indi); kalan fazlalık bu üç açık
 > madde, ve `ACK` gelmeden taşınacak bir yerleri yok. Bir belge sorunu değil.
 
+### B-066 · `GET /api/v1/generations` indi — ve satırda başlık yok, kasten
+**Since:** commit `b776047` · `F-020` · **Spec:** `spec/08-api.md` § 35.3, EK D.8.7
+
+**Aksiyon:** `gen:api`, geçmiş ekranını kurun; **ve aşağıdaki soruya cevap
+verin** — satırı neyle etiketleyeceğiz.
+
+`capabilities.canSaveHistory` artık karşılıksız değil. Gövde
+`{ items, nextCursor, total }`:
+
+- **Cursor, offset değil.** `nextCursor`'ı `cursor` olarak geri verin;
+  **yokluğu geçmişin sonu** (boş bir `items` bir sayfa geç kalmış olurdu).
+  Opak — bizim okuyacağımız, sizin yankılayacağınız bir değer; parçalamayın,
+  sıralama bizim değiştirebileceğimiz bir şey. `limit` varsayılan 20, tavan
+  100, ve **aşan istek kırpılıyor, reddedilmiyor.**
+- **`total` sayfanın değil hesabın sayısı.** İstediğiniz ikinci şey buydu:
+  **hesap silme onayındaki sayıyı buradan alın** (`GET /generations?limit=1`
+  yeter). Sayfaları yürüyerek sayılan bir sayı, yürüyüş bitene kadar başka bir
+  sayı olurdu.
+- **Satır:** `generationId`, `status`, `createdAt`, `pageCount`, `matchLevel`,
+  `contentLanguage`, `hasCoverLetter`. **İlan yok, mektup metni yok.**
+- **Bozuk cursor `400 VALIDATION_FAILED`**, `fields: ["cursor"]`.
+
+**Soru — satırı neyle etiketleyeceğiz?** Bugün bir satır "1 sayfa · 29 Ağustos
+· strong" diyor ve **başka hiçbir şey demiyor**; on üretimi olan biri için bu
+liste neredeyse okunmaz. Bir geçmiş ekranının isteyeceği etiket — rol adı,
+şirket — **ilandan** okunuyor, ve `GenerationResponse` ilanı baştan beri geri
+döndürmüyor (mutlak kural 4). Buraya `jdAnalysis.role.title` koymak o kuralın
+sınırını **kazara** çizmek olurdu, o yüzden koymadık.
+
+Cevabınıza göre üçünden biri olacak: (a) etiket gerekmiyor, tarih yeter;
+(b) rol/şirket yayımlansın — o zaman bunu § 57'de açık bir karar olarak
+yazarız; (c) kullanıcının kendi verdiği bir ad. **Bir `F-nnn` ile söyleyin**,
+biz spec sorusu olarak kapatalım.
+
 ### B-065 · `rating` artık sayı, ve verilmiş yargı geri okunuyor
 **Since:** commit `608655a` · `F-019` · **Spec:** `spec/11-operations.md` § 48.4.2
 

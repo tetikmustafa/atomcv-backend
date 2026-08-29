@@ -203,6 +203,31 @@ bir tane var.
 > alanı düşer. **İlanı geri döndürmez**: sistemin tuttuğu en büyük kullanıcı
 > içeriği ve hiçbir ekran istemiyor (mutlak kural 4). ETag taşımaz, § 35.6.
 
+> **`GET /generations` indi (`F-020`).** Bu da kaynak haritasında baştan beri
+> vardı ve hiç yazılmamıştı — yani `capabilities.canSaveHistory` **hesapta
+> `true`** iken kişinin geçmişini açabileceği bir yer yoktu. Gövde
+> EK D.8.7'nin sayfalama şekli: `{ items, nextCursor, total }`.
+>
+> **Cursor, offset değil** (EK D.8.7). Liste tepeden büyüyor; yürüyüşün
+> ortasında yeni bir üretim inince offset'li ikinci sayfa bir satırı
+> tekrarlar, bir satırı gizler. Cursor **sıralama anahtarının tamamını**
+> taşıyor (`created_at` + `id`, base64, istemciye opak): aynı `created_at`'i
+> paylaşan satırlar id'ye göre sıralı, ve yalnız zaman damgasını taşıyan bir
+> cursor eşit grubun kalanını ya atlar ya iki kez verir. `nextCursor`'ın
+> yokluğu geçmişin sonudur — boş bir `items` bir sayfa geç kalmış olurdu.
+>
+> **`total` sayfanın değil hesabın sayısı**, ve tek bir ekran için burada:
+> hesap silme onayı neyin gittiğini saymak zorunda (`B-057`) ve sayfalayamaz.
+> "En az bu kadar" anlamına gelen bir sayı, geri alınamayan tek yerde hiç
+> sayı olmamasından kötüdür.
+>
+> **Satır ilanı taşımaz, mektubu da taşımaz** — yalnız açılacak bir mektup
+> olup olmadığını (`hasCoverLetter`). Taşıdığı: `generationId`, `status`,
+> `createdAt`, `pageCount`, `matchLevel` ve `contentLanguage`. **Satırda
+> başlık yok**, ve bu bilinçli bir boşluk: bir geçmiş ekranının isteyeceği
+> her etiket (rol, şirket) ilandan okunuyor, ve birini buraya koymak mutlak
+> kural 4'ün sorusunu kazara cevaplamak olurdu. Soru `B-066`'da açık.
+
 > **İki dil alanı (`F-013`).** `contentLanguage` belgenin gerçekten yazıldığı
 > dil, `postingLanguage` Faz A'nın ilanı okuduğu dil; ikisi de BCP 47, ikisi de
 > boşken **gönderilmez** (`F-010`'un kuralı). Ayrıldıklarında CV profilin

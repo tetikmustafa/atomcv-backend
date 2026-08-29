@@ -5,25 +5,22 @@
 >
 > Bir sapma kalıcıysa `spec/`'e işlenir ve buradan silinir.
 
-**Aktif aşama:** Aşama 3 — hesap ve MVP.
-**Plan:** `spec/14-build-guide.md` § XI-A.6, Adım 3.1-3.x; gerekçesi
-`spec/13-development.md` § 55. Aşama 2'nin tam kaydı `archive/stage-2.md`'de,
-Aşama 1 `archive/stage-1.md`'de.
+**Aktif aşama:** Aşama 3 — hesap ve MVP. **Plan:** `spec/14-build-guide.md`
+§ XI-A.6; gerekçesi `spec/13-development.md` § 55. Aşama 1-2'nin tam kayıtları
+`archive/stage-1.md` ve `archive/stage-2.md`'de.
 
 ---
 
 ## Aşama 2'den taşınan açık kutular
 
-**`Axiom'da loglar görünüyor`** — dataset açık, `.env` dolu (2026-08-26);
-telde doğrulanması üretim dağıtımını bekliyor.
-
-**`llm_invocations.user_id` NULL.** Zincir `UserContext` tutan fazlardan
-çağrılıyor ama kullanıcıyı aşağı geçirmiyor. Günlük toplam (bütçe freni) bunu
-istemiyor; **kullanıcı bazlı maliyet** istiyor.
-
-**§ 44.3'ün sıkılaştıracağı limiter hâlâ yok** — 3.3 dilim 4'ün `RateLimiter`'ı
-genel (katman, konu, sınır, pencere) ama **girişe** bağlı. § 44.3 ağır
-kullanıcının **üretim** hakkını kısmak istiyor; yeri `QuotaService`.
+- **`Axiom'da loglar görünüyor`** — dataset açık, `.env` dolu (2026-08-26);
+  telde doğrulanması üretim dağıtımını bekliyor.
+- **`llm_invocations.user_id` NULL.** Zincir `UserContext` tutan fazlardan
+  çağrılıyor ama kullanıcıyı aşağı geçirmiyor. Günlük toplam (bütçe freni)
+  bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
+- **§ 44.3'ün sıkılaştıracağı limiter hâlâ yok** — 3.3 dilim 4'ün
+  `RateLimiter`'ı genel ama **girişe** bağlı; § 44.3 ağır kullanıcının
+  **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
 
 ## Aşama 1'den taşınan kısıtlar — hâlâ açık
 
@@ -64,10 +61,8 @@ sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
 ## Aşama 3 · dilim 9-10 — `F-017`, `F-019`, `F-021` (2026-08-29)
 
-Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları
-EK D.6 ile `spec/11-operations.md` § 48.4.2'de. Frontend aksiyonları
-`B-062`-`B-065`.
-
+Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları EK D.6 ile
+`spec/11-operations.md` § 48.4.2'de. Frontend aksiyonları `B-062`-`B-065`.
 **Buradan taşınmayan tek şey, çünkü başka hiçbir yerde yazmıyor:**
 
 **Springdoc'ta tam sayı enum'u üç şeyi birden istiyor** — `@Schema(type =
@@ -82,14 +77,43 @@ bildiriminin üstünde**, özelliğin üstünde değil.
 | enum + `@Schema(type=integer)` | `type: integer`, **enum tamamen yok** |
 | enum + `type` + `allowableValues` | ✅ `enum: [1,-1]` |
 
-`allowableValues` bir `String[]`; swagger onu ancak tip **açıkça** integer
-yazılmışsa sayıya çeviriyor, ve tipi yazıp `allowableValues` yazmamak enum'u
-tamamen düşürüyor. `@JsonValue` tek başına yetmiyor. `OpenApiSchemaIT` üçünü
-de tutuyor.
+`@JsonValue` tek başına yetmiyor — yetiyormuş gibi duran kısım o.
+`OpenApiSchemaIT` üçünü de tutuyor.
 
 **Ders, bu oturumda dört kez:** *bir muhafızın düştüğünü görmeden yazıldı
 sayma.* `{"userEdited": true}` yıllardır test ediliyordu — **constructor
 çağrılarak**; telde `500` dönüyordu ve telden geçen hiçbir test yoktu.
+
+## Aşama 3 · dilim 11 — `F-020` (2026-08-29)
+
+`GET /api/v1/generations`. Sözleşme `spec/08-api.md` § 35.3'e işlendi; burada
+yalnız iki tuzak.
+
+**`limit + 1` çekip fazlasını atmak, ikinci bir sorgudan iyi.** "Sonraki sayfa
+var mı" sorusunu sayarak cevaplamak, bu sorgunun zaten bildiği bir şeyi ikinci
+kez ve **başka bir anda** sormaktı. `total` ayrı bir `count` olarak duruyor
+çünkü o başka bir soru — sayfanın değil hesabın sayısı.
+
+**Cursor sıralama anahtarının tamamını taşımak zorunda.** `created_at DESC,
+id DESC` sıralı bir listede yalnız zaman damgası taşıyan bir cursor, eşit
+damgalı grubun kalanını ya atlıyor ya iki kez veriyor — karşılaştırmanın hangi
+yöne yaslandığına göre. Üçüncü seçenek yok: **bir satırı tanımlamayan anahtar
+bir satırdan devam edemez.** `rowsSharingATimestampAreNotSkipped` bunu tutuyor.
+
+**Bilinçli boşluk — satırda başlık yok.** Bir geçmiş satırı bugün "1 sayfa ·
+tarih · strong" diyor ve on üretimi olan biri için okunması güç. Etiket
+(rol, şirket) **ilandan** okunur ve `GenerationResponse` ilanı baştan beri
+döndürmüyor (mutlak kural 4). Buraya `jdAnalysis.role.title` koymak o kuralın
+sınırını **kazara** çizmek olurdu. **Tamir etmeye kalkma** — frontend'e soruldu
+(`B-066`), cevabı bir spec kararı olacak.
+
+**`spotlessCheck` yerelde CRLF'e düşüyor** — editör aracı ve python'un metin
+modu Windows'ta CRLF yazıyor; git commit'te normalleştirdiği için CI geçiyor,
+yerel kontrol düşüyor. **Yeni dosya yazdıktan sonra `sh ./gradlew
+spotlessApply`.** (CLAUDE.md'nin heredoc uyarısının kardeşi: bu notun kendisi
+`\r\n` yazmaya çalışırken heredoc'ta gerçek bir satır sonuna dönüştü.)
+
+Frontend aksiyonu: `B-066` — ve içinde cevaplanacak bir soru var.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
