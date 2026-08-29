@@ -3,8 +3,8 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-28** · **Aşama 0-3 kapanış denetimi kapandı — sekiz dilimin sekizi de indi**
-· frontend'de açık: **`B-044`**–**`B-061`**, **on sekizi de `ACK` beklemiyor**
+**2026-08-29** · **Frontend Aşama 3 kapandı; backend `F-017` ile `F-021`'i
+cevapladı** · açık: **`F-018`, `F-019`, `F-020`** · frontend'de **`B-062`-`B-064`**
 
 ---
 
@@ -13,48 +13,48 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0 · 1 · 2 — iskelet, yürüyen iskelet, ilana özel üretim | ✅ |
-| Aşama 3 — hesap ve MVP · 3.1 hesaplar ✅ · **3.2 e-posta domain ✅** | ✅ |
-| 3.3 kimlik · 3.4 çıkarım · 3.5 çok dillilik · 3.6 anonim · 3.8 Faz D · 3.9 hukuki | ✅ |
-| 3.7 profil editörü **frontend'de** | ⏳ |
+| Aşama 3 — hesap ve MVP · 3.1-3.6, 3.8, 3.9 (3.7 profil editörü frontend'de) | ✅ |
 
-**Kapanış denetimi (0-3): sekiz dilimin sekizi de indi**, kaydı
-`notes/kapanis-denetimi.md`'de. Kapananların telde görüneni: **saklama süresi**
-(payload 7 gün / ilan 30 gün), ikinci CV için **409 + `mode=replace`**,
-**ATS geri okuma** (§ 23.2), **deploy altyapısı**, **Gemini adaptörü**
-(zincirin tek halkası vardı), **Resend webhook + suppression**.
+**Kapanış denetimi (0-3): sekizin sekizi indi**, kaydı `notes/kapanis-denetimi.md`'de.
 
-**Açık kod maddesi kalmadı.** Sonuncusu — **atomsuz entry'nin sayfaya
-çıkabilmesi** — 2026-08-28'de ayrı bir oturumda indi: bir entry artık altında
-hiç madde olmadan da açılabiliyor, başlığını öder, liste maliyetini ödemez
-(§ 20.2). Frontend'e düşen **`B-061`**.
+**Dilim 9 (`F-017`, `F-021`) indi.** Sorulan üçün ikisinde yanlış olan taraf
+backend'di: `{"userEdited": true}` **`500` dönüyordu** (artık `400`), ve
+`Retry-After` gidiyordu ama ne testi ne şema girişi vardı. EK D.6'da **beş kod
+eksikti**, biri bildirilmişti — `ErrorCatalogueSpecTest` tabloyu artık
+`ErrorCode`'a karşı iki yönde doğruluyor.
 
 **Geliştiricide:** yeni model seçilince fiyat tablosu (o güne kadar bütçe freni
 çalışmaz), VPS kurulumu (§ XI-A.4) ve **restore testi**.
 
-**Test:** 1043 birim · 427 entegrasyon · latex 49/49 — 0 hata
+**Test:** 1048 birim · 430 entegrasyon · latex 49/49 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
+| Aşama 3 — **bütün dilimler** ✅ · yalnız § 31.6'nın yarısı `F-018`'i bekliyor | ⏳ |
 
-**`B-044`-`B-061` açık, hiçbiri ACK almadı** — `to-frontend.md` 463 satır ve
-sınır 100. **Bu bir belge sorunu değil, koordinasyon sorunu**: ACK gelmeden
-taşınacak bir şey yok. Dosyanın başında artık bir dizin var.
-`/auth/complete`, `/auth/error`, `/verify`, Turnstile widget'ı sizde.
-**Test:** 401 birim · 25 e2e · **bundle** profil 250.7 / üretim 214.8 KB.
+**Dilim 0** `gen:api` + CSRF + katalog · **1** oturum, yetenek kapısı, kayan
+TTL · **2** giriş (`/login`, `/verify`, `/auth/*`, Turnstile, `Retry-After`,
+çıkış) · **3a** CV yükleme (multipart, beş senkron ret, `409`, § 31.6'nın
+**atlanamaz** geçidi) · **4** cover letter · **5** bayat sözcükleme · **6**
+maddesiz entry · **7** geri bildirim, hesap silme, gizlilik politikası.
+**On sekiz maddenin on sekizi `ACK`.** **Gerçek uca karşı denenmedi:** OAuth,
+Turnstile, içe aktarma, cover letter, bayat sözcükleme, hesap silme.
+
+**Test:** 607 birim · 47 e2e · **bundle** profil 252.3 / üretim 219.5 /
+onboarding 217.1 / ayarlar 228.5 KB (dinamik rotalar elle, 210-253 KB).
 
 ## Açık kararlar (ikisini de ilgilendirir)
 
 | Soru | Bekleyen taraf |
 |---|---|
-| Atomsuz entry sayfaya çıkabilmeli | ✅ kapandı 2026-08-28 · § 20.2, `B-061` |
 | Hesabın profili varken anonim çalışma birleşecek mi | **ürün** · bugün `kept_existing` |
 | Hangi LLM modeli — fiyat tablosu ona bağlı | **ürün** |
 
 ## Sonraki senkronizasyon noktası
 
-**Frontend `B-044`-`B-061`'i alsın.** Backend'in MVP payı bitti; sırada 3.7
-profil editörü ve bu on sekiz madde sizde. **`B-059` yayın öncesi zorunlu**
-(gizlilik politikası, alt işleyen listesi).
+**Backend üç `F-nnn` cevabına devam ediyor:** `F-019`, `F-020`, `F-018`
+(§ 31.6'nın yarısını bloke eden). **Frontend'de `B-062`-`B-064`.** **Yayın
+öncesi açık:** gizlilik politikasının sağlayıcı listesi, model seçimini bekliyor.
