@@ -5,9 +5,11 @@ import com.mustafatetik.atomcv.generation.api.dto.CoverLetterRequest;
 import com.mustafatetik.atomcv.generation.api.dto.CoverLetterResponse;
 import com.mustafatetik.atomcv.generation.api.dto.FeedbackRequest;
 import com.mustafatetik.atomcv.generation.api.dto.FeedbackResponse;
+import com.mustafatetik.atomcv.generation.api.dto.GenerationPage;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
+import com.mustafatetik.atomcv.generation.repository.GenerationCursor;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.domain.Generation;
@@ -28,6 +30,7 @@ import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimitDecision;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,6 +53,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -89,6 +93,19 @@ public class GenerationController {
      * hour is several tries per generation and no loop.
      */
     private static final int LETTERS_PER_HOUR = 10;
+
+    /**
+     * A history screen shows a screenful; twenty is that, and the cursor is
+     * there for anyone who wants more. A default of "everything" would make
+     * the first request of a heavy account the slowest one it ever makes.
+     *
+     * <p>A String because it is an annotation default, parsed back where it is
+     * used -- one number, not two that can drift.
+     */
+    private static final String DEFAULT_PAGE_SIZE = "20";
+
+    /** The ceiling a caller may ask for. Beyond it the request is clamped, not refused. */
+    private static final int MAX_PAGE_SIZE = 100;
 
     /**
      * Published on every 429 here, because a header nobody documented is a
@@ -163,6 +180,63 @@ public class GenerationController {
         return ResponseEntity.accepted()
                 .location(URI.create("/api/v1/jobs/" + job.getId()))
                 .body(AcceptedJobResponse.of(job));
+    }
+
+    @Operation(
+            summary = "The generations this account has made, newest first",
+            description = """
+                    `capabilities.canSaveHistory` says these are kept; this is                     where they are read (F-020).
+
+                    Cursor pagination, not offset: the list grows from the top,                     and a page two taken after a new generation lands would                     repeat one row and hide another. Pass the `nextCursor` of                     a page back as `cursor` to get the one after it; its                     absence is the end of the history.
+
+                    `total` counts the whole account rather than the page.                     The one screen that needs it cannot page — deleting an                     account has to say what goes, and a number that meant "at                     least this many" would be worse there than none.
+
+                    A row carries no posting and no letter, only whether                     there is a letter to open. The posting stays on the row                     (absolute rule 4).""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "A page of history"),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — the cursor was not one of ours",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GenerationPage> list(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE) int limit) {
+
+        // Scoped, and here it is the whole of the IDOR defence: this is the
+        // one endpoint in the file that names no id, so nothing but the acting
+        // user stands between a caller and everybody's history (rule 3).
+        UserContext user = currentUser.require();
+
+        GenerationCursor from;
+        try {
+            from = GenerationCursor.decode(cursor).orElse(null);
+        } catch (IllegalArgumentException malformed) {
+            // A client only ever echoes a cursor back, so a broken one is its
+            // mistake. Left alone this reaches the catch-all and answers 500.
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", java.util.List.of("cursor"))
+                    .build());
+        }
+
+        var page = generations.findPage(user, from, clamped(limit));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(GenerationPage.of(page, generations.countFor(user)));
+    }
+
+    /**
+     * A page size the caller asked for, within what the server will serve.
+     *
+     * <p>Clamped rather than refused: a limit is a preference, and answering
+     * 400 to {@code limit=1000} would make a client handle an error where the
+     * useful behaviour is obvious. Zero and negatives fall to the default,
+     * because a page of no rows is a request that cannot be walked.
+     */
+    private static int clamped(int limit) {
+        return limit < 1 ? Integer.parseInt(DEFAULT_PAGE_SIZE) : Math.min(limit, MAX_PAGE_SIZE);
     }
 
     @Operation(

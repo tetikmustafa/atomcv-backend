@@ -41,4 +41,46 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
     public List<Generation> findRecent(UserContext user, int limit) {
         return jpa.findByUserIdOrderByCreatedAtDescIdDesc(user.userId(), Limit.of(limit));
     }
+
+    /**
+     * One page of history, resuming after {@code cursor} when there is one
+     * (F-020, EK D.8.7).
+     *
+     * <p>Asks for one row more than it will hand back, and that extra row is
+     * the whole of "is there a next page". Counting instead would be a second
+     * query answering a question this one already knows, and it would answer it
+     * about a different instant.
+     */
+    public Page findPage(UserContext user, GenerationCursor cursor, int limit) {
+        List<Generation> found = cursor == null
+                ? jpa.findByUserIdOrderByCreatedAtDescIdDesc(user.userId(), Limit.of(limit + 1))
+                : jpa.findPageAfter(user.userId(), cursor.createdAt(), cursor.id(),
+                        Limit.of(limit + 1));
+
+        boolean more = found.size() > limit;
+        List<Generation> items = more ? found.subList(0, limit) : found;
+        Generation last = items.isEmpty() ? null : items.get(items.size() - 1);
+
+        return new Page(List.copyOf(items),
+                more && last != null
+                        ? new GenerationCursor(last.getCreatedAt(), last.getId())
+                        : null);
+    }
+
+    /**
+     * How many this person has, all of them.
+     *
+     * <p>Here rather than derived from a page: the account-deletion screen has
+     * to say what goes, and a number that meant "at least this many" in the one
+     * irreversible place would be worse than no number (F-020).
+     */
+    public long countFor(UserContext user) {
+        return jpa.countByUserId(user.userId());
+    }
+
+    /**
+     * @param nextCursor null when this page is the end of the history
+     */
+    public record Page(List<Generation> items, GenerationCursor nextCursor) {
+    }
 }
