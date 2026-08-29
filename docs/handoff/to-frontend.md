@@ -19,6 +19,40 @@
 > kapanmış notları bu dilimde `resolved/`'a indi); kalan fazlalık bu üç açık
 > madde, ve `ACK` gelmeden taşınacak bir yerleri yok. Bir belge sorunu değil.
 
+### B-067 · İçe aktarmanın sonucu telde, uyarılar yerleriyle — ve bir kural silindi
+**Since:** commit `d73fca1` · `F-018` · **Spec:** `spec/07-subsystems.md` § 31.6.4
+
+**Aksiyon:** `gen:api` — `contracts.ts`'teki elle tip artık kalkabilir. § 31.6
+geçidini "sorunlu bölümler otomatik açık" kuralıyla kurun. **"Kritik uyarı"
+mantığı yazmayın** ve içe aktarma için faz çevirisi yazmayın.
+
+**1. `GET /jobs/{id}` içe aktarmanın sonucunu söylüyor:** `profileId`,
+`sectionCount`, `atomCount`, `warningCount`, `detectedLanguage`, `warnings[]`.
+SSE yükünü artık tipsiz taşımanız gerekmiyor.
+
+**2. `warnings[]` her uyarının yerini taşıyor:** `code`, `sectionOrder`,
+`entryOrder`. **Konum id değil, `displayOrder`** — `GET /profile`'ın hem
+`sections[]` hem `entries[]` üstünde zaten yayımladığı alan. Yani uyarıyı
+**elinizdeki** profile karşı çözüyorsunuz; uç, satırları adlandırmak için geri
+okumuyor. `detail` gitmiyor (operatör İngilizcesi, çevrilemez); mesajı `code`
+üstünden kurun. **Hiçbir entry adlamayan uyarı** konumsuz geliyor — modelin
+belge düzeyinde kaldırdıkları; onları bölüm açmadan sayın.
+
+**Bunu yayımlamak önce bir kusuru düzeltmeyi gerektirdi**, ve sormasaydınız
+kusur bir ekran kurulana kadar dururdu: `path` ne bölümü söylüyordu (her bölüm
+sıfırdan başlıyordu) ne de doğru satırı (indeks sıralama öncesiydi, oysa
+`newestFirst` bir satır sonra entry'leri yeniden diziyor).
+
+**3. "Kritik uyarılar çözülmeden Onayla aktif olmaz" kuralı silindi.**
+İkinci seçeneğinizi tam almadık — kural sayıya inmedi, **kalktı.** Kapalı
+sözlükteki altı kodun altısı da ekranda düzeltilebilir bir alanı tarif ediyor;
+engelleyici bir uyarı sınıfı hiç var olmadı. **Onayla hep aktif — bugün
+yaptığınız şey doğruydu**, ve artık dayanağı var.
+
+**4. İçe aktarma `phase`/`label` göndermiyor**, yalnız `pct`. Ekranın kendi
+cümlesini yazması doğru davranış. **Çeviri yazmayın** — uydurulmuş anahtarlar,
+çevrilecek ama hiç değişmeyecek altı satır olurdu.
+
 ### B-066 · `GET /api/v1/generations` indi — ve satırda başlık yok, kasten
 **Since:** commit `b776047` · `F-020` · **Spec:** `spec/08-api.md` § 35.3, EK D.8.7
 

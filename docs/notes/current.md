@@ -84,36 +84,30 @@ bildiriminin üstünde**, özelliğin üstünde değil.
 sayma.* `{"userEdited": true}` yıllardır test ediliyordu — **constructor
 çağrılarak**; telde `500` dönüyordu ve telden geçen hiçbir test yoktu.
 
-## Aşama 3 · dilim 11 — `F-020` (2026-08-29)
+## Aşama 3 · dilim 11-12 — `F-020`, `F-018` (2026-08-29)
 
-`GET /api/v1/generations`. Sözleşme `spec/08-api.md` § 35.3'e işlendi; burada
-yalnız iki tuzak.
+Kayıtları `archive/stage-3-handoff-answers.md`'de; kalıcı kararlar
+`spec/08-api.md` § 35.3 ve `spec/07-subsystems.md` § 31.6.4'te. Frontend
+aksiyonları `B-066`, `B-067`. Burada kalanlar yalnız **canlı** olanlar:
 
-**`limit + 1` çekip fazlasını atmak, ikinci bir sorgudan iyi.** "Sonraki sayfa
-var mı" sorusunu sayarak cevaplamak, bu sorgunun zaten bildiği bir şeyi ikinci
-kez ve **başka bir anda** sormaktı. `total` ayrı bir `count` olarak duruyor
-çünkü o başka bir soru — sayfanın değil hesabın sayısı.
+**Tamir etmeye kalkma — ikisi de bilinçli boşluk:**
+- **Geçmiş satırında başlık yok.** Etiket (rol, şirket) ilandan okunur, ilan
+  mutlak kural 4 gereği geri dönmüyor. Frontend'e soruldu (`B-066`); cevabı
+  bir spec kararı olacak.
+- **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
+  `ExtractionWarningCode` kapalı ve altı değerinin altısı da düzeltilebilir bir
+  alanı tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**, sayıya
+  indirilmedi. Yedincisi gerçekten engelleyici olursa karar § 31.6.4'te.
 
-**Cursor sıralama anahtarının tamamını taşımak zorunda.** `created_at DESC,
-id DESC` sıralı bir listede yalnız zaman damgası taşıyan bir cursor, eşit
-damgalı grubun kalanını ya atlıyor ya iki kez veriyor — karşılaştırmanın hangi
-yöne yaslandığına göre. Üçüncü seçenek yok: **bir satırı tanımlamayan anahtar
-bir satırdan devam edemez.** `rowsSharingATimestampAreNotSkipped` bunu tutuyor.
-
-**Bilinçli boşluk — satırda başlık yok.** Bir geçmiş satırı bugün "1 sayfa ·
-tarih · strong" diyor ve on üretimi olan biri için okunması güç. Etiket
-(rol, şirket) **ilandan** okunur ve `GenerationResponse` ilanı baştan beri
-döndürmüyor (mutlak kural 4). Buraya `jdAnalysis.role.title` koymak o kuralın
-sınırını **kazara** çizmek olurdu. **Tamir etmeye kalkma** — frontend'e soruldu
-(`B-066`), cevabı bir spec kararı olacak.
+**Ders — bir alanı yayımlamak, onu ilk kez okumaktır.** Frontend uyarıların
+*yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde **yanlış** olduğu
+çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
+yoktu, burada alan vardı ve yanlıştı.
 
 **`spotlessCheck` yerelde CRLF'e düşüyor** — editör aracı ve python'un metin
 modu Windows'ta CRLF yazıyor; git commit'te normalleştirdiği için CI geçiyor,
 yerel kontrol düşüyor. **Yeni dosya yazdıktan sonra `sh ./gradlew
-spotlessApply`.** (CLAUDE.md'nin heredoc uyarısının kardeşi: bu notun kendisi
-`\r\n` yazmaya çalışırken heredoc'ta gerçek bir satır sonuna dönüştü.)
-
-Frontend aksiyonu: `B-066` — ve içinde cevaplanacak bir soru var.
+spotlessApply`.**
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
