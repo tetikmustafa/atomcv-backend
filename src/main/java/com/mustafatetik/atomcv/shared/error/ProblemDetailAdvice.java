@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -138,24 +139,39 @@ public class ProblemDetailAdvice {
     }
 
     /**
-     * A path parameter or query parameter that could not be converted, or one
-     * the handler needs and the request left out. Both are malformed requests
-     * and belong with the other 400s; without these two they reach the
-     * catch-all, which answers 500 and tells the user the server broke.
+     * A parameter or a multipart part the handler needs and the request either
+     * left out or wrote in a form that could not be converted. All three are
+     * malformed requests and belong with the other 400s; without these
+     * handlers they reach the catch-all, which answers 500 and tells the user
+     * the server broke.
      *
-     * <p>Only the parameter's name travels. Its value is user input
-     * (absolute rule 4) and is neither logged nor returned.
+     * <p>The part is here for the same reason the query parameter is, and
+     * F-024 measured it against the running server: a multipart body without
+     * its {@code file} part left {@code POST /profile/import} as a 500. Our
+     * own form cannot send one, which is exactly why it stayed — the next
+     * client, a script or a mobile app, would read it as a server fault.
+     *
+     * <p>Only the name travels. The value is user input (absolute rule 4) and
+     * is neither logged nor returned.
      */
     @ExceptionHandler({
             MethodArgumentTypeMismatchException.class,
-            MissingServletRequestParameterException.class})
+            MissingServletRequestParameterException.class,
+            MissingServletRequestPartException.class})
     public ResponseEntity<ProblemDetail> handleBadParameter(Exception exception) {
-        String field = exception instanceof MethodArgumentTypeMismatchException mismatch
-                ? mismatch.getName()
-                : ((MissingServletRequestParameterException) exception).getParameterName();
         return respond(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
-                .param("fields", List.of(field))
+                .param("fields", List.of(nameOf(exception)))
                 .build());
+    }
+
+    private static String nameOf(Exception exception) {
+        if (exception instanceof MethodArgumentTypeMismatchException mismatch) {
+            return mismatch.getName();
+        }
+        if (exception instanceof MissingServletRequestPartException part) {
+            return part.getRequestPartName();
+        }
+        return ((MissingServletRequestParameterException) exception).getParameterName();
     }
 
     /**

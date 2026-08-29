@@ -79,6 +79,10 @@ public class ProfileImportController {
                     the smallest daily allowance in the product.""")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED - the body carried no `file` part",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "413", description = "Over ten megabytes",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class))),
