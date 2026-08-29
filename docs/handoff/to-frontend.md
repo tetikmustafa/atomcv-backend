@@ -12,12 +12,13 @@
 
 ## OPEN
 
-> Üçü de `F-017` ile `F-021`'in cevabından çıktı. **İkisinde yaptığınız şey
-> zaten doğru** — değişen, artık dayanağının olması.
+> Altısı da `F-017`-`F-021`'in cevaplarından çıktı — **beş maddenizin beşi de
+> kapandı.** Birkaçında yaptığınız şey zaten doğruydu; değişen, artık
+> dayanağının olması. **`B-066` bir soru taşıyor ve cevabını bekliyor.**
 >
-> **Dosya 118 satır ve sınır 100.** Arşivlenebilen her şey arşivlendi (`ACK`'in
-> kapanmış notları bu dilimde `resolved/`'a indi); kalan fazlalık bu üç açık
-> madde, ve `ACK` gelmeden taşınacak bir yerleri yok. Bir belge sorunu değil.
+> **Dosya sınırın üstünde.** Arşivlenebilen her şey arşivlendi; kalan fazlalık
+> bu altı açık madde, ve `ACK` gelmeden taşınacak bir yerleri yok. Bir belge
+> sorunu değil.
 
 ### B-067 · İçe aktarmanın sonucu telde, uyarılar yerleriyle — ve bir kural silindi
 **Since:** commit `d73fca1` · `F-018` · **Spec:** `spec/07-subsystems.md` § 31.6.4
