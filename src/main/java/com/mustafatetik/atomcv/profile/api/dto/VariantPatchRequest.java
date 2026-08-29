@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.profile.api.dto;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertFalse;
 import jakarta.validation.constraints.Size;
 import org.openapitools.jackson.nullable.JsonNullable;
 
@@ -37,6 +38,14 @@ public record VariantPatchRequest(
 
         @Schema(description = "Make this the wording used by default") Boolean primary,
 
+        // AssertFalse rather than a check in the controller: null stays valid
+        // under it -- "leave it alone" is most of the traffic -- and the
+        // existing MethodArgumentNotValidException handler names the field
+        // from the binding result, so the refusal publishes
+        // `fields: ["userEdited"]` without a second place to keep the name in
+        // step. VariantPatch's constructor still throws: that guard is for a
+        // service-layer caller, and this one is for the wire (F-021).
+        @AssertFalse
         @Schema(description = "Send `false` to hand a wording back: it stops being "
                 + "yours, and a stale one is queued for regeneration (Bolum 32.2's "
                 + "\"regenerate\" button). `true` is refused — a wording becomes "
