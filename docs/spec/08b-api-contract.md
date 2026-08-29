@@ -80,7 +80,9 @@ yalnızca yerine koyar.
 | `COMPILATION_FAILED` | 502 | `detail: string`, `rawSourceAvailable: boolean` |
 | `PAGE_LIMIT_EXCEEDED` | 422 | `actual: integer`, `limit: integer` |
 | `REWRITE_VALIDATION_FAILED` | 500 | `atomId: uuid`, `issues: string[]` |
+| `COVER_LETTER_REJECTED` | 422 | `issues: string[]` |
 | `EMBEDDING_UNAVAILABLE` | 503 | — |
+| `GENERATION_PAUSED` | 503 | — |
 | `UNSUPPORTED_DOCUMENT` | 415 | `accepted: string[]` |
 | `DOCUMENT_TOO_LARGE` | 413 | `limitBytes: integer` |
 | `PDF_NOT_TEXT_BASED` | 422 | — |
@@ -106,6 +108,33 @@ yalnızca yerine koyar.
 | `PRECONDITION_REQUIRED` | 428 | — |
 | `VALIDATION_FAILED` | 400 | `fields: string[]` |
 | `INTERNAL_ERROR` | 500 | — |
+| `METHOD_NOT_ALLOWED` | 405 | — |
+| `NOT_ACCEPTABLE` | 406 | — |
+| `UNSUPPORTED_MEDIA_TYPE` | 415 | — |
+
+**`F-017`: tabloda beş satır eksikti, biri bildirilmişti.** Frontend
+`COVER_LETTER_REJECTED`'ı gördü; tabloyu `ErrorCode`'a karşı okuyan bir muhafız
+yazılınca dördü daha çıktı. Eksikliğin bedeli belge değil test:
+**frontend'in katalog testi `params`'ı bu tablodan okuyor**, yani satırı olmayan
+bir kodun mesajı yanlış argümanla yazılsa da yeşil kalıyor — `B-043`'ün delik
+bulduğu yerin aynısı.
+
+`GENERATION_PAUSED` § 44.3'ün acil freni, § 10-security.md'de tarif ediliyordu
+ve buraya hiç geçmemişti. `METHOD_NOT_ALLOWED`, `NOT_ACCEPTABLE` ve
+`UNSUPPORTED_MEDIA_TYPE` D.6.8'in kendi tablosunda duruyordu; **iki tablo bir
+kataloğun tamamı değil**, ve "tam katalog" diyen bu.
+
+**Tablo artık bir testin okuduğu şey.** `ErrorCatalogueSpecTest` her satırı
+enum'a karşı doğruluyor — kod, HTTP durumu, parametre adları, tipleri ve
+sıraları — ve iki yönde de: koda karşılık gelmeyen bir satır da düşürüyor.
+Sıra da denetleniyor, çünkü tabloyu okuyan kişi ICU mesajını hangi
+parametrenin önce geldiğine bakarak yazıyor.
+
+**`COVER_LETTER_REJECTED`'ın `issues` sözlüğü kapalı** ve altı değerli:
+`unsupported_claim`, `number_invented`, `experience_overstated`,
+`wrong_company`, `length_out_of_range`, `cliche` (§ 34.4.1). Kapalılık
+`CoverLetterIssue` enum'uyla zorlanıyor, yani listeye yedincisi ancak bu belge
+de değişerek eklenebilir — frontend altısını ICU'da adlandırabilir.
 
 **Adım 1.2'de eklenen dört kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
 adlandırmadığı durumlar: bulunamayan kaynak, `If-Match` uyuşmazlığı (Bölüm 35.6
