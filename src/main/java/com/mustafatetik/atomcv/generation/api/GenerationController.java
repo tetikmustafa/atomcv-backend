@@ -172,7 +172,9 @@ public class GenerationController {
 
                     **Counts, never a percentage.** Bolum 23.3 forbids one by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.
 
-                    The report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.""")
+                    The report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.
+
+                    Carries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so Bolum 48.4's 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The generation"),
             @ApiResponse(responseCode = "404",
@@ -189,9 +191,18 @@ public class GenerationController {
         Generation generation = generations.findById(currentUser.require(), generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
+        // F-019: the verdict and its grant ride along, so a reload shows the
+        // thumb that was pressed instead of asking for it again -- and so the
+        // person can still see `accessedAt` the day after they granted it,
+        // which is most of the forty-eight hours (Bolum 48.4).
+        FeedbackResponse verdict = feedback.read(currentUser.require(), generationId)
+                .map(recorded -> FeedbackResponse.of(generationId, recorded.verdict(),
+                        recorded.grant(), clock.instant()))
+                .orElse(null);
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
-                .body(GenerationResponse.of(generation));
+                .body(GenerationResponse.of(generation, verdict));
     }
 
     @Operation(
@@ -333,19 +344,13 @@ public class GenerationController {
             @PathVariable UUID generationId,
             @Valid @RequestBody FeedbackRequest request) {
 
-        if (!request.hasValidRating()) {
-            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
-                    .param("fields", java.util.List.of("rating"))
-                    .build());
-        }
-
         // Scoped, and it is the IDOR defense here too: a verdict on somebody
         // else's generation answers 404 (absolute rule 3).
         feedback.find(currentUser.require(), generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         var recorded = feedback.record(currentUser.require(), generationId,
-                request.rating(), request.domainCategory(), request.comment(),
+                request.ratingValue(), request.domainCategory(), request.comment(),
                 request.granted());
 
         return ResponseEntity.ok()

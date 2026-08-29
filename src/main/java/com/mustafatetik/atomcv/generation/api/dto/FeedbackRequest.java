@@ -25,9 +25,9 @@ import java.util.Locale;
 @Schema(description = "A verdict on one generation")
 public record FeedbackRequest(
 
-        @Schema(description = "1 for good, -1 for bad", allowableValues = {"1", "-1"})
+        @Schema(description = "1 for good, -1 for bad")
         @NotNull
-        Short rating,
+        Rating rating,
 
         @Schema(description = "Which part it is about")
         Category category,
@@ -40,6 +40,56 @@ public record FeedbackRequest(
                 + "so the problem can be diagnosed",
                 defaultValue = "false")
         Boolean contentGranted) {
+
+    /**
+     * Bolum 13's two values, and the schema says so in the type they are
+     * (F-019).
+     *
+     * <p><strong>An enum rather than a {@code Short} with an
+     * {@code allowableValues}.</strong> Swagger's {@code allowableValues} is a
+     * {@code String[]} and publishes quoted values whatever the property's
+     * type, so the schema said {@code format: int32} and
+     * {@code enum: ["1", "-1"]} in the same breath — openapi-typescript
+     * believes the enum, and the frontend was carrying an {@code Omit} to undo
+     * the string literals while sending the number that was always correct.
+     *
+     * <p>This is the shape {@link Category} beside it already uses: a closed
+     * vocabulary whose wire form is a {@code @JsonValue}. The difference is
+     * that this one's wire form is a number, and the compiler now keeps the
+     * two values from drifting instead of a hand-written range check.
+     */
+    @Schema(type = "integer", format = "int32", allowableValues = {"1", "-1"})
+    public enum Rating {
+
+        UP((short) 1),
+        DOWN((short) -1);
+
+        private final short wire;
+
+        Rating(short wire) {
+            this.wire = wire;
+        }
+
+        @com.fasterxml.jackson.annotation.JsonValue
+        public short wireValue() {
+            return wire;
+        }
+
+        /**
+         * Anything else is refused here rather than by a range check on the
+         * record: a rating of zero is neither a thumb up nor a thumb down, and
+         * failing at the parse means the endpoint cannot be reached with one.
+         */
+        @JsonCreator
+        public static Rating fromWireValue(short value) {
+            return switch (value) {
+                case 1 -> UP;
+                case -1 -> DOWN;
+                default -> throw new IllegalArgumentException(
+                        "a rating is 1 or -1");
+            };
+        }
+    }
 
     /** Bolum 13's column vocabulary, lowercase on the wire like every other one. */
     public enum Category {
@@ -62,13 +112,9 @@ public record FeedbackRequest(
         }
     }
 
-    /**
-     * <strong>Validated here rather than by an annotation.</strong> Bolum 13's
-     * column allows exactly two values and a range would allow zero, which is
-     * neither a thumb up nor a thumb down.
-     */
-    public boolean hasValidRating() {
-        return rating != null && (rating == 1 || rating == -1);
+    /** The number Bolum 13's column stores. */
+    public short ratingValue() {
+        return rating.wireValue();
     }
 
     public GenerationFeedback.Category domainCategory() {
