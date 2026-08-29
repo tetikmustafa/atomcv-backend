@@ -131,6 +131,26 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
     }
 
     /**
+     * A multipart body that carries no {@code file} part at all (F-024).
+     *
+     * <p>It answered 500 before this: {@code MissingServletRequestPartException}
+     * had no handler and fell to the catch-all, so the server told the user
+     * their request had broken it. Our own form cannot produce this — it will
+     * not submit without a file — which is why it survived a whole stage, and
+     * why the frontend found it by asking the running server rather than the
+     * screen. The next client would have read the 500 as ours.
+     */
+    @Test
+    void amultipartWithoutTheFilePartIsTheClientsFaultNotOurs() throws Exception {
+        mvc.perform(multipart("/api/v1/profile/import?mode=replace"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields[0]").value("file"));
+
+        assertThat(queuedJobs()).isZero();
+    }
+
+    /**
      * Bolum 44.2: nothing was extracted, so nothing was spent. Without the
      * refund a person could burn a day's allowance on files that never made it
      * past the first rung.
