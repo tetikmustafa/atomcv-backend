@@ -65,6 +65,33 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     /**
+     * F-023: the import's warning vocabulary has to be published as an enum.
+     *
+     * <p>{@code ImportWarning.code} went out as a bare {@code string}, and
+     * Bolum 31.6.4 tells a client to build its message from that code. Between
+     * the two, only one of the six values was written down anywhere the
+     * frontend could read it — Bolum 31.4's example — so five messages could
+     * not be written at all, and a guessed key set would have been six lines
+     * that never match. The review screen counted its warnings and opened
+     * their sections without ever naming one.
+     *
+     * <p><strong>The six are spelled out here rather than read from the
+     * enum.</strong> A test derived from {@code ExtractionWarningCode.values()}
+     * agrees with whatever the code happens to say, including a seventh value
+     * added without telling anyone — and a seventh value is a wire change the
+     * other repository has to hear about before it ships a message for it.
+     * This list failing is the reminder to write the handoff item.
+     */
+    @Test
+    void theImportWarningVocabularyIsPublishedAsAnEnum() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.ImportWarning.properties.code.enum")
+                        .value(Matchers.containsInAnyOrder(
+                                "ambiguous_date", "missing_organization", "unclear_section",
+                                "scrambled_text", "overlapping_dates", "untranslatable_atom")));
+    }
+
+    /**
      * F-019: an integer enum has to be published as integers.
      *
      * <p>The column allows two values and springdoc was publishing them as the

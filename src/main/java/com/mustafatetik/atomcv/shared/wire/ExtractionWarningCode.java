@@ -1,4 +1,4 @@
-package com.mustafatetik.atomcv.ingestion.structuring;
+package com.mustafatetik.atomcv.shared.wire;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -22,6 +22,13 @@ import java.util.Locale;
  * field the person can correct on the review screen, which is why that screen
  * is mandatory. What cannot be corrected — no language, no content at all —
  * ends the extraction instead (Bolum 31.10).
+ *
+ * <p><strong>It lives in {@code shared} because two modules touch it</strong>
+ * ({@code F-023}). Bolum 31 raises these codes and {@code GET /jobs/&#123;id&#125;}
+ * publishes them, and ingestion already depends on jobs to queue its work — so
+ * an import in the other direction would close a circle the architecture test
+ * refuses. Its sibling {@code UnreadablePostingReason} moved for the same
+ * reason. Nothing here depends on anything, which is what makes the move free.
  */
 public enum ExtractionWarningCode {
 

@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.jobs.api.dto;
 
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobStatus;
@@ -90,11 +91,26 @@ public record JobStatusResponse(
      * the {@code code} is the closed vocabulary the frontend renders an ICU
      * message from.
      *
+     * <p><strong>The schema is the enum; the field is a String</strong>
+     * ({@code F-023}). Publishing {@link ExtractionWarningCode} is what lets a
+     * client write six messages instead of guessing at them — the frontend
+     * could name none of the six from a bare {@code string}, and a guessed key
+     * set would be six lines that never match. The value is still read as text
+     * because it comes back through a JSONB column: a row written before a
+     * value was renamed carries a code this build does not know, and typing
+     * the field would make that row either throw or vanish. A vanished warning
+     * would break {@code warningCount == warnings.length}, so it travels, and
+     * a client reading a closed vocabulary openly falls to its own general
+     * sentence.
+     *
      * @param code one of Bolum 31.4's vocabulary, lowercase on the wire
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(description = "Something the import could not settle")
-    public record ImportWarning(String code, Integer sectionOrder, Integer entryOrder) {
+    public record ImportWarning(
+            @Schema(implementation = ExtractionWarningCode.class) String code,
+            Integer sectionOrder,
+            Integer entryOrder) {
     }
 
     public static JobStatusResponse of(Job job) {

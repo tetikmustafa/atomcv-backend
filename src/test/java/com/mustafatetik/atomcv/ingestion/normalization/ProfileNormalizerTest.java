@@ -8,7 +8,7 @@ import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile.ExtractedC
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile.ExtractedEntry;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile.ExtractedSection;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile.ExtractionWarning;
-import com.mustafatetik.atomcv.ingestion.structuring.ExtractionWarningCode;
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import java.time.YearMonth;
 import java.util.List;

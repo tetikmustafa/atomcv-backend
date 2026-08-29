@@ -2,7 +2,7 @@ package com.mustafatetik.atomcv.ingestion.normalization;
 
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile.ExtractionWarning;
-import com.mustafatetik.atomcv.ingestion.structuring.ExtractionWarningCode;
+import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.Tag;
