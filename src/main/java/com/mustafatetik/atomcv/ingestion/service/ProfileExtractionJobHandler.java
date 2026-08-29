@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.ingestion.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
 import com.mustafatetik.atomcv.billing.QuotaService;
+import com.mustafatetik.atomcv.ingestion.normalization.EntryPath;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
 import com.mustafatetik.atomcv.ingestion.normalization.ProfileNormalizer;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile;
@@ -23,7 +24,10 @@ import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -200,7 +204,40 @@ public class ProfileExtractionJobHandler implements JobHandler {
         result.put("atomCount", normalized.atoms().size());
         result.put("warningCount", normalized.warnings().size());
         result.put("detectedLanguage", normalized.language());
+        result.put("warnings", locatedWarnings(normalized));
         return JobOutcome.completed(result);
+    }
+
+    /**
+     * The warnings, each saying which row it is about (F-018).
+     *
+     * <p>Bolum 31.6 opens the sections that have one, and a count cannot say
+     * which those are. What travels is the code and the position -- the
+     * section's and the entry's {@code display_order}, which is what
+     * {@code GET /profile} publishes for both, so the client resolves a
+     * warning to a row it is already holding.
+     *
+     * <p><strong>Not the {@code detail}.</strong> It is an English note for an
+     * operator, it is untranslatable, and the code is what the frontend
+     * renders an ICU message from. A warning that names no entry -- the model
+     * raises some -- travels with its code and no position rather than being
+     * dropped: "something about this document" is still worth a count.
+     *
+     * <p>LinkedHashMap and a List: this reaches a JSONB column and a response,
+     * and nothing whose order a reader can see may vary run to run.
+     */
+    private static List<Map<String, Object>> locatedWarnings(NormalizedProfile normalized) {
+        List<Map<String, Object>> located = new ArrayList<>();
+        for (var warning : normalized.warnings()) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("code", warning.code().wireValue());
+            EntryPath.parse(warning.path()).ifPresent(path -> {
+                entry.put("sectionOrder", path.section());
+                entry.put("entryOrder", path.entry());
+            });
+            located.add(Collections.unmodifiableMap(entry));
+        }
+        return List.copyOf(located);
     }
 
     /**

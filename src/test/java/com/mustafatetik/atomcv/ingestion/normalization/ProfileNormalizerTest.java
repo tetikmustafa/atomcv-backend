@@ -113,6 +113,53 @@ class ProfileNormalizerTest {
                         ExtractionWarningCode.AMBIGUOUS_DATE);
     }
 
+    // -- where a warning happened (F-018) ----------------------------------
+
+    /**
+     * <strong>The path names the section, and every section used to be
+     * section zero.</strong> The form this replaced was
+     * {@code sections.entries[i]} with no section in it at all, so a warning
+     * on Education's first row and one on Experience's first row were written
+     * down as the same place. The frontend could not open the right one, which
+     * is half of what Bolum 31.6 asks for.
+     */
+    @Test
+    void awarningNamesTheSectionItHappenedIn() {
+        var normalized = normalizer.normalize(new ExtractedProfile("en", 0.99,
+                ExtractedContact.EMPTY,
+                List.of(new ExtractedSection(SectionKind.EDUCATION, "Education",
+                                List.of(entry("BSc", "A university", "2015-09", "2019-06"))),
+                        new ExtractedSection(SectionKind.EXPERIENCE, "Experience",
+                                List.of(entry("Engineer", "Brisa", "not a date", null)))),
+                List.of()));
+
+        assertThat(normalized.warnings()).singleElement().satisfies(warning ->
+                assertThat(EntryPath.parse(warning.path())).hasValue(new EntryPath(1, 0)));
+    }
+
+    /**
+     * <strong>And it names the row after the sort, not before it.</strong>
+     * Warnings used to be written down against the index the model answered
+     * in, and {@code newestFirst} reorders the entries a line later — so the
+     * only case where the path was readable at all, a single section, was
+     * exactly the case where it could point at the wrong row.
+     *
+     * <p>Here the unreadable date is on the entry the model listed first and
+     * the sort puts last: the old code said entry 0, the row is entry 1.
+     */
+    @Test
+    void awarningNamesTheRowTheReaderSeesAndNotTheOneTheModelSent() {
+        var normalized = normalizer.normalize(sectionOf(SectionKind.EXPERIENCE,
+                entry("Oldest", "A", "not a date", "2020-01"),
+                entry("Newest", "C", "2024-01", null)));
+
+        assertThat(normalized.sections().get(0).entries())
+                .extracting(NormalizedProfile.NormalizedEntry::title)
+                .containsExactly("Newest", "Oldest");
+        assertThat(normalized.warnings()).singleElement().satisfies(warning ->
+                assertThat(EntryPath.parse(warning.path())).hasValue(new EntryPath(0, 1)));
+    }
+
     // -- ordering (steps 5 and 6) ------------------------------------------
 
     @Test
