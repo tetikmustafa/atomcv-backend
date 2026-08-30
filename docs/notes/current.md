@@ -63,22 +63,8 @@ sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
 Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları EK D.6 ile
 `spec/11-operations.md` § 48.4.2'de. Frontend aksiyonları `B-062`-`B-065`.
-**Buradan taşınmayan tek şey, çünkü başka hiçbir yerde yazmıyor:**
-
-**Springdoc'ta tam sayı enum'u üç şeyi birden istiyor** — `@Schema(type =
-"integer", format = "int32", allowableValues = {"1", "-1"})`, ve **enum
-bildiriminin üstünde**, özelliğin üstünde değil.
-
-| Ne denendi | Ne çıktı |
-|---|---|
-| `Short` + `allowableValues` | `type: integer`, `enum: ["1","-1"]` — tırnaklı |
-| aynısı + özellikte `type` | aynı, tırnaklı |
-| enum + `@JsonValue short` | `type: string`, enum düştü |
-| enum + `@Schema(type=integer)` | `type: integer`, **enum tamamen yok** |
-| enum + `type` + `allowableValues` | ✅ `enum: [1,-1]` |
-
-`@JsonValue` tek başına yetmiyor — yetiyormuş gibi duran kısım o.
-`OpenApiSchemaIT` üçünü de tutuyor.
+Springdoc'un tam sayı enum'unu nasıl yayımladığı — dört denemesiyle —
+EK D.6.1'e taşındı; kalıcı bir olgu, rolling bir kayıt değil.
 
 **Ders, bu oturumda dört kez:** *bir muhafızın düştüğünü görmeden yazıldı
 sayma.* `{"userEdited": true}` yıllardır test ediliyordu — **constructor
@@ -90,14 +76,12 @@ Kayıtları `archive/stage-3-handoff-answers.md`'de; kalıcı kararlar
 `spec/08-api.md` § 35.3 ve `spec/07-subsystems.md` § 31.6.4'te. Frontend
 aksiyonları `B-066`, `B-067`. Burada kalanlar yalnız **canlı** olanlar:
 
-**Tamir etmeye kalkma — ikisi de bilinçli boşluk:**
-- **Geçmiş satırında başlık yok.** Etiket (rol, şirket) ilandan okunur, ilan
-  mutlak kural 4 gereği geri dönmüyor. Frontend'e soruldu (`B-066`); cevabı
-  bir spec kararı olacak.
+**Tamir etmeye kalkma — bilinçli boşluk:**
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
   `ExtractionWarningCode` kapalı ve altı değerinin altısı da düzeltilebilir bir
   alanı tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**, sayıya
   indirilmedi. Yedincisi gerçekten engelleyici olursa karar § 31.6.4'te.
+  (Geçmiş satırının başlığı artık boşluk değil — `F-022`, § 57.6.)
 
 **Ders — bir alanı yayımlamak, onu ilk kez okumaktır.** Frontend uyarıların
 *yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde **yanlış** olduğu
@@ -108,6 +92,28 @@ yoktu, burada alan vardı ve yanlıştı.
 modu Windows'ta CRLF yazıyor; git commit'te normalleştirdiği için CI geçiyor,
 yerel kontrol düşüyor. **Yeni dosya yazdıktan sonra `sh ./gradlew
 spotlessApply`.**
+
+## Aşama 3 · dilim 13 — `F-022`, `F-023`, `F-024` (2026-08-30)
+
+Kalıcı kararlar `spec/16-cost-legal.md` § 57.6, `spec/08-api.md` § 35.3,
+`spec/07-subsystems.md` § 31.6.5 ve EK D.6.9'da. Frontend aksiyonları
+`B-068`-`B-070`. Burada yalnız **canlı** olanlar:
+
+**Tamir etmeye kalkma — ikisi de bilinçli:**
+- **`ImportWarning.code` alanı `String`, şeması enum.** Değer JSONB'den geri
+  okunuyor; tipi enum yapmak, adı değişmiş bir kod taşıyan eski satırı ya
+  attırır ya düşürür, ve düşen uyarı `warningCount == warnings.length`'i bozar.
+- **`OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.**
+  `ExtractionWarningCode.values()`'tan türetilirse yedinci değere de "evet"
+  der; oysa yedincisi karşı reponun duyması gereken bir tel değişikliği.
+
+**`shared.wire` yeni bir paket, ve bir sonraki kapalı sözlüğün yeri.** İki
+modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` retlerin.
+
+**Ders — bir uca yalnız kendi arayüzünden bakan, o ucun başka istemcilere ne
+dediğini hiç görmez.** `file` parçasız istek bir aşama boyunca `500` döndü;
+frontend'in formu onu üretemediği için hiçbir ekran testi oraya ulaşamazdı.
+`B-064` ile aynı sınıf, ve bu sefer bulan şey ekran değil sunucu denetimiydi.
 
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 

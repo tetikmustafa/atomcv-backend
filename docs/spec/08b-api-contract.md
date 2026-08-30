@@ -37,6 +37,29 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 | `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
 | `retry` | Geçici hata | Değiştirmeden yeniden gönder |
 
+**Sayı olan bir kapalı sözlük springdoc'ta üç şeyi birden istiyor**
+(`F-019`): `@Schema(type = "integer", format = "int32", allowableValues =
+{"1", "-1"})`, ve **enum bildiriminin üstünde**, onu taşıyan özelliğin
+üstünde değil. `allowableValues` bir `String[]`, yani özelliğin tipi ne
+olursa olsun tırnaklı basıyor, ve openapi-typescript enum'a inanıyor:
+`FeedbackRequest.rating` bir süre `"1" | "-1"` diye üretildi, istemci —
+doğru olarak — sayı gönderirken.
+
+| Ne denendi | Ne çıktı |
+|---|---|
+| `Short` + `allowableValues` | `type: integer`, `enum: ["1","-1"]` — tırnaklı |
+| aynısı + özellikte `type` | aynı, tırnaklı |
+| enum + `@JsonValue short` | `type: string`, enum düştü |
+| enum + `@Schema(type=integer)` | `type: integer`, **enum tamamen yok** |
+| enum + `type` + `allowableValues` | ✅ `enum: [1,-1]` |
+
+**`@JsonValue` tek başına yetmiyor** — yetiyormuş gibi duran kısım o.
+`OpenApiSchemaIT` üçünü birden tutuyor.
+
+**Metin olan kapalı bir sözlük ise `@Schema(implementation = X.class)` ile
+yayımlanıyor** (`F-023`), alanın tipi `String` kalsa bile: `ImportWarning.code`
+JSONB'den geri okunduğu için `String` duruyor, şeması yine de enum.
+
 **`params.reason`** (`UNPARSEABLE_JOB_DESCRIPTION`) — bir ilanın neden analize
 dönüşemediği. Sekiz değer, tek kod: kod API sonucunu adlandırıyor, `reason`
 kullanıcıya söylenecek cümleyi. `confidence` ve `skillsFound` sekizden yalnız
@@ -551,3 +574,27 @@ ama yanıt yalnız yazılan sözcüklemeyi taşır.
 gösterildi; null'lanabilirlik testi `nullable = true` geri konularak
 kızartıldı. `OpenApiSchemaIT` 8 testten 16'ya, `AtomApiIT` 17'den 19'a,
 `ProblemDetailAdviceTest` 7'den 12'ye çıktı.
+
+#### D.6.9 — Gerçek uca karşı üçüncü ölçüm (`F-024`, Aşama 3 kapanışı)
+
+Frontend MSW'yi kapatıp bütün kapıları çalışan sunucuya karşı denetledi.
+**Ölçtüğü her şey doğru çıktı** — `413` → `409` → `415`/`422` sırası,
+`{"userEdited": true}` → `400`, `405`/`406`/`415`, `rating: 0` → `400`,
+cursor'lı sayfalama ve bozuk cursor'ın `400`'ü, CSRF'siz yazmanın `403`'ü —
+**biri hariç.**
+
+| İstek | Önce | Sonra |
+|---|---|---|
+| `POST /profile/import`, multipart gövde, **`file` parçası yok** | 500 `INTERNAL_ERROR` | **400** `VALIDATION_FAILED`, `fields: ["file"]` |
+
+Sebebi D.6.8'in listesindekilerin aynısı, bir istisna sonra:
+`MissingServletRequestPartException`'ın `ProblemDetailAdvice`'ta işleyicisi
+yoktu, son çareye düşüyordu, ve sunucu kullanıcıya "isteğin beni bozdu"
+diyordu. `handleBadParameter` **zaten** tam bu gerekçeyle query parametresinin
+eksiğini yakalıyordu; bir parça, aynı kusurun başka bir zarfı.
+
+**Bunun bir aşama boyunca durabilmesinin sebebi kayda değer.** Frontend'in
+kendi formu bu isteği üretemiyor — dosya seçilmeden göndermiyor — yani hiçbir
+ekran testi buraya ulaşamazdı. Bulunması, ekranın değil **sunucunun**
+denetlenmesini gerektirdi. *Bir uca yalnız kendi arayüzünden bakan, o ucun
+başka istemcilere ne dediğini hiç görmez.*

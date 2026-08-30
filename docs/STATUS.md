@@ -3,8 +3,8 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-29** · **Frontend Aşama 3 kapandı; backend beş `F-nnn`'in beşini de
-cevapladı** · açık `F-nnn` yok · frontend'de **`B-062`-`B-067`**
+**2026-08-30** · **`F-022`-`F-024`'ün üçü de indi** · açık `F-nnn` yok ·
+frontend'de **`B-068`-`B-070`**
 
 ---
 
@@ -15,33 +15,34 @@ cevapladı** · açık `F-nnn` yok · frontend'de **`B-062`-`B-067`**
 | Aşama 0 · 1 · 2 — iskelet, yürüyen iskelet, ilana özel üretim | ✅ |
 | Aşama 3 — hesap ve MVP · 3.1-3.6, 3.8, 3.9 (3.7 profil editörü frontend'de) | ✅ |
 
-**Dilim 9-12: beş `F-nnn`'in beşi de indi.** Ortak bulgu: sorulanların
-çoğunda yanlış olan taraf backend'di. `{"userEdited": true}` **`500`
-dönüyordu**; `Retry-After` gidiyordu ama testi de şema girişi de yoktu;
-§ 48.4'ün "kontrol edilemeyen onay" iddiası yalnız oturum boyunca doğruydu;
-EK D.6'da **beş kod eksikti**; `GET /generations` haritada vardı, hiç
-yazılmamıştı; ve `F-018`'de uyarının **yerinin kendisi yanlıştı**. § 31.6'nın
-"kritik uyarı" kuralı **silindi** — kapalı sözlükte engelleyici kod yok.
+**Dilim 9-13: sekiz `F-nnn`'in sekizi de indi**, ve çoğunda yanlış olan taraf
+backend'di — üç ayrı istisna `500` dönüyordu, EK D.6'da beş kod eksikti,
+`F-018`'de uyarının yeri yanlıştı. Ayrıntı `resolved/`'da.
+
+**Dilim 13'ün kalıcı kararı § 57.6:** geçmiş satırı `roleTitle` ve
+`companyName` taşıyor, ve **mutlak kural 4'ün sınırı** orada üç ölçütle
+yazılı — listede olmayan alan istisna değil.
 
 **Kapanış denetimi (0-3)** `notes/kapanis-denetimi.md`'de. **Geliştiricide:**
-model seçilince fiyat tablosu (o güne kadar bütçe freni çalışmaz), VPS kurulumu
-(§ XI-A.4) ve **restore testi**.
+model seçilince fiyat tablosu, VPS kurulumu (§ XI-A.4) ve **restore testi**.
 
-**Test:** 1054 birim · 444 entegrasyon · latex 49/49 — 0 hata
+**Test:** 1054 birim · 448 entegrasyon · latex 49/49 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
-| Aşama 3 — **bütün dilimler** ✅ · yalnız § 31.6'nın yarısı `F-018`'i bekliyor | ⏳ |
+| Aşama 3 — **bütün dilimler** ✅ · `B-068`-`B-070` açık | ⏳ |
 
-Sekiz dilim (dilim dökümü kendi `notes/`'larında — bu dosyanın kuralı).
-**On sekiz maddenin on sekizi `ACK`.** **Gerçek uca karşı denenmedi:** OAuth,
-Turnstile, içe aktarma, cover letter, bayat sözcükleme, hesap silme.
+On dilim (dökümü kendi `notes/`'larında). § 31.6'nın geçidi ve geçmiş ekranı
+indi; satırın etiketi ile uyarıların adları `B-070`/`B-069` ile geldi.
+**Gerçek uca karşı ölçüldü** (2026-08-30, MSW kapalı) — biri mock'un kapı
+sırasını yanlışladı, biri `500` çıkardı (`F-024`). **Ölçülmeyen:** OAuth ve
+Turnstile (dağıtım ister), hesap silme ve mektup üretimi.
 
-**Test:** 607 birim · 47 e2e · **bundle** profil 252.3 / üretim 219.5 /
-onboarding 217.1 / ayarlar 228.5 KB (dinamik rotalar elle, 210-253 KB).
+**Test:** 643 birim · 51 e2e · **bundle** profil 252.5 / üretim 220.3 /
+geçmiş 213.8 / onboarding 217.3 / ayarlar 229.8 KB (dinamik rotalar elle).
 
 ## Açık kararlar (ikisini de ilgilendirir)
 
@@ -52,8 +53,8 @@ onboarding 217.1 / ayarlar 228.5 KB (dinamik rotalar elle, 210-253 KB).
 
 ## Sonraki senkronizasyon noktası
 
-**Backend'de açık `F-nnn` kalmadı**; sıra **`B-062`-`B-067`'de.** İçlerinde
-bir soru var: `B-066` geçmiş satırının neyle etiketleneceğini soruyor — etiket
-ilandan okunuyor, ilan ise mutlak kural 4'te, o yüzden kararı frontend bir
-`F-nnn` ile açsın. **Yayın öncesi açık:** gizlilik politikasının sağlayıcı
+**Sıra frontend'de: `B-068`-`B-070`.** Üçü de `gen:api` istiyor. `B-070`
+satıra iki alan koyuyor; `B-069` altı uyarı kodunu adlandırılabilir yapıyor,
+yani § 31.6'nın geçidi artık hangi uyarı olduğunu söyleyebilir; `B-068`'de
+yapacak bir şey yok. **Yayın öncesi açık:** gizlilik politikasının sağlayıcı
 listesi, model seçimini bekliyor.

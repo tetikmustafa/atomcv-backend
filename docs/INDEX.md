@@ -77,6 +77,7 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | LLM ile yapılandırma, çıkarım prompt'u | `spec/07-subsystems.md` § 31.4, § 31.4.1 |
 | Beceri/tarih/run normalizasyonu, alias sözlüğü | `spec/07-subsystems.md` § 31.5, § 31.5.1 |
 | Yükleme ucu, çıkarım işi, profile yazma | `spec/07-subsystems.md` § 31.6.1 |
+| Gözden geçirme ekranı, uyarının yeri ve sözlüğü | `spec/07-subsystems.md` § 31.6.4, § 31.6.5 |
 | Çok dillilik, varyant senkronu | `spec/07-subsystems.md` § 32, § 32.2.1, § 32.3.1 |
 | Şablon, özelleştirme | `spec/07-subsystems.md` § 33 |
 | Cover letter | `spec/07-subsystems.md` § 34 |
@@ -132,6 +133,7 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | Prompt şablonları | `spec/15-repos-and-claude.md` § XI-B.8 |
 | Repolar arası koordinasyon | `spec/15-repos-and-claude.md` § XI-B.9 |
 | Maliyet, hukuki | `spec/16-cost-legal.md` |
+| **Telde ilandan ne dönebilir — mutlak kural 4'ün sınırı** | `spec/16-cost-legal.md` § 57.6 |
 | Terimler sözlüğü | `spec/17-appendix-abc.md` § EK A |
 | Yayın kontrol listeleri | `spec/17-appendix-abc.md` § EK C |
 
