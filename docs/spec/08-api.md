@@ -223,10 +223,22 @@ bir tane var.
 >
 > **Satır ilanı taşımaz, mektubu da taşımaz** — yalnız açılacak bir mektup
 > olup olmadığını (`hasCoverLetter`). Taşıdığı: `generationId`, `status`,
-> `createdAt`, `pageCount`, `matchLevel` ve `contentLanguage`. **Satırda
-> başlık yok**, ve bu bilinçli bir boşluk: bir geçmiş ekranının isteyeceği
-> her etiket (rol, şirket) ilandan okunuyor, ve birini buraya koymak mutlak
-> kural 4'ün sorusunu kazara cevaplamak olurdu. Soru `B-066`'da açık.
+> `createdAt`, `pageCount`, `matchLevel`, `contentLanguage`, `roleTitle` ve
+> `companyName`.
+
+> **Satır artık etiketli (`F-022`).** Yukarıdaki "satırda başlık yok"
+> boşluğu kasten bırakılmıştı ve `B-066` soruyu frontend'e sordu; cevap
+> **rol ve şirket yayımlansın** oldu. Sebebi ekranın kendisi: etiketsiz satır
+> "1 sayfa · tarih · strong" diyor, ve on üretimi olan biri için bu, listeyi
+> açarken sorduğu tek soruya cevap vermiyor. `roleTitle` ile `companyName`
+> Faz A'nın ilandan **çıkardığı** iki addır — ilanın kendisi değil.
+>
+> **Bu mutlak kural 4'ün bir istisnası, ve sınırı § 57.6'da yazılı.** İki
+> alanı sınırsız bırakmak, "sorumluluklar da satırı anlamlı kılar" diyen bir
+> sonraki alana kapıyı açardı; § 57.6 üç ölçütü ve istisnanın listesini
+> tutuyor. **Boş dize dönmez, alan hiç gitmez** (`F-010`): genel modda ilan
+> yok, ilanda şirket geçmiyorsa `JobAnalysis` onu `""` yapıyor, ve `""`
+> ekranda bir şey söylüyormuş gibi duran bir etiket üretirdi.
 
 > **İki dil alanı (`F-013`).** `contentLanguage` belgenin gerçekten yazıldığı
 > dil, `postingLanguage` Faz A'nın ilanı okuduğu dil; ikisi de BCP 47, ikisi de

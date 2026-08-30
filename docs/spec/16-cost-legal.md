@@ -206,6 +206,43 @@ GET /api/v1/profile/export
 
 GDPR/KVKK'daki taşınabilirlik hakkının karşılığı.
 
+### 57.6 Mutlak kural 4'ün sınırı — telde ilandan ne dönebilir (`F-022`)
+
+**Kural:** kullanıcının yapıştırdığı ilan hiçbir yanıtta geri dönmez. Sistemin
+tuttuğu en büyük kullanıcı içeriği odur, hiçbir ekran istemez, ve bir log
+satırına ya da bir ekran görüntüsüne düşmesinin karşılığı yoktur.
+
+**İstisna, ve tamamı:** bir üretimi **adlandırmaya** yetecek kadarı — Faz A'nın
+ilandan okuduğu **rol başlığı** ve **şirket adı** — geçmiş satırında
+(`GET /generations`, EK D.8.7) dönebilir. Başka hiçbir şey dönemez.
+
+**Neden bir istisna gerekti.** Geçmiş listesi etiketsiz yayımlandı ve satır
+"1 sayfa · tarih · strong" diyordu. Bu, on üretimi olan birinin listeyi
+açarken sorduğu tek soruya — *hangisiydi o* — cevap vermiyor: aynı öğleden
+sonra yapılmış iki başvuruyu tarih ayırmıyor, ve adlandırmayı kullanıcıya
+yıkmak on üretimi olan kişinin yapmayacağı bir iş.
+
+**Sınırın nerede bittiği, kuralın kendisi kadar önemli.** İki alan bir kuralı
+bir sınıra çeviriyor, ve bitişini yazan bir cümle yoksa bir sonraki alan da
+aynı gerekçeyle girer — "sorumluluklar da satırı anlamlı kılar", sonra
+"anahtar kelimeler de". Üç ölçüt, üçü birden:
+
+1. **Amaç adlandırmaktır, göstermek değil.** Alan, kullanıcının kendi
+   listesinde bir satırı ötekinden ayırmaya yarıyorsa girebilir; ilanın
+   içeriğini okutuyorsa giremez.
+2. **Model tarafından çıkarılmış, kullanıcı tarafından yazılmamış olmalı.**
+   Rol ve şirket Faz A'nın ilandan **çıkardığı** iki addır; yapıştırılan
+   metnin bir parçası değil, onun hakkındaki bir olgudur.
+3. **Bir satıra sığmalı.** Cümle uzunluğunda hiçbir şey — sorumluluklar,
+   özet, gereksinimler — bu istisnadan geçmez.
+
+**Boş dize dönmez, alan hiç gitmez** (`F-010`). Genel modda ilan yoktur;
+ilanda şirket geçmiyorsa `JobAnalysis` onu `""` yapar, ve `""` ekranda bir şey
+söylüyormuş gibi duran bir etiket üretir.
+
+**Yeni bir alan bu üç ölçütten geçse bile buraya yazılmadan inmez.** Bu bölüm,
+istisnanın listesidir; listede olmayan alan istisna değildir.
+
 ---
 
 ## 58. Proje Sürdürülebilirliği

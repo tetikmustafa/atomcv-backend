@@ -1085,6 +1085,37 @@ frontend'in ICU mesajını kurduğu şey `code`. Hiçbir entry adlamayan bir uya
 ekranın kendi cümlesini yazması **doğru davranış**. Uydurulmuş bir anahtar
 kümesi, çevrilecek ama hiç değişmeyecek altı satır olurdu.
 
+#### 31.6.5 Kararlar (`F-023`) — sözlük yayımlanmadan mesaj yazılamıyor
+
+**Düzeltme — `code` şemada `enum`, `string` değil.** § 31.6.4 "mesajı `code`
+üstünden kurun" diyor, ama `ImportWarning.code` telde düz bir `string` olarak
+yayımlanıyordu ve altı değerin **yalnız biri** okunabilir bir yerde yazılıydı
+(§ 31.4'ün `AMBIGUOUS_DATE` örneği). Yani ekran uyarıları sayabiliyor ve
+bölümlerini açabiliyordu, hiçbirini **adlandıramıyordu**; tahminle yazılmış
+altı ICU anahtarı da hiç eşleşmeyecek altı satır olurdu — bu, § 31.6.4'ün faz
+çevirileri için verdiği gerekçenin aynısı, ters yönden.
+
+**`ExtractionWarningCode` `shared`'a taşındı.** Yayımlayabilmek için gerekliydi:
+kodları § 31 üretiyor, `GET /jobs/{id}` yayımlıyor, ve çıkarım işini kuyruğa
+vermek için `jobs`'a zaten bağımlı — ters yöndeki bir import
+`ArchitectureTest`'in reddettiği bir çevrimi kapatırdı. `UnreadablePostingReason`
+ile `CompilationFailureKind` aynı sebeple `shared`'da; onlar birer ret olduğu
+için `shared.error`'da duruyor, **bir uyarı bir ret değil** (§ 31.10), o yüzden
+kardeş bir pakette: `shared.wire`.
+
+**Alan `String` kalıyor, şeması enum.** Değer JSONB kolondan geri okunuyor:
+bir değerin adı değişmeden önce yazılmış bir satır, bu sürümün tanımadığı bir
+kod taşır. Alanın tipi enum olsaydı o satır ya istisna atardı ya düşerdi, ve
+düşen bir uyarı `warningCount == warnings.length` iddiasını bozardı. Kod telde
+gidiyor; kapalı bir sözlüğü **kapalı olduğunu bilerek açık okuyan** istemci
+kendi genel cümlesine düşüyor.
+
+**Muhafızın okuduğu altı değer elle yazılı.** `ExtractionWarningCode.values()`
+üzerinden türetilmiş bir test, kimseye söylenmeden eklenmiş yedinci bir değere
+de "evet" derdi — oysa yedinci değer, karşı reponun mesajını yazmadan önce
+duyması gereken bir tel değişikliği. Testin düşmesi, handoff maddesinin
+hatırlatıcısı.
+
 #### 31.6.1 Kararlar (Adım 3.4, dilim 4)
 
 **`POST /profile/import`, multipart, `202` + iş.** Ayrım § 31.10'un ilk üç

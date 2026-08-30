@@ -875,3 +875,82 @@ sağlayıcısı olarak çizilmemişti. Silinmedi, hiç yoktu — madde yine de k
 **`B-046`'nın ertelenen yarısı indi:** çıkış düğmesi artık çizili, ve giriş
 yoluyla birlikte geldi — ulaşılamayan bir durumun düğmesi olmasın diye
 beklemişti.
+---
+
+## Aşama 3 · backend cevapları — 2026-08-29
+
+`F-017`-`F-021`'in cevaplarından çıkan altı maddenin beşi. Altıncı (`B-066`)
+kanalda kaldı: geçmiş ekranı `F-022`'nin cevabını bekliyor.
+
+### B-062 · Cover letter 429'unda `Retry-After` — kapandı
+Başlık hep gidiyordu; eksik olan onu yayımlayan `@ApiResponse` ile telde
+gördüğünü söyleyen testti. **Frontend:** `gen:api` çekildi, mektup reddindeki
+"birazdan tekrar dene" dalı silindi. Süre `ApiError.retryAfterSeconds`'tan
+geliyor ve dakikaya `toRetryMinutes` ile yuvarlanıyor — üç kota kapısı da
+artık aynı yoldan geçiyor, ikinci bir hesap yok.
+
+### B-063 · Hata tablosunda beş yeni satır — kapandı
+`COVER_LETTER_REJECTED`, `GENERATION_PAUSED`, `METHOD_NOT_ALLOWED`,
+`NOT_ACCEPTABLE`, `UNSUPPORTED_MEDIA_TYPE`. **Frontend:** beşinin de mesajı
+katalogda vardı; eksik olan `issues`'un adlandırılmasıydı. `CoverLetterIssue`
+altı değeri `errorValues.COVER_LETTER_REJECTED.*` altında yazıldı ve
+`nameVocabularies` onları çeviriyor — **tanımadığı bir değeri ham geçiriyor**,
+yedinci bir değer bir panelin çökmesi değil bir satırın İngilizce kalması
+oluyor.
+
+### B-064 · `{"userEdited": true}` artık `400` — kapandı
+**Frontend:** yapacak bir şey çıkmadı; mock'un ürettiği reddin şekli telden
+gelenle aynı. Kayda değer olan sebebi: şekli **tahminle** değil, `F-021`'i
+yazarken sorarak sabitlemiştik, ve o soru backend'de bir `500`'ü ortaya
+çıkardı.
+
+### B-065 · `rating` sayı, ve verilmiş yargı geri okunuyor — kapandı
+**Frontend:** `rating`'in üstündeki `Omit` daraltması silindi — gönderilen şey
+değişmedi, tip artık onu tarif ediyor. `GET /generations/{id}`'nin `feedback`
+alanı okunuyor ve panel ondan kuruluyor; `useFeedback` yazma yanıtını aynı
+slota **write-through** yazıyor, yani ertesi gün dönen kişi `accessedAt`'i
+görüyor ve aynı oturumdaki kişi ekranın iki kez sormasını görmüyor.
+
+### B-067 · İçe aktarmanın sonucu telde, uyarılar yerleriyle — kapandı
+**Frontend:** `contracts.ts`'ten `ImportCompletedEvent` silindi (dosyadan
+çıkan üçüncü tip), `useJob`'ın terminal yükü genişleten `result` alanı da
+onunla gitti — artık `JobStatus` her iki iş türünü de tarif ediyor.
+
+§ 31.6'nın iki tasarım kuralı da yerine oturdu: **sorunlu bölümler otomatik
+açık** — uyarının `sectionOrder`'ı elimizdeki profilin `displayOrder`'ına
+çözülüyor, uç satır adlandırmak için geri okunmuyor — ve **Onayla hep aktif**,
+artık silinmiş bir kuralın yokluğu olarak değil, § 31.6.4'ün açık kararı
+olarak.
+
+**Açılma toplayıcı, atayıcı değil** (`editorUiStore.expandSections`): geçit
+ekrana her dönüşte uyarılarını yeniden çözüyor, ve atayan bir sürüm elle
+açılmış bölümü her dönüşte kapatırdı. Negatif kontrolle sabitlendi.
+
+**Uyarılar adlandırılmıyor, ve bu bilerek:** şema `code`'u düz `string` olarak
+yayımlıyor, `ExtractionWarningCode`'un altı değeri buradan bilinmiyor. Altı
+ICU anahtarını tahminle yazmak, `B-067`'nin faz çevirileri için verdiği
+gerekçenin aynısıyla yanlış olurdu — **`F-023`**.
+### B-066 · `GET /generations` ve geçmiş ekranı — kapandı (2026-08-30)
+**Frontend:** ekran `/history`'de, ve nav'da — yalnız URL ile ulaşılan bir
+rota ulaşılabilir değil. Sayfalama `useInfiniteQuery`: `nextCursor` geri
+veriliyor, **yokluğu geçmişin sonu**, ve değeri hiçbir yerde ayrıştırılmıyor.
+`total` hesabın sayısı olarak okunuyor — satır sayısı sayfalar indikçe
+büyürken o büyümüyor.
+
+**Kapı `capabilities.canSaveHistory`**, ve üç durumlu: oturum cevap vermeden
+önce iki cümleden hiçbiri doğru değil. Anonim oturuma kilitli kapı değil, ne
+aldığını söyleyen bir not gösteriliyor (§ 33.4).
+
+**Tamamlanmayan üretimin satırı bağlantı değil:** arkasında açılacak bir belge
+yok, ve tek gösterebileceği şey etiketin zaten söylediği hata olurdu.
+
+**Sorunuza cevap `F-022`: seçenek (b).** Satır bugün tarih, sayfa, eşleşme
+düzeyi, dil ve mektubu söylüyor; rol ve şirket geldiğinde satıra eklenecek.
+Uydurulmuş bir ad yazılmadı.
+
+**Ve ekranı kurarken duran bir kusur çıktı:** next-intl'in **hiçbir tarih
+formatı yok** — `format.dateTime(date, 'short')` `MISSING_FORMAT` logluyor ve
+bir yedeğe düşüyor, yani ekran çalışıyor gibi görünüyor. Geri bildirim
+panelinin grant tarihi bunu zaten yaşıyormuş. `formats` artık
+`lib/i18n/formats.ts`'te ve hem istek yapılandırmasında hem test
+sarmalayıcılarında aynı nesne.
