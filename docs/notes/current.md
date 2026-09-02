@@ -87,7 +87,7 @@ modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` ret
 çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
 yoktu, burada alan vardı ve yanlıştı.
 
-## Aşama 3 · dilim 14 — `F-027` (2026-09-02)
+## Aşama 3 · dilim 14 — `F-027`, `F-025` (2026-09-02)
 
 Silinmiş bir hesabın oturumu artık `401`. Kontrol `SessionCurrentUser`'ın
 oturum çözümünde, uçlarda değil: kusur profile özgü değildi, silinmiş bir
@@ -112,14 +112,21 @@ stub'ıydı.
 alıyordu. Yani o sınıf tam da bu kusur sayesinde geçiyormuş, ve `401` inince
 ortaya çıktı. `@AfterEach` artık dev kullanıcısını ve altın profili geri
 koyuyor.
-## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
-- **Kılavuz "tablo" dediğinde önce `V1`'e bak** — beş kez var olan bir tablo
-  için migration istedi.
-- **Toplu JPQL `update` `@Version`'ı atlar** ve **okuma, yakalanmak istenen
-  bayatlığı onarır** — etag'i **önceki yazmanın yanıtından** al. Aşama 3'ün
-  başvuru izlemesi ikisine de çarpacak.
+**`F-025` — `Ekleme`: işveren, ilanın taşıdığı bir addır ya da hiçbir şeydir.**
+`EmployerName.verifiedAgainst` ilanda geçmeyen `company.name`'i siliyor,
+Faz A'nın geçidinden sonra ve cache'ten önce. Yer tutucu ifade listesi
+**bilerek yazılmadı**: dilden ve modelden bağımsız olan şey, adın ilanda
+bulunması. Dört yazımı da tek kural yakalıyor (`""`, `"Unknown"`,
+`"not specified"`, `"Belirtilmemiş"`).
 
+**Bilinçli bedeli var:** modelin alıntılamak yerine *yeniden yazdığı* bir ad
+(çeviri, "A.Ş." eklemesi) etiketi kaybediyor. Şirketsiz satır işi hâlâ
+söylüyor; yanlış şirketli satırı okuyanın ayırt etme yolu yok.
+
+**Taşınan:** aynı şey prompt'ta da yazmalı, ama yazmak yeni bir sürüm demek
+(§ 53.2) — üç fixture ve bir haftalık cache geçersiz olur. **`job_analysis`
+model seçimiyle birlikte `v2`'ye çıktığında o cümle de girsin.**
 ---
 
 ## Kapanan adımların arşiv haritası
@@ -187,11 +194,5 @@ Frontend aksiyonları: `B-055`-`B-058`.
 
 Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da: ne bulundu, ne
 yazıldı, hangi muhafız hangi ihlalle düşürüldü. Buraya kopyalanmadı — ikinci
-bir kopya ayrışır.
-
-**Bu oturumda üç kez tekrarlanan ve tekrar edecek olan ders:** *bir muhafızın
-düştüğünü görmeden yazıldı sayma.* Üçü de yeşil görünüyordu ve üçü de bir şey
-kanıtlamıyordu — `make record`'un hiç kaydetmemesi, `@SpringBootTest`'in taban
-sınıfın anahtarlarını düşürmesi, ve CSRF muafiyeti sökülüyken geçen webhook
-testi. Sonuncusunu CLAUDE.md zaten yazmıştı ve yine düşüldü; kural artık
-§ 51.7'de.
+bir kopya ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü
+görmeden yazıldı sayma.* Dilim 14'te yine gerekti.

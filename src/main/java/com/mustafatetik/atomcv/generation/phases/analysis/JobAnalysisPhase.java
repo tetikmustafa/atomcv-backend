@@ -152,10 +152,20 @@ public class JobAnalysisPhase {
             String jobDescription, String version) {
         var verdict = PlausibilityGate.check(analysis);
         if (verdict.isAccepted()) {
+            // F-025: an employer the posting does not name is not an employer,
+            // whatever the model wrote in the field. Before the cache, so the
+            // week the entry lives is a week of the checked answer — and after
+            // the gate, which judges what came back rather than what we kept.
+            var checked = EmployerName.verifiedAgainst(analysis, jobDescription);
+            if (checked != analysis) {
+                // The fact, never the name (absolute rule 4): it came out of
+                // the posting and the posting is the user's.
+                log.info("Faz A named an employer the posting does not carry; label dropped");
+            }
             // Only what passed. Caching a refusal would freeze it for a week,
             // and a model that wandered once should be asked again.
-            cache.put(jobDescription, version, analysis);
-            return Result.ok(analysis);
+            cache.put(jobDescription, version, checked);
+            return Result.ok(checked);
         }
         log.info("Plausibility gate refused an analysis: {}", verdict);
         // And the same sentence applies to the recording the chain has just

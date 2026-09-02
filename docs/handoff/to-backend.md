@@ -11,42 +11,12 @@
 
 ## OPEN
 
-> İkisi de **gerçek uca karşı ölçümden** çıktı (2026-08-30, `make record`),
-> mock'a karşı değil, ve ikisi de bir aşama boyunca durmuştu. Hiçbiri bir
-> ekranı bloke etmiyor. **`F-027` cevaplandı ve aşağıya, `ACK`'e indi.**
+> **Gerçek uca karşı ölçümden** çıktı (2026-08-30, `make record`), mock'a
+> karşı değil, ve bir aşama boyunca durmuştu. Bir ekranı bloke etmiyor.
+> **`F-025` ve `F-027` cevaplandı ve aşağıya, `ACK`'e indi.**
 >
-> **Dosya sınırın üstünde**, ve arşivlenebilen her şey arşivlendi: fazlalık bu
-> açık maddeler, ve `ACK` gelmeden taşınacak bir yerleri yok.
-
-### F-025 · `companyName` telde `"not specified"` olabiliyor — boş dize kuralı bunu tutmuyor
-**Since:** frontend commit `1c63e27` · gerçek uca karşı ölçüm, 2026-08-30
-**Neden:** `B-070` "boş dize hiç dönmüyor, alan ya doludur ya yoktur" diyor ve
-`""` için doğru. Ama telde duran 45 satırın birinde `companyName` **`"not
-specified"`** — modelin, şirketin adı geçmediğini söylemek için yazdığı bir
-cümle. `""` değil, o yüzden çeviren kural onu yakalamıyor, ve satır ekranda
-*"Business Intelligence Specialist (SQL Developer) · not specified"* diye
-çıkıyor: § 57.6'nın "bir şey söylüyormuş gibi duran etiket" diye tarif ettiği
-şeyin ta kendisi.
-
-**Bizde çözülemez, ve denemeyeceğiz.** İstemci tarafında bu, bir yer tutucu
-ifade kara listesi demek — `"not specified"`, `"belirtilmemiş"`, `"N/A"`,
-`"unknown"`, ve modelin yarın yazacağı yedincisi. Dilden ve modelden bağımlı
-bir tahmin, ve yanlış tarafta.
-
-**İstenen:** ikisinden biri. (a) `JobAnalysis` "yok"u tek bir biçimde
-söylesin — prompt'ta şirket yoksa alanı boş bırakma talimatı, ve mevcut
-`""` → yok çevirisi işini görsün; ya da (b) çevirici, boş dizeye ek olarak
-modelin "yok" demek için kullandığı kalıpları da yok sayar — hangisi
-sizin tarafınızda daha az kırılgansa. Kararı sizinki, çünkü hangi kalıpların
-çıktığını **prompt'u yazan** taraf görebiliyor.
-
-**Kayıt için doğru çıkanlar:** iki alan gerçekten bağımsız (45 satırın 28'inde
-rol var, 19'unda şirket), ve genel modda ikisi de yok. Bir de şunu ölçtük:
-`roleTitle` **kendi içinde tire taşıyabiliyor** (`"Integration Engineer —
-Legacy Systems"`), o yüzden satırda rolü ve şirketi bir tire ile birleştirmiyor,
-iki ayrı öğe olarak çiziyoruz.
-
-**Spec:** `spec/16-cost-legal.md` § 57.6, `spec/08-api.md` EK D.8.7
+> **Dosya sınırın üstünde**, ve arşivlenebilen her şey arşivlendi: fazlalık
+> `ACK` gelmeden taşınacak yeri olmayan maddeler.
 
 ### F-026 · Dört mektup taslağının dördü de reddedildi — `retry` tek çıkış yolu
 **Since:** frontend commit `5df4d42` · gerçek uca karşı ölçüm, 2026-08-30
@@ -101,6 +71,46 @@ değiştirildi: tek elemanlı bir liste `ListFormat`'ı hiç sınamıyordu.
 
 *(`F-001`…`F-024` `resolved/to-backend-2026-08.md`'de — üçünün de cevabı
 oraya indi 2026-08-30'da, dosya sınırı.)*
+
+### F-025 · İndi — ve üçüncü bir yolla, ikisinden biriyle değil
+
+**İkisini de seçmedik, ve gerekçemiz sizin kendi itirazınız.** (b)'ye "yer
+tutucu ifade kara listesi — dilden ve modelden bağımlı bir tahmin" dediniz ve
+haklıydınız; aynı itiraz bizim tarafımızda da geçerli, çünkü kalıbı yazan
+model, listeyi yazan biz değiliz. (a) ise tek başına yetmiyor: prompt bir
+talimat, muhafaza değil.
+
+**Kural şu: işveren, ilanın taşıdığı bir addır ya da hiçbir şeydir.**
+`company.name` ilanın metninde geçmiyorsa siliniyor — büyük/küçük harfe ve
+satır kaymasına duyarsız bir içerme kontrolü, Faz A'nın geçidinden sonra ve
+cache'ten önce. `"not specified"` ilanda yok; `"Calico Teknoloji"` var. Kapalı
+bir kural, sözlüğü yok, ve **her dilde aynı** çalışıyor.
+
+**Sizin ölçtüğünüz dördün dördünü de yakalıyor.** Bu arada burada üç kayıtlı
+`job_analysis` cevabı duruyor ve şirketi olmayan bir ilan için **üç ayrı şey**
+yazmışlar: `""`, `"Unknown"` ve gerçek bir ad. Sizinkiyle dört. Yani mesele
+"yedinci kalıp" değil, kalıbın kendisinin sabit olmaması — o yüzden sayılan
+değil, doğrulanabilir bir özellik seçtik.
+
+**Bedeli var ve söylüyoruz:** model adı alıntılamak yerine *yeniden yazarsa*
+(çeviri, `A.Ş.` eklemesi, kısaltma açması) etiket kayboluyor. Bilerek o
+yönde: şirketsiz bir satır işi hâlâ söylüyor, yanlış şirketli bir satırı
+okuyanın ayırt etme yolu yok. § 57.6'nın kendi ölçütü de bu.
+
+**Prompt'a da yazılmalı, ve yazılmadı.** Yazmak yeni bir prompt sürümü demek
+(§ 53.2): üç fixture ve bir haftalık cache geçersiz olur, ve `local-fake`
+gerçek cevap yerine sentetik üretmeye başlar. `job_analysis` model seçimiyle
+birlikte `v2`'ye çıkacak zaten; cümle o zaman girecek. Bugünkü kusuru
+kapatmak için gerekmiyor.
+
+**Kayıt için:** `roleTitle`'a aynı kuralı **uygulamadık.** Model rol adını
+sıkça yeniden yazıyor ("Senior Backend Engineer" ↔ "Backend Engineer
+(Senior)") ve içerme kontrolü orada meşru başlıkları düşürürdü. Orada bir yer
+tutucu ölçerseniz ayrı bir madde açın — çözümü aynı olmayacak.
+
+**Sizde iş yok.** Alan zaten "ya dolu ya yok"; değişen, dolu olduğunda
+gerçekten bir ad olması. Tirenin iki ayrı öğe olarak çizilmesi kararınız da
+doğru — `roleTitle` kendi içinde tire taşıyor ve bunu biz de teyit ediyoruz.
 
 ### F-027 · İndi, ve düzeltme uçlarda değil oturumda
 

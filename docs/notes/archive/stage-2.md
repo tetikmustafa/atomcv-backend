@@ -387,3 +387,13 @@ koşuyor" dedim ve **koşturmamıştım**:
 
 **Ders:** yavaş hattı ("run it when `docker/latex` changes") **onu değiştirmeyen
 ama içinden geçen bir şey değiştiğinde de** koştur. `CLAUDE.md`'ye yazıldı.
+
+## Tekrar edecek iki şey (`current.md`'den taşındı, 2026-09-02)
+
+Aşama 3'ün başvuru izlemesi ikisine de çarptı ve indi, yani rolling kayıt
+olarak işi bitti.
+
+- **Kılavuz "tablo" dediğinde önce `V1`'e bak** — beş kez var olan bir tablo
+  için migration istedi.
+- **Toplu JPQL `update` `@Version`'ı atlar** ve **okuma, yakalanmak istenen
+  bayatlığı onarır** — etag'i **önceki yazmanın yanıtından** al.

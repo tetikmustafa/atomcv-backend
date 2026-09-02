@@ -249,6 +249,36 @@ class JobAnalysisPhaseTest {
         assertThat(cache.size()).isZero();
     }
 
+    // ── F-025, the employer ──────────────────────────────────────────────
+
+    /**
+     * The wiring, not the rule — {@code EmployerNameTest} holds the rule. A
+     * check the phase never calls is a check with nothing behind it, and the
+     * cached entry has to be the checked one: an unchecked answer frozen for a
+     * week would go on labelling rows for a week.
+     */
+    @Test
+    void anEmployerThePostingDoesNotNameIsDroppedAndTheCacheKeepsTheCheckedAnswer() {
+        var cache = new InMemoryCache();
+        var provider = new StubProvider(
+                analysisJson(0.94, 2).replace("Acme Payments", "not specified"), sent);
+
+        var result = phase(provider, cache).analyse(posting(), false, "user-1", null);
+
+        assertThat(((Result.Ok<JobAnalysis>) result).value().company().name()).isEmpty();
+        assertThat(cache.find(posting(), "v1").orElseThrow().company().name()).isEmpty();
+    }
+
+    /** And one it does name survives the same path. */
+    @Test
+    void anEmployerThePostingNamesIsKept() {
+        var result = phase(new StubProvider(analysisJson(0.94, 2), sent))
+                .analyse(posting(), false, "user-1", null);
+
+        assertThat(((Result.Ok<JobAnalysis>) result).value().company().name())
+                .isEqualTo("Acme Payments");
+    }
+
     // ── Bolum 18.5 ───────────────────────────────────────────────────────
 
     /**
@@ -365,7 +395,7 @@ class JobAnalysisPhaseTest {
 
     private static String posting() {
         return """
-                We are seeking a senior backend engineer for our payments team.
+                Acme Payments is seeking a senior backend engineer for our payments team.
 
                 Responsibilities:
                 - Design and scale payment processing systems
