@@ -87,46 +87,41 @@ modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` ret
 çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
 yoktu, burada alan vardı ve yanlıştı.
 
-## Aşama 3 · dilim 14 — `F-027`, `F-025` (2026-09-02)
+## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
-Silinmiş bir hesabın oturumu artık `401`. Kontrol `SessionCurrentUser`'ın
-oturum çözümünde, uçlarda değil: kusur profile özgü değildi, silinmiş bir
-`user_id` adına yapılan **her yazma** yabancı anahtarı ihlal ediyordu — profil
-uçlarının `500` dönmesinin sebebi satırı ilk kullanımda yaratmalarıydı, hiçbir
-şey yazmayan `GET /generations` ise hesap yerindeymiş gibi `200` dönüyordu.
-İstek başına tek birincil anahtar okuması, ve zaten memoize edilmiş.
-
-**Ekleme — `revokeAllFor` artık yutmuyor, fırlatıyor.** `AccountDeletionService`
-oturumları satırdan **önce** siliyor ve gerekçesini javadoc'unda yazıyor; ama
-Redis hatası `warn` + `0` dönüyordu, ki bu "hiç oturumu yoktu"dan ayırt
-edilemez. Hesap o cevabın üstüne siliniyordu. Artık silinmiyor.
+Kalıcı kararlar `spec/05-pipeline-a-c.md` § 18.4.1 (`F-025`) ve
+`spec/07-subsystems.md` § 34.4.2 (`F-026`)'de; `F-027`'nin gerekçesi
+`SessionCurrentUser.pointsAtALiveAccount`'un javadoc'unda. Burada yalnız
+**canlı** olanlar:
 
 **Sapma — `DELETE /account` iki kez basılınca ikincisi `204` değil `401`.**
 Uç hâlâ idempotent (§ 57.4); değişen, ikinci basışın uca *ulaşamaması*. Telde
-zaten böyleydi — ilk yanıt çerezi siliyor — eski `204`'ü üreten şey dev
-stub'ıydı.
+zaten böyleydi — ilk yanıt çerezi siliyor — eski `204`'ü üreten dev stub'ıydı.
+
+**Ekleme — `revokeAllFor` yutmuyor, fırlatıyor.** Redis hatası `warn` + `0`
+dönüyordu, ki "hiç oturumu yoktu"dan ayırt edilemez, ve hesap o cevabın
+üstüne siliniyordu. Oturumları silinemeyen hesap artık silinmiyor.
+
+**Tamir etmeye kalkma:**
+- **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş** —
+  içlerinde `synthetic-631` geçiyor. Ölçüm diye okunmasınlar; gerçek olan iki
+  tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
+- **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2'nin son
+  paragrafı). Ölçülmüş, bilerek kapatılmadı.
+- **Prompt'lar `job_analysis` ve `cover_letter` için hâlâ eski cümleyi
+  taşıyor.** İkisi de `v2` bekliyor, ve `v2` model seçimini bekliyor.
 
 **Ders — bir sınıf yıktığını geri koymuyorsa, onu ayakta tutan şey sıradır.**
 `AccountDeletionIT` acting user'ı siliyor ve suite tek bağlam paylaşıyor;
 `SecondImportIT` üç sınıf sonra `409`'unu **silinmiş bir kullanıcıdan**
-alıyordu. Yani o sınıf tam da bu kusur sayesinde geçiyormuş, ve `401` inince
-ortaya çıktı. `@AfterEach` artık dev kullanıcısını ve altın profili geri
-koyuyor.
+alıyordu — yani o sınıf tam da `F-027`'nin kusuru sayesinde geçiyormuş, ve
+`401` inince ortaya çıktı. `@AfterEach` artık geri koyuyor.
 
-**`F-025` — `Ekleme`: işveren, ilanın taşıdığı bir addır ya da hiçbir şeydir.**
-`EmployerName.verifiedAgainst` ilanda geçmeyen `company.name`'i siliyor,
-Faz A'nın geçidinden sonra ve cache'ten önce. Yer tutucu ifade listesi
-**bilerek yazılmadı**: dilden ve modelden bağımsız olan şey, adın ilanda
-bulunması. Dört yazımı da tek kural yakalıyor (`""`, `"Unknown"`,
-`"not specified"`, `"Belirtilmemiş"`).
+**Ders — reddedilen bir cevap da kaydediliyor, ve ölçüm orada duruyor.**
+`F-026`'nın dört taslağını yeniden üretmek gerekmedi: `local-record` onları
+diske yazmıştı. Bir muhafızın yanlış pozitifini aramanın en ucuz yeri
+`fixtures/llm/`.
 
-**Bilinçli bedeli var:** modelin alıntılamak yerine *yeniden yazdığı* bir ad
-(çeviri, "A.Ş." eklemesi) etiketi kaybediyor. Şirketsiz satır işi hâlâ
-söylüyor; yanlış şirketli satırı okuyanın ayırt etme yolu yok.
-
-**Taşınan:** aynı şey prompt'ta da yazmalı, ama yazmak yeni bir sürüm demek
-(§ 53.2) — üç fixture ve bir haftalık cache geçersiz olur. **`job_analysis`
-model seçimiyle birlikte `v2`'ye çıktığında o cümle de girsin.**
 ---
 
 ## Kapanan adımların arşiv haritası
