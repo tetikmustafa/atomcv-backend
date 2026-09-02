@@ -192,6 +192,38 @@ Sıra önemlidir: incelik (güven, beceri sayısı, sorumluluk) **şekilden önc
 
 **Uzunluk denetimi § 18.3'ün injection savunmasının yapısal yarısıdır.** Fence modele bölgenin veri olduğunu söyler; bu denetim modelin buna inanmayı bıraktığını fark eder. Enjekte edilmiş bir talimat daha kısa bir cevap üretmez — bir paragrafla adlandırılmış bir beceri ya da talimat taşıyan bir başlık üretir, ve bunların şekli vardır. Tavanlar gerçek bir ilanın ürettiğinin çok üstünde: uzun ama gerçek bir sorumluluğu reddeden bir kapı, hiç kapı olmamasından kötüdür. Denetim **tercih edilen becerileri de** kapsar (`allSkills`), yalnız zorunluları değil: enjekte edilmiş bir talimatın hangi listeye düşeceğini seçen bir şey yok.
 
+#### 18.4.1 Kararlar (`F-025`, 2026-09-02)
+
+**Ekleme — işveren, ilanın taşıdığı bir addır ya da hiçbir şeydir.** Şema
+`company.name`'i **zorunlu ve düz `string`** yapıyor, yani adlandıracak bir
+işvereni olmayan modelin yine de bir şey yazması gerekiyor — ve her seferinde
+başka bir şey yazıyor. Bu repodaki üç kayıtlı analiz `"Unknown"`, boş dize ve
+gerçek bir ad diyor; frontend telde dördüncüsünü ölçtü: `"not specified"`,
+geçmiş satırında bir olguymuş gibi duran bir etiket (§ 57.6).
+
+**Kural bir liste değil, doğrulanabilir bir özellik.** "Yok" demenin
+kalıplarını saymak, modelin hangi dilde hangi cümleyi yazacağı üzerine bir
+tahmindir ve yedincisi listede olmaz. Adı, olmayan addan ayıran şey **ilanın
+onu içermesi**: `"not specified"` metinde yok, `"Calico Teknoloji"` var.
+Kontrol büyük/küçük harfe ve satır kaymasına duyarsız, Faz A'nın kapısından
+sonra ve § 18.6'nın önbelleğinden önce çalışıyor — böylece bir haftalık girdi
+de denetlenmiş cevabı taşıyor, ve § 34.2'nin selamlaması aynı satırla
+düzeliyor.
+
+**Sessizliğe doğru hata veriyor, bilerek.** Adı alıntılamak yerine *yeniden
+yazan* bir model (çeviri, `A.Ş.` eklemesi, kısaltma açması) etiketi
+kaybediyor. İkisinden ucuz olanı bu: şirketi olmayan satır işin ne olduğunu
+hâlâ söylüyor, yanlış şirketi adlandıran satırı okuyanın ayırt etme yolu yok.
+
+**`role.title`'a uygulanmıyor.** Model rol adını sık ve meşru biçimde
+başka türlü yazıyor ("Senior Backend Engineer" ↔ "Backend Engineer (Senior)"),
+ve aynı kural orada gerçek başlıkları düşürürdü.
+
+**Prompt'ta da yazmalı, ve yazılmadı.** Yazmak yeni bir prompt sürümü demek
+(§ 53.2): üç fixture ve bir haftalık önbellek geçersiz olur, `local-fake`
+sentetik cevaba döner. `job_analysis` model seçimiyle birlikte `v2`'ye
+çıkacak; cümle o değişikliğe ait, ve kusuru kapatmak için gerekmiyor.
+
 ### 18.5 Embedding hedefi sentezi
 
 Ham ilan metni embed'lenmez (sosyal haklar, şirket tanıtımı gibi gürültü içerir):
