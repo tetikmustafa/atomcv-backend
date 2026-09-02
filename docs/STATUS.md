@@ -23,8 +23,8 @@ eksikti, ve dilim 14'ün üçü de **ölçümle** çıktı. Ayrıntı `resolved/
 Dilim 13'ünkü § 57.6: geçmiş satırının iki alanı, ve mutlak kural 4'ün sınırı.
 
 **Kapanış denetimi (0-3)** `notes/kapanis-denetimi.md`'de. **Geliştiricide:**
-fiyat tablosu (model seçilince), VPS (§ XI-A.4), restore testi, ve `main`'de
-Deploy'u düşüren iki HIGH CVE (netty-codec, pgjdbc).
+fiyat tablosu (model seçilince), VPS (§ XI-A.4) ve restore testi. Deploy'u
+düşüren iki HIGH CVE yamalandı (netty-codec, pgjdbc).
 
 **Test:** 1078 birim · 450 entegrasyon · latex 49/49 — 0 hata
 

@@ -23,6 +23,20 @@ repositories {
     mavenCentral()
 }
 
+// Two libraries Spring Boot's BOM pins one patch behind a fix, and the image
+// scan on the Deploy workflow is where that shows up: Trivy fails the job on
+// HIGH, so main has been red on every push since these two were published.
+// Overriding the BOM's property is the documented way to take a security patch
+// before the next Boot release carries it — and it is a property rather than a
+// dependency line because both arrive transitively, netty through the mail and
+// Redis clients and pgjdbc through the driver.
+//
+// **Both go when Boot's BOM catches up.** An override that outlives its reason
+// is a pin that quietly holds a library back, which is the same failure in the
+// other direction.
+extra["postgresql.version"] = "42.7.12"   // CVE-2026-54291, SCRAM downgrade
+extra["netty.version"] = "4.1.136.Final"  // CVE-2026-59901, decoder loop
+
 // Integration tests live in their own source set so that `gradlew test` stays
 // fast and free of Docker. CI runs `test` and `integrationTest` as separate
 // steps (Bolum 47.1).

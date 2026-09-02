@@ -117,6 +117,12 @@ dönüyordu, ki "hiç oturumu yoktu"dan ayırt edilemez, ve hesap o cevabın
 alıyordu — yani o sınıf tam da `F-027`'nin kusuru sayesinde geçiyormuş, ve
 `401` inince ortaya çıktı. `@AfterEach` artık geri koyuyor.
 
+**Geçici — `build.gradle.kts`'te iki BOM geçersizleştirmesi var.**
+`postgresql.version` 42.7.12 ve `netty.version` 4.1.136.Final; ikisi de
+Trivy'nin `main`'de Deploy'u düşürdüğü HIGH CVE'ler için, ve ikisi de Spring
+Boot'un BOM'u yetişince **kaldırılmalı**. Gerekçesini aşan bir pin, kütüphaneyi
+sessizce geride tutar — aynı kusurun ters yönü.
+
 **Ders — reddedilen bir cevap da kaydediliyor, ve ölçüm orada duruyor.**
 `F-026`'nın dört taslağını yeniden üretmek gerekmedi: `local-record` onları
 diske yazmıştı. Bir muhafızın yanlış pozitifini aramanın en ucuz yeri
