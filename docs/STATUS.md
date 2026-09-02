@@ -3,8 +3,8 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-09-02** · açık `B-nnn` yok · **`F-027` indi** · açık `F-nnn`:
-**`F-025`**, **`F-026`** (ikisi de telde ölçüldü)
+**2026-09-02** · açık `B-nnn` yok · **`F-025` ve `F-027` indi** · açık
+`F-nnn`: **`F-026`**
 
 ---
 
@@ -26,7 +26,7 @@ yazılı — listede olmayan alan istisna değil.
 **Kapanış denetimi (0-3)** `notes/kapanis-denetimi.md`'de. **Geliştiricide:**
 model seçilince fiyat tablosu, VPS kurulumu (§ XI-A.4) ve **restore testi**.
 
-**Test:** 1060 birim · 450 entegrasyon · latex 49/49 — 0 hata
+**Test:** 1071 birim · 450 entegrasyon · latex 49/49 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -52,8 +52,9 @@ ile Turnstile** — ikisi de yapılandırılmış bir dağıtım istiyor.
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra hâlâ backend'de: `F-025`, `F-026`.** `companyName: "not specified"`, ve
-dört mektup taslağının dördünün de reddedilmesi. **`F-027` kapandı:** hesabı
-olmayan oturum artık `401`, ve `DELETE /account`'un ikinci basışı bunun
-sonucu olarak `204` yerine `401` — istemcide iş çıkarmıyor. **Yayın öncesi
-açık:** gizlilik politikasının sağlayıcı listesi, model seçimini bekliyor.
+**Sıra hâlâ backend'de: `F-026`** — dört mektup taslağının dördünün de
+reddedilmesi. **`F-027`:** hesabı olmayan oturum artık `401`, ve bu yüzden
+`DELETE /account`'un ikinci basışı `204` değil `401`. **`F-025`:** işveren
+adı ilanda geçmiyorsa siliniyor — kara liste değil doğrulanabilir bir kural,
+prompt cümlesi `job_analysis` `v2`'ye bırakıldı. İkisi de istemcide iş
+çıkarmıyor. **Yayın öncesi:** gizlilik politikası model seçimini bekliyor.

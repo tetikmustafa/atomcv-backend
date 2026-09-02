@@ -211,6 +211,26 @@ public record JobAnalysis(
                 .collect(Collectors.joining(". "));
     }
 
+    /**
+     * The same analysis with the employer unnamed (F-025).
+     *
+     * <p>"" and not null, because that is how this record says absent
+     * everywhere else — {@link Company} normalises a missing name to it, and
+     * {@code GenerationSummary} already turns a blank into a field that is not
+     * on the wire. A second spelling of absent would mean every reader
+     * checking for two.
+     *
+     * <p>Written here rather than at the call site so that the twelve
+     * components stay named in one place: a rebuild spelled out somewhere else
+     * is a list that silently drops a field the day one is added.
+     */
+    JobAnalysis withoutCompanyName() {
+        return new JobAnalysis(
+                role, new Company("", company.sizeHint()), requiredSkills, preferredSkills,
+                responsibilities, keywords, experienceYears, languageRequirements,
+                companyTone, jdLanguage, confidence, extractionNotes);
+    }
+
     private static <T> List<T> copyOf(List<T> values) {
         return values == null ? List.of() : List.copyOf(values);
     }
