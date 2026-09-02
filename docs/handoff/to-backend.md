@@ -11,7 +11,111 @@
 
 ## OPEN
 
-*(şu an açık madde yok — `F-022`-`F-024`'ün üçü de `ACK`'te)*
+> Üçü de **gerçek uca karşı ölçümden** çıktı (2026-08-30, `make record`),
+> mock'a karşı değil — ikisi bir aşama boyunca durmuş, biri hesap silmenin
+> ardındaki bir yolda duruyordu. Hiçbiri bir ekranı bloke etmiyor.
+>
+> **Dosya sınırın üstünde**, ve arşivlenebilen her şey arşivlendi: fazlalık bu
+> üç açık madde, ve `ACK` gelmeden taşınacak bir yerleri yok.
+
+### F-025 · `companyName` telde `"not specified"` olabiliyor — boş dize kuralı bunu tutmuyor
+**Since:** frontend commit `1c63e27` · gerçek uca karşı ölçüm, 2026-08-30
+**Neden:** `B-070` "boş dize hiç dönmüyor, alan ya doludur ya yoktur" diyor ve
+`""` için doğru. Ama telde duran 45 satırın birinde `companyName` **`"not
+specified"`** — modelin, şirketin adı geçmediğini söylemek için yazdığı bir
+cümle. `""` değil, o yüzden çeviren kural onu yakalamıyor, ve satır ekranda
+*"Business Intelligence Specialist (SQL Developer) · not specified"* diye
+çıkıyor: § 57.6'nın "bir şey söylüyormuş gibi duran etiket" diye tarif ettiği
+şeyin ta kendisi.
+
+**Bizde çözülemez, ve denemeyeceğiz.** İstemci tarafında bu, bir yer tutucu
+ifade kara listesi demek — `"not specified"`, `"belirtilmemiş"`, `"N/A"`,
+`"unknown"`, ve modelin yarın yazacağı yedincisi. Dilden ve modelden bağımlı
+bir tahmin, ve yanlış tarafta.
+
+**İstenen:** ikisinden biri. (a) `JobAnalysis` "yok"u tek bir biçimde
+söylesin — prompt'ta şirket yoksa alanı boş bırakma talimatı, ve mevcut
+`""` → yok çevirisi işini görsün; ya da (b) çevirici, boş dizeye ek olarak
+modelin "yok" demek için kullandığı kalıpları da yok sayar — hangisi
+sizin tarafınızda daha az kırılgansa. Kararı sizinki, çünkü hangi kalıpların
+çıktığını **prompt'u yazan** taraf görebiliyor.
+
+**Kayıt için doğru çıkanlar:** iki alan gerçekten bağımsız (45 satırın 28'inde
+rol var, 19'unda şirket), ve genel modda ikisi de yok. Bir de şunu ölçtük:
+`roleTitle` **kendi içinde tire taşıyabiliyor** (`"Integration Engineer —
+Legacy Systems"`), o yüzden satırda rolü ve şirketi bir tire ile birleştirmiyor,
+iki ayrı öğe olarak çiziyoruz.
+
+**Spec:** `spec/16-cost-legal.md` § 57.6, `spec/08-api.md` EK D.8.7
+
+### F-026 · Dört mektup taslağının dördü de reddedildi — `retry` tek çıkış yolu
+**Since:** frontend commit `5df4d42` · gerçek uca karşı ölçüm, 2026-08-30
+(`make record`, yani gerçek LLM çağrıları)
+**Neden:** Altın profile (`senior_backend_tr`) karşı arka arkaya **dört**
+taslak istedik ve dördü de `422 COVER_LETTER_REJECTED` döndü:
+
+| # | `style` | `issues` |
+|---|---|---|
+| 1 | `default` | `number_invented`, `length_out_of_range` |
+| 2 | `shorter` | `number_invented`, `length_out_of_range` |
+| 3 | `shorter` | `number_invented`, `length_out_of_range` |
+| 4 | `more_formal` + `companyNote` | `number_invented`, `length_out_of_range`, `cliche` |
+
+Dördüncüsünün farklı çıkması, bunların **tekrar oynatılan tek bir fixture
+olmadığını** gösteriyor: gerçekten dört ayrı taslak yazıldı ve dördü de
+geçemedi.
+
+**Ekranın söylediği cümle bu ölçüme göre yanlış.** `COVER_LETTER_REJECTED`'ın
+tek çözümü `retry`, ve bizim metnimiz "tekrar istemek genelde geçen bir taslak
+üretir" diyor. Dört denemede geçmedi; yani kullanıcının önündeki tek düğme onu
+hiçbir yere götürmüyor olabilir. Metni yumuşatmadık — bir profil ve bir model
+yapılandırmasına bakarak ürün metnini değiştirmek, ölçtüğümüzden fazlasını
+iddia etmek olurdu.
+
+**İstenen:** bu iki ihlalin sistematik olup olmadığına bakın. `number_invented`
+altın profilin metriklerinden (`300 bin satır`) geliyor olabilir — mektuba
+girmesi yasaksa prompt bunu söylemeli; `length_out_of_range` ise `shorter`
+istendiğinde bile çıkıyor, ki bu bir aralık/prompt uyuşmazlığına benziyor.
+**Sistematikse çıkışsız bir ekran var demektir**, ve o zaman ya guard'ın ya
+prompt'un değişmesi gerekiyor — istemcinin ekleyebileceği bir şey yok.
+
+**Doğru çalışan yarısı:** gövde tam beklediğimiz şekilde geldi ve ekran onu
+doğru çiziyor — iki değer `errorValues` üzerinden adlandırılıp
+`Intl.ListFormat` ile birleşiyor, panel kırmızı değil, ve `retry` düğmesi
+zaten ekranda duran düğme. Mock'un tek elemanlı `issues`'u da ölçülen çiftle
+değiştirildi: tek elemanlı bir liste `ListFormat`'ı hiç sınamıyordu.
+
+**Spec:** `spec/07-subsystems.md` § 34, `spec/08b-api-contract.md` EK D.6.5
+
+### F-027 · Silinmiş hesabın çerezi her profil okumasında `500` üretiyor
+**Since:** frontend commit `5df4d42` · gerçek uca karşı ölçüm, 2026-08-30
+**Neden:** `DELETE /api/v1/account` **doğru çalışıyor** — `204`, `sid` çerezi
+`Max-Age=0` ile siliniyor, `GET /generations` artık `{"items":[],"total":0}`.
+Ama aynı kullanıcı kimliğiyle yapılan **sonraki her profil okuması `500`**:
+
+```
+GET /api/v1/profile           500 INTERNAL_ERROR
+GET /api/v1/profile/sections  500 INTERNAL_ERROR
+GET /api/v1/profile/atoms     500 INTERNAL_ERROR
+GET /api/v1/profile/entries   500 INTERNAL_ERROR
+GET /api/v1/account/usage     200
+GET /api/v1/generations       200
+```
+
+Yerelde bu durumu **dev auth stub'ı** üretiyor (istek çerezsiz de aynı
+kullanıcı olarak kimliklendiriliyor), ama **üretimde de ulaşılabilir**: hesabı
+bir cihazda silen kişinin öteki sekmesinde **eski oturum çerezi duruyor.** O
+sekmenin bir sonraki isteği bugün `500` alıyor; doğrusu
+`401 AUTHENTICATION_REQUIRED` olurdu — istemci onu zaten girişe yönlendiren
+bir şey olarak tanıyor, `INTERNAL_ERROR`'ı ise "bir şeyler ters gitti"
+panelinden başka bir şey olarak tanıyamaz.
+
+**İstenen:** silinmiş bir kullanıcıyı gösteren oturum `401` alsın. Ayrıca:
+§ 35.6 "hesabı olan ama profili olmayan çağırana boş profil dönülür, 404 yok"
+diyor — bu yol o iddiayı da `500` ile bozuyor, yani düzeltme muhtemelen iki
+yerde: oturum doğrulaması ve profil çözümleyicisinin eksik satır hâli.
+
+**Spec:** `spec/16-cost-legal.md` § 57.4, `spec/08-api.md` § 35.6
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -25,40 +129,5 @@
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
 
-### F-022 · (b) uygulandı, ve sınır istediğinizden geniş yazıldı
-`GenerationSummary` üstünde `roleTitle` ve `companyName`. **İkisi bağımsız**
-ve **boş dize hiç dönmüyor** — alan ya doludur ya yoktur, yani `""` kontrolü
-yazmanız gerekmiyor.
-
-§ 57.6'yı istediğiniz gibi bir cümle olarak değil, **üç ölçüt ve bir liste**
-olarak yazdık: amaç adlandırmaksa, model çıkarımıysa, bir satıra sığıyorsa —
-ve listede olmayan alan istisna değil. Sizin gördüğünüz risk ("sınırı yazan
-bir cümle yoksa bir sonraki alan da aynı gerekçeyle girer") tam olarak doğru
-riskti; bir cümle onu ölçemezdi. **Aksiyonunuz var — `B-070`.**
-
-### F-023 · Haklıydınız, ve gerekçeniz kendi gerekçemizdi
-`ImportWarning.code` artık `enum`. Altı değer: `ambiguous_date`,
-`missing_organization`, `unclear_section`, `scrambled_text`,
-`overlapping_dates`, `untranslatable_atom`.
-
-Yayımlamak enum'u `shared`'a taşımayı gerektirdi — kodları çıkarım üretiyor,
-`GET /jobs/{id}` yayımlıyor, ve çıkarım işi kuyruğa vermek için `jobs`'a
-zaten bağımlı; ters yöndeki import bir çevrim kapatıyordu.
-
-**Alanın tipi telde `String` kaldı, bilerek**, ve bu tam sizin okuma
-biçiminize göre: değer JSONB'den geri geliyor, adı sonradan değişmiş bir kod
-taşıyan eski satır tipi enum olsa ya düşerdi ya isteği bozardı. Kapalı
-olduğunu bilerek açık okuyun. **Aksiyonunuz var — `B-069`.**
-
-### F-024 · Doğru teşhis, ve sizde iş yok
-`MissingServletRequestPartException`'ın işleyicisi yoktu, istek son çareye
-düşüyordu. Artık `400 VALIDATION_FAILED`, `fields: ["file"]` — mock'unuzun
-ürettiği şey. `B-064` ile aynı sınıf ve bir istisna kadar yakın:
-`handleBadParameter` query parametresinin eksiğini zaten yakalıyordu.
-
-**Asıl değerli olan madde değil, ölçümü yapmış olmanız.** Kendi formunuzdan
-bakan hiçbir test buraya ulaşamazdı; bir aşama boyunca durmasının sebebi o, ve
-EK D.6.9'a ders olarak öyle yazıldı. **`B-068`.**
-
-*(`F-001`…`F-021` `resolved/to-backend-2026-08.md`'de — beşinin de cevabı
-oraya indi 2026-08-29'da, dosya sınırı.)*
+*(`F-001`…`F-024` `resolved/to-backend-2026-08.md`'de — üçünün de cevabı
+oraya indi 2026-08-30'da, dosya sınırı.)*

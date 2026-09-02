@@ -3,8 +3,8 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-30** · **`F-022`-`F-024`'ün üçü de indi** · açık `F-nnn` yok ·
-frontend'de **`B-068`-`B-070`**
+**2026-08-30** · **`B-068`-`B-070` de kapandı — açık `B-nnn` yok** · açık
+`F-nnn`: **`F-025`**, **`F-026`**, **`F-027`** (üçü de telde ölçüldü)
 
 ---
 
@@ -33,16 +33,15 @@ model seçilince fiyat tablosu, VPS kurulumu (§ XI-A.4) ve **restore testi**.
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0 — İskelet · 1 — Profil editörü · 2 — Üretim akışı + SSE | ✅ |
-| Aşama 3 — **bütün dilimler** ✅ · `B-068`-`B-070` açık | ⏳ |
+| Aşama 3 — **bütün dilimler** ✅ · açık `B-nnn` kalmadı | ✅ |
 
-On dilim (dökümü kendi `notes/`'larında). § 31.6'nın geçidi ve geçmiş ekranı
-indi; satırın etiketi ile uyarıların adları `B-070`/`B-069` ile geldi.
-**Gerçek uca karşı ölçüldü** (2026-08-30, MSW kapalı) — biri mock'un kapı
-sırasını yanlışladı, biri `500` çıkardı (`F-024`). **Ölçülmeyen:** OAuth ve
-Turnstile (dağıtım ister), hesap silme ve mektup üretimi.
+On iki dilim (dökümü kendi `notes/`'larında). Geçit uyarıları adlandırıyor,
+geçmiş satırı rol ve şirketle etiketli. **Gerçek uca karşı ölçüldü**
+(2026-08-30, MSW kapalı; mektup ve hesap silme dahil): ölçüm mock'un kapı
+sırasını yanlışladı ve `F-024`-`F-027`'yi çıkardı. **Ölçülmeyen yalnız OAuth
+ile Turnstile** — ikisi de yapılandırılmış bir dağıtım istiyor.
 
-**Test:** 643 birim · 51 e2e · **bundle** profil 252.5 / üretim 220.3 /
-geçmiş 213.8 / onboarding 217.3 / ayarlar 229.8 KB (dinamik rotalar elle).
+**Test:** 649 birim · 51 e2e · **bundle** profil 252.5 / geçmiş 213.9 / üretim 220.3 / onboarding 217.3 / ayarlar 229.8 KB.
 
 ## Açık kararlar (ikisini de ilgilendirir)
 
@@ -53,8 +52,9 @@ geçmiş 213.8 / onboarding 217.3 / ayarlar 229.8 KB (dinamik rotalar elle).
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de: `B-068`-`B-070`.** Üçü de `gen:api` istiyor. `B-070`
-satıra iki alan koyuyor; `B-069` altı uyarı kodunu adlandırılabilir yapıyor,
-yani § 31.6'nın geçidi artık hangi uyarı olduğunu söyleyebilir; `B-068`'de
-yapacak bir şey yok. **Yayın öncesi açık:** gizlilik politikasının sağlayıcı
-listesi, model seçimini bekliyor.
+**Sıra backend'de: `F-025`, `F-026`, `F-027`** — üçü de telde ölçüldü, hiçbiri
+bir ekranı bloke etmiyor: `companyName: "not specified"`; dört mektup
+taslağının dördünün de reddedilmesi (tek çözüm `retry`, ve işe yaramadı); ve
+silinmiş hesabın çerezinin her profil okumasında `500` üretmesi. **Yayın
+öncesi açık:** gizlilik politikasının sağlayıcı listesi, model seçimini
+bekliyor.
