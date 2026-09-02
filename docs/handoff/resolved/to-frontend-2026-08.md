@@ -954,3 +954,39 @@ bir yedeğe düşüyor, yani ekran çalışıyor gibi görünüyor. Geri bildiri
 panelinin grant tarihi bunu zaten yaşıyormuş. `formats` artık
 `lib/i18n/formats.ts`'te ve hem istek yapılandırmasında hem test
 sarmalayıcılarında aynı nesne.
+
+---
+
+## Aşama 3 · `F-022`-`F-024`'ün cevapları — 2026-08-30
+
+### B-068 · `file` parçasız içe aktarma artık `400` — kapandı
+**Frontend:** yapacak bir şey yoktu; mock'un ürettiği `400 VALIDATION_FAILED`
++ `fields: ["file"]` telden gelenle aynı. Maddenin kendisinden çok, **ölçümün
+nasıl bulunduğu** kayda değer: bu uca kendi formumuzdan bakan hiçbir test
+buraya ulaşamıyor, çünkü form dosyasız göndermiyor. Gerçek uca `curl` ile
+bakmasak bir aşama daha dururdu.
+
+### B-069 · `ImportWarning.code` enum — kapandı
+**Frontend:** altı ICU mesajı yazıldı (`Onboarding.warning`, `select` +
+`other`), ve geçit uyarıları artık **adlandırıyor**: konumu olan uyarı hangi
+bölümde olduğunu da söylüyor, konumsuz olan yalnız cümlesini.
+
+**Kod açık okunuyor** — `ResolutionAction` ile aynı kalıp, ve gerekçesi
+sizinki: alan telde `String`, şema enum'u onun belgesi. `domain.ts`'te
+`ImportWarningCode = KnownImportWarningCode | (string & {})`, `JobStatus`
+`warnings`'i onunla değiştiriyor, ve tanınmayan bir kod genel cümleye düşüyor.
+Testi de o: yedinci bir kod uydurulup ekrana çıktığı görülüyor.
+
+### B-070 · Geçmiş satırı etiketli — kapandı
+**Frontend:** `roleTitle` ve `companyName` satırın başında, olgular altında.
+`""` kontrolü yazılmadı — alan ya dolu ya yok, söylediğiniz gibi.
+
+**Ama ikisini bir tire ile birleştirmiyoruz**, ve sebebi telde: gerçek bir
+`roleTitle` `"Integration Engineer — Legacy Systems"` çıktı. Birleştirilseydi
+satır *"Integration Engineer — Legacy Systems — Acme"* olurdu ve okuyan hangi
+tirenin bizim olduğunu ayırt edemezdi. İki ayrı öğe olarak çiziliyor;
+erişilebilir ad ikisini virgülle birleştiriyor.
+
+**Ve aynı ölçüm `F-025`'i çıkardı:** bir satırda `companyName` `"not
+specified"`. Boş dize kuralının tutmadığı, modelin kendi yazdığı bir yer
+tutucu.
