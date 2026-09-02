@@ -130,8 +130,12 @@ public class CoverLetterService {
     private static String instructionFor(CoverLetterStyle style) {
         return switch (style) {
             case DEFAULT -> "";
+            // Named no number since F-026: it used to say "nearer 250 than
+            // 400", and the letters this model writes are nearer 130 — so the
+            // button was pushing the one draft that might have passed further
+            // under the floor.
             case SHORTER -> "Keep it at the short end of the range: "
-                    + "nearer 250 words than 400, without dropping a section.";
+                    + "as brief as it can be without dropping a section.";
             case MORE_FORMAL -> "More formal than the tone above would usually be: "
                     + "no contractions, no first-name address, plain and reserved.";
         };

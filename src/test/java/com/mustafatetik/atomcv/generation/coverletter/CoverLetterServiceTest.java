@@ -107,7 +107,7 @@ class CoverLetterServiceTest {
         var request = ArgumentCaptor.forClass(StructuredRequest.class);
         verify(providers).call(request.capture());
         assertThat(request.getValue().systemPrompt())
-                .contains("nearer 250 words")
+                .contains("as brief as it can be")
                 .doesNotContain("{{style}}")
                 .doesNotContain("{{language}}")
                 .doesNotContain("Ran the Postgres fleet")

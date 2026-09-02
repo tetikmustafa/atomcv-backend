@@ -1552,7 +1552,7 @@ validate(coverLetter, selectedAtoms, profile):
     ✓ Geçen her sayı, atomların metrics'inde mi?
     ✓ Deneyim süresi iddiası profil tarihleriyle tutarlı mı?   // ← en sık uydurma
     ✓ Şirket adı doğru mu? (JD'den)
-    ✓ Uzunluk 250-400 kelime aralığında mı?
+    ✓ Uzunluk 120-400 kelime aralığında mı?          // ← taban ölçüldü, § 34.4.2
     ✗ Klişe ifade var mı?
 ```
 
@@ -1611,6 +1611,56 @@ bir şey. `RateLimiter`'ın `cover_letter` katmanı, kullanıcı başına 10/saa
 gönderdiği iki dilin ikisi de listeleniyor, çünkü aynı boş cümle Türkçe de
 yazılıyor.
 
+#### 34.4.2 Kararlar (`F-026`, 2026-09-02)
+
+**Düzeltme — taban 250 değil 120, ve 250 hiç ölçülmemişti.** Gerçek uca karşı
+kaydedilen beş taslak **106, 119, 127, 130 ve 153** kelime çıktı; ikisi gerçek
+bir ilandan, ve beşi de bu maddeden reddedildi. `COVER_LETTER_REJECTED`'ın tek
+çözümü `retry`, ve `retry` aynı modelden aynı mektubu istiyor — yani madde
+sistematik olarak çıkışsız bir ekran üretiyordu.
+
+**Taban 120, çünkü 150 yetmiyor.** Selamlama, giriş, iki-üç kanıt, kapanış ve
+imzası olan bir mektup 120'nin altına biri eksilmeden inmiyor; 150 ise ölçülen
+iki gerçek taslaktan kısa olanını (130) hâlâ reddeder ve çıkmazı yarı yarıya
+açık bırakırdı.
+
+**Ve uzunluk, bu listedeki tek *iddia olmayan* ölçüt.** Öteki beşi mektubun
+sayfada olmayan bir şey söyleyip söylemediğini soruyor; bu, ne kadar uzun
+olduğunu. Yanlış pozitifin bedeli ikisinde de bütün mektup, ama yalnız burada
+o bedel **doğru** bir mektup için ödeniyor. Tabanı taşımanın gerekçesi bu.
+
+**Prompt hâlâ 250-400 istiyor, ve bilerek.** Tabandan fazlasını istemek
+çelişki değil; istenen şeyi değiştirmek yeni bir prompt sürümü demek (§ 53.2)
+ve o ancak model seçildiğinde ölçülebilir. **`shorter` düğmesinin cümlesi
+düzeltildi**: "250'ye yakın" diyordu, oysa bu modelin yazdığı mektuplar 130
+civarında — düğme geçebilecek tek taslağı tabanın daha da altına itiyordu.
+
+**Düzeltme — sayı kontrolü rakam dizisi değil *nicelik* okuyor.** § 34.4.1
+"rakam okuyor" diyordu; ölçüm onu yanlışladı. Sayfa `saniyede 40 bin istek`
+taşıyor, model `40,000 requests per second` yazıyor: aynı sayı, mektubun
+yazdığı biçimde. `\d+` ile bölününce sayfa `40`, mektup `40` ve `000` oluyor,
+yani **ayracın kendisi uydurma sayı diye raporlanıyor** ve mektup sayfayı
+doğru alıntıladığı için çöpe gidiyordu. Ölçülen dört taslağın ikisinde sayı
+ihlalinin tek sebebi buydu. Artık gruplanmış bir sayı tek nicelik, ve
+ardından gelen ölçek sözcüğü (`bin`, `milyon`, `milyar`, `thousand`,
+`million`, `billion`) temsil ettiği sıfırlar olarak okunuyor. Sayfanın tarafı
+ham rakam dizilerini de tutuyor, yani mektubun daha *azını* söylemesi eskisi
+kadar serbest.
+
+**Ölçek sözcüğü listesi `F-025`'in reddettiği liste değil.** Orada liste
+modelin "bilmiyorum" demek için yazabileceği *cümlelerden* olurdu — açık uçlu
+ve her zaman bir gerisinde. Burada iki dilde bin, milyon ve milyar; o dillere
+ait bir olgu. Bilinmeyen bir sözcük bir birleştirmeyi kaçırır, yanlış bir
+birleştirme üretmez.
+
+**Bilinen ve kapatılmayan boşluk: sayı kontrolü yalnız rakam görüyor.** Aynı
+kayıtta model `800 ms'den 90 ms'ye` metriğini "from over eighty milliseconds
+to ninety milliseconds" diye yazdı — hem yanlış hem de anlamsız (artış), ve
+hiçbir muhafız görmedi çünkü ortada rakam yok. Deneyim süresi kontrolü de aynı
+kaçağa açık ("thirteen years"). Yazıyla yazılmış sayıları çözmek iki dilde
+açık uçlu bir sözlük demek; `F-025`'in reddettiği türden. **Ölçülmüş bir
+boşluk olarak duruyor.**
+
 ### 34.5 Şirket bilgisi eksikliği
 
 ```
@@ -1631,6 +1681,6 @@ Tek LLM çağrısı, ucuz. Kullanıcı birkaç varyant deneyebilmeli.
 
 ### 34.7 Sayfa bütçesi
 
-Cover letter render edilmiyor (düz metin kopyalanıyor) → punto ölçümü gereksiz. **250-400 kelime** sınırı yeterli. PDF isteniyorsa aynı şablon sistemi "letter" düzeniyle kullanılır.
+Cover letter render edilmiyor (düz metin kopyalanıyor) → punto ölçümü gereksiz. **120-400 kelime** sınırı yeterli (taban § 34.4.2'de ölçüldü). PDF isteniyorsa aynı şablon sistemi "letter" düzeniyle kullanılır.
 
 ---
