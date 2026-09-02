@@ -1,0 +1,146 @@
+{
+  "role" : {
+    "title" : "Fullstack Developer - Geospatial Applications",
+    "seniority" : null,
+    "domain" : "Geospatial Software Development",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Calico Teknoloji",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "python",
+    "canonical" : "python",
+    "importance" : "critical"
+  }, {
+    "name" : "go",
+    "canonical" : "go",
+    "importance" : "high"
+  }, {
+    "name" : "django",
+    "canonical" : "django",
+    "importance" : "high"
+  }, {
+    "name" : "rest",
+    "canonical" : "rest",
+    "importance" : "high"
+  }, {
+    "name" : "websockets",
+    "canonical" : "websockets",
+    "importance" : "high"
+  }, {
+    "name" : "postgres",
+    "canonical" : "postgres",
+    "importance" : "high"
+  }, {
+    "name" : "postgis",
+    "canonical" : "postgis",
+    "importance" : "high"
+  }, {
+    "name" : "sql",
+    "canonical" : "sql",
+    "importance" : "high"
+  }, {
+    "name" : "orms",
+    "canonical" : "orms",
+    "importance" : "high"
+  }, {
+    "name" : "etl",
+    "canonical" : "etl",
+    "importance" : "medium"
+  }, {
+    "name" : "automated testing",
+    "canonical" : "automated testing",
+    "importance" : "high"
+  }, {
+    "name" : "docker",
+    "canonical" : "docker",
+    "importance" : "high"
+  }, {
+    "name" : "networking concepts",
+    "canonical" : "networking",
+    "importance" : "medium"
+  }, {
+    "name" : "linux",
+    "canonical" : "linux",
+    "importance" : "high"
+  }, {
+    "name" : "git",
+    "canonical" : "git",
+    "importance" : "high"
+  }, {
+    "name" : "cicd",
+    "canonical" : "cicd",
+    "importance" : "high"
+  }, {
+    "name" : "html5",
+    "canonical" : "html5",
+    "importance" : "high"
+  }, {
+    "name" : "css3",
+    "canonical" : "css3",
+    "importance" : "high"
+  }, {
+    "name" : "javascript",
+    "canonical" : "javascript",
+    "importance" : "high"
+  }, {
+    "name" : "typescript",
+    "canonical" : "typescript",
+    "importance" : "high"
+  }, {
+    "name" : "maplibre or web-mapping library",
+    "canonical" : "maplibre",
+    "importance" : "high"
+  }, {
+    "name" : "react",
+    "canonical" : "react",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "go",
+    "canonical" : "go",
+    "importance" : null
+  }, {
+    "name" : "gdal",
+    "canonical" : "gdal",
+    "importance" : null
+  }, {
+    "name" : "geospatial python stack",
+    "canonical" : "geospatial python stack",
+    "importance" : null
+  }, {
+    "name" : "htmx",
+    "canonical" : "htmx",
+    "importance" : null
+  }, {
+    "name" : "qgis",
+    "canonical" : "qgis",
+    "importance" : null
+  }, {
+    "name" : "geospatial concepts and GIS technologies",
+    "canonical" : "geospatial concepts and gis technologies",
+    "importance" : null
+  }, {
+    "name" : "imagery data processing and storage",
+    "canonical" : "imagery data processing and storage",
+    "importance" : null
+  }, {
+    "name" : "geospatial data (vector, raster, geojson, shapefile)",
+    "canonical" : "geospatial data",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Implement new features and maintain existing software across all Calico Teknoloji software stack", "Collaborate with engineers and translate their requirements and techniques into modern data processing pipelines and applications", "Read ICDs provided by a cross-functional engineering team and turn that into functioning pieces of software", "Deploy and orchestrate services in an agile fashion", "Solve technical problems in the field of geospatial applications", "Write and maintain documentation for the software stack", "Design and build real-time map based interfaces for performant rendering and visualization of a diverse set of high volume sensor data", "Design responsive UI" ],
+  "keywords" : [ "fullstack development", "geospatial applications", "data processing pipelines", "map-based interfaces", "visualization", "responsive UI" ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "",
+  "jdLanguage" : "en",
+  "confidence" : 0.9,
+  "extractionNotes" : [ ]
+}
