@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.identity.service;
 
 import com.mustafatetik.atomcv.identity.domain.Session;
+import com.mustafatetik.atomcv.identity.repository.SignInAccounts;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.Resolution;
@@ -10,6 +11,8 @@ import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
@@ -35,14 +38,18 @@ public class SessionCurrentUser implements CurrentUser {
 
     private static final String ATTRIBUTE = SessionCurrentUser.class.getName() + ".session";
 
+    private static final Logger log = LoggerFactory.getLogger(SessionCurrentUser.class);
+
     private final SessionStore sessions;
     private final SessionCookies cookies;
+    private final SignInAccounts accounts;
     private final ObjectProvider<LocalDevSessions> localDev;
 
-    SessionCurrentUser(SessionStore sessions, SessionCookies cookies,
+    SessionCurrentUser(SessionStore sessions, SessionCookies cookies, SignInAccounts accounts,
             ObjectProvider<LocalDevSessions> localDev) {
         this.sessions = sessions;
         this.cookies = cookies;
+        this.accounts = accounts;
         this.localDev = localDev;
     }
 
@@ -108,8 +115,46 @@ public class SessionCurrentUser implements CurrentUser {
             // A cookie that no longer resolves is not a local-dev request: the
             // browser held a session that has been revoked or has expired, and
             // answering as the dev user would hide exactly that.
-            return sessions.find(sid.get());
+            return sessions.find(sid.get()).filter(this::pointsAtALiveAccount);
         }
-        return Optional.ofNullable(localDev.getIfAvailable()).map(LocalDevSessions::session);
+        return Optional.ofNullable(localDev.getIfAvailable())
+                .map(LocalDevSessions::session)
+                .filter(this::pointsAtALiveAccount);
+    }
+
+    /**
+     * <strong>A session can outlive the account it points at, and one that has
+     * is not a session.</strong> Bolum 57.4's deletion revokes every session
+     * of the account first and for this reason, but "first" only orders the
+     * two steps — it does not make the second one impossible to observe. A
+     * request already in flight when the row went, or a revocation Redis could
+     * not carry out, leaves a cookie behind that resolves to a user who is not
+     * there.
+     *
+     * <p>What that cookie used to get was a 500, and from one endpoint rather
+     * than from the endpoint that mattered: every read of the profile, because
+     * {@code ProfileResolver} creates the row on first use and the insert
+     * broke {@code profiles.user_id}'s foreign key. Reads that create nothing
+     * — the generation list, the usage counters — answered 200 as if the
+     * account were fine. The right answer is the one the client already knows
+     * how to act on: {@code 401 AUTHENTICATION_REQUIRED}, from here, for every
+     * endpoint at once rather than for the one that happened to write.
+     *
+     * <p>One lookup by primary key, and the memoised attribute above means it
+     * is one per request rather than one per caller. Anonymous sessions have
+     * no account to check.
+     */
+    private boolean pointsAtALiveAccount(Session session) {
+        if (session.isAnonymous() || accounts.byId(session.userId()).isPresent()) {
+            return true;
+        }
+        // Bolum 40.1: a stored session pointing at a deleted account is the
+        // state the section says must not exist, so seeing one is also the
+        // moment to end it. The id is safe to log — it references a row that
+        // is gone — and it is not user content.
+        log.info("Session outlived the account it points at ({}); revoking it and answering "
+                + "as unauthenticated", session.userId());
+        sessions.revoke(session.id());
+        return false;
     }
 }

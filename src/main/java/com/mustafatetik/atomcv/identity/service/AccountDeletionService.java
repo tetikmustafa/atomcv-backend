@@ -62,9 +62,12 @@ public class AccountDeletionService {
     public boolean delete(UserContext user) {
         UUID userId = user.userId();
 
-        // Sessions first. If the row goes and this then fails, a live cookie
-        // is pointing at an account that is not there any more — every request
-        // it makes is a 500 rather than a sign-in screen.
+        // Sessions first, and this throws rather than reporting zero when it
+        // cannot: if the row went and this then failed quietly, a live cookie
+        // would be pointing at an account that is not there any more. That
+        // request is answered by SessionCurrentUser now instead of breaking a
+        // foreign key, but an account reported deleted while its sessions are
+        // still live is the wrong state to be in either way.
         int revoked = sessions.revokeAllFor(userId);
 
         int forgotten = counters.forget(QuotaSubject.of(user));

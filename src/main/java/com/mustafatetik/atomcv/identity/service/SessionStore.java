@@ -162,7 +162,19 @@ public class SessionStore {
      * JWT, and the operation a password reset, a role change or a stolen
      * device needs.
      *
+     * <p><strong>A failure is raised and not logged.</strong> This used to
+     * warn and answer zero, which made the ordering
+     * {@link AccountDeletionService} depends on decorative: that class deletes
+     * the sessions before the row so that a live cookie can never point at an
+     * account that is gone, and a swallowed failure let exactly that through
+     * while the deletion reported success. Refusing the deletion leaves the
+     * account and its sessions consistent with each other, and a second press
+     * costs nothing.
+     *
      * @return how many sessions were removed
+     * @throws SessionStoreUnavailableException when the store could not be
+     *                                          reached, so that the caller
+     *                                          cannot mistake it for none
      */
     public int revokeAllFor(UUID userId) {
         try {
@@ -175,7 +187,7 @@ public class SessionStore {
             return ids.size();
         } catch (Exception unavailable) {
             log.warn("Bulk session revocation failed: {}", unavailable.getClass().getSimpleName());
-            return 0;
+            throw new SessionStoreUnavailableException(unavailable);
         }
     }
 

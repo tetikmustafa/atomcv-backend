@@ -2,15 +2,21 @@ package com.mustafatetik.atomcv.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.identity.domain.AuthMethod;
+import com.mustafatetik.atomcv.identity.service.AccountDeletionService;
 import com.mustafatetik.atomcv.identity.service.SessionStore;
+import com.mustafatetik.atomcv.profile.seed.DevSeeder;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
+import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserRole;
 import java.util.List;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +59,41 @@ class AccountDeletionIT extends AbstractIntegrationTest {
     @Autowired
     private SessionStore sessions;
 
+    @Autowired
+    private AccountDeletionService deletions;
+
+    @Autowired
+    private DevSeeder seeder;
+
     private UUID profileId;
+
+    /**
+     * <strong>This class is the only one that deletes the acting user, so it
+     * is the only one that has to put them back.</strong> One context and one
+     * database serve the whole suite, and {@code DevSeeder}'s golden profile
+     * is seeded once at start-up — every class after this one inherits
+     * whatever the last case here left behind.
+     *
+     * <p>Nothing enforced that until F-027. A request from a session pointing
+     * at a deleted account used to be served as though the account were there,
+     * so {@code SecondImportIT} went on getting its 409 out of a user who had
+     * been deleted three classes earlier — passing on the very defect this
+     * slice is about. The moment that request became a 401 the dependency
+     * surfaced, which is the honest reading: the isolation was always missing
+     * and the bug was hiding it.
+     *
+     * <p>Wiped rather than repaired, and in that order: {@code DevSeeder} is
+     * idempotent by looking for a profile row, so an empty one left over would
+     * make it skip and hand the next class a profile with nothing in it.
+     */
+    @AfterEach
+    void leaveTheSeededProfileAsItWasFound() {
+        jdbc.update("DELETE FROM users WHERE id = ?", LocalDevUser.DEV_USER_ID);
+        jdbc.update("DELETE FROM usage_counters WHERE subject_id = ?",
+                LocalDevUser.DEV_USER_ID.toString());
+        localUser.ensureUserExists();
+        seeder.run(null);
+    }
 
     @BeforeEach
     void anaccountWithSomethingInIt() {
@@ -120,11 +160,74 @@ class AccountDeletionIT extends AbstractIntegrationTest {
         assertThat(sessions.find(session.id())).isEmpty();
     }
 
-    /** A second press is the same answer as the first, not a failure. */
+    /**
+     * <strong>F-027.</strong> The account is gone and a session is not, which
+     * is what a revocation Redis could not carry out leaves behind — and what
+     * {@code make dev} produces on every cookieless request, because the
+     * stand-in signs in a row that has just been deleted.
+     *
+     * <p>Every one of these used to answer 500, and only these: the profile
+     * endpoints create the profile row on first use and the insert broke
+     * {@code profiles.user_id}. The generation list created nothing, so it
+     * answered 200 with an empty page as though the account were fine — an
+     * account that is not there, answering as though it were.
+     */
     @Test
-    void deletingTwiceIsNotAnError() throws Exception {
+    void aSessionThatOutlivedItsAccountIsRefusedRatherThanBreakingAForeignKey()
+            throws Exception {
+
+        jdbc.update("DELETE FROM users WHERE id = ?", LocalDevUser.DEV_USER_ID);
+
+        for (String path : List.of(
+                "/api/v1/profile",
+                "/api/v1/profile/sections",
+                "/api/v1/profile/atoms",
+                "/api/v1/profile/entries",
+                "/api/v1/generations",
+                "/api/v1/account/usage")) {
+
+            mvc.perform(get(path))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+        }
+    }
+
+    /**
+     * Bolum 35.6, which the same path was suspected of breaking: an account
+     * that has never opened the editor reads as an empty profile and not as a
+     * 404. It is the account being absent that refuses, not the profile.
+     */
+    @Test
+    void anAccountWithoutAProfileStillReadsAsAnEmptyOne() throws Exception {
+        jdbc.update("DELETE FROM profiles WHERE user_id = ?", LocalDevUser.DEV_USER_ID);
+
+        mvc.perform(get("/api/v1/profile")).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/profile/sections")).andExpect(status().isOk());
+    }
+
+    /**
+     * A second press is not a failure, and it does not reach the endpoint
+     * either.
+     *
+     * <p>This used to assert two 204s, and that was the dev stand-in talking:
+     * a cookieless request is signed in as the dev user, so the second press
+     * arrived authenticated. In a browser it cannot — the first response
+     * cleared the {@code sid} — and since F-027 a session pointing at a
+     * deleted account is refused rather than served. So the honest assertion
+     * is the pair: the endpoint answers 401, and the idempotency Bolum 57.4
+     * asks for is still underneath it, where it was always the service's.
+     */
+    @Test
+    void pressingDeleteTwiceIsRefusedAtTheDoorAndIsStillNotAnError() throws Exception {
         mvc.perform(delete("/api/v1/account")).andExpect(status().isNoContent());
-        mvc.perform(delete("/api/v1/account")).andExpect(status().isNoContent());
+
+        mvc.perform(delete("/api/v1/account"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+
+        assertThat(deletions.delete(UserContext.of(LocalDevUser.DEV_USER_ID)))
+                .as("an account that is not there is false, not a failure")
+                .isFalse();
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
