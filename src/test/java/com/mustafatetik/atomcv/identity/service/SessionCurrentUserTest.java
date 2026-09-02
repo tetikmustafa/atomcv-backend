@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import com.mustafatetik.atomcv.identity.domain.AuthMethod;
 import com.mustafatetik.atomcv.identity.domain.Session;
+import com.mustafatetik.atomcv.identity.domain.UserAccount;
+import com.mustafatetik.atomcv.identity.repository.SignInAccounts;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
@@ -23,6 +25,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -38,8 +41,16 @@ class SessionCurrentUserTest {
 
     private final SessionStore store = mock(SessionStore.class);
 
+    private final SignInAccounts accounts = mock(SignInAccounts.class);
+
     private final SessionCookies cookies =
             new SessionCookies(new SessionProperties(null, null, null, null, null, true));
+
+    @BeforeEach
+    void theAccountExistsUnlessASaysOtherwise() {
+        when(accounts.byId(any())).thenReturn(
+                Optional.of(UserAccount.signingUp("someone@example.com", "Someone")));
+    }
 
     @AfterEach
     void clearTheRequest() {
@@ -53,7 +64,7 @@ class SessionCurrentUserTest {
         when(store.find("a-session-id")).thenReturn(Optional.of(session));
         bindRequestCarrying("a-session-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
 
         assertThat(currentUser.find()).contains(session.asUserContext());
         assertThat(currentUser.session()).contains(session);
@@ -68,7 +79,7 @@ class SessionCurrentUserTest {
     void withoutASessionRequireEndsTheRequestWithTheCatalogueCode() {
         bindRequestWithoutCookies();
 
-        var currentUser = new SessionCurrentUser(store, cookies, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
 
         assertThat(currentUser.find()).isEmpty();
         assertThatThrownBy(currentUser::require)
@@ -93,7 +104,7 @@ class SessionCurrentUserTest {
         when(store.find("a-revoked-id")).thenReturn(Optional.empty());
         bindRequestCarrying("a-revoked-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
 
         assertThat(currentUser.find()).isEmpty();
     }
@@ -102,7 +113,7 @@ class SessionCurrentUserTest {
     void withoutACookieTheLocalStandInAnswersAndNeverTouchesTheStore() {
         bindRequestWithoutCookies();
 
-        var currentUser = new SessionCurrentUser(store, cookies, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
 
         assertThat(currentUser.find())
                 .map(user -> user.userId())
@@ -120,12 +131,74 @@ class SessionCurrentUserTest {
                 "a-session-id", SOMEONE, UserRole.USER, AuthMethod.MAGIC_LINK, NOW)));
         bindRequestCarrying("a-session-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
         currentUser.find();
         currentUser.require();
         currentUser.session();
 
         verify(store, times(1)).find("a-session-id");
+        verify(accounts, times(1)).byId(SOMEONE);
+    }
+
+    /**
+     * <strong>F-027.</strong> A session can outlive the account it points at
+     * — a request already in flight when the row went, or a revocation Redis
+     * could not carry out. What that used to get was a 500, and only from the
+     * endpoints that write: reading the profile creates its row on first use
+     * and the insert broke a foreign key, while the generation list answered
+     * 200 as though the account were fine.
+     */
+    @Test
+    void aSessionThatOutlivedItsAccountIsNobodyAndIsRevoked() {
+        when(store.find("a-session-id")).thenReturn(Optional.of(Session.beginning(
+                "a-session-id", SOMEONE, UserRole.USER, AuthMethod.MAGIC_LINK, NOW)));
+        when(accounts.byId(SOMEONE)).thenReturn(Optional.empty());
+        bindRequestCarrying("a-session-id");
+
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+
+        assertThat(currentUser.find()).isEmpty();
+        assertThatThrownBy(currentUser::require)
+                .isInstanceOfSatisfying(ApiException.class, thrown -> {
+                    assertThat(thrown.error().code()).isEqualTo(ErrorCode.AUTHENTICATION_REQUIRED);
+                    assertThat(thrown.error().httpStatus()).isEqualTo(401);
+                });
+        // Bolum 40.1: a stored session pointing at a deleted account is the
+        // state the section says must not exist, so seeing one ends it.
+        verify(store).revoke("a-session-id");
+    }
+
+    /**
+     * The same check on the cookieless path, which is where the frontend's
+     * measurement hit it: {@code make dev} answers as the dev user, and after
+     * {@code DELETE /account} that user is a row that is not there.
+     */
+    @Test
+    void theLocalStandInIsCheckedAgainstTheAccountToo() {
+        when(accounts.byId(LocalDevUser.DEV_USER_ID)).thenReturn(Optional.empty());
+        bindRequestWithoutCookies();
+
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
+
+        assertThat(currentUser.find()).isEmpty();
+        assertThat(currentUser.session()).isEmpty();
+    }
+
+    /**
+     * An anonymous session has no account, so there is nothing to check and no
+     * lookup to spend on it (Adim 3.6).
+     */
+    @Test
+    void anAnonymousSessionIsNeverLookedUpAsAnAccount() {
+        when(store.find("an-anonymous-id"))
+                .thenReturn(Optional.of(Session.anonymous("an-anonymous-id", NOW)));
+        bindRequestCarrying("an-anonymous-id");
+
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+
+        assertThat(currentUser.anonymousSession()).isPresent();
+        assertThat(currentUser.find()).isEmpty();
+        verify(accounts, never()).byId(any());
     }
 
     /**
@@ -134,7 +207,7 @@ class SessionCurrentUserTest {
      */
     @Test
     void outsideARequestThereIsNobodyRatherThanAFailure() {
-        var currentUser = new SessionCurrentUser(store, cookies, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
 
         assertThat(currentUser.session()).isEmpty();
         assertThat(currentUser.find()).isEmpty();

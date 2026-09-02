@@ -165,6 +165,10 @@ True here and nowhere in the architecture documents; each cost a debugging round
   when anything it exercises changes; `latex.yml` does the same on those paths.
 - A `pre-commit` gitleaks hook runs on every commit; a commit that printed
   nothing about secrets did not run it.
+- **`spotlessCheck` fails locally on CRLF where CI passes.** The editor tool
+  and python's text mode both write CRLF here, and git normalises on commit —
+  so the runner sees LF and the local check sees CRLF. **Run `sh ./gradlew
+  spotlessApply` after writing a new file.**
 - **The tests run on a JDK and the product ships on a JRE, and that gap hides
   faults.** `RandomGenerator.getDefault()` needs the `jdk.random` module, which
   is not in `java.se` and is absent from every JRE image: the application

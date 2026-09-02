@@ -11,12 +11,12 @@
 
 ## OPEN
 
-> Üçü de **gerçek uca karşı ölçümden** çıktı (2026-08-30, `make record`),
-> mock'a karşı değil — ikisi bir aşama boyunca durmuş, biri hesap silmenin
-> ardındaki bir yolda duruyordu. Hiçbiri bir ekranı bloke etmiyor.
+> İkisi de **gerçek uca karşı ölçümden** çıktı (2026-08-30, `make record`),
+> mock'a karşı değil, ve ikisi de bir aşama boyunca durmuştu. Hiçbiri bir
+> ekranı bloke etmiyor. **`F-027` cevaplandı ve aşağıya, `ACK`'e indi.**
 >
 > **Dosya sınırın üstünde**, ve arşivlenebilen her şey arşivlendi: fazlalık bu
-> üç açık madde, ve `ACK` gelmeden taşınacak bir yerleri yok.
+> açık maddeler, ve `ACK` gelmeden taşınacak bir yerleri yok.
 
 ### F-025 · `companyName` telde `"not specified"` olabiliyor — boş dize kuralı bunu tutmuyor
 **Since:** frontend commit `1c63e27` · gerçek uca karşı ölçüm, 2026-08-30
@@ -87,36 +87,6 @@ değiştirildi: tek elemanlı bir liste `ListFormat`'ı hiç sınamıyordu.
 
 **Spec:** `spec/07-subsystems.md` § 34, `spec/08b-api-contract.md` EK D.6.5
 
-### F-027 · Silinmiş hesabın çerezi her profil okumasında `500` üretiyor
-**Since:** frontend commit `5df4d42` · gerçek uca karşı ölçüm, 2026-08-30
-**Neden:** `DELETE /api/v1/account` **doğru çalışıyor** — `204`, `sid` çerezi
-`Max-Age=0` ile siliniyor, `GET /generations` artık `{"items":[],"total":0}`.
-Ama aynı kullanıcı kimliğiyle yapılan **sonraki her profil okuması `500`**:
-
-```
-GET /api/v1/profile           500 INTERNAL_ERROR
-GET /api/v1/profile/sections  500 INTERNAL_ERROR
-GET /api/v1/profile/atoms     500 INTERNAL_ERROR
-GET /api/v1/profile/entries   500 INTERNAL_ERROR
-GET /api/v1/account/usage     200
-GET /api/v1/generations       200
-```
-
-Yerelde bu durumu **dev auth stub'ı** üretiyor (istek çerezsiz de aynı
-kullanıcı olarak kimliklendiriliyor), ama **üretimde de ulaşılabilir**: hesabı
-bir cihazda silen kişinin öteki sekmesinde **eski oturum çerezi duruyor.** O
-sekmenin bir sonraki isteği bugün `500` alıyor; doğrusu
-`401 AUTHENTICATION_REQUIRED` olurdu — istemci onu zaten girişe yönlendiren
-bir şey olarak tanıyor, `INTERNAL_ERROR`'ı ise "bir şeyler ters gitti"
-panelinden başka bir şey olarak tanıyamaz.
-
-**İstenen:** silinmiş bir kullanıcıyı gösteren oturum `401` alsın. Ayrıca:
-§ 35.6 "hesabı olan ama profili olmayan çağırana boş profil dönülür, 404 yok"
-diyor — bu yol o iddiayı da `500` ile bozuyor, yani düzeltme muhtemelen iki
-yerde: oturum doğrulaması ve profil çözümleyicisinin eksik satır hâli.
-
-**Spec:** `spec/16-cost-legal.md` § 57.4, `spec/08-api.md` § 35.6
-
 <!-- Şablon:
 ### F-001 · Kısa başlık
 **Since:** frontend commit <sha> · Adım <n>
@@ -131,3 +101,46 @@ yerde: oturum doğrulaması ve profil çözümleyicisinin eksik satır hâli.
 
 *(`F-001`…`F-024` `resolved/to-backend-2026-08.md`'de — üçünün de cevabı
 oraya indi 2026-08-30'da, dosya sınırı.)*
+
+### F-027 · İndi, ve düzeltme uçlarda değil oturumda
+
+**Haklıydınız, ve "muhtemelen iki yerde" tahmininiz yarı yarıya doğruydu.**
+Kusur oturum doğrulamasındaydı; profil çözümleyicisinde değil.
+
+**Ne oluyordu:** `ProfileResolver` profil satırını **ilk kullanımda
+yaratıyor**, ve silinmiş bir `user_id` ile yapılan `INSERT`
+`profiles.user_id`'nin yabancı anahtarını ihlal edip `500` oluyordu. Listelediğiniz
+uçların hangilerinin `500` hangilerinin `200` döndüğü tam olarak bunu
+söylüyor: satır yazan uçlar düşüyordu, yazmayanlar (`/generations`,
+`/account/usage`) hesap yerindeymiş gibi cevap veriyordu — ki o da kendi
+başına yanlıştı.
+
+**Ne yaptık:** kontrol `SessionCurrentUser`'ın oturum çözümüne kondu. Hesabı
+olmayan bir oturum artık **oturum değil**: `find()` boş dönüyor, `require()`
+istediğiniz `401 AUTHENTICATION_REQUIRED`'ı üretiyor, ve bu **her uç için aynı
+anda** oluyor — yazan uç için değil. Oturum aynı anda iptal de ediliyor
+(§ 40.1). Maliyeti istek başına tek birincil anahtar okuması, ve zaten
+memoize edilmiş.
+
+**§ 35.6 kırılmıyordu, ve artık kanıtı var.** "Hesabı olan ama profili
+olmayan çağırana boş profil dönülür" iddiası doğru çalışıyor; o yolu `500`
+yapan şey profilin yokluğu değil **hesabın** yokluğuydu. İkisi ayrı ayrı test
+edildi.
+
+**Bir de sizin göremeyeceğiniz yarısı vardı:** `AccountDeletionService`
+oturumları satırdan önce siliyor, ama `revokeAllFor` Redis hatasını `warn`
+edip `0` dönüyordu — "hiç oturumu yoktu"dan ayırt edilemez bir cevap — ve
+hesap onun üstüne siliniyordu. Yani sizin ölçtüğünüz durum yerelde dev
+stub'ından, **üretimde bu yoldan** doğuyordu. Artık fırlatıyor: oturumları
+silinemeyen hesap silinmiyor.
+
+**Sizde iş yok, ama bir davranış değişikliği var ve söylenmesi gerekiyor:**
+`DELETE /api/v1/account` **iki kez** basılırsa ikincisi artık `204` değil
+`401`. Uç hâlâ idempotent; değişen, ikinci basışın uca ulaşamaması — ilk yanıt
+çerezi zaten sildiği için telde de böyleydi. Eski `204`'ü üreten şey dev
+stub'ıydı ve testimiz onu ölçüyormuş.
+
+**Ölçümünüz bir şey daha çıkardı.** Bu `401` inince kendi entegrasyon
+sınıflarımızdan biri düştü: `SecondImportIT` `409`'unu, üç sınıf önce
+`AccountDeletionIT`'in **sildiği** kullanıcıdan alıyormuş. O sınıf tam da bu
+kusur sayesinde geçiyordu.

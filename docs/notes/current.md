@@ -59,47 +59,19 @@ düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
 bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
 sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
-## Aşama 3 · dilim 9-10 — `F-017`, `F-019`, `F-021` (2026-08-29)
+## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
-Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları EK D.6 ile
-`spec/11-operations.md` § 48.4.2'de. Frontend aksiyonları `B-062`-`B-065`.
-Springdoc'un tam sayı enum'unu nasıl yayımladığı — dört denemesiyle —
-EK D.6.1'e taşındı; kalıcı bir olgu, rolling bir kayıt değil.
+Kayıtları `archive/stage-3-handoff-answers.md`'de; kalıcı kararlar EK D.6,
+EK D.6.1, EK D.6.9, `spec/07-subsystems.md` § 31.6.4-5, `spec/08-api.md`
+§ 35.3, `spec/11-operations.md` § 48.4.2 ve `spec/16-cost-legal.md` § 57.6'da.
+Frontend aksiyonları `B-062`-`B-070`, dokuzu da kapandı. Burada yalnız
+**canlı** olanlar:
 
-**Ders, bu oturumda dört kez:** *bir muhafızın düştüğünü görmeden yazıldı
-sayma.* `{"userEdited": true}` yıllardır test ediliyordu — **constructor
-çağrılarak**; telde `500` dönüyordu ve telden geçen hiçbir test yoktu.
-
-## Aşama 3 · dilim 11-12 — `F-020`, `F-018` (2026-08-29)
-
-Kayıtları `archive/stage-3-handoff-answers.md`'de; kalıcı kararlar
-`spec/08-api.md` § 35.3 ve `spec/07-subsystems.md` § 31.6.4'te. Frontend
-aksiyonları `B-066`, `B-067`. Burada kalanlar yalnız **canlı** olanlar:
-
-**Tamir etmeye kalkma — bilinçli boşluk:**
+**Tamir etmeye kalkma — üçü de bilinçli:**
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
   `ExtractionWarningCode` kapalı ve altı değerinin altısı da düzeltilebilir bir
   alanı tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**, sayıya
   indirilmedi. Yedincisi gerçekten engelleyici olursa karar § 31.6.4'te.
-  (Geçmiş satırının başlığı artık boşluk değil — `F-022`, § 57.6.)
-
-**Ders — bir alanı yayımlamak, onu ilk kez okumaktır.** Frontend uyarıların
-*yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde **yanlış** olduğu
-çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
-yoktu, burada alan vardı ve yanlıştı.
-
-**`spotlessCheck` yerelde CRLF'e düşüyor** — editör aracı ve python'un metin
-modu Windows'ta CRLF yazıyor; git commit'te normalleştirdiği için CI geçiyor,
-yerel kontrol düşüyor. **Yeni dosya yazdıktan sonra `sh ./gradlew
-spotlessApply`.**
-
-## Aşama 3 · dilim 13 — `F-022`, `F-023`, `F-024` (2026-08-30)
-
-Kalıcı kararlar `spec/16-cost-legal.md` § 57.6, `spec/08-api.md` § 35.3,
-`spec/07-subsystems.md` § 31.6.5 ve EK D.6.9'da. Frontend aksiyonları
-`B-068`-`B-070`. Burada yalnız **canlı** olanlar:
-
-**Tamir etmeye kalkma — ikisi de bilinçli:**
 - **`ImportWarning.code` alanı `String`, şeması enum.** Değer JSONB'den geri
   okunuyor; tipi enum yapmak, adı değişmiş bir kod taşıyan eski satırı ya
   attırır ya düşürür, ve düşen uyarı `warningCount == warnings.length`'i bozar.
@@ -110,11 +82,36 @@ Kalıcı kararlar `spec/16-cost-legal.md` § 57.6, `spec/08-api.md` § 35.3,
 **`shared.wire` yeni bir paket, ve bir sonraki kapalı sözlüğün yeri.** İki
 modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` retlerin.
 
-**Ders — bir uca yalnız kendi arayüzünden bakan, o ucun başka istemcilere ne
-dediğini hiç görmez.** `file` parçasız istek bir aşama boyunca `500` döndü;
-frontend'in formu onu üretemediği için hiçbir ekran testi oraya ulaşamazdı.
-`B-064` ile aynı sınıf, ve bu sefer bulan şey ekran değil sunucu denetimiydi.
+**Ders — bir alanı yayımlamak, onu ilk kez okumaktır.** Frontend uyarıların
+*yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde **yanlış** olduğu
+çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
+yoktu, burada alan vardı ve yanlıştı.
 
+## Aşama 3 · dilim 14 — `F-027` (2026-09-02)
+
+Silinmiş bir hesabın oturumu artık `401`. Kontrol `SessionCurrentUser`'ın
+oturum çözümünde, uçlarda değil: kusur profile özgü değildi, silinmiş bir
+`user_id` adına yapılan **her yazma** yabancı anahtarı ihlal ediyordu — profil
+uçlarının `500` dönmesinin sebebi satırı ilk kullanımda yaratmalarıydı, hiçbir
+şey yazmayan `GET /generations` ise hesap yerindeymiş gibi `200` dönüyordu.
+İstek başına tek birincil anahtar okuması, ve zaten memoize edilmiş.
+
+**Ekleme — `revokeAllFor` artık yutmuyor, fırlatıyor.** `AccountDeletionService`
+oturumları satırdan **önce** siliyor ve gerekçesini javadoc'unda yazıyor; ama
+Redis hatası `warn` + `0` dönüyordu, ki bu "hiç oturumu yoktu"dan ayırt
+edilemez. Hesap o cevabın üstüne siliniyordu. Artık silinmiyor.
+
+**Sapma — `DELETE /account` iki kez basılınca ikincisi `204` değil `401`.**
+Uç hâlâ idempotent (§ 57.4); değişen, ikinci basışın uca *ulaşamaması*. Telde
+zaten böyleydi — ilk yanıt çerezi siliyor — eski `204`'ü üreten şey dev
+stub'ıydı.
+
+**Ders — bir sınıf yıktığını geri koymuyorsa, onu ayakta tutan şey sıradır.**
+`AccountDeletionIT` acting user'ı siliyor ve suite tek bağlam paylaşıyor;
+`SecondImportIT` üç sınıf sonra `409`'unu **silinmiş bir kullanıcıdan**
+alıyordu. Yani o sınıf tam da bu kusur sayesinde geçiyormuş, ve `401` inince
+ortaya çıktı. `@AfterEach` artık dev kullanıcısını ve altın profili geri
+koyuyor.
 ## Aşama 2'den öğrenilen, tekrar edecek iki şey
 
 - **Kılavuz "tablo" dediğinde önce `V1`'e bak** — beş kez var olan bir tablo

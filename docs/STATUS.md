@@ -3,8 +3,8 @@
 > İki repo da bu dosyayı okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir, buraya taşınmaz.
 
-**2026-08-30** · **`B-068`-`B-070` de kapandı — açık `B-nnn` yok** · açık
-`F-nnn`: **`F-025`**, **`F-026`**, **`F-027`** (üçü de telde ölçüldü)
+**2026-09-02** · açık `B-nnn` yok · **`F-027` indi** · açık `F-nnn`:
+**`F-025`**, **`F-026`** (ikisi de telde ölçüldü)
 
 ---
 
@@ -26,7 +26,7 @@ yazılı — listede olmayan alan istisna değil.
 **Kapanış denetimi (0-3)** `notes/kapanis-denetimi.md`'de. **Geliştiricide:**
 model seçilince fiyat tablosu, VPS kurulumu (§ XI-A.4) ve **restore testi**.
 
-**Test:** 1054 birim · 448 entegrasyon · latex 49/49 — 0 hata
+**Test:** 1060 birim · 450 entegrasyon · latex 49/49 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -52,9 +52,8 @@ ile Turnstile** — ikisi de yapılandırılmış bir dağıtım istiyor.
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra backend'de: `F-025`, `F-026`, `F-027`** — üçü de telde ölçüldü, hiçbiri
-bir ekranı bloke etmiyor: `companyName: "not specified"`; dört mektup
-taslağının dördünün de reddedilmesi (tek çözüm `retry`, ve işe yaramadı); ve
-silinmiş hesabın çerezinin her profil okumasında `500` üretmesi. **Yayın
-öncesi açık:** gizlilik politikasının sağlayıcı listesi, model seçimini
-bekliyor.
+**Sıra hâlâ backend'de: `F-025`, `F-026`.** `companyName: "not specified"`, ve
+dört mektup taslağının dördünün de reddedilmesi. **`F-027` kapandı:** hesabı
+olmayan oturum artık `401`, ve `DELETE /account`'un ikinci basışı bunun
+sonucu olarak `204` yerine `401` — istemcide iş çıkarmıyor. **Yayın öncesi
+açık:** gizlilik politikasının sağlayıcı listesi, model seçimini bekliyor.
