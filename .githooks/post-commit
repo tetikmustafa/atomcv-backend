@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Auto-syncs docs/handoff/**.md and docs/STATUS.md to the sibling frontend
+# repo whenever a commit touches them. Runs entirely outside Claude Code —
+# no LLM tokens spent on cross-repo communication, no manual command either.
+#
+# Setup (once per machine):
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/post-commit
+#   # only if your frontend checkout is NOT at ../atomcv-frontend:
+#   git config atomcv.siblingPath /absolute/path/to/atomcv-frontend
+set -euo pipefail
+
+# Loop guard — don't react to a commit this same sync mechanism produced.
+LAST_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
+[[ "$LAST_MSG" == chore\(docs-sync\):* ]] && exit 0
+
+# Only act if the commit actually touched the synced files.
+CHANGED=$(git diff --name-only HEAD~1 HEAD -- docs/handoff/ docs/STATUS.md 2>/dev/null || true)
+[ -z "$CHANGED" ] && exit 0
+
+SIBLING="$(git config --get atomcv.siblingPath || echo "../atomcv-frontend")"
+
+if [ ! -d "$SIBLING/.git" ]; then
+  echo "[docs-sync] Sibling repo not found at: $SIBLING"
+  echo "[docs-sync] Set the correct path with:"
+  echo "  git config atomcv.siblingPath /absolute/path/to/atomcv-frontend"
+  exit 0
+fi
+
+mkdir -p "$SIBLING/docs/handoff"
+cp docs/handoff/*.md "$SIBLING/docs/handoff/" 2>/dev/null || true
+cp docs/STATUS.md "$SIBLING/docs/" 2>/dev/null || true
+
+(
+  cd "$SIBLING"
+  git add docs/handoff docs/STATUS.md 2>/dev/null || true
+  if ! git diff --cached --quiet 2>/dev/null; then
+    git commit -q -m "chore(docs-sync): receive handoff + STATUS from backend"
+    echo "[docs-sync] handoff + STATUS synced and committed in $SIBLING"
+  fi
+)

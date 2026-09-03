@@ -1,0 +1,66 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr review:*)",
+      "Bash(*sync-spec.sh*)",
+      "Bash(*sync-handoff.sh*)",
+      "Bash(docker compose -f docker-compose.prod.yml*)",
+      "Bash(*docker-compose.prod.yml*)",
+      "Bash(git clean -fdx*)",
+      "Bash(docker volume rm*)",
+      "Bash(*flyway*prod*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Write(docs/notes/**)",
+      "Write(docs/STATUS.md)",
+      "Write(docs/spec/**)"
+    ],
+    "allow": [
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew integrationTest:*)",
+      "Bash(./gradlew bootRun:*)",
+      "Bash(docker compose --profile core*)",
+      "Bash(docker compose --profile full*)",
+      "Bash(docker compose ps*)",
+      "Bash(docker compose logs*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(rg:*)",
+      "Read(src/**)",
+      "Read(build.gradle.kts)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/block-risky-bash.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/warn-doc-read.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
