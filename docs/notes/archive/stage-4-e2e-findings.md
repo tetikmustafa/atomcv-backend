@@ -136,3 +136,61 @@ testi her iki halde de geçiyor.
 - **`EMBEDDING_UNAVAILABLE` Faz D'yi sessizce kapatıyor.** Eşikler embedding'li
   skorlara göre ayarlı; onlarsız hiçbir aday geçmiyor ve bunu söyleyen bir şey yok.
 
+## Dilim D — çıkarım uydurma yapıyor (Bulgu 4'ün asıl kökü) · 2026-09-04
+
+**Geliştirici cevapladı ve öncül düştü: `Kafka` CV'de geçmiyor.** Örnek olarak
+konan `cv.tex` de doğruluyor — `Kafka` sıfır eşleşme, `SQL Server` sıfır
+eşleşme, yalnız çıplak `SQL` altı kez. Satır 166:
+
+> `Integrated structured enterprise data utilizing 	extbf{SQL} queries to model complex business reporting logic.`
+
+Veritabanındaki atom:
+
+> `Integrated structured enterprise data utilizing advanced **SQL Server** queries, optimizing analytic data layers.`
+
+Yani model `SQL` → `SQL Server` yapmış (başka ve daha özgül bir ürün, arkasında
+`skills`'e giren `mssql`), "advanced" eklemiş, cümlenin sonunu değiştirmiş.
+**Bu çıkarım değil, yeniden yazım.**
+
+**Kök neden: P3 yalnız Faz D'de uygulanıyordu.** Modelin *yeniden yazdığı*
+metin altı kontrolden geçiyor; *çıkardığı* metin hiçbirinden geçmiyor ve
+`is_primary` varyant olarak doğrudan sayfaya gidiyor. Bütün çıkarım yolu
+garantinin dışındaydı.
+
+**Düzeltme — `ExtractionFidelity`.** Faz D'nin `introducedNames()` sorusu, tek
+kaynak olarak belgenin kendisiyle: bu madde, dosyanın taşımadığı bir ad veriyor
+mu? Sözlük yok, yani duyulmamış bir teknoloji ünlü olanla aynı şartlarda
+yakalanıyor. Normalizasyonda, `normalizeEntry` içinde — uyarı orada doğuyor ve
+`path`'ini sıralamadan sonra otomatik alıyor (F-018'in kuralı).
+
+**Ret değil uyarı, ve bilerek.** Atom onun dışında kişinin kendi içeriği,
+§ 31.6'nın gözden geçirme ekranı tam bunun için var, ve tek uydurma kelime için
+içe aktarımı çöpe atmak **bu kod tabanının zaten bir kez yaptığı hata** (dilim B).
+
+**`normalize(extracted)` aşırı yüklemesi kaldırıldı.** Kontrolü atlayan ikinci
+bir yol bırakmak, gelecekteki bir çağıranın garantiyi sessizce kaybetmesi
+demekti; tek imza, belge parametresi nullable ve ne anlama geldiği yazılı.
+
+**Yedinci `ExtractionWarningCode`, ve şema değişmedi.** `UNSUPPORTED_BY_SOURCE`
+kodu **model üretmiyor**, pipeline üretiyor — o yüzden extraction şeması hâlâ
+altı değer listeliyor, prompt sürümü değişmedi, fikstürler ve cache geçerli.
+Enum artık `raisedByModel()` ile bu ayrımı taşıyor ve iki test onu koruyor.
+
+**`OpenApiSchemaIT` tam tasarlandığı gibi çalıştı.** Elle yazılmış altı değer
+düştü, javadoc'u "bu liste düşerse handoff maddesini yaz" diyordu, ve `B-071`
+o yüzden yazıldı. Notlarda "yedincisi karşı reponun duyması gereken bir tel
+değişikliği" diye duran öngörü karşılandı.
+
+**Ölçemediğimiz şey — ve tahmin etmedik.** Yanlış pozitif oranı **bilinmiyor**.
+Üç kayıtlı fixture'ı `cv.tex`'e karşı koşturmak 16/84, 6/28 ve 5/30 bayrak
+verdi, ama **fikstürlerin hiçbirinin kaynağı `cv.tex` değil** (`Cloudflare`,
+`TensorFlow`, `SoapUI` gerçek teknolojiler ve asıl belgelerde varlar). Yani o
+sayılar belge uyuşmazlığı artefaktı, ölçüm değil. Modelin kendi etiketlerine
+(`emphasisSource`/`skills`/`properNouns`) daraltmak da denendi: 18→16, kayda
+değer bir fayda yok, çünkü model teknolojileri zaten vurguluyor.
+
+**Ve bunun asıl sebebi kayda değer: `local-record` cevabı saklıyor, girdiyi
+saklamıyor.** Bir çıkarımın sadakati ancak kaynak belgeyle ölçülebilir, ve o
+belge hiçbir yerde yok. **P3'ün çıkarım tarafını denetlemenin önündeki tek
+engel bu.** Bir sonraki `make record`'da kaynak metnin de yazılması gerekiyor.
+

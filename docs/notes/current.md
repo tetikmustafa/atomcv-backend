@@ -103,6 +103,7 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 |---|---|
 | A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
 | B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
+| D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
 | C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
 
 **Canlı kalanlar:**
@@ -116,9 +117,10 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 - **`EMBEDDING_UNAVAILABLE` Faz D'yi sessizce kapatıyor.** Ölçülen koşuda
   `trace.B.weights = "without-embedding"`, skorlar 0.0-0.061, `RewritePlanner`
   eşiği 0.40 → `bullet_rewrite` **sıfır çağrı**, yani muhafızlar hiç koşmadı.
-- **Çıkarım çıktısını kaynağa karşı doğrulayan hiçbir şey yok** — P3 yalnız
-  yeniden yazmada uygulanıyor, çıkarımın yazdığı nesir doğrudan sayfaya gidiyor.
-  Ham yükleme saklanmıyor. **Geliştiricinin cevabını bekliyor.**
+- **`local-record` cevabı saklıyor, girdiyi saklamıyor.** Bir çıkarımın
+  sadakati ancak kaynak belgeye karşı ölçülebilir; o belge diskte olmadığı için
+  `UNSUPPORTED_BY_SOURCE`'un **yanlış pozitif oranı ölçülemedi**. Bir sonraki
+  `make record` kaynak metni de yazmalı.
 - **`trace.D` yazılmıyor**, ve `promptVersions` koşmayan `bullet_rewrite`'ı
   koşmuş gösteriyor.
 
