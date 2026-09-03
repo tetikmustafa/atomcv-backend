@@ -12,8 +12,35 @@
 
 ## OPEN
 
-*(şu an açık madde yok — `B-068`, `B-069` ve `B-070` kapandı ve
-`resolved/`'a indi.)*
+### B-071 · Yedinci `ExtractionWarningCode`: `unsupported_by_source`
+
+**Since:** commit <bu PR> · Aşama 4 dilim D · **Spec:** `spec/07-subsystems.md`
+§ 31.6 · `shared/wire/ExtractionWarningCode`
+
+**Neden:** çıkarım, belgede olmayan bir teknoloji yazabiliyor ve bugüne kadar
+bunu kimse kontrol etmiyordu. Gerçek bir CV `utilizing **SQL** queries to model
+complex business reporting logic` diyor; yazılan atom `utilizing advanced **SQL
+Server** queries, optimizing analytic data layers` oldu — başka ve daha özgül
+bir ürün, arkasında `skills`'e giren `mssql` ile. Aynı yükleme, belgede hiç
+geçmeyen `Kafka`'yı About paragrafına yazdı. P3 yalnız Faz D'de, yani modelin
+*yeniden yazdığı* yerde uygulanıyordu; *çıkardığı* şeyin sayfada olup olmadığını
+soran hiçbir şey yoktu.
+
+**Action:** `ImportWarning.code` için ICU `select`'ine yedinci dal ekleyin.
+Önerilen anlam: *"Bu satırda, yüklediğiniz belgede geçmeyen bir ad var —
+kontrol edin."* Kod `unsupported_by_source`, ve diğer altısı gibi
+`sectionOrder`/`entryOrder` taşıyor, yani gözden geçirme ekranında satıra
+bağlanıyor. Şemada da yayımlandı (`GET /v3/api-docs`).
+
+**Dikkat — bu kodu model üretmiyor.** Extraction şeması hâlâ altı değer
+listeliyor; yedincisini pipeline belgeye karşı üretiyor. Yani prompt sürümü
+değişmedi, fikstürler ve cache geçerli.
+
+**Ölçülmemiş bir yanı var ve söylüyoruz:** yanlış pozitif oranını
+ölçemedik. Kayıtlı hiçbir fixture'ın **kaynak belgesi diskte değil**
+(`local-record` cevabı saklıyor, girdiyi değil), o yüzden kontrolü ancak
+uyuşmayan bir belgeye karşı koşturabildik. Uyarı engelleyici değil; ekranda
+gürültü yaparsa duymak istiyoruz.
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
 
