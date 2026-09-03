@@ -117,7 +117,10 @@ public class ProfileExtractionJobHandler implements JobHandler {
             }
             case Result.Ok<ExtractedProfile> ok -> {
                 progress.report(ORGANISING);
-                NormalizedProfile normalized = normalizer.normalize(ok.value());
+                // The document itself, so normalization can ask whether the
+                // answer stayed on it (P3, ExtractionFidelity).
+                NormalizedProfile normalized =
+                        normalizer.normalize(ok.value(), payload.asExtractedText().text());
                 progress.report(SAVING);
                 yield userId == null
                         ? completedAnonymously(anonSession, normalized)

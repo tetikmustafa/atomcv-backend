@@ -60,13 +60,19 @@ public class ProfileNormalizer {
      *         emphasis turned into runs, entries ordered and every
      *         {@code display_order} written
      */
-    public NormalizedProfile normalize(ExtractedProfile extracted) {
+    /**
+     * @param sourceText what the file actually said, or {@code null} where the
+     *                   caller does not have it. Given it, every atom is
+     *                   checked for names the document does not carry
+     *                   ({@link ExtractionWarningCode#UNSUPPORTED_BY_SOURCE}).
+     */
+    public NormalizedProfile normalize(ExtractedProfile extracted, String sourceText) {
         List<ExtractionWarning> warnings = new ArrayList<>(extracted.warnings());
         List<NormalizedProfile.NormalizedSection> sections = new ArrayList<>();
 
         short sectionOrder = 0;
         for (var section : extracted.sections()) {
-            sections.add(normalizeSection(section, sectionOrder++, warnings));
+            sections.add(normalizeSection(section, sectionOrder++, warnings, sourceText));
         }
 
         var normalized = new NormalizedProfile(
@@ -90,11 +96,11 @@ public class ProfileNormalizer {
 
     private NormalizedProfile.NormalizedSection normalizeSection(
             ExtractedProfile.ExtractedSection section, short order,
-            List<ExtractionWarning> warnings) {
+            List<ExtractionWarning> warnings, String sourceText) {
 
         List<Located> located = new ArrayList<>();
         for (var raw : section.entries()) {
-            located.add(normalizeEntry(raw, section.kind()));
+            located.add(normalizeEntry(raw, section.kind(), sourceText));
         }
         if (NEWEST_FIRST.contains(section.kind())) {
             located.sort(Comparator.comparing(Located::entry, newestFirst()));
@@ -129,7 +135,7 @@ public class ProfileNormalizer {
     }
 
     private Located normalizeEntry(
-            ExtractedProfile.ExtractedEntry entry, SectionKind kind) {
+            ExtractedProfile.ExtractedEntry entry, SectionKind kind, String sourceText) {
 
         // Raised without a path and given one after the sort: where this entry
         // ends up is not known yet, and the model's own order is not where.
@@ -146,6 +152,8 @@ public class ProfileNormalizer {
             warnings.add(new ExtractionWarning(ExtractionWarningCode.OVERLAPPING_DATES,
                     "an entry ends before it starts", ""));
         }
+
+        ExtractionFidelity.check(entry, sourceText).ifPresent(warnings::add);
 
         List<NormalizedProfile.NormalizedAtom> atoms = new ArrayList<>();
         short order = 0;

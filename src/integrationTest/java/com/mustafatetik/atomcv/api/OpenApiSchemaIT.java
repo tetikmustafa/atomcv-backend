@@ -75,12 +75,14 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
      * that never match. The review screen counted its warnings and opened
      * their sections without ever naming one.
      *
-     * <p><strong>The six are spelled out here rather than read from the
+     * <p><strong>The seven are spelled out here rather than read from the
      * enum.</strong> A test derived from {@code ExtractionWarningCode.values()}
      * agrees with whatever the code happens to say, including a seventh value
      * added without telling anyone — and a seventh value is a wire change the
      * other repository has to hear about before it ships a message for it.
-     * This list failing is the reminder to write the handoff item.
+     * This list failing is the reminder to write the handoff item. It has done
+     * its job once: {@code unsupported_by_source} arrived with slice D and
+     * {@code B-071} was written because this test refused to pass quietly.
      */
     @Test
     void theImportWarningVocabularyIsPublishedAsAnEnum() throws Exception {
@@ -88,7 +90,8 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.ImportWarning.properties.code.enum")
                         .value(Matchers.containsInAnyOrder(
                                 "ambiguous_date", "missing_organization", "unclear_section",
-                                "scrambled_text", "overlapping_dates", "untranslatable_atom")));
+                                "scrambled_text", "overlapping_dates", "untranslatable_atom",
+                                "unsupported_by_source")));
     }
 
     /**

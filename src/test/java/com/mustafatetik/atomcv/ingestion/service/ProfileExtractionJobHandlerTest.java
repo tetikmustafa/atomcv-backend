@@ -92,7 +92,7 @@ class ProfileExtractionJobHandlerTest {
     void aReadableCvIsStructuredNormalisedAndWritten() {
         var profile = new Profile(USER);
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 1));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 1));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
         JobOutcome outcome = handler.handle(job(), reported::add);
@@ -111,7 +111,7 @@ class ProfileExtractionJobHandlerTest {
     void theTerminalEventCarriesCountsAndNoneOfTheCv() {
         var profile = new Profile(USER);
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 1));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 1));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
         var result = ((JobOutcome.Completed) handler.handle(job(), reported::add)).result();
@@ -127,7 +127,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void theProgressSaysWhichStageItIsOnAndInOrder() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
@@ -145,7 +145,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void theVectorsAndTheHeightsAreQueuedRatherThanWaitedFor() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
@@ -168,7 +168,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void theBackgroundWorkIsQueuedOnlyOnceThereIsAProfileToDoItTo() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
         handler.handle(job(), reported::add);
@@ -268,7 +268,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void ananonymousUploadIsWrittenToTheEphemeralStoreAndNowhereElse() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         JobOutcome outcome = handler.handle(anonymousJob(ADDRESS), reported::add);
 
@@ -286,7 +286,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void ananonymousUploadAnswersWithTheProfileTheStoreHolds() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         var result = ((JobOutcome.Completed)
                 handler.handle(anonymousJob(ADDRESS), reported::add)).result();
@@ -304,7 +304,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void nobackgroundWorkIsQueuedForAProfileWithNoRows() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(2, 5, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
 
@@ -338,7 +338,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void ananonymousCallerIsBucketedByProfileAndNotByTheirCookie() {
         when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
-        when(normalizer.normalize(any())).thenReturn(normalized(1, 1, 0));
+        when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
 

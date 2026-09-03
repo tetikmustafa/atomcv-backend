@@ -31,7 +31,7 @@ class ProfileNormalizerTest {
 
     @Test
     void aDateTheModelLeftInTheDocumentsOwnWordsIsRead() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "Brisa", "Eylül 2023", "Aralık 2024")));
 
         var entry = normalized.sections().get(0).entries().get(0);
@@ -46,7 +46,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void aDateThatCannotBeReadBecomesNullAndAWarning() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "Brisa", "sometime in the spring", "2024-12")));
 
         assertThat(normalized.sections().get(0).entries().get(0).start()).isNull();
@@ -59,7 +59,7 @@ class ProfileNormalizerTest {
     /** A year with no month says so, because it is a different question to ask. */
     @Test
     void aYearWithNoMonthSaysThatIsWhatItWas() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "Brisa", "2019", "2024-12")));
 
         assertThat(normalized.warnings()).singleElement().satisfies(warning ->
@@ -72,7 +72,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void anAbsentEndDateIsNotAWarning() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "Brisa", "2023-09", null)));
 
         assertThat(normalized.warnings()).isEmpty();
@@ -81,7 +81,7 @@ class ProfileNormalizerTest {
 
     @Test
     void anEntryThatEndsBeforeItStartsIsFlagged() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "Brisa", "2024-09", "2023-01")));
 
         assertThat(normalized.warnings()).extracting(ExtractionWarning::code)
@@ -90,7 +90,7 @@ class ProfileNormalizerTest {
 
     @Test
     void anEntryWithContentButNoOrganizationIsFlagged() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entry("Data Engineer", "", "2023-09", "2024-12")));
 
         assertThat(normalized.warnings()).extracting(ExtractionWarning::code)
@@ -106,7 +106,7 @@ class ProfileNormalizerTest {
                 List.of(new ExtractionWarning(ExtractionWarningCode.UNCLEAR_SECTION,
                         "a heading could not be placed", "sections[1]")));
 
-        var normalized = normalizer.normalize(extracted);
+        var normalized = normalize(extracted);
 
         assertThat(normalized.warnings()).extracting(ExtractionWarning::code)
                 .containsExactlyInAnyOrder(ExtractionWarningCode.UNCLEAR_SECTION,
@@ -125,7 +125,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void awarningNamesTheSectionItHappenedIn() {
-        var normalized = normalizer.normalize(new ExtractedProfile("en", 0.99,
+        var normalized = normalize(new ExtractedProfile("en", 0.99,
                 ExtractedContact.EMPTY,
                 List.of(new ExtractedSection(SectionKind.EDUCATION, "Education",
                                 List.of(entry("BSc", "A university", "2015-09", "2019-06"))),
@@ -149,7 +149,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void awarningNamesTheRowTheReaderSeesAndNotTheOneTheModelSent() {
-        var normalized = normalizer.normalize(sectionOf(SectionKind.EXPERIENCE,
+        var normalized = normalize(sectionOf(SectionKind.EXPERIENCE,
                 entry("Oldest", "A", "not a date", "2020-01"),
                 entry("Newest", "C", "2024-01", null)));
 
@@ -164,7 +164,7 @@ class ProfileNormalizerTest {
 
     @Test
     void experienceIsOrderedNewestFirstAndNumberedAfterwards() {
-        var normalized = normalizer.normalize(sectionOf(SectionKind.EXPERIENCE,
+        var normalized = normalize(sectionOf(SectionKind.EXPERIENCE,
                 entry("Oldest", "A", "2019-01", "2020-01"),
                 entry("Newest", "C", "2024-01", null),
                 entry("Middle", "B", "2021-06", "2023-12")));
@@ -182,7 +182,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void anEntryWithNoStartDateSinksToTheBottom() {
-        var normalized = normalizer.normalize(sectionOf(SectionKind.EXPERIENCE,
+        var normalized = normalize(sectionOf(SectionKind.EXPERIENCE,
                 entry("Undated", "A", null, null),
                 entry("Dated", "B", "2021-06", "2023-12")));
 
@@ -199,7 +199,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void educationKeepsTheOrderTheDocumentPutItIn() {
-        var normalized = normalizer.normalize(sectionOf(SectionKind.EDUCATION,
+        var normalized = normalize(sectionOf(SectionKind.EDUCATION,
                 entry("BSc", "A university", "2015-09", "2019-06"),
                 entry("MSc", "A university", "2019-09", "2021-06")));
 
@@ -210,7 +210,7 @@ class ProfileNormalizerTest {
 
     @Test
     void everySectionAndAtomIsNumberedToo() {
-        var normalized = normalizer.normalize(new ExtractedProfile("en", 0.99,
+        var normalized = normalize(new ExtractedProfile("en", 0.99,
                 ExtractedContact.EMPTY,
                 List.of(new ExtractedSection(SectionKind.EXPERIENCE, "Experience",
                                 List.of(entryWithAtoms("A", "Org", atom("one"), atom("two")))),
@@ -233,7 +233,7 @@ class ProfileNormalizerTest {
                 List.of("React.js", "PostgreSQL", "react", "  "),
                 List.of(), List.of(), List.of());
 
-        var normalized = normalizer.normalize(profileWith(entryWithAtoms("A", "Org", atom)));
+        var normalized = normalize(profileWith(entryWithAtoms("A", "Org", atom)));
 
         assertThat(normalized.atoms()).singleElement().satisfies(one ->
                 assertThat(one.skills()).containsExactly("react", "postgres"));
@@ -244,7 +244,7 @@ class ProfileNormalizerTest {
         var atom = new ExtractedAtom("built things", null, List.of(), List.of(),
                 List.of(), List.of(), List.of(), List.of("  Data Engineering ", "ETL", "etl"));
 
-        var normalized = normalizer.normalize(profileWith(entryWithAtoms("A", "Org", atom)));
+        var normalized = normalize(profileWith(entryWithAtoms("A", "Org", atom)));
 
         assertThat(normalized.atoms()).singleElement().satisfies(one ->
                 assertThat(one.tags()).containsExactly("data engineering", "etl"));
@@ -258,7 +258,7 @@ class ProfileNormalizerTest {
                 List.of("Microsoft Fabric"), List.of("Microsoft Fabric"),
                 List.of("microsoft-fabric"), List.of(), List.of(), List.of());
 
-        var normalized = normalizer.normalize(profileWith(entryWithAtoms("A", "Org", atom)));
+        var normalized = normalize(profileWith(entryWithAtoms("A", "Org", atom)));
 
         assertThat(normalized.atoms()).singleElement().satisfies(one -> {
             assertThat(one.source().plainText())
@@ -274,7 +274,7 @@ class ProfileNormalizerTest {
      */
     @Test
     void anEnglishCvGetsNoSecondCopyOfItself() {
-        var normalized = normalizer.normalize(
+        var normalized = normalize(
                 profileWith(entryWithAtoms("A", "Org", atom("Engineered ETL pipelines"))));
 
         assertThat(normalized.atoms()).singleElement().satisfies(one -> {
@@ -286,10 +286,10 @@ class ProfileNormalizerTest {
     /** {@code plainText} and {@code contentHash} are the domain's, over the plain text. */
     @Test
     void reMarkingASentenceDoesNotChangeItsContentHash() {
-        var marked = normalizer.normalize(profileWith(entryWithAtoms("A", "Org",
+        var marked = normalize(profileWith(entryWithAtoms("A", "Org",
                 new ExtractedAtom("Engineered ETL pipelines", null,
                         List.of("ETL"), List.of(), List.of(), List.of(), List.of(), List.of()))));
-        var unmarked = normalizer.normalize(
+        var unmarked = normalize(
                 profileWith(entryWithAtoms("A", "Org", atom("Engineered ETL pipelines"))));
 
         assertThat(marked.atoms().get(0).source().contentHash())
@@ -305,7 +305,7 @@ class ProfileNormalizerTest {
                         null, null, null, "Istanbul"),
                 List.of(), List.of());
 
-        var contact = normalizer.normalize(extracted).contact();
+        var contact = normalize(extracted).contact();
 
         assertThat(contact.name()).isEqualTo("Ada Lovelace");
         assertThat(contact.email()).isEqualTo("ada@example.com");
@@ -317,7 +317,7 @@ class ProfileNormalizerTest {
     /** Statistics only; the CV's own words never reach a log (absolute rule 4). */
     @Test
     void theShapeThatReachesALogLineCarriesNoneOfTheText() {
-        var normalized = normalizer.normalize(profileWith(
+        var normalized = normalize(profileWith(
                 entryWithAtoms("Data Engineer", "Brisa", atom("Engineered ETL pipelines"))));
 
         assertThat(normalized.shape())
@@ -352,4 +352,14 @@ class ProfileNormalizerTest {
         return new ExtractedProfile("tr", 0.96, ExtractedContact.EMPTY,
                 List.of(new ExtractedSection(kind, "Deneyim", List.of(entries))), List.of());
     }
+
+    /**
+     * The document is not the subject here; {@code ExtractionFidelityTest}
+     * owns that comparison. Null means "no document to check against", which
+     * is the editor's case and leaves every other rule untouched.
+     */
+    private NormalizedProfile normalize(ExtractedProfile extracted) {
+        return normalizer.normalize(extracted, null);
+    }
+
 }

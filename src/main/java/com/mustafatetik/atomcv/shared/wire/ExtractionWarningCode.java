@@ -2,6 +2,8 @@ package com.mustafatetik.atomcv.shared.wire;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -33,13 +35,13 @@ import java.util.Locale;
 public enum ExtractionWarningCode {
 
     /** A date was written in a form that could not be read. The field is left null. */
-    AMBIGUOUS_DATE,
+    AMBIGUOUS_DATE(true),
 
     /** An entry has bullets but no employer, school or project name attached. */
-    MISSING_ORGANIZATION,
+    MISSING_ORGANIZATION(true),
 
     /** A heading did not match any of Bolum 13's kinds and was filed as custom. */
-    UNCLEAR_SECTION,
+    UNCLEAR_SECTION(true),
 
     /**
      * The document appeared to be out of order.
@@ -49,10 +51,10 @@ public enum ExtractionWarningCode {
      * agreed after reading it. The two disagree often — a one-column CV of
      * short lines trips the heuristic and reads perfectly.
      */
-    SCRAMBLED_TEXT,
+    SCRAMBLED_TEXT(true),
 
     /** Two entries claim overlapping dates in a way that may be a misreading. */
-    OVERLAPPING_DATES,
+    OVERLAPPING_DATES(true),
 
     /**
      * A bullet could not be rendered into English.
@@ -61,7 +63,61 @@ public enum ExtractionWarningCode {
      * atom, so this is a gap in coverage rather than a failure — but the user
      * should know which sentence will not travel.
      */
-    UNTRANSLATABLE_ATOM;
+    UNTRANSLATABLE_ATOM(true),
+
+    /**
+     * A bullet names something the uploaded document does not.
+     *
+     * <p>Extraction is supposed to be extraction. It is not: a real CV said
+     * "utilizing <b>SQL</b> queries to model complex business reporting logic"
+     * and the atom written from it said "utilizing advanced <b>SQL Server</b>
+     * queries, optimizing analytic data layers". A different, more specific
+     * product, and {@code mssql} went into the skills array behind it. The same
+     * upload produced a summary offering "message queues (Redis, Kafka)" from a
+     * document containing no Kafka at all.
+     *
+     * <p>P3 was enforced only where the model <em>rewrites</em>, and nothing
+     * ever asked whether what it <em>extracted</em> was on the page. This is
+     * that question, asked against the document's own text.
+     *
+     * <p>A warning rather than a refusal, and deliberately. The atom is
+     * otherwise the person's own content, the review screen of Bolum 31.6
+     * exists to correct exactly this, and refusing the import over one invented
+     * word is the failure this codebase has already had once.
+     */
+    UNSUPPORTED_BY_SOURCE(false);
+
+    /**
+     * Whether the model may answer with this code.
+     *
+     * <p>Six of these are the model's own report of what it could not settle,
+     * and the extraction schema lists exactly those — a value the schema does
+     * not name is a value the answer cannot legally carry, so it is the
+     * schema, not this flag, that stops the model inventing one.
+     *
+     * <p>{@link #UNSUPPORTED_BY_SOURCE} is the exception and is raised by the
+     * pipeline, against the document, after the model has answered. Putting it
+     * in the schema would offer the model a way to grade its own honesty, and
+     * would cost a new prompt version (Bolum 53.2) for a code it must never
+     * write.
+     */
+    private final boolean raisedByModel;
+
+    ExtractionWarningCode(boolean raisedByModel) {
+        this.raisedByModel = raisedByModel;
+    }
+
+    public boolean raisedByModel() {
+        return raisedByModel;
+    }
+
+    /** The codes the extraction schema offers, in the enum's own order. */
+    public static List<String> modelRaisedWireValues() {
+        return Arrays.stream(values())
+                .filter(ExtractionWarningCode::raisedByModel)
+                .map(ExtractionWarningCode::wireValue)
+                .toList();
+    }
 
     /** Lowercase on the wire, like every other closed vocabulary here (EK D.9). */
     @JsonValue
