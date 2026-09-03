@@ -146,12 +146,31 @@ class ProfileExtractionPromptTest {
                         Arrays.stream(SectionKind.values()).map(SectionKind::wireValue).toList());
     }
 
+    /**
+     * The schema offers the model the codes the model may raise, and only
+     * those. {@code UNSUPPORTED_BY_SOURCE} is the pipeline's answer to the
+     * document after the model has spoken; naming it here would invite the
+     * model to grade its own honesty, and would cost a prompt version
+     * (Bolum 53.2) for a value it must never write.
+     */
     @Test
-    void theWarningCodesInTheSchemaAreTheEnumsOwn() {
+    void theWarningCodesInTheSchemaAreTheOnesTheModelMayRaise() {
         assertThat(enumOf(schema().at("/properties/warnings/items/properties/code")))
                 .containsExactlyInAnyOrderElementsOf(
-                        Arrays.stream(ExtractionWarningCode.values())
-                                .map(ExtractionWarningCode::wireValue).toList());
+                        ExtractionWarningCode.modelRaisedWireValues());
+    }
+
+    /**
+     * And every code is on one side of that line deliberately. A value added
+     * with neither the schema nor a reason to stay out of it fails here rather
+     * than becoming a code the model can never legally send.
+     */
+    @Test
+    void everyCodeIsEitherOfferedToTheModelOrRaisedByThePipeline() {
+        assertThat(Arrays.stream(ExtractionWarningCode.values())
+                .filter(code -> !code.raisedByModel())
+                .map(ExtractionWarningCode::wireValue))
+                .containsExactly("unsupported_by_source");
     }
 
     // -- an answer in that shape parses ------------------------------------
