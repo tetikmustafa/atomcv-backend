@@ -78,3 +78,61 @@ doğru çözüm, mesajı yumuşatmak değil.
 dinliyor, `ImportScreen` onu kullanıyor. Olay gitti; yanlış olan taşıdığı
 cümleydi, ve o cümlenin sebebi yukarıdaki yanlış pozitifti.
 
+## Dilim C — P3'ün muhafızları (Bulgu 4) · 2026-09-04
+
+**Belirti:** üretilen CV'de iki uydurma — About'ta "message queues (Redis,
+**Kafka**)" ve bir maddede "advanced **SQL Server** queries", oysa kaynak atom
+yalnız "SQL" diyor.
+
+**Teşhis — ikisi de Faz D'de doğmadı.** Atomlar 14:08:29'da yazılmış
+(`created_by=user`, `derived_from_variant_id=NULL`), üretim 14:10:41'de koşmuş,
+ve basılan metin atomlarla **bayt bayt aynı**. Üstelik `bullet_rewrite`
+invocation sayısı o koşuda **sıfır**: `embedding` işi `EMBEDDING_UNAVAILABLE`
+ile düşünce `trace.B.weights = "without-embedding"`, skorlar 0.0-0.061,
+`RewritePlanner` eşiği 0.40 → **`RewriteValidator.validate()` bir kez bile
+çağrılmadı.** `atoms.skills` de zaten `mssql` taşıyor ve `aliases.txt:42`
+`sql-server = mssql` diyor: **normalizasyon doğru**, "SQL → SQL Server" diye
+bir eşleme kayması yok.
+
+**Düzeltme — sözlük cevap tarafında açıldı.** İki muhafız da
+`ClaimVocabulary.of()`'u gezip cevapta arıyordu, yani **tanımadığı bir uydurma
+görünmüyordu**. `aliases.txt` 74 satır ve `kafka` içinde yok; posting'de de
+yok. Yani Redis kontrol edilip serbest bırakıldı, Kafka **hiç sorulmadı**.
+`introducedNames()` soruyu kapalı olan yönden soruyor: "cevap tanıdığım bir şey
+mi anıyor" değil, **"kaynaklarının hiçbirinde olmayan bir ad mı veriyor"**.
+Kaynak = orijinal metin + atom skills + kişinin kendi sözleri + ilan.
+
+İsim şekli: içeride büyük harf (`PyTorch`), karakterler arası `.`/`+`/`#`
+(`Node.js`, `C++`), harfe bitişik rakam (`S3`), ya da cümle başı **olmayan** bir
+büyük harf. Yanlış pozitifin bedeli reddedilen bir yeniden yazım ve kişinin
+kendi cümlesinin kalması — P3'ün istediği yön.
+
+**İlk denemede dört test düştü ve ikisi gerçek hataydı** (bendeydi): token
+regex'i cümle sonundaki noktayı yutuyordu, yani `"Postgres."` kaynaklarda
+aranıyor ve bulunamıyordu; ve `300.000` gibi salt sayısal token'lar "karakterler
+arası nokta" kuralına takılıyordu — oysa o bir binlik ayracı ve sayıların kendi
+kuralı var. İkisi de düzeltildi.
+
+**Düzeltme — About birleşimi About atomlarını dışlıyordu.** § 21.7 "girdi
+**seçilmiş atomların** skills + metrics birleşimi" diyor; kod `isAbout` dalında
+`continue` edip onları hiç eklemiyordu. Dört About paragrafı olan gerçek
+profilde üçü birleşimin dışında kalıyordu.
+
+**Regresyon testi § 51.7'ye göre:** `FabricatedTechnologyTest` teknolojinin
+sözlükte **olmadığını önce kendisi doğruluyor** — yoksa eski testler gibi
+Kubernetes'i ölçer. İki "uydurma" testi düzeltmesiz düşüyor, iki "serbest"
+testi her iki halde de geçiyor.
+
+**Hâlâ açık, ve Faz D'nin işi değil:**
+- **Çıkarım çıktısını kaynak belgeye karşı doğrulayan hiçbir şey yok.** P3
+  yalnız *yeniden yazma* anında uygulanıyor; `is_primary` varyant olarak yazılan
+  LLM nesri hiçbir kapıdan geçmeden sayfaya basılıyor. Ham yükleme hiçbir yerde
+  saklanmıyor, yani cümlenin CV'den mi geldiği modelden mi doğrulanamıyor.
+  **Geliştiriciye soruldu.**
+- **`trace.D` yazılmıyor** (`rewriteAccepted`/`rejected`/`rejectReasons` →
+  `src/main/java`'da sıfır eşleşme) ve `promptVersions` koşmayan
+  `bullet_rewrite`'ı koşmuş gösteriyor. `RewrittenContent` yalnız kabul edilenleri
+  taşıyor; sayaçları yukarı geçirmek ayrı bir dilim.
+- **`EMBEDDING_UNAVAILABLE` Faz D'yi sessizce kapatıyor.** Eşikler embedding'li
+  skorlara göre ayarlı; onlarsız hiçbir aday geçmiyor ve bunu söyleyen bir şey yok.
+

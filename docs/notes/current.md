@@ -103,6 +103,7 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 |---|---|
 | A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
 | B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
+| C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
 
 **Canlı kalanlar:**
 - **`llm_invocations.job_id` 108 satırın 108'inde NULL** (`user_id` 104'ünde).
@@ -114,7 +115,12 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
   freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
 - **`EMBEDDING_UNAVAILABLE` Faz D'yi sessizce kapatıyor.** Ölçülen koşuda
   `trace.B.weights = "without-embedding"`, skorlar 0.0-0.061, `RewritePlanner`
-  eşiği 0.40 → `bullet_rewrite` **sıfır çağrı**. Dilim C'nin konusu.
+  eşiği 0.40 → `bullet_rewrite` **sıfır çağrı**, yani muhafızlar hiç koşmadı.
+- **Çıkarım çıktısını kaynağa karşı doğrulayan hiçbir şey yok** — P3 yalnız
+  yeniden yazmada uygulanıyor, çıkarımın yazdığı nesir doğrudan sayfaya gidiyor.
+  Ham yükleme saklanmıyor. **Geliştiricinin cevabını bekliyor.**
+- **`trace.D` yazılmıyor**, ve `promptVersions` koşmayan `bullet_rewrite`'ı
+  koşmuş gösteriyor.
 
 ---
 
