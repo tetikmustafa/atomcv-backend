@@ -54,7 +54,7 @@ public final class AboutValidator {
         }
 
         // 1. Bolum 21.7, verbatim: every technology is one the page carries.
-        if (namesSomethingThePageDoesNot(candidate, folded, postingSkills)) {
+        if (namesSomethingThePageDoesNot(candidate, answer, folded, postingSkills)) {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
         }
 
@@ -81,7 +81,8 @@ public final class AboutValidator {
      * outage rather than a guard.
      */
     private static boolean namesSomethingThePageDoesNot(
-            AboutCandidate candidate, String foldedAnswer, List<String> postingSkills) {
+            AboutCandidate candidate, String answer, String foldedAnswer,
+            List<String> postingSkills) {
 
         Set<String> allowed = new LinkedHashSet<>();
         for (String skill : candidate.skills()) {
@@ -94,12 +95,22 @@ public final class AboutValidator {
             if (!ClaimVocabulary.mentions(foldedAnswer, term)) {
                 continue;
             }
-            if (allowed.contains(SkillNames.canonical(term)) || ClaimVocabulary.mentions(foldedOwn, term)) {
+            if (allowed.contains(SkillNames.canonical(term))
+                    || ClaimVocabulary.mentions(foldedOwn, term)) {
                 continue;
             }
             return true;
         }
-        return false;
+        // The loop above only refuses what the alias file knows, and this is
+        // the summary that printed "message queues (Redis, Kafka)" with Redis
+        // on the page and Kafka nowhere in the profile: Redis was checked and
+        // allowed, Kafka was never checked. A name no source carries is the
+        // same violation whether or not a dictionary has heard of it.
+        List<String> sources = new ArrayList<>(candidate.skills());
+        sources.add(candidate.originalText());
+        sources.add(candidate.ownWords());
+        sources.addAll(postingSkills);
+        return !ClaimVocabulary.introducedNames(answer, sources).isEmpty();
     }
 
     /**

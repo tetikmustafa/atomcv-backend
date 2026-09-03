@@ -76,7 +76,7 @@ public final class RewriteValidator {
         }
 
         // 3. The one that matters.
-        if (claimsSomethingItCannot(candidate, folded, postingSkills)) {
+        if (claimsSomethingItCannot(candidate, answer, folded, postingSkills)) {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
         }
 
@@ -108,7 +108,8 @@ public final class RewriteValidator {
      * the difference between a guard and an outage.
      */
     private static boolean claimsSomethingItCannot(
-            RewriteCandidate candidate, String foldedAnswer, List<String> postingSkills) {
+            RewriteCandidate candidate, String answer, String foldedAnswer,
+            List<String> postingSkills) {
 
         String foldedOriginal = candidate.originalText().toLowerCase(Locale.ROOT);
         Set<String> allowed = new LinkedHashSet<>(candidate.skills());
@@ -126,7 +127,21 @@ public final class RewriteValidator {
             }
             return true;
         }
-        return false;
+        // And the other half of the question: a name none of the sources
+        // carry. The loop above can only refuse what the alias file knows.
+        return !ClaimVocabulary.introducedNames(answer, sourcesOf(candidate, postingSkills))
+                .isEmpty();
+    }
+
+    /** Everything the rewrite was allowed to draw a name from. */
+    private static List<String> sourcesOf(
+            RewriteCandidate candidate, List<String> postingSkills) {
+
+        List<String> sources = new ArrayList<>();
+        sources.add(candidate.originalText());
+        sources.addAll(candidate.skills());
+        sources.addAll(postingSkills);
+        return sources;
     }
 
     private static List<String> digitsOf(String value) {
