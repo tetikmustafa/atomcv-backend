@@ -147,3 +147,11 @@ değişmedi. İd'ye çözmek gerekseydi iki writer'ın da dönüş tipi değişe
 
 Frontend aksiyonu: `B-067`.
 
+
+## Ders — bir alanı yayımlamak, onu ilk kez okumaktır
+
+Frontend uyarıların *yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde
+**yanlış** olduğu çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia
+doğruydu ve kanıtı yoktu, burada alan vardı ve yanlıştı.
+
+*(2026-09-03'te `current.md`'den taşındı — sınır.)*
