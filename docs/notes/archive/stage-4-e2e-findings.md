@@ -194,3 +194,37 @@ saklamıyor.** Bir çıkarımın sadakati ancak kaynak belgeyle ölçülebilir, 
 belge hiçbir yerde yok. **P3'ün çıkarım tarafını denetlemenin önündeki tek
 engel bu.** Bir sonraki `make record`'da kaynak metnin de yazılması gerekiyor.
 
+## Dilim E — Faz D'nin sessizliği · 2026-09-04
+
+**Geliştirici `make dev-full` koşmuş**, yani embedding container'ı ayaktaydı;
+`embedding` işi yine de **üç denemenin üçünde de** `EMBEDDING_UNAVAILABLE` ile
+düştü (08-28'deki üç koşu tamamlanmıştı). Yani geçici bir kesinti, yerel bir
+eksiklik değil — ve üretimde de olabilir.
+
+**Sonucu Faz D'nin sessizce kapanması.** `trace.B.weights =
+"without-embedding"` → skorlar 0.0-0.061 → `RewritePlanner`'ın eşikleri
+(`FLOOR_SCORE` 0.40, `FULL_ADAPTATION_SCORE` 0.65, § 21.2'den *verbatim*) hiçbir
+adayı geçirmiyor → `bullet_rewrite` sıfır çağrı. Muhafızlar koşmadı, ve bunu
+söyleyen hiçbir kayıt yoktu.
+
+**Eşiklere dokunulmadı, ve bilerek.** § 21.2 onları harfiyen veriyor;
+embedding'siz skor dağılımına göre yeniden ayarlamak **ölçüm ister** ve elimde
+o ölçüm yok. Yanlış ayarlanmış bir eşik, sessizce hiç yazmamaktan daha kötü:
+alakasız atomları yeniden yazdırır.
+
+**Yapılan: sessizliği görünür kılmak.** `trace.D` artık yazılıyor
+(`{"rewritten": n}`), ve **sıfır gerçek bir cevap**: Faz D koştu ve hiçbir şey
+değiştirmedi. Genel modda blok zaten yok — orada yazacak bir ilan yok. Testin
+javadoc'u bu ayrımı taşıyor, çünkü "ölçülmemiş" ile "ölçüldü ve sıfır" aynı
+şey değil.
+
+**§ 14.6'nın `rejectReasons`'ı hâlâ yok** ve sebebi yapısal:
+`RewrittenContent` yalnız **kabul edilenleri** taşıyor (§ 21.5 gereği — Faz E
+için "yok" ile "reddedildi" aynı şey). Reddedilenlerin sayımını yukarı geçirmek
+`ContentRewriter` cephesini değiştirmek demek; ayrı bir dilim, ve bu blok onun
+yerini tutmuyor.
+
+**`promptVersions` hâlâ `bullet_rewrite: v1` diyebiliyor koşmamışken** —
+`rewritten.isEmpty()` üzerinden karar veriyor ve About sentezi tuttuğunda liste
+dolu oluyor. Aynı cepheyi istiyor, aynı dilime bırakıldı.
+

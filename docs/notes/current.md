@@ -103,6 +103,7 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 |---|---|
 | A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
 | B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
+| E · Faz D sessizliği | `trace.D` yazılıyor; sıfır artık "koştu ve değiştirmedi" diyor. Eşiklere dokunulmadı — § 21.2 verbatim ve yeniden ayarlamak ölçüm ister |
 | D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
 | C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
 
@@ -114,15 +115,17 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
   giriş jetonu), tek `profile_extract` satırı var.
 - **`cost_usd` her satırda 0.000000** — fiyat tablosu yok, yani **günlük bütçe
   freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
-- **`EMBEDDING_UNAVAILABLE` Faz D'yi sessizce kapatıyor.** Ölçülen koşuda
-  `trace.B.weights = "without-embedding"`, skorlar 0.0-0.061, `RewritePlanner`
-  eşiği 0.40 → `bullet_rewrite` **sıfır çağrı**, yani muhafızlar hiç koşmadı.
+- **`EMBEDDING_UNAVAILABLE` Faz D'yi kapatıyor** (`dev-full` ile bile, üç
+  denemenin üçü de düştü). Artık sessiz değil — `trace.D` sıfır yazıyor — ama
+  **eşikler embedding'siz dağılıma göre ayarlanmadı**: § 21.2 onları verbatim
+  veriyor ve yeniden ayarlamak ölçüm ister.
 - **`local-record` cevabı saklıyor, girdiyi saklamıyor.** Bir çıkarımın
   sadakati ancak kaynak belgeye karşı ölçülebilir; o belge diskte olmadığı için
   `UNSUPPORTED_BY_SOURCE`'un **yanlış pozitif oranı ölçülemedi**. Bir sonraki
   `make record` kaynak metni de yazmalı.
-- **`trace.D` yazılmıyor**, ve `promptVersions` koşmayan `bullet_rewrite`'ı
-  koşmuş gösteriyor.
+- **§ 14.6'nın `rejectReasons`'ı hâlâ yok** ve `promptVersions` koşmayan
+  `bullet_rewrite`'ı koşmuş gösterebiliyor. İkisi de `RewrittenContent`'in
+  yalnız kabul edilenleri taşımasından; `ContentRewriter` cephesini istiyor.
 
 ---
 
