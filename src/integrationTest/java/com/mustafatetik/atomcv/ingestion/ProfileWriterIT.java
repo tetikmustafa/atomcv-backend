@@ -227,6 +227,35 @@ class ProfileWriterIT extends AbstractIntegrationTest {
 
     // -- fixtures ----------------------------------------------------------
 
+    /**
+     * Bolum 20.2, constraint 4. The column defaults {@code min_atoms} to two,
+     * and an import that leaves it there writes a floor that a one-bullet entry
+     * can never reach — a language, a degree, a Tech Stack category. Faz C then
+     * drops the entry whole, and a real profile lost three whole sections to a
+     * number nobody chose.
+     *
+     * <p>The unreachable minimum stays reachable through the API on purpose: a
+     * user asking for two bullets an entry does not have is asking for it to be
+     * dropped. This is only about the importer not deciding that for them.
+     */
+    @Test
+    void anImportedEntryAsksOnlyForBulletsItActuallyHas() {
+        var profile = writer.write(user, cv(), false);
+
+        assertThat(minAtomsOf(profile.getId(), "Diller"))
+                .as("one bullet, so one is the most it can ask for")
+                .isEqualTo((short) 1);
+        assertThat(minAtomsOf(profile.getId(), "Data Engineer"))
+                .as("two bullets, so the default still applies")
+                .isEqualTo((short) 2);
+    }
+
+    private Short minAtomsOf(UUID profileId, String entryTitle) {
+        return jdbc.queryForObject(
+                "SELECT min_atoms FROM entries WHERE profile_id = ? AND title = ?",
+                Short.class, profileId, entryTitle);
+    }
+
     private int count(String table, UUID profileId) {
         Integer rows = jdbc.queryForObject(
                 "SELECT count(*) FROM " + table + " WHERE profile_id = ?",

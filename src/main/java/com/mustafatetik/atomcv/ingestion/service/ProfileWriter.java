@@ -125,6 +125,26 @@ public class ProfileWriter {
         }
     }
 
+    /**
+     * The floor an imported entry can actually reach (Bolum 20.2, constraint 4).
+     *
+     * <p>{@code min_atoms} says how much of an entry is worth printing, and its
+     * column default is two. An import that leaves the default in place writes
+     * that claim over entries extraction gave one bullet — a language, a degree,
+     * a Tech Stack category — and for those the rule stops meaning "show at
+     * least this much" and starts meaning "never show this at all". Faz C then
+     * drops them whole, and a real profile lost its Tech Stack, Languages and
+     * Education sections to a default nobody chose.
+     *
+     * <p>The unreachable minimum stays available deliberately: a user who edits
+     * an entry to ask for two bullets it does not have is asking for it to be
+     * dropped, and {@code SelectionPhase} still obeys that. This only stops the
+     * importer from making that choice on the user's behalf.
+     */
+    private static short reachableMinimumFor(int atomCount) {
+        return (short) Math.min(Entry.DEFAULT_MIN_ATOMS, atomCount);
+    }
+
     private void writeEntry(Target target, Section section,
             NormalizedProfile.NormalizedEntry normalized, SectionKind kind) {
         Entry entry = new Entry(target.profileId(), section.getId(),
@@ -133,6 +153,7 @@ public class ProfileWriter {
         entry.setLocation(blankToNull(normalized.location()));
         entry.setStartDate(firstOfMonth(normalized.start()));
         entry.setEndDate(firstOfMonth(normalized.end()));
+        entry.setMinAtoms(reachableMinimumFor(normalized.atoms().size()));
         entries.save(target.ref(), entry);
 
         for (var atom : normalized.atoms()) {

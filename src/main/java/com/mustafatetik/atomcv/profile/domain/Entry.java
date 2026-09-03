@@ -69,11 +69,19 @@ public class Entry implements ProfileOwned {
     private boolean verbatim;
 
     /**
+     * What an entry asks for when nobody says otherwise, and what the column
+     * defaults to. An importer writing this over an entry that owns fewer
+     * atoms is asking for that entry to be dropped, which is why the ingestion
+     * side clamps it rather than taking it as given.
+     */
+    public static final short DEFAULT_MIN_ATOMS = 2;
+
+    /**
      * Below this many atoms the entry is not worth printing at all: selection
      * either keeps this many or drops the entry whole (Bolum 20).
      */
     @Column(nullable = false)
-    private short minAtoms = 2;
+    private short minAtoms = DEFAULT_MIN_ATOMS;
 
     /**
      * Measured height of the entry's own furniture in points, keyed by

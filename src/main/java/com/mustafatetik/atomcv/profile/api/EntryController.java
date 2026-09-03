@@ -99,7 +99,7 @@ public class EntryController {
                 request.importance() == null ? 0.5f : request.importance(),
                 Boolean.TRUE.equals(request.alwaysInclude()),
                 Boolean.TRUE.equals(request.verbatim()),
-                request.minAtoms() == null ? (short) 2 : request.minAtoms()));
+                request.minAtoms() == null ? Entry.DEFAULT_MIN_ATOMS : request.minAtoms()));
 
         return ResponseEntity.status(201)
                 .eTag(EntityTags.of(created.getVersion()))
