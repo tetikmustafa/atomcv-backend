@@ -193,9 +193,12 @@ public class GenerationJobHandler implements JobHandler {
     /**
      * Bolum 14.6, with the phases that are instrumented.
      *
-     * <p>A, D and E are absent rather than guessed at: nothing times them
-     * today, and a trace carrying a zero would read as "instant" instead of as
-     * "unmeasured". They arrive when the phases are instrumented.
+     * <p>A and E are absent rather than guessed at: nothing times them today,
+     * and a trace carrying a zero would read as "instant" instead of as
+     * "unmeasured". They arrive when the phases are instrumented. D carries
+     * only its count for now — {@code RewrittenContent} keeps the accepted
+     * rewrites and not the refused ones, so Bolum 14.6's {@code rejectReasons}
+     * needs a tally threaded out of the rewrite services first.
      *
      * <p>C carries its budget, which Bolum 14.6 does not ask for. It is here
      * because the abridged version could not answer the one question it gets
@@ -217,6 +220,13 @@ public class GenerationJobHandler implements JobHandler {
         phaseC.put("pinnedCostPt", pinnedCostPt(selection));
         phaseC.put("budget", budget(selection.budget()));
 
+        // Faz D. Absent in general mode, where there is no posting to write
+        // towards and nothing was meant to happen; present and zero is the
+        // phase having run and changed nothing, which is what a scoring run
+        // without embeddings produces and what no record used to show.
+        Map<String, Object> phaseD = new LinkedHashMap<>();
+        phaseD.put("rewritten", generated.document().rewrittenAtoms());
+
         Map<String, Object> phaseF = new LinkedHashMap<>();
         phaseF.put("pageCount", generated.document().pageCount());
         phaseF.put("attempts", generated.document().attempts());
@@ -225,6 +235,7 @@ public class GenerationJobHandler implements JobHandler {
         Map<String, Object> trace = new LinkedHashMap<>();
         trace.put("B", phaseB);
         trace.put("C", phaseC);
+        trace.put("D", phaseD);
         trace.put("F", phaseF);
         return trace;
     }

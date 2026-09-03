@@ -19,6 +19,11 @@ import com.mustafatetik.atomcv.rendering.model.RenderRequest;
  * @param attempts   how many compilations it took; more than one means the
  *                   measurement was optimistic and the budget had to shrink
  * @param budgetFactor the share of the page the last attempt allowed itself
+ * @param rewrittenAtoms how many atoms Faz D actually replaced. Zero is a real
+ *                   answer and not a missing one — general mode has no posting
+ *                   to write towards — but zero <em>with</em> a posting is the
+ *                   phase having quietly done nothing, which is how a scoring
+ *                   run without embeddings looks from the outside
  */
 public record GeneratedDocument(
         byte[] pdf,
@@ -26,7 +31,8 @@ public record GeneratedDocument(
         SelectionState selection,
         RenderRequest rendered,
         int attempts,
-        double budgetFactor) {
+        double budgetFactor,
+        int rewrittenAtoms) {
 
     /** Shape only: the document is the user's own content. */
     @Override
