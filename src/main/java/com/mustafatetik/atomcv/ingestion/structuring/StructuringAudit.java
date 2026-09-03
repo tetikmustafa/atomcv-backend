@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.ingestion.structuring;
 
+import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,8 +32,29 @@ final class StructuringAudit {
      * characters is about four lines of a rendered CV — past anything that
      * survives Bolum 20's page budget, and far past anything a person writes
      * in one bullet.
+     *
+     * <p>Measured against every recorded extraction: the longest bullet any
+     * real CV has produced here is 219 characters, so this keeps most of a
+     * threefold margin.
      */
     private static final int MAX_ATOM_TEXT = 600;
+
+    /**
+     * An About paragraph is not a bullet, and the reasoning above does not
+     * transfer to it.
+     *
+     * <p>It cost a silent failure to find out. A four-page CV extracted
+     * cleanly into 84 atoms and every one of them was thrown away because a
+     * professional summary came to 607 characters — seven over a ceiling
+     * argued from what "a person writes in one bullet". The three next longest
+     * fields in that profile were 541, 519 and 506, and all four were About:
+     * this was a systematic near-miss on real writing, not a freak.
+     *
+     * <p>Fifteen hundred is about 250 words, or twenty rendered lines. It
+     * keeps the original test — a value that could not be a CV field at all —
+     * for a field whose shape is a paragraph rather than a line.
+     */
+    private static final int MAX_ABOUT_TEXT = 1500;
 
     /** Bolum 43.1 uses sixty for a skill name against a posting; a CV is no different. */
     private static final int MAX_SKILL = 60;
@@ -55,7 +77,7 @@ final class StructuringAudit {
                 return Optional.of("section.title");
             }
             for (var entry : section.entries()) {
-                Optional<String> onEntry = abnormalEntryField(entry);
+                Optional<String> onEntry = abnormalEntryField(entry, section.kind());
                 if (onEntry.isPresent()) {
                     return onEntry;
                 }
@@ -64,18 +86,20 @@ final class StructuringAudit {
         return Optional.empty();
     }
 
-    private static Optional<String> abnormalEntryField(ExtractedProfile.ExtractedEntry entry) {
+    private static Optional<String> abnormalEntryField(
+            ExtractedProfile.ExtractedEntry entry, SectionKind kind) {
         if (tooLong(entry.title(), MAX_LABEL)) {
             return Optional.of("entry.title");
         }
         if (tooLong(entry.organization(), MAX_LABEL)) {
             return Optional.of("entry.organization");
         }
+        int maxText = maxTextFor(kind);
         for (var atom : entry.atoms()) {
-            if (tooLong(atom.textSource(), MAX_ATOM_TEXT)) {
+            if (tooLong(atom.textSource(), maxText)) {
                 return Optional.of("atom.textSource");
             }
-            if (tooLong(atom.textEn(), MAX_ATOM_TEXT)) {
+            if (tooLong(atom.textEn(), maxText)) {
                 return Optional.of("atom.textEn");
             }
             if (anyTooLong(atom.skills(), MAX_SKILL)) {
@@ -86,6 +110,11 @@ final class StructuringAudit {
             }
         }
         return Optional.empty();
+    }
+
+    /** A paragraph gets a paragraph's ceiling; everything else is a line. */
+    private static int maxTextFor(SectionKind kind) {
+        return kind == SectionKind.ABOUT ? MAX_ABOUT_TEXT : MAX_ATOM_TEXT;
     }
 
     private static boolean tooLong(String value, int limit) {
