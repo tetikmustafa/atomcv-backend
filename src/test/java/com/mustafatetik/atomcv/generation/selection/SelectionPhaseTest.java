@@ -317,6 +317,62 @@ class SelectionPhaseTest {
                 .isEqualTo(CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK));
     }
 
+    // ── what a dropped entry gives back ───────────────────────────────────
+
+    /**
+     * Bolum 20.3. An entry that cannot reach its minimum leaves the page and
+     * refunds everything it was charged, and that budget has to be offered to
+     * somebody else.
+     *
+     * <p>Measured on a real run before this was true: 133 pt of a 352 pt free
+     * budget sat unclaimed while ten atoms carried {@code BUDGET}. The greedy
+     * pass had already finished when the drop happened and never came back, and
+     * the swap pass skips any candidate that would simply fit.
+     */
+    @Test
+    void theSpaceAnEntryGivesBackIsOfferedToTheNextOne() {
+        double expensivePt = 60.0;
+        // The first entry is the better one and is taken first, but its third
+        // bullet does not fit, so the whole entry goes. The second is what the
+        // freed budget should reach.
+        var request = new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(entry(3, 3, 0.9, expensivePt),
+                                entry(1, 4, 0.5, expensivePt)),
+                        List.of())),
+                1, smallCapacity());
+
+        var state = SelectionPhase.select(request).orElseThrow();
+
+        assertThat(state.selected()).as("the second entry reached the page").isNotEmpty();
+        assertThat(state.budget().remainingPt())
+                .as("a page that still has room for a bullet is not finished")
+                .isLessThan(expensivePt);
+    }
+
+    /**
+     * A section heading is charged for the content under it and has to be
+     * refunded when the last of it leaves. Until it was, a real run paid for
+     * five headings and printed four.
+     */
+    @Test
+    void aSectionThatEmptiesStopsPayingForItsHeading() {
+        // One section, one entry, and a minimum it can never reach: everything
+        // under the heading leaves and the heading has to leave with it.
+        var request = new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(entry(3, 2, 0.9)),
+                        List.of())),
+                1, smallCapacity());
+
+        var state = SelectionPhase.select(request).orElseThrow();
+
+        assertThat(state.selected()).isEmpty();
+        assertThat(state.budget().fixedPt())
+                .as("only the page's own header is still charged")
+                .isEqualTo(CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK));
+    }
+
     // ── fixtures ──────────────────────────────────────────────────────────
 
     private static Result<SelectionState> select(SelectionRequest request) {
@@ -351,11 +407,15 @@ class SelectionPhaseTest {
     }
 
     private static EntryPlan entry(int minAtoms, int atomCount, double score) {
+        return entry(minAtoms, atomCount, score, BULLET_PT);
+    }
+
+    private static EntryPlan entry(int minAtoms, int atomCount, double score, double costPt) {
         UUID entryId = UUID.randomUUID();
         var atoms = new ArrayList<AtomCandidate>();
         for (int index = 0; index < atomCount; index++) {
             atoms.add(new AtomCandidate(UUID.randomUUID(), UUID.randomUUID(), entryId,
-                    score, BULLET_PT, false, true));
+                    score, costPt, false, true));
         }
         return new EntryPlan(entryId, (short) minAtoms, atoms);
     }

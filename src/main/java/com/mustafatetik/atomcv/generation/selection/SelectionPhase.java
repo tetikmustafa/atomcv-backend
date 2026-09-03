@@ -86,6 +86,18 @@ public final class SelectionPhase {
         /** What each open entry's heading and list were charged when opened. */
         private final Map<UUID, Double> entryFurniturePt = new HashMap<>();
 
+        /** What each open section's heading was charged, for the refund when it empties. */
+        private final Map<UUID, Double> sectionHeaderPt = new HashMap<>();
+
+        /** What each open section's own list was charged, on the same terms. */
+        private final Map<UUID, Double> sectionListPt = new HashMap<>();
+
+        /** Section-level atoms — the ones under no entry — currently on the page. */
+        private final Map<UUID, Integer> takenFromSection = new HashMap<>();
+
+        /** Which entry a section's list pushed down, so that closing it can put it back. */
+        private final Map<UUID, UUID> upgradedByList = new HashMap<>();
+
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
@@ -123,9 +135,12 @@ public final class SelectionPhase {
                 return mandatory.map(ignored -> null);
             }
 
-            fillGreedily();
-            enforceEntryMinimums();
+            fillUntilStable();
             improveBySwapping();
+            // A swap that falls through hands back more than it takes, and one
+            // that lands can open an entry short of its minimum. Either way the
+            // page is not finished until filling and the minimum agree.
+            fillUntilStable();
             rejectWhatIsLeft();
 
             // The heading candidates leave by their own door. They travel
@@ -222,10 +237,35 @@ public final class SelectionPhase {
         }
 
         /**
+         * Fill, and keep filling for as long as an entry leaves the page.
+         *
+         * <p>{@link #enforceEntryMinimums()} refunds everything a dropped entry
+         * was charged, and until this loop existed nothing ever offered that
+         * space to anyone else — the greedy pass had already run and does not
+         * come back on its own. A measured run finished with 133 pt of a 352 pt
+         * free budget unclaimed while ten atoms sat in the pool marked
+         * {@code BUDGET}: a reason that was true when it was written and false
+         * by the time the run ended.
+         *
+         * <p>Terminates. A drop takes its entry off the page and its atoms out
+         * of the pool for good, so every further round has one fewer entry left
+         * to drop.
+         */
+        private void fillUntilStable() {
+            do {
+                fillGreedily();
+            } while (enforceEntryMinimums());
+        }
+
+        /**
          * Constraint (4): an entry shows its minimum or none of itself. Half an
          * entry reads as a mistake rather than as an edit.
+         *
+         * @return whether an entry left the page, which is the only outcome
+         *         here that frees budget somebody else could use
          */
-        private void enforceEntryMinimums() {
+        private boolean enforceEntryMinimums() {
+            boolean dropped = false;
             for (UUID entryId : List.copyOf(openEntries)) {
                 if (headerOnly.contains(entryId)) {
                     // The minimum is a statement about bullets, and this entry
@@ -237,9 +277,10 @@ public final class SelectionPhase {
 
                 EntryPlan entry = entries.get(entryId);
                 if (takenFromEntry.getOrDefault(entryId, 0) < entry.minAtoms()) {
-                    dropEntry(entryId);
+                    dropped |= dropEntry(entryId);
                 }
             }
+            return dropped;
         }
 
         /**
@@ -275,6 +316,14 @@ public final class SelectionPhase {
             }
         }
 
+        /**
+         * Everything still in the pool was offered the page and did not fit.
+         *
+         * <p>{@code BUDGET} is only honest because {@link #fillUntilStable()}
+         * ran last: an atom that would have fitted has already been taken, and
+         * one whose entry went is already rejected with its own reason. Move
+         * this above the filling and the label goes back to being a guess.
+         */
         private void rejectWhatIsLeft() {
             for (AtomCandidate atom : pool.values()) {
                 if (atom.headerOnly()) {
@@ -376,12 +425,20 @@ public final class SelectionPhase {
             }
 
             if (sectionId != null) {
-                openSections.add(sectionId);
+                if (openSections.add(sectionId)) {
+                    // Recorded, not just flagged: it has to be given back by
+                    // the same amount when the last thing under it leaves.
+                    sectionHeaderPt.put(sectionId,
+                            capacity.fixedCost(CapacityModel.SECTION_HEADER));
+                }
                 if (atom.entryId() == null) {
+                    takenFromSection.merge(sectionId, 1, Integer::sum);
                     // The renderer prints a section's own atoms above its
                     // entries, so a list opening here pushes the section's
                     // first entry down into the more expensive position.
                     if (openSectionLists.add(sectionId)) {
+                        sectionListPt.put(sectionId,
+                                capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
                         structurePt += upgradeFirstEntryOf(sectionId);
                     }
                 }
@@ -415,6 +472,7 @@ public final class SelectionPhase {
                         // opened by its heading alone never paid for a list.
                         && charged < ceilingFor(entryId)) {
                     entryFurniturePt.merge(entryId, difference, Double::sum);
+                    upgradedByList.put(sectionId, entryId);
                     return difference;
                 }
             }
@@ -434,6 +492,8 @@ public final class SelectionPhase {
             selected.remove(atom.atomId());
             contentPt -= atom.renderCostPt();
             AtomCandidate original = originalOf(atom);
+            UUID sectionId = sectionOfAtom.get(original.atomId());
+
             if (original.entryId() != null) {
                 int left = takenFromEntry.merge(original.entryId(), -1, Integer::sum);
                 if (left == 0) {
@@ -443,8 +503,60 @@ public final class SelectionPhase {
                     structurePt -= entryFurniturePt.remove(original.entryId());
                     headerOnly.remove(original.entryId());
                 }
+            } else if (sectionId != null) {
+                int left = takenFromSection.merge(sectionId, -1, Integer::sum);
+                if (left == 0 && openSectionLists.remove(sectionId)) {
+                    structurePt -= sectionListPt.remove(sectionId);
+                    structurePt -= downgradeFirstEntryOf(sectionId);
+                }
             }
+            closeSectionIfEmpty(sectionId);
             pool.put(original.atomId(), original);
+        }
+
+        /**
+         * A section heading is printed for the content under it, so it is
+         * charged when the first atom arrives and has to be handed back when
+         * the last one leaves.
+         *
+         * <p>Until this existed a dropped entry refunded its own furniture and
+         * left the heading behind. A measured run paid for five section
+         * headings and printed four, and those twenty-four points went missing
+         * from a page that was already under-filled — invisibly, because the
+         * budget still balanced against a structure figure that was wrong.
+         */
+        private void closeSectionIfEmpty(UUID sectionId) {
+            if (sectionId == null || !openSections.contains(sectionId)
+                    || openSectionLists.contains(sectionId)) {
+                return;
+            }
+            boolean stillHasEntry = openEntries.stream()
+                    .anyMatch(entryId -> sectionId.equals(sectionOfEntry.get(entryId)));
+            if (stillHasEntry) {
+                return;
+            }
+            openSections.remove(sectionId);
+            structurePt -= sectionHeaderPt.remove(sectionId);
+        }
+
+        /**
+         * Puts back what {@link #upgradeFirstEntryOf} moved, once the list that
+         * pushed it down has closed.
+         *
+         * <p>Approximate in the same direction the upgrade is: it moves the one
+         * entry that was charged, and if that entry has already left the page
+         * it refunds nothing, because the removal refunded the upgraded figure
+         * whole.
+         */
+        private double downgradeFirstEntryOf(UUID sectionId) {
+            UUID entryId = upgradedByList.remove(sectionId);
+            if (entryId == null || !entryFurniturePt.containsKey(entryId)) {
+                return 0.0;
+            }
+            double difference = capacity.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST)
+                    - capacity.fixedCost(CapacityModel.ENTRY_HEADER);
+            entryFurniturePt.merge(entryId, -difference, Double::sum);
+            return difference;
         }
 
         private void topUpToMinimum(UUID entryId, boolean forced) {
@@ -465,8 +577,14 @@ public final class SelectionPhase {
             }
         }
 
-        /** Takes an entry off the page whole, and gives its space back. */
-        private void dropEntry(UUID entryId) {
+        /**
+         * Takes an entry off the page whole, and gives its space back.
+         *
+         * @return whether it went. A locked entry stays, and the caller has to
+         *         know that nothing was freed or it would loop forever waiting
+         *         for a page that never changes.
+         */
+        private boolean dropEntry(UUID entryId) {
             for (AtomCandidate atom : entries.get(entryId).atoms()) {
                 SelectedAtom chosen = selected.get(atom.atomId());
                 if (chosen == null) {
@@ -475,7 +593,7 @@ public final class SelectionPhase {
                 if (chosen.forcedByLock()) {
                     // A locked atom keeps its entry alive whatever the minimum
                     // says: the user asked for it by name.
-                    return;
+                    return false;
                 }
             }
             for (AtomCandidate atom : entries.get(entryId).atoms()) {
@@ -487,6 +605,8 @@ public final class SelectionPhase {
                 }
             }
             openEntries.remove(entryId);
+            closeSectionIfEmpty(sectionOfEntry.get(entryId));
+            return true;
         }
 
         private SelectedAtom weakestRemovable(double neededPt, double betterThan) {
