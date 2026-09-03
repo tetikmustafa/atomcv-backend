@@ -196,6 +196,13 @@ public class GenerationJobHandler implements JobHandler {
      * <p>A, D and E are absent rather than guessed at: nothing times them
      * today, and a trace carrying a zero would read as "instant" instead of as
      * "unmeasured". They arrive when the phases are instrumented.
+     *
+     * <p>C carries its budget, which Bolum 14.6 does not ask for. It is here
+     * because the abridged version could not answer the one question it gets
+     * asked: a page that came out under-filled recorded {@code "rejected": 13}
+     * and nothing about how much room those thirteen were turned away from, so
+     * telling a selection bug from a budget bug meant reading
+     * {@code selection_state} out of the database by hand.
      */
     private static Map<String, Object> trace(GeneratedGeneration generated) {
         SelectionState selection = generated.document().selection();
@@ -206,7 +213,9 @@ public class GenerationJobHandler implements JobHandler {
         Map<String, Object> phaseC = new LinkedHashMap<>();
         phaseC.put("selected", selection.selected().size());
         phaseC.put("rejected", selection.rejected().size());
-        phaseC.put("usedPt", selection.budget().usedPt());
+        phaseC.put("rejectionReasons", rejectionReasons(selection));
+        phaseC.put("pinnedCostPt", pinnedCostPt(selection));
+        phaseC.put("budget", budget(selection.budget()));
 
         Map<String, Object> phaseF = new LinkedHashMap<>();
         phaseF.put("pageCount", generated.document().pageCount());
@@ -218,6 +227,45 @@ public class GenerationJobHandler implements JobHandler {
         trace.put("C", phaseC);
         trace.put("F", phaseF);
         return trace;
+    }
+
+    /**
+     * How many atoms each reason turned away.
+     *
+     * <p>Walked in the enum's own order, not the rejections': a map built from
+     * whatever order the list happened to be in reaches a JSONB column
+     * differently on two runs of the same input, and Faz C is supposed to be
+     * the part of this that never varies.
+     */
+    private static Map<String, Integer> rejectionReasons(SelectionState selection) {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (SelectionState.RejectionReason reason : SelectionState.RejectionReason.values()) {
+            long tally = selection.rejected().stream()
+                    .filter(atom -> atom.reason() == reason)
+                    .count();
+            if (tally > 0) {
+                counts.put(reason.name(), (int) tally);
+            }
+        }
+        return counts;
+    }
+
+    /** What the locks alone came to, before anything competed for the rest. */
+    private static double pinnedCostPt(SelectionState selection) {
+        return selection.selected().stream()
+                .filter(SelectionState.SelectedAtom::forcedByLock)
+                .mapToDouble(SelectionState.SelectedAtom::renderCostPt)
+                .sum();
+    }
+
+    private static Map<String, Object> budget(SelectionState.BudgetBreakdown breakdown) {
+        Map<String, Object> budget = new LinkedHashMap<>();
+        budget.put("totalPt", breakdown.totalPt());
+        budget.put("fixedPt", breakdown.fixedPt());
+        budget.put("freePt", breakdown.freePt());
+        budget.put("usedPt", breakdown.usedPt());
+        budget.put("remainingPt", breakdown.remainingPt());
+        return budget;
     }
 
     /**
