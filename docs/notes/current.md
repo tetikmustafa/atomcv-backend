@@ -18,6 +18,8 @@
 - **`llm_invocations.user_id` NULL.** Zincir `UserContext` tutan fazlardan
   çağrılıyor ama kullanıcıyı aşağı geçirmiyor. Günlük toplam (bütçe freni)
   bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
+- **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
+  demeli (§ 9), sahibi frontend.
 - **§ 44.3'ün sıkılaştıracağı limiter hâlâ yok** — 3.3 dilim 4'ün
   `RateLimiter`'ı genel ama **girişe** bağlı; § 44.3 ağır kullanıcının
   **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
@@ -29,31 +31,19 @@
 | ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı: PDFBox 3.4 dilim 1'de geldi. `FitReport` `F-008`'de indi — kalan yarısı üretilen PDF'i geri okumak |
 | `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
-## Aşama 3'e taşınanlar
-
-- **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
-  demeli (§ 9), sahibi frontend.
-
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
-Aşama 0-3 baştan tarandı, on üç karar alındı ve uygulandı. **Tam kayıt
-`kapanis-denetimi.md`'de**: her bulgu, her kararın gerekçesi, ve geliştiriciye
-düşenler. Buradaki kural gereği burada yalnız *hâlâ canlı olan* duruyor.
-
-**Kalıcı olanlar `spec/`'e işlendi ve buradan silindi** (kural gereği): § 47,
-§ 57.4, § 3.2, § 51.7, ve atomsuz entry'nin § 20.2'si. Gerekçeleri
-`kapanis-denetimi.md`'de.
-
-**Hâlâ canlı olan iki kayıt:**
+**Tam kayıt `kapanis-denetimi.md`'de**; kalıcı olanlar `spec/`'e işlendi
+(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). Hâlâ canlı ikisi:
 
 - **Sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor** — o liste
   kullanıcıya atom atom gösteriliyor ve hiçbir atoma çözülmeyen bir entry
   id'si sessizlikten kötü. Golden'daki "her atom ya seçilir ya bir sebep alır"
   sayımının başlık-adaylarını dışlamasının sebebi bu.
-- **`SelectionPhase.openEntries` `LinkedHashSet` olmak zorunda.** `HashSet`
-  iken `upgradeFirstEntryOf` "ilk ulaştığını" ücretlendiriyordu ve iterasyon
-  JVM başına tuzlandığı için bir kaldırmanın iadesi koşudan koşuya
-  değişiyordu. **İterasyon sırası bir sayıya dönüşüyorsa `Linked*` gerekiyor.**
+- **`SelectionPhase.openEntries` `LinkedHashSet` olmak zorunda.** `HashSet` iken
+  `upgradeFirstEntryOf` "ilk ulaştığını" ücretlendiriyor ve iterasyon JVM başına
+  tuzlandığı için bir kaldırmanın iadesi koşudan koşuya değişiyordu.
+  **İterasyon sırası bir sayıya dönüşüyorsa `Linked*` gerekiyor.**
 
 **Geliştiricide:** yeni model seçilince fiyat tablosu — **o güne kadar günlük
 bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
@@ -61,11 +51,8 @@ sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
-Kayıtları `archive/stage-3-handoff-answers.md`'de; kalıcı kararlar EK D.6,
-EK D.6.1, EK D.6.9, `spec/07-subsystems.md` § 31.6.4-5, `spec/08-api.md`
-§ 35.3, `spec/11-operations.md` § 48.4.2 ve `spec/16-cost-legal.md` § 57.6'da.
-Frontend aksiyonları `B-062`-`B-070`, dokuzu da kapandı. Burada yalnız
-**canlı** olanlar:
+Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları orada
+adlandırılan spec bölümlerinde. Burada yalnız **canlı** olanlar:
 
 **Tamir etmeye kalkma — üçü de bilinçli:**
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
@@ -82,51 +69,66 @@ Frontend aksiyonları `B-062`-`B-070`, dokuzu da kapandı. Burada yalnız
 **`shared.wire` yeni bir paket, ve bir sonraki kapalı sözlüğün yeri.** İki
 modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` retlerin.
 
-**Ders — bir alanı yayımlamak, onu ilk kez okumaktır.** Frontend uyarıların
-*yerini* istedi; yayımlamaya kalkınca yerin iki ayrı biçimde **yanlış** olduğu
-çıktı. Dilim 9'un `Retry-After`'ının tam tersi: orada iddia doğruydu ve kanıtı
-yoktu, burada alan vardı ve yanlıştı.
-
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
-Kalıcı kararlar `spec/05-pipeline-a-c.md` § 18.4.1 (`F-025`) ve
-`spec/07-subsystems.md` § 34.4.2 (`F-026`)'de; `F-027`'nin gerekçesi
-`SessionCurrentUser.pointsAtALiveAccount`'un javadoc'unda. Burada yalnız
-**canlı** olanlar:
-
-**Sapma — `DELETE /account` iki kez basılınca ikincisi `204` değil `401`.**
-Uç hâlâ idempotent (§ 57.4); değişen, ikinci basışın uca *ulaşamaması*. Telde
-zaten böyleydi — ilk yanıt çerezi siliyor — eski `204`'ü üreten dev stub'ıydı.
-
-**Ekleme — `revokeAllFor` yutmuyor, fırlatıyor.** Redis hatası `warn` + `0`
-dönüyordu, ki "hiç oturumu yoktu"dan ayırt edilemez, ve hesap o cevabın
-üstüne siliniyordu. Oturumları silinemeyen hesap artık silinmiyor.
+Tam kayıt `archive/stage-3-slice-14.md`'de; kalıcı kararlar
+`spec/05-pipeline-a-c.md` § 18.4.1 ve `spec/07-subsystems.md` § 34.4.2'de.
+Burada yalnız **canlı** olanlar:
 
 **Tamir etmeye kalkma:**
-- **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş** —
-  içlerinde `synthetic-631` geçiyor. Ölçüm diye okunmasınlar; gerçek olan iki
-  tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
-- **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2'nin son
-  paragrafı). Ölçülmüş, bilerek kapatılmadı.
-- **Prompt'lar `job_analysis` ve `cover_letter` için hâlâ eski cümleyi
-  taşıyor.** İkisi de `v2` bekliyor, ve `v2` model seçimini bekliyor.
-
-**Ders — bir sınıf yıktığını geri koymuyorsa, onu ayakta tutan şey sıradır.**
-`AccountDeletionIT` acting user'ı siliyor ve suite tek bağlam paylaşıyor;
-`SecondImportIT` üç sınıf sonra `409`'unu **silinmiş bir kullanıcıdan**
-alıyordu — yani o sınıf tam da `F-027`'nin kusuru sayesinde geçiyormuş, ve
-`401` inince ortaya çıktı. `@AfterEach` artık geri koyuyor.
+- **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş**
+  (`synthetic-631`); gerçek olan iki tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
+- **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
+- **`job_analysis` ve `cover_letter` prompt'ları eski cümleyi taşıyor** — ikisi
+  de `v2` bekliyor, `v2` model seçimini bekliyor.
 
 **Geçici — `build.gradle.kts`'te iki BOM geçersizleştirmesi var.**
 `postgresql.version` 42.7.12 ve `netty.version` 4.1.136.Final; ikisi de
-Trivy'nin `main`'de Deploy'u düşürdüğü HIGH CVE'ler için, ve ikisi de Spring
-Boot'un BOM'u yetişince **kaldırılmalı**. Gerekçesini aşan bir pin, kütüphaneyi
-sessizce geride tutar — aynı kusurun ters yönü.
+Trivy'nin düşürdüğü HIGH CVE'ler için, ve Boot'un BOM'u yetişince
+**kaldırılmalı**.
 
 **Ders — reddedilen bir cevap da kaydediliyor, ve ölçüm orada duruyor.**
 `F-026`'nın dört taslağını yeniden üretmek gerekmedi: `local-record` onları
 diske yazmıştı. Bir muhafızın yanlış pozitifini aramanın en ucuz yeri
 `fixtures/llm/`.
+
+## Aşama 4 · uçtan uca ölçüm — dilim A: Faz C (2026-09-03)
+
+Dört bulguluk uçtan uca ölçümün ilki. **Bulgular kusurlarla bire bir eşleşmedi**:
+"eksik Tech Stack" render kusuru sanılıyordu, Faz C çıktı.
+
+**Düzeltme — iade edilen bütçe bir daha teklif edilmiyordu.** Düşürülen entry
+yerini iade ediyor ama greedy pass bitmişti; `improveBySwapping` de `needed <= 0`
+ile **sığan** her adayı atlıyor. Ölçümde 352 pt'nin **133'ü boş**, on atom `BUDGET`
+ile reddedilmişti — etiket yazıldığında doğru, koşu bitince yanlış.
+`fillUntilStable()` sabit noktaya döndürüyor, ve **`BUDGET` artık gerçekten
+doğru**: yeni ret kodu gerekmedi, telde değişiklik yok.
+
+**Düzeltme — boşalan section başlığı iade edilmiyordu.** `remove()` yalnız
+`entryFurniturePt`'yi veriyordu; ölçülen koşu **beş** başlık ödeyip **dört** bastı.
+`closeSectionIfEmpty` iade ediyor, `downgradeFirstEntryOf` de liste kapanınca
+`upgradeFirstEntryOf`'un taşıdığını geri koyuyor.
+
+**Düzeltme — `min_atoms`'u import körlemesine 2 yazıyordu.** `ProfileWriter` hiç
+`setMinAtoms` çağırmıyordu; extraction'ın tek madde verdiği her entry (bir dil, bir
+derece, bir Tech Stack kategorisi) ulaşamayacağı bir taban taşıyor ve Faz C onu
+**bütün** düşürüyordu. Gerçek profilde **11 entry** — kaybolan üç bölümün sebebi
+bu; `V5` onarıyor.
+
+**Kıskaç `SelectionPhase`'e konmadı.** Oraya konunca `GoldenSelectionTest` düştü:
+fikstür *bilerek* atom sayısından büyük `min_atoms` taşıyor, çünkü "kısa
+basmaktansa bütün düşür" **kullanıcının** kararı (`EntryPatchRequest`). Kusur
+ulaşılamaz minimum değil, **import'un o kararı kullanıcı adına vermesi**.
+Migration'ın körlemesine uygulanabilmesi de buradan: `minAtoms` frontend'de
+yalnız mock ve üretilmiş tipte geçiyor, hiçbir bileşende değil.
+
+**Ekleme — `trace.C` bütçesini taşıyor** (§ 14.6 istemiyor). Kısaltılmışı
+`"rejected": 13` yazıp ne kadar yerden çevrildiğini yazmıyordu; seçim kusurunu
+bütçeden ayırmak `selection_state`'i elle okumak demekti. `rejectionReasons` ve
+`pinnedCostPt` zaten § 14.6'da isteniyordu.
+
+**Ders — bir muhafız düşürdüğünde önce neyi koruduğuna bak:**
+`GoldenSelectionTest` kıskacın yanlış değil, **yanlış katmanda** olduğunu diyordu.
 
 ---
 
@@ -193,7 +195,6 @@ Frontend aksiyonları: `B-055`-`B-058`.
 
 ## Dilim kayıtları
 
-Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da: ne bulundu, ne
-yazıldı, hangi muhafız hangi ihlalle düşürüldü. Buraya kopyalanmadı — ikinci
-bir kopya ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü
-görmeden yazıldı sayma.* Dilim 14'te yine gerekti.
+Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da; ikinci bir kopya
+ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü görmeden
+yazıldı sayma.* Dilim 14'te ve Aşama 4 dilim A'da yine gerekti.
