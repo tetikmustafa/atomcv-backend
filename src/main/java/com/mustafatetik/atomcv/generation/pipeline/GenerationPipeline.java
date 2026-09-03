@@ -111,7 +111,7 @@ public class GenerationPipeline {
                 reportAts(document.pdf(), renderRequest);
                 return Result.ok(new GeneratedDocument(
                         document.pdf(), document.pageCount(), state, renderRequest,
-                        attempt, factor));
+                        attempt, factor, rewritten.byAtom().size()));
             }
 
             // Bolum 23.1: a rising rate here means the measurement layer is

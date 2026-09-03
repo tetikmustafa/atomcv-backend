@@ -269,7 +269,7 @@ class JobSpecificGenerationServiceTest {
         var rendered = new RenderRequest(
                 new RenderRequest.ProfileHeader("Ada Lovelace", null, List.of()),
                 List.of(), TemplateCustomization.CLASSIC, java.util.Locale.ENGLISH);
-        return new GeneratedDocument(new byte[] {1}, 1, selection, rendered, 1, 1.0);
+        return new GeneratedDocument(new byte[] {1}, 1, selection, rendered, 1, 1.0, 0);
     }
 
     private static JobAnalysis posting() {

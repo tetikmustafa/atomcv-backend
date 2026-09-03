@@ -150,6 +150,11 @@ class GenerationJobHandlerTest {
     /**
      * A zero would read as "instant" rather than as "unmeasured", so the
      * phases nothing times are absent instead.
+     *
+     * <p>D is not one of them. Its count is not a timing, and zero there is a
+     * real answer with a meaning: Faz D ran and replaced nothing. That is how
+     * a run scored without embeddings looks, and while the block was missing
+     * it looked like nothing at all.
      */
     @Test
     void thetraceCarriesOnlyThePhasesThatAreInstrumented() {
@@ -161,7 +166,10 @@ class GenerationJobHandlerTest {
         var saved = ArgumentCaptor.forClass(Generation.class);
         verify(records).save(any(), saved.capture());
         assertThat(saved.getValue().getTrace())
-                .containsOnlyKeys("B", "C", "F");
+                .containsOnlyKeys("B", "C", "D", "F");
+        assertThat(saved.getValue().getTrace()).extracting("D")
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .containsEntry("rewritten", 0);
     }
 
     // ── failure ──────────────────────────────────────────────────────────
@@ -252,7 +260,7 @@ class GenerationJobHandlerTest {
                                         .ProfileHeader("Ada", "", List.of()),
                                 List.of(), TemplateCustomization.CLASSIC,
                                 java.util.Locale.ENGLISH),
-                        1, 1.0));
+                        1, 1.0, 0));
     }
 
     private static JobAnalysis posting() {
