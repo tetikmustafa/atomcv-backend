@@ -70,12 +70,19 @@ public final class AboutSynthesis {
                     continue;
                 }
                 if (isAbout) {
-                    // The first one on the page. A section with two paragraphs
-                    // is a profile nobody has, and rewriting both from the
-                    // same input would print the same paragraph twice.
+                    // The first one is the paragraph that gets rewritten:
+                    // synthesising each of them from the same input would
+                    // print the same paragraph twice.
                     about = about == null ? node : about;
-                    continue;
                 }
+                // Every selected atom feeds the union, About included.
+                // Bolum 21.7 says the input is "seçilmiş atomların skills +
+                // metrics birleşimi" and this skipped the About section's own,
+                // so a paragraph reworded from itself could be refused for
+                // keeping a technology it already named. A profile with four
+                // About paragraphs — which is what real ones have, whatever
+                // the comment here used to claim — lost the other three from
+                // the union entirely.
                 skills.addAll(node.atom().getSkills());
                 metrics.addAll(node.atom().getMetrics());
             }
