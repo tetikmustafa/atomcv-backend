@@ -113,7 +113,7 @@ dependencies {
     // alternatives, executes nothing while doing it (Bolum 42.1) -- no
     // JavaScript, no embedded action. Versions pinned because Spring Boot's
     // BOM manages neither: an unpinned coordinate does not resolve.
-    implementation("org.apache.pdfbox:pdfbox:3.0.5")
+    implementation("org.apache.pdfbox:pdfbox:3.0.8")
     // Likewise for DOCX, and for the same reason: POI's text API reads
     // document parts and never runs a macro.
     implementation("org.apache.poi:poi-ooxml:5.4.1")
