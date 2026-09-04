@@ -52,8 +52,25 @@ public record CapacityModel(
      */
     public static final String ENTRY_HEADER_AFTER_LIST = "entryHeaderAfterList";
 
-    /** What a bullet list costs before its first bullet. */
+    /** What a bullet list costs before its first bullet, under an entry heading. */
     public static final String ITEMIZE_OVERHEAD = "itemizeOverhead";
+
+    /**
+     * The same list where it opens directly under a section heading, with no
+     * entry between them — a skills matrix, a list of languages.
+     *
+     * <p>Five points less, and for the reason {@link #ENTRY_HEADER_AFTER_LIST}
+     * exists: TeX adds the space above a list with {@code \addvspace}, which
+     * takes the larger of what is asked and what is already there rather than
+     * the sum. A section heading has just left its own space behind, so the
+     * list adds almost nothing; an entry heading has ended a paragraph, and the
+     * paragraph skip is still to be paid.
+     *
+     * <p>Measured, not reasoned: with one number for both, a real profile's
+     * skills section was charged 66.6pt for something the compiler put on the
+     * page in 57.4, and the page came out short by most of a bullet.
+     */
+    public static final String SECTION_LIST_OVERHEAD = "sectionListOverhead";
 
     /** One bullet, at one line. Longer bullets are measured, not assumed. */
     public static final String ITEM_LINE = "itemLine";

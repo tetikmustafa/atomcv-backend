@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.mustafatetik.atomcv.profile.domain.content.Mark;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
@@ -98,9 +99,25 @@ class LatexDocumentRendererTest {
         String document = renderer.renderFinal(request(TemplateCustomization.CLASSIC)).value();
 
         assertThat(document)
-                .contains("\\item Built \\textbf{ETL} pipelines processing \\textbf{300K+ rows}")
+                .contains("\\resumeItem{Built \\textbf{ETL} pipelines "
+                        + "processing \\textbf{300K+ rows}}")
                 .contains("\\section*{Experience}")
-                .contains("\\atomcvEntry{Backend Engineer}{Acme}{İstanbul}{2023-03 – present}");
+                // The title, the dates on the right of the first line, and the
+                // employer with its place underneath (Bolum 22).
+                .contains("\\resumeSubheading{Backend Engineer}{2023-03 – present}"
+                        + "{Acme}{İstanbul}");
+    }
+
+    /** A contact field says what it is, and links where it can. */
+    @Test
+    void contactLinesAreLabelledAndLinked() {
+        String document = renderer.renderFinal(request(TemplateCustomization.CLASSIC)).value();
+
+        assertThat(document)
+                .contains("\\textbf{Email:} \\href{mailto:mustafa@example.com}"
+                        + "{\\underline{mustafa@example.com}}")
+                .as("a city is not a link")
+                .contains("\\textbf{Location:} İstanbul");
     }
 
     @Test
@@ -147,9 +164,13 @@ class LatexDocumentRendererTest {
                 new RenderRequest.ProfileHeader(
                         "Mustafa Tetik",
                         "Backend Engineer",
-                        List.of("mustafa@example.com", "İstanbul")),
+                        List.of(
+                                new RenderRequest.ContactLine("Email", "mustafa@example.com",
+                                        "mailto:mustafa@example.com"),
+                                new RenderRequest.ContactLine("Location", "İstanbul", ""))),
                 List.of(new RenderRequest.RenderableSection(
                         "Experience",
+                        SectionLayout.ENTRY_LIST,
                         List.of(new RenderRequest.RenderableEntry(
                                 "Backend Engineer", "Acme", "İstanbul", "2023-03 – present",
                                 List.of(BULLET))),

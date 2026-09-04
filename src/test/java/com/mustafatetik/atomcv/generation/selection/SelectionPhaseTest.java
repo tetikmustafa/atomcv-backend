@@ -33,6 +33,16 @@ class SelectionPhaseTest {
     /** Roughly one wrapped bullet at ten points. */
     private static final double BULLET_PT = 25.0;
 
+    /**
+     * Budgets are sums of measured points, so they are compared to a tolerance
+     * and not for equality. The measured constants carry five decimals; adding
+     * four of them and asking for {@code ==} tests IEEE 754's associativity
+     * rather than the arithmetic this file is about. A thousandth of a point is
+     * far below anything a page can show.
+     */
+    private static final org.assertj.core.data.Offset<Double> A_POINT =
+            org.assertj.core.data.Offset.offset(0.001);
+
     // ── the guarantee ─────────────────────────────────────────────────────
 
     @Test
@@ -174,11 +184,11 @@ class SelectionPhaseTest {
 
         var state = select(request).orElseThrow();
 
-        assertThat(state.budget().fixedPt()).isEqualTo(
+        assertThat(state.budget().fixedPt()).isCloseTo(
                 CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK)
                         + CAPACITY.fixedCost(CapacityModel.SECTION_HEADER)
                         + CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER)
-                        + CAPACITY.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
+                        + CAPACITY.fixedCost(CapacityModel.ITEMIZE_OVERHEAD), A_POINT);
     }
 
     // ── an entry with nothing under it ────────────────────────────────────
@@ -187,10 +197,10 @@ class SelectionPhaseTest {
     void anEntryOpenedByItsHeadingPaysForTheHeadingAndNoList() {
         var state = select(oneEntry(heading(0.7))).orElseThrow();
 
-        assertThat(state.budget().fixedPt()).isEqualTo(
+        assertThat(state.budget().fixedPt()).isCloseTo(
                 CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK)
                         + CAPACITY.fixedCost(CapacityModel.SECTION_HEADER)
-                        + CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER));
+                        + CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER), A_POINT);
         assertThat(state.budget().usedPt()).as("a heading is furniture, not content").isZero();
     }
 
@@ -370,7 +380,7 @@ class SelectionPhaseTest {
         assertThat(state.selected()).isEmpty();
         assertThat(state.budget().fixedPt())
                 .as("only the page's own header is still charged")
-                .isEqualTo(CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK));
+                .isCloseTo(CAPACITY.fixedCost(CapacityModel.HEADER_BLOCK), A_POINT);
     }
 
     // ── fixtures ──────────────────────────────────────────────────────────

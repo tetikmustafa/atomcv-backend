@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.render;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
@@ -184,8 +185,15 @@ class RenderPhaseTest {
 
         assertThat(request.header().name()).isEqualTo("Ada Lovelace");
         assertThat(request.header().headline()).isEqualTo("Backend engineer");
+        // Labelled and linked, and in Bolum 22's fixed order.
         assertThat(request.header().contactLines())
-                .containsExactly("ada@example.com", "Istanbul", "github.com/ada");
+                .extracting(RenderRequest.ContactLine::label,
+                        RenderRequest.ContactLine::value,
+                        RenderRequest.ContactLine::href)
+                .containsExactly(
+                        tuple("Email", "ada@example.com", "mailto:ada@example.com"),
+                        tuple("Location", "Istanbul", ""),
+                        tuple("GitHub", "github.com/ada", "https://github.com/ada"));
     }
 
     @Test

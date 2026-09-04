@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.rendering.model;
 
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.util.List;
@@ -26,11 +27,37 @@ public record RenderRequest(
         contentLanguage = contentLanguage == null ? Locale.ENGLISH : contentLanguage;
     }
 
+    /**
+     * One line of the contact block: what it is, what it says, and where it
+     * points.
+     *
+     * @param label the reader's word for this field, already in the content
+     *              language. Chosen from a closed set by {@link ContactKind},
+     *              never from user text
+     * @param value what is printed
+     * @param href  where it links, or empty for something unlinkable like a
+     *              city or a phone number
+     */
+    public record ContactLine(String label, String value, String href) {
+
+        public ContactLine {
+            label = label == null ? "" : label;
+            value = value == null ? "" : value;
+            href = href == null ? "" : href;
+        }
+
+        /** Shape only: a contact line is personal data. */
+        @Override
+        public String toString() {
+            return "ContactLine[" + label + "]";
+        }
+    }
+
     /** The name and contact line at the top of the page. */
     public record ProfileHeader(
             String name,
             String headline,
-            List<String> contactLines) {
+            List<ContactLine> contactLines) {
 
         public ProfileHeader {
             name = name == null ? "" : name;
@@ -44,14 +71,24 @@ public record RenderRequest(
         }
     }
 
-    /** One heading with what hangs off it, already in the order it prints. */
+    /**
+     * One heading with what hangs off it, already in the order it prints.
+     *
+     * @param layout how Bolum 33.4 says this section is set. It was missing
+     *               here entirely, so the renderer set every section as a
+     *               bullet list whatever the column said — {@code INLINE_LIST}
+     *               and {@code TWO_COLUMN} existed in the enum, in the schema
+     *               and in the CHECK constraint, and could not reach the page.
+     */
     public record RenderableSection(
             String title,
+            SectionLayout layout,
             List<RenderableEntry> entries,
             List<RichContent> atoms) {
 
         public RenderableSection {
             title = title == null ? "" : title;
+            layout = layout == null ? SectionLayout.BULLET_LIST : layout;
             entries = entries == null ? List.of() : List.copyOf(entries);
             atoms = atoms == null ? List.of() : List.copyOf(atoms);
         }

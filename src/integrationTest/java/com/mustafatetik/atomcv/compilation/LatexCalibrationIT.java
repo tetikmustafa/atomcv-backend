@@ -102,20 +102,56 @@ class LatexCalibrationIT {
                 .isCloseTo(capacity().fixedCost(CapacityModel.SECTION_HEADER), offset());
     }
 
+    /**
+     * A list opening straight under a section heading, with no entry between
+     * them — a skills matrix. It is not the same number as a list under an
+     * entry heading, for the reason {@code ENTRY_HEADER_AFTER_LIST} is not the
+     * same as {@code ENTRY_HEADER}: TeX takes the larger of the space asked
+     * for and the space already there, and a section heading has just left
+     * some behind.
+     */
+    @Test
+    void alistUnderASectionHeadingCostsLessThanOneUnderAnEntry() {
+        double one = delta("afterSection", "afterListUnderSection");
+        double three = delta("beforeThreeUnderSection", "afterThreeUnderSection");
+        double perItem = (three - one) / 2;
+
+        // The bullets cost the same in either place; only what opens the list
+        // differs. If this ever stops holding, a section list needs its own
+        // ITEM_LINE too and not just its own overhead.
+        assertThat(perItem)
+                .as("a bullet under a section heading is still a bullet")
+                .isCloseTo(capacity().fixedCost(CapacityModel.ITEM_LINE), offset());
+        assertThat(one - perItem)
+                .isCloseTo(capacity().fixedCost(CapacityModel.SECTION_LIST_OVERHEAD), offset());
+        assertThat(capacity().fixedCost(CapacityModel.SECTION_LIST_OVERHEAD))
+                .isLessThan(capacity().fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
+    }
+
     @Test
     void anEntryHeadingCostsWhatWasMeasured() {
-        assertThat(delta("afterSection", "afterEntry"))
+        assertThat(delta("afterThirdSection", "afterEntry"))
                 .isCloseTo(capacity().fixedCost(CapacityModel.ENTRY_HEADER), offset());
     }
 
     /**
      * A bullet list of one, then of three: the difference gives one bullet,
      * and what is left over is the list's own overhead.
+     *
+     * <p><strong>Both lists open under an entry heading, and that is the whole
+     * point.</strong> The three-item list used to be measured where it followed
+     * the one-item list rather than a heading, so the subtraction was taking
+     * the difference of two <em>different</em> overheads and calling it a
+     * bullet: it produced 11.585pt where a marginal bullet is exactly one
+     * baseline, 12pt, which is what TeX guarantees and what
+     * {@code RenderCost.totalPt} is written around. The 0.415 it was out by
+     * then travelled into every atom's stored cost as a per-item correction
+     * that belongs to the list, and the error grew with the number of bullets.
      */
     @Test
     void aBulletListSeparatesIntoOverheadAndLines() {
         double oneItemBlock = delta("afterEntry", "afterOneItem");
-        double threeItemBlock = delta("afterOneItem", "afterThreeItems");
+        double threeItemBlock = delta("beforeThreeItems", "afterThreeItems");
         double perItem = (threeItemBlock - oneItemBlock) / 2;
 
         assertThat(perItem)
@@ -144,6 +180,9 @@ class LatexCalibrationIT {
                 .as("a one-item list further down the page")
                 .isCloseTo(capacity().fixedCost(CapacityModel.ITEMIZE_OVERHEAD)
                         + capacity().fixedCost(CapacityModel.ITEM_LINE), offset());
+        assertThat(capacity().fixedCost(CapacityModel.ITEM_LINE))
+                .as("a marginal bullet is one baseline, which is TeX's own guarantee")
+                .isCloseTo(capacity().baselineSkipPt(), offset());
     }
 
     /**

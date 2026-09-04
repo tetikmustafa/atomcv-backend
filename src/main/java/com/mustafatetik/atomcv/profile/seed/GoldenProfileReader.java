@@ -66,12 +66,25 @@ public final class GoldenProfileReader {
     }
 
     /**
-     * What each wording was measured at, by content hash. Empty when the file
-     * is absent, which is what a newly written fixture looks like until the
-     * measuring test has run.
+     * What each wording was measured at, under the template key it was measured
+     * against. Empty when the file is absent, which is what a newly written
+     * fixture looks like until the measuring test has run.
+     *
+     * <p><strong>The file names its own template.</strong> Reading the key from
+     * {@code TemplateCustomization} instead would put this package on
+     * {@code rendering}, which already depends on it — and writing the key here
+     * as a literal is what went wrong before: it said {@code classic:v1} through
+     * a version bump, every lookup missed, selection fell through to the
+     * estimate and its 8% margin, and the drift test reported a 30% error in the
+     * cost model that was really a fixture reading the wrong shelf.
+     *
+     * <p>A stale file is now loud rather than quiet. Its costs land under the
+     * old key, the running template looks under the new one and finds nothing,
+     * and {@code MeasurementDriftIT} says so — which is the failure that led
+     * here in the first place, and is worth keeping.
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, Double> costsOf(String name) {
+    public static Map<String, Map<String, Double>> costsOf(String name) {
         String path = String.format(COSTS_PATH, name);
         try (InputStream in = open(path)) {
             return in == null ? Map.of() : JSON.readValue(in, Map.class);
@@ -80,14 +93,18 @@ public final class GoldenProfileReader {
         }
     }
 
-    public static void applyCosts(GoldenProfile profile, Map<String, Double> costs) {
+    public static void applyCosts(
+            GoldenProfile profile, Map<String, Map<String, Double>> byTemplate) {
+
         Instant measuredAt = Instant.EPOCH;
-        for (AtomVariant variant : profile.variants()) {
-            Double cost = costs.get(variant.getContentHash());
-            if (cost != null) {
-                variant.recordRenderCost("classic:v1", cost, measuredAt);
+        byTemplate.forEach((costKey, costs) -> {
+            for (AtomVariant variant : profile.variants()) {
+                Double cost = costs.get(variant.getContentHash());
+                if (cost != null) {
+                    variant.recordRenderCost(costKey, cost, measuredAt);
+                }
             }
-        }
+        });
     }
 
     private static GoldenProfile materialise(GoldenProfileDocument document, UUID ownerId) {

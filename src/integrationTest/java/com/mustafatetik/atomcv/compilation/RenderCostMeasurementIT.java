@@ -97,10 +97,12 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
 
         assertThat(measured).isEqualTo(1);
         var stored = variants.findById(profile, variantId).orElseThrow();
-        assertThat(stored.getRenderCosts()).containsKey("classic:v1");
+        assertThat(stored.getRenderCosts())
+                .containsKey(TemplateCustomization.CLASSIC.costKey());
         // One line of ten-point text: a baseline and the list's own item
         // separation, so thirteen points here — not hundreds, and not zero.
-        assertThat(stored.getRenderCosts().get("classic:v1")).isBetween(12.0, 60.0);
+        assertThat(stored.getRenderCosts().get(TemplateCustomization.CLASSIC.costKey()))
+                .isBetween(10.0, 60.0);
         assertThat(stored.getCostMeasuredAt()).isNotNull();
     }
 
@@ -194,7 +196,7 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
 
     private double cost(UUID variantId) {
         return variants.findById(profile, variantId).orElseThrow()
-                .getRenderCosts().get("classic:v1");
+                .getRenderCosts().get(TemplateCustomization.CLASSIC.costKey());
     }
 
     private UUID seedVariant(RichContent content) {

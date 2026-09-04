@@ -115,11 +115,15 @@ public final class AtsCheck {
      * printed together and a template that loses one loses all of them.
      */
     private static boolean contactReadable(RenderRequest printed, String haystack) {
-        List<String> lines = printed.header().contactLines();
+        var lines = printed.header().contactLines();
         if (lines.isEmpty()) {
             return true;
         }
+        // The value, not the label. The labels are the template's own words
+        // and would be found in the extracted text whether or not the address
+        // beside them survived, which is the one thing this asks about.
         return lines.stream()
+                .map(RenderRequest.ContactLine::value)
                 .map(AtsCheck::normalise)
                 .filter(line -> !line.isBlank())
                 .anyMatch(haystack::contains);

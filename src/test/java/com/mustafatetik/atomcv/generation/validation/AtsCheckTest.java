@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
@@ -112,7 +113,8 @@ class AtsCheckTest {
 
     private static RenderRequest request(List<String> headings, List<String> bullets) {
         List<RenderRequest.RenderableSection> sections = headings.stream()
-                .map(heading -> new RenderRequest.RenderableSection(heading, List.of(),
+                .map(heading -> new RenderRequest.RenderableSection(heading,
+                        SectionLayout.BULLET_LIST, List.of(),
                         // The bullets sit under the first heading; the second
                         // exists only so that order can be wrong.
                         heading.equals(headings.get(0))
@@ -121,7 +123,8 @@ class AtsCheckTest {
                 .toList();
         return new RenderRequest(
                 new RenderRequest.ProfileHeader("Mustafa Tetik", "Backend Engineer",
-                        List.of("ben@example.com")),
+                        List.of(new RenderRequest.ContactLine(
+                                "Email", "ben@example.com", "mailto:ben@example.com"))),
                 sections, TemplateCustomization.CLASSIC, java.util.Locale.ENGLISH);
     }
 
