@@ -23,19 +23,31 @@ repositories {
     mavenCentral()
 }
 
-// Two libraries Spring Boot's BOM pins one patch behind a fix, and the image
-// scan on the Deploy workflow is where that shows up: Trivy fails the job on
-// HIGH, so main has been red on every push since these two were published.
-// Overriding the BOM's property is the documented way to take a security patch
-// before the next Boot release carries it — and it is a property rather than a
-// dependency line because both arrive transitively, netty through the mail and
-// Redis clients and pgjdbc through the driver.
+// Libraries Spring Boot's BOM pins one patch behind a fix, and the image scan
+// on the Deploy workflow is where that shows up: Trivy fails the job on HIGH,
+// so main goes red on every push until the override lands. Overriding the BOM's
+// property is the documented way to take a security patch before the next Boot
+// release carries it — and it is a property rather than a dependency line
+// because all three arrive transitively: netty through the mail and Redis
+// clients, pgjdbc through the driver, Tomcat through spring-boot-starter-web.
 //
-// **Both go when Boot's BOM catches up.** An override that outlives its reason
-// is a pin that quietly holds a library back, which is the same failure in the
-// other direction.
+// **Each goes when Boot's BOM catches up.** An override that outlives its
+// reason is a pin that quietly holds a library back, which is the same failure
+// in the other direction.
 extra["postgresql.version"] = "42.7.12"   // CVE-2026-54291, SCRAM downgrade
 extra["netty.version"] = "4.1.136.Final"  // CVE-2026-59901, decoder loop
+// Three CRITICALs at once, all published after 2026-09-02 — the scan was clean
+// on the push that added the two above and failed on the next one without
+// anything in this repository having changed. A security constraint bypass, an
+// authentication bypass and an unauthorized-access hole, which is the whole
+// front door of a servlet container.
+//
+// 10.1.59 and not the 10.1.58 the advisory names: that one was never published
+// to Maven Central -- the 10.1 line goes 10.1.57, 10.1.59 -- and 10.1.59 is the
+// first release on this line that carries the fix. Staying on 10.1.x rather
+// than the 11.0.25 also listed is deliberate; 11 is the Servlet 6.1 line and
+// Boot 3 is built against 6.0.
+extra["tomcat.version"] = "10.1.59"       // CVE-2026-65182, -65905, -68525
 
 // Integration tests live in their own source set so that `gradlew test` stays
 // fast and free of Docker. CI runs `test` and `integrationTest` as separate
