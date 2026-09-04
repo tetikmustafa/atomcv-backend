@@ -97,7 +97,7 @@ dependencies {
     // hand-written converter that ddl-auto=validate could not check.
     // Version pinned to hibernate-core's: Spring Boot's BOM manages the
     // core but not this module, so an unpinned coordinate does not resolve.
-    implementation("org.hibernate.orm:hibernate-vector:6.6.53.Final")
+    implementation("org.hibernate.orm:hibernate-vector:7.4.6.Final")
     // JSON merge-patch needs three states — absent, null, value — and Java has
     // no tri-state Optional: Jackson deserializes an absent Optional field as
     // Optional.empty(), the same as an explicit null. This library owns that
