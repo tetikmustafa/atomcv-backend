@@ -363,7 +363,9 @@ public final class SelectionPhase {
             }
             if (atom.entryId() == null) {
                 if (sectionId != null && !openSectionLists.contains(sectionId)) {
-                    cost += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
+                    // Directly under the heading, so the heading's own space
+                    // has already been left and this list adds almost nothing.
+                    cost += capacity.fixedCost(CapacityModel.SECTION_LIST_OVERHEAD);
                 }
             } else if (!openEntries.contains(atom.entryId())) {
                 cost += entryFurnitureCost(atom, sectionId);
@@ -438,7 +440,7 @@ public final class SelectionPhase {
                     // first entry down into the more expensive position.
                     if (openSectionLists.add(sectionId)) {
                         sectionListPt.put(sectionId,
-                                capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
+                                capacity.fixedCost(CapacityModel.SECTION_LIST_OVERHEAD));
                         structurePt += upgradeFirstEntryOf(sectionId);
                     }
                 }

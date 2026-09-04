@@ -20,7 +20,7 @@ public final class TemplateRegistry {
      * leaves old measurements looking valid for a document that no longer
      * matches them, and the page guarantee fails quietly rather than loudly.
      */
-    private static final Map<String, Integer> VERSIONS = Map.of("classic", 1);
+    private static final Map<String, Integer> VERSIONS = Map.of("classic", 2);
 
     /**
      * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
@@ -34,15 +34,50 @@ public final class TemplateRegistry {
             \\usepackage{enumitem}
             \\usepackage{parskip}
             \\usepackage[hidelinks]{hyperref}
+            \\usepackage{tabularx}
             \\pagestyle{empty}
-            \\titleformat{\\section}{\\normalsize\\bfseries\\color{accent}}{}{0em}{}[\\titlerule]
-            \\titlespacing*{\\section}{0pt}{8pt}{4pt}
-            \\setlist[itemize]{leftmargin=0.15in,label={--},topsep=2pt,itemsep=1pt,parsep=0pt}
-            \\newcommand{\\atomcvName}[1]{\\begin{center}{\\LARGE\\bfseries #1}\\end{center}}
+            \\raggedbottom
+            \\raggedright
+            \\setlength{\\tabcolsep}{0in}
+            \\urlstyle{same}
+            % The indent an entry and its bullets share. A length rather than a
+            % number in six places: the bullets get it from enumitem's
+            % leftmargin and the headings from \\hspace*, and the two drifting
+            % apart is a ragged left edge nobody would think to measure.
+            \\newlength{\\atomcvindent}\\setlength{\\atomcvindent}{0.15in}
+            \\newlength{\\atomcvblock}%
+            \\setlength{\\atomcvblock}{\\dimexpr\\textwidth-\\atomcvindent\\relax}
+            \\titleformat{\\section}{\\raggedright\\large\\bfseries\\color{accent}}%
+              {}{0em}{}[\\color{accent}\\titlerule]
+            \\titlespacing*{\\section}{0pt}{6pt}{2pt}
+            \\setlist[itemize]{leftmargin=\\atomcvindent,topsep=0pt,itemsep=0pt,%
+              parsep=0pt,partopsep=0pt}
+            % No \\small on a bullet. Bolum 26 measures one baselineskip for the
+            % whole document and the capacity model carries one number; setting
+            % the bullets a size smaller put every prediction 24-43% over what
+            % the page actually held. Density is layer B — fontSizePt on the
+            % customization — and not one element quietly shrinking.
+            \\newcommand{\\resumeItem}[1]{\\item{#1}}
+            \\newcommand{\\resumeSubheading}[4]{%
+              \\noindent\\hspace*{\\atomcvindent}%
+              \\begin{tabular*}{\\atomcvblock}[t]{l@{\\extracolsep{\\fill}}r}
+                \\textbf{#1} & #2 \\\\
+                \\textit{\\small#3} & \\textit{\\small #4} \\\\
+              \\end{tabular*}\\par}
+            \\newcommand{\\resumeProjectHeading}[2]{%
+              \\noindent\\hspace*{\\atomcvindent}%
+              \\begin{tabularx}{\\atomcvblock}{X r}
+                \\textbf{#1} & #2 \\\\
+              \\end{tabularx}\\par}
+            \\newcommand{\\resumeSubHeadingListStart}{}
+            \\newcommand{\\resumeSubHeadingListEnd}{}
+            \\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+            \\newcommand{\\resumeItemListEnd}{\\end{itemize}}
+            \\newcommand{\\resumeInlineList}[1]%
+              {\\begin{itemize}[leftmargin=\\atomcvindent, label={}]%
+                \\item{#1}\\end{itemize}}
+            \\newcommand{\\atomcvName}[1]{\\begin{center}{\\Huge\\bfseries #1}\\end{center}}
             \\newcommand{\\atomcvContact}[1]{\\begin{center}\\small #1\\end{center}}
-            \\newcommand{\\atomcvEntry}[4]{%
-              \\noindent\\textbf{#1}\\hfill{\\small #3}\\\\%
-              {\\small\\itshape #2}\\hfill{\\small #4}\\par}
             """;
 
     /**
@@ -67,16 +102,17 @@ public final class TemplateRegistry {
                     // the page. An earlier 52.0 was measured after a \null,
                     // which bought the header a baseline gap no real document
                     // has (EK D.8.10).
-                    CapacityModel.HEADER_BLOCK, 45.68127,
-                    CapacityModel.SECTION_HEADER, 24.0,
-                    CapacityModel.ENTRY_HEADER_AFTER_LIST, 32.0,
+                    CapacityModel.HEADER_BLOCK, 50.81888,
+                    CapacityModel.SECTION_HEADER, 24.60003,
+                    CapacityModel.ENTRY_HEADER_AFTER_LIST, 28.60004,
                     // Two lines: the title, and the organization with its
                     // dates. A hand-written probe that lost the line break
                     // measured 10.87 and looked entirely plausible — the
                     // calibration test is what caught it (EK D.8.3).
-                    CapacityModel.ENTRY_HEADER, 22.76,
-                    CapacityModel.ITEMIZE_OVERHEAD, 7.0,
-                    CapacityModel.ITEM_LINE, 13.0));
+                    CapacityModel.ENTRY_HEADER, 21.0,
+                    CapacityModel.ITEMIZE_OVERHEAD, 6.830015,
+                    CapacityModel.ITEM_LINE, 12.0,
+                    CapacityModel.SECTION_LIST_OVERHEAD, -3.16999));
 
     private TemplateRegistry() {
     }

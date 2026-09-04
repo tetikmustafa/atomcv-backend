@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.compilation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.profile.domain.content.Mark;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
@@ -134,8 +135,13 @@ class LatexContainerIT {
         var renderer = new LatexDocumentRenderer();
         var document = renderer.renderFinal(new RenderRequest(
                 new RenderRequest.ProfileHeader("Mustafa Tetik", "Backend Engineer",
-                        List.of("mustafa@example.com", "İstanbul, Türkiye")),
+                        List.of(
+                                new RenderRequest.ContactLine("Email", "mustafa@example.com",
+                                        "mailto:mustafa@example.com"),
+                                new RenderRequest.ContactLine(
+                                        "Location", "İstanbul, Türkiye", ""))),
                 List.of(new RenderRequest.RenderableSection("Experience",
+                        SectionLayout.ENTRY_LIST,
                         List.of(new RenderRequest.RenderableEntry(
                                 "Backend Engineer", "Acme", "İstanbul", "2023-03 – present",
                                 List.of(RichContent.of(

@@ -228,3 +228,60 @@ yerini tutmuyor.
 `rewritten.isEmpty()` üzerinden karar veriyor ve About sentezi tuttuğunda liste
 dolu oluyor. Aynı cepheyi istiyor, aynı dilime bırakıldı.
 
+## Dilim F — gerçek Klasik şablonu (Bulgu 3) · 2026-09-04
+
+`resumeItem`, `resumeSubheading` ve `resumeProjectHeading` bu repoda **hiç
+yoktu**; "Klasik" üç uydurma komuttu (`tomcvName`/`tomcvContact`/
+`tomcvEntry`), `templates.yaml` spec'te ve CI yol filtresinde adı geçiyordu
+ama dosya yoktu, iletişim bloğu çıplak değerleri `·` ile birleştiriyordu, ve
+`RenderableSection`'ın **`layout` alanı yoktu** — yani `INLINE_LIST` enum'da,
+şemada ve CHECK kısıtında vardı, sayfaya çıkması imkânsızdı.
+
+**Üç mühendislik kararı, üçü de bilinçli:**
+- Referans pdfLaTeX ve kendi sayfa kurulumunu varsayıyor; biz XeLaTeX'iz ve
+  kenar boşluğu kullanıcı ayarı. **Komutlar ve bölüm biçimi alındı**,
+  `glyphtounicode` ve `ddtolength` geometrisi alınmadı.
+- **`TWO_COLUMN` bilerek uygulanmadı.** § 33.5 Klasik'i ATS için tek sütun
+  tutuyor; renderer'ın bunu sessizce ezmesi render kararı değil.
+- **Referansın negatif `space`'leri, sahibi olduğu öğenin dışına sızdığı her
+  yerde çıkarıldı.** Listeden sonraki bir `space`, sonraki section başlığını
+  ilkinden ucuza getiriyor; öğe başına tek sayı taşıyan bir maliyet modeli bunu
+  ifade edemez. `	itlespacing` ve enumitem aynı işi konum bağımsız yapıyor.
+
+**`\small` maddeden kalktı.** Bölüm 26 belge için **tek** bir baselineskip
+ölçüyor; tek bir öğeyi küçültmek her tahmini sayfanın tuttuğunun %24-43 üstüne
+çıkardı. Yoğunluk katman B'nin işi (`fontSizePt`), şablonun değil.
+
+**Asıl bulgu, ve kalıcı olan bu: `ITEM_LINE` bir ölçüm artefaktıydı.**
+Kalibrasyon üç maddelik listeyi **bir maddelik listeden sonra** ölçüyordu, oysa
+tek maddelik olan **entry başlığından sonra** ölçülüyor — yani çıkarma iki ayrı
+overhead'in farkını alıp "bir madde" diyordu. 13.0 (eski şablon) ve 11.585 (yeni)
+böyle çıktı. İkisi de yanlış: **marjinal bir madde tam bir baselineskip, 12.0** —
+TeX'in garantisi, ve `RenderCost.totalPt` zaten onun üstüne yazılmış. Aradaki
+0.415 her atomun **saklanmış maliyetine** madde başına bir düzeltme olarak
+giriyordu, oysa listeye ait; hata madde sayısıyla büyüyordu ve toplam hatanın
+işareti profilin maddelerini entry listeleriyle section listeleri arasında nasıl
+dağıttığına bağlıydı. Kalibrasyon artık benzeri benzerle ölçüyor ve
+`itemSpacingPt` sıfır.
+
+**Ekleme — `SECTION_LIST_OVERHEAD`.** Section başlığının **hemen altında**
+açılan liste ile entry başlığının altında açılan liste aynı maliyette değil:
+TeX boşluğu `ddvspace` ile ekliyor, yani istenenle mevcut olanın **büyüğünü**
+alıyor, toplamını değil. Başlık kendi boşluğunu yeni bırakmış olduğu için
+listenin ekleyeceği neredeyse yok (−3.17, bir düzeltme terimi, fiziksel
+yükseklik değil); entry başlığı ise paragrafı bitirmiş, paragraf boşluğu hâlâ
+ödenecek (6.83). `ENTRY_HEADER` / `ENTRY_HEADER_AFTER_LIST` çiftinin birebir
+aynısı, ve aynı sebeple.
+
+**Döngü — maliyet dosyası artık hangi şablonu ölçtüğünü kendisi söylüyor.**
+Anahtarı `TemplateCustomization`'dan okumak `profile.seed`'i `rendering`'e
+bağlıyordu, oysa `rendering` zaten `profile`'a bağlı. Literal yazmak da seçenek
+değildi: `classic:v1` sürüm atlayınca **sessizce** ıskaladı, seçim tahminciye ve
+%8 payına düştü, ve drift testi maliyet modelinde %30 hata bildirdi — oysa
+fikstür yanlış rafa bakıyordu. Dosya kendi anahtarını taşıyınca bayat bir kayıt
+**gürültüyle** düşüyor, ki bu tam da buraya getiren hataydı.
+
+**Ders — bir kalibrasyon, ölçtüğü şeyin bağlamını da ölçer.** Üç sayıdan ikisi
+(`ITEM_LINE`, `ITEMIZE_OVERHEAD`) yıllardır yanlıştı ve kimse fark etmedi,
+çünkü eski şablonda birbirlerini götürüyorlardı. Şablon değişince ortaya çıktı.
+

@@ -103,7 +103,9 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 |---|---|
 | A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
 | B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
+| F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2'ye ölçüldü ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
 | E · Faz D sessizliği | `trace.D` yazılıyor; sıfır artık "koştu ve değiştirmedi" diyor. Eşiklere dokunulmadı — § 21.2 verbatim ve yeniden ayarlamak ölçüm ister |
+| F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2 ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
 | D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
 | C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
 

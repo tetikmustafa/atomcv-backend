@@ -47,7 +47,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class GoldenCostsIT {
 
-    private static final String COST_KEY = "classic:v1";
+    private static final String COST_KEY = TemplateCustomization.CLASSIC.costKey();
     private static final double TOLERANCE_PT = 0.01;
     private static final Path FIXTURES = Path.of("src/main/resources/golden/profiles");
 
@@ -79,10 +79,18 @@ class GoldenCostsIT {
             return;
         }
 
-        Map<String, Double> stored = GoldenProfileReader.costsOf(name);
-        assertThat(stored)
+        var byTemplate = GoldenProfileReader.costsOf(name);
+        assertThat(byTemplate)
                 .as("no costs recorded for %s — run gradlew latexTest -Dgolden.record=true", name)
                 .isNotEmpty();
+        // The file says which template it was measured against, and this is
+        // where a stale one is caught: a recording made before a geometry
+        // change keys its costs under the old version, every lookup misses, and
+        // selection quietly falls back to the estimate.
+        assertThat(byTemplate)
+                .as("%s was measured against another template version — re-record it", name)
+                .containsOnlyKeys(COST_KEY);
+        Map<String, Double> stored = byTemplate.get(COST_KEY);
 
         measured.forEach((hash, cost) -> assertThat(stored.get(hash))
                 .as("wording %s has drifted or is missing", hash.substring(0, 8))
@@ -124,8 +132,8 @@ class GoldenCostsIT {
     /** Sorted, so a re-recording produces a diff a person can read. */
     private static void record(String name, Map<String, Double> measured) throws Exception {
         Path file = FIXTURES.resolve(name + ".costs.json");
-        JSON.writerWithDefaultPrettyPrinter()
-                .writeValue(Files.newBufferedWriter(file), new TreeMap<>(measured));
+        JSON.writerWithDefaultPrettyPrinter().writeValue(Files.newBufferedWriter(file),
+                Map.of(COST_KEY, new TreeMap<>(measured)));
         System.out.println("[golden] recorded " + measured.size() + " costs into " + file);
     }
 }

@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.VariantAuthor;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.repository.AtomRepository;
@@ -118,11 +119,32 @@ public class ProfileWriter {
     private void writeSection(Target target, NormalizedProfile.NormalizedSection normalized) {
         Section section = new Section(target.profileId(), normalized.kind(),
                 normalized.title(), normalized.displayOrder());
+        section.setLayout(layoutFor(normalized.kind()));
         sections.save(target.ref(), section);
 
         for (var entry : normalized.entries()) {
             writeEntry(target, section, entry, normalized.kind());
         }
+    }
+
+    /**
+     * How a section is set (Bolum 33.4).
+     *
+     * <p>The column has allowed four layouts since the first migration and the
+     * importer wrote the default over all of them, so every profile in
+     * existence said {@code bullet_list} — including the skills matrices that
+     * are the whole reason {@code INLINE_LIST} is in the enum. A Tech Stack
+     * with one category per bullet is a list of five lines where the person
+     * wrote five labelled rows.
+     *
+     * <p>Only skills move. About, experience, projects and education are
+     * bullets and entries, which is what the default already says, and
+     * {@code TWO_COLUMN} stays unused here — Bolum 33.5 keeps Classic
+     * single-column for ATS extraction, and choosing it at import would decide
+     * that question in the wrong place.
+     */
+    private static SectionLayout layoutFor(SectionKind kind) {
+        return kind == SectionKind.SKILLS ? SectionLayout.INLINE_LIST : SectionLayout.BULLET_LIST;
     }
 
     /**

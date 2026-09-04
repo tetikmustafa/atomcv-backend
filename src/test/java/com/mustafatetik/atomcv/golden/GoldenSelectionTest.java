@@ -126,8 +126,11 @@ class GoldenSelectionTest {
         // The heading follows the bullets of the degree above it, so it is the
         // dearer of the two headings — and no ITEMIZE_OVERHEAD, because a line
         // with no bullets opens no list (EK D.8.10).
+        // A tolerance, not equality: this is a difference of two sums of
+        // measured points, and the constants carry five decimals.
         assertThat(charged)
-                .isEqualTo(CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST));
+                .isCloseTo(CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST),
+                        org.assertj.core.data.Offset.offset(0.001));
     }
 
     private static UUID atomlessEntryOf(GoldenProfile golden) {
