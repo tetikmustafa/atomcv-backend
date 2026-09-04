@@ -12,24 +12,24 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0-2 · 3 — hesap ve MVP (3.7 profil editörü frontend'de) | ✅ |
-| Aşama 4 — uçtan uca ölçüm · dilim A-E | ✅ · şablon dilimi park |
+| Aşama 4 — uçtan uca ölçüm · dilim A-F | ✅ |
 
 **Aşama 3 · dilim 9-14:** on bir `F-nnn` indi (§ 18.4.1, § 34.4.2); kapanış denetimi `notes/kapanis-denetimi.md`'de.
 
-**Aşama 4 — dört bulgu, yedi kusur** (`notes/archive/stage-4-e2e-findings.md`).
-**Bulgular kusurlarla eşleşmedi:** "eksik Tech Stack" render sanılıyordu, Faz C
-çıktı; iki uydurma cümle Faz D sanılıyordu, ikisi de **çıkarımdan** geliyordu.
+**Aşama 4 — dört bulgu, yedi kusur** (`notes/archive/stage-4-e2e-findings.md`);
+**bulgular kusurlarla eşleşmedi:** "eksik Tech Stack" render sanılıyordu Faz C
+çıktı, iki uydurma cümle Faz D sanılıyordu ikisi de **çıkarımdan** geliyordu.
 
-**Park: gerçek Klasik şablonu** (`feat/klasik-template`, `wip`) — komutlar,
-etiketli iletişim bloğu ve `INLINE_LIST` çalışıyor, geometri v2'ye ölçüldü;
-açık: bir ArchUnit döngüsü, altı test, `minimal_edge`'de %3.2 drift.
+**Dilim F — gerçek Klasik şablonu indi:** referansın komutları, etiketli
+iletişim bloğu, `INLINE_LIST`, geometri v2. Drift'i kapatan şablon değil
+arkasındaki kalibrasyon oldu: **`ITEM_LINE` bir ölçüm artefaktıymış**.
 
 **Geliştiricide, artık ölçülmüş:** `cost_usd` sıfır → günlük bütçe freni ölü;
 `llm_invocations.job_id` 108/108 NULL; `local-record` girdiyi saklamıyor, o
-yüzden çıkarım sadakatinin yanlış pozitifi ölçülemiyor. Ayrıca fiyat tablosu ve
+yüzden çıkarım sadakatinin yanlış pozitifi ölçülemiyor. Ayrıca fiyat tablosu,
 VPS/restore.
 
-**Test:** 1095 birim · 451 entegrasyon · latex 49/49 — 0 hata
+**Test:** 1097 birim · 451 entegrasyon · latex 50/50 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
