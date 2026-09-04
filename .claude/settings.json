@@ -17,13 +17,13 @@
       "Bash(*flyway*prod*)"
     ],
     "ask": [
-      "Bash(git commit:*)",
-      "Bash(git tag:*)",
       "Write(docs/notes/**)",
       "Write(docs/STATUS.md)",
       "Write(docs/spec/**)"
     ],
     "allow": [
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
       "Bash(./gradlew build:*)",
       "Bash(./gradlew test:*)",
       "Bash(./gradlew integrationTest:*)",

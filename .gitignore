@@ -4,6 +4,16 @@
 *.pem
 *.key
 
+# A CV kept beside the code to work from. `cv.tex` carries a real name, address
+# and telephone, and this repository is public -- the same reason the recorded
+# `profile_extraction` answers are ignored further down.
+#
+# Broader than that one file on purpose, so the next one dropped here is caught
+# too. It also means a `.tex` that *should* be committed -- a reference template,
+# a rendering fixture -- has to be forced in with `git add -f`, and would be
+# missing from a fresh clone until someone noticed.
+*.tex
+
 # Build output
 build/
 .gradle/
