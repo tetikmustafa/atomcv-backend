@@ -61,9 +61,32 @@ services:
   # Bolum 28. Also under `full`: the first run downloads ~2.5 GB of model
   # weights, which is not something `make dev` should ever do on its own.
   embeddings:
-    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
+    # 1.7 and not 1.5, and this is not a routine bump. On 1.5 the container
+    # never started here at all: it fetched two of the model's config files and
+    # then died on the third with "relative URL without a base", which is a bug
+    # in that release's downloader and not a network problem. The volume stayed
+    # empty, every embedding call failed, and Faz B fell back to keyword-only
+    # weights — where most atoms score 0.0 and selection stops meaning anything.
+    # That is what EMBEDDING_UNAVAILABLE was on 2026-09-02, and why a generation
+    # dropped Education and Languages for no reason anyone could see.
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.7
     profiles: [full]
-    command: ["--model-id", "BAAI/bge-m3", "--port", "8081"]
+    # --max-batch-tokens, and it is what makes this container start at all.
+    # TEI defaults to 16384 and allocates a batch that size while warming up,
+    # which OOM-killed it at both 4G and 8G. Bolum 28 embeds atoms and a job
+    # posting -- a bullet is tens of tokens, not thousands -- so the default is
+    # sized for a workload this system does not have.
+    #
+    # --max-client-batch-size is a workaround and should not stay one. TEI
+    # allows 32 per request by default and EmbeddingService sends a profile's
+    # atoms in a single call, so an 84-atom profile came back 413 "batch size
+    # 84 > maximum allowed batch size 32". Every profile larger than 32 atoms
+    # has therefore never embedded against a real TEI; the 28-atom one that
+    # used to be here fitted under the limit and hid it. The client is what
+    # needs to chunk -- raising a server limit only moves where it breaks.
+    command: ["--model-id", "BAAI/bge-m3", "--port", "8081",
+              "--max-batch-tokens", "2048",
+              "--max-client-batch-size", "512"]
     ports: ["8081:8081"]
     # The weights outlive the container. Without this every `docker compose
     # down` costs the 2.5 GB download again.
@@ -81,7 +104,14 @@ services:
       retries: 60
     deploy:
       resources:
-        limits: { cpus: '2', memory: 4G }
+        # 8G and not 4G, measured rather than guessed: at 4G the container was
+        # OOM-killed during "Warming up model" every time — `OOMKilled=true`,
+        # exit 137 — after downloading the weights successfully. bge-m3's ONNX
+        # weights are ~2.2 GB and warmup holds more than that at once, so the
+        # limit was below what the model this file names has ever needed. It
+        # never started here, which is the other half of why Faz B ran on
+        # keyword-only weights.
+        limits: { cpus: '2', memory: 8G }
 
 volumes:
   pgdata:

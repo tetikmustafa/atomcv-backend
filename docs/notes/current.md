@@ -92,10 +92,10 @@ Trivy'nin düşürdüğü HIGH CVE'ler için, ve Boot'un BOM'u yetişince
 diske yazmıştı. Bir muhafızın yanlış pozitifini aramanın en ucuz yeri
 `fixtures/llm/`.
 
-## Aşama 4 · uçtan uca ölçüm (2026-09-03/04)
+## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/06)
 
 Dört bulgu, **yedi** ayrı kusur; dilim kayıtları
-`archive/stage-4-e2e-findings.md`'de. Bulgular kusurlarla bire bir eşleşmedi:
+`archive/stage-3-post-closure-e2e.md`'de. Bulgular kusurlarla eşleşmedi:
 "eksik Tech Stack" render sanılıyordu, Faz C çıktı; iki uydurma cümle Faz D
 sanılıyordu, ikisi de çıkarımdan geliyordu.
 
@@ -117,15 +117,15 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
   giriş jetonu), tek `profile_extract` satırı var.
 - **`cost_usd` her satırda 0.000000** — fiyat tablosu yok, yani **günlük bütçe
   freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
-- **Eşikler embedding'siz dağılıma göre ayarlanmadı**: § 21.2 onları verbatim
-  veriyor, yeniden ayarlamak ölçüm ister. Artık sessiz değil (`trace.D`).
-- **Embeddings container'ı bu makinede hiç çalışmadı** (`modelcache` boş, TEI
-  `cpu-1.5` `bge-m3`'ü indirirken kırılıyor). Faz D'nin sessizliğinin kökü bu.
-- **Nitelik-listesi biçimindeki ilanı § 18 `no_responsibilities` ile reddediyor**
-  — kural doğru, ama gerçek ilanların çoğu böyle. Ürün kararı.
-- **`local-record` cevabı saklıyor, girdiyi saklamıyor** — bir sonraki
-  `make record` kaynak metni de yazmalı. (Yanlış pozitif oranı 2026-09-06'da
-  gerçek CV'ye karşı ölçüldü: **0/84**.)
+- **`EmbeddingService` parçalamıyor** — 84 atomu tek istekte yolluyor, TEI `413`
+  dönüyor; compose'daki `--max-client-batch-size 512` yama. İstemci parçalamalı.
+- **Faz D eşikleri ulaşılamıyor, ve artık ölçüldü:** gerçek embedding + gerçek
+  ilanla en yüksek atom skoru **0.3577**, `FLOOR_SCORE` **0.40**. § 21.2'nin
+  sayıları bu skorlama fonksiyonuyla uyuşmuyor; karar spec'in.
+- **Nitelik-listesi ilanı § 18 `no_responsibilities` ile reddediyor** — kural
+  doğru, ama gerçek ilanların çoğu böyle. Ürün kararı.
+- **`local-record` girdiyi saklamıyor** — bir sonraki `make record` kaynak metni
+  de yazmalı. (Yanlış pozitif oranı gerçek CV'ye karşı ölçüldü: **0/84**.)
 - **§ 14.6'nın `rejectReasons`'ı hâlâ yok** ve `promptVersions` koşmayan
   `bullet_rewrite`'ı koşmuş gösterebiliyor. İkisi de `RewrittenContent`'in
   yalnız kabul edilenleri taşımasından; `ContentRewriter` cephesini istiyor.
@@ -197,4 +197,4 @@ Frontend aksiyonları: `B-055`-`B-058`.
 
 Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da; ikinci bir kopya
 ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü görmeden
-yazıldı sayma.* Dilim 14'te ve Aşama 4 dilim A'da yine gerekti.
+yazıldı sayma.* Dilim 14'te ve kapanış sonrası dilim A'da yine gerekti.
