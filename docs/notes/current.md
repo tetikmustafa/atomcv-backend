@@ -117,14 +117,15 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
   giriş jetonu), tek `profile_extract` satırı var.
 - **`cost_usd` her satırda 0.000000** — fiyat tablosu yok, yani **günlük bütçe
   freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
-- **`EMBEDDING_UNAVAILABLE` Faz D'yi kapatıyor** (`dev-full` ile bile, üç
-  denemenin üçü de düştü). Artık sessiz değil — `trace.D` sıfır yazıyor — ama
-  **eşikler embedding'siz dağılıma göre ayarlanmadı**: § 21.2 onları verbatim
-  veriyor ve yeniden ayarlamak ölçüm ister.
-- **`local-record` cevabı saklıyor, girdiyi saklamıyor.** Bir çıkarımın
-  sadakati ancak kaynak belgeye karşı ölçülebilir; o belge diskte olmadığı için
-  `UNSUPPORTED_BY_SOURCE`'un **yanlış pozitif oranı ölçülemedi**. Bir sonraki
-  `make record` kaynak metni de yazmalı.
+- **Eşikler embedding'siz dağılıma göre ayarlanmadı**: § 21.2 onları verbatim
+  veriyor, yeniden ayarlamak ölçüm ister. Artık sessiz değil (`trace.D`).
+- **Embeddings container'ı bu makinede hiç çalışmadı** (`modelcache` boş, TEI
+  `cpu-1.5` `bge-m3`'ü indirirken kırılıyor). Faz D'nin sessizliğinin kökü bu.
+- **Nitelik-listesi biçimindeki ilanı § 18 `no_responsibilities` ile reddediyor**
+  — kural doğru, ama gerçek ilanların çoğu böyle. Ürün kararı.
+- **`local-record` cevabı saklıyor, girdiyi saklamıyor** — bir sonraki
+  `make record` kaynak metni de yazmalı. (Yanlış pozitif oranı 2026-09-06'da
+  gerçek CV'ye karşı ölçüldü: **0/84**.)
 - **§ 14.6'nın `rejectReasons`'ı hâlâ yok** ve `promptVersions` koşmayan
   `bullet_rewrite`'ı koşmuş gösterebiliyor. İkisi de `RewrittenContent`'in
   yalnız kabul edilenleri taşımasından; `ContentRewriter` cephesini istiyor.

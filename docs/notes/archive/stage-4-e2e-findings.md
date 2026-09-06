@@ -285,3 +285,63 @@ fikstür yanlış rafa bakıyordu. Dosya kendi anahtarını taşıyınca bayat b
 (`ITEM_LINE`, `ITEMIZE_OVERHEAD`) yıllardır yanlıştı ve kimse fark etmedi,
 çünkü eski şablonda birbirlerini götürüyorlardı. Şablon değişince ortaya çıktı.
 
+## Doğrulama — gerçek profil, gerçek CV, gerçek ilan (2026-09-06)
+
+Dört bulgu da gerçek içerikte çıkmıştı, o yüzden düzeltmeler de gerçek içerikte
+sınandı. Golden fikstürler bu bulguların hiçbirini üretmemişti.
+
+**Bulgu 1 — tripwire.** Aynı `cv.pdf`, aynı uç, `mode=replace`. Önce
+`EXTRACTION_EMPTY` ve sıfır atom; şimdi **`completed`, 84 atom, 6 section.**
+Çağrı bedava koştu: `local-fake` fikstürü girdinin hash'iyle bulup oynattı
+(`profile_extraction | fake-model | 0 jeton`).
+
+**Bulgu 4 — çıkarım sadakati, ve bir düzeltme.** Yeni muhafız 84 atomun
+hiçbirinde tetiklenmedi: **yanlış pozitif 0/84** — "ölçemiyoruz" dediğimiz şeyin
+ilk gerçek ölçümü. Ve ölçüm bir raporu düzeltti: **"SQL Server" uydurma
+değilmiş.** PDF'in metni çıkarıldı, `SQL Server` **iki kez** geçiyor, üstelik
+tam o maddede ("Integrated structured enterprise data utilizing SQL Server
+queries"). Önceki sonuç `cv.tex`'in 166. satırıyla karşılaştırmaya
+dayanıyordu, oysa `cv.tex` sonradan *format örneği* olarak verilen dosya, o
+atomları üreten belge değil. **Kafka** ise gerçekten yok (PDF'te sıfır kez), o
+uydurma gerçekti.
+
+**Bulgu 2 ve 3 — ilana özel gerçek üretim** (`6f08a6e6`, `classic:v2`):
+
+| | Şikâyet edilen koşu | Bu koşu |
+|---|---|---|
+| `usedPt` / `freePt` | 219.0 / 352.5 | **252.0 / 252.8** |
+| Boş kalan | **133.5 pt** | **0.79 pt** |
+| Bölümler | About, Experience, Projects(1), Affiliations | About, Experience, **Tech Stack**, Projects(**2**), Affiliations |
+| Faz D | sıfır çağrı | `rewritten: 1` |
+
+PDF'te iletişim satırı artık etiketli (`Email: … · Phone: …`), entry başlıkları
+`esumeSubheading`'in iki satırlı tablosu. Genel mod koşusunda ise
+`rejectionReasons` **yalnız `BUDGET`** — tek bir `ENTRY_BELOW_MINIMUM` yok,
+yani `min_atoms` kusuru kökten kapandı.
+
+**Düzeltme — yazdığım bir yorum yalan söylüyordu.** `trace.D` için "genel modda
+yok" demiştim; üretilen gerçek trace bloğu genel modda da gösterdi. Blok kalsın
+doğru — kaldırmak "ilan yok" ile "ölçülmemiş"i aynı sessizliğe düşürürdü, ki A
+ve E tam bunu önlemek için yok. Ayıran şey `B.weights`.
+
+**Ölçülemeyen: Faz D gerçek embedding'le.** Ve sebebi bulundu, tahmin değil:
+**embeddings container'ı bu makinede hiç çalışmamış.** `modelcache` volume'ü
+boş (4 KB) ve TEI `cpu-1.5` `BAAI/bge-m3`'ü indirirken ölüyor — ilk iki dosya
+iniyor, `config.json`'da `relative URL without a base`. Ağ sorunu değil.
+09-02'nin `EMBEDDING_UNAVAILABLE`'ı buydu: fikstürler o gün `make record` ile
+kaydedilmiş, yani gerçek `TeiEmbeddingProvider` devredeydi ve karşısında ölü bir
+container vardı. **Faz D'nin sessizliğinin kökü burası**, ve düzeltmesi bu
+repoda değil.
+
+**Ölçülemeyen: ilana özel akış `ilan.txt` ile.** Gerçek `job_analysis` çağrısı
+koştu (`confidence 0.9`, `skillsFound 17`) ve `no_responsibilities` ile
+reddetti — **doğru olarak**: ilan bir giriş cümlesi ve sekiz "Technical
+Qualifications" maddesinden ibaret, sorumluluk bölümü yok. Kusur değil, ama
+gerçek ilanların büyük kısmı bu şekilde; § 18'in geçidinin bunu reddetmesi
+ürün kararı olarak ayrıca bakılmayı hak ediyor.
+
+**Kozmetik, ve zaten kapanmış:** 16:54 koşusunda Tech Stack kategorisi iki kez
+basılıyor (entry başlığı + madde metni), çünkü o profilde section hâlâ
+`bullet_list`'ti. Yeniden yükleme `inline_list` yazdı; o düzende renderer entry
+başlıklarını hiç basmıyor.
+

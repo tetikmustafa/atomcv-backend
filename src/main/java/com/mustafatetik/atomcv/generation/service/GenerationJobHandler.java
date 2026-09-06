@@ -220,10 +220,12 @@ public class GenerationJobHandler implements JobHandler {
         phaseC.put("pinnedCostPt", pinnedCostPt(selection));
         phaseC.put("budget", budget(selection.budget()));
 
-        // Faz D. Absent in general mode, where there is no posting to write
-        // towards and nothing was meant to happen; present and zero is the
-        // phase having run and changed nothing, which is what a scoring run
-        // without embeddings produces and what no record used to show.
+        // Faz D. Always written, general mode included, because zero is a fact
+        // there too and omitting it would put "no posting to write towards" and
+        // "not instrumented" behind the same silence — which is the confusion
+        // A and E are absent to avoid. What separates the two cases is B:
+        // `weights` reads "general-mode" where there was no posting at all, and
+        // names a weight set where there was one and nothing came back.
         Map<String, Object> phaseD = new LinkedHashMap<>();
         phaseD.put("rewritten", generated.document().rewrittenAtoms());
 
