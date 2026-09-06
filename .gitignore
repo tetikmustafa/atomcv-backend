@@ -12,6 +12,7 @@
 # too. It also means a `.tex` that *should* be committed -- a reference template,
 # a rendering fixture -- has to be forced in with `git add -f`, and would be
 # missing from a fresh clone until someone noticed.
+cv/
 *.tex
 
 # Build output
