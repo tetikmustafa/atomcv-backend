@@ -12,11 +12,11 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0-2 · 3 — hesap ve MVP (3.7 profil editörü frontend'de) | ✅ |
-| Aşama 4 — uçtan uca ölçüm · dilim A-F | ✅ |
+| Kapanış sonrası — uçtan uca ölçüm · dilim A-F | ✅ |
 
 **Aşama 3 · dilim 9-14:** on bir `F-nnn` indi (§ 18.4.1, § 34.4.2); kapanış denetimi `notes/kapanis-denetimi.md`'de.
 
-**Aşama 4 — dört bulgu, yedi kusur** (`notes/archive/stage-4-e2e-findings.md`);
+**Kapanış sonrası ölçüm — dört bulgu, yedi kusur** (`notes/archive/`);
 **bulgular kusurlarla eşleşmedi:** "eksik Tech Stack" render sanılıyordu Faz C
 çıktı, iki uydurma cümle Faz D sanılıyordu ikisi de **çıkarımdan** geliyordu.
 

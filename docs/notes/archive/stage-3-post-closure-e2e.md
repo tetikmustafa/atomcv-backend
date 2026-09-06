@@ -1,11 +1,11 @@
-# Aşama 4 · uçtan uca ölçüm — dilim kayıtları
+# Aşama 3 kapanışından sonra · uçtan uca ölçüm — dilim kayıtları
 
 > Aşama 3 kapandıktan sonra yapılan ilk gerçek uçtan uca denemede dört bulgu
 > çıktı ve dördü de dört ayrı fazda yaşıyordu. Teşhis dört ayrı soruşturmayla,
 > tek harita halinde yapıldı; **bulgular kusurlarla bire bir eşleşmedi.**
 > `current.md` yalnız canlı olanı ve dilim listesini taşıyor, ayrıntı burada.
 
-## Aşama 4 · uçtan uca ölçüm — dilim A: Faz C (2026-09-03)
+## Dilim A — Faz C (2026-09-03)
 
 Dört bulguluk uçtan uca ölçümün ilki. **Bulgular kusurlarla bire bir eşleşmedi**:
 "eksik Tech Stack" render kusuru sanılıyordu, Faz C çıktı.
@@ -315,7 +315,8 @@ uydurma gerçekti.
 | Faz D | sıfır çağrı | `rewritten: 1` |
 
 PDF'te iletişim satırı artık etiketli (`Email: … · Phone: …`), entry başlıkları
-`esumeSubheading`'in iki satırlı tablosu. Genel mod koşusunda ise
+`
+esumeSubheading`'in iki satırlı tablosu. Genel mod koşusunda ise
 `rejectionReasons` **yalnız `BUDGET`** — tek bir `ENTRY_BELOW_MINIMUM` yok,
 yani `min_atoms` kusuru kökten kapandı.
 
@@ -344,4 +345,53 @@ gerçek ilanların büyük kısmı bu şekilde; § 18'in geçidinin bunu reddetm
 basılıyor (entry başlığı + madde metni), çünkü o profilde section hâlâ
 `bullet_list`'ti. Yeniden yükleme `inline_list` yazdı; o düzende renderer entry
 başlıklarını hiç basmıyor.
+
+## Embeddings hiç çalışmamış — ve CV'nin "istenen gibi olmamasının" sebebi buydu
+
+Doğrulama turunda CV hâlâ beklenen gibi çıkmıyordu. Yapısal kusurlar kapanmıştı
+ama **hangi** içeriğin sayfada kaldığı rastgeleydi, ve sebebi ölçüldü:
+
+| | Embedding'siz | Gerçek embedding'le |
+|---|---|---|
+| `trace.B.weights` | `without-embedding` | `default` |
+| Seçilen atomların skor aralığı | 0.0000 – 0.0719 | **0.2741 – 0.3577** |
+| Tam sıfır skorlu | 20'de **6** | 19'da **0** |
+
+Sıfıra yakın ve birbirine yapışık skorlarla Faz C'nin "puan/maliyet" sıralaması
+anlamını yitiriyor: Education ile Languages bir yarışı kaybetmedi, eşitlik
+bozucuya düştü. Gerçek vektörlerle aynı profil aynı ilana karşı **Education,
+Experience (üç işin üçü) ve Tech Stack** üretti.
+
+**Container üç ayrı sebeple ölüydü, üçü de ölçüldü:**
+
+1. **TEI `cpu-1.5`'in indiricisi bozuk.** İki config dosyasını indirip
+   üçüncüde `relative URL without a base` ile ölüyor — ağ değil, o sürümün
+   hatası. `cpu-1.7` sorunsuz indiriyor. Volume boş kaldığı için **ağırlıklar
+   hiç inmemiş.**
+2. **Bellek limiti yetersiz.** 4 GB'ta ve 8 GB'ta "Warming up model" sırasında
+   `OOMKilled=true`, exit 137. TEI varsayılan olarak **16384 token'lık** bir
+   yığınla ısınıyor; bu sistem onlarca token'lık maddeler gömüyor.
+   `--max-batch-tokens 2048` ile 8 GB'ta kalkıyor.
+3. **`--max-client-batch-size` 32, uygulama 84 atomu tek istekte gönderiyor** →
+   `413 batch size 84 > maximum allowed batch size 32`. Yani **32 atomdan büyük
+   hiçbir profil gerçek TEI'ye karşı hiç gömülememiş**; buradaki 28 atomlu eski
+   profil sınırın altında kaldığı için bunu gizlemiş.
+
+**Üçüncüsü bir uygulama kusuru ve compose'daki `512` bir yama.** İstemci
+parçalamalı: sunucu sınırını yükseltmek kırılma noktasını taşımaktan ibaret, ve
+bir sonraki büyük profil yine duvara çarpar. `EmbeddingService` bir sonraki
+dilimde parçalamalı.
+
+**Ve şimdi ölçülmüş bir şey daha var: Faz D eşikleri doğru yapılandırmada bile
+ulaşılamıyor.** Gerçek embedding, gerçek ilan, en yüksek atom skoru **0.3577**;
+`RewritePlanner`'ın tabanı **0.40**, tam uyarlama eşiği 0.65. Yani `trace.D`
+hâlâ `rewritten: 0`. Daha önce "yeniden ayarlamak ölçüm ister" diye
+dokunmamıştım — ölçüm artık burada, ve § 21.2'nin sayıları bu skorlama
+fonksiyonuyla uyuşmuyor. Karar spec'in.
+
+**Etiket düzeltmesi.** Bu işi "Aşama 4" diye adlandırmıştım; yanlış. Aşama 4
+`spec/14-build-guide.md` § XI-A.7'de **"Olgunlaşma (Sürekli)"** — atom düzeyinde
+tekilleştirme, ilan URL'den çekme, dokümanların çevirisi. Yaptığımız iş kapanmış
+Aşama 3'te uçtan uca testte çıkan hataların düzeltilmesiydi. `STATUS.md`
+frontend'e de gittiği için etiket oradan da düzeltildi.
 
