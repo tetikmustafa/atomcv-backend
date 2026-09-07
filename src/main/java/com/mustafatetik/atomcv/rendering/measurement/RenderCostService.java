@@ -1,15 +1,22 @@
 package com.mustafatetik.atomcv.rendering.measurement;
 
+import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.domain.Section;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
+import com.mustafatetik.atomcv.profile.repository.AtomRepository;
 import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
+import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,10 +37,15 @@ public class RenderCostService {
     private static final Logger log = LoggerFactory.getLogger(RenderCostService.class);
 
     private final AtomVariantRepository variants;
+    private final AtomRepository atoms;
+    private final SectionRepository sections;
     private final MeasurementService measurements;
 
-    RenderCostService(AtomVariantRepository variants, MeasurementService measurements) {
+    RenderCostService(AtomVariantRepository variants, AtomRepository atoms,
+            SectionRepository sections, MeasurementService measurements) {
         this.variants = variants;
+        this.atoms = atoms;
+        this.sections = sections;
         this.measurements = measurements;
     }
 
@@ -61,9 +73,12 @@ public class RenderCostService {
             return 0;
         }
 
+        Map<UUID, SectionLayout> layoutOfVariant = layouts(profile);
         var request = new MeasurementRequest(pending.stream()
                 .map(variant -> new MeasurementRequest.MeasurableItem(
-                        variant.getId().toString(), variant.getContent()))
+                        variant.getId().toString(), variant.getContent(),
+                        layoutOfVariant.getOrDefault(
+                                variant.getAtomId(), SectionLayout.BULLET_LIST)))
                 .toList(),
                 customization);
 
@@ -89,5 +104,30 @@ public class RenderCostService {
         // Counts, never content.
         log.info("Measured {} of {} wordings for {}", stored, pending.size(), costKey);
         return stored;
+    }
+
+    /**
+     * Which layout each atom's section is set in, so a wording is measured the
+     * way it will be printed (Bolum 22.4, rule 3).
+     *
+     * <p>Two extra reads per measuring job, and they buy the one thing the page
+     * guarantee cannot do without: an {@code INLINE_LIST} row is printed with
+     * its label in bold, and a measurement taken on the unbolded text reports a
+     * row narrower than the page will hold. Wrong in the safe direction is
+     * still wrong, and this one is wrong in the other.
+     */
+    private Map<UUID, SectionLayout> layouts(ProfileRef profile) {
+        Map<UUID, SectionLayout> bySection = new HashMap<>();
+        for (Section section : sections.findAll(profile)) {
+            bySection.put(section.getId(), section.getLayout());
+        }
+        Map<UUID, SectionLayout> byAtom = new HashMap<>();
+        for (Atom atom : atoms.findAll(profile)) {
+            SectionLayout layout = bySection.get(atom.getSectionId());
+            if (layout != null) {
+                byAtom.put(atom.getId(), layout);
+            }
+        }
+        return byAtom;
     }
 }
