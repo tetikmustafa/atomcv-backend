@@ -120,6 +120,55 @@ class RewritePlannerTest {
         assertThat(plan.candidates()).isEmpty();
     }
 
+    /**
+     * <strong>A Tech Stack row is not a bullet, and Bolum 21.4's prompt is
+     * written about a bullet.</strong>
+     *
+     * <p>It is a category and the items in it, and Bolum 33's rule for it is
+     * filtering: an item may be dropped, a category dropped when it empties,
+     * and nothing added. A prompt asking a model to bring a line closer to a
+     * posting is an invitation to do the opposite -- rename the category, or
+     * write in the item the posting asked for. Bolum 21.6 catches a technology
+     * the posting named; a category heading nobody wrote is not a claim about a
+     * technology, so nothing downstream would catch that at all.
+     *
+     * <p>The score is deliberately well over the ceiling: a Tech Stack row is
+     * exactly the atom that scores best against a posting, because it is a list
+     * of the posting's own words.
+     */
+    @Test
+    void atechStackRowIsNeverRewritten() {
+        var row = of(AtomKind.SKILL,
+                "Backend & Microservices: Spring Boot, Spring Cloud, Hibernate",
+                List.of("spring boot", "spring cloud", "hibernate"));
+
+        assertThat(planFor(List.of(scored(row, 0.95)), row).candidates()).isEmpty();
+    }
+
+    /** "Turkish: Native" is a fact, and a posting's vocabulary has nothing for it. */
+    @Test
+    void alanguageRowIsNeverRewritten() {
+        var row = of(AtomKind.LANGUAGE, "Turkish: Native", List.of());
+
+        assertThat(planFor(List.of(scored(row, 0.95)), row).candidates()).isEmpty();
+    }
+
+    /**
+     * The summary has its own prompt, its own ceiling and its own validator
+     * (Bolum 21.7), and {@code RewritePhase} plans it in the same fan-out.
+     * Leaving it here as well meant one paragraph asked for twice, two invoices,
+     * and the second answer overwriting the first by arriving later.
+     */
+    @Test
+    void thesummaryIsLeftToItsOwnPrompt() {
+        var paragraph = of(AtomKind.ABOUT_PARAGRAPH,
+                "Computer Engineering graduate specializing in Distributed Systems and "
+                + "Backend Development, with Java and Spring Boot throughout.",
+                List.of("java", "spring boot"));
+
+        assertThat(planFor(List.of(scored(paragraph, 0.95)), paragraph).candidates()).isEmpty();
+    }
+
     @Test
     void anatomWithNoWordingAtAllIsNotRewritten() {
         var atom = new AtomNode(atomRow(List.of()), List.of());
@@ -291,6 +340,12 @@ class RewritePlannerTest {
         Atom row = atomRow(skills);
         row.setMetrics(metrics);
         row.setProperNouns(properNouns);
+        return new AtomNode(row, List.of(wording(row, "en", RichContent.plain(text), true)));
+    }
+
+    private static AtomNode of(AtomKind kind, String text, List<String> skills) {
+        Atom row = new Atom(PROFILE, UUID.randomUUID(), UUID.randomUUID(), kind, (short) 0);
+        row.setSkills(skills);
         return new AtomNode(row, List.of(wording(row, "en", RichContent.plain(text), true)));
     }
 

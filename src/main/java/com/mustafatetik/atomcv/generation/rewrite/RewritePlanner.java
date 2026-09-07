@@ -118,7 +118,7 @@ public final class RewritePlanner {
     private static Optional<RewriteCandidate> candidateFor(
             Atom atom, AtomVariant wording, double score) {
 
-        if (atom.isVerbatim() || wording.getContent().isEmpty()) {
+        if (atom.isVerbatim() || wording.getContent().isEmpty() || !isABullet(atom)) {
             return Optional.empty();
         }
         String text = wording.getContent().plainText();
@@ -134,6 +134,41 @@ public final class RewritePlanner {
                 atom.getId(), wording.getId(), wording.getContent(),
                 atom.getSkills(), atom.getMetrics(), atom.getProperNouns(),
                 score, maxCharsFor(text), intent, atom.getEmbedding()));
+    }
+
+    /**
+     * Whether this atom is the kind of thing Bolum 21.4's prompt is written
+     * about: one sentence, saying what somebody did.
+     *
+     * <p><strong>Ekleme — three kinds are not, and each was reachable.</strong>
+     * The loop above offers every selected atom, and Bolum 21.2's tiers are
+     * about scores alone, so a Tech Stack row scoring well against a Java
+     * posting was a rewrite candidate like any bullet.
+     *
+     * <ul>
+     *   <li>{@code SKILL} — a Tech Stack row is a category and the items in it,
+     *       and Bolum 33's rule for it is <em>filtering</em>: items may be
+     *       dropped from a category and a category dropped when it empties,
+     *       and nothing may be added. A prompt that asks a model to bring a
+     *       line closer to a posting is an invitation to do the opposite —
+     *       rename the category, or write in the item the posting asked for.
+     *       Bolum 21.6 would catch a technology the posting named; it cannot
+     *       catch a category heading nobody wrote, because a heading is not a
+     *       claim about a technology.</li>
+     *   <li>{@code LANGUAGE} — "Turkish: Native" is a fact with no phrasing to
+     *       improve, and the posting's vocabulary has nothing to offer it.</li>
+     *   <li>{@code ABOUT_PARAGRAPH} — Bolum 21.7 has its own prompt, its own
+     *       ceiling and its own validator for the summary, and
+     *       {@code RewritePhase} plans it in the same fan-out. Leaving it here
+     *       too meant one paragraph asked for twice, two invoices, and the
+     *       second answer overwriting the first by arriving later.</li>
+     * </ul>
+     */
+    private static boolean isABullet(Atom atom) {
+        return switch (atom.getKind()) {
+            case BULLET, CERTIFICATION -> true;
+            case SKILL, LANGUAGE, ABOUT_PARAGRAPH -> false;
+        };
     }
 
     /**
