@@ -2,7 +2,7 @@
   "role" : {
     "title" : "Senior Backend Engineer",
     "seniority" : "senior",
-    "domain" : "Payments / Backend Engineering",
+    "domain" : "payments backend engineering",
     "employmentType" : null,
     "workMode" : null
   },
@@ -19,13 +19,13 @@
     "canonical" : "go",
     "importance" : "critical"
   }, {
-    "name" : "Distributed services",
-    "canonical" : "distributed systems",
-    "importance" : "critical"
-  }, {
     "name" : "PostgreSQL",
     "canonical" : "postgres",
     "importance" : "high"
+  }, {
+    "name" : "Distributed services",
+    "canonical" : "distributed systems",
+    "importance" : "critical"
   }, {
     "name" : "Observability tooling",
     "canonical" : "observability",
@@ -45,7 +45,7 @@
     "importance" : null
   } ],
   "responsibilities" : [ "Design and operate distributed services in Java and Go", "Own the reliability of a high-throughput ledger", "Mentor other engineers as the team grows" ],
-  "keywords" : [ "senior backend engineer", "payments", "distributed systems", "java", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "kubernetes", "terraform", "production systems" ],
+  "keywords" : [ "backend engineering", "payments", "distributed systems", "java", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "kubernetes", "terraform", "production systems" ],
   "experienceYears" : {
     "min" : null,
     "max" : null
@@ -54,5 +54,5 @@
   "companyTone" : "Professional, concise, and growth-oriented",
   "jdLanguage" : "en",
   "confidence" : 0.96,
-  "extractionNotes" : [ "The company name, employment type, work mode, and company size are not stated.", "The posting requires several years of production experience with PostgreSQL but does not provide a numeric range.", "Applicants are asked to include a short note about systems they have operated." ]
+  "extractionNotes" : [ "The posting requires several years of production PostgreSQL experience but does not specify a numeric minimum or maximum.", "Company name, company size, employment type, and work mode are not stated." ]
 }

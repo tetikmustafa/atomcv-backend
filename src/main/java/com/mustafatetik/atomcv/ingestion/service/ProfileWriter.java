@@ -137,14 +137,25 @@ public class ProfileWriter {
      * with one category per bullet is a list of five lines where the person
      * wrote five labelled rows.
      *
-     * <p>Only skills move. About, experience, projects and education are
-     * bullets and entries, which is what the default already says, and
+     * <p><strong>Languages is the second, and for the same reason.</strong> A
+     * language is a label and a level — "Turkish: Native" — which is the row a
+     * skills matrix is made of. Set as entries it printed the label twice: an
+     * entry heading reading {@code English} with a bullet under it reading
+     * {@code English: B2}, and two languages then cost 112 pt of a 708 pt page
+     * for what an inline list prints in 45.
+     *
+     * <p>Experience, projects and education stay bullets and entries, which is
+     * what the default already says. About too: its atoms are paragraphs, and
+     * an inline list would run them together on one line.
      * {@code TWO_COLUMN} stays unused here — Bolum 33.5 keeps Classic
      * single-column for ATS extraction, and choosing it at import would decide
      * that question in the wrong place.
      */
     private static SectionLayout layoutFor(SectionKind kind) {
-        return kind == SectionKind.SKILLS ? SectionLayout.INLINE_LIST : SectionLayout.BULLET_LIST;
+        return switch (kind) {
+            case SKILLS, LANGUAGES -> SectionLayout.INLINE_LIST;
+            default -> SectionLayout.BULLET_LIST;
+        };
     }
 
     /**
@@ -162,9 +173,19 @@ public class ProfileWriter {
      * an entry to ask for two bullets it does not have is asking for it to be
      * dropped, and {@code SelectionPhase} still obeys that. This only stops the
      * importer from making that choice on the user's behalf.
+     *
+     * <p><strong>An About entry is one paragraph, whatever the default says.</strong>
+     * The column default of two is a bullet-list number, and a summary is not a
+     * bullet list. A profile keeping four summaries — one written towards
+     * backend work, one towards data, one towards AI, which is what a person
+     * maintaining a master CV does — had its About entry claim a minimum of
+     * two, so Bolum 20.3's "prints its minimum or none of itself" put two
+     * opening paragraphs on one page. Both were the person's own words and the
+     * document still read as a mistake.
      */
-    private static short reachableMinimumFor(int atomCount) {
-        return (short) Math.min(Entry.DEFAULT_MIN_ATOMS, atomCount);
+    private static short reachableMinimumFor(SectionKind kind, int atomCount) {
+        int wanted = kind == SectionKind.ABOUT ? 1 : Entry.DEFAULT_MIN_ATOMS;
+        return (short) Math.min(wanted, atomCount);
     }
 
     private void writeEntry(Target target, Section section,
@@ -175,7 +196,7 @@ public class ProfileWriter {
         entry.setLocation(blankToNull(normalized.location()));
         entry.setStartDate(firstOfMonth(normalized.start()));
         entry.setEndDate(firstOfMonth(normalized.end()));
-        entry.setMinAtoms(reachableMinimumFor(normalized.atoms().size()));
+        entry.setMinAtoms(reachableMinimumFor(kind, normalized.atoms().size()));
         entries.save(target.ref(), entry);
 
         for (var atom : normalized.atoms()) {

@@ -111,6 +111,9 @@ public final class SelectionPhase {
          */
         private final Set<UUID> reservedByFloor = new LinkedHashSet<>();
 
+        /** Each section's plan, so an atom can be traced back to its policy. */
+        private final Map<UUID, SectionPlan> planOfSection = new LinkedHashMap<>();
+
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
@@ -125,6 +128,7 @@ public final class SelectionPhase {
                     capacity.pageTextHeightPt() * request.maxPages() * request.budgetFactor();
 
             for (SectionPlan section : request.sections()) {
+                planOfSection.put(section.sectionId(), section);
                 for (AtomCandidate atom : section.atoms()) {
                     sectionOfAtom.put(atom.atomId(), section.sectionId());
                 }
@@ -276,11 +280,17 @@ public final class SelectionPhase {
          * cares about, and an average buries a strong role behind a long one.
          */
         private void reserve(SectionPlan section, SectionFloor floor) {
+            // The section's own atoms first, because that is where the renderer
+            // prints them and because they are the cheapest way to reach the
+            // floor: no entry heading, no list of their own.
             for (AtomCandidate atom : sortedByScore(section.atoms())) {
-                if (takenFromSection.getOrDefault(section.sectionId(), 0) >= floor.looseAtoms()) {
+                if (takenFromSection.getOrDefault(section.sectionId(), 0) >= floor.atoms()) {
                     break;
                 }
                 takeIfItFits(atom);
+            }
+            if (floor.entries() == 0) {
+                return;
             }
 
             List<EntryPlan> ranked = new ArrayList<>(section.entries());
@@ -293,13 +303,16 @@ public final class SelectionPhase {
                 if (openedHere >= floor.entries()) {
                     break;
                 }
+                if (floor.atoms() > 0 && atomsOnThePageFrom(section) >= floor.atoms()) {
+                    // The floor is already met by the section's own atoms. A
+                    // section carrying both shapes — loose rows and entries —
+                    // would otherwise reserve the total twice over.
+                    break;
+                }
                 // An entry already on the page counts towards the floor: it is
-                // there, and reserving a second one beside it would print more
-                // than the floor asks for.
+                // there, from a lock or from an earlier pass, and reserving a
+                // second one beside it would print more than the floor asks for.
                 if (openEntries.contains(entry.entryId())) {
-                    // Already on the page, from a lock or from the floor of a
-                    // section list above it. It counts, and reserving beside it
-                    // would print more than the floor asked for.
                     openedHere++;
                     continue;
                 }
@@ -309,7 +322,7 @@ public final class SelectionPhase {
                 // (Bolum 20.2) -- and a bound of zero took nothing at all, so
                 // the one section whose floor is only an entry was the one
                 // section the floors could not put on the page.
-                int wanted = Math.max(1, Math.max(floor.atomsPerEntry(), entry.minAtoms()));
+                int wanted = Math.max(1, Math.max(floor.atomsPerEntry(), minAtomsFor(entry)));
                 if (openWholeEntry(entry, wanted)) {
                     openedHere++;
                 }
@@ -365,6 +378,52 @@ public final class SelectionPhase {
             }
         }
 
+        /**
+         * An entry's minimum, never above what its section may print.
+         *
+         * <p>The two can disagree, and one stored row is why this exists: an
+         * About entry carrying four summaries had a minimum of two, so Bolum
+         * 20.3's "prints its minimum or none of itself" put two opening
+         * paragraphs on a page whose section may hold one. {@code V7} repairs
+         * the rows; this stops any that are left — or any a client sends later
+         * — from reintroducing it. The ceiling is about what the document is;
+         * the minimum is about what an entry is worth, and the document wins.
+         */
+        private int minAtomsFor(EntryPlan entry) {
+            int minimum = entry.minAtoms();
+            SectionPlan section = planOfSection.get(sectionOfEntry.get(entry.entryId()));
+            if (section == null || section.floor().maxAtoms() == 0) {
+                return minimum;
+            }
+            return Math.min(minimum, section.floor().maxAtoms());
+        }
+
+        /**
+         * Whether this atom's section may take another (Bolum 33.4).
+         *
+         * <p>Only {@code ABOUT} has a ceiling, and it is not a budget rule. A
+         * real profile keeps four summaries — one written towards backend work,
+         * one towards data, one towards AI — and every one of them scores the
+         * same against a posting, so the greedy pass printed whichever two fit
+         * and the page carried two opening paragraphs. A CV has one.
+         */
+        private boolean withinItsCeiling(AtomCandidate atom) {
+            SectionPlan section = planOfSection.get(sectionOfAtom.get(atom.atomId()));
+            if (section == null || section.floor().isNone()) {
+                return true;
+            }
+            return section.floor().allowsMoreThan(atomsOnThePageFrom(section));
+        }
+
+        /** How much of this section is on the page, counted across both shapes. */
+        private int atomsOnThePageFrom(SectionPlan section) {
+            int total = takenFromSection.getOrDefault(section.sectionId(), 0);
+            for (EntryPlan entry : section.entries()) {
+                total += takenFromEntry.getOrDefault(entry.entryId(), 0);
+            }
+            return total;
+        }
+
         private static double bestScoreIn(EntryPlan entry) {
             return entry.atoms().stream()
                     .mapToDouble(AtomCandidate::score)
@@ -387,6 +446,9 @@ public final class SelectionPhase {
                 double bestEfficiency = 0;
 
                 for (AtomCandidate atom : pool.values()) {
+                    if (!withinItsCeiling(atom)) {
+                        continue;
+                    }
                     double cost = effectiveCostOf(atom);
                     if (cost > remainingPt()) {
                         continue;
@@ -450,7 +512,7 @@ public final class SelectionPhase {
                 topUpToMinimum(entryId, false);
 
                 EntryPlan entry = entries.get(entryId);
-                if (takenFromEntry.getOrDefault(entryId, 0) < entry.minAtoms()) {
+                if (takenFromEntry.getOrDefault(entryId, 0) < minAtomsFor(entry)) {
                     dropped |= dropEntry(entryId);
                 }
             }
@@ -467,6 +529,7 @@ public final class SelectionPhase {
          */
         private void improveBySwapping() {
             List<AtomCandidate> wanted = sortedByScore(pool.values()).stream()
+                    .filter(this::withinItsCeiling)
                     .limit(SWAP_CANDIDATES)
                     .toList();
 
@@ -741,7 +804,7 @@ public final class SelectionPhase {
                 return;
             }
             for (AtomCandidate atom : sortedByScore(entry.atoms())) {
-                if (takenFromEntry.getOrDefault(entryId, 0) >= entry.minAtoms()) {
+                if (takenFromEntry.getOrDefault(entryId, 0) >= minAtomsFor(entry)) {
                     return;
                 }
                 if (!pool.containsKey(atom.atomId())) {
