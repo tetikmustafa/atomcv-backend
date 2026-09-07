@@ -849,6 +849,24 @@ göründüğü için: Markdown bir *taslak* — model `## Deneyim`'i başlık,
 prose değildir. LaTeX tarafında argüman korunur, komut atılır (kalın yazılmış
 bir isim yine isimdir), preamble ise bütünüyle atılır.
 
+**Düzeltme — iki argüman iki alandır, tek kelime değil** (kapanış sonrası
+dilim K). Sadeleştirme bir argümanı açıyor, gerisi süslü parantez öbeği olarak
+kalıyor, ve parantezler silinince aralarında hiçbir şey olmadan birleşiyorlar.
+Gerçek bir `.tex` yüklemesi bunu üretti:
+
+```
+\resumeSubheading{Marmara University}{Istanbul, Turkiye}
+                 {Computer Engineering | GPA: 3.21}{2022 -- 2026}
+   →   Computer Engineering | GPA: 3.212022 -- 2026
+```
+
+Bir not ortalaması ile bir tarih aralığı tek bir sayıya kaynamış, ve model onu
+sadakatle bir atoma taşıdı — üretilen CV'deki, kaynak belgenin söylemediği tek
+satır. Bitişik iki öbeğin arasına satır sonu giriyor, **ikincisi noktalama ile
+başlamıyorsa**: referans şablon etiketli satırı `\textbf{Kategori}{: öğe, öğe}`
+diye yazıyor ve orada ikinci öbek birincinin *devamı*. Ayraç her çiftin arasına
+konsaydı her Tech Stack satırında iki noktadan önce boşluk olurdu.
+
 ### 31.4 LLM ile yapılandırma (tek çağrı)
 
 ```json
@@ -1490,12 +1508,47 @@ public record TemplateCustomization(
 enum SectionLayout {
     BULLET_LIST,    // madde listesi
     ENTRY_LIST,     // başlık + tarih + maddeler
-    INLINE_LIST,    // virgülle ayrılmış tek satır
-    TWO_COLUMN      // yan yana iki liste
+    INLINE_LIST,    // etiketli satırlar: "Kategori: öğe, öğe, öğe"
+    TWO_COLUMN,     // yan yana iki liste
+    PARAGRAPH       // başlığın altında düz nesir, madde işareti yok
 }
 ```
 
 Kullanıcı "Sertifikalar", "Yayınlar", "Gönüllü Çalışmalar" ekler; düzen tipini seçer. Her düzen tipinin sabit maliyeti şablon config'inde bir kez ölçülür.
+
+#### 33.4.1 Kararlar (kapanış sonrası dilim K) — iki düzenin gerçek şekli
+
+Referans şablon (§ 33.5'in Klasik'i) bir CV'nin altı bölümünü **üç** farklı
+şekilde diziyor, listelenen dördü ise ikisini ifade edemiyordu. İkisi de gerçek
+bir CV'de yanlış çıktı.
+
+**Ekleme — beşinci değer: `PARAGRAPH`.** Bir özet tek bir akan paragraftır;
+kolonun varsayılanı `bullet_list` olduğu için madde işaretiyle basılıyordu —
+paragrafın önünde bir işaret, ve hiç gelmeyen bir listenin ilk maddesi gibi
+okunuyor. `INLINE_LIST`'e katlanamaz: bir inline satır **etiket + liste**
+demek, ilk iki noktası kalın diziliyor, ve "Backend engineer: beş yıl…" diye
+açılan bir özetin ilk kelimeleri onunla ilgisi olmayan bir kuralla kalınlaşırdı.
+`PARAGRAPH` yalnız doğru olan tek şeyi söylüyor: nesir, işaret yok. Geometri
+değişmiyor (aynı kenar boşluğunda aynı `itemize`, işaret marjda durur), o
+yüzden şablon sürümü yükselmedi ve hiçbir ölçülmüş maliyet geçersizleşmedi.
+`ProfileWriter` `ABOUT` için bunu yazıyor, `V9` eski satırları taşıyor.
+
+**Düzeltme — `INLINE_LIST` "virgülle ayrılmış tek satır" değil, etiketli
+satırlar.** Referans belge her satırı `\textbf{Kategori}{: öğe, öğe}` diye
+diziyor; düz basılan bir Tech Stack, okuyucunun aşağı doğru tarayacağı hiçbir
+şeyi olmayan altı satırlık virgüllü kelime dizisi. Ayırma **render kararı**:
+kalın etiket ilk iki noktaya kadar, gerisi sade — ve satırdaki başka hiçbir
+işaret dizilmiyor. Çıkarım not bulduğunu işaretliyor, ve her öğesi bir teknoloji
+olan bir listede bu satırın **yüzde yetmişi** demek; yüzde yetmişi italik bir
+beceri matrisi hiçbir şeyi vurgulamıyor. Etiket de aynı yoldan sade: kalın zaten
+vurgunun kendisi.
+
+**İçerikte değil render'da, ve sebebi ölçülebilir.** `RichContent.contentHash`
+düz metin üzerinden hesaplanıyor (§ 16.2), yani satırı işaretleyerek kalın
+yapmak **ölçülmüş maliyeti geçersizleştirmezdi**: daha geniş basılan bir satır
+dar satırın sayısını taşımaya devam ederdi. Üstelik Tech Stack satırını
+düzenleyen kişi düz metin yazıyor; kimse dokunmadıkça ayakta kalan bir şekil,
+bölümün sahip olduğu bir şekil değil.
 
 ### 33.5 Şablon kataloğu
 

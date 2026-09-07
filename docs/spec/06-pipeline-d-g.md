@@ -38,6 +38,15 @@ okuyor.
 
 `verbatim = true` atomlar bu aşamaya **hiç gönderilmez**.
 
+**Üç atom türü de gönderilmez** (kapanış sonrası dilim K). § 21.4'ün prompt'u
+*bir CV maddesi* hakkında yazılmış, ve üçü madde değil:
+
+| Tür | Neden |
+|---|---|
+| `SKILL` | Bir Tech Stack satırı bir kategori ve içindeki öğelerdir; § 33'ün kuralı **süzmek**: öğe düşürülür, boşalan kategori düşürülür, hiçbir şey eklenmez. "Bu satırı ilana yaklaştır" diyen bir prompt tam tersini davet ediyor — kategoriyi yeniden adlandırmak, ya da ilanın istediği öğeyi yazmak. § 21.6 ilanın adlandırdığı bir teknolojiyi yakalar; **kimsenin yazmadığı bir kategori başlığı bir teknoloji iddiası değil**, yani onu hiçbir kapı yakalamaz |
+| `LANGUAGE` | "Türkçe: Anadil" iyileştirilecek bir ifade taşımıyor, ve ilanın söz dağarcığının ona verecek bir şeyi yok |
+| `ABOUT_PARAGRAPH` | § 21.7'nin kendi prompt'u, kendi tavanı ve kendi doğrulayıcısı var, ve aynı fan-out'ta planlanıyor. Burada da durması bir paragrafın **iki kez** istenmesi, iki fatura, ve geç gelen cevabın ötekini ezmesi demekti |
+
 ### 21.3 Uzunluk kısıtı — sayfa garantisinin korunması
 
 Faz C atomları **ölçülmüş maliyetleriyle** seçti. Faz D metni uzatırsa sayfa taşar.
@@ -427,6 +436,28 @@ public RenderedSource renderMeasurement(MeasurementRequest req) {
 3. Sarmalayıcı ortam (`itemize` içinde basılıyorsa ölçüm de öyle)
 
 `item.key()` = `{variantId}:{customizationId}:{templateVersion}`
+
+#### 22.4.1 Kararlar (kapanış sonrası dilim K) — üçüncü kural düzeni de kapsıyor
+
+**Ekleme — ölçülecek her öğe hangi düzende basılacağını taşıyor.** Yukarıdaki
+üç kuralın üçüncüsü ("sarmalayıcı ortam") bugüne kadar yalnız *ortam* diye
+okunuyordu; § 33.4.1 ile birlikte artık **basılan metnin kendisi** de düzene
+bağlı: bir `INLINE_LIST` satırı sayfaya etiketi kalın olarak çıkıyor ve kalın
+geniştir. Düzensiz ölçülen bir beceri matrisinin her satırı, basılacak satırdan
+**dar** raporlanıyordu — bir render maliyetinin yanlış olmasının yasak olduğu
+tek yön, çünkü sayfa garantisi sayının bir üst sınır olmasına dayanıyor.
+
+`MeasurementRequest.MeasurableItem` bu yüzden `SectionLayout` taşıyor, ve onu
+dolduran iki çağıranın ikisi de atomun bölümünü okuyor (`RenderCostService`,
+`GoldenCostsIT`). Varsayılan `BULLET_LIST` — kolonun varsayılanı, ve düzeni
+bilmeyen bir çağıranın alacağı en zararsız cevap.
+
+**Sarmalayıcı ortam aynı kaldı, ve bilerek.** Ölçüm hâlâ `\resumeItemListStart`
+içinde koşuyor, sayfa ise satırı `\resumeInlineList` içinde basıyor. İkisi de
+`leftmargin=\atomcvindent` ile açılıyor, yani içerdeki `\linewidth` birebir aynı
+— aradaki tek fark marjda duran madde işareti, ve o metin bloğunun genişliğine
+girmiyor. Kalibrasyonun "inline listenin kendi sabitine gerek yok" cevabı da
+bunu söylüyordu.
 
 ### 22.5 Preamble üretimi
 

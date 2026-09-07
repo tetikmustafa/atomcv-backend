@@ -12,6 +12,35 @@
 
 ## OPEN
 
+### B-073 · `SectionLayout` beşinci değeri aldı: `paragraph`
+
+**Since:** commit <bu PR> · kapanış sonrası dilim K · **Spec:**
+`spec/07-subsystems.md` § 33.4 · `profile/domain/SectionLayout`
+
+**Ne oldu:** `sections.layout` artık `bullet_list | entry_list | inline_list |
+two_column | **paragraph**` alıyor. `SectionResponse` onu yayımlıyor,
+`SectionCreateRequest`/`SectionPatchRequest` kabul ediyor. `V9` her `about`
+bölümünü — kolonun varsayılanını taşıyan, yani kimsenin seçmediği her satırı —
+`paragraph`'a taşıdı, ve içe aktarım artık onu yazıyor.
+
+**Neden:** bir özet tek bir akan paragraf. Varsayılan `bullet_list` olduğu için
+madde işaretiyle basılıyordu — paragrafın önünde bir işaret, hiç gelmeyen bir
+listenin ilk maddesi gibi. `inline_list`'e katlanamadı: o düzen satırın ilk iki
+noktasını kalın diziyor ("Kategori: öğe, öğe"), ve "Backend engineer: beş
+yıl…" diye açılan bir özetin ilk kelimeleri onunla ilgisi olmayan bir kuralla
+kalınlaşırdı.
+
+**Action:** düzen adını gösteren/seçtiren her yerde beşinci değeri karşılayın.
+Bilmediği bir değeri `other`'a düşüren bir `select` varsa şimdi oraya düşüyor;
+ICU anahtarını ekleyin. **Bölüm düzeni seçtiren bir arayüz varsa** `paragraph`
+"Paragraf / düz metin" olarak listelenmeli, ve About bölümü için varsayılan o.
+Başka iş yok: dört eski değer aynı anlamda.
+
+**Yan not, ekranda görünmez ama sorulur:** `inline_list` artık "virgülle
+ayrılmış tek satır" değil, **etiketli satırlar** — sayfada her satır
+`Kategori: öğe, öğe` şeklinde, etiketi kalın. Tel değişmedi, yalnız o düzenin
+ne demek olduğu netleşti.
+
 ### B-072 · `no_responsibilities` telden kalktı
 
 **Since:** commit <bu PR> · kapanış sonrası dilim H · **Spec:**
@@ -73,13 +102,6 @@ gürültü yaparsa duymak istiyoruz.
 _(`B-037`…`B-070`'in hepsi kapandı ve `resolved/to-frontend-2026-08.md`'de —
 hangi dilimin hangisini kapattığı orada. Aşağıdakiler **hâlâ canlı olan**
 kayıtlar; gerisi arşive indi.)_
-
-**`B-062`-`B-070`'in dokuzu da kapandı** (2026-08-29/30), notları arşivde.
-
-**`B-070`'i uygularken telde `F-025`'i açtık:** `companyName` bir satırda
-**`"not specified"`** geliyor — `""` değil, yani "boş dize hiç dönmez" kuralı
-onu tutmuyor ve ekranda bir şey söylüyormuş gibi duran bir etiket üretiyor.
-İstemcide çözmek yer tutucu kara listesi demek olurdu; oraya girmedik.
 
 **İki maddede bir doğrulama eksik ve söylenmesi gerekiyor:** ne OAuth
 sıçraması (`B-048`) ne de Turnstile (`B-050`) gerçek uca karşı denendi —
