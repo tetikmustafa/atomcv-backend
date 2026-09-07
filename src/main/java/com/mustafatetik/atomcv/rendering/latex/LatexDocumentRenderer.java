@@ -101,10 +101,17 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             // \resumeItemListStart and \linewidth is narrower there than
             // \textwidth, which is Bolum 22.4's own rule: the preamble, the
             // width and the environment all match, or the numbers are fiction.
+            // The same content the page will carry, marks and all. An
+            // INLINE_LIST row reaches the page with its label in bold, so it is
+            // measured that way too: \resumeInlineList and \resumeItemListStart
+            // both set their contents at the same \linewidth, and the only
+            // difference between the two that costs points is this one.
             out.append("\\resumeItemListStart\n")
                     .append("\\item\\savebox{").append(BOX)
                     .append("}{\\parbox{\\linewidth}{")
-                    .append(LatexInlineRenderer.render(item.content()))
+                    .append(item.layout() == SectionLayout.INLINE_LIST
+                            ? InlineRow.render(item.content())
+                            : LatexInlineRenderer.render(item.content()))
                     .append("}}\\usebox{").append(BOX).append("}\n")
                     .append("\\typeout{ATOMCOST|").append(item.key())
                     .append("|\\the\\ht").append(BOX)
@@ -228,7 +235,11 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             inlineList(out, section);
             return;
         }
-        bullets(out, section.atoms());
+        if (section.layout() == SectionLayout.PARAGRAPH) {
+            paragraphs(out, section);
+            return;
+        }
+        items(out, section.atoms());
         if (section.entries().isEmpty()) {
             return;
         }
@@ -263,6 +274,38 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 .append("}\n");
     }
 
+    /**
+     * Prose under a heading, with no marker in front of it (Bolum 33.4).
+     *
+     * <p>One {@code \resumeItem} per paragraph, however long the paragraph is
+     * and however many sentences it holds — a summary is a block, and nothing
+     * here counts its sentences or looks for a place to break it. The document
+     * this template was taken from writes its About exactly this way.
+     *
+     * <p>Entries are flattened into the same list. A section set as prose has
+     * no headings to print: extraction has to put every atom somewhere and the
+     * shape it is given has only entries, so it invents a title for the one it
+     * makes — and an invented title above a paragraph is a line nobody wrote.
+     * {@code ProfileWriter} already hangs a summary off its section for that
+     * reason; this makes the renderer unable to print one even if a row
+     * somewhere still has it.
+     */
+    private static void paragraphs(StringBuilder out, RenderRequest.RenderableSection section) {
+        List<RichContent> all = new ArrayList<>(section.atoms());
+        for (RenderRequest.RenderableEntry entry : section.entries()) {
+            all.addAll(entry.atoms());
+        }
+        if (all.isEmpty()) {
+            return;
+        }
+        out.append("\\resumeParagraphListStart\n");
+        for (RichContent paragraph : all) {
+            out.append("\\resumeItem{")
+                    .append(LatexInlineRenderer.render(paragraph)).append("}\n");
+        }
+        out.append("\\resumeParagraphListEnd\n");
+    }
+
     /** One inline block, the way a skills matrix is written (Bolum 33.4). */
     private static void inlineList(StringBuilder out, RenderRequest.RenderableSection section) {
         List<RichContent> all = new ArrayList<>(section.atoms());
@@ -274,7 +317,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         }
         out.append("\\resumeInlineList{\n");
         for (int index = 0; index < all.size(); index++) {
-            out.append(LatexInlineRenderer.render(all.get(index)));
+            out.append(InlineRow.render(all.get(index)));
             // A break between rows and none after the last: a trailing \\
             // inside an \item opens a row that nothing fills.
             out.append(index < all.size() - 1 ? " \\\\\n" : "\n");
@@ -282,6 +325,15 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         out.append("}\n");
     }
 
+    /**
+     * Bullets, through the template's own commands.
+     *
+     * <p>Used for a section's loose atoms as well as an entry's. A second
+     * spelling — a bare {@code itemize} with a bare {@code \item} — printed the
+     * same thing under the classic template and would stop doing so the moment
+     * a template gave {@code \resumeItem} anything of its own, silently and
+     * only for the sections whose atoms hang off the section.
+     */
     private static void items(StringBuilder out, List<RichContent> atoms) {
         if (atoms.isEmpty()) {
             return;
@@ -291,16 +343,5 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             out.append("\\resumeItem{").append(LatexInlineRenderer.render(atom)).append("}\n");
         }
         out.append("\\resumeItemListEnd\n");
-    }
-
-    private static void bullets(StringBuilder out, List<RichContent> atoms) {
-        if (atoms.isEmpty()) {
-            return;
-        }
-        out.append("\\begin{itemize}\n");
-        for (RichContent atom : atoms) {
-            out.append("\\item ").append(LatexInlineRenderer.render(atom)).append('\n');
-        }
-        out.append("\\end{itemize}\n");
     }
 }
