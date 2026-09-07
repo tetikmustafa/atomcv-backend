@@ -131,7 +131,15 @@ public final class SelectionRequestBuilder {
                     // plus the minimum it is worth printing at (EK D.8.7).
                     candidates = pinBest(candidates, Math.max(1, minAtoms));
                 }
-                entries.add(new EntryPlan(entry.entry().getId(), minAtoms, candidates));
+                // A project is the entry with no employer, no place and no
+                // dates, and the renderer gives it a one-line heading for
+                // exactly that reason. Asking the data here rather than the
+                // section's name is what keeps the two in step.
+                boolean bare = isBlank(entry.entry().getOrganization())
+                        && isBlank(entry.entry().getLocation())
+                        && entry.entry().getStartDate() == null;
+                entries.add(new EntryPlan(
+                        entry.entry().getId(), minAtoms, bare, candidates));
             }
 
             if (section.section().isAlwaysInclude()) {
@@ -140,7 +148,7 @@ public final class SelectionRequestBuilder {
                 } else if (!entries.isEmpty()) {
                     EntryPlan first = entries.get(0);
                     entries.set(0, new EntryPlan(first.entryId(), first.minAtoms(),
-                            pinBest(first.atoms(), 1)));
+                            first.bare(), pinBest(first.atoms(), 1)));
                 }
             }
 
@@ -149,7 +157,7 @@ public final class SelectionRequestBuilder {
                 sections.add(new SectionPlan(section.section().getId(),
                         section.section().isAlwaysInclude(),
                         SectionFloor.priorityOf(kind), SectionFloor.forKind(kind),
-                        entries, loose));
+                        section.section().getLayout(), entries, loose));
             }
         }
 
@@ -167,6 +175,10 @@ public final class SelectionRequestBuilder {
      * Pins the highest-scoring candidates, ties broken by id so that two runs
      * of the same profile pin the same ones (Bolum 19.6).
      */
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
     private static List<AtomCandidate> pinBest(List<AtomCandidate> candidates, int count) {
         List<AtomCandidate> ranked = candidates.stream()
                 .filter(AtomCandidate::active)

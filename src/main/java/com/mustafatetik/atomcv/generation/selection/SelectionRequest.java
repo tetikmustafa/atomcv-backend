@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.selection;
 
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -60,6 +61,7 @@ public record SelectionRequest(
             boolean alwaysInclude,
             int priority,
             SectionFloor floor,
+            SectionLayout layout,
             List<EntryPlan> entries,
             List<AtomCandidate> atoms) {
 
@@ -68,7 +70,22 @@ public record SelectionRequest(
                 List<EntryPlan> entries, List<AtomCandidate> atoms) {
 
             this(sectionId, alwaysInclude, SectionFloor.UNRANKED, SectionFloor.NONE,
-                    entries, atoms);
+                    SectionLayout.BULLET_LIST, entries, atoms);
+        }
+
+        /**
+         * The ranked form, for a section set as bullets or entries.
+         *
+         * <p>The layout is here because it costs the budget, not because the
+         * renderer needs it: the three label-less shapes open for three
+         * different numbers, and an inline row pays no separation where a
+         * bullet does (Bolum 33.4).
+         */
+        public SectionPlan(UUID sectionId, boolean alwaysInclude, int priority,
+                SectionFloor floor, List<EntryPlan> entries, List<AtomCandidate> atoms) {
+
+            this(sectionId, alwaysInclude, priority, floor,
+                    SectionLayout.BULLET_LIST, entries, atoms);
         }
 
         public SectionPlan {
@@ -95,7 +112,13 @@ public record SelectionRequest(
      *                 so selection either keeps this many or drops it whole
      *                 (Bolum 20.2, constraint 4)
      */
-    public record EntryPlan(UUID entryId, short minAtoms, List<AtomCandidate> atoms) {
+    public record EntryPlan(
+            UUID entryId, short minAtoms, boolean bare, List<AtomCandidate> atoms) {
+
+        /** An entry that carries a heading of two lines, which most do. */
+        public EntryPlan(UUID entryId, short minAtoms, List<AtomCandidate> atoms) {
+            this(entryId, minAtoms, false, atoms);
+        }
 
         public EntryPlan {
             atoms = List.copyOf(atoms);

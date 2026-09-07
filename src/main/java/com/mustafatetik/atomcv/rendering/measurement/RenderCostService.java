@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
 import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.rendering.template.CapacityModel.RowShape;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -73,12 +74,11 @@ public class RenderCostService {
             return 0;
         }
 
-        Map<UUID, SectionLayout> layoutOfVariant = layouts(profile);
+        Map<UUID, RowShape> shapeOfAtom = shapes(profile);
         var request = new MeasurementRequest(pending.stream()
                 .map(variant -> new MeasurementRequest.MeasurableItem(
                         variant.getId().toString(), variant.getContent(),
-                        layoutOfVariant.getOrDefault(
-                                variant.getAtomId(), SectionLayout.BULLET_LIST)))
+                        shapeOfAtom.getOrDefault(variant.getAtomId(), RowShape.ENTRY_BULLET)))
                 .toList(),
                 customization);
 
@@ -88,14 +88,19 @@ public class RenderCostService {
 
         for (AtomVariant variant : pending) {
             RenderCost cost = measured.get(variant.getId().toString());
+            RowShape shape = shapeOfAtom.getOrDefault(
+                    variant.getAtomId(), RowShape.ENTRY_BULLET);
             if (cost == null) {
                 // One missing measurement is not a reason to throw away the
                 // rest: selection falls back to an estimate for this one and
                 // says so, rather than the whole profile going unmeasured.
                 continue;
             }
+            // A bullet pays the separation an itemize puts between two items;
+            // an inline row shares a single item with its neighbours and pays
+            // none. Five points a row, and a skills matrix is several rows.
             variant.recordRenderCost(costKey,
-                    cost.totalPt(capacity.baselineSkipPt(), capacity.itemSpacingPt()),
+                    cost.totalPt(capacity.itemBaselineSkipPt(), capacity.rowSpacingPt(shape)),
                     measuredAt);
             variants.save(profile, variant);
             stored++;
@@ -116,18 +121,33 @@ public class RenderCostService {
      * row narrower than the page will hold. Wrong in the safe direction is
      * still wrong, and this one is wrong in the other.
      */
-    private Map<UUID, SectionLayout> layouts(ProfileRef profile) {
+    private Map<UUID, RowShape> shapes(ProfileRef profile) {
         Map<UUID, SectionLayout> bySection = new HashMap<>();
         for (Section section : sections.findAll(profile)) {
             bySection.put(section.getId(), section.getLayout());
         }
-        Map<UUID, SectionLayout> byAtom = new HashMap<>();
+        Map<UUID, RowShape> byAtom = new HashMap<>();
         for (Atom atom : atoms.findAll(profile)) {
             SectionLayout layout = bySection.get(atom.getSectionId());
-            if (layout != null) {
-                byAtom.put(atom.getId(), layout);
+            if (layout == null) {
+                continue;
             }
+            byAtom.put(atom.getId(), shapeOf(layout, atom.getEntryId() != null));
         }
         return byAtom;
+    }
+
+    /**
+     * Which of the three shapes a page sets this atom in.
+     *
+     * <p>An inline section flattens everything it holds into one block, so
+     * where the atom hangs does not matter there. Everywhere else it decides
+     * the list's nesting, and the nesting decides the number.
+     */
+    public static RowShape shapeOf(SectionLayout layout, boolean inEntry) {
+        if (layout == SectionLayout.INLINE_LIST) {
+            return RowShape.INLINE_ROW_SHAPE;
+        }
+        return inEntry ? RowShape.ENTRY_BULLET : RowShape.SECTION_BULLET;
     }
 }
