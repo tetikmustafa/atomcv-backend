@@ -63,12 +63,55 @@ public class FixtureStore {
     }
 
     /**
+     * The prompt that earned an answer, beside the answer (Bolum 31.4).
+     *
+     * <p><strong>The one deliberate exception to "the file holds the answer,
+     * never the prompt".</strong> {@link com.mustafatetik.atomcv.ingestion
+     * .normalization.ExtractionFidelity} asks whether an extracted atom names
+     * something the uploaded document does not, and that question cannot be
+     * asked of a recording at all: the answer is kept and the document it was
+     * read from is gone. So the check's false-positive rate — the number that
+     * decides whether it can ever become a refusal rather than a warning — was
+     * measurable only by uploading a CV and reading the logs.
+     *
+     * <p>Written only for the prompts {@link FixtureRecordingAnswers} names,
+     * which are the ones whose directory {@code .gitignore} already keeps out
+     * of a public repository. This file is the person's CV in full.
+     */
+    public Path saveSource(StructuredRequest<?> request) {
+        var file = sourcePathFor(request);
+        try {
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, request.userPrompt(), StandardCharsets.UTF_8);
+            return file;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not record the source of " + file, e);
+        }
+    }
+
+    /** The recorded prompt, for whoever wants to measure against it. */
+    public Optional<String> findSource(StructuredRequest<?> request) {
+        var file = sourcePathFor(request);
+        if (!Files.isRegularFile(file)) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(Files.readString(file, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Unreadable source " + file, e);
+        }
+    }
+
+    /**
      * Removes a recording, for an answer the pipeline refused.
      *
      * @return whether there was one to remove
      */
     public boolean remove(StructuredRequest<?> request) {
         try {
+            // The source goes with it. A prompt left behind by a withdrawn
+            // answer is a file nothing will ever read again, holding a CV.
+            Files.deleteIfExists(sourcePathFor(request));
             return Files.deleteIfExists(pathFor(request));
         } catch (IOException e) {
             throw new UncheckedIOException("Could not withdraw fixture " + pathFor(request), e);
@@ -79,6 +122,17 @@ public class FixtureStore {
     Path pathFor(StructuredRequest<?> request) {
         return root.resolve(request.promptId())
                 .resolve(request.promptVersion() + "-" + hash(request.userPrompt()) + ".json");
+    }
+
+    /**
+     * {@code {root}/{promptId}/{version}-{hash}.source.txt} — the same stem, so
+     * the pair is obvious in a directory listing and a stale source cannot end
+     * up beside a different answer.
+     */
+    Path sourcePathFor(StructuredRequest<?> request) {
+        return root.resolve(request.promptId())
+                .resolve(request.promptVersion() + "-" + hash(request.userPrompt())
+                        + ".source.txt");
     }
 
     /**

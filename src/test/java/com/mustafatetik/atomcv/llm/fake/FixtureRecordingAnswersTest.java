@@ -104,6 +104,61 @@ class FixtureRecordingAnswersTest {
         new FixtureRecordingAnswers(properties, JSON).discard(request());
     }
 
+    // ── Bolum 31.4: the document, kept beside the answer ─────────────────
+
+    /**
+     * <strong>An extraction's source is kept and an analysis's is not.</strong>
+     * {@code ExtractionFidelity} asks whether an atom names something the
+     * uploaded document does not, and a recording could not be asked that at
+     * all: the answer was kept and the document was gone. Its false-positive
+     * rate — the number that decides whether the check can ever become a
+     * refusal rather than a warning — was measurable only by uploading a CV and
+     * reading the logs.
+     */
+    @Test
+    void anextractionKeepsTheDocumentItWasReadFrom() {
+        var properties = new FakeLlmProperties(fixtures, false);
+        var extraction = extractionRequest();
+
+        new FixtureRecordingAnswers(properties, JSON)
+                .record(extraction, new Analysis("Backend Engineer", 4));
+
+        assertThat(new FixtureStore(fixtures, JSON).findSource(extraction))
+                .contains(extraction.userPrompt());
+    }
+
+    /**
+     * And nothing else does. {@code job_analysis} is the one fixture directory
+     * this public repository commits, so a source file there would carry a
+     * posting into it — and every prompt outside the ignored three would put
+     * somebody's own sentences in an untracked path nobody was told to expect.
+     */
+    @Test
+    void nootherPromptLeavesItsInputOnDisk() {
+        var properties = new FakeLlmProperties(fixtures, false);
+
+        new FixtureRecordingAnswers(properties, JSON)
+                .record(request(), new Analysis("Backend Engineer", 4));
+
+        assertThat(new FixtureStore(fixtures, JSON).findSource(request())).isEmpty();
+    }
+
+    /**
+     * A withdrawn answer takes its source with it. A prompt left behind by a
+     * recording nothing will replay is a file holding a CV for no reason.
+     */
+    @Test
+    void awithdrawnRecordingTakesItsSourceWithIt() {
+        var properties = new FakeLlmProperties(fixtures, false);
+        var recorder = new FixtureRecordingAnswers(properties, JSON);
+        var extraction = extractionRequest();
+        recorder.record(extraction, new Analysis("Backend Engineer", 4));
+
+        recorder.discard(extraction);
+
+        assertThat(new FixtureStore(fixtures, JSON).findSource(extraction)).isEmpty();
+    }
+
     private static Analysis answered(LlmOutcome<Analysis> outcome) {
         return ((LlmOutcome.Answered<Analysis>) outcome).response().data();
     }
@@ -114,6 +169,15 @@ class FixtureRecordingAnswersTest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** The one prompt whose input is kept — see {@code WITH_SOURCE}. */
+    private static StructuredRequest<Analysis> extractionRequest() {
+        return new StructuredRequest<>("profile_extraction", "v1", "system",
+                "<document>Built the ingest path.</document>",
+                new JsonSchema("profile_extraction",
+                        JSON.createObjectNode().put("type", "object")),
+                Analysis.class, ModelTier.CHEAP, Duration.ofSeconds(30));
     }
 
     private static StructuredRequest<Analysis> request() {
