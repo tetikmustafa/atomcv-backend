@@ -98,6 +98,19 @@ public final class SelectionPhase {
         /** Which entry a section's list pushed down, so that closing it can put it back. */
         private final Map<UUID, UUID> upgradedByList = new HashMap<>();
 
+        /**
+         * Atoms placed to meet a {@link SectionFloor}, which the swap pass may
+         * not trade away.
+         *
+         * <p>Separate from {@code forcedByLock} on purpose, and it cost a
+         * failing test to learn why they are not the same thing. A lock is the
+         * user naming an atom; this is the document keeping its shape. They
+         * reach the record differently too — {@code pinnedCostPt} answers "what
+         * did the user's own choices cost", and counting a floor there would
+         * report a choice nobody made.
+         */
+        private final Set<UUID> reservedByFloor = new LinkedHashSet<>();
+
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
@@ -135,6 +148,7 @@ public final class SelectionPhase {
                 return mandatory.map(ignored -> null);
             }
 
+            placeSectionFloors();
             fillUntilStable();
             improveBySwapping();
             // A swap that falls through hands back more than it takes, and one
@@ -196,6 +210,166 @@ public final class SelectionPhase {
                 return Result.err(conflict());
             }
             return Result.ok(null);
+        }
+
+        /**
+         * Stage 1b: what each section is worth printing at, before anything
+         * competes for the rest ({@link SectionFloor}).
+         *
+         * <p><strong>The stage the page was missing.</strong> Without it the
+         * greedy pass ranks every atom against every other, and a measured run
+         * put twenty atoms on the page with all twenty from Projects: no
+         * experience, no skills, no summary. Every one of those choices was the
+         * best answer to "which atom is worth the most per point", and the
+         * document was not a CV.
+         *
+         * <p>Reserved in two passes, and the order matters. The first gives
+         * every section its {@link SectionFloor#hardFloor()} — so a section
+         * cannot be squeezed out by the one above it, which is what a single
+         * pass in priority order would do to Languages every time. The second
+         * tops each up to its full floor, in priority order, so what is scarce
+         * goes to the sections a reader looks for first.
+         *
+         * <p>Nothing here is forced, and the two passes are the whole of how a
+         * floor degrades. A floor is a ceiling on what may be reserved and
+         * never a demand: a profile with one job reserves one, and a profile
+         * with no projects prints no Projects heading. Where the page runs out
+         * the second pass simply stops taking, so a section keeps the hard
+         * floor the first pass gave it — thinner, and still there. Dropping a
+         * section is not one of the outcomes: a CV missing its experience is
+         * not a smaller CV, it is a different document.
+         */
+        private void placeSectionFloors() {
+            List<SectionPlan> byPriority = new ArrayList<>(request.sections());
+            byPriority.sort(Comparator.comparingInt(SectionPlan::priority));
+
+            Map<UUID, SectionFloor> floors = new LinkedHashMap<>();
+            for (SectionPlan section : byPriority) {
+                if (!section.floor().isNone()) {
+                    floors.put(section.sectionId(), section.floor());
+                }
+            }
+            if (floors.isEmpty()) {
+                return;
+            }
+
+            for (SectionPlan section : byPriority) {
+                SectionFloor floor = floors.get(section.sectionId());
+                if (floor != null) {
+                    reserve(section, floor.hardFloor());
+                }
+            }
+            for (SectionPlan section : byPriority) {
+                SectionFloor floor = floors.get(section.sectionId());
+                if (floor != null) {
+                    reserve(section, floor);
+                }
+            }
+        }
+
+        /**
+         * As much of one section's floor as the profile has and the page can
+         * hold, best first.
+         *
+         * <p>Entries are chosen by their own best atom rather than by an
+         * average: a section reserving two roles wants the two the posting
+         * cares about, and an average buries a strong role behind a long one.
+         */
+        private void reserve(SectionPlan section, SectionFloor floor) {
+            for (AtomCandidate atom : sortedByScore(section.atoms())) {
+                if (takenFromSection.getOrDefault(section.sectionId(), 0) >= floor.looseAtoms()) {
+                    break;
+                }
+                takeIfItFits(atom);
+            }
+
+            List<EntryPlan> ranked = new ArrayList<>(section.entries());
+            ranked.sort(Comparator.comparingDouble(
+                    (EntryPlan entry) -> bestScoreIn(entry)).reversed()
+                    .thenComparing(entry -> entry.entryId().toString()));
+
+            int openedHere = 0;
+            for (EntryPlan entry : ranked) {
+                if (openedHere >= floor.entries()) {
+                    break;
+                }
+                // An entry already on the page counts towards the floor: it is
+                // there, and reserving a second one beside it would print more
+                // than the floor asks for.
+                if (openEntries.contains(entry.entryId())) {
+                    // Already on the page, from a lock or from the floor of a
+                    // section list above it. It counts, and reserving beside it
+                    // would print more than the floor asked for.
+                    openedHere++;
+                    continue;
+                }
+                // At least one, whatever the floor asks for. EDUCATION's floor
+                // is "one entry and no bullets" -- a degree line is a heading
+                // and asking for an achievement under it is asking to pad
+                // (Bolum 20.2) -- and a bound of zero took nothing at all, so
+                // the one section whose floor is only an entry was the one
+                // section the floors could not put on the page.
+                int wanted = Math.max(1, Math.max(floor.atomsPerEntry(), entry.minAtoms()));
+                if (openWholeEntry(entry, wanted)) {
+                    openedHere++;
+                }
+            }
+        }
+
+        /**
+         * One entry, opened whole or not at all.
+         *
+         * <p><strong>Bolum 20.3, and the golden set is what said so.</strong>
+         * Taking bullets one at a time while the budget lasted opened an entry
+         * with two of the three it is worth printing at, and then the floor
+         * held it there — {@link #dropEntry} will not take an entry the floor
+         * put on the page. "Reaches its minimum or is dropped whole" is the
+         * rule, and a stage that can leave an entry short has to check before
+         * it starts rather than repair afterwards.
+         *
+         * @return whether the entry was opened
+         */
+        private boolean openWholeEntry(EntryPlan entry, int wanted) {
+            List<AtomCandidate> take = new ArrayList<>();
+            double needed = 0;
+            for (AtomCandidate atom : sortedByScore(entry.atoms())) {
+                if (take.size() >= wanted) {
+                    break;
+                }
+                if (!pool.containsKey(atom.atomId())) {
+                    continue;
+                }
+                // Only the first pays the furniture: it is what opens the
+                // entry, and the heading is not charged twice.
+                needed += take.isEmpty() ? effectiveCostOf(atom) : atom.renderCostPt();
+                take.add(atom);
+            }
+            if (take.size() < wanted || needed > remainingPt()) {
+                return false;
+            }
+            for (AtomCandidate atom : take) {
+                include(atom, false);
+                reservedByFloor.add(atom.atomId());
+            }
+            return true;
+        }
+
+        /** The floor never overspends the page; what does not fit waits. */
+        private void takeIfItFits(AtomCandidate atom) {
+            if (!pool.containsKey(atom.atomId())) {
+                return;
+            }
+            if (effectiveCostOf(atom) <= remainingPt()) {
+                include(atom, false);
+                reservedByFloor.add(atom.atomId());
+            }
+        }
+
+        private static double bestScoreIn(EntryPlan entry) {
+            return entry.atoms().stream()
+                    .mapToDouble(AtomCandidate::score)
+                    .max()
+                    .orElse(0);
         }
 
         /**
@@ -592,9 +766,11 @@ public final class SelectionPhase {
                 if (chosen == null) {
                     continue;
                 }
-                if (chosen.forcedByLock()) {
+                if (chosen.forcedByLock() || reservedByFloor.contains(chosen.atomId())) {
                     // A locked atom keeps its entry alive whatever the minimum
-                    // says: the user asked for it by name.
+                    // says: the user asked for it by name. So does one holding
+                    // a section's floor -- dropping the entry would drop the
+                    // section, which is the one outcome the floor rules out.
                     return false;
                 }
             }
@@ -615,6 +791,14 @@ public final class SelectionPhase {
             SelectedAtom weakest = null;
             for (SelectedAtom chosen : selected.values()) {
                 if (chosen.forcedByLock() || chosen.score() >= betterThan) {
+                    continue;
+                }
+                if (reservedByFloor.contains(chosen.atomId())) {
+                    // The whole point of the floor. Every atom holding a
+                    // section's shape scores below the atoms competing for the
+                    // rest of the page -- that is why the section needed a
+                    // floor -- so an unguarded swap pass trades all six of them
+                    // away and puts the page back where it started.
                     continue;
                 }
                 if (chosen.renderCostPt() < neededPt) {

@@ -158,6 +158,77 @@ class RenderPhaseTest {
         assertThat(plain(request.sections().get(0).atoms())).containsExactly("Go");
     }
 
+    /**
+     * <strong>The order a reader expects, not the order the import wrote.</strong>
+     * A profile whose columns say Languages, Skills, About prints About,
+     * Skills, Languages — {@link com.mustafatetik.atomcv.generation.selection
+     * .SectionFloor#priorityOf}. Faz C already builds the page in that order,
+     * and printing it in another would put the section a floor placed first
+     * somewhere in the middle.
+     */
+    @Test
+    void thesectionsArePrintedInTheOrderAReaderExpects() {
+        var languages = new Section(PROFILE, SectionKind.LANGUAGES, "Languages", (short) 0);
+        var skills = new Section(PROFILE, SectionKind.SKILLS, "Skills", (short) 1);
+        var about = new Section(PROFILE, SectionKind.ABOUT, "About", (short) 2);
+
+        var atoms = new java.util.ArrayList<Atom>();
+        var wordings = new java.util.ArrayList<AtomVariant>();
+        var chosen = new java.util.ArrayList<SelectedAtom>();
+        for (Section section : List.of(languages, skills, about)) {
+            var atom = new Atom(PROFILE, section.getId(), null, AtomKind.SKILL, (short) 0);
+            var wording = variant(atom, section.getTitle() + " text");
+            atoms.add(atom);
+            wordings.add(wording);
+            chosen.add(new SelectedAtom(atom.getId(), wording.getId(), 0.9, 20, false));
+        }
+        var tree = ProfileAssembler.assemble(PROFILE,
+                List.of(languages, skills, about), List.of(), atoms, wordings);
+
+        var request = RenderPhase.build(profile(), tree,
+                state(chosen.toArray(new SelectedAtom[0])),
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
+
+        assertThat(request.sections()).extracting(
+                        com.mustafatetik.atomcv.rendering.model.RenderRequest
+                                .RenderableSection::title)
+                .containsExactly("About", "Skills", "Languages");
+    }
+
+    /**
+     * And a section the order does not name keeps its place relative to its
+     * peers. Somebody's "Certifications" told us nothing about where it goes,
+     * so the profile's own arrangement is the best answer there is.
+     */
+    @Test
+    void asectionTheOrderDoesNotNameKeepsTheProfilesArrangement() {
+        var second = new Section(PROFILE, SectionKind.CUSTOM, "Publications", (short) 0);
+        var first = new Section(PROFILE, SectionKind.CUSTOM, "Certifications", (short) 1);
+        var about = new Section(PROFILE, SectionKind.ABOUT, "About", (short) 2);
+
+        var atoms = new java.util.ArrayList<Atom>();
+        var wordings = new java.util.ArrayList<AtomVariant>();
+        var chosen = new java.util.ArrayList<SelectedAtom>();
+        for (Section section : List.of(second, first, about)) {
+            var atom = new Atom(PROFILE, section.getId(), null, AtomKind.SKILL, (short) 0);
+            var wording = variant(atom, section.getTitle() + " text");
+            atoms.add(atom);
+            wordings.add(wording);
+            chosen.add(new SelectedAtom(atom.getId(), wording.getId(), 0.9, 20, false));
+        }
+        var tree = ProfileAssembler.assemble(PROFILE,
+                List.of(second, first, about), List.of(), atoms, wordings);
+
+        var request = RenderPhase.build(profile(), tree,
+                state(chosen.toArray(new SelectedAtom[0])),
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
+
+        assertThat(request.sections()).extracting(
+                        com.mustafatetik.atomcv.rendering.model.RenderRequest
+                                .RenderableSection::title)
+                .containsExactly("About", "Publications", "Certifications");
+    }
+
     @Test
     void theWordingSelectionChoseIsTheOneRendered() {
         var fixture = twoBulletsInOneJob();

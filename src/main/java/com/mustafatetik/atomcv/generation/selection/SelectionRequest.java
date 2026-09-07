@@ -47,11 +47,29 @@ public record SelectionRequest(
     }
 
     /** A heading, its entries, and any atoms hanging straight off it. */
+    /**
+     * @param priority where this section sits in the order the page is built
+     *                 and printed in — {@link SectionFloor#priorityOf}. Carried
+     *                 rather than derived, because {@link SelectionPhase} reads
+     *                 scores and points and knows nothing about profiles.
+     * @param floor    what this section is worth printing at, reserved before
+     *                 anything competes for the rest ({@link SectionFloor})
+     */
     public record SectionPlan(
             UUID sectionId,
             boolean alwaysInclude,
+            int priority,
+            SectionFloor floor,
             List<EntryPlan> entries,
             List<AtomCandidate> atoms) {
+
+        /** Unranked and with no floor: everything competes, as it used to. */
+        public SectionPlan(UUID sectionId, boolean alwaysInclude,
+                List<EntryPlan> entries, List<AtomCandidate> atoms) {
+
+            this(sectionId, alwaysInclude, SectionFloor.UNRANKED, SectionFloor.NONE,
+                    entries, atoms);
+        }
 
         public SectionPlan {
             entries = List.copyOf(entries);
