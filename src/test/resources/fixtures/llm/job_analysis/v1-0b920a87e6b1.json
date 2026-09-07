@@ -1,0 +1,58 @@
+{
+  "role" : {
+    "title" : "Senior Backend Engineer",
+    "seniority" : "senior",
+    "domain" : "Payments / Backend Engineering",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "Go",
+    "canonical" : "go",
+    "importance" : "critical"
+  }, {
+    "name" : "Distributed services",
+    "canonical" : "distributed systems",
+    "importance" : "critical"
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : "high"
+  }, {
+    "name" : "Observability tooling",
+    "canonical" : "observability",
+    "importance" : "high"
+  }, {
+    "name" : "Production software delivery",
+    "canonical" : "software delivery",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Kubernetes",
+    "canonical" : "kubernetes",
+    "importance" : null
+  }, {
+    "name" : "Terraform",
+    "canonical" : "terraform",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Design and operate distributed services in Java and Go", "Own the reliability of a high-throughput ledger", "Mentor other engineers as the team grows" ],
+  "keywords" : [ "senior backend engineer", "payments", "distributed systems", "java", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "kubernetes", "terraform", "production systems" ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Professional, concise, and growth-oriented",
+  "jdLanguage" : "en",
+  "confidence" : 0.96,
+  "extractionNotes" : [ "The company name, employment type, work mode, and company size are not stated.", "The posting requires several years of production experience with PostgreSQL but does not provide a numeric range.", "Applicants are asked to include a short note about systems they have operated." ]
+}
