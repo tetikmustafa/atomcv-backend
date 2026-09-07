@@ -296,6 +296,15 @@ public final class SelectionPhase {
             List<EntryPlan> ranked = new ArrayList<>(section.entries());
             ranked.sort(Comparator.comparingDouble(
                     (EntryPlan entry) -> bestScoreIn(entry)).reversed()
+                    // The wording decides a tie, not the id — the same rule
+                    // sortedByScore follows, and for the same reason. Ids are
+                    // minted fresh on every import, and a profile whose entries
+                    // score alike is not a corner case: fourteen projects with
+                    // no dates all score the same in general mode, so the two
+                    // this floor reserves were being chosen by a random UUID.
+                    // Reading the same CV twice then produced two different
+                    // pages, which is Principle 2 broken (Bolum 20.3).
+                    .thenComparing(Run::wordingOf)
                     .thenComparing(entry -> entry.entryId().toString()));
 
             int openedHere = 0;
@@ -422,6 +431,21 @@ public final class SelectionPhase {
                 total += takenFromEntry.getOrDefault(entry.entryId(), 0);
             }
             return total;
+        }
+
+        /**
+         * An entry named by what it says rather than by the id it was given.
+         *
+         * <p>The best-scoring wording in it, which is the one the ranking above
+         * compared. Empty for an entry with no candidates at all, and the id
+         * behind it is then the last resort it always was.
+         */
+        private static String wordingOf(EntryPlan entry) {
+            return entry.atoms().stream()
+                    .max(Comparator.comparingDouble(AtomCandidate::score)
+                            .thenComparing(AtomCandidate::tieBreak))
+                    .map(AtomCandidate::tieBreak)
+                    .orElse("");
         }
 
         private static double bestScoreIn(EntryPlan entry) {
