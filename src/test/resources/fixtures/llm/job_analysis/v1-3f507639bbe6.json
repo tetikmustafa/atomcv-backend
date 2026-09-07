@@ -1,0 +1,122 @@
+{
+  "role" : {
+    "title" : "Senior Java Software Developer",
+    "seniority" : "senior",
+    "domain" : "Enterprise software development and systems integration",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Not specified",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "JSF",
+    "canonical" : "jsf",
+    "importance" : "high"
+  }, {
+    "name" : "JPA",
+    "canonical" : "jpa",
+    "importance" : "high"
+  }, {
+    "name" : "Web teknolojileri",
+    "canonical" : "web technologies",
+    "importance" : "high"
+  }, {
+    "name" : "Spring Boot",
+    "canonical" : "spring boot",
+    "importance" : "critical"
+  }, {
+    "name" : "Spring Data",
+    "canonical" : "spring data",
+    "importance" : "high"
+  }, {
+    "name" : "Spring MVC",
+    "canonical" : "spring mvc",
+    "importance" : "high"
+  }, {
+    "name" : "İlişkisel veri tabanı sistemleri",
+    "canonical" : "relational databases",
+    "importance" : "high"
+  }, {
+    "name" : "Çok katmanlı mimari",
+    "canonical" : "multitier architecture",
+    "importance" : "high"
+  }, {
+    "name" : "Nesneye dayalı programlama",
+    "canonical" : "object-oriented programming",
+    "importance" : "high"
+  }, {
+    "name" : "SOAP",
+    "canonical" : "soap",
+    "importance" : "high"
+  }, {
+    "name" : "REST",
+    "canonical" : "rest",
+    "importance" : "high"
+  }, {
+    "name" : "SQL",
+    "canonical" : "sql",
+    "importance" : "high"
+  }, {
+    "name" : "NoSQL",
+    "canonical" : "nosql",
+    "importance" : "high"
+  }, {
+    "name" : "React",
+    "canonical" : "react",
+    "importance" : "high"
+  }, {
+    "name" : "Mikroservis mimarisi",
+    "canonical" : "microservices architecture",
+    "importance" : "critical"
+  }, {
+    "name" : "Git",
+    "canonical" : "git",
+    "importance" : "high"
+  }, {
+    "name" : "Maven",
+    "canonical" : "maven",
+    "importance" : "high"
+  }, {
+    "name" : "Analitik bakış açısı",
+    "canonical" : "analytical thinking",
+    "importance" : "medium"
+  }, {
+    "name" : "Sonuç ve müşteri odaklılık",
+    "canonical" : "results and customer orientation",
+    "importance" : "medium"
+  }, {
+    "name" : "Ekip yönetimi ve ekip çalışması",
+    "canonical" : "team leadership and teamwork",
+    "importance" : "high"
+  }, {
+    "name" : "Sigorta, bankacılık ve finans sektörü deneyimi",
+    "canonical" : "insurance, banking, and finance industry experience",
+    "importance" : "medium"
+  }, {
+    "name" : "İlgili üniversite bölümünden mezuniyet",
+    "canonical" : "relevant university degree",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "5-9 yıl yazılım geliştirme deneyimi",
+    "canonical" : "5-9 years of software development experience",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Complete software development assignments in accordance with the analysis.", "Create technical designs and document the development process.", "Develop high-performance software within the software development lifecycle, meet defined quality standards, and deliver work on time.", "Apply professional software development practices, including coding standards, code reviews, source control tools, unit testing, and functional testing.", "Provide proactive support for team management and assignments, take initiative in helping manage other team members, and provide mentoring.", "Continuously identify process improvement opportunities and submit project proposals.", "Perform maintenance activities such as problem investigation, resolution, and redevelopment when necessary, producing permanent solutions.", "Monitor new technologies and contribute to software development processes.", "Provide relevant senior units with periodic or situational updates based on the priority and importance of assigned work." ],
+  "keywords" : [ "java", "spring boot", "spring data", "spring mvc", "jsf", "jpa", "react", "microservices architecture", "soap", "rest", "sql", "nosql", "relational databases", "object-oriented programming", "multitier architecture", "git", "maven", "technical design", "software development lifecycle", "code review", "unit testing", "functional testing", "mentoring", "enterprise software", "systems integration", "insurance", "banking", "finance" ],
+  "experienceYears" : {
+    "min" : 5,
+    "max" : 9
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Professional, technical, and corporate, with an emphasis on quality, customer focus, leadership, and continuous improvement.",
+  "jdLanguage" : "tr",
+  "confidence" : 0.93,
+  "extractionNotes" : [ "The posting does not explicitly state a job title; the title and seniority are derived from the Java-focused requirements, preferred 5-9 years of experience, team management, and mentoring duties.", "The company name, employment type, workplace mode, and company size are not provided.", "The 5-9 year experience range is explicitly described as preferred rather than mandatory.", "The company's work includes insurance, public sector, finance, manufacturing, healthcare, integration, business processes, and IoT, but IoT is not stated as a candidate requirement." ]
+}
