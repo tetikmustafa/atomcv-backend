@@ -31,7 +31,11 @@ class TeiEmbeddingProviderTest {
     private String baseUrl;
     private final AtomicReference<String> lastBody = new AtomicReference<>();
     private final AtomicReference<int[]> embedStatus = new AtomicReference<>(new int[] {200});
-    private final AtomicReference<String> embedBody = new AtomicReference<>("[]");
+    private final AtomicReference<String> embedBody = new AtomicReference<>(null);
+
+    /** How many inputs each request carried, in order. */
+    private final java.util.List<Integer> requestSizes =
+            java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     private final AtomicReference<int[]> healthStatus = new AtomicReference<>(new int[] {200});
 
     @BeforeEach
@@ -39,9 +43,16 @@ class TeiEmbeddingProviderTest {
         server = HttpServer.create(new InetSocketAddress(0), 0);
         baseUrl = "http://localhost:" + server.getAddress().getPort();
         server.createContext("/embed", exchange -> {
-            lastBody.set(new String(exchange.getRequestBody().readAllBytes(),
-                    StandardCharsets.UTF_8));
-            respond(exchange, embedStatus.get()[0], embedBody.get());
+            String body = new String(exchange.getRequestBody().readAllBytes(),
+                    StandardCharsets.UTF_8);
+            lastBody.set(body);
+            int asked = JSON.readTree(body).path("inputs").size();
+            requestSizes.add(asked);
+            // A fixed answer where a test set one, and otherwise as many
+            // vectors as were asked for — which is what a chunking client
+            // needs from a server to be testable at all.
+            String answer = embedBody.get();
+            respond(exchange, embedStatus.get()[0], answer == null ? vectors(asked) : answer);
         });
         server.createContext("/health", exchange -> respond(exchange, healthStatus.get()[0], ""));
         server.start();
@@ -55,15 +66,56 @@ class TeiEmbeddingProviderTest {
     // ── The request ──────────────────────────────────────────────────────
 
     @Test
-    void abatchTravelsAsOneRoundTrip() throws Exception {
-        embedBody.set(vectors(3));
-
+    void abatchUnderTheLimitTravelsAsOneRoundTrip() throws Exception {
         var result = provider().embedBatch(List.of("one", "two", "three"));
 
         assertThat(result).hasSize(3);
+        assertThat(requestSizes).containsExactly(3);
         var sent = JSON.readTree(lastBody.get());
         assertThat(sent.path("inputs")).hasSize(3);
         assertThat(sent.path("inputs").get(0).asText()).isEqualTo("one");
+    }
+
+    /**
+     * The server has a limit and the caller does not know it. TEI allows 32 per
+     * request by default and answers 413 above it, so a profile's atoms going
+     * in one call meant an 84-atom import failed outright — and every profile
+     * bigger than 32 atoms had never embedded against a real server, because
+     * the 28-atom one in front of us fitted underneath and hid it.
+     */
+    @Test
+    void abatchOverTheLimitIsDividedRatherThanRefused() {
+        var texts = IntStream.range(0, 84).mapToObj(index -> "atom " + index).toList();
+
+        var result = provider().embedBatch(texts);
+
+        assertThat(result).hasSize(84);
+        assertThat(requestSizes).containsExactly(32, 32, 20);
+    }
+
+    /**
+     * Order is the whole contract: the caller pairs vector n with atom n, and a
+     * chunking client that returned them out of order would score every atom
+     * against somebody else's sentence with nothing looking broken.
+     */
+    @Test
+    void thevectorsComeBackInTheOrderTheyWereAskedFor() throws Exception {
+        var texts = IntStream.range(0, 7).mapToObj(index -> "atom " + index).toList();
+
+        provider(3).embedBatch(texts);
+
+        assertThat(requestSizes).containsExactly(3, 3, 1);
+        // The last request carries the last text, so the walk went forwards.
+        assertThat(JSON.readTree(lastBody.get()).path("inputs").get(0).asText())
+                .isEqualTo("atom 6");
+    }
+
+    @Test
+    void abatchThatDividesExactlyDoesNotSendAnEmptyRequest() {
+        var texts = IntStream.range(0, 64).mapToObj(index -> "atom " + index).toList();
+
+        assertThat(provider().embedBatch(texts)).hasSize(64);
+        assertThat(requestSizes).containsExactly(32, 32);
     }
 
     /**
@@ -165,8 +217,12 @@ class TeiEmbeddingProviderTest {
     // ── helpers ──────────────────────────────────────────────────────────
 
     private TeiEmbeddingProvider provider() {
+        return provider(32);
+    }
+
+    private TeiEmbeddingProvider provider(int batchSize) {
         return new TeiEmbeddingProvider(new EmbeddingProperties(
-                baseUrl, Duration.ofSeconds(5), Duration.ofSeconds(1)), JSON);
+                baseUrl, Duration.ofSeconds(5), Duration.ofSeconds(1), batchSize), JSON);
     }
 
     private static String vectors(int count) {
