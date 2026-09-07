@@ -67,7 +67,7 @@ public class RewritePhase {
      *                sentences a second time
      * @return {@code carried} plus whatever this pass accepted
      */
-    public RewrittenContent rewrite(
+    public RewriteOutcome rewrite(
             ProfileTree tree,
             SelectionState selection,
             RewriteContext context,
@@ -79,7 +79,7 @@ public class RewritePhase {
             // rewrite made against an empty vocabulary could name any
             // technology at all and pass. Faz D does not run.
             log.info("Faz D skipped: the posting named no skills");
-            return carried;
+            return RewriteOutcome.of(carried);
         }
 
         RewritePlan plan = RewritePlanner.plan(tree, selection);
@@ -100,33 +100,49 @@ public class RewritePhase {
                         () -> about.synthesise(candidate, context))));
 
         if (todo.isEmpty()) {
-            return carried;
+            return RewriteOutcome.of(carried);
         }
         log.info("Faz D: {} tasks={} (already rewritten {})",
                 plan.shape(), todo.size(), carried.byAtom().size());
 
-        return carried.and(runAll(todo));
+        Pass pass = runAll(todo);
+        return new RewriteOutcome(carried.and(pass.accepted()), pass.tally());
     }
 
     /** One thing to ask a model for, and what stands if the answer does not. */
-    private record Task(UUID atomId, RichContent original, Supplier<RichContent> work) {
+    private record Task(UUID atomId, RichContent original, Supplier<RewriteResult> work) {
+    }
+
+    /** What one fan-out came back with: the accepted rewrites, and the bill. */
+    private record Pass(Map<UUID, RichContent> accepted, RewriteTally tally) {
     }
 
     /**
      * All of them at once, and every answer collected — including the ones
      * that came back as the original.
+     *
+     * <p>The tallies are merged here, on the joining thread, and each task
+     * writes only its own: they are counts of the same few things from several
+     * virtual threads, and a shared counter would be the one piece of shared
+     * mutable state in a phase that otherwise has none. {@code Future.get()}
+     * is what makes each task's writes visible to this merge.
      */
-    private Map<UUID, RichContent> runAll(List<Task> tasks) {
+    private Pass runAll(List<Task> tasks) {
 
         var accepted = new LinkedHashMap<UUID, RichContent>();
+        var tally = RewriteTally.none();
         try (ExecutorService threads = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Future<RichContent>> answers = new ArrayList<>(tasks.size());
+            List<Future<RewriteResult>> answers = new ArrayList<>(tasks.size());
             for (Task task : tasks) {
                 answers.add(threads.submit(task.work()::get));
             }
             for (int i = 0; i < tasks.size(); i++) {
                 Task task = tasks.get(i);
-                RichContent answer = answerOf(answers.get(i), task.atomId());
+                RewriteResult result = answerOf(answers.get(i), task.atomId());
+                RichContent answer = result == null ? null : result.content();
+                if (result != null) {
+                    tally = tally.plus(result.tally());
+                }
                 // A service answers with the original when it kept the
                 // original, and there is no point recording that: an atom
                 // absent from the map is printed from the profile anyway.
@@ -140,13 +156,16 @@ public class RewritePhase {
             // better answer than no CV at all.
             log.warn("Faz D failed as a whole; every bullet keeps its original wording: {}",
                     wentWrong.getClass().getSimpleName());
-            return Map.of();
+            // The tally goes with it. Whatever partial counts had been merged
+            // describe a pass that did not happen, and a trace is worth less
+            // than nothing when it half-describes something.
+            return new Pass(Map.of(), RewriteTally.none());
         }
-        return accepted;
+        return new Pass(accepted, tally);
     }
 
     /** @return the answer, or null when this one task did not come back */
-    private static RichContent answerOf(Future<RichContent> answer, UUID atomId) {
+    private static RewriteResult answerOf(Future<RewriteResult> answer, UUID atomId) {
         try {
             return answer.get();
         } catch (InterruptedException interrupted) {

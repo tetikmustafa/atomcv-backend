@@ -17,6 +17,9 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteIssue;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
@@ -76,7 +79,8 @@ class GenerationJobHandlerTest {
 
     @Test
     void asuccessfulRunIsWrittenDownAndItsIdComesBack() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
@@ -97,7 +101,8 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thesnapshotCarriesEnoughToDrawThePageAgain() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -114,7 +119,8 @@ class GenerationJobHandlerTest {
     /** The same hash the analysis cache keys on, so the two can be matched. */
     @Test
     void thepostingIsRecordedWithTheHashTheCacheUses() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -133,7 +139,8 @@ class GenerationJobHandlerTest {
      */
     @Test
     void theengineVersionNamesWhatActuallyRan() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.WITHOUT_EMBEDDING, "v7")));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -158,7 +165,8 @@ class GenerationJobHandlerTest {
      */
     @Test
     void thetraceCarriesOnlyThePhasesThatAreInstrumented() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -172,12 +180,73 @@ class GenerationJobHandlerTest {
                 .containsEntry("rewritten", 0);
     }
 
+    /**
+     * <strong>Bolum 14.6's rejectReasons.</strong> {@code rewritten: 0} has
+     * four causes with four different fixes — nothing was a candidate, nothing
+     * came back, everything came back and was refused, or the phase never ran
+     * — and the page looks the same in all four. This is what separates them,
+     * and it was the block's one missing field.
+     */
+    @Test
+    void thetraceSaysWhyFazDChangedNothing() {
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
+                .thenReturn(Result.ok(generatedWith(ScoringWeights.DEFAULT, "v1",
+                        new RewriteTally(Map.of(BulletRewriteService.PROMPT_ID, 4),
+                                Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 3,
+                                        RewriteIssue.TOO_LONG, 1),
+                                1))));
+
+        handler.handle(job(), ProgressSink.NONE);
+
+        var saved = ArgumentCaptor.forClass(Generation.class);
+        verify(records).save(any(), saved.capture());
+        assertThat(saved.getValue().getTrace()).extracting("D")
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .containsEntry("rewritten", 0)
+                .containsEntry("calls", Map.of(BulletRewriteService.PROMPT_ID, 4))
+                .containsEntry("unreachable", 1)
+                .containsEntry("rejectReasons", Map.of(
+                        RewriteIssue.UNSUPPORTED_CLAIM.name(), 3,
+                        RewriteIssue.TOO_LONG.name(), 1));
+    }
+
+    /**
+     * Walked in the enum's own order rather than the answers'. This reaches a
+     * JSONB column, and a map built from whatever order the refusals arrived in
+     * would store two different traces for two runs of one input — which reads
+     * as a flake and is not one.
+     */
+    @Test
+    void therejectReasonsAreWrittenInTheEnumsOwnOrder() {
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
+                .thenReturn(Result.ok(generatedWith(ScoringWeights.DEFAULT, "v1",
+                        // Handed over in the reverse of the enum's own order.
+                        new RewriteTally(Map.of(),
+                                inOrder(RewriteIssue.SEMANTIC_DRIFT, RewriteIssue.NUMBER_LOST),
+                                0))));
+
+        handler.handle(job(), ProgressSink.NONE);
+
+        var saved = ArgumentCaptor.forClass(Generation.class);
+        verify(records).save(any(), saved.capture());
+        assertThat(saved.getValue().getTrace()).extracting("D")
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .extracting("rejectReasons")
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .containsExactly(
+                        java.util.Map.entry(RewriteIssue.NUMBER_LOST.name(), 1),
+                        java.util.Map.entry(RewriteIssue.SEMANTIC_DRIFT.name(), 1));
+    }
+
     // ── failure ──────────────────────────────────────────────────────────
 
     /** Bolum 30.5: the world outside may have changed by the next attempt. */
     @Test
     void aprovideroutageComesBackRetryableAndWritesNoRecord() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
@@ -196,7 +265,8 @@ class GenerationJobHandlerTest {
     /** The next attempt reads the same thin profile and reaches the same answer. */
     @Test
     void athinProfileComesBackFinal() {
-        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(), any()))
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.InsufficientProfile(10, List.of("atoms"))));
 
@@ -221,7 +291,8 @@ class GenerationJobHandlerTest {
             assertThat(failed.retryable()).isFalse();
             assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         });
-        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), anyBoolean(), any());
+        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
@@ -241,6 +312,12 @@ class GenerationJobHandlerTest {
     private static GeneratedGeneration generatedWith(
             ScoringWeights weights, String promptVersion) {
 
+        return generatedWith(weights, promptVersion, RewriteTally.none());
+    }
+
+    private static GeneratedGeneration generatedWith(
+            ScoringWeights weights, String promptVersion, RewriteTally rewriteTally) {
+
         var selection = new SelectionState(
                 List.of(new SelectionState.SelectedAtom(
                         UUID.randomUUID(), UUID.randomUUID(), 0.8, 27.7, false)),
@@ -254,13 +331,24 @@ class GenerationJobHandlerTest {
                 new GenerationOptions(1, "en", TemplateCustomization.CLASSIC),
                 weights,
                 Map.of(JobAnalysisPhase.PROMPT_ID, promptVersion),
+                rewriteTally,
                 new GeneratedDocument("%PDF".getBytes(StandardCharsets.UTF_8), 1, selection,
                         new com.mustafatetik.atomcv.rendering.model.RenderRequest(
                                 new com.mustafatetik.atomcv.rendering.model.RenderRequest
                                         .ProfileHeader("Ada", "", List.of()),
                                 List.of(), TemplateCustomization.CLASSIC,
                                 java.util.Locale.ENGLISH),
-                        1, 1.0, 0));
+                        1, 1.0, 0),
+                null, null);
+    }
+
+    /** One each, in the order given rather than the enum's. */
+    private static Map<RewriteIssue, Integer> inOrder(RewriteIssue... issues) {
+        var counts = new java.util.LinkedHashMap<RewriteIssue, Integer>();
+        for (RewriteIssue issue : issues) {
+            counts.put(issue, 1);
+        }
+        return counts;
     }
 
     private static JobAnalysis posting() {

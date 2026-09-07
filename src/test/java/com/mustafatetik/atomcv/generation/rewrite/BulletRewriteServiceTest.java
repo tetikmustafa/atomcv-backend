@@ -57,7 +57,7 @@ class BulletRewriteServiceTest {
     void agoodRewriteIsWhatGetsPrinted() {
         answering("Moved 300K rows through the Microsoft Fabric batch pipeline");
 
-        RichContent printed = service.rewrite(candidate(), context);
+        RichContent printed = service.rewrite(candidate(), context).content();
 
         assertThat(printed.plainText())
                 .isEqualTo("Moved 300K rows through the Microsoft Fabric batch pipeline");
@@ -72,7 +72,7 @@ class BulletRewriteServiceTest {
     void arewriteThatClaimsSomethingUnsupportedIsThrownAwayTwiceAndTheOriginalStands() {
         answering("Moved 300K rows with Microsoft Fabric on Kubernetes");
 
-        RichContent printed = service.rewrite(candidate(), context);
+        RichContent printed = service.rewrite(candidate(), context).content();
 
         assertThat(printed.plainText()).isEqualTo(ORIGINAL);
         verify(providers, times(BulletRewriteService.ATTEMPTS)).call(any());
@@ -85,7 +85,7 @@ class BulletRewriteServiceTest {
                 .thenReturn(answer("Moved rows with Microsoft Fabric"))
                 .thenReturn(answer("Moved 300K rows on the Microsoft Fabric pipeline"));
 
-        RichContent printed = service.rewrite(candidate(), context);
+        RichContent printed = service.rewrite(candidate(), context).content();
 
         assertThat(printed.plainText())
                 .isEqualTo("Moved 300K rows on the Microsoft Fabric pipeline");
@@ -102,7 +102,7 @@ class BulletRewriteServiceTest {
         when(providers.call(request())).thenReturn(Result.err(
                 new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
-        assertThat(service.rewrite(candidate(), context).plainText()).isEqualTo(ORIGINAL);
+        assertThat(service.rewrite(candidate(), context).content().plainText()).isEqualTo(ORIGINAL);
     }
 
     /** And so does an embedding service that cannot be reached (check five). */
@@ -111,8 +111,60 @@ class BulletRewriteServiceTest {
         when(embeddings.embed(any())).thenThrow(new IllegalStateException("down"));
         answering("Moved 300K rows on the Microsoft Fabric pipeline");
 
-        assertThat(service.rewrite(candidate(), context).plainText())
+        assertThat(service.rewrite(candidate(), context).content().plainText())
                 .isEqualTo("Moved 300K rows on the Microsoft Fabric pipeline");
+    }
+
+    // -- Bolum 14.6: what the trace is told ---------------------------------
+
+    /**
+     * <strong>Two refusals are not the same as never having asked.</strong>
+     * Both print the person's own sentence, and until this counted them the
+     * record could not tell a prompt that had started producing nothing but
+     * unsupported claims from a phase that had quietly stopped running. The
+     * page looks identical in both cases; the fixes are opposite.
+     */
+    @Test
+    void arefusedRewriteIsCountedWithTheReasonItWasRefusedFor() {
+        answering("Moved 300K rows with Microsoft Fabric on Kubernetes");
+
+        RewriteTally tally = service.rewrite(candidate(), context).tally();
+
+        assertThat(tally.callsByPrompt())
+                .containsEntry(BulletRewriteService.PROMPT_ID, BulletRewriteService.ATTEMPTS);
+        assertThat(tally.refusals())
+                .containsEntry(RewriteIssue.UNSUPPORTED_CLAIM, BulletRewriteService.ATTEMPTS);
+        assertThat(tally.unreachable()).isZero();
+    }
+
+    /**
+     * And an outage is counted apart from both. It is read by looking at the
+     * provider chain rather than at the prompt, and filing it under a rewrite
+     * issue would send whoever reads the trace to the wrong place — there is no
+     * issue, because no answer was ever judged.
+     */
+    @Test
+    void anoutageIsCountedAsUnreachableAndNotAsARefusal() {
+        when(providers.call(request())).thenReturn(Result.err(
+                new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
+
+        RewriteTally tally = service.rewrite(candidate(), context).tally();
+
+        assertThat(tally.unreachable()).isEqualTo(BulletRewriteService.ATTEMPTS);
+        assertThat(tally.refusals()).isEmpty();
+    }
+
+    /** A rewrite that passed cost one call and refused nothing. */
+    @Test
+    void anacceptedRewriteIsCountedAsACallWithNoRefusal() {
+        answering("Moved 300K rows through the Microsoft Fabric batch pipeline");
+
+        RewriteTally tally = service.rewrite(candidate(), context).tally();
+
+        assertThat(tally.callsByPrompt()).containsExactly(
+                java.util.Map.entry(BulletRewriteService.PROMPT_ID, 1));
+        assertThat(tally.refusals()).isEmpty();
+        assertThat(tally.unreachable()).isZero();
     }
 
     // -- Bolum 43.1 --------------------------------------------------------

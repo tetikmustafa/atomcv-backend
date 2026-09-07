@@ -10,7 +10,9 @@ import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.rewrite.AboutSynthesisService;
 import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteOutcome;
 import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScoringService;
@@ -116,7 +118,8 @@ public class JobSpecificGenerationService {
             Integer maxPages,
             String language,
             boolean coverLetter,
-            ProgressSink progress) {
+            ProgressSink progress,
+            java.util.UUID jobId) {
 
         var owned = profiles.owned(user);
         Profile head = owned.profile();
@@ -134,7 +137,7 @@ public class JobSpecificGenerationService {
         String bucketKey = user.userId().toString();
         Result<JobAnalysis> analysed =
                 analysis.analyse(jobDescription, preflightAcknowledged, bucketKey,
-                        user.userId());
+                        user.userId(), jobId);
         if (analysed instanceof Result.Err<JobAnalysis> refused) {
             return Result.err(refused.error());
         }
@@ -203,8 +206,12 @@ public class JobSpecificGenerationService {
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
                 options.language(), head.getPreferences().writingStyle().tone(), bucketKey,
-                user.userId());
+                user.userId(), jobId);
         var rewritten = new AtomicReference<>(RewrittenContent.none());
+        // Accumulated across the compile loop rather than overwritten. A
+        // document that came out too long has already paid for the pass before
+        // it, and the trace is a record of what was spent.
+        var tally = new AtomicReference<>(RewriteTally.none());
         var announced = new AtomicBoolean();
         ContentRewriter rewriter = (state, carried) -> {
             // Once, however many times the compile loop goes round. A bar
@@ -214,19 +221,21 @@ public class JobSpecificGenerationService {
             if (first) {
                 progress.report(GenerationPhase.REWRITING.at(60));
             }
-            RewrittenContent done = rewrites.rewrite(rendered, state, context, carried);
-            rewritten.set(done);
+            RewriteOutcome done = rewrites.rewrite(rendered, state, context, carried);
+            rewritten.set(done.content());
+            tally.updateAndGet(sofar -> sofar.plus(done.tally()));
             if (first) {
                 progress.report(GenerationPhase.RENDERING.at(70));
             }
-            return done;
+            return done.content();
         };
 
         return pipeline.run(head, tree, built.request(), rewriter,
                         options.customization(), options.locale())
                 .map(document -> new GeneratedGeneration(
                         profile.id(), posting, options, scores.weights(),
-                        promptVersions(bucketKey, rewritten.get()),
+                        promptVersions(bucketKey, tally.get()),
+                        tally.get(),
                         document,
                         // Bolum 23.3, and it is measured on what the page
                         // prints rather than on what Faz B ranked: selection
@@ -242,26 +251,32 @@ public class JobSpecificGenerationService {
                 .map(made -> coverLetter
                         ? made.withCoverLetter(letters.writeQuietly(
                                 head, rendered, made.document().selection(), posting,
-                                "", CoverLetterStyle.DEFAULT, bucketKey, user.userId()))
+                                "", CoverLetterStyle.DEFAULT, bucketKey, user.userId(),
+                                jobId))
                         : made);
     }
 
     /**
-     * The versions that actually ran (Bolum 53.3). Faz D's are recorded only
-     * when Faz D changed something: a record naming a rewrite prompt for a
-     * generation that printed the profile verbatim would send anybody reading
-     * it back to the wrong prompt.
+     * The versions that actually ran (Bolum 53.3), and it is now read off the
+     * calls rather than off the result.
      *
-     * <p>The two prompts are recorded together rather than separately. Telling
-     * them apart needs the About atom's id, which is a fact about one profile,
-     * and the question a record like this answers is "which prompts could have
-     * written this" — both could.
+     * <p><strong>Duzeltme.</strong> This used to key off "Faz D changed
+     * something", which conflated three different runs. A generation whose only
+     * accepted answer was the About paragraph recorded {@code bullet_rewrite}
+     * as having run — it had not, or it had and every answer was refused, and
+     * the record could not say which. And a pass where both prompts ran and
+     * both were refused recorded neither, so a prompt that had started
+     * producing nothing but unsupported claims left no trace of having been
+     * asked. A prompt version belongs in this record when a request went out
+     * under it, whatever came back.
      */
-    private Map<String, String> promptVersions(String bucketKey, RewrittenContent rewritten) {
+    private Map<String, String> promptVersions(String bucketKey, RewriteTally tally) {
         var versions = new LinkedHashMap<String, String>();
         versions.put(JobAnalysisPhase.PROMPT_ID, analysis.promptVersionFor(bucketKey));
-        if (!rewritten.isEmpty()) {
+        if (tally.callsByPrompt().containsKey(BulletRewriteService.PROMPT_ID)) {
             versions.put(BulletRewriteService.PROMPT_ID, rewrites.promptVersionFor(bucketKey));
+        }
+        if (tally.callsByPrompt().containsKey(AboutSynthesisService.PROMPT_ID)) {
             versions.put(AboutSynthesisService.PROMPT_ID,
                     rewrites.aboutPromptVersionFor(bucketKey));
         }

@@ -66,7 +66,7 @@ class RewritePhaseTest {
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
 
         assertThat(arrivals.getCount()).isZero();
-        assertThat(rewritten.byAtom()).hasSize(8);
+        assertThat(rewritten.content().byAtom()).hasSize(8);
     }
 
     /**
@@ -88,8 +88,8 @@ class RewritePhaseTest {
         var rewritten = phase.rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
 
-        assertThat(rewritten.byAtom()).hasSize(3);
-        assertThat(rewritten.covers(doomed)).isFalse();
+        assertThat(rewritten.content().byAtom()).hasSize(3);
+        assertThat(rewritten.content().covers(doomed)).isFalse();
     }
 
     /**
@@ -105,7 +105,7 @@ class RewritePhaseTest {
         var rewritten = phase.rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
 
-        assertThat(rewritten.isEmpty()).isTrue();
+        assertThat(rewritten.content().isEmpty()).isTrue();
     }
 
     /**
@@ -121,10 +121,10 @@ class RewritePhaseTest {
 
         var first = phase.rewrite(
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
-        var second = phase.rewrite(fixture.tree(), fixture.selection(), context(), first);
+        var second = phase.rewrite(fixture.tree(), fixture.selection(), context(), first.content());
 
         assertThat(stub.calls.get()).isEqualTo(3);
-        assertThat(second.byAtom()).hasSize(3);
+        assertThat(second.content().byAtom()).hasSize(3);
     }
 
     /**
@@ -145,7 +145,7 @@ class RewritePhaseTest {
                 RewrittenContent.none());
 
         assertThat(stub.calls.get()).isZero();
-        assertThat(rewritten.isEmpty()).isTrue();
+        assertThat(rewritten.content().isEmpty()).isTrue();
     }
 
     /** Nothing worth rewriting is not a failure, and costs nothing. */
@@ -158,7 +158,7 @@ class RewritePhaseTest {
                 fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
 
         assertThat(stub.calls.get()).isZero();
-        assertThat(rewritten.isEmpty()).isTrue();
+        assertThat(rewritten.content().isEmpty()).isTrue();
     }
 
     /**
@@ -178,8 +178,8 @@ class RewritePhaseTest {
                 RewrittenContent.none());
 
         assertThat(about.calls.get()).isEqualTo(1);
-        assertThat(rewritten.byAtom()).hasSize(4);
-        assertThat(rewritten.orOriginal(fixture.aboutId(), RichContent.EMPTY).plainText())
+        assertThat(rewritten.content().byAtom()).hasSize(4);
+        assertThat(rewritten.content().orOriginal(fixture.aboutId(), RichContent.EMPTY).plainText())
                 .isEqualTo("A synthesised summary.");
     }
 
@@ -193,9 +193,85 @@ class RewritePhaseTest {
 
         var first = phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(),
                 context(), RewrittenContent.none());
-        phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(), context(), first);
+        phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(), context(), first.content());
 
         assertThat(about.calls.get()).isEqualTo(1);
+    }
+
+    // -- Bolum 14.6: the bill for the pass ----------------------------------
+
+    /**
+     * <strong>The two prompts are counted apart.</strong> They used to be
+     * recorded together, keyed off whether Faz D had changed anything at all,
+     * so a generation whose only accepted answer was the summary named
+     * {@code bullet_rewrite} as having run — and sent whoever read the record
+     * to a prompt that had made no call.
+     */
+    @Test
+    void thetallyNamesEachPromptForItsOwnCalls() {
+        var fixture = strongMatches(3);
+        var phase = new RewritePhase(
+                new StubRewriter(candidate -> RichContent.plain("rewritten")),
+                new RecordingAbout(RichContent.plain("A synthesised summary.")));
+
+        var outcome = phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(),
+                context(), RewrittenContent.none());
+
+        assertThat(outcome.tally().callsByPrompt())
+                .containsEntry(BulletRewriteService.PROMPT_ID, 3)
+                .containsEntry(AboutSynthesisService.PROMPT_ID, 1);
+    }
+
+    /**
+     * And the refusals of every task in the fan-out reach the same tally. Each
+     * task counts into its own sheet on its own virtual thread; a single shared
+     * counter would be the one piece of mutable state in the phase, and losing
+     * a count to a race would be invisible.
+     */
+    @Test
+    void therefusalsOfEveryTaskInTheFanOutAreAddedUp() {
+        var fixture = strongMatches(5);
+        var phase = phaseOf(new StubRewriter(candidate -> null));
+
+        var outcome = phase.rewrite(
+                fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
+
+        assertThat(outcome.content().isEmpty()).isTrue();
+        assertThat(outcome.tally().refusals())
+                .containsEntry(RewriteIssue.UNSUPPORTED_CLAIM, 5);
+    }
+
+    /** A pass with nothing to do spent nothing, and says so. */
+    @Test
+    void apassThatMadeNoCallHasAnEmptyTally() {
+        var fixture = weakMatches(3);
+
+        var outcome = phaseOf(new StubRewriter(candidate -> RichContent.plain("rewritten")))
+                .rewrite(fixture.tree(), fixture.selection(), context(),
+                        RewrittenContent.none());
+
+        assertThat(outcome.tally().isEmpty()).isTrue();
+    }
+
+    /**
+     * The compile loop's second pass adds to the first rather than replacing
+     * it. A document that came out too long has already paid for the pass
+     * before it, and a trace that reported only the last one would understate
+     * a generation that cost twice as much as it looked.
+     */
+    @Test
+    void asecondPassAddsToTheBillRatherThanReplacingIt() {
+        var fixture = strongMatches(2);
+        var stub = new StubRewriter(candidate -> null);
+        var phase = phaseOf(stub);
+
+        var first = phase.rewrite(
+                fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
+        var second = phase.rewrite(
+                fixture.tree(), fixture.selection(), context(), first.content());
+
+        assertThat(first.tally().plus(second.tally()).callsByPrompt())
+                .containsEntry(BulletRewriteService.PROMPT_ID, 4);
     }
 
     // -- fixtures ----------------------------------------------------------
@@ -299,8 +375,8 @@ class RewritePhaseTest {
         }
 
         @Override
-        public RichContent synthesise(AboutCandidate candidate, RewriteContext context) {
-            return candidate.original();
+        public RewriteResult synthesise(AboutCandidate candidate, RewriteContext context) {
+            return RewriteResult.kept(candidate.original());
         }
     }
 
@@ -309,6 +385,8 @@ class RewritePhaseTest {
 
         private final RichContent answer;
         private final AtomicInteger calls = new AtomicInteger();
+        private final RewriteTally tally = new RewriteTally(
+                java.util.Map.of(AboutSynthesisService.PROMPT_ID, 1), java.util.Map.of(), 0);
 
         RecordingAbout(RichContent answer) {
             super(null, null);
@@ -316,9 +394,9 @@ class RewritePhaseTest {
         }
 
         @Override
-        public RichContent synthesise(AboutCandidate candidate, RewriteContext context) {
+        public RewriteResult synthesise(AboutCandidate candidate, RewriteContext context) {
             calls.incrementAndGet();
-            return answer;
+            return new RewriteResult(answer, tally);
         }
     }
 
@@ -339,10 +417,19 @@ class RewritePhaseTest {
         }
 
         @Override
-        public RichContent rewrite(RewriteCandidate candidate, RewriteContext context) {
+        public RewriteResult rewrite(RewriteCandidate candidate, RewriteContext context) {
             calls.incrementAndGet();
             RichContent rewritten = answer.apply(candidate);
-            return rewritten == null ? candidate.original() : rewritten;
+            // One call, and — where the stub answered with the original — one
+            // refusal, which is what a real service would have counted.
+            var tally = new RewriteTally(
+                    java.util.Map.of(BulletRewriteService.PROMPT_ID, 1),
+                    rewritten == null
+                            ? java.util.Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 1)
+                            : java.util.Map.of(),
+                    0);
+            return new RewriteResult(
+                    rewritten == null ? candidate.original() : rewritten, tally);
         }
     }
 }

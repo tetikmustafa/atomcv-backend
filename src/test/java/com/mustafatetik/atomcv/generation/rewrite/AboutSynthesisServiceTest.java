@@ -52,7 +52,7 @@ class AboutSynthesisServiceTest {
     void agoodSummaryIsWhatGetsPrinted() {
         answering("Backend engineer who has run Postgres in production for a payments team.");
 
-        RichContent printed = service.synthesise(candidate(), context);
+        RichContent printed = service.synthesise(candidate(), context).content();
 
         assertThat(printed.plainText())
                 .isEqualTo("Backend engineer who has run Postgres in production "
@@ -68,7 +68,7 @@ class AboutSynthesisServiceTest {
     void asummaryThatReachesForThePostingsWordsIsThrownAwayAndTheOriginalStands() {
         answering("Backend engineer running Postgres and Kubernetes for payments.");
 
-        RichContent printed = service.synthesise(candidate(), context);
+        RichContent printed = service.synthesise(candidate(), context).content();
 
         assertThat(printed.plainText()).isEqualTo(ORIGINAL);
         verify(providers, times(AboutSynthesisService.ATTEMPTS)).call(any());
@@ -81,7 +81,7 @@ class AboutSynthesisServiceTest {
                 .thenReturn(answer("Ran Postgres and Kubernetes."))
                 .thenReturn(answer("Ran Postgres for a payments team."));
 
-        assertThat(service.synthesise(candidate(), context).plainText())
+        assertThat(service.synthesise(candidate(), context).content().plainText())
                 .isEqualTo("Ran Postgres for a payments team.");
         verify(providers, times(2)).call(any());
     }
@@ -92,7 +92,7 @@ class AboutSynthesisServiceTest {
         when(providers.call(request())).thenReturn(Result.err(
                 new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
-        assertThat(service.synthesise(candidate(), context).plainText()).isEqualTo(ORIGINAL);
+        assertThat(service.synthesise(candidate(), context).content().plainText()).isEqualTo(ORIGINAL);
     }
 
     /**

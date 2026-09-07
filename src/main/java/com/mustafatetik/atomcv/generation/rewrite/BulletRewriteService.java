@@ -72,23 +72,29 @@ public class BulletRewriteService {
     /**
      * @param candidate what the planner admitted, carrying its own constraints
      * @param context   the posting's words and the profile's voice
-     * @return the content to print for this atom, rewritten or original
+     * @return the content to print for this atom — rewritten or original — and
+     *         the record of how it got there. The two attempts are counted even
+     *         when both are refused, because "the prompt ran and everything it
+     *         produced was a lie" and "the prompt never ran" are the same
+     *         sentence on the page and opposite problems to fix
      */
-    public RichContent rewrite(RewriteCandidate candidate, RewriteContext context) {
+    public RewriteResult rewrite(RewriteCandidate candidate, RewriteContext context) {
+        var tally = new TallySheet();
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-            RichContent accepted = attempt(candidate, context);
+            RichContent accepted = attempt(candidate, context, tally);
             if (accepted != null) {
-                return accepted;
+                return new RewriteResult(accepted, tally.sealed());
             }
         }
         // Counts and ids are the log; the sentence is the user's (rule 4).
         log.info("Kept the original wording for atom {} after {} attempts",
                 candidate.atomId(), ATTEMPTS);
-        return candidate.original();
+        return new RewriteResult(candidate.original(), tally.sealed());
     }
 
     /** @return the accepted content, or null when this attempt did not pass */
-    private RichContent attempt(RewriteCandidate candidate, RewriteContext context) {
+    private RichContent attempt(RewriteCandidate candidate, RewriteContext context,
+            TallySheet tally) {
         Prompt prompt = prompts.load(PROMPT_ID,
                 prompts.selectVersion(PROMPT_ID, context.bucketKey()));
         FencedPrompt fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -99,14 +105,19 @@ public class BulletRewriteService {
                 .replace(LANGUAGE, context.language())
                 .replace(TONE, context.tone());
 
+        tally.called(PROMPT_ID);
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
                 fenced.userPromptFor(fencedData(candidate, context)),
-                prompt.schema(), RewrittenBullet.class, ModelTier.MID, TIMEOUT, context.userId()));
+                prompt.schema(), RewrittenBullet.class, ModelTier.MID, TIMEOUT,
+                context.userId(), context.jobId()));
 
         if (answer instanceof Result.Err<LlmResponse<RewrittenBullet>>) {
             // An outage is not a rewrite failure, but the answer is the same
-            // one: the original stands and the generation carries on.
+            // one: the original stands and the generation carries on. Counted
+            // apart from the refusals for exactly that reason — this one is
+            // read by looking at the provider chain, not at the prompt.
+            tally.unreachable();
             return null;
         }
         RewrittenBullet rewritten = answer.orElseThrow().data();
@@ -116,6 +127,7 @@ public class BulletRewriteService {
                 vectorOf(rewritten.text()), candidate.originalVector());
         if (!issues.isEmpty()) {
             log.info("A rewrite of atom {} was refused: {}", candidate.atomId(), issues);
+            tally.refused(issues);
             return null;
         }
         return RunMarking.mark(rewritten.text(), rewritten.emphasis(),
