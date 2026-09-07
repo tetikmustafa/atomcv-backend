@@ -46,6 +46,12 @@ public final class GoldenProfileReader {
      * atoms against a one-page budget, and almost none of it relevant to any
      * one posting.
      *
+     * <p>{@code stress_long_career} is the seventh and the bluntest: six jobs of
+     * ten wrapping bullets, far more than a page holds and all of it in one
+     * section. An integration test found the shape and this set could not,
+     * because every other fixture here is short enough that a systematic
+     * under-charge stays inside the drift budget.
+     *
      * <p>The five hand-written ones are the shapes of profiles. This one is a
      * shape nobody would have thought to write: every earlier fixture has more
      * relevant content than fits, and this one has far less, which is what made
@@ -59,7 +65,8 @@ public final class GoldenProfileReader {
             "career_changer",
             "academic_long",
             "minimal_edge",
-            "master_cv_en");
+            "master_cv_en",
+            "stress_long_career");
 
     private static final String PROFILE_PATH = "golden/profiles/%s.json";
     private static final String COSTS_PATH = "golden/profiles/%s.costs.json";
