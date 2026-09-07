@@ -128,6 +128,32 @@ class LatexCalibrationIT {
                 .isLessThan(capacity().fixedCost(CapacityModel.ITEMIZE_OVERHEAD));
     }
 
+    /**
+     * <strong>An inline list is the same list, and a row in it is the same
+     * line.</strong> {@code \resumeInlineList} is one {@code itemize} holding a
+     * single {@code \item} whose rows are separated by {@code \\}, opened
+     * directly under a section heading — so it costs
+     * {@code SECTION_LIST_OVERHEAD} to open and one {@code ITEM_LINE} a row,
+     * and needs no constant of its own.
+     *
+     * <p>It had no probe at all, which is how selection came to charge a Tech
+     * Stack row an entry heading and an itemize it never gets — 35.43 pt each,
+     * 169.55 pt on a real page. Nothing failed, because nothing was measuring.
+     */
+    @Test
+    void aninlineListCostsTheSameAsTheListItIs() {
+        double one = delta("beforeInlineOne", "afterInlineOne");
+        double three = delta("beforeInlineThree", "afterInlineThree");
+        double perRow = (three - one) / 2;
+
+        assertThat(perRow)
+                .as("a row of an inline list is one line, like any other")
+                .isCloseTo(capacity().fixedCost(CapacityModel.ITEM_LINE), offset());
+        assertThat(one - perRow)
+                .as("and it opens for what a list under a section heading opens for")
+                .isCloseTo(capacity().fixedCost(CapacityModel.SECTION_LIST_OVERHEAD), offset());
+    }
+
     @Test
     void anEntryHeadingCostsWhatWasMeasured() {
         assertThat(delta("afterThirdSection", "afterEntry"))

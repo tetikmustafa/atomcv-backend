@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
@@ -296,6 +297,114 @@ class SelectionRequestBuilderTest {
                 .flatMap(sec -> sec.atoms().stream())
                 .mapToDouble(candidate -> candidate.renderCostPt())
                 .sum();
+    }
+
+    // ── an inline list is lines, not entries ──────────────────────────────
+
+    /**
+     * <strong>A Tech Stack row is a line, and Faz C was charging it as an
+     * entry.</strong> {@code LatexDocumentRenderer.inlineList} flattens every
+     * entry of an {@code INLINE_LIST} section into one {@code resumeInlineList}
+     * block: no entry heading, no {@code itemize} of its own, and the entry
+     * titles are never printed at all. Selection did not know that and opened
+     * an entry per row, charging {@code ENTRY_HEADER_AFTER_LIST} plus
+     * {@code ITEMIZE_OVERHEAD} for each.
+     *
+     * <p>Measured against the compiler: 35.43 pt a row, 169.55 pt for the five
+     * that reached a real page — a quarter of a 708 pt page reserved for
+     * furniture the compiler never sets. That is why the other sections could
+     * not be opened and why the page came out short of the budget it had.
+     */
+    @Test
+    void aninlineListsRowsAreOfferedAsLinesRatherThanAsEntries() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setLayout(SectionLayout.INLINE_LIST);
+        var languages = profile.entry(section, 0);
+        var backend = profile.entry(section, 1);
+        profile.bullet(section, languages, "Programming Languages: Java, Python");
+        profile.bullet(section, backend, "Backend: Spring Boot, Flask");
+
+        var plan = build(profile).request().sections().get(0);
+
+        assertThat(plan.entries())
+                .as("nothing on the page opens an entry, so nothing here may charge for one")
+                .isEmpty();
+        assertThat(plan.atoms()).hasSize(2)
+                .allSatisfy(row -> assertThat(row.entryId()).isNull());
+    }
+
+    /**
+     * And in the order the renderer prints: the section's own atoms first, then
+     * every entry's, as the tree holds them. A page whose skills matrix came
+     * out shuffled would be this list reordered.
+     */
+    @Test
+    void aninlineListKeepsTheOrderTheRendererPrints() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setLayout(SectionLayout.INLINE_LIST);
+        var loose = profile.looseAtom(section, "loose");
+        var entry = profile.entry(section, 0);
+        var row = profile.bullet(section, entry, "from an entry");
+
+        var atoms = build(profile).request().sections().get(0).atoms();
+
+        assertThat(atoms).hasSize(2);
+        assertThat(atoms.get(0).atomId()).isEqualTo(loose.getId());
+        assertThat(atoms.get(1).atomId()).isEqualTo(row.getId());
+    }
+
+    /**
+     * A lock on one of those entries is a lock on its rows. The entry is gone
+     * by the time selection runs, so a lock left on it would be silently
+     * dropped — and "this stays on my CV" turning into nothing is the one
+     * failure a lock may not have.
+     */
+    @Test
+    void alockOnAnInlineListEntryTravelsToItsRows() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setLayout(SectionLayout.INLINE_LIST);
+        var entry = profile.entry(section, 0);
+        entry.setAlwaysInclude(true);
+        profile.bullet(section, entry, "Programming Languages: Java, Python");
+
+        var atoms = build(profile).request().sections().get(0).atoms();
+
+        assertThat(atoms).singleElement()
+                .satisfies(row -> assertThat(row.alwaysInclude()).isTrue());
+    }
+
+    /** An inactive row is still a candidate, so it can be explained (Bolum 19.5). */
+    @Test
+    void aninactiveInlineListRowIsStillExplainable() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setLayout(SectionLayout.INLINE_LIST);
+        var entry = profile.entry(section, 0);
+        var row = profile.bullet(section, entry, "Programming Languages: Java");
+        row.setActive(false);
+
+        var atoms = build(profile).request().sections().get(0).atoms();
+
+        assertThat(atoms).singleElement()
+                .satisfies(candidate -> assertThat(candidate.active()).isFalse());
+    }
+
+    /**
+     * An {@code INLINE_LIST} entry with no rows offers nothing. The heading
+     * candidate a bullet-list entry falls back on would charge for a title the
+     * inline renderer discards, and print nothing for it.
+     */
+    @Test
+    void aninlineListEntryWithNoRowsIsNotOfferedAsAHeading() {
+        var profile = new Fixture();
+        var section = profile.section(SectionKind.SKILLS, 0);
+        section.setLayout(SectionLayout.INLINE_LIST);
+        profile.entry(section, 0);
+
+        assertThat(build(profile).request().sections()).isEmpty();
     }
 
     // ── shape ─────────────────────────────────────────────────────────────

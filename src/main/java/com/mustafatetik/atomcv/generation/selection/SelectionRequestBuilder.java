@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
@@ -98,9 +99,20 @@ public final class SelectionRequestBuilder {
                 continue;
             }
 
+            // The renderer prints an INLINE_LIST section as one block and
+            // discards its entry titles, so its rows are filed here in the
+            // order it writes them: the section's own atoms, then every
+            // entry's. See Run#inlineRows for what that is worth in points.
+            boolean inline = section.section().getLayout() == SectionLayout.INLINE_LIST;
+            List<AtomCandidate> loose = new ArrayList<>(run.candidates(section.atoms(), null));
+
             List<EntryPlan> entries = new ArrayList<>();
             for (EntryNode entry : section.entries()) {
                 if (!entry.entry().isActive()) {
+                    continue;
+                }
+                if (inline) {
+                    loose.addAll(run.inlineRows(entry.atoms(), entry.entry()));
                     continue;
                 }
                 List<AtomCandidate> candidates = run.candidates(entry.atoms(), entry.entry());
@@ -121,7 +133,6 @@ public final class SelectionRequestBuilder {
                 entries.add(new EntryPlan(entry.entry().getId(), minAtoms, candidates));
             }
 
-            List<AtomCandidate> loose = run.candidates(section.atoms(), null);
             if (section.section().isAlwaysInclude()) {
                 if (!loose.isEmpty()) {
                     loose = pinBest(loose, 1);
@@ -222,6 +233,40 @@ public final class SelectionRequestBuilder {
                         variant.getContentHash()));
             }
             return candidates;
+        }
+
+        /**
+         * The rows of an {@code INLINE_LIST} entry, filed where the renderer
+         * prints them (Bolum 33.4).
+         *
+         * <p>Scored <em>with</em> the entry, because that is what the row
+         * belongs to and where a date would be found; filed <em>without</em>
+         * it, because {@code LatexDocumentRenderer.inlineList} flattens every
+         * entry of such a section into a single block and prints no heading and
+         * opens no list of its own for any of them.
+         *
+         * <p>The gap was worth a quarter of a page. Selection charged each row
+         * {@code ENTRY_HEADER_AFTER_LIST} plus {@code ITEMIZE_OVERHEAD} —
+         * 35.43 pt measured against the compiler — so a five-row Tech Stack
+         * reserved 169.55 pt of a 708 pt page for furniture that is never set.
+         * The page then came out short and the sections that could not be
+         * opened were reported as {@code BUDGET} rejections, which was true of
+         * the arithmetic and false of the document.
+         *
+         * <p>The entry's own lock travels down to its rows. It has nowhere else
+         * to go — the entry does not reach {@code SelectionPhase} at all — and
+         * a lock that quietly stops meaning anything is worse than one that was
+         * never set.
+         */
+        List<AtomCandidate> inlineRows(List<AtomNode> atoms, Entry entry) {
+            List<AtomCandidate> rows = new ArrayList<>();
+            for (AtomCandidate row : candidates(atoms, entry)) {
+                rows.add(new AtomCandidate(
+                        row.atomId(), row.variantId(), null, row.score(), row.renderCostPt(),
+                        row.alwaysInclude() || entry.isAlwaysInclude(), row.active(),
+                        row.contentKey()));
+            }
+            return rows;
         }
 
         /**

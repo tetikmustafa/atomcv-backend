@@ -174,6 +174,18 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeSubHeadingListEnd
                 \\typeout{CALIB|afterEntryFollowingAList|\\the\\pagetotal}
+                \\section*{Probe}
+                \\typeout{CALIB|beforeInlineOne|\\the\\pagetotal}
+                \\resumeInlineList{Probe
+                }
+                \\typeout{CALIB|afterInlineOne|\\the\\pagetotal}
+                \\section*{Probe}
+                \\typeout{CALIB|beforeInlineThree|\\the\\pagetotal}
+                \\resumeInlineList{Probe \\\\
+                Probe \\\\
+                Probe
+                }
+                \\typeout{CALIB|afterInlineThree|\\the\\pagetotal}
                 \\end{document}
                 """);
     }
