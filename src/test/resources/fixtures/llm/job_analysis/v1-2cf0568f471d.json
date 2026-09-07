@@ -1,0 +1,90 @@
+{
+  "role" : {
+    "title" : "Java Developer and Frontend Developer",
+    "seniority" : "mid",
+    "domain" : "software development",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "unknown",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "javascript",
+    "canonical" : "javascript",
+    "importance" : "critical"
+  }, {
+    "name" : "spring boot",
+    "canonical" : "spring boot",
+    "importance" : "critical"
+  }, {
+    "name" : "cloud architecture",
+    "canonical" : "cloud architecture",
+    "importance" : "high"
+  }, {
+    "name" : "oracle pl/sql",
+    "canonical" : "oracle pl/sql",
+    "importance" : "medium"
+  }, {
+    "name" : "html",
+    "canonical" : "html",
+    "importance" : "high"
+  }, {
+    "name" : "jquery",
+    "canonical" : "jquery",
+    "importance" : "high"
+  }, {
+    "name" : "css",
+    "canonical" : "css",
+    "importance" : "high"
+  }, {
+    "name" : "react",
+    "canonical" : "react",
+    "importance" : "critical"
+  }, {
+    "name" : "redux",
+    "canonical" : "redux",
+    "importance" : "medium"
+  }, {
+    "name" : "bootstrap",
+    "canonical" : "bootstrap",
+    "importance" : "medium"
+  }, {
+    "name" : "responsive web design",
+    "canonical" : "responsive web design",
+    "importance" : "medium"
+  }, {
+    "name" : "web services (RESTful, SOAP)",
+    "canonical" : "web services (restful, soap)",
+    "importance" : "medium"
+  }, {
+    "name" : "git",
+    "canonical" : "git",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "oracle pl/sql",
+    "canonical" : "oracle pl/sql",
+    "importance" : null
+  }, {
+    "name" : "responsive web design",
+    "canonical" : "responsive web design",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Participate in modern software projects using latest technologies in insurance sector.", "Develop software solutions aligning with project requirements.", "Collaborate effectively in a team environment to produce innovative solutions." ],
+  "keywords" : [ "software development", "Java", "Frontend", "spring boot", "cloud", "oracle", "HTML", "jQuery", "CSS", "React", "Redux", "Bootstrap", "web services", "git" ],
+  "experienceYears" : {
+    "min" : 5,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "professional",
+  "jdLanguage" : "tr",
+  "confidence" : 0.9,
+  "extractionNotes" : [ ]
+}
