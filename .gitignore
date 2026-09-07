@@ -44,15 +44,24 @@ Thumbs.db
 # are what stops latexTest falling back to a synthetic analysis the plausibility
 # gate then refuses, and they identify nobody.
 #
-# The other three are the developer's own CV, structured. A `profile_extraction`
+# The other four are the developer's own CV, structured. A `profile_extraction`
 # answer *is* the CV -- name, email, phone, every link -- and this repository is
 # public, so committing one would publish that permanently and irreversibly.
-# `about_synthesis` and `cover_letter` are written from the same content.
-# FixtureStore's "the file holds the answer, never the prompt" does not cover
-# these: here the answer is the personal data.
+# `about_synthesis`, `cover_letter` and `bullet_rewrite` are written from the
+# same content -- a rewritten bullet is the person's own sentence with the
+# words moved. FixtureStore's "the file holds the answer, never the prompt"
+# does not cover these: here the answer is the personal data.
+#
+# `bullet_rewrite` was added late and by accident. Its directory had never
+# existed, because Faz D had never made a call -- the thresholds kept it shut
+# -- so the pattern above named the three that had. The first generation that
+# cleared the floor wrote a file into an un-ignored path and it reached a
+# commit. **A new prompt id is a new directory, and the question to ask of it
+# is whether its answer is derived from the CV.**
 #
 # Nothing is lost. Every prompt still replays for whoever recorded it, and a
 # fresh clone synthesises a schema-shaped answer (local-fake, synthesize: true).
 src/test/resources/fixtures/llm/profile_extraction/
 src/test/resources/fixtures/llm/about_synthesis/
 src/test/resources/fixtures/llm/cover_letter/
+src/test/resources/fixtures/llm/bullet_rewrite/

@@ -124,6 +124,105 @@ class SectionFloorSelectionTest {
         assertThat(profile.atomsIn(state, SectionKind.LANGUAGES)).isEqualTo(1);
     }
 
+    // ── the same kind, hung two different ways ────────────────────────────
+
+    /**
+     * <strong>A floor says how much, never where.</strong> One import writes
+     * the summary as a paragraph straight under the heading; another puts it in
+     * a "Professional Summary" entry. One writes two languages as two lines,
+     * another as two entries. The page is the same either way and so is the
+     * floor.
+     *
+     * <p>Measured on a real profile before it was written: every section of an
+     * 84-atom import hung its atoms off entries, and About and Languages — the
+     * two given loose-atom floors — were the two sections that still did not
+     * reach the page.
+     */
+    @Test
+    void asectionWhoseAtomsHangOffEntriesGetsTheSameFloor() {
+        var inEntries = new Fixture();
+        inEntries.entrySection(SectionKind.ABOUT, 1, 4, 0.20);
+        inEntries.entrySection(SectionKind.LANGUAGES, 2, 1, 0.15);
+        inEntries.entrySection(SectionKind.PROJECTS, 14, 5, 0.90);
+
+        var state = SelectionPhase.select(inEntries.request()).orElseThrow();
+
+        assertThat(inEntries.sectionsOn(state))
+                .contains(SectionKind.ABOUT, SectionKind.LANGUAGES);
+        assertThat(inEntries.atomsIn(state, SectionKind.ABOUT)).isGreaterThanOrEqualTo(1);
+        assertThat(inEntries.atomsIn(state, SectionKind.LANGUAGES))
+                .as("two languages, one line each")
+                .isGreaterThanOrEqualTo(2);
+    }
+
+    /**
+     * And a section carrying both shapes reserves the total once. Counting the
+     * loose rows and then opening as many entries beside them would print twice
+     * the floor and spend the page on one section.
+     */
+    @Test
+    void asectionCarryingBothShapesReservesItsFloorOnce() {
+        var profile = new Fixture();
+        var mixed = profile.mixedSection(SectionKind.SKILLS, 3, 3, 0.20);
+        profile.entrySection(SectionKind.PROJECTS, 14, 5, 0.90);
+
+        var state = SelectionPhase.select(profile.request()).orElseThrow();
+
+        assertThat(profile.atomsIn(state, SectionKind.SKILLS))
+                .as("three is the floor, and the entries do not add three more")
+                .isEqualTo(3);
+        assertThat(mixed.floor().atoms()).isEqualTo(3);
+    }
+
+    /**
+     * <strong>About is one paragraph, and the ceiling is why.</strong> A real
+     * profile keeps four summaries — one written towards backend work, one
+     * towards data, one towards AI — and they all score the same against any
+     * one posting, so the greedy pass printed whichever two fit and the page
+     * opened with two competing paragraphs.
+     */
+    @Test
+    void aboutPrintsOneParagraphHoweverManyTheProfileKeeps() {
+        var profile = new Fixture();
+        profile.entrySection(SectionKind.ABOUT, 1, 4, 0.95);
+        profile.entrySection(SectionKind.EXPERIENCE, 2, 2, 0.20);
+
+        var state = SelectionPhase.select(profile.request()).orElseThrow();
+
+        assertThat(profile.atomsIn(state, SectionKind.ABOUT))
+                .as("four to choose from, one on the page")
+                .isEqualTo(1);
+    }
+
+    /**
+     * And a stored entry minimum cannot argue the ceiling away. An About entry
+     * carrying four summaries was written with a minimum of two, so Bolum
+     * 20.3's "prints its minimum or none of itself" put two opening paragraphs
+     * on a page whose section may hold one.
+     */
+    @Test
+    void astoredEntryMinimumDoesNotOverrideTheCeiling() {
+        var profile = new Fixture();
+        profile.entrySection(SectionKind.ABOUT, 1, 4, 0.95, (short) 2);
+        profile.entrySection(SectionKind.EXPERIENCE, 2, 2, 0.20);
+
+        var state = SelectionPhase.select(profile.request()).orElseThrow();
+
+        assertThat(profile.atomsIn(state, SectionKind.ABOUT)).isEqualTo(1);
+        assertThat(profile.sectionsOn(state)).contains(SectionKind.ABOUT);
+    }
+
+    /** And a kind with no ceiling takes as much as the page and the score allow. */
+    @Test
+    void akindWithNoCeilingIsNotCapped() {
+        var profile = new Fixture();
+        profile.entrySection(SectionKind.EXPERIENCE, 2, 6, 0.95);
+
+        var state = SelectionPhase.select(profile.request()).orElseThrow();
+
+        assertThat(profile.atomsIn(state, SectionKind.EXPERIENCE)).isGreaterThan(4);
+    }
+
     // ── the sections the order does not name ──────────────────────────────
 
     /**
@@ -276,6 +375,11 @@ class SectionFloorSelectionTest {
 
         /** Entries with bullets under them — experience, projects. */
         SectionPlan entrySection(SectionKind kind, int entries, int bullets, double score) {
+            return entrySection(kind, entries, bullets, score, (short) 0);
+        }
+
+        SectionPlan entrySection(SectionKind kind, int entries, int bullets, double score,
+                short minAtoms) {
             var plans = new ArrayList<EntryPlan>();
             for (int index = 0; index < entries; index++) {
                 UUID entryId = UUID.randomUUID();
@@ -284,9 +388,24 @@ class SectionFloorSelectionTest {
                     atoms.add(atom(kind, entryId,
                             score - index * 0.01 - bullet * 0.001, LINE_PT));
                 }
-                plans.add(new EntryPlan(entryId, (short) 0, atoms));
+                plans.add(new EntryPlan(entryId, minAtoms, atoms));
             }
             return add(kind, plans, List.of());
+        }
+
+        /** Loose rows and entries in one section, which a real profile can have. */
+        SectionPlan mixedSection(SectionKind kind, int rows, int entries, double score) {
+            var atoms = new ArrayList<AtomCandidate>();
+            for (int index = 0; index < rows; index++) {
+                atoms.add(atom(kind, null, score - index * 0.001, LINE_PT));
+            }
+            var plans = new ArrayList<EntryPlan>();
+            for (int index = 0; index < entries; index++) {
+                UUID entryId = UUID.randomUUID();
+                plans.add(new EntryPlan(entryId, (short) 0,
+                        List.of(atom(kind, entryId, score - 0.05 - index * 0.001, LINE_PT))));
+            }
+            return add(kind, plans, atoms);
         }
 
         /** Entries with nothing under them — a degree line (Bolum 20.2). */
