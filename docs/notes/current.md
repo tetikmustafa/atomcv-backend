@@ -15,7 +15,7 @@
 - **Axiom'da loglar görünüyor** — dataset açık, `.env` dolu (2026-08-26); telde
   doğrulanması üretim dağıtımını bekliyor.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
-  demeli (§ 9) — frontend'in.
+  demeli (§ 9) — frontend'in işi.
 - **§ 44.3'ün limiter'ı hâlâ yok** — 3.3'ünki **girişe** bağlı; § 44.3 ağır
   kullanıcının **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
 
@@ -50,15 +50,13 @@ adlandırılan spec bölümlerinde. Burada yalnız **canlı** olanlar:
 
 **Tamir etmeye kalkma — üçü de bilinçli:**
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
-  `ExtractionWarningCode` kapalı ve altı değerinin altısı da düzeltilebilir bir
-  alanı tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**, sayıya
-  indirilmedi. Yedincisi gerçekten engelleyici olursa karar § 31.6.4'te.
-- **`ImportWarning.code` alanı `String`, şeması enum.** Değer JSONB'den geri
-  okunuyor; enum yapmak adı değişmiş eski satırı ya attırır ya düşürür, ve
-  düşen uyarı `warningCount == warnings.length`'i bozar.
-- **`OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.** `values()`'tan
-  türetilirse yedinciye de "evet" der; oysa o karşı reponun duyması gereken
-  bir tel değişikliği.
+  `ExtractionWarningCode` kapalı ve altı değeri de düzeltilebilir bir alanı
+  tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**. Yedincisi gerçekten
+  engelleyici olursa karar § 31.6.4'te.
+- **`ImportWarning.code` `String`, şeması enum** — değer JSONB'den geri
+  okunuyor, enum yapmak adı değişmiş satırı düşürür ve `warningCount`'u bozar.
+  **`OpenApiSchemaIT`'in okuduğu altı değer de elle yazılı**: `values()`'tan
+  türetilirse yedinciye de "evet" der.
 
 **`shared.wire` bir sonraki kapalı sözlüğün yeri** — iki modülün yayımladığı,
 **ret olmayan** sözlükler oraya; `shared.error` retlerin.
@@ -73,63 +71,74 @@ Burada yalnız **canlı** olanlar:
 - **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş**
   (`synthetic-631`); gerçek olan iki tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
 - **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
-- **`job_analysis` ve `cover_letter` prompt'ları eski cümleyi taşıyor** — ikisi
-  de `v2` bekliyor, `v2` model seçimini bekliyor.
+- **`cover_letter` prompt'u eski cümleyi taşıyor** — `v2` model seçimini
+  bekliyor. (`job_analysis` v2 dilim H'de indi.)
 
-**Geçici — `build.gradle.kts`'te iki BOM geçersizleştirmesi var.**
-`postgresql.version` 42.7.12 ve `netty.version` 4.1.136.Final; ikisi de
-Trivy'nin düşürdüğü HIGH CVE'ler için, ve Boot'un BOM'u yetişince
-**kaldırılmalı**.
+**Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi var:**
+`postgresql` 42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59. Hepsi Trivy'nin
+düşürdüğü CVE'ler için; Boot'un BOM'u yetişince **kaldırılmalı**.
 
-**Ders — bir muhafızın yanlış pozitifini aramanın en ucuz yeri
-`fixtures/llm/`.** `F-026`'nın dört taslağını yeniden üretmek gerekmedi.
+**Ders — bir muhafızın yanlış pozitifini aramanın en ucuz yeri `fixtures/llm/`.**
 
-## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/06)
+## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
 
-Dört bulgu, **yedi** ayrı kusur; dilim kayıtları
+Dört bulgu, **yedi** ayrı kusur; dilim A-G'nin tam kaydı
 `archive/stage-3-post-closure-e2e.md`'de. Bulgular kusurlarla eşleşmedi:
-"eksik Tech Stack" render sanılıyordu, Faz C çıktı; iki uydurma cümle Faz D
-sanılıyordu, ikisi de çıkarımdan geliyordu.
+"eksik Tech Stack" render sanılıyordu Faz C çıktı; iki uydurma cümle Faz D
+sanılıyordu, ikisi de çıkarımdan geliyordu. Dilim F Klasik şablonunu indirdi
+ve drift'i kapatan **`ITEM_LINE`'ın bir ölçüm artefaktı olduğunu görmek** oldu;
+dilim G ölçümün kendisini indirdi (`job_id`, TEI parçalama, `RewriteTally`,
+`local-record`'un kaynak dosyası).
 
-| Dilim | Ne indi |
-|---|---|
-| A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
-| B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
-| F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2'ye ölçüldü ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
-| E · Faz D sessizliği | `trace.D` yazılıyor; sıfır artık "koştu ve değiştirmedi" diyor. Eşiklere dokunulmadı — § 21.2 verbatim ve yeniden ayarlamak ölçüm ister |
-| D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
-| C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
+**Geliştiricide:** fiyat tablosu (**o güne kadar günlük bütçe freni ölü**),
+VPS kurulumu, restore testi.
 
-**İndi — dilim G (2026-09-07):** `job_id` yazılıyor (`StructuredRequest.jobId`,
-`user_id` ile aynı yol); TEI istemcisi `atomcv.embedding.batch-size` ile
-parçalıyor, compose yaması kalktı; `local-record` `profile_extraction` için
-`*.source.txt` da yazıyor.
+## Kapanış sonrası · dilim I-J-H — sayfanın şekli (2026-09-07)
 
-**Ekleme — Faz D'nin faturası içerikten ayrı taşınıyor.** `RewrittenContent`
-§ 21.5 gereği yalnız kabul edilenleri tutar; Faz E için doğru, trace için
-yanlış olan kural bu. `RewritePhase` artık `RewriteOutcome` (içerik +
-`RewriteTally`) döndürüyor: prompt başına **çağrı**, `RewriteIssue` başına
-**ret**, ayrı bir **ulaşılamayan**. Üçü ayrı, çünkü `rewritten: 0`'ın dört
-sebebi var ve sayfa dördünde de aynı görünüyor. § 14.6'nın `rejectReasons`'ı bu.
+Tek sayfada altı bölüm, ilana göre doldurulmuş. Üçü de ölçüme dayalı.
 
-**Düzeltme — `promptVersions` "çağrı gitti mi"ye bakıyor, "değişti mi"ye
-değil.** Eskisi About'u kabul edilen bir üretimde `bullet_rewrite`'ı koşmuş
-gösteriyor, iki prompt da koşup her cevabı reddedilen geçişte **hiçbirini**
-yazmıyordu; ikisi de regresyon arayanı yanlış prompt'a yolluyor.
+**Sapma — § 20 seçimi saf bütçe yarışı diye tarif ediyor, o bir CV üretmiyor.**
+Ölçülen koşu sayfaya yirmi atom koydu, yirmisi de Projects'ten: deneyim yok,
+yetenek yok, özet yok — her biri "hangi atom puan başına daha değerli"nin doğru
+cevabıydı. **`SectionFloor`** her türe önce taban ayırıyor (About 1 paragraf ·
+Education 1 · Experience 2×2 · Projects 2×3 · Tech Stack 3 · Languages 2 =
+**576/708pt**), kalan **132pt** ilana göre yarışıyor. Sıra sabit, seçimde ve
+sayfada aynı. **Taban bir tavandır, talep değil:** profilde yoksa basılmaz,
+eksikse ne varsa girer. About'un ayrıca *tavanı* var — bir CV bir özet.
+
+**Düzeltme — `inline_list` maliyeti.** Renderer Tech Stack'i tek blokta düz
+satır basarken Faz C her satıra entry mobilyası yazıyordu: **35.43pt**, beş
+satırda **169.55pt**, sayfanın dörtte biri. Prob hiç yoktu; artık
+`LatexCalibrationIT` ölçüyor ve cevap "kendi sabiti gerekmiyor".
+
+**Düzeltme — § 18.4'ün `no_responsibilities`'i kalktı.** Gerçek ilanların çoğu
+başlıksız nitelik listesi; ölçülen ilan 0.92 güven ve 20 yetenekle reddedildi.
+`job_analysis` **v2** sorumlulukları metinde ne varsa ondan türetiyor; yetenek
+kuralı sıkı kaldı (`postingSkills` § 21.6'nın sözlüğü). İş tarif etmeyen metin
+zaten `LOW_CONFIDENCE`; ikisi aynı ilanı iki kez reddediyordu. `B-072`.
+
+**Ekleme — üç import kararı ikinci yazıcıyla paylaşıldı:** `layoutFor`
+(Languages da `INLINE_LIST`, `V6`), `reachableMinimumFor` (About entry'si 1,
+`V7`), `hangsOffItsSection` (özet bölüme asılır, `V8` — uydurulan "Professional
+Summary" başlığı gitti). `EphemeralProfileWriter` üçünü de kaçırmıştı.
+
+**Tamir etmeye kalkma — testlerin öğrettiği üçü:**
+- **`improveBySwapping()` tabanı yerleştirir yerleştirmez takas ediyordu.**
+  `reservedByFloor` ayrı bir küme: `forcedByLock` "kullanıcı seçti" demek ve
+  `pinnedCostPt` onu sayar; taban kullanıcının seçimi değil.
+- **Golden, tabanın bir entry'yi 3'lük asgarisinin 2'siyle açtığını yakaladı**
+  (§ 20.3). Entry artık açılmadan önce fiyatlanıyor.
+- **Taban "nerede" değil "ne kadar" demeli.** İlk hali About ve Languages'ı
+  serbest atom sanıyordu; gerçek profil ikisini de entry'de tutuyor.
 
 **Canlı kalanlar:**
-- **Aynı 4-sayfa belge iki kez faturalandı** (13:58 ve 14:06, ikisi de 4522
-  giriş jetonu), tek `profile_extract` satırı var. `job_id` indiği için bir
-  sonraki tekrar kendini gösterir.
-- **`cost_usd` her satırda 0.000000** — fiyat tablosu yok, yani **günlük bütçe
-  freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
-- **Faz D eşikleri ulaşılamıyor, ve artık ölçüldü:** gerçek embedding + gerçek
-  ilanla en yüksek atom skoru **0.3577**, `FLOOR_SCORE` **0.40**. § 21.2'nin
-  sayıları bu skorlama fonksiyonuyla uyuşmuyor; karar spec'in.
-- **Nitelik-listesi ilanı § 18 `no_responsibilities` ile reddediyor** — kural
-  doğru, ama gerçek ilanların çoğu böyle. Ürün kararı.
-- **Yanlış pozitif oranı bir sonraki `make record`'la ölçülür** — kaynak
-  dosyaları henüz yok, `RecordedExtractionFidelityTest` o zamana dek sessiz.
+- **Aynı 4-sayfa belge iki kez faturalandı**, tek `profile_extract` satırı var;
+  `job_id` indiği için bir sonraki tekrar kendini gösterir.
+- **Faz D eşikleri ölçüldü, ikisi de doğru çıktı:** bir profilde en yüksek skor
+  0.3577 (Faz D koşmadı), diğerinde 0.4313 (koştu). § 21.2'nin sayıları profile
+  göre kenarda; **ayarlamak yeni ölçüm ister**, karar spec'in.
+- **Altı bölümün *sert* tabanı sığmazsa sayfa limiti kazanır**, en alttaki
+  düşer. Ölçülen sayfada olmuyor (386/708pt); kendi testi var.
 
 ---
 
@@ -149,41 +158,34 @@ Frontend aksiyonları: `B-055`-`B-058`.
 ## Kapanan adımlardan hâlâ canlı olanlar
 
 **Tamir etmeye kalkma — ikisi de beklenen davranış:**
-- **`suspicious_output` telde hiç görülmedi.** Bir enjeksiyon tripwire'ı; uslu
-  bir modelle açılmaması doğru sonuç.
-- **`bullet_rewrite` / `about_synthesis` yerelde anlamsız çalışıyor.**
-  Fixture yokken `SyntheticAnswer` şema şeklinde bir cümle üretiyor,
-  doğrulayıcı reddedip orijinali bastırıyor. Fixture inince düzelir.
+- **`suspicious_output` telde hiç görülmedi** — bir enjeksiyon tripwire'ı, uslu bir modelle açılmaması doğru sonuç.
+- **`bullet_rewrite` / `about_synthesis` fixture'ı olmayan girdide anlamsız.**
+  `SyntheticAnswer` şema şeklinde bir cümle üretir, doğrulayıcı reddeder,
+  orijinal basılır. İkisi de artık kayıtlı ve `.gitignore`'da.
 
 **Test yazarken:**
 - **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.** Silmeyen bir
-  kimlik testi dördüncü sırada ilgisiz bir 429'da düşer, flake gibi okunur.
+  kimlik testi dördüncüde ilgisiz bir 429'da düşer, flake gibi okunur.
 - **`profiles` entegrasyon paketinde hiç boş değil** (`DevSeeder`) — anonim
   gizlilik iddiası "satır sayısı değişmedi" diye kuruluyor.
-- **`local` profilinde yapılandırılmış LLM sağlayıcısı yok**, entegrasyon
-  lane'inde her çağrı `ALL_PROVIDERS_UNAVAILABLE` alır. `CoverLetterApiIT`
-  bunu kasten öyle kuruyor.
+- **`local` profilinde LLM sağlayıcısı yok** — entegrasyon lane'inde her çağrı
+  `ALL_PROVIDERS_UNAVAILABLE` alır; `CoverLetterApiIT` kasten öyle kuruyor.
 - **`AccountDeletionIT` tablo listesini `information_schema`'dan okuyor** —
-  elle yazılmış bir liste, sonradan eklenen tabloda sonsuza kadar geçerdi.
+  elle yazılmış liste sonradan eklenen tabloda sonsuza kadar geçerdi.
 
 **Sınırlar ve açıklar:**
-- **`latexTest` 44/48**, sebebi fixture yokluğu (`job_analysis` → `LOW_CONFIDENCE`
-  → `failed`), Faz D değil. `ce9483e`'de de düşüyordu. Düzeltmesi `make record`.
-- **Faz D bir üretimde sekize kadar eşzamanlı çağrı yapıyor**, her biri
-  `REQUIRES_NEW` ile bağlantı alıyor. Havuz 10, işçi eşzamanlılığı 2 → tepede
-  16 kısa ödünç. **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
-- **`support_grants.accessed_at`'i hiçbir şey yazmıyor** — operatör arayüzü bu
-  repoda yok. **Erişim aracı gelirse ilk işi o kolonu yazmak olmalı.**
-- **R2'deki PDF'ler** § 57.4'ün silme listesinde, R2 istemcisi ise hiç yok
-  (7. karar: MVP'ye girmiyor, cümle işaretlenecek).
-- **Anonim işler yükseltmede taşınmıyor** (`anon_session_id` ile kapsanıyor);
-  bugün zararsız, anonim *üretim* inince değişir. **Anonim oturumun kullanıcı
-  indeksi yok** — toplu iptali de yok, onu bitiren TTL'i.
+- **Faz D sekize kadar eşzamanlı çağrı yapıyor**, her biri `REQUIRES_NEW` ile
+  bağlantı alıyor. Havuz 10, işçi eşzamanlılığı 2 → tepede 16 kısa ödünç.
+  **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
+- **`support_grants.accessed_at`'i hiçbir şey yazmıyor** (operatör arayüzü bu
+  repoda yok). **R2'deki PDF'ler** § 57.4'ün silme listesinde, R2 istemcisi ise
+  hiç yok (7. karar: MVP'ye girmiyor).
+- **Anonim işler yükseltmede taşınmıyor** (`anon_session_id` kapsıyor); anonim
+  *üretim* inince değişir. **Anonim oturumun kullanıcı indeksi yok.**
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`SkillNames.canonical` dört çağıranın ortak kuralı** — alias
-  dosyasında sol taraf insanların yazdığı gibi olmalı, yoksa anahtar eşleşmez.
-- **`Contact.linkedin` CV alanı**, LinkedIn *girişinin* kaldırılmasıyla ilgisiz
-  ve duruyor — karıştırılmasın.
+  dosyasında sol taraf insanların yazdığı gibi olmalı. **`Contact.linkedin`**
+  CV alanı, LinkedIn *girişinin* kaldırılmasıyla ilgisiz — karıştırılmasın.
 - **İzlenecek:** CI bir kez `PGVectorTypeContributor`'da `NoClassDefFoundError`
   verdi, aynı ağaç tekrar koşuşta geçti (2026-08-27, run 33091345512).
   **Tekrarlarsa ilk bakılacak yer bağlam sayısı, kod değil.**
@@ -193,8 +195,6 @@ söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değ
 
 ---
 
-## Dilim kayıtları
-
-Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da; ikinci bir kopya
-ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü görmeden
-yazıldı sayma.* Dilim 14, kapanış sonrası A ve G'de yine gerekti.
+Sekiz dilimin kaydı **`kapanis-denetimi.md` § 6**'da. Oradan çıkan tek kural
+§ 51.7'de: *bir muhafızın düştüğünü görmeden yazıldı sayma.* Dilim 14, kapanış
+sonrası A, G ve J'de yine gerekti — J'de üç kez.
