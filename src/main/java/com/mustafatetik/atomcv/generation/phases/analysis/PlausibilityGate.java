@@ -18,6 +18,23 @@ import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
  */
 final class PlausibilityGate {
 
+    // Duzeltme -- there was a fourth verdict here, NO_RESPONSIBILITIES, and it
+    // refused an analysis whose `responsibilities` list came back empty. The
+    // reasoning was sound: Faz B matches bullets to duties, so an analysis with
+    // none has nothing for it to do.
+    //
+    // The rule was wrong about the world. Most real advertisements are
+    // qualification lists with no duties under any heading, and the one that
+    // forced this out said "At least 5 years of hands-on software development
+    // experience in Java, Java EE" and nothing about the work. It was refused
+    // at 0.92 confidence with twenty skills read out of it -- the model had
+    // understood the posting and the gate threw the answer away.
+    //
+    // job_analysis v2 derives the duties from whatever the text carries, so an
+    // empty list now means the text described no work at all. That is what
+    // `confidence` measures, and it is measured here already; a second check on
+    // the same fact refused the same posting twice.
+
     /** Bolum 18.4, verbatim. Below this the model is guessing. */
     static final double MIN_CONFIDENCE = 0.55;
 
@@ -53,9 +70,6 @@ final class PlausibilityGate {
         /** Fewer than two required skills: nothing to score a profile against. */
         TOO_FEW_SKILLS(UnreadablePostingReason.TOO_FEW_SKILLS),
 
-        /** No responsibilities: Faz B has nothing to match bullets to. */
-        NO_RESPONSIBILITIES(UnreadablePostingReason.NO_RESPONSIBILITIES),
-
         /**
          * A field is far longer than that field ever is.
          *
@@ -90,9 +104,6 @@ final class PlausibilityGate {
         }
         if (analysis.requiredSkills().size() < MIN_REQUIRED_SKILLS) {
             return Verdict.TOO_FEW_SKILLS;
-        }
-        if (analysis.responsibilities().isEmpty()) {
-            return Verdict.NO_RESPONSIBILITIES;
         }
         if (hasAbnormalFieldLength(analysis)) {
             return Verdict.SUSPICIOUS_OUTPUT;

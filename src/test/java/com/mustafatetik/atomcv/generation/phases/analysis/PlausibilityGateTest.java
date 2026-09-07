@@ -36,11 +36,40 @@ class PlausibilityGateTest {
                 .isEqualTo(Verdict.TOO_FEW_SKILLS);
     }
 
-    /** Faz B matches bullets to duties, so an analysis with none has no work to do. */
+    /**
+     * <strong>Duzeltme — a posting that lists no duties is still a posting.</strong>
+     * The gate used to refuse an analysis with an empty {@code responsibilities}
+     * list, on the reasoning that Faz B has nothing to match bullets to. The
+     * reasoning was sound and the rule was wrong about the world: most real
+     * advertisements are qualification lists, and the one that forced this said
+     *
+     * <pre>At least 5 years of hands-on software development experience in
+     * Java, Java EE</pre>
+     *
+     * with no "Responsibilities" heading anywhere. It was refused at 0.92
+     * confidence with twenty skills read out of it — the model had understood
+     * the posting perfectly and the gate threw the answer away.
+     *
+     * <p>The duties are derived from whatever the text carries now
+     * ({@code job_analysis} v2), so an empty list means the text described no
+     * work at all, and that is what {@code confidence} is for. Keeping both
+     * would refuse the same posting twice.
+     */
     @Test
-    void anAnalysisWithNoResponsibilitiesIsRefused() {
+    void apostingThatListsNoDutiesIsStillAPosting() {
         assertThat(PlausibilityGate.check(analysis().withResponsibilities().build()))
-                .isEqualTo(Verdict.NO_RESPONSIBILITIES);
+                .isEqualTo(Verdict.ACCEPTED);
+    }
+
+    /**
+     * And what used to stop it still does, from the other side: a text with no
+     * work in it is a text the model is not confident about.
+     */
+    @Test
+    void atextWithNoWorkInItIsRefusedByConfidenceInstead() {
+        assertThat(PlausibilityGate.check(
+                analysis().withResponsibilities().withConfidence(0.40).build()))
+                .isEqualTo(Verdict.LOW_CONFIDENCE);
     }
 
     // ── The length audit (Bolum 18.3, structural half) ───────────────────

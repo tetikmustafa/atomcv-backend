@@ -95,7 +95,7 @@ atomcv:
   # value change rather than a release.
   prompts:
     active:
-      job_analysis: v1
+      job_analysis: v2
       profile_extraction: v1
       translation: v1
       bullet_rewrite: v1
