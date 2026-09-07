@@ -205,16 +205,26 @@ public class ProfileWriter {
      * {@code English: B2}, and two languages then cost 112 pt of a 708 pt page
      * for what an inline list prints in 45.
      *
+     * <p><strong>About is the third, and it is neither of the other two.</strong>
+     * A summary is one flowing paragraph — that is what it is in the document
+     * this template was taken from, and in every CV that has one — and under
+     * the default it was printed as a bulleted item: a marker in front of a
+     * paragraph, which reads as the first of a list that never arrives. It is
+     * not an inline list either. An inline row is a label and the list it
+     * introduces, so its first colon is set in bold, and a summary opening
+     * "Backend engineer: five years of ..." would have had its first words
+     * emboldened by a rule that was never about it. {@code PARAGRAPH} says the
+     * one thing that is true of it: prose, no marker.
+     *
      * <p>Experience, projects and education stay bullets and entries, which is
-     * what the default already says. About too: its atoms are paragraphs, and
-     * an inline list would run them together on one line.
-     * {@code TWO_COLUMN} stays unused here — Bolum 33.5 keeps Classic
-     * single-column for ATS extraction, and choosing it at import would decide
-     * that question in the wrong place.
+     * what the default already says. {@code TWO_COLUMN} stays unused here —
+     * Bolum 33.5 keeps Classic single-column for ATS extraction, and choosing
+     * it at import would decide that question in the wrong place.
      */
     static SectionLayout layoutFor(SectionKind kind) {
         return switch (kind) {
             case SKILLS, LANGUAGES -> SectionLayout.INLINE_LIST;
+            case ABOUT -> SectionLayout.PARAGRAPH;
             default -> SectionLayout.BULLET_LIST;
         };
     }

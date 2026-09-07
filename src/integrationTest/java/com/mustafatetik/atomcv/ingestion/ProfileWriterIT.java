@@ -298,6 +298,21 @@ class ProfileWriterIT extends AbstractIntegrationTest {
         assertThat(layoutOf(profile.getId(), "experience")).isEqualTo("bullet_list");
     }
 
+    /**
+     * Bolum 33.4: a summary is prose, and prose takes no bullet.
+     *
+     * <p>Under the column's default the renderer set it as a bulleted item — a
+     * marker in front of a paragraph, which reads as the first of a list that
+     * never arrives. Not {@code inline_list} either: that layout sets a row's
+     * first colon in bold, and a summary is not a label and a list.
+     */
+    @Test
+    void aSummaryIsSetAsAParagraph() {
+        var profile = writer.write(user, cvWithASummaryAndALanguage(), false);
+
+        assertThat(layoutOf(profile.getId(), "about")).isEqualTo("paragraph");
+    }
+
     private String layoutOf(UUID profileId, String kind) {
         return jdbc.queryForObject(
                 "SELECT layout FROM sections WHERE profile_id = ? AND kind = ?",

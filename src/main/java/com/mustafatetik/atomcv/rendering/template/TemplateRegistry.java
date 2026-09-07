@@ -73,6 +73,13 @@ public final class TemplateRegistry {
             \\newcommand{\\resumeSubHeadingListEnd}{}
             \\newcommand{\\resumeItemListStart}{\\begin{itemize}}
             \\newcommand{\\resumeItemListEnd}{\\end{itemize}}
+            % A summary, straight under the heading. Same list at the same
+            % margin as a bullet list, with the marker left out -- the marker
+            % sits in the margin, so nothing about the width or the height of
+            % what is inside changes, and no measured cost moves.
+            \\newcommand{\\resumeParagraphListStart}%
+              {\\begin{itemize}[leftmargin=\\atomcvindent, label={}]}
+            \\newcommand{\\resumeParagraphListEnd}{\\end{itemize}}
             \\newcommand{\\resumeInlineList}[1]%
               {\\begin{itemize}[leftmargin=\\atomcvindent, label={}]%
                 \\item{#1}\\end{itemize}}
