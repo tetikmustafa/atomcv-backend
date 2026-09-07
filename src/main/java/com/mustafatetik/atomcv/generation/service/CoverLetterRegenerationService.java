@@ -64,7 +64,9 @@ public class CoverLetterRegenerationService {
         Result<CoverLetterDraft> written = letters.write(
                 head, tree, generation.getSelectionState().toSelectionState(),
                 generation.getJdAnalysis(), companyNote, style, user.userId().toString(),
-                user.userId());
+                // Not a queued job: the person pressed the button and is
+                // waiting on the answer, so there is no job row to attribute to.
+                user.userId(), null);
 
         if (written instanceof Result.Ok<CoverLetterDraft> ok) {
             generation.setCoverLetter(ok.value().plainText());

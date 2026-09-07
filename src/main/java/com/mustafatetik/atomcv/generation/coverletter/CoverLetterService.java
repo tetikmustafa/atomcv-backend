@@ -71,11 +71,12 @@ public class CoverLetterService {
      */
     public Result<CoverLetterDraft> write(
             CoverLetterInput input, CoverLetterStyle style, String bucketKey,
-            java.util.UUID userId) {
+            java.util.UUID userId,
+            java.util.UUID jobId) {
 
         List<CoverLetterIssue> lastIssues = List.of();
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-            Attempt made = attempt(input, style, bucketKey, userId);
+            Attempt made = attempt(input, style, bucketKey, userId, jobId);
             if (made.outage()) {
                 return Result.err(new PipelineError.AllProvidersUnavailable(List.of()));
             }
@@ -101,7 +102,8 @@ public class CoverLetterService {
 
     private Attempt attempt(
             CoverLetterInput input, CoverLetterStyle style, String bucketKey,
-            java.util.UUID userId) {
+            java.util.UUID userId,
+            java.util.UUID jobId) {
 
         Prompt prompt = prompts.load(PROMPT_ID, prompts.selectVersion(PROMPT_ID, bucketKey));
         FencedPrompt fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -114,7 +116,7 @@ public class CoverLetterService {
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
                 fenced.userPromptFor(fencedData(input)),
-                prompt.schema(), CoverLetterDraft.class, ModelTier.MID, TIMEOUT, userId));
+                prompt.schema(), CoverLetterDraft.class, ModelTier.MID, TIMEOUT, userId, jobId));
 
         if (answer instanceof Result.Err<LlmResponse<CoverLetterDraft>>) {
             return Attempt.unavailable();

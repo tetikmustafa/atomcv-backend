@@ -69,14 +69,15 @@ public class LlmInvocationRecorder {
                     INSERT INTO llm_invocations (
                         prompt_id, prompt_version, provider, model,
                         input_tokens, output_tokens, cached_tokens,
-                        cost_usd, latency_ms, outcome, created_at, user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        cost_usd, latency_ms, outcome, created_at, user_id, job_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     event.promptId(), event.promptVersion(), event.provider(), event.model(),
                     event.inputTokens(), event.outputTokens(), event.cachedTokens(),
                     cost, event.latencyMs(), event.outcome().name().toLowerCase(
                             java.util.Locale.ROOT),
-                    java.sql.Timestamp.from(event.occurredAt()), event.userId());
+                    java.sql.Timestamp.from(event.occurredAt()), event.userId(),
+                    event.jobId());
         } catch (RuntimeException unwritten) {
             // Never the prompt or the answer, and never the caller's problem
             // (absolute rule 4).

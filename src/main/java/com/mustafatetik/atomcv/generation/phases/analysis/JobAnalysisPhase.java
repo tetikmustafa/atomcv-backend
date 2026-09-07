@@ -96,7 +96,7 @@ public class JobAnalysisPhase {
      *               column that means "which account spent this"
      */
     public Result<JobAnalysis> analyse(String jobDescription, boolean preflightAcknowledged,
-            String bucketKey, UUID userId) {
+            String bucketKey, UUID userId, UUID jobId) {
 
         if (jobDescription == null || jobDescription.isBlank()) {
             throw new IllegalArgumentException(
@@ -134,7 +134,7 @@ public class JobAnalysisPhase {
                 PROMPT_ID, version,
                 fenced.system(),
                 fenced.userPromptFor(jobDescription),
-                prompt.schema(), JobAnalysis.class, ModelTier.CHEAP, TIMEOUT, userId);
+                prompt.schema(), JobAnalysis.class, ModelTier.CHEAP, TIMEOUT, userId, jobId);
         var answer = providers.call(request);
 
         return switch (answer) {
