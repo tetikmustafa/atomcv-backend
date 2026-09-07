@@ -35,13 +35,31 @@ import java.util.UUID;
  */
 public final class GoldenProfileReader {
 
-    /** The five profiles of Bolum 51.3, in the order they are listed there. */
+    /**
+     * The five profiles of Bolum 51.3, in the order they are listed there, and
+     * a sixth that was not written but <em>read</em>.
+     *
+     * <p>{@code master_cv_en} is a real four-page master CV, imported from the
+     * LaTeX source in {@code cv/master_cv.tex} through the real pipeline and
+     * kept as the profile that came out: four About variants, three roles,
+     * fourteen projects, seven Tech Stack rows, two languages — eighty-four
+     * atoms against a one-page budget, and almost none of it relevant to any
+     * one posting.
+     *
+     * <p>The five hand-written ones are the shapes of profiles. This one is a
+     * shape nobody would have thought to write: every earlier fixture has more
+     * relevant content than fits, and this one has far less, which is what made
+     * it the fixture that first showed a page filling itself with whatever was
+     * left. Every bug the post-closure round found needed real content to
+     * appear at all (EK D.8.9's own warning, met).
+     */
     public static final List<String> NAMES = List.of(
             "senior_backend_tr",
             "junior_frontend_en",
             "career_changer",
             "academic_long",
-            "minimal_edge");
+            "minimal_edge",
+            "master_cv_en");
 
     private static final String PROFILE_PATH = "golden/profiles/%s.json";
     private static final String COSTS_PATH = "golden/profiles/%s.costs.json";
