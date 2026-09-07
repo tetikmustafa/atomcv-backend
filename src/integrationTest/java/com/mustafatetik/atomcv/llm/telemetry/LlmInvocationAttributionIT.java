@@ -66,7 +66,46 @@ class LlmInvocationAttributionIT extends AbstractIntegrationTest {
                 """, Integer.class)).isPositive();
     }
 
+    /**
+     * And {@code job_id}, which had the same shape of hole. Nothing wrote it
+     * either, so a billed call could only be tied to the work that caused it by
+     * matching timestamps — which is how a four-page CV was found to have been
+     * paid for twice with a single job row to show for it.
+     */
+    @Test
+    void acallMadeByAJobNamesTheJobItWasFor() {
+        UUID user = someone();
+        UUID job = queuedJob(user);
+
+        events.publishEvent(LlmInvocationEvent.succeeded(
+                request(user).inJob(job), answer(), Instant.now()));
+
+        assertThat(jdbc.queryForObject(
+                "SELECT job_id FROM llm_invocations WHERE user_id = ? AND job_id = ?",
+                UUID.class, user, job)).isEqualTo(job);
+    }
+
+    /** A call nobody queued leaves it NULL rather than borrowing a job. */
+    @Test
+    void acallOutsideTheQueueLeavesTheJobEmpty() {
+        UUID user = someone();
+
+        events.publishEvent(LlmInvocationEvent.succeeded(
+                request(user), answer(), Instant.now()));
+
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM llm_invocations WHERE user_id = ? AND job_id IS NULL",
+                Integer.class, user)).isPositive();
+    }
+
     // ── fixtures ──────────────────────────────────────────────────────────
+
+    private UUID queuedJob(UUID owner) {
+        UUID id = UUID.randomUUID();
+        jdbc.update("INSERT INTO jobs (id, type, user_id, payload, status) "
+                + "VALUES (?, 'generation', ?, '{}'::jsonb, 'queued')", id, owner);
+        return id;
+    }
 
     private UUID someone() {
         UUID id = UUID.randomUUID();

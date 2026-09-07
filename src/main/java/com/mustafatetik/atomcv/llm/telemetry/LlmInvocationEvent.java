@@ -32,6 +32,9 @@ import java.util.UUID;
  * @param userId        whose work this was, or null. Bolum 44.3's brake reads
  *                      the daily total and does not need it; "which user cost
  *                      what" has no other source and cannot be backfilled
+ * @param jobId         which queued job made the call, or null. Same argument:
+ *                      the column exists, nothing wrote it, and a billed call
+ *                      could only be tied to its job by matching timestamps
  */
 public record LlmInvocationEvent(
         String promptId,
@@ -44,7 +47,8 @@ public record LlmInvocationEvent(
         int cachedTokens,
         long latencyMs,
         Instant occurredAt,
-        UUID userId) {
+        UUID userId,
+        UUID jobId) {
 
     /** The values {@code llm_invocations.outcome} allows, verbatim from V1. */
     public enum Outcome {
@@ -60,7 +64,7 @@ public record LlmInvocationEvent(
                 request.promptId(), request.promptVersion(),
                 response.provider(), response.model(), Outcome.SUCCESS,
                 response.inputTokens(), response.outputTokens(), response.cachedTokens(),
-                response.latencyMs(), at, request.userId());
+                response.latencyMs(), at, request.userId(), request.jobId());
     }
 
     public static LlmInvocationEvent failed(
@@ -68,6 +72,6 @@ public record LlmInvocationEvent(
             Outcome outcome, long latencyMs, Instant at) {
         return new LlmInvocationEvent(
                 request.promptId(), request.promptVersion(), provider, model, outcome,
-                0, 0, 0, latencyMs, at, request.userId());
+                0, 0, 0, latencyMs, at, request.userId(), request.jobId());
     }
 }

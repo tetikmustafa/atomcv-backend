@@ -32,6 +32,12 @@ import java.util.UUID;
  *                      is the column that answers "for whom" — which cannot be
  *                      reconstructed afterwards, so it is written or it is
  *                      lost. Never used to *reach* anything, only to attribute
+ * @param jobId         which queued job made this call, or {@code null} where
+ *                      no job did. The column exists and was written by nothing
+ *                      at all, so tying a billed call to the work that caused
+ *                      it meant matching timestamps to the millisecond — which
+ *                      is how a 4-page CV was found to have been paid for twice
+ *                      with one job row to show for it (Bolum 27.5)
  */
 
 public record StructuredRequest<T>(
@@ -43,7 +49,8 @@ public record StructuredRequest<T>(
         Class<T> resultType,
         ModelTier preferredTier,
         Duration timeout,
-        UUID userId) {
+        UUID userId,
+        UUID jobId) {
 
     /**
      * The same call with nobody attributed.
@@ -57,13 +64,27 @@ public record StructuredRequest<T>(
             String userPrompt, JsonSchema outputSchema, Class<T> resultType,
             ModelTier preferredTier, Duration timeout) {
         this(promptId, promptVersion, systemPrompt, userPrompt, outputSchema, resultType,
-                preferredTier, timeout, null);
+                preferredTier, timeout, null, null);
+    }
+
+    /** Attributed to a person but to no job — a call made outside the queue. */
+    public StructuredRequest(String promptId, String promptVersion, String systemPrompt,
+            String userPrompt, JsonSchema outputSchema, Class<T> resultType,
+            ModelTier preferredTier, Duration timeout, UUID userId) {
+        this(promptId, promptVersion, systemPrompt, userPrompt, outputSchema, resultType,
+                preferredTier, timeout, userId, null);
     }
 
     /** This call, attributed. */
     public StructuredRequest<T> forUser(UUID userId) {
         return new StructuredRequest<>(promptId, promptVersion, systemPrompt, userPrompt,
-                outputSchema, resultType, preferredTier, timeout, userId);
+                outputSchema, resultType, preferredTier, timeout, userId, jobId);
+    }
+
+    /** This call, tied to the job that is running it. */
+    public StructuredRequest<T> inJob(UUID jobId) {
+        return new StructuredRequest<>(promptId, promptVersion, systemPrompt, userPrompt,
+                outputSchema, resultType, preferredTier, timeout, userId, jobId);
     }
 
     public StructuredRequest {

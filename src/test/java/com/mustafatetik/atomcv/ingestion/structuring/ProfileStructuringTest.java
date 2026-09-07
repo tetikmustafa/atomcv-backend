@@ -58,7 +58,7 @@ class ProfileStructuringTest {
     @Test
     void theDocumentGoesInsideTheFenceAndNeverIntoTheSystemHalf() {
         structuring(answering(profileJson("tr", 0.95, 1)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(sent.get().systemPrompt()).containsIgnoringCase("DATA to be parsed");
         assertThat(sent.get().systemPrompt()).doesNotContain(CV);
@@ -73,7 +73,7 @@ class ProfileStructuringTest {
     @Test
     void theCallAsksForTheMidTier() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(sent.get().preferredTier()).isEqualTo(ModelTier.MID);
         assertThat(sent.get().promptRef()).isEqualTo("profile_extraction:v1");
@@ -88,7 +88,7 @@ class ProfileStructuringTest {
     @Test
     void aScrambledDocumentCarriesItsNoteInsideTheFence() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, true), "user-1", null);
+                .structure(document(CV, true), "user-1", null, null);
 
         assertThat(sent.get().userPrompt()).containsIgnoringCase("wrong order");
         assertThat(sent.get().systemPrompt()).doesNotContainIgnoringCase("wrong order");
@@ -97,7 +97,7 @@ class ProfileStructuringTest {
     @Test
     void anOrdinaryDocumentCarriesNoNote() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(sent.get().userPrompt()).doesNotContainIgnoringCase("wrong order");
     }
@@ -107,7 +107,7 @@ class ProfileStructuringTest {
     @Test
     void aReadableCvComesBackAsAProfile() {
         var result = structuring(answering(profileJson("tr", 0.96, 2)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(result).isInstanceOf(Result.Ok.class);
         var profile = ((Result.Ok<ExtractedProfile>) result).value();
@@ -124,7 +124,7 @@ class ProfileStructuringTest {
     @Test
     void aLanguageTheModelIsUnsureOfBecomesAQuestionCarryingItsGuess() {
         var result = structuring(answering(profileJson("tr", 0.31, 2)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(errorOf(result)).isInstanceOf(PipelineError.LanguageUndetected.class);
         assertThat(((PipelineError.LanguageUndetected) errorOf(result)).candidates())
@@ -134,7 +134,7 @@ class ProfileStructuringTest {
     @Test
     void aLanguageTheModelDidNotNameBecomesAnOpenQuestion() {
         var result = structuring(answering(profileJson("", 0.9, 2)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(((PipelineError.LanguageUndetected) errorOf(result)).candidates()).isEmpty();
     }
@@ -142,7 +142,7 @@ class ProfileStructuringTest {
     @Test
     void aDocumentWithNoAtomsInItIsNothingExtracted() {
         var result = structuring(answering(profileJson("en", 0.99, 0)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(errorOf(result)).isInstanceOf(PipelineError.NothingExtracted.class);
     }
@@ -156,9 +156,9 @@ class ProfileStructuringTest {
     @Test
     void anAnswerRefusedByTheAuditIsIndistinguishableFromAnEmptyOne() {
         var injected = structuring(answering(profileJsonWithAtomText("x".repeat(2000))))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
         var empty = structuring(answering(profileJson("en", 0.99, 0)))
-                .structure(document(CV, false), "user-1", null);
+                .structure(document(CV, false), "user-1", null, null);
 
         assertThat(errorOf(injected)).isInstanceOf(PipelineError.NothingExtracted.class);
         assertThat(errorOf(injected)).isEqualTo(errorOf(empty));
@@ -171,7 +171,7 @@ class ProfileStructuringTest {
      */
     @Test
     void aProviderOutageTravelsAsItselfAndNotAsAnUnreadableCv() {
-        var result = structuring(answering(null)).structure(document(CV, false), "user-1", null);
+        var result = structuring(answering(null)).structure(document(CV, false), "user-1", null, null);
 
         assertThat(errorOf(result))
                 .isInstanceOf(PipelineError.AllProvidersUnavailable.class);

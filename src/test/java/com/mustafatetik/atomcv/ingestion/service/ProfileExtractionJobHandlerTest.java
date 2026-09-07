@@ -91,7 +91,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void aReadableCvIsStructuredNormalisedAndWritten() {
         var profile = new Profile(USER);
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 1));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
@@ -110,7 +110,7 @@ class ProfileExtractionJobHandlerTest {
     @Test
     void theTerminalEventCarriesCountsAndNoneOfTheCv() {
         var profile = new Profile(USER);
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 1));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(profile);
 
@@ -126,7 +126,7 @@ class ProfileExtractionJobHandlerTest {
 
     @Test
     void theProgressSaysWhichStageItIsOnAndInOrder() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
@@ -144,7 +144,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void theVectorsAndTheHeightsAreQueuedRatherThanWaitedFor() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
@@ -167,7 +167,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void theBackgroundWorkIsQueuedOnlyOnceThereIsAProfileToDoItTo() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
         when(writer.write(any(), any(), anyBoolean())).thenReturn(new Profile(USER));
 
@@ -186,7 +186,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void aRefusedExtractionGivesTheAllowanceBack() {
-        when(structuring.structure(any(), any(), any()))
+        when(structuring.structure(any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         handler.handle(job(), reported::add);
@@ -199,7 +199,7 @@ class ProfileExtractionJobHandlerTest {
 
     @Test
     void aCvThatYieldedNothingIsNotWorthAnotherAttempt() {
-        when(structuring.structure(any(), any(), any()))
+        when(structuring.structure(any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -212,7 +212,7 @@ class ProfileExtractionJobHandlerTest {
 
     @Test
     void aLanguageThatCouldNotBeSettledBecomesAQuestionCarryingItsGuess() {
-        when(structuring.structure(any(), any(), any())).thenReturn(
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(
                 Result.err(new PipelineError.LanguageUndetected(List.of("tr"))));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -228,7 +228,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void aProviderOutageIsRetryableAndSaysWhoWasTried() {
-        when(structuring.structure(any(), any(), any())).thenReturn(
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(
                 Result.err(new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
         var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
@@ -267,7 +267,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousUploadIsWrittenToTheEphemeralStoreAndNowhereElse() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         JobOutcome outcome = handler.handle(anonymousJob(ADDRESS), reported::add);
@@ -285,7 +285,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousUploadAnswersWithTheProfileTheStoreHolds() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         var result = ((JobOutcome.Completed)
@@ -303,7 +303,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void nobackgroundWorkIsQueuedForAProfileWithNoRows() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
@@ -320,7 +320,7 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void arefusedAnonymousExtractionGivesTheAddressItsAllowanceBack() {
-        when(structuring.structure(any(), any(), any()))
+        when(structuring.structure(any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.NothingExtracted()));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
@@ -337,13 +337,13 @@ class ProfileExtractionJobHandlerTest {
      */
     @Test
     void ananonymousCallerIsBucketedByProfileAndNotByTheirCookie() {
-        when(structuring.structure(any(), any(), any())).thenReturn(Result.ok(extracted()));
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(1, 1, 0));
 
         handler.handle(anonymousJob(ADDRESS), reported::add);
 
         var bucketKey = ArgumentCaptor.forClass(String.class);
-        verify(structuring).structure(any(), bucketKey.capture(), any());
+        verify(structuring).structure(any(), bucketKey.capture(), any(), any());
         assertThat(bucketKey.getValue())
                 .isEqualTo(ProfileRef.ephemeral(SESSION).id().toString())
                 .isNotEqualTo(SESSION.value());

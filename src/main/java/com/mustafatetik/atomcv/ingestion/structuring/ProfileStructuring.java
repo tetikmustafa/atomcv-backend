@@ -93,7 +93,8 @@ public class ProfileStructuring {
      *               two are separate arguments
      */
     public Result<ExtractedProfile> structure(
-            ExtractedText document, String bucketKey, java.util.UUID userId) {
+            ExtractedText document, String bucketKey, java.util.UUID userId,
+            java.util.UUID jobId) {
         String version = prompts.selectVersion(PROMPT_ID, bucketKey);
         var prompt = prompts.load(PROMPT_ID, version);
         var fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -102,7 +103,8 @@ public class ProfileStructuring {
                 PROMPT_ID, version,
                 fenced.system(),
                 fenced.userPromptFor(withScrambleNote(document)),
-                prompt.schema(), ExtractedProfile.class, ModelTier.MID, TIMEOUT, userId));
+                prompt.schema(), ExtractedProfile.class, ModelTier.MID, TIMEOUT,
+                userId, jobId));
 
         return switch (answer) {
             // An outage is an outage. Restating it as an unreadable CV would
