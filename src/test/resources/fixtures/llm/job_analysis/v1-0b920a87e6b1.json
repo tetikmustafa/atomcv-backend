@@ -2,12 +2,12 @@
   "role" : {
     "title" : "Senior Backend Engineer",
     "seniority" : "senior",
-    "domain" : "payments backend engineering",
+    "domain" : "Backend Engineering / Payments",
     "employmentType" : null,
     "workMode" : null
   },
   "company" : {
-    "name" : "",
+    "name" : "Not specified",
     "sizeHint" : null
   },
   "requiredSkills" : [ {
@@ -19,13 +19,13 @@
     "canonical" : "go",
     "importance" : "critical"
   }, {
-    "name" : "PostgreSQL",
-    "canonical" : "postgres",
-    "importance" : "high"
-  }, {
     "name" : "Distributed services",
     "canonical" : "distributed systems",
     "importance" : "critical"
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : "high"
   }, {
     "name" : "Observability tooling",
     "canonical" : "observability",
@@ -33,7 +33,7 @@
   }, {
     "name" : "Production software delivery",
     "canonical" : "software delivery",
-    "importance" : "high"
+    "importance" : "medium"
   } ],
   "preferredSkills" : [ {
     "name" : "Kubernetes",
@@ -44,15 +44,15 @@
     "canonical" : "terraform",
     "importance" : null
   } ],
-  "responsibilities" : [ "Design and operate distributed services in Java and Go", "Own the reliability of a high-throughput ledger", "Mentor other engineers as the team grows" ],
+  "responsibilities" : [ "Design and operate distributed services using Java and Go", "Own the reliability of a high-throughput ledger", "Mentor other engineers as the team grows" ],
   "keywords" : [ "backend engineering", "payments", "distributed systems", "java", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "kubernetes", "terraform", "production systems" ],
   "experienceYears" : {
     "min" : null,
     "max" : null
   },
   "languageRequirements" : [ ],
-  "companyTone" : "Professional, concise, and growth-oriented",
+  "companyTone" : "Concise, professional, and engineering-focused",
   "jdLanguage" : "en",
-  "confidence" : 0.96,
-  "extractionNotes" : [ "The posting requires several years of production PostgreSQL experience but does not specify a numeric minimum or maximum.", "Company name, company size, employment type, and work mode are not stated." ]
+  "confidence" : 0.95,
+  "extractionNotes" : [ "The posting requests several years of production experience but does not provide a numeric range.", "Company name, company size, employment type, and work mode are not specified." ]
 }

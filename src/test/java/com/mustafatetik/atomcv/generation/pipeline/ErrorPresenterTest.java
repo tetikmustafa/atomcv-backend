@@ -142,7 +142,7 @@ class ErrorPresenterTest {
     }
 
     /**
-     * The three thin-posting verdicts. {@code continue_anyway} is not offered:
+     * The two thin-posting verdicts. {@code continue_anyway} is not offered:
      * the preflight had already passed, so acknowledging it skips nothing and
      * the resubmission meets the same gate — the button was {@code retry}
      * under a name that told the user to expect something else.
@@ -150,8 +150,7 @@ class ErrorPresenterTest {
     @Test
     void aThinPostingIsNotOfferedAWayPastAPreflightItAlreadyPassed() {
         for (var reason : List.of(UnreadablePostingReason.LOW_CONFIDENCE,
-                UnreadablePostingReason.TOO_FEW_SKILLS,
-                UnreadablePostingReason.NO_RESPONSIBILITIES)) {
+                UnreadablePostingReason.TOO_FEW_SKILLS)) {
             var presented = presenter.present(
                     new PipelineError.UnparseableJobDescription(0.7, 1, reason), PAGE_HEIGHT_PT);
 

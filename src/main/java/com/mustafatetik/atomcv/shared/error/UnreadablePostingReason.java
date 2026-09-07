@@ -5,16 +5,27 @@ import java.util.Locale;
 /**
  * Why a posting could not be turned into an analysis (Bolum 18.1, Bolum 18.4).
  *
- * <p>Eight reasons behind one code. The catalogue publishes
+ * <p>Seven reasons behind one code. The catalogue publishes
  * {@link ErrorCode#UNPARSEABLE_JOB_DESCRIPTION} and keeps publishing it: from
- * the API's point of view the outcome is the same, and an eighth sibling code
+ * the API's point of view the outcome is the same, and a seventh sibling code
  * would buy nothing the frontend cannot do with a parameter. What it could not
  * do without one is write a true sentence — {@code confidence} and
- * {@code skillsFound} describe two of these eight, and next to the other six
+ * {@code skillsFound} describe two of these seven, and next to the other five
  * they contradict the refusal they arrive with (F-016).
  *
+ * <p><strong>Duzeltme — there was an eighth, {@code NO_RESPONSIBILITIES}, and
+ * it refused most real advertisements.</strong> A posting that lists
+ * qualifications and no duties is the ordinary shape, not a broken one:
+ * "At least 5 years of hands-on software development experience in Java, Java
+ * EE" describes the work perfectly well without a heading saying so. It was
+ * refused at 0.92 confidence with twenty skills read out of it.
+ * {@code job_analysis} v2 derives the duties from whatever the text carries,
+ * and a text that describes no work at all is what {@code LOW_CONFIDENCE} is
+ * for. The value is gone from the wire; nothing reads it back, so no stored
+ * refusal is disturbed.
+ *
  * <p>The first four come from the preflight, before anything is spent; the last
- * four from the plausibility gate, on what came back. The split matters to the
+ * three from the plausibility gate, on what came back. The split matters to the
  * user and not only to a log: the preflight refused <em>their text</em> and
  * they may know better than the heuristic, while the gate refused <em>the
  * model's answer</em> and there is nothing about the text to fix.
@@ -47,13 +58,10 @@ public enum UnreadablePostingReason {
     /** Fewer than two required skills: nothing to score a profile against. */
     TOO_FEW_SKILLS(Origin.GATE),
 
-    /** No responsibilities: Faz B has nothing to match bullets to. */
-    NO_RESPONSIBILITIES(Origin.GATE),
-
     /**
      * A field is far longer than that field ever is.
      *
-     * <p>The one reason that is not about the posting at all. The first seven
+     * <p>The one reason that is not about the posting at all. The other six
      * say the text was thin or absent; this one says the answer is not shaped
      * like an analysis — so the way out is to ask again, not to edit anything.
      */
