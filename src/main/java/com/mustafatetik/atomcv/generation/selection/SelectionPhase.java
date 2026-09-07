@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState.BudgetBreakdo
 import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectedAtom;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectionReason;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
@@ -97,6 +98,12 @@ public final class SelectionPhase {
 
         /** Which entry a section's list pushed down, so that closing it can put it back. */
         private final Map<UUID, UUID> upgradedByList = new HashMap<>();
+
+        /**
+         * What the open bullet lists are currently charged for the space they
+         * leave behind them — see {@link #retuneListCloses()}.
+         */
+        private double listClosePt;
 
         /**
          * Atoms placed to meet a {@link SectionFloor}, which the swap pass may
@@ -321,20 +328,60 @@ public final class SelectionPhase {
                 // An entry already on the page counts towards the floor: it is
                 // there, from a lock or from an earlier pass, and reserving a
                 // second one beside it would print more than the floor asks for.
+                //
+                // It is topped up rather than left alone, and that took a
+                // failing test to notice. The hard-floor pass opens every
+                // section at one entry and one atom; without this, a floor
+                // reading "two roles at two bullets" delivered one role at two
+                // and one at one, and only the greedy pass that follows ever
+                // made up the difference -- when the page had room to spare and
+                // nothing outbid it.
                 if (openEntries.contains(entry.entryId())) {
+                    topUpFloorEntry(entry, wantedFor(entry, floor));
                     openedHere++;
                     continue;
                 }
-                // At least one, whatever the floor asks for. EDUCATION's floor
-                // is "one entry and no bullets" -- a degree line is a heading
-                // and asking for an achievement under it is asking to pad
-                // (Bolum 20.2) -- and a bound of zero took nothing at all, so
-                // the one section whose floor is only an entry was the one
-                // section the floors could not put on the page.
-                int wanted = Math.max(1, Math.max(floor.atomsPerEntry(), minAtomsFor(entry)));
-                if (openWholeEntry(entry, wanted)) {
+                if (openWholeEntry(entry, wantedFor(entry, floor))) {
                     openedHere++;
                 }
+            }
+        }
+
+        /**
+         * How much of one entry a floor asks for.
+         *
+         * <p>At least one, whatever the floor says. {@code EDUCATION}'s floor
+         * is "one entry and no bullets" — a degree line is a heading, and
+         * asking for an achievement under it is asking to pad (Bolum 20.2) —
+         * and a bound of zero took nothing at all, so the one section whose
+         * floor is only an entry was the one section the floors could not put
+         * on the page.
+         */
+        private int wantedFor(EntryPlan entry, SectionFloor floor) {
+            return Math.max(1, Math.max(floor.atomsPerEntry(), minAtomsFor(entry)));
+        }
+
+        /**
+         * Brings an entry the page already holds up to what the floor asks of
+         * it, best first, and stops as soon as one does not fit.
+         *
+         * <p>Unlike {@link #openWholeEntry} this is all-or-something: the entry
+         * is on the page either way, so taking two of the three it wants leaves
+         * it deeper than it was rather than leaving it half-opened.
+         */
+        private void topUpFloorEntry(EntryPlan entry, int wanted) {
+            for (AtomCandidate atom : sortedByScore(entry.atoms())) {
+                if (takenFromEntry.getOrDefault(entry.entryId(), 0) >= wanted) {
+                    return;
+                }
+                if (!pool.containsKey(atom.atomId())) {
+                    continue;
+                }
+                if (effectiveCostOf(atom) > remainingPt()) {
+                    return;
+                }
+                include(atom, false);
+                reservedByFloor.add(atom.atomId());
             }
         }
 
@@ -446,6 +493,79 @@ public final class SelectionPhase {
                             .thenComparing(AtomCandidate::tieBreak))
                     .map(AtomCandidate::tieBreak)
                     .orElse("");
+        }
+
+        /**
+         * What a section heading costs.
+         *
+         * <p>Two numbers, because what a heading costs depends on what closed
+         * above it: the reference pulls every heading up with
+         * {@code \vspace{-10pt}}, so the space already there decides how much
+         * of that is actually spent. Which one applies is not knowable here —
+         * selection opens sections in score order and the page prints them in
+         * reading order, so at the moment a heading is priced there is no
+         * telling what will end up above it.
+         *
+         * <p>They are a tenth of a point apart, so the dearer is charged for
+         * every heading and the question does not have to be answered.
+         */
+        private double sectionHeaderCost() {
+            return capacity.fixedCost(CapacityModel.SECTION_HEADER);
+        }
+
+        /** What a section's own list of loose atoms costs to open. */
+        private double listCostOf(UUID sectionId) {
+            return capacity.sectionListOverheadPt(layoutOf(sectionId));
+        }
+
+        /**
+         * And what those lists leave behind them, which only the section below
+         * them spends (EK D.8.10, {@code CapacityModel.SECTION_LIST_CLOSE}).
+         *
+         * <p>Recomputed rather than charged and refunded piecemeal, because it
+         * is not a property of any one section: opening the last section on the
+         * page makes the list two sections above it dearer, and closing it
+         * makes it cheap again. Selection opens sections in score order and the
+         * page prints them in reading order, so the pairs change under it.
+         * There are never more than a handful of sections, and getting this
+         * wrong in the cheap direction is a second page.
+         *
+         * <p>A list with its own section's entries under it is left alone: what
+         * follows it there is a sub-heading list rather than a heading, and
+         * {@link #upgradeFirstEntryOf} already charges that entry the dearer of
+         * its two numbers.
+         */
+        private void retuneListCloses() {
+            double wanted = 0;
+            List<UUID> order = new ArrayList<>(planOfSection.keySet());
+            for (int i = 0; i < order.size(); i++) {
+                UUID sectionId = order.get(i);
+                if (!openSectionLists.contains(sectionId)) {
+                    continue;
+                }
+                double close = capacity.sectionListClosePt(layoutOf(sectionId));
+                if (close == 0 || hasOpenEntry(sectionId)) {
+                    continue;
+                }
+                boolean aheadingFollows = order.subList(i + 1, order.size()).stream()
+                        .anyMatch(openSections::contains);
+                if (aheadingFollows) {
+                    wanted += close;
+                }
+            }
+            structurePt += wanted - listClosePt;
+            listClosePt = wanted;
+        }
+
+        private boolean hasOpenEntry(UUID sectionId) {
+            return openEntries.stream()
+                    .anyMatch(entryId -> sectionId.equals(sectionOfEntry.get(entryId)));
+        }
+
+        /** How this section is set, which decides what its list costs to open. */
+        private SectionLayout layoutOf(UUID sectionId) {
+            SectionPlan section = planOfSection.get(sectionId);
+            return section == null ? SectionLayout.BULLET_LIST : section.layout();
         }
 
         private static double bestScoreIn(EntryPlan entry) {
@@ -620,13 +740,16 @@ public final class SelectionPhase {
             UUID sectionId = sectionOfAtom.get(atom.atomId());
 
             if (sectionId != null && !openSections.contains(sectionId)) {
-                cost += capacity.fixedCost(CapacityModel.SECTION_HEADER);
+                cost += sectionHeaderCost();
             }
             if (atom.entryId() == null) {
                 if (sectionId != null && !openSectionLists.contains(sectionId)) {
                     // Directly under the heading, so the heading's own space
-                    // has already been left and this list adds almost nothing.
-                    cost += capacity.fixedCost(CapacityModel.SECTION_LIST_OVERHEAD);
+                    // has already been left and this list adds almost nothing
+                    // -- unless it is an inline list, which the renderer opens
+                    // with an itemize of its own and which therefore does not
+                    // get pulled up by the negative space a bullet list leaves.
+                    cost += listCostOf(sectionId);
                 }
             } else if (!openEntries.contains(atom.entryId())) {
                 cost += entryFurnitureCost(atom, sectionId);
@@ -640,7 +763,7 @@ public final class SelectionPhase {
          * not the second (Bolum 20.2, constraint 5).
          */
         private double entryFurnitureCost(AtomCandidate atom, UUID sectionId) {
-            double furniture = entryHeaderCost(sectionId);
+            double furniture = entryHeaderCost(atom.entryId(), sectionId);
             if (!atom.headerOnly()) {
                 furniture += capacity.fixedCost(CapacityModel.ITEMIZE_OVERHEAD);
             }
@@ -648,25 +771,27 @@ public final class SelectionPhase {
         }
 
         /**
-         * An entry heading costs more when a list came before it (EK D.8.10).
+         * An entry heading costs more when a list came before it (EK D.8.10),
+         * and less when the entry is a project.
          *
-         * <p>The first entry of a section follows its heading and pays
-         * {@code ENTRY_HEADER}; every later one follows the bullets of the
-         * entry above it and pays the paragraph skip as well.
+         * <p>The first entry of a section follows its heading and pays the
+         * cheaper of the pair; every later one follows the bullets of the entry
+         * above it and pays the paragraph skip as well. And a project carries
+         * no employer, no place and no dates, so the renderer sets its heading
+         * on one line rather than two — about nine points less, which on a page
+         * with two projects is most of a bullet.
          */
-        private double entryHeaderCost(UUID sectionId) {
-            return capacity.fixedCost(anythingPrintedIn(sectionId)
-                    ? CapacityModel.ENTRY_HEADER_AFTER_LIST
-                    : CapacityModel.ENTRY_HEADER);
+        private double entryHeaderCost(UUID entryId, UUID sectionId) {
+            EntryPlan entry = entries.get(entryId);
+            return capacity.entryHeadingPt(
+                    entry != null && entry.bare(), anythingPrintedIn(sectionId));
         }
 
         private boolean anythingPrintedIn(UUID sectionId) {
             if (sectionId == null) {
                 return false;
             }
-            return openSectionLists.contains(sectionId)
-                    || openEntries.stream()
-                            .anyMatch(entryId -> sectionId.equals(sectionOfEntry.get(entryId)));
+            return openSectionLists.contains(sectionId) || hasOpenEntry(sectionId);
         }
 
         private double adjustedScoreOf(AtomCandidate atom) {
@@ -688,11 +813,16 @@ public final class SelectionPhase {
             }
 
             if (sectionId != null) {
+                // Priced before the set is touched, because the price depends
+                // on whether this is the first section on the page and adding
+                // it first makes it never be. Charge and record would then
+                // disagree by the seven points between the two numbers, and
+                // the section would hand back more than it ever took.
+                double heading = sectionHeaderCost();
                 if (openSections.add(sectionId)) {
                     // Recorded, not just flagged: it has to be given back by
                     // the same amount when the last thing under it leaves.
-                    sectionHeaderPt.put(sectionId,
-                            capacity.fixedCost(CapacityModel.SECTION_HEADER));
+                    sectionHeaderPt.put(sectionId, heading);
                 }
                 if (atom.entryId() == null) {
                     takenFromSection.merge(sectionId, 1, Integer::sum);
@@ -700,8 +830,7 @@ public final class SelectionPhase {
                     // entries, so a list opening here pushes the section's
                     // first entry down into the more expensive position.
                     if (openSectionLists.add(sectionId)) {
-                        sectionListPt.put(sectionId,
-                                capacity.fixedCost(CapacityModel.SECTION_LIST_OVERHEAD));
+                        sectionListPt.put(sectionId, listCostOf(sectionId));
                         structurePt += upgradeFirstEntryOf(sectionId);
                     }
                 }
@@ -717,6 +846,7 @@ public final class SelectionPhase {
                     atom.atomId(), atom.variantId(), atom.score(),
                     atom.renderCostPt(), forcedByLock));
             pool.remove(atom.atomId());
+            retuneListCloses();
         }
 
         /**
@@ -774,6 +904,7 @@ public final class SelectionPhase {
                 }
             }
             closeSectionIfEmpty(sectionId);
+            retuneListCloses();
             pool.put(original.atomId(), original);
         }
 
@@ -793,13 +924,12 @@ public final class SelectionPhase {
                     || openSectionLists.contains(sectionId)) {
                 return;
             }
-            boolean stillHasEntry = openEntries.stream()
-                    .anyMatch(entryId -> sectionId.equals(sectionOfEntry.get(entryId)));
-            if (stillHasEntry) {
+            if (hasOpenEntry(sectionId)) {
                 return;
             }
             openSections.remove(sectionId);
             structurePt -= sectionHeaderPt.remove(sectionId);
+            retuneListCloses();
         }
 
         /**
@@ -871,6 +1001,7 @@ public final class SelectionPhase {
             }
             openEntries.remove(entryId);
             closeSectionIfEmpty(sectionOfEntry.get(entryId));
+            retuneListCloses();
             return true;
         }
 

@@ -32,6 +32,20 @@ class SectionFloorSelectionTest {
     /** One printed line, which is what a measured bullet comes to. */
     private static final double LINE_PT = CAPACITY.fixedCost(CapacityModel.ITEM_LINE);
 
+    /**
+     * What a bullet of {@code n} printed lines costs, the way a measurement
+     * comes out ({@code RenderCost.totalPt}).
+     *
+     * <p>Not {@code n * LINE_PT}. A bullet pays the list's separation once and
+     * a baseline per line, so multiplying the one-line cost charges the
+     * separation {@code n} times — which under the reference template, where a
+     * bullet is a small line plus five points, prices a five-line paragraph a
+     * third above what the compiler sets it in.
+     */
+    private static double linesPt(int lines) {
+        return lines * CAPACITY.itemBaselineSkipPt() + CAPACITY.itemSpacingPt();
+    }
+
     // ── the shape ─────────────────────────────────────────────────────────
 
     /**
@@ -51,12 +65,24 @@ class SectionFloorSelectionTest {
                         SectionKind.SKILLS, SectionKind.LANGUAGES);
     }
 
-    /** And each of them at the depth its floor asks for (Bolum 20.3). */
+    /**
+     * And each of them at the depth its floor asks for (Bolum 20.3).
+     *
+     * <p>Two pages, and the reason is worth stating rather than hiding in a
+     * parameter. This profile's six full floors come to more than one page of
+     * the reference template holds: its furniture is dearer than the template
+     * this fixture was first written against — a bullet is a small line plus
+     * the separation an itemize sets, and a section heading below the first
+     * costs seven points more — so a page of six sections carries about two
+     * bullets fewer than it used to. What happens when they do not all fit is
+     * a different rule and has its own tests below; this one is about the
+     * floors being honoured when there is room for them.
+     */
     @Test
     void eachSectionArrivesAtTheDepthItsFloorAsksFor() {
         var profile = aWholeProfile();
 
-        var state = SelectionPhase.select(profile.request()).orElseThrow();
+        var state = SelectionPhase.select(profile.request(2)).orElseThrow();
 
         assertThat(profile.atomsIn(state, SectionKind.ABOUT)).isGreaterThanOrEqualTo(1);
         assertThat(profile.entriesIn(state, SectionKind.EXPERIENCE))
@@ -72,6 +98,28 @@ class SectionFloorSelectionTest {
     }
 
     /**
+     * On one page, this profile runs out — and it runs out the way it should.
+     *
+     * <p>Every section still reaches the page and every one of them keeps at
+     * least its hard floor; what gives is the depth of the sections a reader
+     * looks for later. The page is full to within a bullet, which is what says
+     * this is the budget rather than the floors failing.
+     */
+    @Test
+    void apageThatCannotHoldEveryFullFloorStillHoldsEverySection() {
+        var profile = aWholeProfile();
+
+        var state = SelectionPhase.select(profile.request()).orElseThrow();
+
+        assertThat(profile.sectionsOn(state)).hasSize(6);
+        assertThat(profile.entriesIn(state, SectionKind.EXPERIENCE)).isGreaterThanOrEqualTo(2);
+        assertThat(profile.atomsIn(state, SectionKind.EXPERIENCE)).isGreaterThanOrEqualTo(2);
+        assertThat(state.budget().freePt() - state.budget().usedPt())
+                .as("full to within a bullet")
+                .isLessThan(CAPACITY.fixedCost(CapacityModel.ITEM_LINE));
+    }
+
+    /**
      * A floor is a ceiling on what may be <em>reserved</em>, not a quota. What
      * is left over still competes, so a posting that is all about the projects
      * still gets a page weighted towards them.
@@ -80,7 +128,9 @@ class SectionFloorSelectionTest {
     void whatIsLeftAfterTheFloorsStillGoesToWhatScoresBest() {
         var profile = aWholeProfile();
 
-        var state = SelectionPhase.select(profile.request()).orElseThrow();
+        // Two pages, so that there is something left over to go anywhere. On
+        // one there is not: see the test above.
+        var state = SelectionPhase.select(profile.request(2)).orElseThrow();
 
         assertThat(profile.atomsIn(state, SectionKind.PROJECTS))
                 .as("the floor reserved six; the rest of the page went the same way")
@@ -326,11 +376,11 @@ class SectionFloorSelectionTest {
      */
     private static Fixture aWholeProfile() {
         var profile = new Fixture();
-        profile.looseSection(SectionKind.ABOUT, 1, 0.30, 5 * LINE_PT);
+        profile.looseSection(SectionKind.ABOUT, 1, 0.30, linesPt(5));
         profile.headingSection(SectionKind.EDUCATION, 1, 0.30);
         profile.entrySection(SectionKind.EXPERIENCE, 3, 6, 0.35);
         profile.entrySection(SectionKind.PROJECTS, 14, 5, 0.90);
-        profile.looseSection(SectionKind.SKILLS, 7, 0.30, 2 * LINE_PT);
+        profile.looseSection(SectionKind.SKILLS, 7, 0.30, linesPt(2));
         profile.looseSection(SectionKind.LANGUAGES, 2, 0.20);
         return profile;
     }
@@ -338,7 +388,7 @@ class SectionFloorSelectionTest {
     /** The classic page, at a fraction of its height. */
     private static CapacityModel pageOf(double share) {
         return new CapacityModel(CAPACITY.pageTextHeightPt() * share, CAPACITY.textWidthPt(),
-                CAPACITY.baselineSkipPt(), fixedCosts());
+                CAPACITY.baselineSkipPt(), CAPACITY.itemBaselineSkipPt(), fixedCosts());
     }
 
     private static Map<String, Double> fixedCosts() {
@@ -346,7 +396,11 @@ class SectionFloorSelectionTest {
         for (String name : List.of(CapacityModel.HEADER_BLOCK, CapacityModel.SECTION_HEADER,
                 CapacityModel.ENTRY_HEADER, CapacityModel.ENTRY_HEADER_AFTER_LIST,
                 CapacityModel.ITEMIZE_OVERHEAD, CapacityModel.SECTION_LIST_OVERHEAD,
-                CapacityModel.ITEM_LINE)) {
+                CapacityModel.SECTION_LIST_CLOSE,
+                CapacityModel.ITEM_LINE, CapacityModel.SECTION_ITEM_LINE,
+                CapacityModel.INLINE_ROW, CapacityModel.INLINE_LIST_OVERHEAD,
+                CapacityModel.PARAGRAPH_LIST_OVERHEAD, CapacityModel.PROJECT_HEADING,
+                CapacityModel.PROJECT_HEADING_AFTER_LIST)) {
             costs.put(name, CAPACITY.fixedCost(name));
         }
         return costs;
@@ -444,6 +498,10 @@ class SectionFloorSelectionTest {
 
         SelectionRequest request() {
             return request(CAPACITY);
+        }
+
+        SelectionRequest request(int pages) {
+            return new SelectionRequest(List.copyOf(sections), pages, CAPACITY);
         }
 
         SelectionRequest request(CapacityModel capacity) {
