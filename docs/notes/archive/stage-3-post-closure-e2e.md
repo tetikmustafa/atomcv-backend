@@ -395,3 +395,39 @@ tekilleştirme, ilan URL'den çekme, dokümanların çevirisi. Yaptığımız i�
 Aşama 3'te uçtan uca testte çıkan hataların düzeltilmesiydi. `STATUS.md`
 frontend'e de gittiği için etiket oradan da düzeltildi.
 
+---
+
+## Dilim A-G'nin `current.md`'den taşınan kaydı (2026-09-07)
+
+## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/06)
+
+Dört bulgu, **yedi** ayrı kusur; dilim kayıtları
+`archive/stage-3-post-closure-e2e.md`'de. Bulgular kusurlarla eşleşmedi:
+"eksik Tech Stack" render sanılıyordu, Faz C çıktı; iki uydurma cümle Faz D
+sanılıyordu, ikisi de çıkarımdan geliyordu.
+
+| Dilim | Ne indi |
+|---|---|
+| A · Faz C | iade edilen bütçe yeniden teklif ediliyor; boşalan section başlığı iade ediliyor; `min_atoms` import'ta ulaşılabilir yazılıyor (`V5`) ve `trace.C` bütçesini taşıyor |
+| B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
+| F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2'ye ölçüldü ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
+| E · Faz D sessizliği | `trace.D` yazılıyor; sıfır artık "koştu ve değiştirmedi" diyor. Eşiklere dokunulmadı — § 21.2 verbatim ve yeniden ayarlamak ölçüm ister |
+| D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
+| C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
+
+**İndi — dilim G (2026-09-07):** `job_id` yazılıyor (`StructuredRequest.jobId`,
+`user_id` ile aynı yol); TEI istemcisi `atomcv.embedding.batch-size` ile
+parçalıyor, compose yaması kalktı; `local-record` `profile_extraction` için
+`*.source.txt` da yazıyor.
+
+**Ekleme — Faz D'nin faturası içerikten ayrı taşınıyor.** `RewrittenContent`
+§ 21.5 gereği yalnız kabul edilenleri tutar; Faz E için doğru, trace için
+yanlış olan kural bu. `RewritePhase` artık `RewriteOutcome` (içerik +
+`RewriteTally`) döndürüyor: prompt başına **çağrı**, `RewriteIssue` başına
+**ret**, ayrı bir **ulaşılamayan**. Üçü ayrı, çünkü `rewritten: 0`'ın dört
+sebebi var ve sayfa dördünde de aynı görünüyor. § 14.6'nın `rejectReasons`'ı bu.
+
+**Düzeltme — `promptVersions` "çağrı gitti mi"ye bakıyor, "değişti mi"ye
+değil.** Eskisi About'u kabul edilen bir üretimde `bullet_rewrite`'ı koşmuş
+gösteriyor, iki prompt da koşup her cevabı reddedilen geçişte **hiçbirini**
+yazmıyordu; ikisi de regresyon arayanı yanlış prompt'a yolluyor.
