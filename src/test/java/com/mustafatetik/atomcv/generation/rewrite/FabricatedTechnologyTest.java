@@ -102,6 +102,78 @@ class FabricatedTechnologyTest {
         assertThat(issues).doesNotContain(RewriteIssue.UNSUPPORTED_CLAIM);
     }
 
+    /**
+     * The substitution, which is the same class of fault wearing a familiar
+     * name.
+     *
+     * <p>A CV tailored by hand for a posting that asks for "Spring Core"
+     * changed one bullet's <em>Spring Cloud</em> to <em>Spring Core</em>. Two
+     * different things: one is a service-discovery and gateway stack, the other
+     * is the container at the bottom of the framework, and the person who wrote
+     * the bullet built the first. Whatever was meant by it, a product that did
+     * the same would be putting a claim on a page that no atom supports — and
+     * this is exactly the shape Bolum 21.6's third check exists for, because
+     * the posting is where the temptation comes from.
+     *
+     * <p>Note what carries it: not the alias file, which knows neither name,
+     * but the posting's own skills. That is the vocabulary a stuffed answer
+     * draws from, and it is why the check reads {@code postingSkills} rather
+     * than a fixed list.
+     */
+    @Test
+    void asubstitutionTowardsThePostingIsAnUnsupportedClaim() {
+        List<String> posting = List.of("java", "spring boot", "spring core", "spring mvc");
+        var candidate = new RewriteCandidate(UUID.randomUUID(), UUID.randomUUID(),
+                RichContent.plain("Architected a backend system transitioning from monolithic "
+                        + "to microservices utilizing Java 21, Spring Boot, and Spring Cloud."),
+                List.of("java", "spring-boot", "spring-cloud"), List.of(), List.of(),
+                0.8, 500, RewriteIntent.ADAPT, null);
+
+        var swapped = RewriteValidator.validate(candidate,
+                "Architected a backend system transitioning from monolithic to microservices "
+                        + "utilizing Java 21, Spring Boot, and Spring Core.",
+                posting, null, null);
+        assertThat(swapped)
+                .as("Spring Core is the posting's word, and no atom's")
+                .contains(RewriteIssue.UNSUPPORTED_CLAIM);
+
+        var kept = RewriteValidator.validate(candidate,
+                "Architected a backend system moving from a monolith to microservices with "
+                        + "Java 21, Spring Boot and Spring Cloud.",
+                posting, null, null);
+        assertThat(kept)
+                .as("the person's own stack, reworded, is not a claim")
+                .doesNotContain(RewriteIssue.UNSUPPORTED_CLAIM);
+    }
+
+    /**
+     * And the trap that would have let it through, checked directly.
+     *
+     * <p>Absolute rule 7: a Turkish default locale lowercases {@code SQL} to
+     * {@code sqı}, so a guard that folded case without a locale would stop
+     * recognising half the names it knows — and a guard that recognises nothing
+     * refuses nothing. Every fold in this path names {@code Locale.ROOT}; this
+     * is what says so out loud.
+     */
+    @Test
+    void theguardStillRefusesUnderATurkishLocale() {
+        Locale before = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            var candidate = new RewriteCandidate(UUID.randomUUID(), UUID.randomUUID(),
+                    RichContent.plain("Integrated structured enterprise data using SQL queries."),
+                    List.of("sql"), List.of(), List.of(), 0.8, 500, RewriteIntent.ADAPT, null);
+
+            var issues = RewriteValidator.validate(candidate,
+                    "Integrated structured enterprise data using SQL Server queries.",
+                    List.of("sql server"), null, null);
+
+            assertThat(issues).contains(RewriteIssue.UNSUPPORTED_CLAIM);
+        } finally {
+            Locale.setDefault(before);
+        }
+    }
+
     private static RewriteCandidate bullet(String original) {
         return new RewriteCandidate(UUID.randomUUID(), UUID.randomUUID(),
                 RichContent.plain(original), List.of("etl"), List.of(), List.of(),
