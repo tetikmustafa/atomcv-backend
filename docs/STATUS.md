@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntılı inşa kayıtları repo-yerel `notes/current.md`'dedir.
 
-**2026-09-04** · **`B-071` açık** (frontend'de) · açık `F-nnn` yok
+**2026-09-07** · **`B-071` açık** (frontend'de) · açık `F-nnn` yok
 
 ---
 
@@ -12,24 +12,25 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0-2 · 3 — hesap ve MVP (3.7 profil editörü frontend'de) | ✅ |
-| Kapanış sonrası — uçtan uca ölçüm · dilim A-F | ✅ |
+| Kapanış sonrası — uçtan uca ölçüm · dilim A-G | ✅ |
 
-**Aşama 3 · dilim 9-14:** on bir `F-nnn` indi (§ 18.4.1, § 34.4.2); kapanış denetimi `notes/kapanis-denetimi.md`'de.
-
-**Kapanış sonrası ölçüm — dört bulgu, yedi kusur** (`notes/archive/`);
+**Aşama 3 · dilim 9-14:** on bir `F-nnn` indi; denetim
+`notes/kapanis-denetimi.md`'de. **Kapanış sonrası ölçüm — dört bulgu, yedi kusur** (`notes/archive/`);
 **bulgular kusurlarla eşleşmedi:** "eksik Tech Stack" render sanılıyordu Faz C
 çıktı, iki uydurma cümle Faz D sanılıyordu ikisi de **çıkarımdan** geliyordu.
+**Dilim F**'te Klasik şablonu indi; drift'i **`ITEM_LINE`**'ın bir ölçüm
+artefaktı olduğunu görmek kapattı.
 
-**Dilim F — gerçek Klasik şablonu indi:** referansın komutları, etiketli
-iletişim bloğu, `INLINE_LIST`, geometri v2. Drift'i kapatan şablon değil
-arkasındaki kalibrasyon oldu: **`ITEM_LINE` bir ölçüm artefaktıymış**.
+**Dilim G — ölçümün kendisi indi:** `llm_invocations.job_id` yazılıyor; TEI
+istemcisi parçalıyor, yani 32 atomdan büyük her profil ilk kez gerçek sunucuya
+gömülüyor; `trace.D` § 14.6'nın `rejectReasons`'ını taşıyor; `local-record`
+çıkarımın kaynak belgesini de saklıyor.
 
-**Geliştiricide, artık ölçülmüş:** `cost_usd` sıfır → günlük bütçe freni ölü;
-`llm_invocations.job_id` 108/108 NULL; `local-record` girdiyi saklamıyor, o
-yüzden çıkarım sadakatinin yanlış pozitifi ölçülemiyor. Ayrıca fiyat tablosu,
-VPS/restore.
+**Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü; fiyat tablosu,
+VPS/restore. **Spec kararı:** Faz D'nin `FLOOR_SCORE` 0.40'ı gerçek
+embedding'le bile ulaşılamıyor (ölçülen en yüksek skor **0.3577**).
 
-**Test:** 1097 birim · 451 entegrasyon · latex 50/50 — 0 hata
+**Test:** 1116 birim · 453 entegrasyon · latex 50/50 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -40,7 +41,7 @@ VPS/restore.
 
 On iki dilim (dökümü kendi `notes/`'larında). **Gerçek uca karşı ölçüldü**
 (2026-08-30, MSW kapalı) ve `F-024`-`F-027`'yi çıkardı. **Ölçülmeyen yalnız
-OAuth ile Turnstile** — ikisi de yapılandırılmış bir dağıtım istiyor.
+OAuth ile Turnstile.**
 
 **Test:** 649 birim · 51 e2e · **bundle** profil 252.5 / geçmiş 213.9 / üretim 220.3 / onboarding 217.3 / ayarlar 229.8 KB.
 
@@ -54,7 +55,6 @@ OAuth ile Turnstile** — ikisi de yapılandırılmış bir dağıtım istiyor.
 ## Sonraki senkronizasyon noktası
 
 **Sıra frontend'de: `B-071` ve üç cevabın `ACK`'i.** `B-071` yedinci
-`ExtractionWarningCode`'u (`unsupported_by_source`) ICU `select`'ine ekletiyor —
-çıkarım belgede olmayan bir ad yazdığında gözden geçirme ekranında görünmeli.
-`F-025`-`F-027`'nin üçü de istemcide iş çıkarmıyor. **Yayın öncesi açık:**
-gizlilik politikası model seçimini bekliyor.
+`ExtractionWarningCode`'u (`unsupported_by_source`) ICU `select`'ine ekletiyor;
+`F-025`-`F-027` istemcide iş çıkarmıyor. **Yayın öncesi açık:** gizlilik
+politikası model seçimini bekliyor.

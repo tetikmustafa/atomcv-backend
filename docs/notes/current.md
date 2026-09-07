@@ -6,30 +6,25 @@
 > Bir sapma kalıcıysa `spec/`'e işlenir ve buradan silinir.
 
 **Aktif aşama:** Aşama 3 — hesap ve MVP. **Plan:** `spec/14-build-guide.md`
-§ XI-A.6; gerekçesi `spec/13-development.md` § 55. Aşama 1-2'nin tam kayıtları
-`archive/stage-1.md` ve `archive/stage-2.md`'de.
+§ XI-A.6; gerekçesi § 55. Aşama 1-2: `archive/stage-1.md`, `archive/stage-2.md`.
 
 ---
 
 ## Aşama 2'den taşınan açık kutular
 
-- **`Axiom'da loglar görünüyor`** — dataset açık, `.env` dolu (2026-08-26);
-  telde doğrulanması üretim dağıtımını bekliyor.
-- **`llm_invocations.user_id` NULL.** Zincir `UserContext` tutan fazlardan
-  çağrılıyor ama kullanıcıyı aşağı geçirmiyor. Günlük toplam (bütçe freni)
-  bunu istemiyor; **kullanıcı bazlı maliyet** istiyor.
+- **Axiom'da loglar görünüyor** — dataset açık, `.env` dolu (2026-08-26); telde
+  doğrulanması üretim dağıtımını bekliyor.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
-  demeli (§ 9), sahibi frontend.
-- **§ 44.3'ün sıkılaştıracağı limiter hâlâ yok** — 3.3 dilim 4'ün
-  `RateLimiter`'ı genel ama **girişe** bağlı; § 44.3 ağır kullanıcının
-  **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
+  demeli (§ 9) — frontend'in.
+- **§ 44.3'ün limiter'ı hâlâ yok** — 3.3'ünki **girişe** bağlı; § 44.3 ağır
+  kullanıcının **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
 
 ## Aşama 1'den taşınan kısıtlar — hâlâ açık
 
 | Eksik | Ne zaman | Neden şimdi değil |
 |---|---|---|
-| ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı: PDFBox 3.4 dilim 1'de geldi. `FitReport` `F-008`'de indi — kalan yarısı üretilen PDF'i geri okumak |
-| `UserScopedRepository`'de `findAll` yok | — | § 41.2 parçacığı `findByUserId` çağırıyor, o da `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
+| ATS metin çıkarma (§ 23.2) yok | Aşama 3 | Engeli kalktı (PDFBox 3.4). `FitReport` `F-008`'de indi; kalanı üretilen PDF'i geri okumak |
+| `UserScopedRepository`'de `findAll` yok | — | § 41.2 `findByUserId` çağırıyor, `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler |
 
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
@@ -45,9 +40,8 @@
   tuzlandığı için bir kaldırmanın iadesi koşudan koşuya değişiyordu.
   **İterasyon sırası bir sayıya dönüşüyorsa `Linked*` gerekiyor.**
 
-**Geliştiricide:** yeni model seçilince fiyat tablosu — **o güne kadar günlük
-bütçe freni çalışmaz**, çünkü fiyatı olmayan model sıfır ediyor ve toplam hep
-sıfır kalıyor. Ayrıca VPS kurulumu ve restore testi.
+**Geliştiricide:** fiyat tablosu (**o güne kadar günlük bütçe freni ölü** —
+fiyatsız model sıfır ediyor), VPS kurulumu, restore testi.
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
@@ -60,14 +54,14 @@ adlandırılan spec bölümlerinde. Burada yalnız **canlı** olanlar:
   alanı tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**, sayıya
   indirilmedi. Yedincisi gerçekten engelleyici olursa karar § 31.6.4'te.
 - **`ImportWarning.code` alanı `String`, şeması enum.** Değer JSONB'den geri
-  okunuyor; tipi enum yapmak, adı değişmiş bir kod taşıyan eski satırı ya
-  attırır ya düşürür, ve düşen uyarı `warningCount == warnings.length`'i bozar.
-- **`OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.**
-  `ExtractionWarningCode.values()`'tan türetilirse yedinci değere de "evet"
-  der; oysa yedincisi karşı reponun duyması gereken bir tel değişikliği.
+  okunuyor; enum yapmak adı değişmiş eski satırı ya attırır ya düşürür, ve
+  düşen uyarı `warningCount == warnings.length`'i bozar.
+- **`OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.** `values()`'tan
+  türetilirse yedinciye de "evet" der; oysa o karşı reponun duyması gereken
+  bir tel değişikliği.
 
-**`shared.wire` yeni bir paket, ve bir sonraki kapalı sözlüğün yeri.** İki
-modülün yayımladığı, **ret olmayan** sözlükler oraya; `shared.error` retlerin.
+**`shared.wire` bir sonraki kapalı sözlüğün yeri** — iki modülün yayımladığı,
+**ret olmayan** sözlükler oraya; `shared.error` retlerin.
 
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
@@ -87,10 +81,8 @@ Burada yalnız **canlı** olanlar:
 Trivy'nin düşürdüğü HIGH CVE'ler için, ve Boot'un BOM'u yetişince
 **kaldırılmalı**.
 
-**Ders — reddedilen bir cevap da kaydediliyor, ve ölçüm orada duruyor.**
-`F-026`'nın dört taslağını yeniden üretmek gerekmedi: `local-record` onları
-diske yazmıştı. Bir muhafızın yanlış pozitifini aramanın en ucuz yeri
-`fixtures/llm/`.
+**Ders — bir muhafızın yanlış pozitifini aramanın en ucuz yeri
+`fixtures/llm/`.** `F-026`'nın dört taslağını yeniden üretmek gerekmedi.
 
 ## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/06)
 
@@ -105,30 +97,39 @@ sanılıyordu, ikisi de çıkarımdan geliyordu.
 | B · çıkarım tripwire | `MAX_ATOM_TEXT` tür başına ayrıldı — About paragrafı 1500, gerisi 600 |
 | F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2'ye ölçüldü ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
 | E · Faz D sessizliği | `trace.D` yazılıyor; sıfır artık "koştu ve değiştirmedi" diyor. Eşiklere dokunulmadı — § 21.2 verbatim ve yeniden ayarlamak ölçüm ister |
-| F · Klasik şablonu | referansın komutları, etiketli iletişim bloğu, `INLINE_LIST`; geometri v2 ve **`ITEM_LINE` bir kalibrasyon artefaktı çıktı** |
 | D · çıkarım sadakati | `ExtractionFidelity` — çıkarım belgede olmayan bir ad yazarsa `UNSUPPORTED_BY_SOURCE` (`B-071`); P3 artık çıkarımı da kapsıyor |
 | C · P3 muhafızları | `ClaimVocabulary.introducedNames()` — sözlüğün tanımadığı uydurma artık görünüyor; About birleşimi § 21.7'ye getirildi |
 
+**İndi — dilim G (2026-09-07):** `job_id` yazılıyor (`StructuredRequest.jobId`,
+`user_id` ile aynı yol); TEI istemcisi `atomcv.embedding.batch-size` ile
+parçalıyor, compose yaması kalktı; `local-record` `profile_extraction` için
+`*.source.txt` da yazıyor.
+
+**Ekleme — Faz D'nin faturası içerikten ayrı taşınıyor.** `RewrittenContent`
+§ 21.5 gereği yalnız kabul edilenleri tutar; Faz E için doğru, trace için
+yanlış olan kural bu. `RewritePhase` artık `RewriteOutcome` (içerik +
+`RewriteTally`) döndürüyor: prompt başına **çağrı**, `RewriteIssue` başına
+**ret**, ayrı bir **ulaşılamayan**. Üçü ayrı, çünkü `rewritten: 0`'ın dört
+sebebi var ve sayfa dördünde de aynı görünüyor. § 14.6'nın `rejectReasons`'ı bu.
+
+**Düzeltme — `promptVersions` "çağrı gitti mi"ye bakıyor, "değişti mi"ye
+değil.** Eskisi About'u kabul edilen bir üretimde `bullet_rewrite`'ı koşmuş
+gösteriyor, iki prompt da koşup her cevabı reddedilen geçişte **hiçbirini**
+yazmıyordu; ikisi de regresyon arayanı yanlış prompt'a yolluyor.
+
 **Canlı kalanlar:**
-- **`llm_invocations.job_id` 108 satırın 108'inde NULL** (`user_id` 104'ünde).
-  FK ve kolon var, `ProviderChain` kullanıcıyı da işi de aşağı geçirmiyor. Bir
-  faturalı çağrıyı düşen işe bağlamak 17 ms'lik zaman farkıyla yapıldı.
 - **Aynı 4-sayfa belge iki kez faturalandı** (13:58 ve 14:06, ikisi de 4522
-  giriş jetonu), tek `profile_extract` satırı var.
+  giriş jetonu), tek `profile_extract` satırı var. `job_id` indiği için bir
+  sonraki tekrar kendini gösterir.
 - **`cost_usd` her satırda 0.000000** — fiyat tablosu yok, yani **günlük bütçe
   freni ölü**. Zaten geliştirici listesindeydi; artık ölçülmüş hali de var.
-- **`EmbeddingService` parçalamıyor** — 84 atomu tek istekte yolluyor, TEI `413`
-  dönüyor; compose'daki `--max-client-batch-size 512` yama. İstemci parçalamalı.
 - **Faz D eşikleri ulaşılamıyor, ve artık ölçüldü:** gerçek embedding + gerçek
   ilanla en yüksek atom skoru **0.3577**, `FLOOR_SCORE` **0.40**. § 21.2'nin
   sayıları bu skorlama fonksiyonuyla uyuşmuyor; karar spec'in.
 - **Nitelik-listesi ilanı § 18 `no_responsibilities` ile reddediyor** — kural
   doğru, ama gerçek ilanların çoğu böyle. Ürün kararı.
-- **`local-record` girdiyi saklamıyor** — bir sonraki `make record` kaynak metni
-  de yazmalı. (Yanlış pozitif oranı gerçek CV'ye karşı ölçüldü: **0/84**.)
-- **§ 14.6'nın `rejectReasons`'ı hâlâ yok** ve `promptVersions` koşmayan
-  `bullet_rewrite`'ı koşmuş gösterebiliyor. İkisi de `RewrittenContent`'in
-  yalnız kabul edilenleri taşımasından; `ContentRewriter` cephesini istiyor.
+- **Yanlış pozitif oranı bir sonraki `make record`'la ölçülür** — kaynak
+  dosyaları henüz yok, `RecordedExtractionFidelityTest` o zamana dek sessiz.
 
 ---
 
@@ -158,7 +159,7 @@ Frontend aksiyonları: `B-055`-`B-058`.
 - **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.** Silmeyen bir
   kimlik testi dördüncü sırada ilgisiz bir 429'da düşer, flake gibi okunur.
 - **`profiles` entegrasyon paketinde hiç boş değil** (`DevSeeder`) — anonim
-  gizlilik iddiası bu yüzden "satır sayısı değişmedi" diye kuruluyor.
+  gizlilik iddiası "satır sayısı değişmedi" diye kuruluyor.
 - **`local` profilinde yapılandırılmış LLM sağlayıcısı yok**, entegrasyon
   lane'inde her çağrı `ALL_PROVIDERS_UNAVAILABLE` alır. `CoverLetterApiIT`
   bunu kasten öyle kuruyor.
@@ -187,9 +188,8 @@ Frontend aksiyonları: `B-055`-`B-058`.
   verdi, aynı ağaç tekrar koşuşta geçti (2026-08-27, run 33091345512).
   **Tekrarlarsa ilk bakılacak yer bağlam sayısı, kod değil.**
 
-**Ders (Adım 3.4, ve dilim 1'de ikinci kez):** *bir metodun javadoc'u ne zaman
-çalıştığını söylüyorsa çağıranı da ara.*
-**Ders (Adım 3.5):** *doğru davranan kod, korunan kod değildir.*
+**Ders (3.4, dilim 1'de ikinci kez):** *bir javadoc ne zaman çalıştığını
+söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değildir.*
 
 ---
 
@@ -197,4 +197,4 @@ Frontend aksiyonları: `B-055`-`B-058`.
 
 Sekiz dilimin hepsinin kaydı **`kapanis-denetimi.md` § 6**'da; ikinci bir kopya
 ayrışır. Oradan çıkan tek kural § 51.7'de: *bir muhafızın düştüğünü görmeden
-yazıldı sayma.* Dilim 14'te ve kapanış sonrası dilim A'da yine gerekti.
+yazıldı sayma.* Dilim 14, kapanış sonrası A ve G'de yine gerekti.
