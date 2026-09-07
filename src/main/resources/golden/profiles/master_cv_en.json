@@ -1,0 +1,1473 @@
+{
+ "name": "master_cv_en",
+ "description": "The real master CV behind cv/master_cv.tex, as the importer wrote it: four About variants, three roles, fourteen projects, a seven-row Tech Stack and two languages. Four pages of source against a one-page budget, and almost none of it relevant to any one posting -- which is what makes it the fixture for the shape of a page rather than for the arithmetic of one.",
+ "sourceLanguage": "en",
+ "contact": {
+  "name": "Mustafa Tetik",
+  "email": "tetikmustafa03@gmail.com",
+  "phone": "+90 (501) 140 1274",
+  "linkedin": "https://www.linkedin.com/in/mustafa-tetik/",
+  "github": "https://github.com/tetikmustafa",
+  "website": "https://mustafatetik.com",
+  "location": "Istanbul,Turkey"
+ },
+ "maxPages": 1,
+ "sections": [
+  {
+   "kind": "about",
+   "title": "About",
+   "layout": "paragraph",
+   "atoms": [
+    {
+     "text": "Multidisciplinary Computer Engineering graduate with hands-on expertise across Backend Architecture, Data Engineering, AI, and Cybersecurity. Engineered microservice systems using Java and Spring Boot, built ETL pipelines processing 300K+ rows, and developed Transformer-based NLP models achieving 97.27% accuracy. A highly adaptable fast learner who thrives on mastering new technologies. Approaches complex problems with system-level architectural thinking, seamlessly bridging the gap between low-level hardware performance and enterprise-scale deployments across both startup and corporate environments.",
+     "kind": "about_paragraph",
+     "skills": [
+      "backend-architecture",
+      "data-engineering",
+      "artificial-intelligence",
+      "cybersecurity",
+      "java",
+      "spring-boot",
+      "etl",
+      "natural-language-processing"
+     ],
+     "metrics": [
+      "300K+",
+      "97.27%"
+     ]
+    },
+    {
+     "text": "Computer Engineering graduate specializing in Distributed Systems and Backend Development. Architected scalable microservices with Java 21, Spring Boot, and Spring Cloud, orchestrating 5-container deployments via Docker Compose. Experienced in applying TDD, standardizing 35+ RESTful APIs, and building responsive React frontends. An agile and rapid learner, passionate about exploring new frameworks and architectural patterns to deliver clean, maintainable, and high-availability enterprise applications.",
+     "kind": "about_paragraph",
+     "skills": [
+      "distributed-systems",
+      "backend-development",
+      "java",
+      "spring-boot",
+      "spring-cloud",
+      "docker-compose",
+      "test-driven-development",
+      "rest",
+      "react"
+     ],
+     "metrics": [
+      "21",
+      "5-container",
+      "35+"
+     ]
+    },
+    {
+     "text": "Computer Engineering graduate focused on Data Engineering, Business Intelligence, and Optimization. Engineered centralized ETL pipelines in Microsoft Fabric processing over 300,000 rows of operational data and designed 5+ interactive Power BI dashboards. Formulated complex MILP mathematical models via Gurobi for logistics routing. As a highly motivated fast learner, quickly adapts to diverse enterprise ecosystems (SAP BW, SQL, Python) to transform unstructured datasets into automated, actionable business insights.",
+     "kind": "about_paragraph",
+     "skills": [
+      "data-engineering",
+      "business-intelligence",
+      "optimization",
+      "etl",
+      "microsoft-fabric",
+      "powerbi",
+      "mixed-integer-linear-programming",
+      "gurobi",
+      "sap-bw",
+      "sql",
+      "python"
+     ],
+     "metrics": [
+      "300,000",
+      "5+"
+     ],
+     "properNouns": [
+      "Microsoft Fabric",
+      "Power BI",
+      "Gurobi",
+      "SAP BW"
+     ]
+    },
+    {
+     "text": "Computer Engineering graduate actively advancing in Generative AI, Computer Vision, and NLP. Co-authored published research on Transformer LLMs (ALBERT, RoBERTa) achieving state-of-the-art 97.27% accuracy on datasets exceeding 246K records. Optimized a Qwen 2.5 VL diffusion pipeline for a 5-8x inference speedup and implemented YOLOv8 models with sub-10ms algorithmic latency. Driven by a passion for continuous learning, swiftly adopting cutting-edge AI architectures to build intelligent, memory-optimized, and hardware-efficient systems.",
+     "kind": "about_paragraph",
+     "skills": [
+      "generative-artificial-intelligence",
+      "computer-vision",
+      "natural-language-processing",
+      "transformers",
+      "albert",
+      "roberta",
+      "qwen",
+      "diffusion-models",
+      "yolov8"
+     ],
+     "metrics": [
+      "97.27%",
+      "246K",
+      "5-8x",
+      "sub-10ms"
+     ],
+     "properNouns": [
+      "ALBERT",
+      "RoBERTa",
+      "Qwen 2.5 VL",
+      "YOLOv8"
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "education",
+   "title": "Education",
+   "layout": "bullet_list",
+   "entries": [
+    {
+     "title": "Computer Engineering | GPA: 3.21",
+     "organization": "Marmara University",
+     "location": "Istanbul, Turkiye",
+     "minAtoms": 0,
+     "atoms": []
+    }
+   ]
+  },
+  {
+   "kind": "experience",
+   "title": "Experience",
+   "layout": "bullet_list",
+   "entries": [
+    {
+     "title": "Part-time Data Engineer",
+     "organization": "Brisa Bridgestone Sabancı",
+     "location": "Istanbul",
+     "startDate": "2025-09-01",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Engineered Python and Microsoft Fabric ETL pipelines to process and centralize over 300,000 rows of unstructured operational data into a secure Lakehouse.",
+       "kind": "bullet",
+       "skills": [
+        "python",
+        "microsoft-fabric",
+        "etl",
+        "data-lakehouse"
+       ],
+       "metrics": [
+        "300,000"
+       ],
+       "properNouns": [
+        "Microsoft Fabric"
+       ]
+      },
+      {
+       "text": "Developed a dynamic ingestion pipeline via Power Query (M) to extract conversational metrics from an external API, using automated credential rotation across multiple instances.",
+       "kind": "bullet",
+       "skills": [
+        "power-query",
+        "api-integration"
+       ],
+       "properNouns": [
+        "Power Query"
+       ]
+      },
+      {
+       "text": "Designed and deployed 5+ interactive Power BI dashboards with advanced DAX measures.",
+       "kind": "bullet",
+       "skills": [
+        "powerbi",
+        "dax"
+       ],
+       "metrics": [
+        "5+"
+       ],
+       "properNouns": [
+        "Power BI"
+       ]
+      },
+      {
+       "text": "Formulated MILP mathematical models utilizing Gurobi for dynamic vehicle routing.",
+       "kind": "bullet",
+       "skills": [
+        "mixed-integer-linear-programming",
+        "gurobi",
+        "vehicle-routing"
+       ],
+       "properNouns": [
+        "Gurobi"
+       ]
+      },
+      {
+       "text": "Integrated structured enterprise data utilizing SQL Server queries and modeled business reporting logic interacting with SAP Business Warehouse (BW).",
+       "kind": "bullet",
+       "skills": [
+        "mssql",
+        "sap-bw",
+        "data-modeling"
+       ],
+       "properNouns": [
+        "SQL Server",
+        "SAP Business Warehouse"
+       ]
+      },
+      {
+       "text": "Working with Agile project management methodologies, participating in sprint planning and daily workflows.",
+       "kind": "bullet",
+       "skills": [
+        "agile"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Digital Transformation Intern",
+     "organization": "Brisa Bridgestone Sabancı",
+     "location": "Izmit/Kocaeli",
+     "startDate": "2025-07-01",
+     "endDate": "2025-09-01",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Streamlined software workflows and change management, coordinating task resolution via Jira and Bugzilla.",
+       "kind": "bullet",
+       "skills": [
+        "change-management",
+        "jira",
+        "bugzilla"
+       ],
+       "properNouns": [
+        "Jira",
+        "Bugzilla"
+       ]
+      },
+      {
+       "text": "Validated systems by executing integration testing for REST and SOAP services using Postman and SoapUI.",
+       "kind": "bullet",
+       "skills": [
+        "integration-testing",
+        "rest",
+        "soap",
+        "postman",
+        "soapui"
+       ],
+       "properNouns": [
+        "Postman",
+        "SoapUI"
+       ]
+      },
+      {
+       "text": "Authored comprehensive technical documentation for 35+ APIs and established standardized testing protocols.",
+       "kind": "bullet",
+       "skills": [
+        "technical-documentation",
+        "api-testing"
+       ],
+       "metrics": [
+        "35+"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Software Engineering Intern",
+     "organization": "Smartera Software Solutions",
+     "location": "Istanbul",
+     "startDate": "2024-07-01",
+     "endDate": "2024-09-01",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Developed backend services utilizing Java and Spring Boot within a distributed, high-availability architecture.",
+       "kind": "bullet",
+       "skills": [
+        "java",
+        "spring-boot",
+        "distributed-systems"
+       ]
+      },
+      {
+       "text": "Built responsive frontend interfaces utilizing React and JavaScript, consuming backend RESTful APIs.",
+       "kind": "bullet",
+       "skills": [
+        "react",
+        "javascript",
+        "rest"
+       ]
+      },
+      {
+       "text": "Modeled databases via MySQL and Spring Data JPA, applying the DTO pattern for secure data transfer.",
+       "kind": "bullet",
+       "skills": [
+        "mysql",
+        "spring-data-jpa",
+        "data-transfer-object"
+       ],
+       "properNouns": [
+        "MySQL"
+       ]
+      },
+      {
+       "text": "Applied Test-Driven Development (TDD) principles to write maintainable, bug-resistant, and reliable code.",
+       "kind": "bullet",
+       "skills": [
+        "test-driven-development"
+       ]
+      },
+      {
+       "text": "Collaborated via Git workflows and standardized API endpoint definitions utilizing Swagger OpenAPI.",
+       "kind": "bullet",
+       "skills": [
+        "git",
+        "openapi",
+        "swagger"
+       ],
+       "properNouns": [
+        "Git",
+        "Swagger OpenAPI"
+       ]
+      },
+      {
+       "text": "Integrated Docker containerization into the SDLC to standardize local development and testing environments.",
+       "kind": "bullet",
+       "skills": [
+        "docker",
+        "software-development-lifecycle"
+       ],
+       "properNouns": [
+        "Docker"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "projects",
+   "title": "Projects",
+   "layout": "bullet_list",
+   "entries": [
+    {
+     "title": "AI-Powered ATS Resume Tailoring Platform",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected a full-stack AI resume tailoring platform using Next.js 15, TypeScript, and Cloudflare Workers (OpenNext), automating job-specific resume customization end-to-end.",
+       "kind": "bullet",
+       "skills": [
+        "nextjs",
+        "typescript",
+        "cloudflare-workers",
+        "opennext"
+       ],
+       "metrics": [
+        "15"
+       ],
+       "properNouns": [
+        "Cloudflare Workers",
+        "OpenNext"
+       ]
+      },
+      {
+       "text": "Engineered a multi-provider LLM abstraction layer spanning 5 AI providers (Gemini, OpenAI, Claude, DeepSeek, OpenRouter) with a config-driven fallback chain ensuring zero-downtime failover.",
+       "kind": "bullet",
+       "skills": [
+        "large-language-models",
+        "high-availability"
+       ],
+       "metrics": [
+        "5",
+        "zero-downtime"
+       ],
+       "properNouns": [
+        "Gemini",
+        "OpenAI",
+        "Claude",
+        "DeepSeek",
+        "OpenRouter"
+       ]
+      },
+      {
+       "text": "Designed a deterministic compile-verify-retry pipeline measuring real compiled PDF line density against a 54-line capacity model to guarantee exact one-page ATS output.",
+       "kind": "bullet",
+       "skills": [
+        "pdf-processing",
+        "applicant-tracking-systems"
+       ],
+       "metrics": [
+        "54-line",
+        "one-page"
+       ]
+      },
+      {
+       "text": "Built an AI-driven CV format converter ingesting LaTeX, PDF, and DOCX resumes via unpdf and Mammoth, remapping any input into a structured template with zero data fabrication.",
+       "kind": "bullet",
+       "skills": [
+        "latex",
+        "pdf-processing",
+        "docx",
+        "unpdf",
+        "mammoth"
+       ],
+       "metrics": [
+        "zero"
+       ],
+       "properNouns": [
+        "Mammoth"
+       ]
+      },
+      {
+       "text": "Secured public-facing API routes with Cloudflare Turnstile verification and Upstash Redis rate limiting, preventing abuse across serverless compile and inference endpoints.",
+       "kind": "bullet",
+       "skills": [
+        "cloudflare-turnstile",
+        "redis",
+        "rate-limiting",
+        "serverless-computing"
+       ],
+       "properNouns": [
+        "Cloudflare Turnstile",
+        "Upstash Redis"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Generative AI Virtual Photography System",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Engineered a full-stack Generative AI virtual photography system utilizing Stable Diffusion, ControlNet, and Qwen Image Edit (Qwen 2.5 VL) to transform raw product photos into studio-grade visuals.",
+       "kind": "bullet",
+       "skills": [
+        "generative-artificial-intelligence",
+        "stable-diffusion",
+        "controlnet",
+        "qwen"
+       ],
+       "metrics": [
+        "2.5"
+       ],
+       "properNouns": [
+        "Stable Diffusion",
+        "ControlNet",
+        "Qwen Image Edit",
+        "Qwen 2.5 VL"
+       ]
+      },
+      {
+       "text": "Orchestrated a 4-component pipeline (FP8 UNET, 7B-parameter CLIP, VAE, Lightning LoRA), quantizing weights to cut memory footprint by 4x and enable local execution on 6GB-VRAM consumer GPUs.",
+       "kind": "bullet",
+       "skills": [
+        "quantization",
+        "unet",
+        "clip",
+        "variational-autoencoder",
+        "lora"
+       ],
+       "metrics": [
+        "4-component",
+        "FP8",
+        "7B-parameter",
+        "4x",
+        "6GB-VRAM"
+       ],
+       "properNouns": [
+        "CLIP",
+        "Lightning LoRA"
+       ]
+      },
+      {
+       "text": "Designed automated AI workflows using ComfyUI and AuraFlow/Euler schedules, reducing diffusion sampling from 20+ to 4 steps and achieving a 5-8x inference speedup without quality loss.",
+       "kind": "bullet",
+       "skills": [
+        "comfyui",
+        "auraflow",
+        "diffusion-models"
+       ],
+       "metrics": [
+        "20+",
+        "4",
+        "5-8x"
+       ],
+       "properNouns": [
+        "ComfyUI",
+        "AuraFlow"
+       ]
+      },
+      {
+       "text": "Applied advanced Prompt Engineering across 3 distinct camera-angle pipelines, formulating rigorous positive/negative prompt strategies to eliminate artifacts and strictly preserve product identity.",
+       "kind": "bullet",
+       "skills": [
+        "prompt-engineering"
+       ],
+       "metrics": [
+        "3"
+       ]
+      },
+      {
+       "text": "Architected a React frontend utilizing WebSockets for logging 12-step generation cycle.",
+       "kind": "bullet",
+       "skills": [
+        "react",
+        "websocket"
+       ],
+       "metrics": [
+        "12-step"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Game Analysis with Image Processing",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected an end-to-end Computer Vision system to detect physical game tiles and recommend optimal moves, utilizing a Client-Direct architecture with Next.js and an isolated Flask API to bypass serverless cold starts.",
+       "kind": "bullet",
+       "skills": [
+        "computer-vision",
+        "nextjs",
+        "flask",
+        "api-development",
+        "serverless-computing"
+       ]
+      },
+      {
+       "text": "Implemented a Two-Stage Hybrid AI pipeline utilizing YOLOv8-Nano for localization (99.4% mAP50, 41ms) and ResNet-18 for classification (97.26% accuracy, 2.88ms).",
+       "kind": "bullet",
+       "skills": [
+        "yolov8",
+        "resnet",
+        "computer-vision"
+       ],
+       "metrics": [
+        "99.4%",
+        "41ms",
+        "97.26%",
+        "2.88ms"
+       ],
+       "properNouns": [
+        "YOLOv8-Nano",
+        "ResNet-18"
+       ]
+      },
+      {
+       "text": "Formulated complex combinatorial game rules utilizing Depth-First Search (DFS) and Memoization (Hash Caching), calculating optimal 101-point and pair-opening strategies in under 10 milliseconds in-browser.",
+       "kind": "bullet",
+       "skills": [
+        "depth-first-search",
+        "memoization",
+        "algorithms"
+       ],
+       "metrics": [
+        "101-point",
+        "under 10 milliseconds"
+       ]
+      },
+      {
+       "text": "Engineered a custom dataset of 4,432 labeled tiles across 55 classes, developing a hybrid annotation pipeline via OpenCV and Python scripts that accelerated manual labeling from 50+ hours to approximately 1 hour.",
+       "kind": "bullet",
+       "skills": [
+        "opencv",
+        "python",
+        "data-annotation"
+       ],
+       "metrics": [
+        "4,432",
+        "55",
+        "50+ hours",
+        "approximately 1 hour"
+       ],
+       "properNouns": [
+        "OpenCV"
+       ]
+      },
+      {
+       "text": "Built an interactive React frontend allowing real-time manual correction of misclassified tiles, triggering instantaneous algorithm recalculations and achieving an end-to-end system latency of 150-250ms.",
+       "kind": "bullet",
+       "skills": [
+        "react",
+        "real-time-systems"
+       ],
+       "metrics": [
+        "150-250ms"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Order Management System",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected a scalable backend system transitioning from monolithic to microservices architecture utilizing Java 21, Spring Boot 3.3, and Spring Cloud, decomposing business logic into 4 RESTful services.",
+       "kind": "bullet",
+       "skills": [
+        "java",
+        "spring-boot",
+        "spring-cloud",
+        "microservices",
+        "rest"
+       ],
+       "metrics": [
+        "21",
+        "3.3",
+        "4"
+       ]
+      },
+      {
+       "text": "Designed RESTful APIs following MVC architecture to perform CRUD operations, implementing strict request validation, global error handling, and standardized JSON response structures.",
+       "kind": "bullet",
+       "skills": [
+        "rest",
+        "model-view-controller",
+        "crud",
+        "json"
+       ]
+      },
+      {
+       "text": "Implemented Spring Cloud Gateway as the centralized entry point, configuring global CORS management, load-balanced routing, and aggregating independent endpoints into a unified OpenAPI documentation portal.",
+       "kind": "bullet",
+       "skills": [
+        "spring-cloud-gateway",
+        "cors",
+        "load-balancing",
+        "openapi"
+       ]
+      },
+      {
+       "text": "Configured a Netflix Eureka Server for dynamic service discovery and registration, enabling seamless, decoupled synchronous inter-service communication via OpenFeign clients.",
+       "kind": "bullet",
+       "skills": [
+        "netflix-eureka",
+        "service-discovery",
+        "openfeign"
+       ],
+       "properNouns": [
+        "Netflix Eureka"
+       ]
+      },
+      {
+       "text": "Applied the Database-per-service pattern utilizing MySQL 8 for isolated data storage. Used Spring Data JPA, Hibernate, and Lombok to model entities, strictly enforcing the DTO pattern.",
+       "kind": "bullet",
+       "skills": [
+        "database-per-service",
+        "mysql",
+        "spring-data-jpa",
+        "hibernate",
+        "lombok",
+        "data-transfer-object"
+       ],
+       "metrics": [
+        "8"
+       ],
+       "properNouns": [
+        "MySQL"
+       ]
+      },
+      {
+       "text": "Containerized the infrastructure into a 5-container deployment utilizing Docker and Docker Compose. Engineered custom network bridges and automated health-checks to ensure fail-safe background deployments.",
+       "kind": "bullet",
+       "skills": [
+        "docker",
+        "docker-compose",
+        "containerization",
+        "health-checks"
+       ],
+       "metrics": [
+        "5-container"
+       ],
+       "properNouns": [
+        "Docker",
+        "Docker Compose"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Research Paper: Social Media Suicide Risk Detection via Deep Learning",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Co-authored an NLP research paper benchmarking Transformer architectures to detect suicide-related content, achieving state-of-the-art results for early psychological intervention systems.",
+       "kind": "bullet",
+       "skills": [
+        "natural-language-processing",
+        "transformers",
+        "deep-learning"
+       ]
+      },
+      {
+       "text": "Engineered a perfectly balanced dataset by merging two public Reddit repositories into 246,228 labeled posts, utilizing NLTK for comprehensive text normalization (tokenization, stopword/URL removal).",
+       "kind": "bullet",
+       "skills": [
+        "dataset-engineering",
+        "nltk",
+        "text-normalization"
+       ],
+       "metrics": [
+        "two",
+        "246,228"
+       ],
+       "properNouns": [
+        "Reddit",
+        "NLTK"
+       ]
+      },
+      {
+       "text": "Fine-tuned and benchmarked T5-small (60M parameters) and ALBERT (12M parameters) transformer models utilizing a 70/30 train-test split, batch size of 32, and a 2e-5 learning rate.",
+       "kind": "bullet",
+       "skills": [
+        "t5",
+        "albert",
+        "transformers",
+        "model-fine-tuning"
+       ],
+       "metrics": [
+        "60M",
+        "12M",
+        "70/30",
+        "32",
+        "2e-5"
+       ],
+       "properNouns": [
+        "T5-small",
+        "ALBERT"
+       ]
+      },
+      {
+       "text": "Achieved a peak classification accuracy of 97.27% with ALBERT, outperforming T5-small (97.00%) and significantly exceeding traditional baseline models (CNN, LSTM, BiGRU) reported in literature.",
+       "kind": "bullet",
+       "skills": [
+        "albert",
+        "t5",
+        "convolutional-neural-networks",
+        "long-short-term-memory",
+        "bigru"
+       ],
+       "metrics": [
+        "97.27%",
+        "97.00%"
+       ],
+       "properNouns": [
+        "ALBERT",
+        "T5-small"
+       ]
+      },
+      {
+       "text": "Demonstrated architectural efficiency by proving that ALBERT's parameter-sharing design achieved superior accuracy while utilizing an 80% smaller memory footprint than T5-small.",
+       "kind": "bullet",
+       "skills": [
+        "albert",
+        "t5",
+        "model-optimization"
+       ],
+       "metrics": [
+        "80%"
+       ],
+       "properNouns": [
+        "ALBERT",
+        "T5-small"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Ransomware Simulation & Analysis",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected a fully isolated malware sandbox via VirtualBox (Host-Only network), utilizing Windows 10 and REMnux v7 VMs to safely detonate the WannaCry ransomware (MS17-010).",
+       "kind": "bullet",
+       "skills": [
+        "malware-analysis",
+        "virtualbox",
+        "windows",
+        "remnux"
+       ],
+       "metrics": [
+        "10",
+        "v7"
+       ],
+       "properNouns": [
+        "VirtualBox",
+        "Windows 10",
+        "REMnux v7",
+        "WannaCry",
+        "MS17-010"
+       ]
+      },
+      {
+       "text": "Configured INetSim to emulate DNS and HTTP(S) services to bypass sandbox evasion tactics, capturing live network packets and lateral movement attempts utilizing Wireshark and tcpdump.",
+       "kind": "bullet",
+       "skills": [
+        "inetsim",
+        "dns",
+        "http",
+        "wireshark",
+        "tcpdump",
+        "network-analysis"
+       ],
+       "properNouns": [
+        "INetSim",
+        "Wireshark"
+       ]
+      },
+      {
+       "text": "Performed static binary analysis utilizing PEStudio and Sysinternals Strings, extracting SHA-256 hashes (67/71 detection rate) and identifying embedded cryptographic APIs (AES/RSA).",
+       "kind": "bullet",
+       "skills": [
+        "static-analysis",
+        "pestudio",
+        "sysinternals",
+        "sha-256",
+        "aes",
+        "rsa"
+       ],
+       "metrics": [
+        "67/71"
+       ],
+       "properNouns": [
+        "PEStudio",
+        "Sysinternals Strings"
+       ]
+      },
+      {
+       "text": "Executed dynamic host forensics utilizing Procmon, Process Explorer, and Regshot to trace hierarchical process injection and system-file spoofing (diskpart.exe).",
+       "kind": "bullet",
+       "skills": [
+        "dynamic-analysis",
+        "procmon",
+        "process-explorer",
+        "regshot",
+        "digital-forensics"
+       ],
+       "properNouns": [
+        "Procmon",
+        "Process Explorer",
+        "Regshot"
+       ]
+      },
+      {
+       "text": "Mapped the complete attack lifecycle by analyzing .WNCRY file encryption behaviors and specific registry modifications used to establish system persistence.",
+       "kind": "bullet",
+       "skills": [
+        "malware-analysis",
+        "registry-analysis"
+       ],
+       "properNouns": [
+        ".WNCRY"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Personal Portfolio Web Application",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected a responsive web application utilizing the Next.js 15 App Router, React 19, and TypeScript, configuring strict Static Site Generation (SSG) protocols for zero-dependency cloud-edge deployments.",
+       "kind": "bullet",
+       "skills": [
+        "nextjs",
+        "react",
+        "typescript",
+        "static-site-generation"
+       ],
+       "metrics": [
+        "15",
+        "19",
+        "zero-dependency"
+       ]
+      },
+      {
+       "text": "Engineered a custom dark/light theme toggle mechanism via inline script injection, completely preventing Flash of Unstyled Content (FOUC) and hydration mismatches during client-side rendering.",
+       "kind": "bullet",
+       "skills": [
+        "client-side-rendering",
+        "web-development"
+       ]
+      },
+      {
+       "text": "Designed a modern UI/UX with Tailwind CSS and reusable Shadcn UI components, leveraging GPU-accelerated pure CSS keyframes to ensure 60fps rendering for complex micro-interactions.",
+       "kind": "bullet",
+       "skills": [
+        "tailwind-css",
+        "shadcn/ui",
+        "css",
+        "user-interface-design"
+       ],
+       "metrics": [
+        "60fps"
+       ],
+       "properNouns": [
+        "Shadcn UI"
+       ]
+      },
+      {
+       "text": "Structured type-safe data models to dynamically map 10+ diverse engineering projects and interactive timelines into a responsive grid layout.",
+       "kind": "bullet",
+       "skills": [
+        "data-modeling",
+        "responsive-web-design"
+       ],
+       "metrics": [
+        "10+"
+       ]
+      },
+      {
+       "text": "Implemented technical SEO best practices (Next.js Metadata API, OpenGraph) and semantic a11y standards, managing continuous deployment workflows via Git and GitHub.",
+       "kind": "bullet",
+       "skills": [
+        "search-engine-optimization",
+        "web-accessibility",
+        "git",
+        "github",
+        "continuous-deployment"
+       ],
+       "properNouns": [
+        "OpenGraph",
+        "Git",
+        "GitHub"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Dynamic Logistics Routing & Optimization Modeling",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Formulated MILP models to resolve dynamic vehicle capacity constraints and complex logistics bottlenecks.",
+       "kind": "bullet",
+       "skills": [
+        "mixed-integer-linear-programming",
+        "optimization",
+        "vehicle-routing"
+       ]
+      },
+      {
+       "text": "Processed 3000+ rows of operational datasets utilizing Python and Pyomo, deploying Gurobi solvers.",
+       "kind": "bullet",
+       "skills": [
+        "python",
+        "pyomo",
+        "gurobi",
+        "data-processing"
+       ],
+       "metrics": [
+        "3000+"
+       ],
+       "properNouns": [
+        "Pyomo",
+        "Gurobi"
+       ]
+      },
+      {
+       "text": "Optimized fleet utilization and route planning algorithms, significantly reducing simulated computation times.",
+       "kind": "bullet",
+       "skills": [
+        "optimization",
+        "route-planning",
+        "algorithms"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Multiplayer Pacman Game",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Developed an event-driven, 5-player multiplayer arcade game utilizing Unity and C#.",
+       "kind": "bullet",
+       "skills": [
+        "unity",
+        "csharp",
+        "event-driven-programming"
+       ],
+       "metrics": [
+        "5-player"
+       ],
+       "properNouns": [
+        "Unity"
+       ]
+      },
+      {
+       "text": "Implemented Photon Unity Networking (PUN) to orchestrate client-server state synchronization, utilizing RPCs (Remote Procedure Calls) for precise player movement tracking.",
+       "kind": "bullet",
+       "skills": [
+        "photon-unity-networking",
+        "remote-procedure-call",
+        "client-server-architecture"
+       ],
+       "properNouns": [
+        "Photon Unity Networking"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Assembly Car Game (Low-Level Programming)",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Engineered a logic control simulation utilizing 8086 Assembly, executed on the Emu8086 emulator.",
+       "kind": "bullet",
+       "skills": [
+        "x86-assembly",
+        "emu8086"
+       ],
+       "metrics": [
+        "8086"
+       ],
+       "properNouns": [
+        "Emu8086"
+       ]
+      },
+      {
+       "text": "Manipulated BIOS interrupts and managed register-level memory for direct VGA graphics rendering.",
+       "kind": "bullet",
+       "skills": [
+        "bios",
+        "memory-management",
+        "vga"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Solar System 3D Web Model",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Architected an interactive 3D simulation of the Solar System utilizing JavaScript, WebGL, and Three.js.",
+       "kind": "bullet",
+       "skills": [
+        "javascript",
+        "webgl",
+        "three.js"
+       ],
+       "metrics": [
+        "3D"
+       ],
+       "properNouns": [
+        "Solar System"
+       ]
+      },
+      {
+       "text": "Implemented complex orbital mechanics to accurately model planetary motion.",
+       "kind": "bullet",
+       "skills": [
+        "orbital-mechanics"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "DNS & Mail Server Administration",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Deployed secure network services on a Linux server environment, configuring firewall and routing rules.",
+       "kind": "bullet",
+       "skills": [
+        "linux",
+        "firewall",
+        "network-routing",
+        "system-administration"
+       ],
+       "properNouns": [
+        "Linux"
+       ]
+      },
+      {
+       "text": "Managed DNS infrastructure by establishing precise zone files and routing records (A, MX, CNAME, TXT).",
+       "kind": "bullet",
+       "skills": [
+        "dns",
+        "system-administration"
+       ]
+      },
+      {
+       "text": "Configured a mail server ecosystem, implementing SPF, DKIM, and DMARC authentication protocols.",
+       "kind": "bullet",
+       "skills": [
+        "mail-server-administration",
+        "spf",
+        "dkim",
+        "dmarc"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Syllabus Creator App",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Engineered a robust desktop scheduling application utilizing Java and JavaFX, enforcing strict Object-Oriented Programming (OOP) principles and the MVC design pattern.",
+       "kind": "bullet",
+       "skills": [
+        "java",
+        "javafx",
+        "object-oriented-programming",
+        "model-view-controller"
+       ],
+       "properNouns": [
+        "JavaFX"
+       ]
+      },
+      {
+       "text": "Implemented a custom algorithm to prevent overlapping courses across multi-user configuration profiles.",
+       "kind": "bullet",
+       "skills": [
+        "algorithms"
+       ]
+      },
+      {
+       "text": "Designed an intuitive GUI featuring dynamic data binding and robust local data persistence methodologies.",
+       "kind": "bullet",
+       "skills": [
+        "graphical-user-interface",
+        "data-binding",
+        "data-persistence"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Research Paper: Healthcare Sentiment Analysis via Advanced NLP",
+     "minAtoms": 2,
+     "atoms": [
+      {
+       "text": "Co-authored an NLP research paper published in \"Yapay Zekâ Tabanlı Sistemler: Teori, Uygulama ve Gelecek Perspektifleri-2\" (BİDGE Yayınları), processing 12,600+ patient reviews via NHS and RateMDs APIs.",
+       "kind": "bullet",
+       "skills": [
+        "natural-language-processing",
+        "api-integration",
+        "sentiment-analysis"
+       ],
+       "metrics": [
+        "12,600+"
+       ],
+       "properNouns": [
+        "Yapay Zekâ Tabanlı Sistemler: Teori, Uygulama ve Gelecek Perspektifleri-2",
+        "BİDGE Yayınları",
+        "NHS",
+        "RateMDs"
+       ]
+      },
+      {
+       "text": "Mitigated model bias and resolved imbalanced data challenges by implementing rigorous undersampling techniques to generate a perfectly balanced training corpus.",
+       "kind": "bullet",
+       "skills": [
+        "undersampling",
+        "data-preprocessing",
+        "machine-learning"
+       ]
+      },
+      {
+       "text": "Architected a comprehensive benchmark comparing Machine Learning (SVM, XGBoost, CatBoost), Deep Learning (1D CNN, textRNN, textGCN), and Transformer LLMs (RoBERTa, DistilBERT).",
+       "kind": "bullet",
+       "skills": [
+        "support-vector-machine",
+        "xgboost",
+        "catboost",
+        "convolutional-neural-networks",
+        "textrnn",
+        "textgcn",
+        "roberta",
+        "distilbert"
+       ],
+       "metrics": [
+        "1D"
+       ],
+       "properNouns": [
+        "XGBoost",
+        "CatBoost",
+        "RoBERTa",
+        "DistilBERT"
+       ]
+      },
+      {
+       "text": "Evaluated architectural scalability across dynamic train-test splits (70/30 and 80/20), tracking Accuracy, F1-Score, Precision, and Recall metrics.",
+       "kind": "bullet",
+       "skills": [
+        "machine-learning-evaluation"
+       ],
+       "metrics": [
+        "70/30",
+        "80/20"
+       ]
+      },
+      {
+       "text": "Achieved a peak classification accuracy of 76% and 75% F1-Score utilizing RoBERTa, while diagnosing and documenting critical overfitting tendencies in conventional CNN/RNN models.",
+       "kind": "bullet",
+       "skills": [
+        "roberta",
+        "convolutional-neural-networks",
+        "recurrent-neural-networks",
+        "model-evaluation"
+       ],
+       "metrics": [
+        "76%",
+        "75%"
+       ],
+       "properNouns": [
+        "RoBERTa"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "skills",
+   "title": "Tech Stack",
+   "layout": "inline_list",
+   "entries": [
+    {
+     "title": "Programming Languages",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Programming Languages: Java, Python, TypeScript, JavaScript, C#, SQL, DAX, M (Power Query), C, Assembly (8086)",
+       "kind": "skill",
+       "skills": [
+        "java",
+        "python",
+        "typescript",
+        "javascript",
+        "csharp",
+        "sql",
+        "dax",
+        "power-query",
+        "c",
+        "x86-assembly"
+       ],
+       "metrics": [
+        "8086"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Backend & Microservices",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Backend & Microservices: Spring Boot, Spring Cloud (Gateway, Eureka), OpenFeign, RESTful APIs, Flask, FastAPI, Spring Data JPA, Hibernate, JWT, DTO, MVC",
+       "kind": "skill",
+       "skills": [
+        "spring-boot",
+        "spring-cloud",
+        "spring-cloud-gateway",
+        "netflix-eureka",
+        "openfeign",
+        "rest",
+        "flask",
+        "fastapi",
+        "spring-data-jpa",
+        "hibernate",
+        "json-web-token",
+        "data-transfer-object",
+        "model-view-controller"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Frontend & Web Technologies",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Frontend & Web Technologies: React, Next.js (App Router), Tailwind CSS, Vite, WebSockets, Shadcn UI, Three.js, WebGL",
+       "kind": "skill",
+       "skills": [
+        "react",
+        "nextjs",
+        "tailwind-css",
+        "vite",
+        "websocket",
+        "shadcn/ui",
+        "three.js",
+        "webgl"
+       ],
+       "properNouns": [
+        "Shadcn UI"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Data Engineering, BI & Optimization",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Data Engineering, BI & Optimization: Microsoft Fabric, Power BI, SAP BW, SQL Server, ETL Pipelines, Gurobi, Pyomo, MILP",
+       "kind": "skill",
+       "skills": [
+        "microsoft-fabric",
+        "powerbi",
+        "sap-bw",
+        "mssql",
+        "etl",
+        "gurobi",
+        "pyomo",
+        "mixed-integer-linear-programming"
+       ],
+       "properNouns": [
+        "Microsoft Fabric",
+        "Power BI",
+        "SAP BW",
+        "SQL Server",
+        "Gurobi",
+        "Pyomo"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "AI, ML & Computer Vision",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "AI, ML & Computer Vision: PyTorch, TensorFlow, LLMs (T5, ALBERT, RoBERTa), YOLOv8, ResNet, Generative AI (Stable Diffusion, Qwen, ComfyUI, LoRA), NLP (NLTK), OpenCV",
+       "kind": "skill",
+       "skills": [
+        "pytorch",
+        "tensorflow",
+        "large-language-models",
+        "t5",
+        "albert",
+        "roberta",
+        "yolov8",
+        "resnet",
+        "generative-artificial-intelligence",
+        "stable-diffusion",
+        "qwen",
+        "comfyui",
+        "lora",
+        "natural-language-processing",
+        "nltk",
+        "opencv"
+       ],
+       "properNouns": [
+        "PyTorch",
+        "TensorFlow",
+        "ALBERT",
+        "RoBERTa",
+        "YOLOv8",
+        "Stable Diffusion",
+        "Qwen",
+        "ComfyUI",
+        "NLTK",
+        "OpenCV"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Cybersecurity & System Admin",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Cybersecurity & System Admin: Malware Analysis, REMnux, Wireshark, INetSim, Sysinternals (Procmon, Regshot), PEStudio, Linux, DNS/Mail Security (SPF, DKIM, DMARC)",
+       "kind": "skill",
+       "skills": [
+        "malware-analysis",
+        "remnux",
+        "wireshark",
+        "inetsim",
+        "sysinternals",
+        "procmon",
+        "regshot",
+        "pestudio",
+        "linux",
+        "dns",
+        "spf",
+        "dkim",
+        "dmarc"
+       ],
+       "properNouns": [
+        "REMnux",
+        "Wireshark",
+        "INetSim",
+        "Sysinternals",
+        "Procmon",
+        "Regshot",
+        "PEStudio",
+        "Linux"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "DevOps, Databases & Tools",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "DevOps, Databases & Tools: Docker, Docker Compose, Git, GitHub, MySQL, PostgreSQL, Swagger (OpenAPI), Postman, SoapUI, Jira, Bugzilla, Unity, Roboflow",
+       "kind": "skill",
+       "skills": [
+        "docker",
+        "docker-compose",
+        "git",
+        "github",
+        "mysql",
+        "postgres",
+        "swagger",
+        "openapi",
+        "postman",
+        "soapui",
+        "jira",
+        "bugzilla",
+        "unity",
+        "roboflow"
+       ],
+       "properNouns": [
+        "Docker",
+        "Docker Compose",
+        "Git",
+        "GitHub",
+        "MySQL",
+        "PostgreSQL",
+        "Postman",
+        "SoapUI",
+        "Jira",
+        "Bugzilla",
+        "Unity",
+        "Roboflow"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "languages",
+   "title": "Languages",
+   "layout": "inline_list",
+   "entries": [
+    {
+     "title": "Turkish",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "Turkish: Native",
+       "kind": "language"
+      }
+     ]
+    },
+    {
+     "title": "English",
+     "minAtoms": 1,
+     "atoms": [
+      {
+       "text": "English: B2",
+       "kind": "language",
+       "metrics": [
+        "B2"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+We are looking for Senior Software Engineers experienced in Java language to join our team in the exciting field Development in community. If you are passionate about in Big Data technologies and have a strong background in Java development, we want to hear from you!
+
+Technical Qualifications:
+Candidate must have BSc degree in Computer Engineering or relevant field
+Graduated engineering departments (industry, electrical electronics, electronics and communications, computers, telecommunications, computer science)
+At least 5 years of hands-on software development experience in Java, Java EE
+At least 3 -year experience in Spring Framework (such as Spring Boot, Spring MVC, Spring Core)
+Knowledge of professional software engineering practices & best practices for full software development life cycle, including coding standards, code reviews, code check tools, source control management, continuous delivery, testing and operations
+Comprehensive knowledge of web-based applications and REST services experience with Spring Framework experience with Agile frameworks (Scrum, Kanban)
+Knowledge on OOP, Design Patterns, Test Driven Development and Unit Testing
+Good command of English is required.
