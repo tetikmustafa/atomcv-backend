@@ -71,6 +71,28 @@ class TexTextExtractor implements TextExtractor {
     /** A command with no argument at all, a line break among them. */
     private static final Pattern BARE_COMMAND = Pattern.compile("\\\\\\\\|\\\\[a-zA-Z@]++\\*?");
 
+    /**
+     * The join between two arguments of the same command, where the second one
+     * begins a new field rather than continuing the first.
+     *
+     * <p>{@link #COMMAND_KEEPING_ARGUMENT} unwraps one argument, so a command
+     * written with four leaves three brace groups standing side by side, and
+     * stripping the braces then runs them together with nothing between. A real
+     * upload produced <em>Computer Engineering | GPA: 3.212022 -- 2026</em>
+     * from {@code \resumeSubheading{Marmara University}{Istanbul, Turkiye}
+     * {Computer Engineering | GPA: 3.21}{2022 -- 2026}} — a grade and a date
+     * range welded into one number, which is the shape of a fact nobody can
+     * check.
+     *
+     * <p>The lookahead is what keeps a Tech Stack row intact. The reference
+     * template writes a labelled line as {@code \textbf{Programming Languages}
+     * {: Java, Python}}, where the second group is the <em>continuation</em> of
+     * the first and a separator would put a space before the colon. Punctuation
+     * says "still the same sentence"; anything else says "next field".
+     */
+    private static final Pattern ADJACENT_ARGUMENTS =
+            Pattern.compile("\\}\\s*+\\{(?=[^:;,.!?)\\]}])");
+
     /** What LaTeX escapes, put back as the character a reader sees. */
     private static final Pattern ESCAPED_CHARACTER = Pattern.compile("\\\\([%$&#_{}])");
 
@@ -112,6 +134,9 @@ class TexTextExtractor implements TextExtractor {
         text = COMMAND_KEEPING_ARGUMENT.matcher(text).replaceAll("$2");
         text = COMMAND_KEEPING_ARGUMENT.matcher(text).replaceAll("$2");
         text = BARE_COMMAND.matcher(text).replaceAll("\n");
+        // Before the braces go: once they are gone there is nothing left to say
+        // where one argument ended and the next began.
+        text = ADJACENT_ARGUMENTS.matcher(text).replaceAll("}\n{");
         text = ESCAPED_CHARACTER.matcher(text).replaceAll("$1");
         text = text.replace("{", "").replace("}", "").replace("~", " ");
         text = TRAILING_SPACE.matcher(text).replaceAll("");
