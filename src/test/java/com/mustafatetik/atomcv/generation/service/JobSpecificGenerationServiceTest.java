@@ -17,7 +17,12 @@ import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter;
+import com.mustafatetik.atomcv.generation.rewrite.AboutSynthesisService;
+import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteIssue;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteOutcome;
 import com.mustafatetik.atomcv.generation.rewrite.RewritePhase;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
@@ -91,7 +96,8 @@ class JobSpecificGenerationServiceTest {
         renderCosts = mock(RenderCostService.class);
         pipeline = mock(GenerationPipeline.class);
         rewrites = mock(RewritePhase.class);
-        when(rewrites.rewrite(any(), any(), any(), any())).thenReturn(RewrittenContent.none());
+        when(rewrites.rewrite(any(), any(), any(), any()))
+                .thenReturn(RewriteOutcome.of(RewrittenContent.none()));
         letters = mock(CoverLetterWriter.class);
         service = new JobSpecificGenerationService(profiles, assembler, tags, analysis,
                 relevance, renderCosts, rewrites, letters, pipeline);
@@ -111,12 +117,12 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
-        verify(analysis, never()).analyse(anyString(), anyBoolean(), anyString(), any());
+        verify(analysis, never()).analyse(anyString(), anyBoolean(), anyString(), any(), any());
     }
 
     /**
@@ -127,11 +133,11 @@ class JobSpecificGenerationServiceTest {
     @Test
     void anunreadablePostingCostsNoCompilation() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
@@ -150,7 +156,7 @@ class JobSpecificGenerationServiceTest {
         ProfileTree tree = aprofileWithOneBullet();
         UUID atomId = tree.sections().get(0).entries().get(0).atoms().get(0).atom().getId();
         when(assembler.load(ref)).thenReturn(tree);
-        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any())).thenReturn(new RelevanceScores(
                 List.of(new ScoredAtom(atomId, 0.77, 0.5,
@@ -159,7 +165,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
@@ -175,13 +181,35 @@ class JobSpecificGenerationServiceTest {
     @Test
     void thepromptBucketIsTheUser() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(user(), POSTING, true, null, null, false, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, true, null, null, false, ProgressSink.NONE, null);
 
-        verify(analysis).analyse(POSTING, true, USER.toString(), USER);
+        verify(analysis).analyse(POSTING, true, USER.toString(), USER, null);
+    }
+
+    /**
+     * Bolum 27.5's {@code llm_invocations.job_id}. The column existed and
+     * nothing wrote it, so tying a billed call to the work that caused it meant
+     * matching timestamps to the millisecond — which is how a four-page CV was
+     * found to have been paid for twice with one job row to show for it. Faz A
+     * is the first call a generation makes and the cheapest place to prove the
+     * id travels at all.
+     */
+    @Test
+    void thejobIsCarriedIntoTheCallsItPaysFor() {
+        var jobId = java.util.UUID.randomUUID();
+        when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
+                .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
+                        0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
+
+        service.generateForJob(user(), POSTING, true, null, null, false,
+                ProgressSink.NONE, jobId);
+
+        verify(analysis).analyse(POSTING, true, USER.toString(), USER, jobId);
     }
 
     private static UserContext user() {
@@ -199,14 +227,14 @@ class JobSpecificGenerationServiceTest {
     void thepipelineIsHandedAFazDThatKnowsThisPosting() {
         ProfileTree tree = aprofileWithOneBullet();
         when(assembler.load(ref)).thenReturn(tree);
-        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
         verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
@@ -222,6 +250,67 @@ class JobSpecificGenerationServiceTest {
     }
 
     /**
+     * <strong>Duzeltme (Bolum 53.3).</strong> A prompt version belongs in the
+     * record when a request went out under it, and the record used to be keyed
+     * off whether Faz D had <em>changed</em> anything: a generation whose only
+     * accepted answer was the About paragraph recorded {@code bullet_rewrite}
+     * as having run, and a pass where both prompts ran and every answer was
+     * refused recorded neither. Both readings send whoever is chasing a
+     * regression to the wrong prompt.
+     */
+    @Test
+    void onlyThePromptsThatActuallyMadeACallAreRecorded() {
+        aGenerationThatRunsFazD(new RewriteOutcome(RewrittenContent.none(),
+                new RewriteTally(Map.of(AboutSynthesisService.PROMPT_ID, 1), Map.of(), 0)));
+
+        var made = service.generateForJob(
+                user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+
+        assertThat(made.orElseThrow().promptVersions())
+                .containsKey(AboutSynthesisService.PROMPT_ID)
+                .doesNotContainKey(BulletRewriteService.PROMPT_ID);
+    }
+
+    /**
+     * And a pass that called and was refused every time is recorded as having
+     * run. It changed nothing, which is exactly the state that used to leave no
+     * trace of the prompt that produced it.
+     */
+    @Test
+    void apromptThatRanAndWasRefusedIsStillRecordedAsHavingRun() {
+        aGenerationThatRunsFazD(new RewriteOutcome(RewrittenContent.none(),
+                new RewriteTally(Map.of(BulletRewriteService.PROMPT_ID, 2),
+                        Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 2), 0)));
+
+        var made = service.generateForJob(
+                user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+
+        assertThat(made.orElseThrow().promptVersions())
+                .containsKey(BulletRewriteService.PROMPT_ID);
+        assertThat(made.orElseThrow().rewriteTally().refusals())
+                .containsEntry(RewriteIssue.UNSUPPORTED_CLAIM, 2);
+    }
+
+    /** Everything up to the pipeline, with the pipeline actually calling Faz D. */
+    private void aGenerationThatRunsFazD(RewriteOutcome outcome) {
+        when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
+                .thenReturn(Result.ok(posting()));
+        when(relevance.scoreAgainst(any(), any(), any()))
+                .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
+        when(rewrites.rewrite(any(), any(), any(), any())).thenReturn(outcome);
+        when(rewrites.promptVersionFor(any())).thenReturn("v1");
+        when(rewrites.aboutPromptVersionFor(any())).thenReturn("v1");
+        when(pipeline.run(any(), any(), any(), any(), any(), any())).thenAnswer(call -> {
+            ContentRewriter rewriter = call.getArgument(3);
+            rewriter.rewrite(new SelectionState(List.of(), List.of(),
+                    new SelectionState.BudgetBreakdown(600, 100, 500, 300)),
+                    RewrittenContent.none());
+            return Result.ok(aDocument());
+        });
+    }
+
+    /**
      * <strong>Design principle 5, as a default.</strong> A covering letter is
      * a second LLM call, and most people asking for a CV want a CV. Nobody
      * pays for one they did not ask for.
@@ -230,9 +319,9 @@ class JobSpecificGenerationServiceTest {
     void nocoverLetterIsWrittenUnlessItWasAskedFor() {
         aGenerationThatReachesThePipeline();
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
-        verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any());
+        verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -243,18 +332,18 @@ class JobSpecificGenerationServiceTest {
     @Test
     void acoverLetterIsWrittenWhenItWasAskedForAndNeverFailsTheCv() {
         aGenerationThatReachesThePipeline();
-        when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any(), any()))
+        when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(null);
 
-        service.generateForJob(user(), POSTING, false, null, null, true, ProgressSink.NONE);
+        service.generateForJob(user(), POSTING, false, null, null, true, ProgressSink.NONE, null);
 
-        verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any());
+        verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     /** Everything up to the pipeline's door, so the letter is the only variable. */
     private void aGenerationThatReachesThePipeline() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
-        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any()))
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
         when(relevance.scoreAgainst(any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));

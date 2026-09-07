@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
@@ -99,7 +100,7 @@ public class GenerationJobHandler implements JobHandler {
                 : generations.generateForJob(
                         user, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
-                        progress);
+                        progress, job.getId());
 
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
@@ -195,10 +196,7 @@ public class GenerationJobHandler implements JobHandler {
      *
      * <p>A and E are absent rather than guessed at: nothing times them today,
      * and a trace carrying a zero would read as "instant" instead of as
-     * "unmeasured". They arrive when the phases are instrumented. D carries
-     * only its count for now — {@code RewrittenContent} keeps the accepted
-     * rewrites and not the refused ones, so Bolum 14.6's {@code rejectReasons}
-     * needs a tally threaded out of the rewrite services first.
+     * "unmeasured". They arrive when the phases are instrumented.
      *
      * <p>C carries its budget, which Bolum 14.6 does not ask for. It is here
      * because the abridged version could not answer the one question it gets
@@ -226,8 +224,20 @@ public class GenerationJobHandler implements JobHandler {
         // A and E are absent to avoid. What separates the two cases is B:
         // `weights` reads "general-mode" where there was no posting at all, and
         // names a weight set where there was one and nothing came back.
+        RewriteTally rewrites = generated.rewriteTally();
         Map<String, Object> phaseD = new LinkedHashMap<>();
         phaseD.put("rewritten", generated.document().rewrittenAtoms());
+        // Bolum 14.6's rejectReasons, and the two counts it takes to read them.
+        // `rewritten: 0` on its own has four causes with four different fixes —
+        // nothing was a candidate, nothing came back, everything came back and
+        // was refused, or the phase never ran at all — and the page looks the
+        // same in all four. `calls` separates the first two from the last two
+        // and `rejectReasons` separates those; `unreachable` is the provider
+        // chain's share, which is not a prompt problem and must not be counted
+        // as one.
+        phaseD.put("calls", rewrites.callsByPrompt());
+        phaseD.put("rejectReasons", rejectReasons(rewrites));
+        phaseD.put("unreachable", rewrites.unreachable());
 
         Map<String, Object> phaseF = new LinkedHashMap<>();
         phaseF.put("pageCount", generated.document().pageCount());
@@ -260,6 +270,24 @@ public class GenerationJobHandler implements JobHandler {
                 counts.put(reason.name(), (int) tally);
             }
         }
+        return counts;
+    }
+
+    /**
+     * How many refusals each of Bolum 21.6's issues accounts for.
+     *
+     * <p>{@link RewriteTally} already holds these in an {@code EnumMap}, so the
+     * order is the enum's and not the answers' — the same determinism Faz C's
+     * reasons are walked for, and for the same reason: this lands in a JSONB
+     * column and two runs of one input must store one trace.
+     *
+     * <p>One attempt can appear under several issues. A rewrite that was both
+     * too long and short a number is one refusal and two reasons, and the
+     * question this answers is "what is going wrong", not "how many times".
+     */
+    private static Map<String, Integer> rejectReasons(RewriteTally tally) {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        tally.refusals().forEach((issue, count) -> counts.put(issue.name(), count));
         return counts;
     }
 

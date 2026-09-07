@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import java.util.Collections;
@@ -27,6 +28,11 @@ import java.util.UUID;
  * @param promptVersions the versions that actually ran, which under an A/B
  *                       experiment is not the same as the configured defaults
  *                       (Bolum 53.3)
+ * @param rewriteTally   what Faz D called and what it refused (Bolum 14.6).
+ *                       Carried here rather than on {@link GeneratedDocument}
+ *                       because the pipeline neither produces it nor has any
+ *                       use for it — it is the rewriter's own record, and the
+ *                       pipeline only knows the rewriter as a function
  * @param coverLetter    Bolum 34's letter, or null — it was not asked for, or
  *                       it was asked for and could not be written honestly.
  *                       The CV is unaffected either way: a person who asked
@@ -43,28 +49,35 @@ public record GeneratedGeneration(
         GenerationOptions options,
         ScoringWeights weights,
         Map<String, String> promptVersions,
+        RewriteTally rewriteTally,
         GeneratedDocument document,
         FitReport fitReport,
         String coverLetter) {
 
-    /** General mode: no posting, no report, and no letter (Bolum 19.4). */
+    /**
+     * General mode: no posting, no report, no letter (Bolum 19.4) — and no Faz
+     * D, which is why the tally is empty rather than absent. Zero calls is a
+     * fact about this run; a missing tally would read as "not instrumented".
+     */
     public GeneratedGeneration(
             UUID profileId, JobAnalysis posting, GenerationOptions options,
             ScoringWeights weights, Map<String, String> promptVersions,
             GeneratedDocument document) {
 
-        this(profileId, posting, options, weights, promptVersions, document, null, null);
+        this(profileId, posting, options, weights, promptVersions,
+                RewriteTally.none(), document, null, null);
     }
 
     /** The same generation, with the letter that was written for it. */
     public GeneratedGeneration withCoverLetter(String letter) {
         return new GeneratedGeneration(profileId, posting, options, weights,
-                promptVersions, document, fitReport, letter);
+                promptVersions, rewriteTally, document, fitReport, letter);
     }
 
     public GeneratedGeneration {
         promptVersions = promptVersions == null
                 ? Map.of()
                 : Collections.unmodifiableMap(new LinkedHashMap<>(promptVersions));
+        rewriteTally = rewriteTally == null ? RewriteTally.none() : rewriteTally;
     }
 }

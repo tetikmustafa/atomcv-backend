@@ -63,22 +63,27 @@ public class AboutSynthesisService {
     }
 
     /**
-     * @return the paragraph to print: synthesised, or the person's own
+     * @return the paragraph to print — synthesised, or the person's own — and
+     *         what it took to decide. {@code about_synthesis} is counted
+     *         separately from {@code bullet_rewrite} because a generation whose
+     *         only call was this one used to record both prompts as having run
      */
-    public RichContent synthesise(AboutCandidate candidate, RewriteContext context) {
+    public RewriteResult synthesise(AboutCandidate candidate, RewriteContext context) {
+        var tally = new TallySheet();
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-            RichContent accepted = attempt(candidate, context);
+            RichContent accepted = attempt(candidate, context, tally);
             if (accepted != null) {
-                return accepted;
+                return new RewriteResult(accepted, tally.sealed());
             }
         }
         log.info("Kept the person's own About for atom {} after {} attempts",
                 candidate.atomId(), ATTEMPTS);
-        return candidate.original();
+        return new RewriteResult(candidate.original(), tally.sealed());
     }
 
     /** @return the accepted paragraph, or null when this attempt did not pass */
-    private RichContent attempt(AboutCandidate candidate, RewriteContext context) {
+    private RichContent attempt(AboutCandidate candidate, RewriteContext context,
+            TallySheet tally) {
         Prompt prompt = prompts.load(PROMPT_ID,
                 prompts.selectVersion(PROMPT_ID, context.bucketKey()));
         FencedPrompt fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -88,14 +93,17 @@ public class AboutSynthesisService {
                 .replace(LANGUAGE, context.language())
                 .replace(TONE, context.tone());
 
+        tally.called(PROMPT_ID);
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
                 fenced.userPromptFor(fencedData(candidate)),
-                prompt.schema(), SynthesisedAbout.class, ModelTier.MID, TIMEOUT, context.userId()));
+                prompt.schema(), SynthesisedAbout.class, ModelTier.MID, TIMEOUT,
+                context.userId(), context.jobId()));
 
         if (answer instanceof Result.Err<LlmResponse<SynthesisedAbout>>) {
             // An outage is not a failed synthesis, but the answer is the same:
             // the person's paragraph stands and the generation carries on.
+            tally.unreachable();
             return null;
         }
         String text = answer.orElseThrow().data().text();
@@ -104,6 +112,7 @@ public class AboutSynthesisService {
                 AboutValidator.validate(candidate, text, context.postingSkills());
         if (!issues.isEmpty()) {
             log.info("An About for atom {} was refused: {}", candidate.atomId(), issues);
+            tally.refused(issues);
             return null;
         }
         // No emphasis: a summary that bolds its way through four technologies
