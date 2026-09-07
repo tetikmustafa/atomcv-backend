@@ -250,6 +250,76 @@ class ProfileWriterIT extends AbstractIntegrationTest {
                 .isEqualTo((short) 2);
     }
 
+    /**
+     * <strong>A summary hangs off its section, not off an entry.</strong>
+     * Extraction has to put every atom somewhere and the shape it is given has
+     * only entries, so it invents a title for the one it makes — a real import
+     * produced {@code Professional Summary} and the renderer printed it as a
+     * heading above the paragraph. The document it was read from has no such
+     * line, so the page carried a heading nobody wrote and paid an entry
+     * heading's 21 pt for it.
+     */
+    @Test
+    void asummaryIsWrittenUnderItsSectionAndNotUnderAnInventedHeading() {
+        var profile = writer.write(user, cvWithASummaryAndALanguage(), false);
+
+        assertThat(entryCountIn(profile.getId(), "about"))
+                .as("no entry, so no title to invent")
+                .isZero();
+        assertThat(looseAtomCountIn(profile.getId(), "about"))
+                .as("both paragraphs, straight under the heading")
+                .isEqualTo(2);
+    }
+
+    /** And renumbered as one run, so two paragraphs do not share position 0. */
+    @Test
+    void thesummarysParagraphsAreNumberedAsOneRun() {
+        var profile = writer.write(user, cvWithASummaryAndALanguage(), false);
+
+        assertThat(jdbc.queryForList(
+                "SELECT a.display_order FROM atoms a JOIN sections s ON s.id = a.section_id "
+                        + "WHERE a.profile_id = ? AND s.kind = 'about' "
+                        + "ORDER BY a.display_order",
+                Short.class, profile.getId()))
+                .containsExactly((short) 0, (short) 1);
+    }
+
+    /**
+     * Bolum 33.4: a language is a label and a level, which is the row a skills
+     * matrix is made of. Set as entries it printed the label twice — a heading
+     * reading {@code English} above a bullet reading {@code English: B2}.
+     */
+    @Test
+    void skillsAndLanguagesAreSetAsInlineLists() {
+        var profile = writer.write(user, cvWithASummaryAndALanguage(), false);
+
+        assertThat(layoutOf(profile.getId(), "skills")).isEqualTo("inline_list");
+        assertThat(layoutOf(profile.getId(), "languages")).isEqualTo("inline_list");
+        assertThat(layoutOf(profile.getId(), "experience")).isEqualTo("bullet_list");
+    }
+
+    private String layoutOf(UUID profileId, String kind) {
+        return jdbc.queryForObject(
+                "SELECT layout FROM sections WHERE profile_id = ? AND kind = ?",
+                String.class, profileId, kind);
+    }
+
+    private int entryCountIn(UUID profileId, String kind) {
+        Integer rows = jdbc.queryForObject(
+                "SELECT count(*) FROM entries e JOIN sections s ON s.id = e.section_id "
+                        + "WHERE e.profile_id = ? AND s.kind = ?",
+                Integer.class, profileId, kind);
+        return rows == null ? 0 : rows;
+    }
+
+    private int looseAtomCountIn(UUID profileId, String kind) {
+        Integer rows = jdbc.queryForObject(
+                "SELECT count(*) FROM atoms a JOIN sections s ON s.id = a.section_id "
+                        + "WHERE a.profile_id = ? AND s.kind = ? AND a.entry_id IS NULL",
+                Integer.class, profileId, kind);
+        return rows == null ? 0 : rows;
+    }
+
     private Short minAtomsOf(UUID profileId, String entryTitle) {
         return jdbc.queryForObject(
                 "SELECT min_atoms FROM entries WHERE profile_id = ? AND title = ?",
@@ -297,5 +367,62 @@ class ProfileWriterIT extends AbstractIntegrationTest {
                 new Contact("Ada Lovelace", "ada@example.com", null, null, null, null,
                         "Istanbul"),
                 List.of(experience, skills), List.of());
+    }
+
+    /**
+     * A CV carrying the two kinds whose shape the importer decides — a summary,
+     * and a language. Separate from {@link #cv()} on purpose: that one's row
+     * counts are asserted by name elsewhere in this file, and a shared fixture
+     * that grows breaks tests that are about something else entirely.
+     *
+     * <p>Two summaries, because a person keeping a master CV writes one per
+     * kind of job — and because two is what catches a flattening that leaves
+     * both at position 0.
+     */
+    private static NormalizedProfile cvWithASummaryAndALanguage() {
+        var summary = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Veri hatlari kuran bir muhendis"),
+                RichContent.plain("An engineer who builds data pipelines"),
+                List.of(), List.of(), List.of(), List.of(), (short) 0);
+        var otherSummary = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Backend servisleri yazan bir muhendis"),
+                RichContent.plain("An engineer who writes backend services"),
+                List.of(), List.of(), List.of(), List.of(), (short) 1);
+
+        var about = new NormalizedProfile.NormalizedSection(
+                SectionKind.ABOUT, "Hakkimda", (short) 0,
+                List.of(new NormalizedProfile.NormalizedEntry(
+                        "Professional Summary", "", "", null, null, (short) 0,
+                        List.of(summary, otherSummary))));
+
+        var role = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Servisler yazdim"), RichContent.plain("Wrote services"),
+                List.of("java"), List.of(), List.of(), List.of(), (short) 0);
+        var experience = new NormalizedProfile.NormalizedSection(
+                SectionKind.EXPERIENCE, "Deneyim", (short) 1,
+                List.of(new NormalizedProfile.NormalizedEntry(
+                        "Engineer", "Brisa", "Istanbul",
+                        YearMonth.of(2023, 9), null, (short) 0, List.of(role))));
+
+        var skill = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Python"), RichContent.EMPTY,
+                List.of("python"), List.of(), List.of(), List.of(), (short) 0);
+        var skills = new NormalizedProfile.NormalizedSection(
+                SectionKind.SKILLS, "Beceriler", (short) 2,
+                List.of(new NormalizedProfile.NormalizedEntry(
+                        "Diller", "", "", null, null, (short) 0, List.of(skill))));
+
+        var language = new NormalizedProfile.NormalizedAtom(
+                RichContent.plain("Turkce: Anadil"), RichContent.EMPTY,
+                List.of(), List.of(), List.of(), List.of(), (short) 0);
+        var languages = new NormalizedProfile.NormalizedSection(
+                SectionKind.LANGUAGES, "Diller", (short) 3,
+                List.of(new NormalizedProfile.NormalizedEntry(
+                        "Turkce", "", "", null, null, (short) 0, List.of(language))));
+
+        return new NormalizedProfile("tr",
+                new Contact("Ada Lovelace", "ada@example.com", null, null, null, null,
+                        "Istanbul"),
+                List.of(about, experience, skills, languages), List.of());
     }
 }

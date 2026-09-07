@@ -122,8 +122,69 @@ public class ProfileWriter {
         section.setLayout(layoutFor(normalized.kind()));
         sections.save(target.ref(), section);
 
+        if (hangsOffItsSection(normalized.kind())) {
+            writeSummary(target, section, normalized);
+            return;
+        }
         for (var entry : normalized.entries()) {
             writeEntry(target, section, entry, normalized.kind());
+        }
+    }
+
+    /**
+     * Whether a kind's atoms hang off the section rather than off an entry.
+     *
+     * <p>Shared with {@code EphemeralProfileWriter} for the reason
+     * {@link #atomOf} is: where a section's contents live is a decision about
+     * what a CV means rather than about where it is stored, and two copies
+     * would be two answers on the day one of them learned something. That day
+     * came — the persistent writer learned about layouts, minimums and this,
+     * and an anonymous upload kept producing the shape all three fixed.
+     */
+    static boolean hangsOffItsSection(SectionKind kind) {
+        return kind == SectionKind.ABOUT;
+    }
+
+    /**
+     * A summary hangs off its section, not off an entry (Bolum 20.2).
+     *
+     * <p>Extraction has to put every atom somewhere and the shape it is given
+     * has only entries, so it invents a title for the one it makes — and a real
+     * import produced <em>Professional Summary</em>, which was printed as a
+     * heading above the paragraph. The document it was read from has no such
+     * line: its summary sits straight under the section heading, the way every
+     * CV's does. So the page carried a heading nobody wrote, and paid an entry
+     * heading's 21 pt for it.
+     *
+     * <p>Renumbered as one run. Each entry numbers its own atoms from zero, so
+     * flattening two of them without this would put two atoms at position 0 and
+     * leave the order of the section to whatever the database returned. A person
+     * keeping several summaries — one written towards backend work, one towards
+     * data — wrote them in an order, and only one of them is going to be printed
+     * (see {@code SectionFloor}'s ceiling), so which one is first decides which
+     * one that is.
+     */
+    private void writeSummary(Target target, Section section,
+            NormalizedProfile.NormalizedSection normalized) {
+
+        short order = 0;
+        for (var entry : normalized.entries()) {
+            for (var atom : entry.atoms()) {
+                writeParagraph(target, section, atom, order++);
+            }
+        }
+    }
+
+    private void writeParagraph(Target target, Section section,
+            NormalizedProfile.NormalizedAtom normalized, short order) {
+
+        Atom atom = atomOf(target.profileId(), section, null, normalized, SectionKind.ABOUT);
+        atom.setDisplayOrder(order);
+        atoms.save(target.ref(), atom);
+
+        writeVariant(target, atom, normalized.source(), target.language(), true);
+        if (!normalized.english().isEmpty()) {
+            writeVariant(target, atom, normalized.english(), "en", false);
         }
     }
 
@@ -151,7 +212,7 @@ public class ProfileWriter {
      * single-column for ATS extraction, and choosing it at import would decide
      * that question in the wrong place.
      */
-    private static SectionLayout layoutFor(SectionKind kind) {
+    static SectionLayout layoutFor(SectionKind kind) {
         return switch (kind) {
             case SKILLS, LANGUAGES -> SectionLayout.INLINE_LIST;
             default -> SectionLayout.BULLET_LIST;
@@ -183,7 +244,7 @@ public class ProfileWriter {
      * opening paragraphs on one page. Both were the person's own words and the
      * document still read as a mistake.
      */
-    private static short reachableMinimumFor(SectionKind kind, int atomCount) {
+    static short reachableMinimumFor(SectionKind kind, int atomCount) {
         int wanted = kind == SectionKind.ABOUT ? 1 : Entry.DEFAULT_MIN_ATOMS;
         return (short) Math.min(wanted, atomCount);
     }
