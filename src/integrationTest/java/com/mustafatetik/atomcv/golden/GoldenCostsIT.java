@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.compilation.CompilationProperties;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
@@ -110,9 +111,16 @@ class GoldenCostsIT {
                 Duration.ofSeconds(120)));
         var measurements = new MeasurementService(new LatexDocumentRenderer(), client);
 
+        // The layout each wording is printed in, for the same reason
+        // RenderCostService carries it: an INLINE_LIST row reaches the page
+        // with its label in bold, and a measurement taken on the unbolded text
+        // reports a row narrower than the one that is printed (Bolum 22.4).
+        Map<UUID, SectionLayout> layoutOfAtom = layouts(golden);
         var items = golden.variants().stream()
                 .map(variant -> new MeasurementRequest.MeasurableItem(
-                        variant.getContentHash(), variant.getContent()))
+                        variant.getContentHash(), variant.getContent(),
+                        layoutOfAtom.getOrDefault(
+                                variant.getAtomId(), SectionLayout.BULLET_LIST)))
                 .toList();
 
         Map<String, RenderCost> costs = measurements.measure(
@@ -127,6 +135,21 @@ class GoldenCostsIT {
             }
         }
         return byHash;
+    }
+
+    /** Which layout each atom's section is set in. */
+    private static Map<UUID, SectionLayout> layouts(GoldenProfile golden) {
+        Map<UUID, SectionLayout> bySection = new LinkedHashMap<>();
+        golden.sections().forEach(section ->
+                bySection.put(section.getId(), section.getLayout()));
+        Map<UUID, SectionLayout> byAtom = new LinkedHashMap<>();
+        golden.atoms().forEach(atom -> {
+            SectionLayout layout = bySection.get(atom.getSectionId());
+            if (layout != null) {
+                byAtom.put(atom.getId(), layout);
+            }
+        });
+        return byAtom;
     }
 
     /** Sorted, so a re-recording produces a diff a person can read. */
