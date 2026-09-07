@@ -52,22 +52,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         var out = new StringBuilder(PreambleBuilder.build(request.customization()));
         out.append("\\begin{document}\n");
 
-        RenderRequest.ProfileHeader header = request.header();
-        if (!header.name().isBlank()) {
-            out.append("\\atomcvName{").append(LatexEscaper.escape(header.name())).append("}\n");
-        }
-        if (header.headline() != null && !header.headline().isBlank()) {
-            out.append("\\atomcvContact{")
-                    .append(LatexEscaper.escape(header.headline()))
-                    .append("}\n");
-        }
-        if (!header.contactLines().isEmpty()) {
-            out.append("\\atomcvContact{")
-                    .append(String.join(" $\\cdot$ ", header.contactLines().stream()
-                            .map(LatexDocumentRenderer::contact)
-                            .toList()))
-                    .append("}\n");
-        }
+        header(out, request.header());
 
         for (RenderRequest.RenderableSection section : request.sections()) {
             out.append("\n\\section*{").append(LatexEscaper.escape(section.title())).append("}\n");
@@ -97,19 +82,41 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             // itemize with neither: LaTeX stops at "perhaps a missing \item",
             // and \textwidth would measure content at a width no bullet ever
             // gets (EK D.8.3).
-            // The same environment as the page. A bullet is printed inside
-            // \resumeItemListStart and \linewidth is narrower there than
-            // \textwidth, which is Bolum 22.4's own rule: the preamble, the
-            // width and the environment all match, or the numbers are fiction.
-            // The same content the page will carry, marks and all. An
-            // INLINE_LIST row reaches the page with its label in bold, so it is
-            // measured that way too: \resumeInlineList and \resumeItemListStart
-            // both set their contents at the same \linewidth, and the only
-            // difference between the two that costs points is this one.
+            //
+            // The environment and the width are the same question: \linewidth
+            // is whatever the enclosing lists have left of \textwidth. A bullet
+            // under an entry sits in a list nested inside the section's
+            // sub-heading list, so the indent applies twice — and measuring it
+            // one level up sets it wider than the page ever will, which is
+            // fewer lines, which is a cost below what is printed. It came back
+            // as a CV two pages long.
+            //
+            // \small inside the box, because \resumeItem and \resumeInlineList
+            // both set their contents that way and a measurement taken at the
+            // document's size describes lines a page a fifth taller would hold.
+            //
+            // \raggedright inside the box, because \parbox does not inherit the
+            // paragraph shape it is written in: LaTeX runs \@parboxrestore on
+            // the way in, which sets \rightskip to zero and hands the box back
+            // justified. The page is \raggedright and cannot compress a line;
+            // a justified box can squeeze eighteen interword spaces by a third
+            // each, so a bullet a few points too long measured as one line and
+            // set as two. Forty of them made a one-page promise a two-page PDF
+            // (EK D.8.9) — and it took bold text to show, because only marked
+            // runs pushed the line far enough past \linewidth to matter.
+            boolean nested = item.shape() == CapacityModel.RowShape.ENTRY_BULLET;
+            if (nested) {
+                // The bare \item is not decoration. LaTeX refuses a list opened
+                // inside another before the outer one has an item -- "perhaps a
+                // missing \item" -- and on the page that item is the entry
+                // heading. Here it prints nothing, and what it is for is the
+                // second indent it puts on \linewidth.
+                out.append("\\resumeSubHeadingListStart\n\\item\n");
+            }
             out.append("\\resumeItemListStart\n")
                     .append("\\item\\savebox{").append(BOX)
-                    .append("}{\\parbox{\\linewidth}{")
-                    .append(item.layout() == SectionLayout.INLINE_LIST
+                    .append("}{\\small\\parbox{\\linewidth}{\\raggedright ")
+                    .append(item.shape() == CapacityModel.RowShape.INLINE_ROW_SHAPE
                             ? InlineRow.render(item.content())
                             : LatexInlineRenderer.render(item.content()))
                     .append("}}\\usebox{").append(BOX).append("}\n")
@@ -117,6 +124,9 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                     .append("|\\the\\ht").append(BOX)
                     .append("|\\the\\dp").append(BOX).append("}\n")
                     .append("\\resumeItemListEnd\n");
+            if (nested) {
+                out.append("\\resumeSubHeadingListEnd\n");
+            }
         }
 
         out.append("\\end{document}\n");
@@ -132,6 +142,15 @@ public class LatexDocumentRenderer implements DocumentRenderer {
      * exist, and re-running it is how a change to the template is noticed.
      *
      * <p>Same preamble as everything else, for the same reason.
+     *
+     * <p><strong>And the same nesting, which is the harder half of Bolum 22.4's
+     * third rule.</strong> Every probe below is shaped the way
+     * {@code renderFinal} emits that construct: an entry section opens one
+     * {@code \resumeSubHeadingListStart} and keeps every entry and every bullet
+     * list inside it. Measuring a second entry in a list of its own instead
+     * charges each one a list it never opens — which cost this template
+     * eighty-seven points on a real page, and nothing failed, because
+     * everything measured the same wrong document.
      */
     public RenderedSource renderCalibration(TemplateCustomization customization) {
         return new RenderedSource(PreambleBuilder.build(customization) + """
@@ -139,62 +158,114 @@ public class LatexDocumentRenderer implements DocumentRenderer {
                 \\typeout{CALIB|textheight|\\the\\textheight}
                 \\typeout{CALIB|textwidth|\\the\\textwidth}
                 \\typeout{CALIB|baselineskip|\\the\\baselineskip}
-                \\typeout{CALIB|start|\\the\\pagetotal}
-                \\atomcvName{Probe}
-                \\atomcvContact{Probe}
-                \\atomcvContact{Probe}
-                \\typeout{CALIB|afterHeaderBlock|\\the\\pagetotal}
+                {\\small\\typeout{CALIB|itembaselineskip|\\the\\baselineskip}}
+                \\par\\typeout{CALIB|start|\\the\\pagetotal}
+                \\atomcvHeader{Probe}{Probe \\\\ Probe}
+                \\par\\typeout{CALIB|afterHeaderBlock|\\the\\pagetotal}
                 \\section*{Probe}
-                \\typeout{CALIB|afterSection|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterSection|\\the\\pagetotal}
                 \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
-                \\typeout{CALIB|afterListUnderSection|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterListUnderSection|\\the\\pagetotal}
                 \\section*{Probe}
-                \\typeout{CALIB|beforeThreeUnderSection|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeThreeUnderSection|\\the\\pagetotal}
                 \\resumeItemListStart\\resumeItem{Probe}\\resumeItem{Probe}%
                 \\resumeItem{Probe}\\resumeItemListEnd
-                \\typeout{CALIB|afterThreeUnderSection|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterThreeUnderSection|\\the\\pagetotal}
                 \\section*{Probe}
-                \\typeout{CALIB|afterThirdSection|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeBareEntry|\\the\\pagetotal}
                 \\resumeSubHeadingListStart
                 \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeSubHeadingListEnd
-                \\typeout{CALIB|afterEntry|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterBareEntry|\\the\\pagetotal}
+                \\section*{Probe}
+                \\par\\typeout{CALIB|beforeOneEntry|\\the\\pagetotal}
+                \\resumeSubHeadingListStart
+                \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
-                \\typeout{CALIB|afterOneItem|\\the\\pagetotal}
+                \\resumeSubHeadingListEnd
+                \\par\\typeout{CALIB|afterOneEntry|\\the\\pagetotal}
                 \\section*{Probe}
+                \\par\\typeout{CALIB|beforeTwoEntries|\\the\\pagetotal}
                 \\resumeSubHeadingListStart
                 \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
+                \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
+                \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
+                \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
                 \\resumeSubHeadingListEnd
-                \\typeout{CALIB|beforeThreeItems|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterTwoEntries|\\the\\pagetotal}
+                \\section*{Probe}
+                \\par\\typeout{CALIB|beforeEntryThreeItems|\\the\\pagetotal}
+                \\resumeSubHeadingListStart
+                \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeItemListStart\\resumeItem{Probe}\\resumeItem{Probe}%
                 \\resumeItem{Probe}\\resumeItemListEnd
-                \\typeout{CALIB|afterThreeItems|\\the\\pagetotal}
-                \\section*{Probe}
-                \\typeout{CALIB|afterSecondSection|\\the\\pagetotal}
-                \\resumeSubHeadingListStart
-                \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeSubHeadingListEnd
-                \\typeout{CALIB|afterSecondEntry|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterEntryThreeItems|\\the\\pagetotal}
+                \\section*{Probe}
+                \\par\\typeout{CALIB|beforeOneProject|\\the\\pagetotal}
+                \\resumeSubHeadingListStart
+                \\resumeProjectHeading{Probe}{}
                 \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
-                \\typeout{CALIB|afterSecondList|\\the\\pagetotal}
-                \\resumeSubHeadingListStart
-                \\resumeSubheading{Probe}{Probe}{Probe}{Probe}
                 \\resumeSubHeadingListEnd
-                \\typeout{CALIB|afterEntryFollowingAList|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterOneProject|\\the\\pagetotal}
                 \\section*{Probe}
-                \\typeout{CALIB|beforeInlineOne|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeTwoProjects|\\the\\pagetotal}
+                \\resumeSubHeadingListStart
+                \\resumeProjectHeading{Probe}{}
+                \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
+                \\resumeProjectHeading{Probe}{}
+                \\resumeItemListStart\\resumeItem{Probe}\\resumeItemListEnd
+                \\resumeSubHeadingListEnd
+                \\par\\typeout{CALIB|afterTwoProjects|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeSectionAfterList|\\the\\pagetotal}
+                \\section*{Probe}
+                \\par\\typeout{CALIB|afterSectionAfterList|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeParagraphOne|\\the\\pagetotal}
+                \\resumeParagraphListStart\\resumeItem{Probe}\\resumeParagraphListEnd
+                \\par\\typeout{CALIB|afterParagraphOne|\\the\\pagetotal}
+                \\section*{Probe}
+                \\par\\typeout{CALIB|beforeInlineOne|\\the\\pagetotal}
                 \\resumeInlineList{Probe
                 }
-                \\typeout{CALIB|afterInlineOne|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterInlineOne|\\the\\pagetotal}
                 \\section*{Probe}
-                \\typeout{CALIB|beforeInlineThree|\\the\\pagetotal}
+                \\par\\typeout{CALIB|beforeInlineThree|\\the\\pagetotal}
                 \\resumeInlineList{Probe \\\\
                 Probe \\\\
                 Probe
                 }
-                \\typeout{CALIB|afterInlineThree|\\the\\pagetotal}
+                \\par\\typeout{CALIB|afterInlineThree|\\the\\pagetotal}
                 \\end{document}
                 """);
+    }
+
+    /**
+     * The name, and under it everything that says how to reach the person.
+     *
+     * <p>One centred group rather than three, which is how the reference sets
+     * it: two groups leave a paragraph skip between them that the document it
+     * was taken from does not have. The headline, where the person set one,
+     * takes its own line above the contact fields.
+     *
+     * <p>A profile with no name at all still gets the block. The alternative
+     * is a page whose first line is an email address, and the command's
+     * spacing is what everything below it was measured against.
+     */
+    private static void header(StringBuilder out, RenderRequest.ProfileHeader header) {
+        List<String> lines = new ArrayList<>();
+        if (header.headline() != null && !header.headline().isBlank()) {
+            lines.add(LatexEscaper.escape(header.headline()));
+        }
+        if (!header.contactLines().isEmpty()) {
+            lines.add(String.join(" $\\cdot$ ", header.contactLines().stream()
+                    .map(LatexDocumentRenderer::contact)
+                    .toList()));
+        }
+        out.append("\\atomcvHeader{")
+                .append(LatexEscaper.escape(header.name()))
+                .append("}{")
+                .append(String.join(" \\\\ ", lines))
+                .append("}\n");
     }
 
     /**
@@ -312,6 +383,10 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         for (RenderRequest.RenderableEntry entry : section.entries()) {
             all.addAll(entry.atoms());
         }
+        // A row with nothing left in it is a category the Tech Stack editor
+        // emptied (Bolum 33.4). Printing it would be a bold label, a colon and
+        // a blank, and it would still cost a line.
+        all.removeIf(RichContent::isEmpty);
         if (all.isEmpty()) {
             return;
         }

@@ -17,7 +17,19 @@ import java.util.Locale;
  */
 public enum FontFamily {
 
-    /** Times-like. The default: it is what an ATS has seen a million times. */
+    /**
+     * Computer Modern, which is what a {@code article} sets by default and so
+     * what the reference CV this template was taken from is set in.
+     *
+     * <p>Latin Modern is the OpenType cut of it: the same design and the same
+     * metrics, in the format {@code fontspec} can load. Naming Computer Modern
+     * itself would find nothing, and a font {@code \setmainfont} cannot find
+     * is substituted silently — which makes every stored render cost wrong
+     * without a single error.
+     */
+    MODERN("Latin Modern Roman"),
+
+    /** Times-like. */
     SERIF("TeX Gyre Termes"),
 
     /** Helvetica-like. */

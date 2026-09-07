@@ -136,7 +136,7 @@ class LatexDocumentRendererTest {
 
         String document = renderer.renderFinal(request(TemplateCustomization.CLASSIC)).value();
 
-        assertThat(document).contains("margin=0.60in").doesNotContain("margin=0,60in");
+        assertThat(document).contains("margin=0.50in").doesNotContain("margin=0,50in");
     }
 
     @Test
