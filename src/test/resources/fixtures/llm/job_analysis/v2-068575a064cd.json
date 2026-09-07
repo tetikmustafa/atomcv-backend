@@ -1,0 +1,98 @@
+{
+  "role" : {
+    "title" : "Senior Software Engineer",
+    "seniority" : "senior",
+    "domain" : "Java software development and big data",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Unknown",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "Java EE",
+    "canonical" : "java ee",
+    "importance" : "critical"
+  }, {
+    "name" : "Spring Framework",
+    "canonical" : "spring framework",
+    "importance" : "critical"
+  }, {
+    "name" : "Spring Boot",
+    "canonical" : "spring boot",
+    "importance" : "high"
+  }, {
+    "name" : "Spring MVC",
+    "canonical" : "spring mvc",
+    "importance" : "high"
+  }, {
+    "name" : "Spring Core",
+    "canonical" : "spring core",
+    "importance" : "high"
+  }, {
+    "name" : "REST services",
+    "canonical" : "rest services",
+    "importance" : "high"
+  }, {
+    "name" : "Web-based applications",
+    "canonical" : "web applications",
+    "importance" : "high"
+  }, {
+    "name" : "Object-Oriented Programming (OOP)",
+    "canonical" : "object-oriented programming",
+    "importance" : "high"
+  }, {
+    "name" : "Design Patterns",
+    "canonical" : "design patterns",
+    "importance" : "high"
+  }, {
+    "name" : "Test Driven Development",
+    "canonical" : "test-driven development",
+    "importance" : "high"
+  }, {
+    "name" : "Unit Testing",
+    "canonical" : "unit testing",
+    "importance" : "high"
+  }, {
+    "name" : "Agile frameworks (Scrum, Kanban)",
+    "canonical" : "agile methodologies",
+    "importance" : "high"
+  }, {
+    "name" : "Code reviews",
+    "canonical" : "code review",
+    "importance" : "medium"
+  }, {
+    "name" : "Source control management",
+    "canonical" : "source control management",
+    "importance" : "medium"
+  }, {
+    "name" : "Continuous delivery",
+    "canonical" : "continuous delivery",
+    "importance" : "medium"
+  }, {
+    "name" : "Software testing",
+    "canonical" : "software testing",
+    "importance" : "medium"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Big Data technologies",
+    "canonical" : "big data technologies",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Develop software using Java and Java EE.", "Build web-based applications and REST services with the Spring Framework.", "Apply professional software engineering practices throughout the software development lifecycle, including coding standards, code reviews, source control, continuous delivery, testing, and operations.", "Use object-oriented programming, design patterns, test-driven development, and unit testing.", "Work within Agile frameworks such as Scrum and Kanban.", "Contribute to software development in the big data field." ],
+  "keywords" : [ "Senior Software Engineer", "Java", "Java EE", "Spring Framework", "Spring Boot", "Spring MVC", "Spring Core", "REST services", "web applications", "big data", "object-oriented programming", "design patterns", "test-driven development", "unit testing", "Agile", "Scrum", "Kanban", "continuous delivery", "source control", "code review", "software development lifecycle", "BSc degree" ],
+  "experienceYears" : {
+    "min" : 5,
+    "max" : null
+  },
+  "languageRequirements" : [ "Good command of English" ],
+  "companyTone" : "Professional and enthusiastic, with a direct focus on technical qualifications and engineering practices.",
+  "jdLanguage" : "en",
+  "confidence" : 0.94,
+  "extractionNotes" : [ "The company name, employment type, and work mode are not provided.", "The posting requires at least five years of Java and Java EE development experience.", "A separate minimum of three years of Spring Framework experience is stated.", "A BSc degree in Computer Engineering or a relevant engineering or computer science field is required.", "Big Data technologies are presented as an area of passion rather than a clearly stated hands-on technical requirement, so they are classified as preferred." ]
+}

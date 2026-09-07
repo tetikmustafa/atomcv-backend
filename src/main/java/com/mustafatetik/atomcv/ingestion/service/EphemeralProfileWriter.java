@@ -53,7 +53,27 @@ public class EphemeralProfileWriter {
         for (var section : normalized.sections()) {
             Section row = new Section(profileId, section.kind(),
                     section.title(), section.displayOrder());
+            // The same three decisions the persistent writer makes, from the
+            // same place. An anonymous upload is the same CV read the same way;
+            // it differing here is how it came to print a Languages heading
+            // twice and a summary under a title nobody wrote.
+            row.setLayout(ProfileWriter.layoutFor(section.kind()));
             sections.add(row);
+
+            if (ProfileWriter.hangsOffItsSection(section.kind())) {
+                short order = 0;
+                for (var entry : section.entries()) {
+                    for (var atom : entry.atoms()) {
+                        Atom paragraph = ProfileWriter.atomOf(
+                                profileId, row, null, atom, section.kind());
+                        paragraph.setDisplayOrder(order++);
+                        atoms.add(paragraph);
+                        addVariants(profileId, paragraph, atom, language, variants);
+                    }
+                }
+                continue;
+            }
+
             for (var entry : section.entries()) {
                 Entry entryRow = new Entry(profileId, row.getId(),
                         entry.title(), entry.displayOrder());
@@ -61,6 +81,8 @@ public class EphemeralProfileWriter {
                 entryRow.setLocation(blankToNull(entry.location()));
                 entryRow.setStartDate(ProfileWriter.firstOfMonth(entry.start()));
                 entryRow.setEndDate(ProfileWriter.firstOfMonth(entry.end()));
+                entryRow.setMinAtoms(ProfileWriter.reachableMinimumFor(
+                        section.kind(), entry.atoms().size()));
                 entries.add(entryRow);
                 for (var atom : entry.atoms()) {
                     addAtom(profileId, row, entryRow, atom, section.kind(), language,
@@ -84,6 +106,13 @@ public class EphemeralProfileWriter {
 
         Atom atom = ProfileWriter.atomOf(profileId, section, entry, normalized, kind);
         atoms.add(atom);
+        addVariants(profileId, atom, normalized, language, variants);
+    }
+
+    private static void addVariants(UUID profileId, Atom atom,
+            NormalizedProfile.NormalizedAtom normalized, String language,
+            List<AtomVariant> variants) {
+
         variants.add(ProfileWriter.variantOf(profileId, atom,
                 normalized.source(), language, true));
         if (!normalized.english().isEmpty()) {
