@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.render.RenderPhase;
+import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
+import com.mustafatetik.atomcv.generation.rewrite.TechStackEditor;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScorer;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.ScorableAtomFactory;
@@ -142,6 +144,45 @@ class GoldenMasterCvTest {
                 .allSatisfy(label -> assertThat(known).contains(label));
     }
 
+    /**
+     * <strong>And every row is cut to the posting.</strong>
+     *
+     * <p>The master profile's Tech Stack is four pages' worth of everything
+     * this person has ever touched — malware analysis tooling, Power Query,
+     * 8086 assembly — against a Java posting. Printing it whole is the
+     * complaint this filter exists for: a list of things rather than an answer
+     * to the advertisement.
+     *
+     * <p>What may stay is the pair Bolum 33.4 allows, and nothing else: an item
+     * the posting named, or one the rest of the page already talks about. The
+     * check is written that way round — for each item printed, why — so an item
+     * kept for a third reason nobody has thought of fails it.
+     */
+    @Test
+    void everyTechStackItemIsEitherAskedForOrAlreadyOnThePage() {
+        List<String> items = itemsOn(sectionOf("Tech Stack"));
+        String rest = plainTextOf(page.replace(sectionOf("Tech Stack"), ""));
+
+        assertThat(items).isNotEmpty();
+        for (String item : items) {
+            assertThat(askedFor(item) || rest.toLowerCase(Locale.ROOT)
+                    .contains(bareName(item).toLowerCase(Locale.ROOT)))
+                    .as("%s is on the page because the posting asked for it,"
+                            + " or because the rest of the page says it", item)
+                    .isTrue();
+        }
+    }
+
+    /**
+     * And the section is smaller than the profile's, which is the whole point:
+     * a filter that filtered nothing would pass every other check here.
+     */
+    @Test
+    void thepageCarriesFewerTechnologiesThanTheProfileDoes() {
+        assertThat(itemsOn(sectionOf("Tech Stack")).size())
+                .isLessThan(techStackItemsInTheProfile().size());
+    }
+
     /** And Languages is the same row shape, which is why it shares the layout. */
     @Test
     void alanguageIsALabelAndALevel() {
@@ -256,9 +297,23 @@ class GoldenMasterCvTest {
         return SelectionPhase.select(built.request()).orElseThrow();
     }
 
+    /**
+     * Faz D's one deterministic half, and the only part of it this test can
+     * run: the Tech Stack cut to the posting (Bolum 33.4). The rewrites need a
+     * model and are absent here, which is what {@code RewrittenContent}'s
+     * "absent means original" rule is for.
+     */
+    private static RewrittenContent techStackCutToThePosting(SelectionState state) {
+        var context = RewriteContext.of(POSTING, PROFILE.profile().getSelfDescription(),
+                "en", Tone.FORMAL, "golden");
+        return RewrittenContent.none()
+                .and(TechStackEditor.edit(PROFILE.tree(), state, context));
+    }
+
     private static String render() {
-        var request = RenderPhase.build(PROFILE.profile(), PROFILE.tree(), select(),
-                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
+        SelectionState state = select();
+        var request = RenderPhase.build(PROFILE.profile(), PROFILE.tree(), state,
+                techStackCutToThePosting(state), TemplateCustomization.CLASSIC, Locale.ENGLISH);
         String document = new LatexDocumentRenderer().renderFinal(request).value();
         return document.substring(document.indexOf("\\begin{document}"));
     }
@@ -272,6 +327,10 @@ class GoldenMasterCvTest {
     private static final Pattern COMMAND = Pattern.compile("\\\\[a-zA-Z@]+\\*?|[{}\\\\]");
 
     private String sectionOf(String title) {
+        return sectionOf(page, title);
+    }
+
+    private static String sectionOf(String page, String title) {
         int start = page.indexOf("\\section*{" + title + "}\n");
         assertThat(start).as("the page carries a %s section", title).isNotNegative();
         start += ("\\section*{" + title + "}\n").length();
@@ -340,6 +399,69 @@ class GoldenMasterCvTest {
                                     .ifPresent(labels::add)));
                 });
         return labels;
+    }
+
+    /**
+     * The technologies one inline block lists, label aside — split on the
+     * commas between items and not on the commas inside a parenthetical, which
+     * is the rule the editor itself splits by.
+     */
+    private static List<String> itemsOn(String block) {
+        List<String> items = new ArrayList<>();
+        for (String row : rowsIn(block)) {
+            String tail = unescape(row.substring(row.indexOf("}{: ") + "}{: ".length(),
+                    row.lastIndexOf('}')));
+            int depth = 0;
+            var item = new StringBuilder();
+            for (char letter : tail.toCharArray()) {
+                if (letter == '(') {
+                    depth++;
+                } else if (letter == ')' && depth > 0) {
+                    depth--;
+                } else if (letter == ',' && depth == 0) {
+                    items.add(item.toString().strip());
+                    item.setLength(0);
+                    continue;
+                }
+                item.append(letter);
+            }
+            items.add(item.toString().strip());
+        }
+        return items.stream().filter(item -> !item.isBlank()).toList();
+    }
+
+    private static List<String> techStackItemsInTheProfile() {
+        return itemsOn(sectionOf(rendered(PROFILE), "Tech Stack"));
+    }
+
+    /** Everything in the profile's Tech Stack, printed without a posting. */
+    private static String rendered(GoldenProfile profile) {
+        SelectionState state = select();
+        var request = RenderPhase.build(profile.profile(), profile.tree(), state,
+                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH);
+        String document = new LatexDocumentRenderer().renderFinal(request).value();
+        return document.substring(document.indexOf("\\begin{document}"));
+    }
+
+    /** Whether the posting named this technology, under the shared rule. */
+    private static boolean askedFor(String item) {
+        Set<String> asked = new LinkedHashSet<>();
+        POSTING.requiredSkills().forEach(skill -> asked.add(
+                com.mustafatetik.atomcv.shared.text.SkillNames.canonical(
+                        skill.canonical().isBlank() ? skill.name() : skill.canonical())));
+        POSTING.preferredSkills().forEach(skill -> asked.add(
+                com.mustafatetik.atomcv.shared.text.SkillNames.canonical(
+                        skill.canonical().isBlank() ? skill.name() : skill.canonical())));
+        return asked.contains(
+                        com.mustafatetik.atomcv.shared.text.SkillNames.canonical(item))
+                || asked.contains(
+                        com.mustafatetik.atomcv.shared.text.SkillNames.canonical(bareName(item)));
+    }
+
+    /** The item without the qualification it carries in brackets. */
+    private static String bareName(String item) {
+        int bracket = item.indexOf('(');
+        return bracket > 0 ? item.substring(0, bracket).strip() : item;
     }
 
     private static java.util.Optional<String> labelOf(String row) {

@@ -82,6 +82,16 @@ public class RewritePhase {
             return RewriteOutcome.of(carried);
         }
 
+        // Bolum 33.4, and it costs nothing: the Tech Stack is cut to the
+        // posting by reading it, not by asking. Done before the fan-out so
+        // that a row already trimmed on the previous attempt is carried
+        // rather than trimmed again, on the same terms as a rewrite.
+        Map<UUID, RichContent> stack = TechStackEditor.edit(tree, selection, context);
+        RewrittenContent sofar = carried.and(stack);
+        if (!stack.isEmpty()) {
+            log.info("Faz D: {} Tech Stack rows cut to the posting", stack.size());
+        }
+
         RewritePlan plan = RewritePlanner.plan(tree, selection);
         List<Task> todo = new ArrayList<>();
         for (RewriteCandidate candidate : plan.candidates()) {
@@ -100,13 +110,13 @@ public class RewritePhase {
                         () -> about.synthesise(candidate, context))));
 
         if (todo.isEmpty()) {
-            return RewriteOutcome.of(carried);
+            return RewriteOutcome.of(sofar);
         }
         log.info("Faz D: {} tasks={} (already rewritten {})",
                 plan.shape(), todo.size(), carried.byAtom().size());
 
         Pass pass = runAll(todo);
-        return new RewriteOutcome(carried.and(pass.accepted()), pass.tally());
+        return new RewriteOutcome(sofar.and(pass.accepted()), pass.tally());
     }
 
     /** One thing to ask a model for, and what stands if the answer does not. */
