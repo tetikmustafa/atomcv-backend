@@ -990,3 +990,12 @@ erişilebilir ad ikisini virgülle birleştiriyor.
 **Ve aynı ölçüm `F-025`'i çıkardı:** bir satırda `companyName` `"not
 specified"`. Boş dize kuralının tutmadığı, modelin kendi yazdığı bir yer
 tutucu.
+
+## Taşınan ACK notları (2026-09-07, dosya sınırı)
+
+**`B-062`-`B-070`'in dokuzu da kapandı** (2026-08-29/30).
+
+**`B-070`'i uygularken telde `F-025` açıldı:** `companyName` bir satırda
+`"not specified"` geliyor — `""` değil, yani "boş dize hiç dönmez" kuralı onu
+tutmuyor ve ekranda bir şey söylüyormuş gibi duran bir etiket üretiyor.
+İstemcide çözmek yer tutucu kara listesi demek olurdu; oraya girilmedi.

@@ -180,7 +180,13 @@ True here and nowhere in the architecture documents; each cost a debugging round
   sign-in mail to the internet instead of Mailpit, and `TURNSTILE_SECRET_KEY`
   made every `POST /auth/magic-link` a 403. `application-local.yml` now reads
   both from `LOCAL_*` names; **add any new production secret there the same
-  way.**
+  way.** A third is not a secret and is worse: `.env` sets `LLM_CHAIN_CHEAP`
+  and `LLM_CHAIN_MID` to `openrouter`, and an environment variable outranks
+  `application-local-fake.yml`'s `chain: [fake]`. So **`make dev` calls a real
+  provider and spends real money**, whatever the profile is called — measured,
+  not inferred: a `local-fake` import ran a 127-second OpenRouter call. Until
+  that is fixed, `unset LLM_CHAIN_CHEAP LLM_CHAIN_MID` before any run that is
+  supposed to be free.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner.** The source
   encoding is pinned in `build.gradle.kts`; do not remove it.
 - **`Set.copyOf` / `Map.copyOf` iterate in an order salted per JVM run** — three

@@ -12,8 +12,8 @@
 
 ## Aşama 2'den taşınan açık kutular
 
-- **Axiom'da loglar görünüyor** — dataset açık, `.env` dolu (2026-08-26); telde
-  doğrulanması üretim dağıtımını bekliyor.
+- **Axiom'da loglar görünüyor** — dataset açık (2026-08-26); telde doğrulanması
+  üretim dağıtımını bekliyor.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
   demeli (§ 9) — frontend'in işi.
 - **§ 44.3'ün limiter'ı hâlâ yok** — 3.3'ünki **girişe** bağlı; § 44.3 ağır
@@ -36,19 +36,15 @@
   id'si sessizlikten kötü. Golden'daki "her atom ya seçilir ya bir sebep alır"
   sayımının başlık-adaylarını dışlamasının sebebi bu.
 - **`SelectionPhase.openEntries` `LinkedHashSet` olmak zorunda.** `HashSet` iken
-  `upgradeFirstEntryOf` "ilk ulaştığını" ücretlendiriyor ve iterasyon JVM başına
-  tuzlandığı için bir kaldırmanın iadesi koşudan koşuya değişiyordu.
-  **İterasyon sırası bir sayıya dönüşüyorsa `Linked*` gerekiyor.**
+  bir kaldırmanın iadesi koşudan koşuya değişiyordu. **İterasyon sırası bir
+  sayıya dönüşüyorsa `Linked*` gerekiyor.**
 
 **Geliştiricide:** fiyat tablosu (**o güne kadar günlük bütçe freni ölü** —
 fiyatsız model sıfır ediyor), VPS kurulumu, restore testi.
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
-Kayıtları `archive/stage-3-handoff-answers.md`'de, kalıcı kararları orada
-adlandırılan spec bölümlerinde. Burada yalnız **canlı** olanlar:
-
-**Tamir etmeye kalkma — üçü de bilinçli:**
+Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok.**
   `ExtractionWarningCode` kapalı ve altı değeri de düzeltilebilir bir alanı
   tarif ediyor; § 31.6'nın üçüncü kuralı **silindi**. Yedincisi gerçekten
@@ -63,82 +59,86 @@ adlandırılan spec bölümlerinde. Burada yalnız **canlı** olanlar:
 
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
-Tam kayıt `archive/stage-3-slice-14.md`'de; kalıcı kararlar
-`spec/05-pipeline-a-c.md` § 18.4.1 ve `spec/07-subsystems.md` § 34.4.2'de.
-Burada yalnız **canlı** olanlar:
-
-**Tamir etmeye kalkma:**
+Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
 - **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş**
   (`synthetic-631`); gerçek olan iki tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
 - **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
 - **`cover_letter` prompt'u eski cümleyi taşıyor** — `v2` model seçimini
   bekliyor. (`job_analysis` v2 dilim H'de indi.)
 
-**Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi var:**
-`postgresql` 42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59. Hepsi Trivy'nin
-düşürdüğü CVE'ler için; Boot'un BOM'u yetişince **kaldırılmalı**.
-
-**Ders — bir muhafızın yanlış pozitifini aramanın en ucuz yeri `fixtures/llm/`.**
+**Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi:** `postgresql`
+42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59; Boot'un BOM'u yetişince gider.
 
 ## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
 
-Dört bulgu, **yedi** ayrı kusur; dilim A-G'nin tam kaydı
-`archive/stage-3-post-closure-e2e.md`'de. Bulgular kusurlarla eşleşmedi:
-"eksik Tech Stack" render sanılıyordu Faz C çıktı; iki uydurma cümle Faz D
-sanılıyordu, ikisi de çıkarımdan geliyordu. Dilim F Klasik şablonunu indirdi
-ve drift'i kapatan **`ITEM_LINE`'ın bir ölçüm artefaktı olduğunu görmek** oldu;
-dilim G ölçümün kendisini indirdi (`job_id`, TEI parçalama, `RewriteTally`,
-`local-record`'un kaynak dosyası).
+Dört bulgu, yedi ayrı kusur; dilim A-G'nin tam kaydı
+`archive/stage-3-post-closure-e2e.md`'de, **dilim K'nınki de orada**.
 
-**Geliştiricide:** fiyat tablosu (**o güne kadar günlük bütçe freni ölü**),
-VPS kurulumu, restore testi.
+**Geliştiricide:** fiyat tablosu (**o güne kadar günlük bütçe freni ölü** — ve
+dilim K bunu telde gördü: `openai/gpt-5.6-sol` fiyatsız, iki gerçek çağrı
+`cost_usd = 0` yazdı), VPS kurulumu, restore testi.
 
-## Kapanış sonrası · dilim I-J-H — sayfanın şekli (2026-09-07)
+## Kapanış sonrası · dilim I-J-H ve K — sayfanın şekli (2026-09-07)
 
-Tek sayfada altı bölüm, ilana göre doldurulmuş. Üçü de ölçüme dayalı.
+Tam kayıt `archive/stage-3-post-closure-shape.md`'de; kalıcı kararlar
+`spec/05-pipeline-a-c.md` § 18.4 ve § 20, `spec/07-subsystems.md` § 31.3.1 ve
+§ 33.4.1, `spec/06-pipeline-d-g.md` § 21.2 ve § 22.4.1'de. Burada yalnız
+**canlı** olanlar:
 
-**Sapma — § 20 seçimi saf bütçe yarışı diye tarif ediyor, o bir CV üretmiyor.**
-Ölçülen koşu sayfaya yirmi atom koydu, yirmisi de Projects'ten: deneyim yok,
-yetenek yok, özet yok — her biri "hangi atom puan başına daha değerli"nin doğru
-cevabıydı. **`SectionFloor`** her türe önce taban ayırıyor (About 1 paragraf ·
-Education 1 · Experience 2×2 · Projects 2×3 · Tech Stack 3 · Languages 2 =
-**576/708pt**), kalan **132pt** ilana göre yarışıyor. Sıra sabit, seçimde ve
-sayfada aynı. **Taban bir tavandır, talep değil:** profilde yoksa basılmaz,
-eksikse ne varsa girer. About'un ayrıca *tavanı* var — bir CV bir özet.
-
-**Düzeltme — `inline_list` maliyeti.** Renderer Tech Stack'i tek blokta düz
-satır basarken Faz C her satıra entry mobilyası yazıyordu: **35.43pt**, beş
-satırda **169.55pt**, sayfanın dörtte biri. Prob hiç yoktu; artık
-`LatexCalibrationIT` ölçüyor ve cevap "kendi sabiti gerekmiyor".
-
-**Düzeltme — § 18.4'ün `no_responsibilities`'i kalktı.** Gerçek ilanların çoğu
-başlıksız nitelik listesi; ölçülen ilan 0.92 güven ve 20 yetenekle reddedildi.
-`job_analysis` **v2** sorumlulukları metinde ne varsa ondan türetiyor; yetenek
-kuralı sıkı kaldı (`postingSkills` § 21.6'nın sözlüğü). İş tarif etmeyen metin
-zaten `LOW_CONFIDENCE`; ikisi aynı ilanı iki kez reddediyordu. `B-072`.
-
-**Ekleme — üç import kararı ikinci yazıcıyla paylaşıldı:** `layoutFor`
-(Languages da `INLINE_LIST`, `V6`), `reachableMinimumFor` (About entry'si 1,
-`V7`), `hangsOffItsSection` (özet bölüme asılır, `V8` — uydurulan "Professional
-Summary" başlığı gitti). `EphemeralProfileWriter` üçünü de kaçırmıştı.
-
-**Tamir etmeye kalkma — testlerin öğrettiği üçü:**
-- **`improveBySwapping()` tabanı yerleştirir yerleştirmez takas ediyordu.**
-  `reservedByFloor` ayrı bir küme: `forcedByLock` "kullanıcı seçti" demek ve
-  `pinnedCostPt` onu sayar; taban kullanıcının seçimi değil.
-- **Golden, tabanın bir entry'yi 3'lük asgarisinin 2'siyle açtığını yakaladı**
-  (§ 20.3). Entry artık açılmadan önce fiyatlanıyor.
-- **Taban "nerede" değil "ne kadar" demeli.** İlk hali About ve Languages'ı
-  serbest atom sanıyordu; gerçek profil ikisini de entry'de tutuyor.
+**Tamir etmeye kalkma — hepsi bilinçli:**
+- **`SectionFloor` bir tavandır, talep değil.** Profilde yoksa basılmaz;
+  About'un ayrıca *tavanı* var (bir CV bir özet). Sert taban sığmazsa sayfa
+  limiti kazanır ve en alttaki düşer — ölçülen sayfada olmuyor, kendi testi var.
+- **`reservedByFloor` `forcedByLock`'tan ayrı bir küme.** Lock kullanıcının
+  seçimi ve `pinnedCostPt` onu sayar; taban belgenin şeklini koruması.
+- **Bir inline satırın öğeleri **ve** etiketi sade diziliyor**, işaretleri ne
+  derse desin: kalın etiket zaten vurgunun kendisi, ve çıkarım her öğesi
+  teknoloji olan bir listenin %70'ini işaretliyor. Karar render'da, içerikte
+  değil — `contentHash` düz metin üzerinden hesaplandığı için işaretleyerek
+  kalın yapmak ölçülmüş maliyeti **geçersizleştirmezdi**.
+- **`PARAGRAPH` `INLINE_LIST`'e katlanmadı.** İkisi de etiketsiz liste açıyor,
+  ama inline satırın ilk iki noktası kalın diziliyor. Geometri aynı, o yüzden
+  şablon sürümü **yükselmedi** ve hiçbir maliyet geçersizleşmedi.
+- **Maddelerdeki `emphasis` italik kalıyor.** Referans belge teknolojileri
+  **kalın** yazıyor; çıkarım hepsini `EMPHASIS` veriyor (§ 31.5.1) ve § 22.3
+  `emphasis → 	extit` diyor. Şablonda çevirmek bütün ölçümleri yeniden ister.
+  **Karar spec'in.**
 
 **Canlı kalanlar:**
-- **Aynı 4-sayfa belge iki kez faturalandı**, tek `profile_extract` satırı var;
-  `job_id` indiği için bir sonraki tekrar kendini gösterir.
-- **Faz D eşikleri ölçüldü, ikisi de doğru çıktı:** bir profilde en yüksek skor
-  0.3577 (Faz D koşmadı), diğerinde 0.4313 (koştu). § 21.2'nin sayıları profile
-  göre kenarda; **ayarlamak yeni ölçüm ister**, karar spec'in.
-- **Altı bölümün *sert* tabanı sığmazsa sayfa limiti kazanır**, en alttaki
-  düşer. Ölçülen sayfada olmuyor (386/708pt); kendi testi var.
+- **`.env`'in `LLM_CHAIN_*`'i `application-local-fake.yml`'i eziyor.** Ortam
+  değişkeni profil YAML'ının üstünde, `make dev` .env'i export ediyor, yani
+  `chain: [fake]` hiç uygulanmıyor ve **`make dev` gerçek, ücretli çağrı
+  yapıyor**. Ölçüldü: bir `local-fake` içe aktarımı 127 saniyelik bir OpenRouter
+  çağrısı koştu. `CLAUDE.md`'ye yazıldı; kalıcı çözüm ya `.env`'den çıkarmak ya
+  da fake profilinde o adları okumamak.
+- **`headline` içe aktarımın alanı değil**, `PUT /profile`'ın. `mode=replace`
+  onu korumakta haklı; ölçülen koşuda İngilizce bir CV'nin üstünde çıkan Türkçe
+  unvan `DevSeeder`'dan kalmaydı, elle boşaltıldı. Kusur değil.
+- **`.tex` fixture'ı ulaşılamaz oldu.** Bitişik-argüman düzeltmesi çıkarılan
+  metni değiştirdi; `v1-75f61110da11` anahtarı bir daha tutmayacak.
+- **Faz D eşikleri ölçüldü:** en yüksek atom skoru 0.3577-0.4313, § 21.2'nin
+  tabanı 0.40. **Ayarlamak yeni ölçüm ister**, karar spec'in.
+- **`to-frontend.md` 100 satırı aşıyor** ve sebebi arşivleme değil: `B-071`,
+  `B-072` ve `B-073` ACK bekliyor.
+- **`about_synthesis` bu ilanda her seferinde reddediliyor** — iki gerçek
+  deneme, ikisi de `UNSUPPORTED_CLAIM`, sonra kişinin kendi paragrafı basılıyor.
+  Ölçüldü: dört makul özetin üçü düşüyor. İkisi **yanlış pozitif** —
+  `OOP` reddediliyor, oysa sayfanın becerilerinde `object-oriented-programming`
+  var (`TDD` yalnız orijinal paragrafta harfleri geçtiği için geçiyor); `Scrum`
+  ve `Kanban` reddediliyor, çünkü `RewriteContext.canonical()` ilanın
+  `name`'ini ("Agile frameworks (Scrum, Kanban)") atıp yalnız `canonical`'ı
+  ("agile methodologies") taşıyor. Üçüncüsü **doğru davranış**: sayfada olmayan
+  bir ilan becerisini (`unit testing`) anmak § 21.7'nin yasakladığı şey.
+  Kısaltmanın yeri `introducedNames`'in kaynak listesi: metni harfiyen arıyor,
+  kanonikleştirmiyor. **Güvenli yönde düşüyor** ama her üretimde iki çağrı boşa
+  gidiyor; **P3 muhafızını değiştirmek kendi dilimini istiyor.**
+
+**Ders — golden fixture yazılmaz, okunur.** `master_cv_en` beş elle yazılmış
+profilin taşımadığını taşıyor: **ilanla ilgisi olmayan çok fazla içerik.** İlk
+koşusunda Faz C'de belirlenimsizlik yakaladı — `SectionFloor` eşit puanlı iki
+entry'yi **UUID sırasıyla** seçiyordu, ve on dört tarihsiz proje genel modda tam
+olarak eşit puanlı: aynı CV iki kez okununca iki farklı sayfa (İlke 2). Sıra
+artık sözcüklemenin özetinden.
 
 ---
 
@@ -195,6 +195,6 @@ söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değ
 
 ---
 
-Sekiz dilimin kaydı **`kapanis-denetimi.md` § 6**'da. Oradan çıkan tek kural
+Sekiz dilimin kaydı **`kapanis-denetimi.md` § 6**'da; oradan çıkan tek kural
 § 51.7'de: *bir muhafızın düştüğünü görmeden yazıldı sayma.* Dilim 14, kapanış
-sonrası A, G ve J'de yine gerekti — J'de üç kez.
+sonrası A, G, J ve K'de yine gerekti.
