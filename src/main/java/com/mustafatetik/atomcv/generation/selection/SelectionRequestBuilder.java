@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
+import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
 import com.mustafatetik.atomcv.profile.domain.Tone;
@@ -144,10 +145,18 @@ public final class SelectionRequestBuilder {
             }
 
             if (!loose.isEmpty() || !entries.isEmpty()) {
+                SectionKind kind = section.section().getKind();
                 sections.add(new SectionPlan(section.section().getId(),
-                        section.section().isAlwaysInclude(), entries, loose));
+                        section.section().isAlwaysInclude(),
+                        SectionFloor.priorityOf(kind), SectionFloor.forKind(kind),
+                        entries, loose));
             }
         }
+
+        // The order the page is built and printed in (SectionFloor). A stable
+        // sort, so two sections the order does not name keep the profile's own
+        // arrangement between them rather than swapping run to run.
+        sections.sort(Comparator.comparingInt(SectionPlan::priority));
 
         return new BuiltRequest(
                 new SelectionRequest(sections, maxPages, capacity),

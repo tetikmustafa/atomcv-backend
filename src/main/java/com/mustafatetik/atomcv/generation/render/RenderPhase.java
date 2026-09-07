@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.render;
 
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
+import com.mustafatetik.atomcv.generation.selection.SectionFloor;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Contact;
@@ -18,6 +19,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -80,7 +82,7 @@ public final class RenderPhase {
         Set<UUID> openedWithoutAtoms = Set.copyOf(selection.headerOnlyEntries());
 
         List<RenderRequest.RenderableSection> sections = new ArrayList<>();
-        for (SectionNode section : tree.sections()) {
+        for (SectionNode section : inReadingOrder(tree)) {
             List<RichContent> loose = contentOf(section.atoms(), chosenVariant, rewrites);
 
             List<RenderRequest.RenderableEntry> entries = new ArrayList<>();
@@ -107,6 +109,27 @@ public final class RenderPhase {
         }
 
         return new RenderRequest(header(profile, language), sections, customization, language);
+    }
+
+    /**
+     * The order a reader expects, not the order the import happened to write
+     * ({@link SectionFloor#priorityOf}).
+     *
+     * <p>Faz C already builds the page in this order, and printing it in
+     * another would be two answers to one question — the section a floor put
+     * first appearing fourth. {@code sections.display_order} stays what it is:
+     * it is the profile's own arrangement, it is what the editor shows, and
+     * making it the CV's order too is a feature that belongs to the person
+     * rather than to whichever import wrote the column.
+     *
+     * <p>Stable, so two sections the order does not name — a "Certifications",
+     * a "Publications" — keep the profile's arrangement between themselves.
+     */
+    private static List<SectionNode> inReadingOrder(ProfileTree tree) {
+        List<SectionNode> ordered = new ArrayList<>(tree.sections());
+        ordered.sort(Comparator.comparingInt(
+                section -> SectionFloor.priorityOf(section.section().getKind())));
+        return ordered;
     }
 
     private static RenderRequest.ProfileHeader header(Profile profile, Locale language) {
