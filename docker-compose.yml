@@ -77,16 +77,13 @@ services:
     # posting -- a bullet is tens of tokens, not thousands -- so the default is
     # sized for a workload this system does not have.
     #
-    # --max-client-batch-size is a workaround and should not stay one. TEI
-    # allows 32 per request by default and EmbeddingService sends a profile's
-    # atoms in a single call, so an 84-atom profile came back 413 "batch size
-    # 84 > maximum allowed batch size 32". Every profile larger than 32 atoms
-    # has therefore never embedded against a real TEI; the 28-atom one that
-    # used to be here fitted under the limit and hid it. The client is what
-    # needs to chunk -- raising a server limit only moves where it breaks.
+    # --max-client-batch-size is deliberately NOT raised. It was, briefly, to
+    # get past a 413 on an 84-atom profile; the client chunks now
+    # (EmbeddingProperties.batchSize, 32 to match this default), so the server
+    # keeps its own limit and a client that forgets to divide is caught here
+    # rather than in production.
     command: ["--model-id", "BAAI/bge-m3", "--port", "8081",
-              "--max-batch-tokens", "2048",
-              "--max-client-batch-size", "512"]
+              "--max-batch-tokens", "2048"]
     ports: ["8081:8081"]
     # The weights outlive the container. Without this every `docker compose
     # down` costs the 2.5 GB download again.

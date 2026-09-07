@@ -76,21 +76,42 @@ public class TeiEmbeddingProvider implements EmbeddingProvider {
         return embedBatch(List.of(text)).get(0);
     }
 
+    /**
+     * In chunks, because the server has a limit and the caller does not know it.
+     *
+     * <p>A profile's atoms used to go in a single request. TEI allows 32 per
+     * call by default and answers {@code 413} above it, so an 84-atom import
+     * failed outright — and every profile bigger than 32 atoms had therefore
+     * never been embedded against a real server. Raising the server's limit
+     * only moves where this breaks; the client is what has to divide the work.
+     *
+     * <p>Sequential rather than parallel. This runs on the import queue, not in
+     * front of anyone, and CPU inference is the cost — several concurrent
+     * requests would queue inside the same container and buy nothing.
+     */
     @Override
     public List<float[]> embedBatch(List<String> texts) {
         if (texts.isEmpty()) {
             return List.of();
         }
+        int limit = properties.batchSize();
+        var vectors = new java.util.ArrayList<float[]>(texts.size());
+        for (int from = 0; from < texts.size(); from += limit) {
+            vectors.addAll(embedChunk(texts.subList(from, Math.min(from + limit, texts.size()))));
+        }
+        log.debug("Embedded {} texts in {} requests", texts.size(),
+                (texts.size() + limit - 1) / limit);
+        return List.copyOf(vectors);
+    }
+
+    private List<float[]> embedChunk(List<String> chunk) {
         var body = json.createObjectNode();
-        body.set("inputs", json.valueToTree(texts));
+        body.set("inputs", json.valueToTree(chunk));
         // TEI truncates rather than refusing: a long bullet should embed its
         // beginning, not fail the batch it happened to be in.
         body.put("truncate", true);
 
-        var response = send(body.toString());
-        var vectors = parse(response, texts.size());
-        log.debug("Embedded {} texts", texts.size());
-        return vectors;
+        return parse(send(body.toString()), chunk.size());
     }
 
     private String send(String requestBody) {
