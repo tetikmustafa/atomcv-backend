@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.profile.domain.content.Mark;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
+import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.util.List;
@@ -177,16 +178,43 @@ class SectionShapeTest {
 
         String measurement = renderer.renderMeasurement(new MeasurementRequest(
                 List.of(new MeasurementRequest.MeasurableItem(
-                                "inline", row, SectionLayout.INLINE_LIST),
+                                "inline", row, CapacityModel.RowShape.INLINE_ROW_SHAPE),
                         new MeasurementRequest.MeasurableItem(
-                                "bullet", row, SectionLayout.BULLET_LIST)),
+                                "bullet", row, CapacityModel.RowShape.ENTRY_BULLET)),
                 TemplateCustomization.CLASSIC)).value();
 
         assertThat(measurement)
-                .contains("\\parbox{\\linewidth}{\\textbf{Programming Languages}"
+                .contains("\\parbox{\\linewidth}{\\raggedright \\textbf{Programming Languages}"
                         + "{: Java, Python, SQL}}")
-                .as("every other layout is measured as the plain text it prints")
-                .contains("\\parbox{\\linewidth}{Programming Languages: Java, Python, SQL}");
+                .as("every other shape is measured as the plain text it prints")
+                .contains("\\parbox{\\linewidth}{\\raggedright "
+                        + "Programming Languages: Java, Python, SQL}");
+    }
+
+    /**
+     * The measurement box breaks its lines the way the page breaks them.
+     *
+     * <p>{@code \parbox} does not inherit the paragraph shape around it: LaTeX
+     * runs {@code \@parboxrestore} on the way in, which sets {@code \rightskip}
+     * to zero and hands back a <em>justified</em> box. The page is
+     * {@code \raggedright}, and the difference is not cosmetic — a justified
+     * line may shrink eighteen interword spaces by a third each to avoid
+     * breaking, and a ragged one may not. A bullet a few points too long was
+     * measured at one line and set at two; forty of them turned a one-page
+     * promise into a two-page PDF.
+     */
+    @Test
+    void themeasurementBoxBreaksItsLinesTheWayThePageDoes() {
+        String measurement = renderer.renderMeasurement(new MeasurementRequest(
+                List.of(new MeasurementRequest.MeasurableItem("bullet", SUMMARY)),
+                TemplateCustomization.CLASSIC)).value();
+
+        assertThat(measurement)
+                .as("the box is ragged-right, like the page")
+                .contains("\\parbox{\\linewidth}{\\raggedright ");
+        assertThat(renderer.renderCalibration(TemplateCustomization.CLASSIC).value())
+                .as("and the page it is calibrated against says so in the preamble")
+                .contains("\\raggedright");
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
