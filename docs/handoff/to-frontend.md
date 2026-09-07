@@ -12,6 +12,24 @@
 
 ## OPEN
 
+### B-074 · `classic` başka bir belge gibi görünüyor — önizlemesi varsa yenilenmeli
+
+**Since:** commit <bu PR> · kapanış sonrası dilim L · **Spec:**
+`spec/07-subsystems.md` § 33.1
+
+**Ne oldu:** `classic`'in preamble'ı referans CV'nin kendisiyle değiştirildi:
+tipografi Latin Modern (Computer Modern'in OpenType kesimi), maddeler `\small`,
+bölüm başlıkları ve entry'ler referansın negatif aralıklarıyla. Aynı profil
+gözle **belirgin biçimde başka** bir sayfa üretiyor.
+
+**Telde hiçbir şey değişmedi** — `templateId` yine `"classic"`, `pageTextHeightPt`
+yine 722.7, `TemplateCustomization` zaten hiç yayımlanmıyor. Şema kırılmadı,
+istek/yanıt aynı.
+
+**Action:** yalnızca şunu kontrol et — şablon seçicisinde `classic` için
+**istemci tarafında çizilen ya da elde hazırlanmış bir önizleme** varsa artık
+yanlış; yeni bir PDF'ten yenile. Başka bir işi yok, yoksa doğrudan `ACK`.
+
 ### B-073 · `SectionLayout` beşinci değeri aldı: `paragraph`
 
 **Since:** commit <bu PR> · kapanış sonrası dilim K · **Spec:**
