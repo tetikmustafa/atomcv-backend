@@ -28,7 +28,7 @@ LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
 
 **Geliştiricide:** VPS/restore, ve OAuth ile Turnstile'ın gerçek uca karşı denenmesi. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
 
-**Test:** 1244 birim · 457 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1248 birim · 457 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -54,7 +54,7 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de: `B-075` ve `B-076`.** İlki `accessedAt`'i ekrandan kaldırıyor
+**Sıra frontend'de: `B-075`, `B-076`, `B-077`.** İlki `accessedAt`'i ekrandan kaldırıyor
 (yazıcısı yok), ikincisi EK C.1'in sağlayıcı listesini taşıyor — **gizlilik
-politikası yazılabilir**. Model kısıtlanmıyor (2026-09-09); liste yapılandırmadan
-türüyor, `ProcessorAudit` açılışta söylüyor.
+politikası yazılabilir**; üçüncüsü beceri yankısının kanonikleştiğini söylüyor.
+Model kısıtlanmıyor (2026-09-09); liste yapılandırmadan türüyor.

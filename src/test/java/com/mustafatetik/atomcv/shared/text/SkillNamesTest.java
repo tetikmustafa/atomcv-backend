@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -129,5 +130,47 @@ class SkillNamesTest {
     void theDictionaryIsActuallyLoaded() {
         assertThat(SkillNames.aliases()).hasSizeGreaterThan(20);
         assertThat(SkillNames.aliases()).containsEntry("k8s", "kubernetes");
+    }
+
+    /**
+     * A whole list through the rule, which is what both writers of the skills
+     * column now call.
+     *
+     * <p>Ingestion canonicalised what it stored and the profile editor stored
+     * what a client typed, so one row's skills were keys and the next row's were
+     * prose. `RunMarking` reads the stored form as a key when it decides whether
+     * an emphasis is a technology, so a raw row lost its bold.
+     */
+    @Test
+    void awholeListGoesThroughTheSameRule() {
+        // `React.js` goes through the dictionary as well as the spelling fold:
+        // `aliases.txt` maps it to `react`, which is the whole point of having
+        // the file rather than a lowercase-and-hyphenate function.
+        assertThat(SkillNames.canonicalAll(List.of("Spring Boot", "React.js", "  SQL  ")))
+                .containsExactly("spring-boot", "react", "sql");
+    }
+
+    /** Canonicalising creates duplicates, so the list drops them. */
+    @Test
+    void twoSpellingsOfOneSkillAreOneEntry() {
+        assertThat(SkillNames.canonicalAll(List.of("Spring Boot", "spring boot", "spring-boot")))
+                .containsExactly("spring-boot");
+    }
+
+    /**
+     * Order survives, because it reaches a JSONB column and a response — and
+     * the JDK's immutable sets iterate in an order salted per JVM run.
+     */
+    @Test
+    void theorderTheyWereWrittenInIsKept() {
+        assertThat(SkillNames.canonicalAll(List.of("zulu", "alpha", "mike")))
+                .containsExactly("zulu", "alpha", "mike");
+    }
+
+    /** Blank and null are absences, not entries. */
+    @Test
+    void blanksAreDroppedAndNullIsAnEmptyList() {
+        assertThat(SkillNames.canonicalAll(List.of("java", "  ", ""))).containsExactly("java");
+        assertThat(SkillNames.canonicalAll(null)).isEmpty();
     }
 }

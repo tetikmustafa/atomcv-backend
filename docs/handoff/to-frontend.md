@@ -12,13 +12,38 @@
 
 ## OPEN
 
+_Üç madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+backlog. Üçü de ACK'lendiğinde `resolved/`'a iner._
+
+### B-077 · Beceriler artık yazılırken kanonikleşiyor: yankı gönderileni tutmaz
+
+**Since:** commit `<bu PR>` · **Spec:** § 31.5 · `profile/service/AtomService`
+
+**Ne oldu:** `POST`/`PATCH` ile gönderilen `skills`, saklanmadan önce
+`SkillNames`'den geçiyor — ve yanıt **saklanan biçimi** döndürüyor. Yani
+`"Spring Boot"` gönderirsiniz, `"spring-boot"` okursunuz; `"postgresql"`
+gönderirsiniz, sözlük onu `"postgres"`'e çevirdiği için o gelir. İki farklı
+yazım tek beceriye düşerse liste kısalır.
+
+**Neden:** o kolon bir **anahtar** olarak okunuyor — Faz B puanlaması ve
+`RunMarking`'in bir vurgunun teknoloji olup olmadığına karar vermesi ona bakıyor.
+İçe aktarım bunu zaten yapıyordu, editör yapmıyordu: aynı kolonun bir satırı
+anahtar, öteki satırı düz yazıydı, ve ham saklanan bir beceri kalın yazımını
+kaybediyordu.
+
+**Action:** iki şey. (1) Kaydettikten sonra ekrandaki listeyi **yanıttan**
+tazeleyin, gönderdiğinizden değil — yoksa kullanıcı yazdığını görür, sunucu
+başkasını saklar. (2) Kullanıcı "Spring Boot" yazıp `spring-boot` görecek;
+bunu bir hata gibi göstermeyin. İçe aktarılmış profillerde zaten böyle
+görünüyordu, yani ekran açısından yeni bir şekil değil.
+
 ### B-076 · EK C.1'in AI sağlayıcı listesi — yayımlanacak gerçekler
 
 **Since:** commit `<bu PR>` · **Spec:** EK C.1 (*"AI sağlayıcı listesi güncel ve
 açık"*) · `llm/telemetry/ProcessorAudit`
 
-**Neden:** madde model seçimini bekliyordu; model belli, liste yazılabilir.
-Aşağıdakiler ölçüldü — sağlayıcının endpoint API'sinden ve gönderdiğimiz gövdeden.
+**Neden:** madde model seçimini bekliyordu; model belli. Aşağıdakiler ölçüldü —
+sağlayıcının endpoint API'sinden ve gönderdiğimiz gövdeden.
 
 **Kimler.** Biz → **OpenRouter** (broker) → yukarı akış. Bu modelin **yedi
 endpoint'i** var: **OpenAI** (üç varyant), **Microsoft Azure** (`azure`,
@@ -27,9 +52,8 @@ adlandırdığı için dördü de listede olmalı, hangisinin karşıladığı y
 Zincirin ikinci halkası **Gemini**, yani anahtarı olan dağıtımda **Google** da
 listede.
 
-**Ne gidiyor.** CV metni (`profile_extraction`), ilan metni (`job_analysis`),
-madde metinleri (`bullet_rewrite`), özet ve ön yazı girdileri — yani **kişisel
-veri**: ad, iletişim, iş geçmişi.
+**Ne gidiyor.** CV metni, ilan metni, madde metinleri, özet ve ön yazı girdileri
+(`profile_extraction`, `job_analysis`, `bullet_rewrite`, …) — **kişisel veri**.
 
 **Eğitim.** Her istekte `provider.data_collection: "deny"` gidiyor. Metinde
 *"sağlayıcılar eğitmiyor"* değil **"eğitebilecek sağlayıcıya yönlendirilmiyor"**
@@ -55,12 +79,10 @@ gidiyor" listesiyle yazın.
 **Ne oldu:** `contentGrant` artık `open`, `expiresAt` ve `revokedAt` taşıyor;
 **`accessedAt` yok.** Kolon (`support_grants.accessed_at`) yerinde duruyor.
 
-**Neden:** o alanı **hiçbir şey yazmıyor** ve yapısal olarak yazamaz. Başka bir
-kullanıcının içeriğini okumak destek tarafına bakan bir yol gerektiriyor, mutlak
-kural 3 ise (her okuma sahibine göre kapsanmış bir repository'den geçer, IDOR
-savunması) böyle bir yolu kasten bırakmıyor. Yani alan her zaman null: ekran,
-gerçekten bakılmış olsa da **"kimse bakmadı"** diyor. Bir denetim izi değil,
-denetim izi kılığında bir varsayım.
+**Neden:** o alanı **hiçbir şey yazmıyor** ve yazamaz — başka bir kullanıcının
+içeriğini okumak destek tarafına bakan bir yol ister, mutlak kural 3 böyle bir yol
+bırakmıyor. Alan her zaman null, yani ekran gerçekten bakılmış olsa da **"kimse
+bakmadı"** diyor: denetim izi değil, denetim izi kılığında bir varsayım.
 
 **Action:** `Feedback.tsx`'te `grant.accessedAt`'ten üretilen dalı ve
 `feedbackGrantRead` metnini **kaldırın** (mock'takini de). Kullanıcıya izin
@@ -68,10 +90,8 @@ hakkında söylenebilecek doğru şeyler duruyor: açık mı, ne zaman doluyor, 
 çekildi mi. "Okundu / okunmadı" bunlardan biri değil — ve "okunmadı" demek,
 söyleyemediğimiz şeyi söylemek. `npm run gen:api` alanı tipten de düşürecek.
 
-**Söz geri gelecek:** destek okuma yolu (kimlik doğrulamalı, grant açıkken
-okuyan ve `accessed_at`'i damgalayan) indiği gün alan da geri geliyor, aynı adla.
-O yol bir ürün kararı bekliyor: destek kim, nasıl kimlik doğruluyor, uç mu
-çevrimdışı dışa aktarma mı.
+**Söz geri gelecek:** çevrimdışı destek okuyucusu (karar 2026-09-09) `accessed_at`'i
+damgaladığı gün alan aynı adla döner.
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
 

@@ -167,10 +167,41 @@ class AtomApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.verbatim").value(true))
                 .andExpect(jsonPath("$.verified").value(true))
                 .andExpect(jsonPath("$.active").value(false))
-                .andExpect(jsonPath("$.skills").value(contains("go", "postgresql")))
+                // `postgresql` is an alias for `postgres` in the dictionary, so
+                // the echo is the key rather than the word that was sent — see
+                // skillsComeBackAsTheKeyTheyAreStoredAs below.
+                .andExpect(jsonPath("$.skills").value(contains("go", "postgres")))
                 // The wording is untouched by a control change.
                 .andExpect(jsonPath("$.variants[0].plainText")
                         .value("Built ETL pipelines processing 300K+ rows"));
+    }
+
+    /**
+     * The skills column is read as a key, so it is written as one (Bolum 31.5).
+     *
+     * <p>Ingestion canonicalised what it stored and this endpoint stored what a
+     * client typed, so one row's skills were keys and the next row's were prose.
+     * Faz B scores on the key and {@code RunMarking} decides whether an emphasis
+     * is a technology by comparing against it — a row that kept `Spring Boot`
+     * lost its bold and matched nothing the posting spelled differently.
+     *
+     * <p>The echo is the visible half: a client sends what a person typed and
+     * reads back the key it became. That is deliberate, and the same thing an
+     * imported profile has always shown.
+     */
+    @Test
+    void skillsComeBackAsTheKeyTheyAreStoredAs() throws Exception {
+        JsonNode atom = createAtom(ETL_CONTENT);
+
+        mvc.perform(patch("/api/v1/profile/atoms/" + atom.get("id").asText())
+                        .header(HttpHeaders.IF_MATCH, "\"0\"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "skills": ["Spring Boot", "React.js", "spring-boot"] }"""))
+                .andExpect(status().isOk())
+                // `react.js` is an alias for `react`, and the two spellings of
+                // Spring Boot are one skill once the rule is applied.
+                .andExpect(jsonPath("$.skills").value(contains("spring-boot", "react")));
     }
 
     @Test
