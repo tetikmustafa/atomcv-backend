@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-08** · **`B-071`-`B-074` açık** (frontend'de) · açık `F-nnn` yok
+**2026-09-08** · **`B-071`-`B-074` `ACK`** · açık `B-nnn` de `F-nnn` de yok
 
 ## Backend — `atomcv-backend`
 
@@ -35,10 +35,13 @@ artık ilana göre süzülüyor** (§ 33.4, LLM'siz). **Yedinci golden profil
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0-2 — iskelet, profil editörü, üretim akışı + SSE | ✅ |
-| Aşama 3 — **bütün dilimler**; açık `B-071`-`B-074` | ✅ |
+| Aşama 3 — **bütün dilimler** | ✅ |
+| Aşama 4 — `B-071`-`B-074` karşılandı | ✅ |
 
 On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027`'yi çıkardı; ölçülmeyen OAuth ile Turnstile.
-**Test:** 649 birim · 51 e2e · **bundle** profil 252.5 / geçmiş 213.9 / üretim 220.3 / onboarding 217.3 / ayarlar 229.8 KB.
+
+**`B-071`-`B-074` (2026-09-08).** Yedinci uyarı kodu ve silinen `no_responsibilities` dalı ICU tarafında karşılandı; `paragraph` ile yedinci kod `gen:api` ile üretilen tipe girdi ve birliği genişletmekten başka bir şey yapmadı. `B-073` ve `B-074` kod işi çıkarmadı: düzen seçtiren arayüz de, elde hazırlanmış `classic` önizlemesi de yok. `F-016`'nın "sayımı suçlama" nöbeti, dayandığı yakalanmış yük silinince `errorCatalogue`'a taşındı.
+**Test:** 658 birim · 51 e2e · **bundle** profil 252.5 / geçmiş 213.9 / üretim 220.3 / onboarding 217.3 / ayarlar 229.8 KB.
 
 ## Açık kararlar
 
@@ -51,7 +54,6 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de: `B-071`-`B-074`'ün `ACK`'i** — yedinci
-`ExtractionWarningCode`, silinen `no_responsibilities` dalı, beşinci
-`SectionLayout` (`paragraph`), ve `classic`'in yeni görünümü (telde değişiklik
-yok). **Yayın öncesi açık:** gizlilik politikası model seçimini bekliyor.
+**Sıra backend'de: dördü de `ACK`** — `handoff/to-frontend.md` boş, arşive
+inebilir. `B-073`/`B-074` frontend'de iş çıkarmadı ve nedeni orada yazılı.
+**Yayın öncesi açık:** gizlilik politikası model seçimini bekliyor.

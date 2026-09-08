@@ -12,110 +12,44 @@
 
 ## OPEN
 
-### B-074 · `classic` başka bir belge gibi görünüyor — önizlemesi varsa yenilenmeli
-
-**Since:** commit <bu PR> · kapanış sonrası dilim L · **Spec:**
-`spec/07-subsystems.md` § 33.1
-
-**Ne oldu:** `classic`'in preamble'ı referans CV'nin kendisiyle değiştirildi:
-tipografi Latin Modern (Computer Modern'in OpenType kesimi), maddeler `\small`,
-bölüm başlıkları ve entry'ler referansın negatif aralıklarıyla. Aynı profil
-gözle **belirgin biçimde başka** bir sayfa üretiyor.
-
-**Telde hiçbir şey değişmedi** — `templateId` yine `"classic"`, `pageTextHeightPt`
-yine 722.7, `TemplateCustomization` zaten hiç yayımlanmıyor. Şema kırılmadı,
-istek/yanıt aynı.
-
-**Action:** yalnızca şunu kontrol et — şablon seçicisinde `classic` için
-**istemci tarafında çizilen ya da elde hazırlanmış bir önizleme** varsa artık
-yanlış; yeni bir PDF'ten yenile. Başka bir işi yok, yoksa doğrudan `ACK`.
-
-### B-073 · `SectionLayout` beşinci değeri aldı: `paragraph`
-
-**Since:** commit <bu PR> · kapanış sonrası dilim K · **Spec:**
-`spec/07-subsystems.md` § 33.4 · `profile/domain/SectionLayout`
-
-**Ne oldu:** `sections.layout` artık `bullet_list | entry_list | inline_list |
-two_column | **paragraph**` alıyor. `SectionResponse` onu yayımlıyor,
-`SectionCreateRequest`/`SectionPatchRequest` kabul ediyor. `V9` her `about`
-bölümünü — kolonun varsayılanını taşıyan, yani kimsenin seçmediği her satırı —
-`paragraph`'a taşıdı, ve içe aktarım artık onu yazıyor.
-
-**Neden:** bir özet tek bir akan paragraf. Varsayılan `bullet_list` olduğu için
-madde işaretiyle basılıyordu — paragrafın önünde bir işaret, hiç gelmeyen bir
-listenin ilk maddesi gibi. `inline_list`'e katlanamadı: o düzen satırın ilk iki
-noktasını kalın diziyor ("Kategori: öğe, öğe"), ve "Backend engineer: beş
-yıl…" diye açılan bir özetin ilk kelimeleri onunla ilgisi olmayan bir kuralla
-kalınlaşırdı.
-
-**Action:** düzen adını gösteren/seçtiren her yerde beşinci değeri karşılayın.
-Bilmediği bir değeri `other`'a düşüren bir `select` varsa şimdi oraya düşüyor;
-ICU anahtarını ekleyin. **Bölüm düzeni seçtiren bir arayüz varsa** `paragraph`
-"Paragraf / düz metin" olarak listelenmeli, ve About bölümü için varsayılan o.
-Başka iş yok: dört eski değer aynı anlamda.
-
-**Yan not, ekranda görünmez ama sorulur:** `inline_list` artık "virgülle
-ayrılmış tek satır" değil, **etiketli satırlar** — sayfada her satır
-`Kategori: öğe, öğe` şeklinde, etiketi kalın. Tel değişmedi, yalnız o düzenin
-ne demek olduğu netleşti.
-
-### B-072 · `no_responsibilities` telden kalktı
-
-**Since:** commit <bu PR> · kapanış sonrası dilim H · **Spec:**
-`spec/05-pipeline-a-c.md` § 18.4 · `shared/error/UnreadablePostingReason`
-
-**Ne oldu:** `UNPARSEABLE_JOB_DESCRIPTION`'ın `reason` parametresi artık sekiz
-değil **yedi** değer alıyor. `no_responsibilities` üretilmiyor ve enum'dan
-kaldırıldı.
-
-**Neden:** kural "Faz B eşleştirecek bir sorumluluk bulamazsa reddet" diyordu
-ve mantığı doğruydu; dünya hakkında yanlıştı. Gerçek ilanların çoğu başlıksız
-bir nitelik listesi. Bunu çıkaran ilan aynen şöyleydi:
-
-> At least 5 years of hands-on software development experience in Java, Java EE
-
-Hiçbir yerinde "Responsibilities" geçmiyor. **0.92 güvenle ve yirmi yetenek
-okunmuş halde reddedildi** — model ilanı anlamıştı, kapı cevabı çöpe attı.
-`job_analysis` **v2** sorumlulukları metinde ne varsa ondan türetiyor
-(niteliklerden, düz yazıdan, ekip tarifinden); hiç iş tarif etmeyen bir metin
-zaten `low_confidence`'a düşüyor, yani aynı ilan iki kez reddediliyordu.
-
-**Action:** `no_responsibilities` için yazılmış ICU `select` dalını ve varsa
-çeviri anahtarını **kaldırın**. Bir `other` dalınız varsa bu değer artık ona
-düşmez — hiç gelmez. Ekranda başka bir iş yok: kalan yedi değer aynı, sunulan
-çözüm yolları (`paste_full_posting`, `continue_as_general_cv`) aynı.
-
-### B-071 · Yedinci `ExtractionWarningCode`: `unsupported_by_source`
-
-**Since:** commit <bu PR> · Aşama 4 dilim D · **Spec:** `spec/07-subsystems.md`
-§ 31.6 · `shared/wire/ExtractionWarningCode`
-
-**Neden:** çıkarım, belgede olmayan bir teknoloji yazabiliyor ve bugüne kadar
-bunu kimse kontrol etmiyordu. Gerçek bir CV `utilizing **SQL** queries to model
-complex business reporting logic` diyor; yazılan atom `utilizing advanced **SQL
-Server** queries, optimizing analytic data layers` oldu — başka ve daha özgül
-bir ürün, arkasında `skills`'e giren `mssql` ile. Aynı yükleme, belgede hiç
-geçmeyen `Kafka`'yı About paragrafına yazdı. P3 yalnız Faz D'de, yani modelin
-*yeniden yazdığı* yerde uygulanıyordu; *çıkardığı* şeyin sayfada olup olmadığını
-soran hiçbir şey yoktu.
-
-**Action:** `ImportWarning.code` için ICU `select`'ine yedinci dal ekleyin.
-Önerilen anlam: *"Bu satırda, yüklediğiniz belgede geçmeyen bir ad var —
-kontrol edin."* Kod `unsupported_by_source`, ve diğer altısı gibi
-`sectionOrder`/`entryOrder` taşıyor, yani gözden geçirme ekranında satıra
-bağlanıyor. Şemada da yayımlandı (`GET /v3/api-docs`).
-
-**Dikkat — bu kodu model üretmiyor.** Extraction şeması hâlâ altı değer
-listeliyor; yedincisini pipeline belgeye karşı üretiyor. Yani prompt sürümü
-değişmedi, fikstürler ve cache geçerli.
-
-**Ölçülmemiş bir yanı var ve söylüyoruz:** yanlış pozitif oranını
-ölçemedik. Kayıtlı hiçbir fixture'ın **kaynak belgesi diskte değil**
-(`local-record` cevabı saklıyor, girdiyi değil), o yüzden kontrolü ancak
-uyuşmayan bir belgeye karşı koşturabildik. Uyarı engelleyici değil; ekranda
-gürültü yaparsa duymak istiyoruz.
+_(Açık madde yok.)_
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
+
+**B-074** — şablon seçicisi de, `classic` için elde hazırlanmış bir önizleme
+de yok: `templateId` hiçbir bileşende geçmiyor, `src/components/preview/` boş.
+Yenilenecek bir görsel yok, iş yok.
+
+**B-073** — düzen adını gösteren ya da seçtiren bir arayüz yok, dolayısıyla
+karşılanacak bir `select` de yok. `paragraph` `npm run gen:api` ile üretilen
+tipe girdi (üç şemada: `Section`, `SectionCreateRequest`, `SectionPatchRequest`)
+ve birliği genişletmekten başka bir şey yapmadı. Fixture'a `about` bölümü
+eklenmedi: mock'ta düzeni okuyan hiçbir şey yok, eklenen bölüm yalnızca
+`sectionCount`/`atomCount` bekleyen testleri oynatırdı. Mock'un bölüm oluşturma
+varsayılanı sunucununkiyle aynı (`bullet_list`) kalıyor — şema hâlâ öyle
+diyor, `about` satırlarını `V9` taşıdı, kolon varsayılanı değil.
+
+**B-072** — canlı şemada da doğrulandı: `/v3/api-docs` içinde
+`no_responsibilities` hiç geçmiyor (neden sözlüğü zaten şemada değil, hata
+kataloğunda). `no_responsibilities` dalı `errors.UNPARSEABLE_JOB_DESCRIPTION`
+içinden kaldırıldı (en + tr), `gateRefusal`'ın kabul ettiği nedenlerden çıktı,
+katalog testindeki neden listesi yediye indi. Yakalanmış yük de silindi:
+`wireErrors` gerçekten gönderilmiş gövdeleri taşıyor, uydurulmuş bir tanesi
+oraya konmadı. `F-016`'nın nöbeti — "sayımı suçlama" — kayıptan kurtarıldı ve
+katalog testinde artık tek bir yük yerine `too_few_skills` dışındaki her
+nedene karşı koşuyor.
+
+**B-071** — yedinci dal `Onboarding.warning`'e eklendi (en + tr), ve
+`ImportWarning.code` üretilen tipte artık yedi değer listeliyor. Kod zaten
+**açık** okunuyordu (`B-069`), o yüzden tip tarafında iş çıkmadı; eksik olan
+yalnızca cümleydi ve o gelene kadar uyarı `other`'a düşüyordu. Yeri de
+çalışıyor: `sectionOrder`/`entryOrder` taşıdığı için satıra bağlanıyor,
+testi `ReviewGate` içinde. Ortak fixture'a **eklenmedi** — ekrandaki
+davranışı diğer altısından farklı değil, ve üçüncü bir uyarı e2e'deki
+sayıları oynatırdı.
+
+**Yanlış pozitif konusunda söylenecek bir şey henüz yok:** mock'ta bu kodu
+üreten bir yol yok, yani gürültü ancak gerçek uca karşı görülür.
 
 _(`B-037`…`B-070`'in hepsi kapandı ve `resolved/to-frontend-2026-08.md`'de —
 hangi dilimin hangisini kapattığı orada. Aşağıdakiler **hâlâ canlı olan**
