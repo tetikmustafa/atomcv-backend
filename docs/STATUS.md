@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-08** · **`B-071`-`B-074` `ACK`** · açık `B-nnn` de `F-nnn` de yok
+**2026-09-09** · **`B-075`, `B-076` açık** (frontend'de) · açık `F-nnn` yok
 
 ## Backend — `atomcv-backend`
 
@@ -29,7 +29,7 @@ LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
 
 **Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü (yerelde 141 gerçek çağrı, hepsi 0.000000); fiyat tablosu, VPS/restore. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
 
-**Test:** 1219 birim · 457 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1240 birim · 457 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra backend'de: dördü de `ACK`** — `handoff/to-frontend.md` boş, arşive
-inebilir. `B-073`/`B-074` frontend'de iş çıkarmadı ve nedeni orada yazılı.
-**Yayın öncesi açık:** gizlilik politikası model seçimini bekliyor.
+**Sıra frontend'de: `B-075` ve `B-076`.** İlki `accessedAt`'i ekrandan
+kaldırıyor (yazıcısı yok), ikincisi EK C.1'in sağlayıcı listesinin gerçeklerini
+taşıyor — **gizlilik politikası artık yazılabilir**, model seçildi.

@@ -252,6 +252,60 @@ class OpenRouterProviderTest {
         assertThat(response.reportedCostUsd()).isNull();
     }
 
+    /**
+     * Who may serve the call, stated on every call (EK C.1).
+     *
+     * <p>The prompt is somebody's CV, so the question "may a provider keep this
+     * for training" has one defensible default and this is where it is given.
+     * Absent would mean OpenRouter's own default, which is `allow`.
+     */
+    @Test
+    void everyRequestDeniesProvidersThatWouldTrainOnIt() throws Exception {
+        provider("sk-test", "some-model").callStructured(request());
+
+        var provider = JSON.readTree(lastBody.get()).path("provider");
+        assertThat(provider.path("data_collection").asText()).isEqualTo("deny");
+        assertThat(provider.has("only")).as("nothing pinned by default").isFalse();
+        assertThat(provider.has("zdr")).as("not asserted blind").isFalse();
+    }
+
+    /**
+     * And a deployment that bounds the sub-processor list says so in one place.
+     *
+     * <p>This model is served by OpenAI, by Azure in two regions and by Amazon
+     * Bedrock; unrestricted, all four belong in the published list and the price
+     * is a range. Naming one makes both knowable.
+     */
+    @Test
+    void apinnedDeploymentNamesItsProvidersAndItsRetentionPolicy() throws Exception {
+        provider(new OpenRouterProperties(baseUrl, "sk-test",
+                OpenRouterProperties.StructuredOutput.JSON_SCHEMA,
+                OpenRouterProperties.DataCollection.DENY, List.of("openai"), true),
+                "some-model").callStructured(request());
+
+        var provider = JSON.readTree(lastBody.get()).path("provider");
+        assertThat(provider.path("data_collection").asText()).isEqualTo("deny");
+        assertThat(provider.path("only")).singleElement()
+                .satisfies(slug -> assertThat(slug.asText()).isEqualTo("openai"));
+        assertThat(provider.path("zdr").asBoolean()).isTrue();
+    }
+
+    /**
+     * Relaxed all the way, the field goes rather than being sent permissively:
+     * an absent `provider` is what OpenRouter documents as the default, and
+     * sending `allow` explicitly would be this system asserting something it
+     * was told not to.
+     */
+    @Test
+    void adeploymentThatRestrictsNothingSendsNoRoutingPolicy() throws Exception {
+        provider(new OpenRouterProperties(baseUrl, "sk-test",
+                OpenRouterProperties.StructuredOutput.JSON_SCHEMA,
+                OpenRouterProperties.DataCollection.ALLOW, List.of(), false),
+                "some-model").callStructured(request());
+
+        assertThat(JSON.readTree(lastBody.get()).has("provider")).isFalse();
+    }
+
     // ── Bolum 27.3: which status routes where ─────────────────────────────
 
     @Test
@@ -426,8 +480,13 @@ class OpenRouterProviderTest {
 
     private OpenRouterProvider provider(
             String key, String model, OpenRouterProperties.StructuredOutput mode) {
-        return new OpenRouterProvider(
-                new OpenRouterProperties(baseUrl, key, mode),
+        // The shipped default for the routing policy: deny, nothing pinned, no
+        // zero-retention restriction. A test that wants another says so.
+        return provider(new OpenRouterProperties(baseUrl, key, mode, null, null, false), model);
+    }
+
+    private OpenRouterProvider provider(OpenRouterProperties properties, String model) {
+        return new OpenRouterProvider(properties,
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of("openrouter")),
                         Map.of("openrouter", model), Duration.ofSeconds(30), 0),
                 JSON);

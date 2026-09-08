@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.llm.telemetry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.llm.gateway.LlmProperties;
+import com.mustafatetik.atomcv.llm.providers.OpenRouterProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
@@ -30,7 +31,8 @@ class PricingConfigurationTest {
     private static final String MODEL = "openai/gpt-5.6-sol";
 
     @Configuration
-    @EnableConfigurationProperties({LlmPricing.class, LlmProperties.class})
+    @EnableConfigurationProperties({LlmPricing.class, LlmProperties.class,
+            OpenRouterProperties.class})
     static class Binding {
     }
 
@@ -83,6 +85,32 @@ class PricingConfigurationTest {
                             context.getBean(LlmProperties.class),
                             context.getBean(LlmPricing.class));
                     assertThat(audit.unpricedModels()).isEmpty();
+                });
+    }
+
+    /**
+     * The shipped routing policy, which is a privacy default before it is a
+     * cost one (EK C.1): the prompt is somebody's CV, and `deny` is what keeps
+     * it away from a provider that would keep it for training. Pinned here
+     * because it is the kind of default that changes by accident.
+     */
+    @Test
+    void theshippedConfigurationDeniesTrainingAndPinsNothing() {
+        new ApplicationContextRunner()
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withConfiguration(AutoConfigurations.of(
+                        ConfigurationPropertiesAutoConfiguration.class))
+                .withUserConfiguration(Binding.class)
+                .run(context -> {
+                    var openrouter = context.getBean(OpenRouterProperties.class);
+                    assertThat(openrouter.dataCollection())
+                            .isEqualTo(OpenRouterProperties.DataCollection.DENY);
+                    assertThat(openrouter.only())
+                            .as("the broker routes until a deployment says otherwise")
+                            .isEmpty();
+                    assertThat(openrouter.zeroDataRetention())
+                            .as("never asserted without being measured")
+                            .isFalse();
                 });
     }
 

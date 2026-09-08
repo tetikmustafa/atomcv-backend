@@ -19,6 +19,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -132,7 +133,46 @@ public class OpenRouterProvider implements LlmProvider {
         messages.addObject().put("role", "user").put("content", request.userPrompt());
 
         body.set("response_format", responseFormat(schema.name(), schema.node()));
+        routingPolicy().ifPresent(policy -> body.set("provider", policy));
         return body.toString();
+    }
+
+    /**
+     * Who may serve this call, which is a privacy statement before it is a
+     * routing one (EK C.1, Bolum 57).
+     *
+     * <p>The prompt is somebody's CV. OpenRouter's `data_collection` decides
+     * whether a provider that keeps prompts for training may answer it, and the
+     * default here is `deny` — the one place in this system where that question
+     * is asked, and the answer a person would give if they were asked.
+     *
+     * <p>`only` bounds the sub-processor list. The broker's routing does not
+     * appear in the answer: this model is served by OpenAI, by Azure in two
+     * regions and by Amazon Bedrock, so an unrestricted call means all four
+     * names belong in the published list and the price is a range rather than a
+     * figure. Naming one endpoint makes both knowable and gives up the broker's
+     * own fallbacks; the chain's second vendor is what covers that.
+     *
+     * @return the object, or empty when nothing is restricted — an absent field
+     *         is not the same as one set to the permissive value, and the
+     *         absent form is what OpenRouter documents as the default
+     */
+    private Optional<ObjectNode> routingPolicy() {
+        if (!properties.restrictsRouting()) {
+            return Optional.empty();
+        }
+        var policy = json.createObjectNode();
+        if (properties.dataCollection() == OpenRouterProperties.DataCollection.DENY) {
+            policy.put("data_collection", properties.dataCollection().wireValue());
+        }
+        if (!properties.only().isEmpty()) {
+            var only = policy.putArray("only");
+            properties.only().forEach(only::add);
+        }
+        if (properties.zeroDataRetention()) {
+            policy.put("zdr", true);
+        }
+        return Optional.of(policy);
     }
 
     private ObjectNode responseFormat(String name, JsonNode schema) {
