@@ -48,7 +48,8 @@ public record LlmInvocationEvent(
         long latencyMs,
         Instant occurredAt,
         UUID userId,
-        UUID jobId) {
+        UUID jobId,
+        java.math.BigDecimal reportedCostUsd) {
 
     /** The values {@code llm_invocations.outcome} allows, verbatim from V1. */
     public enum Outcome {
@@ -64,7 +65,8 @@ public record LlmInvocationEvent(
                 request.promptId(), request.promptVersion(),
                 response.provider(), response.model(), Outcome.SUCCESS,
                 response.inputTokens(), response.outputTokens(), response.cachedTokens(),
-                response.latencyMs(), at, request.userId(), request.jobId());
+                response.latencyMs(), at, request.userId(), request.jobId(),
+                response.reportedCostUsd());
     }
 
     public static LlmInvocationEvent failed(
@@ -72,6 +74,9 @@ public record LlmInvocationEvent(
             Outcome outcome, long latencyMs, Instant at) {
         return new LlmInvocationEvent(
                 request.promptId(), request.promptVersion(), provider, model, outcome,
-                0, 0, 0, latencyMs, at, request.userId(), request.jobId());
+                // A call that failed was still charged by some providers, but
+                // none of them says so in an error body: nothing is reported,
+                // and the table prices zero tokens at zero.
+                0, 0, 0, latencyMs, at, request.userId(), request.jobId(), null);
     }
 }
