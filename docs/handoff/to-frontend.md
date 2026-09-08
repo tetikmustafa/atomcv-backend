@@ -12,7 +12,31 @@
 
 ## OPEN
 
-_(Açık madde yok.)_
+### B-075 · `contentGrant.accessedAt` telden kalktı — tutulamayan bir sözdü
+
+**Since:** commit `<bu PR>` · **Spec:** `spec/…` § 48.4 ·
+`generation/api/dto/FeedbackResponse.Grant`
+
+**Ne oldu:** `contentGrant` artık `open`, `expiresAt` ve `revokedAt` taşıyor;
+**`accessedAt` yok.** Kolon (`support_grants.accessed_at`) yerinde duruyor.
+
+**Neden:** o alanı **hiçbir şey yazmıyor** ve yapısal olarak yazamaz. Başka bir
+kullanıcının içeriğini okumak destek tarafına bakan bir yol gerektiriyor, mutlak
+kural 3 ise (her okuma sahibine göre kapsanmış bir repository'den geçer, IDOR
+savunması) böyle bir yolu kasten bırakmıyor. Yani alan her zaman null: ekran,
+gerçekten bakılmış olsa da **"kimse bakmadı"** diyor. Bir denetim izi değil,
+denetim izi kılığında bir varsayım.
+
+**Action:** `Feedback.tsx`'te `grant.accessedAt`'ten üretilen dalı ve
+`feedbackGrantRead` metnini **kaldırın** (mock'takini de). Kullanıcıya izin
+hakkında söylenebilecek doğru şeyler duruyor: açık mı, ne zaman doluyor, geri
+çekildi mi. "Okundu / okunmadı" bunlardan biri değil — ve "okunmadı" demek,
+söyleyemediğimiz şeyi söylemek. `npm run gen:api` alanı tipten de düşürecek.
+
+**Söz geri gelecek:** destek okuma yolu (kimlik doğrulamalı, grant açıkken
+okuyan ve `accessed_at`'i damgalayan) indiği gün alan da geri geliyor, aynı adla.
+O yol bir ürün kararı bekliyor: destek kim, nasıl kimlik doğruluyor, uç mu
+çevrimdışı dışa aktarma mı.
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
 

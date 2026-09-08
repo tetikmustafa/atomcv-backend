@@ -267,8 +267,9 @@ public class GenerationController {
 
         // F-019: the verdict and its grant ride along, so a reload shows the
         // thumb that was pressed instead of asking for it again -- and so the
-        // person can still see `accessedAt` the day after they granted it,
-        // which is most of the forty-eight hours (Bolum 48.4).
+        // person can still see, the day after granting it, that the permission
+        // is open and when it runs out (Bolum 48.4). Not whether it was read:
+        // nothing writes `accessed_at` yet, so that is off the wire (B-075).
         FeedbackResponse verdict = feedback.read(currentUser.require(), generationId)
                 .map(recorded -> FeedbackResponse.of(generationId, recorded.verdict(),
                         recorded.grant(), clock.instant()))
@@ -399,7 +400,7 @@ public class GenerationController {
             description = """
                     A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.
 
-                    `contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     including `accessedAt`, which is null until somebody                     actually looks. Sending `contentGranted: false` later                     withdraws a grant that is still open.
+                    `contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     and how long it has left. **Whether it was read is not on                     the wire yet**: `accessed_at` has no writer, because a                     support-facing read path does not exist (B-075), and a                     field that is always null would tell the person nobody                     looked whatever happened. Sending `contentGranted: false` later                     withdraws a grant that is still open.
 
                     The comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.""")
     @ApiResponses({

@@ -112,7 +112,8 @@ class FeedbackApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contentGrant.open").value(true))
                 .andExpect(jsonPath("$.contentGrant.expiresAt").isNotEmpty())
-                // Null until somebody actually looks. That is the promise.
+                // Off the wire until something writes it (B-075): a field that
+                // is always null would say nobody looked whatever happened.
                 .andExpect(jsonPath("$.contentGrant.accessedAt").doesNotExist());
 
         assertThat(jdbc.queryForObject("""
@@ -212,15 +213,20 @@ class FeedbackApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The sharper half of F-019, and the reason it is not merely convenient.
+     * The sharper half of F-019: the grant comes back tomorrow, when the person
+     * who most needs to check on it is the one who returns.
      *
-     * <p>Bolum 48.4 promises the person can see when their content was
-     * actually read. {@code accessedAt} is that promise, and the grant is open
-     * for forty-eight hours — so the one who most needs to look is the one who
-     * comes back tomorrow, and until this landed they had no way to.
+     * <p><strong>And what comes back is what can be known.</strong> Bolum 48.4
+     * promises the person can see when their content was actually read, and
+     * nothing in this system can tell them: {@code support_grants.accessed_at}
+     * has no writer, because reading another user's content needs a
+     * support-facing path and absolute rule 3 leaves none. So the field is off
+     * the wire (`B-075`) rather than published as a permanent null, which would
+     * say "nobody looked" whatever had happened. This asserts the absence, so
+     * that adding the reader has to come back through here.
      */
     @Test
-    void agrantAndItsAuditTrailComeBackToo() throws Exception {
+    void agrantComesBackWithWhatCanBeKnownAboutIt() throws Exception {
         mvc.perform(feedback("{\"rating\":-1,\"contentGranted\":true}"))
                 .andExpect(status().isOk());
 
@@ -228,8 +234,6 @@ class FeedbackApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.feedback.contentGrant.open").value(true))
                 .andExpect(jsonPath("$.feedback.contentGrant.expiresAt").exists())
-                // Null until somebody looks, and this is what makes the
-                // consent checkable rather than decorative.
                 .andExpect(jsonPath("$.feedback.contentGrant.accessedAt").doesNotExist());
     }
 
