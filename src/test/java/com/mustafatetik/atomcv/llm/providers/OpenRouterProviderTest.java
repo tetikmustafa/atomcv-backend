@@ -215,6 +215,43 @@ class OpenRouterProviderTest {
                 .cachedTokens()).isZero();
     }
 
+    /**
+     * What the broker says it charged, which is the only figure that survives
+     * its routing.
+     *
+     * <p>Bolum 27.4's table holds one price per model, and this slug is served
+     * by seven endpoints between 1 and 5.50 per million input tokens — so a
+     * modelled cost is a guess about which one answered. OpenRouter reports
+     * `usage.cost` on every response; where it does, it is believed.
+     */
+    @Test
+    void thecostTheBrokerReportsIsCarriedOut() {
+        respond(200, """
+                {"choices":[{"message":{"content":"{\\"title\\":\\"t\\",\\"skills\\":[]}"}}],
+                 "usage":{"prompt_tokens":1200,"completion_tokens":300,"cost":0.00432}}""");
+
+        var response = answered(provider("sk-test", "some-model").callStructured(request()));
+
+        assertThat(response.reportsItsOwnCost()).isTrue();
+        assertThat(response.reportedCostUsd()).isEqualByComparingTo("0.00432");
+    }
+
+    /**
+     * And silence is not zero. A provider that says nothing about money leaves
+     * the figure to the price table; a zero here would be a claim that the
+     * call was free, which is the mistake F-015 already made once.
+     */
+    @Test
+    void aProviderThatReportsNoCostLeavesItUnknown() {
+        respond(200, answerEnvelope("""
+                {"title":"t","skills":[]}"""));
+
+        var response = answered(provider("sk-test", "some-model").callStructured(request()));
+
+        assertThat(response.reportsItsOwnCost()).isFalse();
+        assertThat(response.reportedCostUsd()).isNull();
+    }
+
     // ── Bolum 27.3: which status routes where ─────────────────────────────
 
     @Test

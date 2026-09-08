@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.llm.gateway.LlmResponse;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import com.mustafatetik.atomcv.llm.gateway.StructuredRequest;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -165,12 +166,32 @@ public class OpenRouterProvider implements LlmProvider {
                     // Reported only when the provider discounted a cached
                     // prefix; absent is zero, not unknown (Bolum 27.4).
                     usage.path("prompt_tokens_details").path("cached_tokens").asInt(),
-                    elapsedNanos / 1_000_000));
+                    elapsedNanos / 1_000_000,
+                    chargedBy(usage)));
         } catch (Exception malformed) {
             // Never with the body attached: the answer is the user's content
             // rendered by a model.
             return failed(request, LlmFailure.Kind.SCHEMA_MISMATCH, "answer did not parse");
         }
+    }
+
+    /**
+     * What this call actually cost, as the broker's own accounting states it.
+     *
+     * <p>OpenRouter returns {@code usage.cost} on every response — the amount
+     * taken off the account, after whichever endpoint it routed to and whatever
+     * promotion was running. Bolum 27.4's table cannot know either: the slug
+     * this deployment runs has seven endpoints between 1 and 5.50 per million
+     * input, and the table holds one figure. So where the number is reported it
+     * is the number, and the table is what answers when nobody reports.
+     *
+     * @return null when the field is absent or not a number, which is what
+     *         "we were not told" has to look like — a zero here would be a
+     *         claim that the call was free
+     */
+    private static BigDecimal chargedBy(JsonNode usage) {
+        var cost = usage.path("cost");
+        return cost.isNumber() ? cost.decimalValue() : null;
     }
 
     /**

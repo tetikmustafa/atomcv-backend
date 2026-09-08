@@ -52,13 +52,22 @@ public class LlmInvocationRecorder {
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(LlmInvocationEvent event) {
-        BigDecimal cost = pricing.costOf(event.model(),
-                event.inputTokens(), event.outputTokens(), event.cachedTokens());
+        // What the provider says it charged, where it says anything. Bolum
+        // 27.4's table models one endpoint's list price and a broker routes:
+        // this slug is served by seven endpoints between 1 and 5.50 per million
+        // input tokens, so a modelled figure is a guess wherever a reported one
+        // exists.
+        BigDecimal cost = event.reportedCostUsd() != null
+                ? event.reportedCostUsd().setScale(6, java.math.RoundingMode.HALF_UP)
+                : pricing.costOf(event.model(),
+                        event.inputTokens(), event.outputTokens(), event.cachedTokens());
 
-        if (!pricing.knows(event.model())) {
+        if (event.reportedCostUsd() == null && !pricing.knows(event.model())) {
             // Counted rather than logged per call: a model nobody priced makes
             // the whole cost report low, and a rising number here says the
-            // price table has fallen behind the chain.
+            // price table has fallen behind the chain. Not counted when the
+            // provider reported a cost: the figure written is right, and a
+            // counter firing anyway would report a problem nobody has.
             meters.counter("llm.unpriced_calls", "model", event.model()).increment();
         }
         meters.counter("llm.calls", "outcome", event.outcome().name().toLowerCase(
