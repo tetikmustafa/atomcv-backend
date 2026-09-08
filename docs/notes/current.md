@@ -186,9 +186,9 @@ basılır.
 - **`SkillNames.canonical` bir karşılaştırmanın iki tarafının da uygulaması
   gereken kural, ve her çağıran uygulamıyor** — dilim L'de `RewriteContext`'in
   atladığı ortaya çıktı. Alias dosyasında sol taraf insanların yazdığı gibi.
-- **İzlenecek:** CI bir kez `PGVectorTypeContributor`'da `NoClassDefFoundError`
-  verdi, aynı ağaç tekrar koşuşta geçti (2026-08-27, run 33091345512).
-  **Tekrarlarsa ilk bakılacak yer bağlam sayısı, kod değil.**
+- **Düzeltme — `PGVectorTypeContributor`'daki `NoClassDefFoundError` flake değildi:**
+  run 33091345512 `main` değil **PR #86'nın dalı** (hibernate-vector 7.4.6), yani
+  sistematik. `dependabot.yml` yok sayıyor artık. **Ders: flake demeden önce dalına bak.**
 
 **Ders (3.4, dilim 1'de ikinci kez):** *bir javadoc ne zaman çalıştığını
 söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değildir.*
