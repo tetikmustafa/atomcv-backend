@@ -27,6 +27,18 @@ public final class ClaimVocabulary {
     /** A word, keeping the characters technology names are actually spelled with. */
     private static final Pattern TOKEN = Pattern.compile("[\\p{L}\\p{N}][\\p{L}\\p{N}.+#-]*");
 
+    /**
+     * What separates the words of one name, whichever of them was written.
+     *
+     * <p>The same three characters {@link SkillNames} folds, and for the same
+     * reason: {@code object-oriented programming} on a page,
+     * {@code object-oriented-programming} in the alias file and
+     * {@code object oriented programming} in an answer are one name written
+     * three ways, and a guard that compares them literally refuses a claim its
+     * own sources support.
+     */
+    private static final Pattern SEPARATORS = Pattern.compile("[\\s_-]+");
+
     private ClaimVocabulary() {
     }
 
@@ -91,12 +103,45 @@ public final class ClaimVocabulary {
             if (!looksLikeAName(token, answer, matcher.start())) {
                 continue;
             }
-            if (mentions(folded, token)) {
+            if (accountedFor(folded, token)) {
                 continue;
             }
             introduced.add(token);
         }
         return introduced;
+    }
+
+    /**
+     * Whether the sources carry this name under any spelling of it they might
+     * have used, which is the difference between a claim and an invention.
+     *
+     * <p>Two questions, and the first is the one that was measured. A skill
+     * arrives from ingestion canonicalised — {@code spring-cloud-gateway},
+     * {@code netflix-eureka}, {@code spring-data-jpa},
+     * {@code json-web-token} — and an answer names its parts as words:
+     * "Spring Cloud Gateway, Netflix Eureka … Spring Data JPA … JSON Web
+     * Token". Every one of those was reported as an invention of something the
+     * page carries outright, because the boundary this check used counted a
+     * hyphen as part of a word. Sixteen recorded summaries against one real
+     * profile: ten such tokens, and one whole summary refused for nothing.
+     * Folding the separators is what answers it, in {@link #mentions}.
+     *
+     * <p>The second is the dictionary, and it is reasoned rather than
+     * measured: an answer writing {@code OOP} where the page says
+     * {@code object-oriented-programming} is the pair {@code aliases.txt} has
+     * had a line for since it was written, and only this check never opened
+     * it. No recorded answer has written the abbreviation, so this is a hole
+     * closed on the file's word rather than on a measurement.
+     *
+     * <p><strong>The other direction stays open.</strong> An answer writing
+     * {@code Object-Oriented Programming} where a source says {@code OOP} is
+     * still refused: the token is not an alias the file has a line for, and
+     * resolving it would mean looking up the source's abbreviations instead —
+     * a different question, and one no measurement has asked for yet.
+     */
+    private static boolean accountedFor(String foldedSources, String token) {
+        return mentions(foldedSources, token)
+                || mentions(foldedSources, SkillNames.canonical(token));
     }
 
     private static String sourcesFolded(Collection<String> sources) {
@@ -153,10 +198,13 @@ public final class ClaimVocabulary {
      *
      * <p>Whole words only, and the boundary has to admit the names people
      * actually write: {@code .NET}, {@code Node.js} and {@code C++} all begin
-     * or end in a character a naive word boundary reads in the wrong
-     * place, so the guard is written against word characters and hyphens
-     * directly. A canonical skill is hyphenated where the writing has a space,
-     * so both spellings are tried.
+     * or end in a character a naive word boundary reads in the wrong place, so
+     * the guard is written against word characters directly.
+     *
+     * <p>Both sides have their separators folded first ({@link #SEPARATORS}),
+     * so the boundary never has to reason about which of a space, an
+     * underscore or a hyphen a writer chose — and a canonical skill matches
+     * the same name written with spaces without the caller trying spellings.
      *
      * @param foldedText already lowercased by the caller, which usually has it
      *                   folded once for several hundred of these
@@ -166,12 +214,16 @@ public final class ClaimVocabulary {
         if (spelled.isEmpty()) {
             return false;
         }
-        return contains(foldedText, spelled) || contains(foldedText, spelled.replace('-', ' '));
+        return contains(foldedText, spelled);
     }
 
     private static boolean contains(String foldedText, String term) {
         Matcher matcher = Pattern.compile(
-                "(?<![\\w-])" + Pattern.quote(term) + "(?![\\w-])").matcher(foldedText);
+                "(?<!\\w)" + Pattern.quote(spaced(term)) + "(?!\\w)").matcher(spaced(foldedText));
         return matcher.find();
+    }
+
+    private static String spaced(String value) {
+        return SEPARATORS.matcher(value).replaceAll(" ");
     }
 }
