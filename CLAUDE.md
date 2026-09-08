@@ -222,8 +222,8 @@ on `AbstractIntegrationTest`'s `MockMvc` proves anything about CSRF.
 4. **The developer decides when to merge.** Open the PR, wait for the checks
    (`gh pr checks <n> --watch`), report, and ask. There are six now — format,
    build, integration, CodeQL, misconfiguration, secrets — plus **LaTeX**, which
-   only runs when a path it exercises changed, and **Deploy**, which runs on
-   `main` and not on a PR at all. On approval:
+   only runs when a path it exercises changed. **Deploy is hand-run only** until
+   there is a VPS; its `push` trigger is commented out in the file. On approval:
    `gh pr merge <n> --rebase --delete-branch`, then `git checkout main` and
    `git reset --hard origin/main`. History stays linear — and **a branch
    carrying a merge commit cannot be rebase-merged**: GitHub answers "This
