@@ -7,7 +7,7 @@ plugins {
     // Bolum 47.1 runs `spotlessCheck` and nothing configured a formatter, so
     // there was no format gate at all. Deliberately narrow -- see the
     // `spotless` block below.
-    id("com.diffplug.spotless") version "7.0.2"
+    id("com.diffplug.spotless") version "8.10.2"
 }
 
 group = "com.mustafatetik"
