@@ -6,8 +6,11 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -66,6 +69,37 @@ public final class SkillNames {
         // ("Node.js").
         spelled = spelled.replaceAll("^[-,;]+|[-.,;]+$", "");
         return CANONICAL_BY_ALIAS.getOrDefault(spelled, spelled);
+    }
+
+    /**
+     * A whole list through the same rule: ordered, deduplicated, blanks gone.
+     *
+     * <p>Here rather than beside each caller because there are two of them and
+     * they write the same column. Ingestion canonicalised what it stored and
+     * the profile editor stored what a client typed, so one row's skills were
+     * keys and the next row's were prose — and {@code RunMarking} reads the
+     * stored form as a key when it decides whether an emphasis is a technology.
+     *
+     * <p><strong>Deduplicated because canonicalising creates duplicates.</strong>
+     * {@code Spring Boot} and {@code spring-boot} are one skill the moment the
+     * rule is applied, and a list carrying both would print it twice.
+     *
+     * <p>{@code LinkedHashSet}, not {@code Set.of}: this order reaches a JSONB
+     * column and a response, and the JDK's immutable sets iterate in an order
+     * salted per JVM run.
+     */
+    public static List<String> canonicalAll(List<String> names) {
+        if (names == null) {
+            return List.of();
+        }
+        Set<String> canonical = new LinkedHashSet<>();
+        for (String name : names) {
+            String key = canonical(name);
+            if (!key.isEmpty()) {
+                canonical.add(key);
+            }
+        }
+        return List.copyOf(canonical);
     }
 
     /** What the dictionary knows, for a test to assert against. */

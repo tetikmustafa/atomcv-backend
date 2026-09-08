@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.profile.service;
 
 import com.mustafatetik.atomcv.profile.domain.Atom;
+import com.mustafatetik.atomcv.shared.text.SkillNames;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.repository.AtomRepository;
@@ -96,7 +97,10 @@ public class AtomService {
         atom.setImportance(draft.importance());
         atom.setAlwaysInclude(draft.alwaysInclude());
         atom.setVerbatim(draft.verbatim());
-        atom.setSkills(draft.skills());
+        // Bolum 31.5's rule on the way in, the same one ingestion applies:
+        // this column is read as a key, by Faz B's scoring and by RunMarking
+        // when it decides whether an emphasis is a technology.
+        atom.setSkills(SkillNames.canonicalAll(draft.skills()));
         atom.setMetrics(draft.metrics());
         atom.setProperNouns(draft.properNouns());
         Atom saved = atoms.save(profile, atom);
@@ -131,7 +135,7 @@ public class AtomService {
             atom.setVerified(patch.verified());
         }
         if (patch.skills() != null) {
-            atom.setSkills(patch.skills());
+            atom.setSkills(SkillNames.canonicalAll(patch.skills()));
         }
         if (patch.metrics() != null) {
             atom.setMetrics(patch.metrics());

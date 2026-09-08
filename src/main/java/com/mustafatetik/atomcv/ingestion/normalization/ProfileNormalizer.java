@@ -220,14 +220,9 @@ public class ProfileNormalizer {
      * iterate in an order salted per JVM run.
      */
     private static List<String> canonicalSkills(List<String> skills) {
-        Set<String> canonical = new LinkedHashSet<>();
-        for (String skill : skills) {
-            String name = SkillNames.canonical(skill);
-            if (!name.isEmpty()) {
-                canonical.add(name);
-            }
-        }
-        return List.copyOf(canonical);
+        // The rule lives in SkillNames, because the profile editor writes this
+        // same column and the two must not drift.
+        return SkillNames.canonicalAll(skills);
     }
 
     private static List<String> canonicalTags(List<String> tags) {
