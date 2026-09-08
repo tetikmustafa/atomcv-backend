@@ -10,7 +10,7 @@
 | Aşama / Adım | Durum |
 |---|---|
 | Aşama 0-2 · 3 — hesap ve MVP (3.7 profil editörü frontend'de) | ✅ |
-| Kapanış sonrası — uçtan uca ölçüm · dilim A-L | ✅ |
+| Kapanış sonrası — uçtan uca ölçüm · dilim A-M | ✅ |
 
 **Aşama 3 · dilim 9-14:** on bir `F-nnn`. Kapanış sonrası ölçüm: dört bulgu, on kusur; **dilim I-J-H** sayfaya bir şekil verdi (`notes/archive/`).
 
@@ -18,17 +18,18 @@
 İnen dördü: About `paragraph` düzeni (beşinci `SectionLayout`, `V9`, **`B-073`**); Tech Stack satırları ve ölçümün aynı şekli görmesi; Faz D'ye `SKILL`/`LANGUAGE`/`ABOUT_PARAGRAPH` gitmiyor; `.tex` çıkarıcısı bitişik argümanları ayırıyor.
 
 **Dilim L — şablon referans belgenin kendisi oldu (`classic:v4`, `B-074`).**
-Preamble birebir portlandı, yedi fixture'ın maliyetleri yeniden ölçüldü. İki
-ölçüm hatası kapandı: ölçüm kutusu `\parbox` yüzünden **yaslı** diziliyordu
-(sayfa `\raggedright`) — marjinal bir madde tek satır ölçülüp iki satır dizildi,
-kırk tanesi tek sayfa sözünü iki sayfa etti; ve birinci seviye madde listesinden
-sonraki bölüm başlığı **12pt daha pahalı** (`SECTION_LIST_CLOSE`). **Tech Stack
-artık ilana göre süzülüyor** (§ 33.4, LLM'siz). **Yedinci golden profil
-`stress_long_career`** iki sayfa hatasını üreten şekli taşıyor.
+Preamble birebir portlandı, yedi fixture yeniden ölçüldü; iki ölçüm hatası kapandı
+(`\parbox` ölçüm kutusunu **yaslı** diziyordu — kırk marjinal madde tek sayfa
+sözünü iki sayfa etti; madde listesinden sonraki başlık **12pt daha pahalı**,
+`SECTION_LIST_CLOSE`). **Tech Stack artık ilana göre süzülüyor** (§ 33.4,
+LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
+
+**Dilim M — P3'ün yanlış pozitifleri ölçüldü.** On altı kayıtlı `about_synthesis` cevabı golden profil ve ilanına oynatıldı: kelime sınırı tireyi kelime karakteri sayıyordu, **on token / dört özet / bir verdict** haksız reddedilmiş; ayırıcılar iki tarafta da katlandı ve gerçek ret kalkmadı.
+İlanın kendi yazımı muhafıza **kaynak** oldu, prompt'a ve sözlüğe girmedi — `bullet_rewrite`'ın fixture'ları ve prompt sürümü yerinde (§ 53.2).
 
 **Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü; fiyat tablosu, VPS/restore. **`make dev` bedava değil** — `.env`'in `LLM_CHAIN_*`'i eziyor.
 
-**Test:** 1213 birim · 457 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1217 birim · 457 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
