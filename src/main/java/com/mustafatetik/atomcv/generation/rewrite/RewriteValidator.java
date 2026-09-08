@@ -53,6 +53,24 @@ public final class RewriteValidator {
             float[] rewrittenVector,
             float[] originalVector) {
 
+        return validate(candidate, rewritten, postingSkills, List.of(),
+                rewrittenVector, originalVector);
+    }
+
+    /**
+     * @param postingSpellings the posting's own wording for those skills, a
+     *                         source of names and not a vocabulary term. A
+     *                         caller with none in hand passes the five-argument
+     *                         form; see {@code RewriteContext.postingSkillNames}
+     */
+    public static List<RewriteIssue> validate(
+            RewriteCandidate candidate,
+            String rewritten,
+            List<String> postingSkills,
+            List<String> postingSpellings,
+            float[] rewrittenVector,
+            float[] originalVector) {
+
         List<RewriteIssue> issues = new ArrayList<>();
         String answer = rewritten == null ? "" : rewritten;
         String folded = answer.toLowerCase(Locale.ROOT);
@@ -76,7 +94,8 @@ public final class RewriteValidator {
         }
 
         // 3. The one that matters.
-        if (claimsSomethingItCannot(candidate, answer, folded, postingSkills)) {
+        if (claimsSomethingItCannot(
+                candidate, answer, folded, postingSkills, postingSpellings)) {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
         }
 
@@ -109,7 +128,7 @@ public final class RewriteValidator {
      */
     private static boolean claimsSomethingItCannot(
             RewriteCandidate candidate, String answer, String foldedAnswer,
-            List<String> postingSkills) {
+            List<String> postingSkills, List<String> postingSpellings) {
 
         String foldedOriginal = candidate.originalText().toLowerCase(Locale.ROOT);
         Set<String> allowed = new LinkedHashSet<>(candidate.skills());
@@ -129,18 +148,22 @@ public final class RewriteValidator {
         }
         // And the other half of the question: a name none of the sources
         // carry. The loop above can only refuse what the alias file knows.
-        return !ClaimVocabulary.introducedNames(answer, sourcesOf(candidate, postingSkills))
-                .isEmpty();
+        return !ClaimVocabulary.introducedNames(
+                answer, sourcesOf(candidate, postingSkills, postingSpellings)).isEmpty();
     }
 
     /** Everything the rewrite was allowed to draw a name from. */
     private static List<String> sourcesOf(
-            RewriteCandidate candidate, List<String> postingSkills) {
+            RewriteCandidate candidate, List<String> postingSkills,
+            List<String> postingSpellings) {
 
         List<String> sources = new ArrayList<>();
         sources.add(candidate.originalText());
         sources.addAll(candidate.skills());
         sources.addAll(postingSkills);
+        // And the posting as it spells itself, for the reason
+        // AboutValidator gives: evidence against invention, not permission.
+        sources.addAll(postingSpellings);
         return sources;
     }
 

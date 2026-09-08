@@ -18,6 +18,17 @@ import java.util.Locale;
  *                      the validator checks the answer against — deliberately
  *                      the same list, because the temptation and the guard
  *                      must be looking at the same words
+ * @param postingSkillNames the same skills as the posting itself spells them,
+ *                      read only where the question is "does any source carry
+ *                      this name?" and never as a vocabulary term. The model
+ *                      answers a skill as two fields and its canonical form
+ *                      can drop a word the posting put in front of it:
+ *                      {@code Agile frameworks (Scrum, Kanban)} arrives with
+ *                      the canonical {@code agile methodologies}, so an answer
+ *                      writing {@code Scrum} was reported as inventing
+ *                      something the posting had asked for by name. Measured on
+ *                      the golden posting, where five of eighteen skills spell
+ *                      a word their canonical form does not carry
  * @param postingFocus  what the job is <em>about</em>, which the About
  *                      paragraph leads with (Bolum 21.7). Separate from the
  *                      skills because it is emphasis rather than vocabulary
@@ -30,6 +41,7 @@ import java.util.Locale;
  */
 public record RewriteContext(
         List<String> postingSkills,
+        List<String> postingSkillNames,
         List<String> postingFocus,
         String ownWords,
         String language,
@@ -41,11 +53,15 @@ public record RewriteContext(
     /** Unattributed, for the tests and for any caller with no user in hand. */
     public RewriteContext(List<String> postingSkills, List<String> postingFocus,
             String ownWords, String language, String tone, String bucketKey) {
-        this(postingSkills, postingFocus, ownWords, language, tone, bucketKey, null, null);
+        this(postingSkills, List.of(), postingFocus, ownWords, language, tone, bucketKey,
+                null, null);
     }
 
     public RewriteContext {
         postingSkills = List.copyOf(postingSkills);
+        postingSkillNames = postingSkillNames == null
+                ? List.of()
+                : List.copyOf(postingSkillNames);
         postingFocus = postingFocus == null ? List.of() : List.copyOf(postingFocus);
         ownWords = ownWords == null ? "" : ownWords;
         language = language == null || language.isBlank() ? "en" : language;
@@ -77,6 +93,16 @@ public record RewriteContext(
         posting.preferredSkills().forEach(skill -> skills.add(canonical(skill)));
         skills.remove("");
 
+        // The posting's own spelling, kept beside the canonical one rather
+        // than instead of it: this list never reaches the prompt, so the
+        // vocabulary the model is shown and the vocabulary the guard checks
+        // stay the one list they were, and only the question "does a source
+        // carry this name?" gets the wider answer.
+        var written = new LinkedHashSet<String>();
+        posting.requiredSkills().forEach(skill -> written.add(asWritten(skill)));
+        posting.preferredSkills().forEach(skill -> written.add(asWritten(skill)));
+        written.remove("");
+
         // Bolum 18's responsibilities and not its keywords: the keywords are
         // the posting's vocabulary, which is exactly what a stuffed summary
         // would draw from. The validator refuses that either way, but a prompt
@@ -85,12 +111,23 @@ public record RewriteContext(
         focus.remove(null);
         focus.remove("");
 
-        return new RewriteContext(List.copyOf(skills), List.copyOf(focus), ownWords,
+        return new RewriteContext(List.copyOf(skills), List.copyOf(written),
+                List.copyOf(focus), ownWords,
                 language, tone == null ? null : tone.wireValue(), bucketKey, userId, jobId);
     }
 
     private static String canonical(JobAnalysis.Skill skill) {
         String name = skill.canonical().isBlank() ? skill.name() : skill.canonical();
         return name.strip().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Not through {@link com.mustafatetik.atomcv.shared.text.SkillNames}: this
+     * is a sentence fragment the posting wrote, not a key to compare on, and
+     * folding {@code Agile frameworks (Scrum, Kanban)} into one hyphenated
+     * token would bury the two words that are the reason it is kept.
+     */
+    private static String asWritten(JobAnalysis.Skill skill) {
+        return skill.name().strip().toLowerCase(Locale.ROOT);
     }
 }
