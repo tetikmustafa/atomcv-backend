@@ -11,8 +11,7 @@
 
 ## Aşama 1-2'den taşınanlar — hâlâ açık
 
-- **Axiom'da loglar görünüyor** — dataset açık (2026-08-26); telde doğrulanması
-  üretim dağıtımını bekliyor.
+- **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
   demeli (§ 9) — frontend'in işi.
 - **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor,
@@ -40,10 +39,10 @@ Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
 Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
-- **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş**
-  (`synthetic-631`); gerçek olan iki tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
 - **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
-- **`cover_letter` prompt'u eski cümleyi taşıyor** — `v2` model seçimini bekliyor.
+- **`cover_letter` v2 indi** — prompt 250-400 isterken "shape" ~130 istiyordu.
+  **Ölçülmedi:** v2 gerçekten uzun yazıyor mu (bir `make record` turu). Fixture'lar
+  v1'e anahtarlı: o güne kadar `local-fake` sentezliyor.
 - **Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi:** `postgresql`
   42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59; Boot'un BOM'u yetişince gider.
 
@@ -108,9 +107,8 @@ kategori boşalırsa düşüyor. **LLM yok** — kategorinin uydurulamayacağın
 etmenin yolu uyduracak kodun olmaması. Üç okuma kusuru: `.tex`'ten gelen Tech
 Stack her kategoriyi kendi entry'sine asıyor (serbest atomları okumak hiçbir şeyi
 süzmedi); `Spring Cloud (Gateway, Eureka)` tek öğe ve düz virgül bölmesi ikiye
-ayırıyordu; `RewriteContext.postingSkills` `SkillNames`'den
-geçmiyordu (ilan `spring boot`, sayfa `spring-boot`) ve burada yerel düzeltildi
-— aynı listeyi okuyan iki muhafız **aşağıda ölçüldü.** `LANGUAGES` süzülmüyor
+ayırıyordu; `RewriteContext.postingSkills` `SkillNames`'den geçmiyordu ve
+burada yerel düzeltildi (süpürmenin kalanı aşağıda). `LANGUAGES` süzülmüyor
 (karar (c)).
 
 **Yedinci golden profil `stress_long_career`** — bu **yazıldı**, okunmadı: altı
@@ -181,14 +179,16 @@ basılır.
   **Anonim işler yükseltmede taşınmıyor** ve anonim oturumun kullanıcı indeksi
   yok; anonim *üretim* inince değişir.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
-  (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişinin*
-  kaldırılmasıyla ilgisiz — karıştırılmasın.
-- **`SkillNames.canonical` bir karşılaştırmanın iki tarafının da uygulaması
-  gereken kural, ve her çağıran uygulamıyor** — dilim L'de `RewriteContext`'in
-  atladığı ortaya çıktı. Alias dosyasında sol taraf insanların yazdığı gibi.
+  (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
+- **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran
+  `RewriteValidator`'dı, düzeldi. Kalan **saklama** tutarsızlığı (içe aktarım
+  kanonik, `AtomService` ham) eşleşmeyi etkilemiyor; editör sorusu.
+- **`accessedAt` telden kalktı (`B-075`), kolon durdu.** § 48.4 iz vaat ediyor,
+  yazacak destek yolu yok (mutlak kural 3). **Yazıcısı olmadan geri ekleme:**
+  hep-null bir alan, "kimse bakmadı" diyen bir ekran demek.
 - **Düzeltme — `PGVectorTypeContributor`'daki `NoClassDefFoundError` flake değildi:**
-  run 33091345512 `main` değil **PR #86'nın dalı** (hibernate-vector 7.4.6), yani
-  sistematik. `dependabot.yml` yok sayıyor artık. **Ders: flake demeden önce dalına bak.**
+  run 33091345512 `main` değil **PR #86'nın dalıydı** (hibernate-vector 7.4.6). **Ders:
+  flake demeden önce dalına bak.** `dependabot.yml` o majörü/minörü yok sayıyor artık.
 
 **Ders (3.4, dilim 1'de ikinci kez):** *bir javadoc ne zaman çalıştığını
 söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değildir.*
