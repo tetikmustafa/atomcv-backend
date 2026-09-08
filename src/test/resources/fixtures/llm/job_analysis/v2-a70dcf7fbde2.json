@@ -1,0 +1,134 @@
+{
+  "role" : {
+    "title" : "Software Engineer",
+    "seniority" : "mid",
+    "domain" : "SaaS backend software engineering",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "MobileAction",
+    "sizeHint" : "scaleup"
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "object-oriented programming",
+    "canonical" : "object-oriented programming",
+    "importance" : "high"
+  }, {
+    "name" : "software design principles",
+    "canonical" : "software design principles",
+    "importance" : "high"
+  }, {
+    "name" : "Spring",
+    "canonical" : "spring",
+    "importance" : "high"
+  }, {
+    "name" : "JPA",
+    "canonical" : "jpa",
+    "importance" : "high"
+  }, {
+    "name" : "Hibernate",
+    "canonical" : "hibernate",
+    "importance" : "high"
+  }, {
+    "name" : "SQL",
+    "canonical" : "sql",
+    "importance" : "high"
+  }, {
+    "name" : "relational databases",
+    "canonical" : "relational databases",
+    "importance" : "high"
+  }, {
+    "name" : "RESTful APIs",
+    "canonical" : "rest apis",
+    "importance" : "high"
+  }, {
+    "name" : "Git",
+    "canonical" : "git",
+    "importance" : "medium"
+  }, {
+    "name" : "Agile software development methodologies",
+    "canonical" : "agile software development",
+    "importance" : "medium"
+  }, {
+    "name" : "analytical thinking and problem-solving skills",
+    "canonical" : "analytical thinking and problem solving",
+    "importance" : "medium"
+  }, {
+    "name" : "AI-assisted development tools",
+    "canonical" : "ai-assisted development tools",
+    "importance" : "medium"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "MySQL",
+    "canonical" : "mysql",
+    "importance" : null
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : null
+  }, {
+    "name" : "SaaS applications",
+    "canonical" : "saas",
+    "importance" : null
+  }, {
+    "name" : "product development",
+    "canonical" : "product development",
+    "importance" : null
+  }, {
+    "name" : "AWS services",
+    "canonical" : "aws",
+    "importance" : null
+  }, {
+    "name" : "EC2",
+    "canonical" : "amazon ec2",
+    "importance" : null
+  }, {
+    "name" : "RDS",
+    "canonical" : "amazon rds",
+    "importance" : null
+  }, {
+    "name" : "Heroku",
+    "canonical" : "heroku",
+    "importance" : null
+  }, {
+    "name" : "microservices architecture",
+    "canonical" : "microservices",
+    "importance" : null
+  }, {
+    "name" : "CI/CD pipelines",
+    "canonical" : "ci/cd",
+    "importance" : null
+  }, {
+    "name" : "Redis",
+    "canonical" : "redis",
+    "importance" : null
+  }, {
+    "name" : "caching technologies",
+    "canonical" : "caching",
+    "importance" : null
+  }, {
+    "name" : "NoSQL databases",
+    "canonical" : "nosql",
+    "importance" : null
+  }, {
+    "name" : "MongoDB",
+    "canonical" : "mongodb",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Build new features across a microservices architecture.", "Develop clean, maintainable, and scalable code for SaaS products.", "Participate in code reviews and write automated tests.", "Improve assigned applications and services.", "Contribute to continuous integration and continuous delivery practices.", "Troubleshoot bugs, analyze production issues, and improve system reliability.", "Collaborate with Product, QA, and engineering colleagues to deliver high-quality solutions.", "Share knowledge with teammates and contribute to engineering best practices.", "Use AI tools where appropriate to improve productivity, code quality, and problem-solving while retaining engineering judgment and ownership." ],
+  "keywords" : [ "Java", "Spring", "JPA", "Hibernate", "SQL", "REST APIs", "Git", "microservices", "SaaS", "automated testing", "CI/CD", "AWS", "EC2", "RDS", "Heroku", "MySQL", "PostgreSQL", "Redis", "MongoDB", "Agile", "AI-assisted development", "system reliability", "code review" ],
+  "experienceYears" : {
+    "min" : 3,
+    "max" : null
+  },
+  "languageRequirements" : [ "Good verbal and written English communication skills" ],
+  "companyTone" : "Fast-paced, product-driven, collaborative, high-trust, learning-oriented, and focused on ownership, technical excellence, and global impact.",
+  "jdLanguage" : "en",
+  "confidence" : 0.98,
+  "extractionNotes" : [ "The role is primarily backend-oriented based on the required Java, Spring, persistence, database, and REST API experience, although the broader platform also uses Vue.js.", "Vue.js is described as part of the platform stack but is not listed as a candidate requirement or preference.", "MySQL and PostgreSQL are treated as preferred database technologies because the posting requires relational database experience and says these specific systems are preferred.", "Employment type and work mode are not explicitly stated.", "Mid-level seniority is inferred from the requirement for at least three years of professional Java development experience.", "The company size hint reflects MobileAction's established scale and global reach while retaining a stated startup mindset." ]
+}

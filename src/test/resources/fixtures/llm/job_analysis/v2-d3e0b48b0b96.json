@@ -1,0 +1,118 @@
+{
+  "role" : {
+    "title" : "Senior Software Engineer",
+    "seniority" : "senior",
+    "domain" : "Java software engineering and Big Data",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Not specified",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "Java EE",
+    "canonical" : "java ee",
+    "importance" : "critical"
+  }, {
+    "name" : "Spring Framework",
+    "canonical" : "spring framework",
+    "importance" : "critical"
+  }, {
+    "name" : "Spring Boot",
+    "canonical" : "spring boot",
+    "importance" : "high"
+  }, {
+    "name" : "Spring MVC",
+    "canonical" : "spring mvc",
+    "importance" : "high"
+  }, {
+    "name" : "Spring Core",
+    "canonical" : "spring core",
+    "importance" : "high"
+  }, {
+    "name" : "Professional software engineering practices",
+    "canonical" : "software engineering best practices",
+    "importance" : "high"
+  }, {
+    "name" : "Full software development life cycle",
+    "canonical" : "software development lifecycle",
+    "importance" : "high"
+  }, {
+    "name" : "Code reviews",
+    "canonical" : "code review",
+    "importance" : "medium"
+  }, {
+    "name" : "Source control management",
+    "canonical" : "source control management",
+    "importance" : "medium"
+  }, {
+    "name" : "Continuous delivery",
+    "canonical" : "continuous delivery",
+    "importance" : "medium"
+  }, {
+    "name" : "Testing",
+    "canonical" : "software testing",
+    "importance" : "high"
+  }, {
+    "name" : "Web-based applications",
+    "canonical" : "web application development",
+    "importance" : "high"
+  }, {
+    "name" : "REST services",
+    "canonical" : "rest services",
+    "importance" : "high"
+  }, {
+    "name" : "Agile frameworks",
+    "canonical" : "agile",
+    "importance" : "high"
+  }, {
+    "name" : "Scrum",
+    "canonical" : "scrum",
+    "importance" : "medium"
+  }, {
+    "name" : "Kanban",
+    "canonical" : "kanban",
+    "importance" : "medium"
+  }, {
+    "name" : "OOP",
+    "canonical" : "object-oriented programming",
+    "importance" : "high"
+  }, {
+    "name" : "Design Patterns",
+    "canonical" : "design patterns",
+    "importance" : "high"
+  }, {
+    "name" : "Test Driven Development",
+    "canonical" : "test-driven development",
+    "importance" : "high"
+  }, {
+    "name" : "Unit Testing",
+    "canonical" : "unit testing",
+    "importance" : "high"
+  }, {
+    "name" : "English",
+    "canonical" : "english",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Big Data technologies",
+    "canonical" : "big data",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Develop software using Java and Java EE.", "Build web-based applications and REST services with the Spring Framework.", "Participate throughout the software development lifecycle, including coding, code reviews, source control, continuous delivery, testing, and operations.", "Apply object-oriented programming, design patterns, test-driven development, and unit testing.", "Work within Agile frameworks such as Scrum and Kanban.", "Contribute to software development involving Big Data technologies." ],
+  "keywords" : [ "Senior Software Engineer", "Java", "Java EE", "Spring Framework", "Spring Boot", "Spring MVC", "Spring Core", "Big Data", "REST services", "web applications", "software development lifecycle", "code review", "source control", "continuous delivery", "Agile", "Scrum", "Kanban", "object-oriented programming", "design patterns", "test-driven development", "unit testing" ],
+  "experienceYears" : {
+    "min" : 5,
+    "max" : null
+  },
+  "languageRequirements" : [ "English — good command required" ],
+  "companyTone" : "Professional and enthusiastic, with a strong emphasis on technical qualifications and engineering practices.",
+  "jdLanguage" : "en",
+  "confidence" : 0.94,
+  "extractionNotes" : [ "The employer's name, company size, employment type, and work mode are not stated.", "A BSc in Computer Engineering or a relevant engineering or computer science field is required.", "The posting requires at least five years of Java and Java EE development experience and at least three years of Spring Framework experience.", "Big Data interest is emphasized in the introduction but is not listed as a mandatory technical qualification, so it is treated as preferred." ]
+}
