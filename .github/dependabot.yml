@@ -18,6 +18,25 @@ updates:
       - dependency-name: org.springframework.boot
         update-types: ["version-update:semver-major"]
 
+      # The two that follow from that one, both measured rather than assumed —
+      # each opened a PR whose "Build and test" failed for the same reason,
+      # every context that boots refusing to start.
+      #
+      # hibernate-vector's version is pinned to hibernate-core's, and Boot's BOM
+      # owns hibernate-core: 7.4.6 against Boot 3.5's 6.6.x is
+      # NoClassDefFoundError in PGVectorTypeContributor (PR #86, run
+      # 33091345512). Minor is ignored too, because the pin is exact — it moves
+      # when Boot's Hibernate moves, not before.
+      - dependency-name: org.hibernate.orm:hibernate-vector
+        update-types:
+          ["version-update:semver-major", "version-update:semver-minor"]
+
+      # springdoc 3.x targets Spring Framework 7, which is Boot 4: on 3.5 the
+      # context dies in ServletWebServerApplicationContextFactory (PR #45).
+      # Revisit with the Boot rule above, not separately.
+      - dependency-name: org.springdoc:*
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
