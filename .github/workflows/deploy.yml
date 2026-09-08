@@ -6,11 +6,25 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
-  # The tag is already built and pushed; a re-run only has to ask the server
-  # again. Useful when a deploy failed for a reason that has since been fixed
-  # on the server rather than in the code.
+  # NO `push` TRIGGER UNTIL THERE IS A SERVER TO DEPLOY TO.
+  #
+  # There is no VPS yet, so `SSH_PRIVATE_KEY` is unset and every push to `main`
+  # failed at `webfactory/ssh-agent` with "The ssh-private-key argument is
+  # empty" — a red mark on every merge that says nothing about the merge. A
+  # failure that is always there is a failure nobody reads, which is worse than
+  # not running at all.
+  #
+  # **Restore this when the VPS is up**, in the same change that adds the
+  # secrets, and check the first run: the `ssh-agent` step has never actually
+  # executed here, so its 0.10.0 bump is unverified.
+  #
+  #   push:
+  #     branches: [main]
+  #
+  # Until then the workflow is hand-run only — which it has to stay runnable
+  # for anyway: the tag is already built and pushed, so a re-run only has to
+  # ask the server again, which is what you want when a deploy failed for a
+  # reason since fixed on the server rather than in the code.
   workflow_dispatch:
     inputs:
       sha:
