@@ -123,7 +123,7 @@ dependencies {
     // every profile but prod -- so nothing is shipped from a developer's
     // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
     // request body, no headers, no address reaches the vendor.
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.9.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.55.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
