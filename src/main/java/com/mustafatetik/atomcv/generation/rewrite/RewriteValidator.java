@@ -131,7 +131,16 @@ public final class RewriteValidator {
             List<String> postingSkills, List<String> postingSpellings) {
 
         String foldedOriginal = candidate.originalText().toLowerCase(Locale.ROOT);
-        Set<String> allowed = new LinkedHashSet<>(candidate.skills());
+        // Through the dictionary, like the term it is compared against. Both
+        // sides or neither: `SkillNames` says so and this was the caller that
+        // did not, so an atom stored with `Spring Boot` failed to match a
+        // posting's `spring boot` and the rewrite naming the atom's own skill
+        // was refused. Ingestion canonicalises what it writes; `AtomService`
+        // stores what a client sends, which is where the raw form comes from.
+        Set<String> allowed = new LinkedHashSet<>();
+        for (String skill : candidate.skills()) {
+            allowed.add(SkillNames.canonical(skill));
+        }
 
         for (String term : ClaimVocabulary.of(postingSkills)) {
             if (!ClaimVocabulary.mentions(foldedAnswer, term)) {
