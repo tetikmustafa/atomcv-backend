@@ -386,8 +386,14 @@ public class LatexInlineRenderer implements InlineRenderer {
             String s = escape(run.text());
             for (String mark : run.marks()) {
                 s = switch (mark) {
-                    case "technology", "metric" -> "\\textbf{" + s + "}";
-                    case "emphasis"             -> "\\textit{" + s + "}";
+                    // 2026-09-09: `emphasis` de kalın. Referans belge
+                    // teknolojileri kalın yazıyor ve çıkarım neredeyse her şeye
+                    // EMPHASIS veriyor (§ 31.5.1), yani italik sayfanın kopya
+                    // ettiği belgeyle çelişmesiydi. Ölçüldü: yedi golden
+                    // profilde hiçbir ifadenin maliyeti 0.01pt'den fazla
+                    // değişmedi — maliyet yüksekliktir, kalın ancak satır
+                    // kırılmasını değiştirirse yüksekliği değiştirir.
+                    case "technology", "metric", "emphasis" -> "\\textbf{" + s + "}";
                     case "organization"         -> s;
                     case "link"                 -> "\\href{" + escapeUrl(run.href()) + "}{" + s + "}";
                     default                     -> s;    // ← ileri uyumluluk
