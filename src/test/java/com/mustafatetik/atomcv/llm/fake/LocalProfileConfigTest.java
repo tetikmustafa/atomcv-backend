@@ -103,6 +103,39 @@ class LocalProfileConfigTest {
                 assertThat(context.getBean(FakeLlmProperties.class).synthesize()).isFalse());
     }
 
+    /**
+     * The variable in `.env` cannot turn the fake chain into a real one, and
+     * this is here because the opposite was written down as measured fact.
+     *
+     * <p>`.env` sets `LLM_CHAIN_CHEAP` and `LLM_CHAIN_MID` to `openrouter`, the
+     * Makefile exports it, and CLAUDE.md concluded that `make dev` therefore
+     * calls a real provider whatever the profile is called. It does not:
+     * `LLM_CHAIN_CHEAP` relaxed-binds to `llm.chain.cheap`, the property here is
+     * `atomcv.llm.chain.cheap`, and the variable only ever feeds the
+     * placeholder in the base document. A profile-specific file outranks that
+     * document, so `[fake]` wins.
+     *
+     * <p>Which makes this a guard on a precedence, not on a value: it fails the
+     * day the override leaves `application-local-fake.yml`, which is the change
+     * that would make the old claim true.
+     */
+    @Test
+    void anEnvironmentVariableCannotTurnTheFakeChainIntoARealOne() {
+        new ApplicationContextRunner()
+                .withInitializer(new ConfigDataApplicationContextInitializer())
+                .withPropertyValues("spring.profiles.active=local,local-fake",
+                        "LLM_CHAIN_CHEAP=openrouter,gemini",
+                        "LLM_CHAIN_MID=openrouter,gemini")
+                .withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations.of(
+                        ConfigurationPropertiesAutoConfiguration.class))
+                .withUserConfiguration(Binding.class)
+                .run(context -> {
+                    var llm = context.getBean(LlmProperties.class);
+                    assertThat(llm.chainFor(ModelTier.CHEAP)).containsExactly("fake");
+                    assertThat(llm.chainFor(ModelTier.MID)).containsExactly("fake");
+                });
+    }
+
     private static void run(String profiles, ContextAssertion assertion) {
         new ApplicationContextRunner()
                 .withInitializer(new ConfigDataApplicationContextInitializer())

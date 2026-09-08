@@ -27,7 +27,7 @@ LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
 **Dilim M — P3'ün yanlış pozitifleri ölçüldü.** On altı kayıtlı `about_synthesis` cevabı golden profil ve ilanına oynatıldı: kelime sınırı tireyi kelime karakteri sayıyordu, **on token / dört özet / bir verdict** haksız reddedilmiş; ayırıcılar iki tarafta da katlandı ve gerçek ret kalkmadı.
 İlanın kendi yazımı muhafıza **kaynak** oldu, prompt'a ve sözlüğe girmedi — `bullet_rewrite`'ın fixture'ları ve prompt sürümü yerinde (§ 53.2). Aynı dilimde **sığmayan atomsuz entry** artık `rejectedEntries`'e giriyor: § 20.2'nin diploma satırı dolu sayfada sessizce kaybolmuyor.
 
-**Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü; fiyat tablosu, VPS/restore. **`make dev` bedava değil** — `.env`'in `LLM_CHAIN_*`'i eziyor.
+**Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü (yerelde 141 gerçek çağrı, hepsi 0.000000); fiyat tablosu, VPS/restore. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
 
 **Test:** 1219 birim · 457 entegrasyon · latex 64/64 — 0 hata
 

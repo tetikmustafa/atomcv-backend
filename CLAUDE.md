@@ -157,13 +157,15 @@ True here and nowhere in the architecture documents; each cost a debugging round
   `RESEND_API_KEY` sent sign-in mail to the internet instead of Mailpit and
   `TURNSTILE_SECRET_KEY` made every `POST /auth/magic-link` a 403;
   `application-local.yml` reads both from `LOCAL_*` names now, and **add any new
-  production secret there the same way.** A third is not a secret and is worse:
-  `.env` sets `LLM_CHAIN_CHEAP`/`LLM_CHAIN_MID` to `openrouter`, an environment
-  variable outranks `application-local-fake.yml`'s `chain: [fake]`, so
-  **`make dev` calls a real provider and spends real money** whatever the
-  profile is called — measured, not inferred: a `local-fake` import ran a
-  127-second OpenRouter call. Until it is fixed, `unset LLM_CHAIN_CHEAP
-  LLM_CHAIN_MID` before any run that is supposed to be free.
+  production secret there the same way.**
+- **`.env`'s `LLM_CHAIN_*` does *not* make `make dev` spend money** — this file
+  said it did, wrongly twice over. `LLM_CHAIN_CHEAP` binds to `llm.chain.cheap`,
+  the property is `atomcv.llm.chain.cheap`, so the variable only feeds the
+  placeholder in the base document — which `application-local-fake.yml` outranks.
+  Measured, and pinned by `LocalProfileConfigTest`. The 127-second OpenRouter
+  call it cited was a `make record` run: all 141 real calls in the local database
+  wrote a fixture, and writing one is what `local-record` does. **The profile is
+  what spends money**, and `local-record`/`local-real` are supposed to.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner**; the source
   encoding is pinned in `build.gradle.kts`, do not remove it. The same console
   makes **`print()` of a non-ASCII string raise `UnicodeEncodeError`** — a
