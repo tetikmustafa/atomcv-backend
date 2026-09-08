@@ -317,3 +317,20 @@ atomcv:
 
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}
+      # Who may serve a call, which EK C.1's provider list has to be able to
+      # answer. `deny` keeps the prompt away from any provider that would keep
+      # it for training — the prompt is somebody's CV, and this is the only
+      # place that question is asked. Overridable because a deployment that
+      # loses every eligible endpoint has to be able to say so without a
+      # release; it is a line in the published list either way.
+      data-collection: ${OPENROUTER_DATA_COLLECTION:deny}
+      # Empty means the broker routes and four names belong in the list:
+      # `openai`, `azure`, `azure/eu`, `amazon-bedrock/us-east-1` all serve this
+      # model, at 2 to 5.50 per million input. Naming one bounds the list and
+      # makes the price table exact, at the cost of the broker's own fallback —
+      # the chain's second vendor is what covers that (Bolum 27.3).
+      only: ${OPENROUTER_ONLY:}
+      # Zero-retention endpoints only. Off, and not because it is unwanted:
+      # which endpoints qualify is not in the model's metadata, so this is
+      # measured against the account before it ships, never assumed.
+      zero-data-retention: ${OPENROUTER_ZDR:false}
