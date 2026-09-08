@@ -21,9 +21,9 @@
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
 **Tam kayıt `kapanis-denetimi.md`'de**; kalıcı olanlar `spec/`'e işlendi
-(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). Hâlâ canlı biri:
-**sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor** (o liste atom atom
-gösteriliyor, hiçbir atoma çözülmeyen bir entry id'si sessizlikten kötü).
+(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). **Canlı madde kalmadı:**
+sığmayan başlık-adayı artık `rejectedEntries`'e giriyor — `headerOnlyEntries`'in yanı,
+tek sebep `BUDGET` (inaktif aday olmuyor, minimumdan muaf), eski snapshot'ta boş (EK D.6.3), telde değişiklik yok.
 `SelectionPhase.openEntries`'in `LinkedHashSet` zorunluluğu CLAUDE.md'de.
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
