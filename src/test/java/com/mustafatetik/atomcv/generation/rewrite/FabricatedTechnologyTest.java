@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.rewrite;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.shared.text.ClaimVocabulary;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import java.util.List;
 import java.util.Locale;
@@ -172,6 +173,75 @@ class FabricatedTechnologyTest {
         } finally {
             Locale.setDefault(before);
         }
+    }
+
+    /**
+     * The false positive this guard was measured producing, which is the other
+     * half of the same rule: a name the page carries is not an invention, and
+     * the page spells its skills the way ingestion canonicalised them.
+     *
+     * <p>Sixteen recorded summaries were replayed against one real profile.
+     * The page carried {@code spring-cloud-gateway}, {@code netflix-eureka},
+     * {@code spring-data-jpa} and {@code json-web-token}; this summary — the
+     * recorded one, verbatim — names their parts the way a sentence does, and
+     * every one of {@code Gateway}, {@code Netflix}, {@code Eureka},
+     * {@code JPA}, {@code JSON} and {@code Token} came back as an invention.
+     * The boundary counted the hyphen as a word character, so {@code Gateway}
+     * was hunted for inside {@code spring-cloud-gateway} and not found.
+     *
+     * <p>It cost the person their summary and the product two model calls, and
+     * it failed in the direction that looks like nothing being wrong: the
+     * original paragraph is printed and no one is told why.
+     */
+    @Test
+    void awordInsideAcanonicalisedPageSkillIsNotAnInvention() {
+        var candidate = new AboutCandidate(UUID.randomUUID(),
+                RichContent.plain("Architected scalable microservices with Java 21, "
+                        + "Spring Boot and Spring Cloud."),
+                List.of("distributed-systems", "java", "spring-boot", "spring-cloud",
+                        "spring-cloud-gateway", "netflix-eureka", "openfeign", "rest",
+                        "test-driven-development", "spring-data-jpa", "hibernate",
+                        "json-web-token", "docker", "docker-compose", "microservices"),
+                List.of(), "", NO_POSTING, 500);
+
+        var issues = AboutValidator.validate(candidate,
+                "Backend developer specializing in distributed systems and Java microservices "
+                        + "with Spring Boot, Spring Cloud, Spring Cloud Gateway, Netflix Eureka, "
+                        + "and OpenFeign. Builds high-availability services using REST, "
+                        + "test-driven development, Spring Data JPA, Hibernate, JSON Web Token, "
+                        + "Docker, and Docker Compose.",
+                NO_POSTING);
+
+        assertThat(issues).doesNotContain(RewriteIssue.UNSUPPORTED_CLAIM);
+    }
+
+    /** The mechanism on its own, without a validator around it. */
+    @Test
+    void thehyphenInAcanonicalNameIsNotAWordBoundary() {
+        assertThat(ClaimVocabulary.introducedNames(
+                "Builds services with Spring Data JPA and JSON Web Token.",
+                List.of("spring-data-jpa", "json-web-token")))
+                .isEmpty();
+    }
+
+    /**
+     * And the dictionary, which this check never opened.
+     *
+     * <p>Reasoned rather than measured, and said out loud for that reason: no
+     * recorded answer has written the abbreviation, so what stands behind this
+     * is {@code aliases.txt} having had the line since it was written, not a
+     * summary that was refused for it.
+     */
+    @Test
+    void anabbreviationTheDictionaryKnowsIsNotAnInvention() {
+        assertThat(SkillNames.aliases())
+                .as("the pair has to be in the file, or this test proves nothing")
+                .containsEntry("oop", "object-oriented-programming");
+
+        assertThat(ClaimVocabulary.introducedNames(
+                "Applies OOP across the service layer.",
+                List.of("object-oriented-programming")))
+                .isEmpty();
     }
 
     private static RewriteCandidate bullet(String original) {
