@@ -14,7 +14,8 @@ public record SelectionState(
         List<SelectedAtom> selected,
         List<RejectedAtom> rejected,
         BudgetBreakdown budget,
-        List<UUID> headerOnlyEntries) {
+        List<UUID> headerOnlyEntries,
+        List<RejectedEntry> rejectedEntries) {
 
     public SelectionState {
         selected = List.copyOf(selected);
@@ -25,13 +26,24 @@ public record SelectionState(
         headerOnlyEntries = headerOnlyEntries == null
                 ? List.of()
                 : List.copyOf(headerOnlyEntries);
+        rejectedEntries = rejectedEntries == null
+                ? List.of()
+                : List.copyOf(rejectedEntries);
     }
 
     /** A selection with no atomless entry on it, which is most of them. */
     public SelectionState(
             List<SelectedAtom> selected, List<RejectedAtom> rejected, BudgetBreakdown budget) {
 
-        this(selected, rejected, budget, List.of());
+        this(selected, rejected, budget, List.of(), List.of());
+    }
+
+    /** One with an atomless entry that reached the page, and none that did not. */
+    public SelectionState(
+            List<SelectedAtom> selected, List<RejectedAtom> rejected, BudgetBreakdown budget,
+            List<UUID> headerOnlyEntries) {
+
+        this(selected, rejected, budget, headerOnlyEntries, List.of());
     }
 
     public record SelectedAtom(
@@ -45,7 +57,30 @@ public record SelectionState(
     public record RejectedAtom(UUID atomId, double score, RejectionReason reason) {
     }
 
-    /** Why an atom did not make it. Every one of these is explainable to a user (P7). */
+    /**
+     * An entry that was offered the page by its heading alone and did not get
+     * it (Bolum 20.2, 20.5).
+     *
+     * <p>Its own record rather than a {@link RejectedAtom} with an entry id in
+     * it. The two ids are not interchangeable: Bolum 20.5's list is read atom
+     * by atom, and one that resolved to nothing would be worse than saying
+     * nothing at all — which is what this used to do, and why a degree line
+     * could vanish off a full page without a word. The list it belongs in is
+     * the one where the id means what it says.
+     *
+     * <p>{@code BUDGET} is the only reason that reaches it, and the other two
+     * cannot: an inactive entry is never offered as a candidate, and the
+     * minimum is a statement about bullets that an entry without any is exempt
+     * from. A new reason here would want its own thought about which of the
+     * two lists it belongs in.
+     */
+    public record RejectedEntry(UUID entryId, double score, RejectionReason reason) {
+    }
+
+    /**
+     * Why an atom — or, for {@code BUDGET}, an entry — did not make it. Every
+     * one of these is explainable to a user (P7).
+     */
     public enum RejectionReason {
         /** There was no room left. */
         BUDGET,

@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionRequest.EntryPlan;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest.SectionPlan;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.BudgetBreakdown;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectedAtom;
+import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectedEntry;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.RejectionReason;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
@@ -123,6 +124,7 @@ public final class SelectionPhase {
 
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
+        private final List<RejectedEntry> rejectedEntries = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
 
         private double structurePt;
@@ -182,7 +184,8 @@ public final class SelectionPhase {
                     List.copyOf(rejected),
                     new BudgetBreakdown(totalBudgetPt, structurePt,
                             totalBudgetPt - structurePt, contentPt),
-                    List.copyOf(headerOnly)));
+                    List.copyOf(headerOnly),
+                    List.copyOf(rejectedEntries)));
         }
 
         /** An atom the user switched off is not a candidate at all (constraint 3). */
@@ -708,11 +711,13 @@ public final class SelectionPhase {
         private void rejectWhatIsLeft() {
             for (AtomCandidate atom : pool.values()) {
                 if (atom.headerOnly()) {
-                    // No rejection for a heading that did not fit: every
-                    // RejectedAtom names an atom, and this one would name an
-                    // entry. Bolum 20.5's list is what the user is shown
-                    // atom by atom, and an id in it that resolves to nothing
-                    // is worse than the silence.
+                    // Not a RejectedAtom: every one of those names an atom and
+                    // this names an entry, and Bolum 20.5's list is read atom
+                    // by atom. It goes in the list where the id means what it
+                    // says instead of going nowhere — the heading carries the
+                    // entry's own id, which is what RejectedEntry wants.
+                    rejectedEntries.add(new RejectedEntry(
+                            atom.entryId(), atom.score(), RejectionReason.BUDGET));
                     continue;
                 }
                 rejected.add(new RejectedAtom(

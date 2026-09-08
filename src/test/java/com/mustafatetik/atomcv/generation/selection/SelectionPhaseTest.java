@@ -233,8 +233,19 @@ class SelectionPhaseTest {
         assertThat(select(request).orElseThrow().headerOnlyEntries()).containsExactly(entryId);
     }
 
+    /**
+     * The heading that did not fit says so — as an entry, in its own list.
+     *
+     * <p>It used to say nothing at all, and the reason was sound as far as it
+     * went: {@code RejectedAtom} names an atom, so an entry id in that list is
+     * an id Bolum 20.5's screen cannot resolve to anything, which is worse than
+     * silence. But silence is what a person sees when their degree line
+     * disappears off a full page, and "the page ran out" is exactly the answer
+     * P7 says every drop owes them. So the id goes where it is what it claims
+     * to be.
+     */
     @Test
-    void aHeadingThatDoesNotFitIsNotOnThePageAndIsNotRejectedEither() {
+    void aHeadingThatDoesNotFitIsRejectedAsAnEntryAndNotAsAnAtom() {
         // Bullets worth far more per point take the page first, and what is
         // left over is less than the heading costs.
         var atoms = new ArrayList<AtomCandidate>();
@@ -252,9 +263,46 @@ class SelectionPhaseTest {
         var state = select(request).orElseThrow();
 
         assertThat(state.headerOnlyEntries()).isEmpty();
-        // No RejectedAtom either: it names an atom, and this one would name an
-        // entry the user cannot resolve to anything.
-        assertThat(state.rejected()).noneMatch(rejection -> rejection.atomId().equals(entryId));
+        assertThat(state.rejected())
+                .as("an entry id in the atom list is an id the screen cannot resolve")
+                .noneMatch(rejection -> rejection.atomId().equals(entryId));
+        assertThat(state.rejectedEntries()).singleElement().satisfies(rejection -> {
+            assertThat(rejection.entryId()).isEqualTo(entryId);
+            assertThat(rejection.score()).isEqualTo(0.1);
+            assertThat(rejection.reason()).isEqualTo(RejectionReason.BUDGET);
+        });
+    }
+
+    /**
+     * And it is in one list or the other, never both.
+     *
+     * <p>A heading can reach the page and be swapped off it again, and the
+     * bookkeeping that closes its entry is what has to put it back among the
+     * candidates. When that goes wrong the failure is invisible in the
+     * document and wrong in the record — an entry reported as printed and
+     * rejected at once, or as neither.
+     */
+    @Test
+    void aHeadingIsEitherOnThePageOrRejected() {
+        UUID entryId = UUID.randomUUID();
+        var atoms = new ArrayList<AtomCandidate>();
+        for (int index = 0; index < 8; index++) {
+            atoms.add(atom(0.9, BULLET_PT, false));
+        }
+        var request = new SelectionRequest(
+                List.of(new SectionPlan(UUID.randomUUID(), false,
+                        List.of(new EntryPlan(entryId, (short) 0,
+                                List.of(AtomCandidate.forEntryHeader(entryId, 0.1, "degree")))),
+                        atoms)),
+                1, smallCapacity());
+
+        var state = select(request).orElseThrow();
+
+        assertThat(state.headerOnlyEntries().contains(entryId)
+                ^ state.rejectedEntries().stream()
+                        .anyMatch(rejection -> rejection.entryId().equals(entryId)))
+                .as("printed or rejected, exactly one")
+                .isTrue();
     }
 
     @Test
