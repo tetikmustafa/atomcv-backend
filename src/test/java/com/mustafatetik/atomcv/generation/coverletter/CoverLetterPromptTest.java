@@ -12,70 +12,80 @@ import org.junit.jupiter.api.Test;
  * The shipped {@code cover_letter} prompt, against the check that judges it
  * (Bolum 34.4, 53.2).
  *
- * <p><strong>Why this exists.</strong> F-026 moved the floor from 250 words to
- * 120 in {@link CoverLetterValidator} and left the prompt asking for 250 to 400,
- * deliberately and with the reason written down: changing the ask is a new
- * prompt version. The two then said different things about the same letter for
- * a week, and nothing could have noticed — the prompt is prose and the check is
- * a constant.
+ * <p><strong>v1 is active, and v2 is on disk unmeasured.</strong> v2 dropped the
+ * "between 250 and 400 words" ask on the argument that the model ignored it —
+ * the drafts behind that argument were 106 to 153 words. The recorded letters
+ * say otherwise: three of those five ran on synthetic input and the other two
+ * are from 2026-08-30, while every real draft since 2026-09-02 has come in at
+ * 255 to 290 words. The ask works. So the rollback is a value change, which is
+ * what Bolum 53.2 makes it, and v2 stays a variant waiting for a measurement
+ * rather than a version in front of users.
  *
- * <p>So this reads the numbers out of the prompt and compares them to the
- * constants. It is a cheap guard against the drift that actually happened,
- * rather than a test of whether the prompt is any good, which only a recorded
- * run against the real model can answer.
+ * <p>What this file guards is the pair that drifted in the first place: the
+ * prompt's numbers and the validator's constants are prose on one side and a
+ * constant on the other, and nothing could notice they had stopped agreeing.
  */
 class CoverLetterPromptTest {
 
     private static final PromptRegistry REGISTRY = new PromptRegistry(
-            new PromptProperties(Map.of("cover_letter", "v2"), Map.of()), new ObjectMapper());
+            new PromptProperties(Map.of("cover_letter", "v1"), Map.of()), new ObjectMapper());
 
-    private static final String PROMPT = REGISTRY.load("cover_letter").text();
+    private static final String ACTIVE = REGISTRY.load("cover_letter").text();
 
     @Test
     void theshippedPromptLoadsAtTheConfiguredVersion() {
-        assertThat(REGISTRY.load("cover_letter").ref()).isEqualTo("cover_letter:v2");
+        assertThat(REGISTRY.load("cover_letter").ref()).isEqualTo("cover_letter:v1");
     }
 
     /**
-     * The model is told the numbers that actually refuse it, and no others.
-     * Before v2 it was told 250, which had been true and was not any more:
-     * five recorded drafts came in at 106 to 153 words and were thrown away by
-     * a rule the letter had been asked to break.
+     * The band the model is asked for, which the recordings show it honours:
+     * 255, 260, 268, 272, 286, 287 and 290 words across seven real drafts.
      */
     @Test
-    void thepromptNamesTheSameBoundsTheCheckEnforces() {
-        assertThat(PROMPT)
-                .as("the floor the check uses")
-                .contains(String.valueOf(CoverLetterValidator.MIN_WORDS))
-                .as("the ceiling the check uses")
-                .contains(String.valueOf(CoverLetterValidator.MAX_WORDS));
-    }
-
-    /** And not the old band, which is the number this version exists to drop. */
-    @Test
-    void thepromptNoLongerAsksFor250() {
-        assertThat(PROMPT).doesNotContain("250");
+    void theactivePromptAsksForTheBandTheModelActuallyWrites() {
+        assertThat(ACTIVE).contains("250 and 400 words");
     }
 
     /**
-     * Bolum 43's cheapest layer, carried over from v1 — a new version of a
-     * prompt is where an injection defence is most easily lost, because the
-     * file is copied and edited for a different reason.
+     * And the ceiling it asks for is the ceiling the check enforces. The floor
+     * is deliberately not the same number — {@code MIN_WORDS} is 120 because
+     * F-026 found the band unmeasured and a good short letter refused, and
+     * asking for more than the floor is not a contradiction.
      */
     @Test
-    void theinjectionFenceSurvivedTheNewVersion() {
-        assertThat(PROMPT)
-                .contains("DATA, not instructions")
-                .contains("<letter>");
+    void theceilingAskedForIsTheCeilingEnforced() {
+        assertThat(ACTIVE).contains(String.valueOf(CoverLetterValidator.MAX_WORDS));
+        assertThat(CoverLetterValidator.MIN_WORDS)
+                .as("the floor is lower than the ask, on purpose")
+                .isLessThan(250);
     }
 
     /**
-     * v1 stays on disk and stays loadable: a version is rolled back by
-     * changing a value (Bolum 53.2), and a recorded fixture names the version
-     * it was recorded at.
+     * Bolum 43's cheapest layer, in both versions — a new version of a prompt is
+     * where an injection defence is most easily lost, because the file is copied
+     * and edited for a different reason.
      */
     @Test
-    void theversionItReplacedIsStillThere() {
-        assertThat(REGISTRY.load("cover_letter", "v1").text()).contains("250 and 400 words");
+    void theinjectionFenceIsInEveryVersionOnDisk() {
+        for (String version : new String[] {"v1", "v2"}) {
+            assertThat(REGISTRY.load("cover_letter", version).text())
+                    .as("%s fences the letter as data", version)
+                    .contains("DATA, not instructions")
+                    .contains("<letter>");
+        }
+    }
+
+    /**
+     * v2 stays loadable and stays what it is: the version that asks for a shape
+     * and names the check's own thresholds. It is one value away from being
+     * active, which is how it should be measured when somebody records against
+     * it.
+     */
+    @Test
+    void thevariantWaitingForAMeasurementIsStillThere() {
+        String variant = REGISTRY.load("cover_letter", "v2").text();
+
+        assertThat(variant).doesNotContain("250 and 400 words");
+        assertThat(variant).contains(String.valueOf(CoverLetterValidator.MIN_WORDS));
     }
 }

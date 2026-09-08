@@ -88,12 +88,17 @@ MALİYET
 □ Kill switch test edildi
 □ Kota sayaçları doğru çalışıyor
 □ DAILY_BUDGET_USD ayarlandı
+□ Fiyat tablosu kullanılan modeli kapsıyor
+  → LlmPricingAudit açılışta sessiz, llm.unpriced_calls artmıyor
 □ Anomali alarmları e-postaya geliyor
 
 HUKUKİ
 □ Gizlilik Politikası yayında
 □ Kullanım Şartları yayında
 □ AI sağlayıcı listesi güncel ve açık
+  → ProcessorAudit'in açılış satırıyla karşılaştırıldı: liste yapılandırmadan
+    türüyor (zincir + model), o yüzden model ya da sağlayıcı değişince
+    yayımlanan sayfa da değişir
 
 OPERASYON
 □ Axiom log akışı çalışıyor
