@@ -27,13 +27,13 @@ except Exception:
 [ -z "$CMD" ] && exit 0
 
 # Keep this list in sync with .claude/settings.json's permissions.deny.
+#
+# `git push`, `git merge`, `git rebase` and the `gh pr` verbs used to be here.
+# They are now `ask` rather than `deny`: the developer still approves each one
+# at the prompt, which is the decision that mattered, but it no longer costs a
+# copy-paste round trip. Everything left is denied outright and belongs to no
+# prompt — a repo-to-repo sync, production, or data that does not come back.
 PATTERNS=(
-  'git push'
-  'git merge'
-  'git rebase'
-  'gh pr create'
-  'gh pr merge'
-  'gh pr review'
   'sync-spec\.sh'
   'sync-handoff\.sh'
   'docker-compose\.prod\.yml'

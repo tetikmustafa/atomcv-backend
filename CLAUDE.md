@@ -33,23 +33,22 @@ We Ship* is something you offer, not something you do quietly.
 
 ## Propose, Don't Run
 
-For the operations below, **never call Bash yourself.** Print the exact
-command in a fenced code block, one line on what it does, and stop.
+**Never run these, and do not retry when they are blocked** — print the command
+instead: `scripts/sync-spec.sh`, `scripts/sync-handoff.sh` or any repo-to-repo
+sync; `docker-compose.prod.yml` and the deploy pipeline; a migration against
+anything but the local dev database; anything that deletes data
+(`git clean -fdx`, `docker volume rm`). `.claude/settings.json` denies them and
+the PreToolUse hook checks the command string a second time.
 
-- `git push`, `git merge`, `git rebase`, anything touching a remote or moving
-  `main`
-- `gh pr create`, `gh pr merge`, `gh pr review`
-- `scripts/sync-spec.sh`, `scripts/sync-handoff.sh`, any repo-to-repo sync
-- `docker-compose.prod.yml`, the deploy pipeline, a migration against anything
-  but the local dev database, and any command that deletes data
-  (`git clean -fdx`, `docker volume rm`)
+**`git push`, `git merge`, `git rebase` and the `gh pr` verbs prompt instead**
+(`ask`). The prompt is the developer's decision, not a formality: say what the
+command does and why before calling it, and **never merge without an explicit
+yes in the conversation** — *How We Ship* still holds, and `main` is pushed
+before a PR is opened.
 
-Enforced at the tool-permission layer too (`.claude/settings.json` and the
-PreToolUse hook): if a call is blocked, print the command and move on rather
-than retrying. **`git commit` is not on this list** — but the `post-commit`
-hook in `.githooks/` copies `docs/handoff/**` and `docs/STATUS.md` into
-`../atomcv-frontend` and commits there, so a commit touching those files
-writes to the other repository on purpose.
+**`git commit` runs freely** — but `.githooks/post-commit` copies
+`docs/handoff/**` and `docs/STATUS.md` into `../atomcv-frontend` and commits
+there, so a commit touching those files writes to the other repository.
 
 Run freely, without asking: local build, test, lint, typecheck, and any
 `gradlew` script that only touches this repo's own working tree.

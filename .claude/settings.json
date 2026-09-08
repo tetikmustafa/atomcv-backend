@@ -2,12 +2,6 @@
   "permissions": {
     "defaultMode": "default",
     "deny": [
-      "Bash(git push:*)",
-      "Bash(git merge:*)",
-      "Bash(git rebase:*)",
-      "Bash(gh pr create:*)",
-      "Bash(gh pr merge:*)",
-      "Bash(gh pr review:*)",
       "Bash(*sync-spec.sh*)",
       "Bash(*sync-handoff.sh*)",
       "Bash(docker compose -f docker-compose.prod.yml*)",
@@ -17,6 +11,12 @@
       "Bash(*flyway*prod*)"
     ],
     "ask": [
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr review:*)",
       "Write(docs/notes/**)",
       "Write(docs/STATUS.md)",
       "Write(docs/spec/**)"
