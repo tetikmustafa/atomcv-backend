@@ -12,8 +12,16 @@ import java.util.UUID;
  *
  * <p><strong>The grant is echoed back because a consent nobody can check is
  * not a consent.</strong> Bolum 48.4 promises the person can see when their
- * content was actually read; {@code accessedAt} is that promise, and it is
- * null until somebody looks.
+ * content was actually read.
+ *
+ * <p><strong>And that half of the promise is not on the wire, because nothing
+ * can keep it yet.</strong> {@code support_grants.accessed_at} exists and
+ * nothing writes it: reading somebody else's content needs a support-facing
+ * path, and absolute rule 3 means there is deliberately none — every read goes
+ * through a repository scoped to the owner. A field that is structurally always
+ * null is not an audit trail, it is a screen telling the person nobody looked
+ * whatever happened, so it is withheld until there is a reader to stamp it.
+ * The column stays; the claim comes back with the path (`B-075`).
  *
  * @param comment deliberately absent. They wrote it, they have it, and
  *                sending it back is a copy of their words travelling for no
@@ -33,15 +41,12 @@ public record FeedbackResponse(
      * @param open      whether the content may be read right now — false once
      *                  it is withdrawn or run out, which are different events
      *                  and the timestamps say which
-     * @param accessedAt when it was actually used, or absent. The audit trail
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record Grant(boolean open, Instant expiresAt, Instant accessedAt,
-            Instant revokedAt) {
+    public record Grant(boolean open, Instant expiresAt, Instant revokedAt) {
 
         static Grant of(SupportGrant grant, Instant now) {
-            return new Grant(grant.isOpenAt(now), grant.getExpiresAt(),
-                    grant.getAccessedAt(), grant.getRevokedAt());
+            return new Grant(grant.isOpenAt(now), grant.getExpiresAt(), grant.getRevokedAt());
         }
     }
 
