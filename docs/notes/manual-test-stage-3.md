@@ -285,3 +285,50 @@ docker compose exec postgres psql -U atomcv -d atomcv -c \
   Adım 3.2'nin işi ve yalnız üretimde doğrulanır.
 - **`suspicious_output`** — bir enjeksiyon tripwire'ı; uslu bir modelle
   açılmaması **beklenen** davranış, eksik değil.
+
+---
+
+## `cover_letter` v2'yi ölçmek — ve neden aktif değil
+
+v2 prompt'u 2026-09-09'da indi ve **aynı gün aktiflikten alındı**: gerekçesi
+diskteki kayıtlara karşı çürüdü. v2, "prompt 250-400 istiyor ama model şekle
+uyup ~130 yazıyor" iddiasıyla sayıyı bırakmıştı. Kayıtlı on iki `cover_letter`
+cevabının dağılımı şu:
+
+| tarih | kelime | not |
+|---|---|---|
+| 08-28 ×3 | 106, 119, 127 | **hepsi sentetik girdiyle koşulmuş** |
+| 08-30 ×2 | 130, 153 | `F-026`'nın ölçtüğü ikisi |
+| 09-02 → 09-07 ×7 | 255, 260, 268, 272, 286, 287, 290 | hepsi gerçek |
+
+**Model isteği tutuyor.** Kısa olanların üçü sentetik, ikisi 30 Ağustos'tan; 2
+Eylül'den sonraki her gerçek taslak bandın içinde. Yani v2 işleyen bir isteği
+kaldırıyordu. Aktif sürüm `v1`; v2 diskte duruyor ve **tek bir değer** uzakta.
+
+**Ölçmek isteyen ne yapar.** `application.yml`'da `cover_letter: v2` (ya da
+`prompts.experiment` ile trafiğin bir kısmı) ve bir kayıt turu — para harcar,
+`cover_letter` başına birkaç kuruş:
+
+    # Kabuk 1
+    make dev-full
+    # Kabuk 2 — GERÇEK çağrılar
+    make record
+    # Kabuk 3
+    ./scripts/dev-record.sh /c/Users/tetik/Desktop/cv.pdf
+
+Sonra karşılaştırma; fixture adı sürümü taşıdığı için ikisi yan yana durur.
+Git Bash'te, `python -` ile şu betiği besle:
+
+    import glob, json, os
+    for path in sorted(glob.glob('src/test/resources/fixtures/llm/cover_letter/*.json')):
+        with open(path, encoding='utf-8') as handle:
+            letter = json.load(handle)
+        text = ' '.join(str(v) for v in letter.values() if isinstance(v, str))
+        print(f"{os.path.basename(path):28} {len(text.split()):4d} kelime")
+
+**Ne aranıyor:** `v2-*` satırları **255-290 bandını tutuyor mu**. Tutmuyorsa v2
+mektupları kısaltmış olur ve v1 kalır. Tutuyorsa v2'nin eklediği şey bedavaya
+gelir: modele muhafızın gerçek eşiklerini (120/400) söylemek.
+
+**Ders:** bir prompt iddiasını fixture'ların *tamamına* karşı ölç, ilk beşine
+karşı değil — ve sentetik girdiyle koşulmuş olanı sayma.

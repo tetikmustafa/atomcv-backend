@@ -12,8 +12,7 @@
 ## Aşama 1-2'den taşınanlar — hâlâ açık
 
 - **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
-- **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
-  demeli (§ 9) — frontend'in işi.
+- **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra" demeli (§ 9) — frontend'in işi.
 - **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor,
   `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler.
 
@@ -40,9 +39,10 @@ Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 
 Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
 - **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
-- **`cover_letter` v2 indi** — prompt 250-400 isterken "shape" ~130 istiyordu.
-  **Ölçülmedi:** v2 gerçekten uzun yazıyor mu (bir `make record` turu). Fixture'lar
-  v1'e anahtarlı: o güne kadar `local-fake` sentezliyor.
+- **Düzeltme — `cover_letter` v2 aktiflikten alındı, gerekçesi çürüdü.** "Model
+  250-400'ü yok sayıyor" iddiası ilk beş fixture'a dayanıyordu; on ikisine bakınca
+  üçü sentetik ve 09-02 sonrası yedi gerçek taslak 255-290 kelime. Aktif `v1`, v2
+  diskte; tarife `manual-test-stage-3.md`'de. **Ders: tamamına karşı ölç.**
 - **Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi:** `postgresql`
   42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59; Boot'un BOM'u yetişince gider.
 
@@ -181,8 +181,8 @@ basılır.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran
-  `RewriteValidator`'dı, düzeldi. Kalan **saklama** tutarsızlığı (içe aktarım
-  kanonik, `AtomService` ham) eşleşmeyi etkilemiyor; editör sorusu.
+  `RewriteValidator`'dı, düzeldi. Kalan **saklama** tutarsızlığı (içe aktarım kanonik,
+  `AtomService` ham) eşleşmeyi etkilemiyor; editör sorusu.
 - **`accessedAt` telden kalktı (`B-075`), kolon durdu.** § 48.4 iz vaat ediyor,
   yazacak destek yolu yok (mutlak kural 3). **Yazıcısı olmadan geri ekleme:**
   hep-null bir alan, "kimse bakmadı" diyen bir ekran demek.
