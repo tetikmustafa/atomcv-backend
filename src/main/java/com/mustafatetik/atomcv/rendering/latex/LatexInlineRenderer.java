@@ -34,11 +34,16 @@ public final class LatexInlineRenderer {
     }
 
     private static String apply(Mark mark, String text, String href) {
-        if (Mark.TECHNOLOGY.equals(mark) || Mark.METRIC.equals(mark)) {
+        // Bolum 22.3 said italic for emphasis, and the reference document this
+        // template was measured against writes its technologies bold. The two
+        // disagreed for one reason: extraction marks almost everything
+        // EMPHASIS (§ 31.5.1) rather than TECHNOLOGY, so the page italicised
+        // what the document it copies sets bold. Bold is the decision (2026-09-09)
+        // and it costs a measurement: bold sets wider, so the golden set's page
+        // costs were re-recorded with it.
+        if (Mark.TECHNOLOGY.equals(mark) || Mark.METRIC.equals(mark)
+                || Mark.EMPHASIS.equals(mark)) {
             return "\\textbf{" + text + "}";
-        }
-        if (Mark.EMPHASIS.equals(mark)) {
-            return "\\textit{" + text + "}";
         }
         if (Mark.LINK.equals(mark)) {
             return "\\href{" + LatexEscaper.escapeUrl(href) + "}{" + text + "}";

@@ -65,10 +65,10 @@ bir inline satırın öğeleri **ve** etiketi sade diziliyor (karar render'da,
 içerikte değil); `PARAGRAPH` `INLINE_LIST`'e katlanmadı.
 
 **Canlı kalanlar:**
-- **Maddelerdeki `emphasis` italik kalıyor.** Referans belge teknolojileri
-  **kalın** yazıyor; çıkarım hepsini `EMPHASIS` veriyor (§ 31.5.1) ve § 22.3
-  `emphasis → \textit` diyor. **Karar spec'in** — ve artık ucuz değil: şablon
-  v4'te çevirmek yedi fixture'ın maliyetlerini yeniden ölçmeyi ister.
+- **`emphasis` kalın oldu** (karar 2026-09-09, § 22.3) ve **bedeli ölçüldü:
+  sıfır.** Yedi golden profilde hiçbir ifadenin maliyeti 0.01pt'den fazla
+  oynamadı (`stress_long_career` dahil) — maliyet yüksekliktir, kalın ancak satır
+  kırılmasını değiştirirse yüksekliği değiştirir. Yeniden kayıt gerekmedi.
 - **Faz D eşikleri ölçüldü:** en yüksek atom skoru 0.3577-0.4313, § 21.2'nin
   tabanı 0.40. **Ayarlamak yeni ölçüm ister**, karar spec'in.
 
