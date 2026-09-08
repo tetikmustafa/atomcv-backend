@@ -268,6 +268,27 @@ atomcv:
     # the same, the claim is not. Left out means "we do not know".
     pricing:
       per-million-tokens:
+        # openai/gpt-5.6-sol, what every chain runs today. Read from
+        # OpenRouter's own endpoints API rather than a screenshot:
+        # `/api/v1/models/openai/gpt-5.6-sol/endpoints` quotes per token
+        # (prompt 0.000002 -> 2 per million) and carries `discount: 0.5` — the
+        # figures below are the promotional ones, and they double if it ends.
+        #
+        # **The slug has seven endpoints and this is one of them.** OpenAI's
+        # standard endpoint is 2/10; `openai/flex` is 1/5, `openai/fast` 4/20,
+        # Bedrock 4.40/22 and Azure up to 5.50/33. Our request names the model
+        # and lets OpenRouter route, so a call Azure serves costs nearly three
+        # times what this table says — which is why the cost OpenRouter reports
+        # per call (`usage.cost`) is believed over this table where it is
+        # present. This stays as the floor under a provider that reports
+        # nothing, and as what LlmPricingAudit checks the chain against.
+        "[openai/gpt-5.6-sol]":
+          input: 2
+          output: 10
+          # `input_cache_read`, 0.0000002 per token. Cache *writes* cost 1.25x
+          # fresh input and are not modelled: OpenRouter reports them
+          # separately (`cache_write_tokens`) and nothing reads that yet.
+          cached: 0.2
         "[google/gemma-4-26b-a4b-it:free]":
           input: 0
           output: 0
