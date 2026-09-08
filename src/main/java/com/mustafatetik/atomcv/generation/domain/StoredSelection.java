@@ -42,7 +42,13 @@ public record StoredSelection(
          * empty rather than being required: an old row re-renders into exactly
          * the document it produced then.
          */
-        List<UUID> headerOnlyEntries) {
+        List<UUID> headerOnlyEntries,
+        /**
+         * The entries the budget refused, absent from every snapshot written
+         * before they were recorded at all — empty for the same reason as the
+         * list above it.
+         */
+        List<SelectionState.RejectedEntry> rejectedEntries) {
 
     public StoredSelection {
         language = language == null ? "" : language;
@@ -51,6 +57,9 @@ public record StoredSelection(
         headerOnlyEntries = headerOnlyEntries == null
                 ? List.of()
                 : List.copyOf(headerOnlyEntries);
+        rejectedEntries = rejectedEntries == null
+                ? List.of()
+                : List.copyOf(rejectedEntries);
     }
 
     /** The shape before an entry could reach the page without atoms. */
@@ -61,18 +70,20 @@ public record StoredSelection(
             List<SelectionState.SelectedAtom> selected,
             List<SelectionState.RejectedAtom> rejected) {
 
-        this(language, customization, budget, selected, rejected, List.of());
+        this(language, customization, budget, selected, rejected, List.of(), List.of());
     }
 
     public static StoredSelection of(
             SelectionState state, String language, TemplateCustomization customization) {
 
         return new StoredSelection(language, customization, state.budget(),
-                state.selected(), state.rejected(), state.headerOnlyEntries());
+                state.selected(), state.rejected(), state.headerOnlyEntries(),
+                state.rejectedEntries());
     }
 
     /** Back to what the pipeline works on, for a regenerated download. */
     public SelectionState toSelectionState() {
-        return new SelectionState(selected, rejected, budget, headerOnlyEntries);
+        return new SelectionState(selected, rejected, budget, headerOnlyEntries,
+                rejectedEntries);
     }
 }

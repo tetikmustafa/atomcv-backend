@@ -74,20 +74,20 @@ class GoldenSelectionTest {
         var request = request(golden, language, pages);
         var state = SelectionPhase.select(request).orElseThrow();
 
-        // Heading candidates are left out on both sides of the count. They are
-        // not atoms: one that reaches the page is reported as an opened entry
-        // and one that does not is reported as nothing at all, because a
-        // RejectedAtom naming an entry would be an id the user cannot resolve.
+        // Heading candidates are counted too, on both sides. They are not
+        // atoms, so they travel in their own two lists — printed as an opened
+        // entry, dropped as a rejected one — and the sum is what says that
+        // every offer the page was made got an answer.
         int candidates = request.sections().stream()
                 .mapToInt(section -> section.atoms().size()
                         + section.entries().stream()
-                                .mapToInt(entry -> (int) entry.atoms().stream()
-                                        .filter(atom -> !atom.headerOnly())
-                                        .count())
+                                .mapToInt(entry -> entry.atoms().size())
                                 .sum())
                 .sum();
 
-        assertThat(state.selected().size() + state.rejected().size()).isEqualTo(candidates);
+        assertThat(state.selected().size() + state.rejected().size()
+                + state.headerOnlyEntries().size() + state.rejectedEntries().size())
+                .isEqualTo(candidates);
     }
 
     /**
