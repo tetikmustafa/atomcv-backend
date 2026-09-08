@@ -15,38 +15,37 @@
 ### B-076 · EK C.1'in AI sağlayıcı listesi — yayımlanacak gerçekler
 
 **Since:** commit `<bu PR>` · **Spec:** EK C.1 (*"AI sağlayıcı listesi güncel ve
-açık"*) · `llm/providers/OpenRouterProperties`
+açık"*) · `llm/telemetry/ProcessorAudit`
 
-**Neden:** madde model seçimini bekliyordu. Model belli, ve liste artık
-yazılabilir. Aşağıdakiler **ölçülmüş** — OpenRouter'ın kendi endpoint API'sinden
-ve gönderdiğimiz istek gövdesinden, ekran görüntüsünden değil.
+**Neden:** madde model seçimini bekliyordu; model belli, liste yazılabilir.
+Aşağıdakiler ölçüldü — sağlayıcının endpoint API'sinden ve gönderdiğimiz gövdeden.
 
-**İşleyen zinciri.** Biz → **OpenRouter** (broker) → yukarı akış sağlayıcı.
-Broker yönlendiriyor, ve bu model yedi endpoint'ten servis ediliyor: **OpenAI**
-(üç varyant), **Microsoft Azure** (`azure`, `azure/us`, `azure/eu`) ve **Amazon
-Bedrock** (`us-east-1`). İstek yalnız modeli adlandırdığı için **dördü de listede
-olmalı** — bir çağrıyı hangisinin karşıladığı yanıtta yazmıyor.
+**Kimler.** Biz → **OpenRouter** (broker) → yukarı akış. Bu modelin **yedi
+endpoint'i** var: **OpenAI** (üç varyant), **Microsoft Azure** (`azure`,
+`azure/us`, `azure/eu`), **Amazon Bedrock** (`us-east-1`) — istek yalnız modeli
+adlandırdığı için dördü de listede olmalı, hangisinin karşıladığı yanıtta yazmaz.
+Zincirin ikinci halkası **Gemini**, yani anahtarı olan dağıtımda **Google** da
+listede.
 
-**Ne gidiyor.** CV'nin kendi metni (`profile_extraction`), ilan metni
-(`job_analysis`), madde metinleri (`bullet_rewrite`), özet girdisi
-(`about_synthesis`), ön yazı girdisi (`cover_letter`). Yani **kişisel veri**:
-isim, iletişim ve iş geçmişi CV çıkarımında modele gidiyor.
+**Ne gidiyor.** CV metni (`profile_extraction`), ilan metni (`job_analysis`),
+madde metinleri (`bullet_rewrite`), özet ve ön yazı girdileri — yani **kişisel
+veri**: ad, iletişim, iş geçmişi.
 
-**Eğitim.** Her istekte `provider.data_collection: "deny"` gönderiyoruz —
-prompt'u eğitim için saklayabilecek bir sağlayıcının çağrıyı karşılaması
-reddediliyor. Bu bizim tarafımızdaki taahhüt; **OpenRouter'ın kendi loglama
-politikası ayrı** ve hesap ayarlarından yönetiliyor, yani metinde "sağlayıcılar
-eğitmiyor" değil "eğitebilecek sağlayıcıya yönlendirilmiyor" demek doğru olur.
+**Eğitim.** Her istekte `provider.data_collection: "deny"` gidiyor. Metinde
+*"sağlayıcılar eğitmiyor"* değil **"eğitebilecek sağlayıcıya yönlendirilmiyor"**
+demek doğru: OpenRouter'ın kendi loglama politikası ayrı, hesap ayarında.
 
-**Model:** `openai/gpt-5.6-sol`, bağlam 1.050.000 token. Fiyat (standart OpenAI
-endpoint'i, %50 kampanyalı): 2 USD giriş / 10 USD çıkış / 0.2 USD önbellekli,
-milyon token başına.
+**Liste yapılandırmadan türüyor, sabit değil** (karar 2026-09-09: model
+kısıtlanmıyor — yarın Claude ya da DeepSeek olabilir). Metni **"şu an kullanılan
+model"** diye yazın ve model değişince sayfayı gözden geçirin. Backend açılışta
+kendi listesini logluyor (`ProcessorAudit`: *"Content may be sent to […]"*) —
+**yayımlanan sayfayı o satıra karşı kontrol edin.**
 
-**Action:** gizlilik politikasındaki alt işleyen bölümünü bu dört adla ve "ne
-gidiyor" listesiyle yazın. **Liste kısalabilir:** `OPENROUTER_ONLY=openai`
-verilirse yalnız OpenAI kalır (ve fiyat kesinleşir), bedeli broker'ın kendi
-yedeklemesinden vazgeçmek. Kısaltmaya karar verirseniz söyleyin, aynı gün
-yapılabilir — o zaman metin de tek adla yazılır.
+**Bugünkü model:** `openai/gpt-5.6-sol`, bağlam 1.050.000; fiyat (standart OpenAI
+endpoint'i, %50 kampanyalı) milyon token başına 2 / 10 / 0.2 USD.
+
+**Action:** gizlilik politikasının alt işleyen bölümünü bu adlarla ve "ne
+gidiyor" listesiyle yazın.
 
 ### B-075 · `contentGrant.accessedAt` telden kalktı — tutulamayan bir sözdü
 

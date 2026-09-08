@@ -24,12 +24,11 @@ sözünü iki sayfa etti; madde listesinden sonraki başlık **12pt daha pahalı
 `SECTION_LIST_CLOSE`). **Tech Stack artık ilana göre süzülüyor** (§ 33.4,
 LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
 
-**Dilim M — P3'ün yanlış pozitifleri ölçüldü.** On altı kayıtlı `about_synthesis` cevabı golden profil ve ilanına oynatıldı: kelime sınırı tireyi kelime karakteri sayıyordu, **on token / dört özet / bir verdict** haksız reddedilmiş; ayırıcılar iki tarafta da katlandı ve gerçek ret kalkmadı.
-İlanın kendi yazımı muhafıza **kaynak** oldu, prompt'a ve sözlüğe girmedi — `bullet_rewrite`'ın fixture'ları ve prompt sürümü yerinde (§ 53.2). Aynı dilimde **sığmayan atomsuz entry** artık `rejectedEntries`'e giriyor: § 20.2'nin diploma satırı dolu sayfada sessizce kaybolmuyor.
+**Dilim M — P3'ün yanlış pozitifleri, maliyet ve sağlayıcı politikası.** On altı kayıtlı `about_synthesis` oynatıldı: kelime sınırı tireyi kelime sayıyordu, **on token / bir verdict** haksız reddedilmiş; ilanın yazımı muhafıza kaynak oldu (prompt'a değil, § 53.2); sığmayan atomsuz entry `rejectedEntries`'e giriyor; `cover_letter` **v2**; **maliyet artık sağlayıcının bildirdiği `usage.cost`** (tablo tabanda, model fiyatlandı); her istekte `data_collection: deny`; `accessedAt` telden kalktı (`B-075`).
 
-**Geliştiricide:** `cost_usd` sıfır → bütçe freni ölü (yerelde 141 gerçek çağrı, hepsi 0.000000); fiyat tablosu, VPS/restore. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
+**Geliştiricide:** VPS/restore, ve OAuth ile Turnstile'ın gerçek uca karşı denenmesi. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
 
-**Test:** 1240 birim · 457 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1244 birim · 457 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +54,7 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de: `B-075` ve `B-076`.** İlki `accessedAt`'i ekrandan
-kaldırıyor (yazıcısı yok), ikincisi EK C.1'in sağlayıcı listesinin gerçeklerini
-taşıyor — **gizlilik politikası artık yazılabilir**, model seçildi.
+**Sıra frontend'de: `B-075` ve `B-076`.** İlki `accessedAt`'i ekrandan kaldırıyor
+(yazıcısı yok), ikincisi EK C.1'in sağlayıcı listesini taşıyor — **gizlilik
+politikası yazılabilir**. Model kısıtlanmıyor (2026-09-09); liste yapılandırmadan
+türüyor, `ProcessorAudit` açılışta söylüyor.
