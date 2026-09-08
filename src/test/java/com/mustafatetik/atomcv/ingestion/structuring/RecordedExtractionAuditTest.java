@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 /**
  * A whole four-page CV, replayed against Bolum 43.1's third layer.
  *
- * <p>This is the extraction that was thrown away: 84 atoms, six sections, and
+ * <p>This is the extraction that was thrown away: 85 atoms, seven sections, and
  * one About paragraph of 607 characters against a ceiling of 600 that had been
  * argued from what fits in a bullet. {@code StructuringAuditTest} checks the
  * boundary with a sentence written for the purpose; this checks that a real
@@ -49,7 +49,7 @@ class RecordedExtractionAuditTest {
 
         assertThat(profile.atoms())
                 .as("the answer really did carry a whole CV")
-                .hasSize(84);
+                .hasSize(85);
         assertThat(longestAtomText(profile))
                 .as("and the field that refused it is still over the bullet ceiling")
                 .isGreaterThan(600);

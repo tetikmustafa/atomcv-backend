@@ -1,155 +1,164 @@
 {
   "detectedLanguage": "en",
-  "languageConfidence": 0.98,
+  "languageConfidence": 0.99,
   "contact": {
-    "name": "bravo charlie",
-    "email": "charlie delta echo foxtr",
-    "phone": "delta echo foxtrot",
-    "linkedin": "echo foxtrot golf hotel india jul",
-    "github": "foxtrot golf hotel indi",
-    "website": "golf hotel india",
+    "name": "alpha bravo c",
+    "email": "bravo charlie delta echo",
+    "phone": "charlie delta echo",
+    "linkedin": "delta echo foxtrot golf hotel ind",
+    "github": "echo foxtrot golf hotel",
+    "website": "foxtrot golf hot",
     "location": null
   },
   "sections": [
     {
       "kind": "about",
-      "title": "lima ",
+      "title": "golf ",
       "entries": [
         {
-          "title": "",
+          "title": "hotel",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot go",
+              "textSource": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zu",
               "textEn": null,
               "emphasisSource": [
-                "romeo sierra tango u",
-                "sierra tan",
-                "tango uniform v",
-                "uniform victor whiskey xray "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "victor whiskey xray ",
-                "whiskey xray yan",
-                "xray yankee zulu alpha ",
-                "yankee zulu a",
-                "zulu",
-                "alpha bravo",
-                "bra",
-                "charlie delt",
-                "delta echo foxtrot golf hot",
-                "echo foxtrot "
-              ],
-              "metrics": [
-                "foxtr",
-                "golf h"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india",
-              "textEn": null,
-              "emphasisSource": [
-                "juliett kilo lima mike november oscar ",
-                "kilo lima mike november",
-                "lima mike novemb",
+                "juliett kilo lima mike november oscar papa quebec romeo sierr",
+                "kilo lima mike novem",
+                "lima mike ",
                 "mike november o"
               ],
               "emphasisEn": [],
               "skills": [
-                "november oscar papa",
-                "oscar papa quebec r",
-                "papa quebec r",
-                "queb",
-                "romeo sierr",
-                "sierra tango",
-                "tango uniform ",
-                "uniform victor whiskey ",
-                "victor w",
-                "whisk"
+                "november oscar papa ",
+                "oscar papa quebe",
+                "papa quebec romeo sierr",
+                "quebec romeo ",
+                "romeo sierra ",
+                "sier",
+                "tango unifo",
+                "uni",
+                "victor whisk",
+                "whiskey xray yankee zulu al"
               ],
               "metrics": [
-                "xr",
-                "yankee zulu",
-                "zul"
+                "xray ",
+                "yankee"
               ],
               "properNouns": [],
-              "tags": []
+              "tags": [
+                "zulu alpha bravo cha"
+              ]
             },
             {
-              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delt",
+              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo",
               "textEn": null,
               "emphasisSource": [
+                "bravo charlie delta echo foxtrot golf hotel",
+                "charlie delta echo foxtrot golf hotel ",
+                "delta echo foxtrot golf",
+                "echo foxtrot gol"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "foxtrot golf hotel ",
+                "golf hotel india ju",
+                "hotel india j",
+                "indi",
+                "juliett kil",
+                "kilo lima mi",
+                "lima mike nove",
+                "mike november oscar pap",
+                "november",
+                "oscar"
+              ],
+              "metrics": [
+                "pa",
+                "quebec rome",
+                "rom"
+              ],
+              "properNouns": [],
+              "tags": [
+                "sierra tango uniform"
+              ]
+            },
+            {
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whi",
+              "textEn": null,
+              "emphasisSource": [
+                "uniform victor whiskey xray yankee zulu alpha bravo charl",
+                "victor whiskey xr",
+                "whiskey xray yankee zulu alpha bra",
+                "xray yankee zulu alpha bravo charli"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "yankee zulu alph",
+                "zulu alpha bravo char",
+                "alpha bravo ",
+                "bra",
                 "charlie delta ec",
-                "delta echo foxtro",
-                "echo foxtrot golf hotel india juli",
-                "foxtrot golf hotel india juliett ki"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "golf hotel india",
-                "hotel india juliett k",
-                "india juliet",
-                "jul",
-                "kilo lima mike n",
-                "lima mik",
-                "mike november oscar papa quebec ",
-                "novemb",
-                "oscar ",
-                "pap",
-                "quebec"
+                "delta ec",
+                "echo foxtrot golf hotel india ju",
+                "foxtro",
+                "golf h",
+                "hot",
+                "india "
               ],
               "metrics": [
-                "romeo s",
-                "si"
+                "juliett",
+                "ki"
               ],
               "properNouns": [
-                "tango uniform vi",
-                "uniform ",
-                "victor",
-                "whiske"
+                "lima mike novemb",
+                "mike nov",
+                "novemb",
+                "oscar "
               ],
-              "tags": []
+              "tags": [
+                "papa quebec romeo si"
+              ]
             },
             {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ech",
+              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whisk",
               "textEn": null,
               "emphasisSource": [
-                "zulu alpha brav",
-                "alpha bravo cha",
-                "bravo charlie delta ec",
-                "charlie delta echo foxtrot g"
+                "romeo sierra tango uniform victor whisk",
+                "sierra tango un",
+                "tango uniform victor w",
+                "uniform victor whiskey xray "
               ],
               "emphasisEn": [],
               "skills": [
-                "delta echo foxtrot golf hotel indi",
-                "echo foxtrot go",
-                "foxtrot golf hotel india ju",
-                "golf hotel i",
-                "hotel india juliett k",
-                "india ",
-                "juliett",
-                "kilo",
-                "lima m"
+                "victor whiskey xray yankee zulu al",
+                "whiskey xray ya",
+                "xray yankee zulu alpha brav",
+                "yankee zulu ",
+                "zulu alpha bravo char",
+                "alpha ",
+                "bravo c",
+                "char",
+                "delta echo foxtr",
+                "echo f"
               ],
               "metrics": [
-                "mike n",
-                "nove",
-                "osca",
-                "papa que"
+                "foxtro",
+                "golf",
+                "hote",
+                "india ju"
               ],
               "properNouns": [
-                "quebec",
-                "romeo s",
-                "sierra tang",
-                "tango "
+                "juliet",
+                "kilo li",
+                "lima mike n",
+                "mike n"
               ],
-              "tags": []
+              "tags": [
+                "november oscar papa "
+              ]
             }
           ]
         }
@@ -157,345 +166,415 @@
     },
     {
       "kind": "education",
-      "title": "uniform v",
+      "title": "oscar pap",
       "entries": [
         {
-          "title": "victor whiskey xray yankee zulu ",
-          "organization": "whiskey xray yanke",
-          "location": "xray yankee zulu ",
-          "startDate": "2022",
-          "endDate": "2026",
-          "atoms": []
+          "title": "papa quebec romeo si",
+          "organization": "quebec romeo sierr",
+          "location": "romeo sierra tang",
+          "startDate": "sier",
+          "endDate": "tang",
+          "atoms": [
+            {
+              "textSource": "uniform victor whiskey xray yank",
+              "textEn": null,
+              "emphasisSource": [
+                "victor whiskey xray ",
+                "whiskey x"
+              ],
+              "emphasisEn": [],
+              "skills": [],
+              "metrics": [
+                "xray"
+              ],
+              "properNouns": [
+                "yankee zulu alpha ",
+                "zulu alp",
+                "alpha b"
+              ],
+              "tags": [
+                "bravo ",
+                "cha"
+              ]
+            }
+          ]
         }
       ]
     },
     {
       "kind": "experience",
-      "title": "yankee zul",
+      "title": "delta echo",
       "entries": [
         {
-          "title": "zulu alpha bravo charli",
-          "organization": "alpha bravo charlie delta",
-          "location": "bravo ch",
-          "startDate": "2025-09",
+          "title": "echo foxtrot golf hotel",
+          "organization": "foxtrot golf hotel india ",
+          "location": "golf hot",
+          "startDate": "hotel india ju",
           "endDate": null,
           "atoms": [
             {
-              "textSource": "charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu a",
+              "textSource": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot ",
               "textEn": null,
               "emphasisSource": [
-                "echo foxtrot golf hotel india juliett kil",
-                "foxtrot golf hote",
-                "golf hotel india"
+                "juliett kilo lima mike november oscar pap",
+                "kilo lima mike no",
+                "lima mike novemb"
               ],
               "emphasisEn": [],
               "skills": [
-                "hotel ",
-                "india juliett ki",
-                "jul",
-                "kilo lima"
+                "mike n",
+                "november oscar p",
+                "osc",
+                "papa queb"
               ],
               "metrics": [
-                "lima mi"
+                "quebec "
               ],
               "properNouns": [
-                "mike november os"
+                "romeo sierra tan"
               ],
-              "tags": []
+              "tags": [
+                "sierra tango uni"
+              ]
             },
             {
-              "textSource": "november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november osc",
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango unifor",
               "textEn": null,
               "emphasisSource": [
-                "papa quebec rom",
-                "quebec romeo",
-                "romeo sierra tango uniform vi"
+                "uniform victor whiskey xra",
+                "victor whiskey ",
+                "whiskey xray",
+                "xray yankee zulu alpha bravo "
               ],
               "emphasisEn": [],
               "skills": [
-                "sierra tango u",
-                "tango unifo",
-                "uniform victor ",
-                "victor whiskey xray"
+                "yankee zulu al",
+                "zulu alpha ",
+                "alpha bravo cha",
+                "bravo charlie delta"
               ],
               "metrics": [],
               "properNouns": [
-                "whiskey xra"
+                "charlie del"
               ],
-              "tags": []
+              "tags": [
+                "delta echo foxtr"
+              ]
             },
             {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kil",
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec rome",
               "textEn": null,
               "emphasisSource": [
-                "zulu alpha bravo charlie delta ech",
-                "alpha bravo charlie d"
+                "foxtrot golf hotel india juliett k",
+                "golf hotel india juli"
               ],
               "emphasisEn": [],
               "skills": [
-                "bravo ch",
-                "cha",
+                "hotel in",
+                "ind",
+                "juliett kilo lima mik"
+              ],
+              "metrics": [
+                "ki"
+              ],
+              "properNouns": [
+                "lima mik"
+              ],
+              "tags": [
+                "mike november oscar p"
+              ]
+            },
+            {
+              "textSource": "november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee ",
+              "textEn": null,
+              "emphasisSource": [
+                "oscar papa quebec romeo ",
+                "papa q",
+                "quebec romeo sierra tan"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "romeo sierra tango uniform victo",
+                "sierra",
+                "tango uniform v"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "unifor"
+              ],
+              "tags": [
+                "victor whisk"
+              ]
+            },
+            {
+              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango",
+              "textEn": null,
+              "emphasisSource": [
+                "xray yankee zulu a",
+                "yankee zulu alpha bravo ",
+                "zulu alpha bravo charlie de"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "alpha brav",
+                "bravo ",
+                "charlie delta ec",
                 "delta echo foxtrot"
               ],
-              "metrics": [
-                "ec"
-              ],
-              "properNouns": [
-                "foxtrot "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra t",
-              "textEn": null,
-              "emphasisSource": [
-                "india juliett kilo lima ",
-                "juliet",
-                "kilo lima mike november"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "lima mike november oscar papa qu",
-                "mike n",
-                "november oscar "
-              ],
               "metrics": [],
               "properNouns": [
-                "oscar "
+                "echo foxtr",
+                "foxtrot golf hotel ind"
               ],
-              "tags": []
+              "tags": [
+                "golf hotel india"
+              ]
             },
             {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike",
+              "textSource": "hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xr",
               "textEn": null,
               "emphasisSource": [
-                "romeo sierra tango",
-                "sierra tango uniform vic",
-                "tango uniform victor whiske"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform vi",
-                "victor whiskey xra",
-                "whiske",
-                "xray yankee zulu"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "yankee zul",
-                "zulu alpha bravo charl"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec ",
-              "textEn": null,
-              "emphasisSource": [
-                "charlie delta echo foxtrot golf hotel ",
-                "delta echo foxt"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "echo ",
-                "foxtrot golf ho"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "golf hotel india juliett kilo",
-          "organization": "hotel india juliett kilo ",
-          "location": "india juliett",
-          "startDate": "2025-07",
-          "endDate": "2025-09",
-          "atoms": [
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee z",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november oscar papa quebec rom",
-                "mike november osc"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "november oscar pa",
-                "osca",
-                "papa que"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "queb",
-                "romeo si"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel ",
-              "textEn": null,
-              "emphasisSource": [
-                "uniform victor whis",
-                "victor whiskey xray ya",
-                "whiskey xray yanke"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "xray yankee zulu al",
-                "yank",
-                "zulu",
-                "alpha b",
-                "bravo "
-              ],
-              "metrics": [],
-              "properNouns": [
-                "charlie",
-                "delta "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform ",
-              "textEn": null,
-              "emphasisSource": [
-                "golf hotel india juliet",
-                "hotel in",
-                "india juliett kilo lima mike n"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "juliett kilo lima mike ",
-                "kilo lima m"
-              ],
-              "metrics": [
-                "lim"
-              ],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "mike november oscar papa qu",
-          "organization": "november oscar papa quebec ",
-          "location": "oscar pa",
-          "startDate": "2024-07",
-          "endDate": "2024-09",
-          "atoms": [
-            {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot g",
-              "textEn": null,
-              "emphasisSource": [
-                "romeo sierra tango u",
-                "sierra tango uniform victor whiskey xray ya"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "tang",
-                "uniform vic",
-                "victor whiskey xray",
-                "whiskey xray yankee",
-                "xray yankee zulu "
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november ",
-              "textEn": null,
-              "emphasisSource": [
-                "alpha bravo charlie ",
-                "bravo charli"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "charl",
-                "delta echo",
-                "echo fox",
-                "foxtrot golf hotel i"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victo",
-              "textEn": null,
-              "emphasisSource": [
-                "india juliett kilo lima m",
-                "juliett kil",
-                "kilo lima mike novem"
+                "india juliett kilo lima mike november ",
+                "juliett kilo li",
+                "kilo lima mike "
               ],
               "emphasisEn": [],
               "skills": [
                 "lima ",
-                "mike november o",
-                "november osca",
-                "oscar papa quebec ro"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "papa "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot ",
-              "textEn": null,
-              "emphasisSource": [
-                "sierra tango uniform victor w",
-                "tango uniform victor whiskey xray yankee zulu "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform victor whiskey "
+                "mike november o"
               ],
               "metrics": [],
               "properNouns": [],
-              "tags": []
-            },
+              "tags": [
+                "november oscar pap"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "oscar papa quebec romeo sierr",
+          "organization": "papa quebec romeo sierra ",
+          "location": "quebec romeo ",
+          "startDate": "romeo sie",
+          "endDate": "sierra tango u",
+          "atoms": [
             {
-              "textSource": "victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kil",
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india jul",
               "textEn": null,
               "emphasisSource": [
-                "xray yankee z",
-                "yankee zulu alpha bravo ",
-                "zulu alpha brav"
+                "uniform victor whi",
+                "victor whiskey xr",
+                "whiskey xray yank"
               ],
               "emphasisEn": [],
               "skills": [
-                "alp",
-                "bravo char",
-                "charlie",
-                "delta e"
+                "xray yankee zulu ",
+                "yank",
+                "zulu alp"
               ],
               "metrics": [],
               "properNouns": [
-                "ech",
-                "foxtrot golf ho"
+                "alph",
+                "bravo ch"
               ],
-              "tags": []
+              "tags": [
+                "charlie delta echo fox"
+              ]
             },
             {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiske",
+              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tang",
               "textEn": null,
               "emphasisSource": [
-                "india juliett kilo lima",
+                "echo foxtrot golf h",
+                "foxtrot golf hotel ind",
+                "golf hotel india j"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "hotel india juliett",
+                "indi",
                 "juli",
-                "kilo lima mike novem"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "lima m",
-                "mike november oscar papa quebec"
+                "kilo li",
+                "lima m"
               ],
               "metrics": [],
               "properNouns": [
+                "mike no",
                 "novemb"
               ],
-              "tags": []
+              "tags": [
+                "oscar papa quebe"
+              ]
+            },
+            {
+              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtr",
+              "textEn": null,
+              "emphasisSource": [
+                "quebec romeo sierra tan",
+                "romeo si",
+                "sierra tango uniform victor wh"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "tango uniform victor wh",
+                "uniform victor wh",
+                "victor whiskey x"
+              ],
+              "metrics": [
+                "whi"
+              ],
+              "properNouns": [],
+              "tags": [
+                "xray yankee z",
+                "yankee "
+              ]
+            }
+          ]
+        },
+        {
+          "title": "zulu alpha bravo charlie de",
+          "organization": "alpha bravo charlie delta e",
+          "location": "bravo ch",
+          "startDate": "charlie d",
+          "endDate": "delta echo fox",
+          "atoms": [
+            {
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform vict",
+              "textEn": null,
+              "emphasisSource": [
+                "foxtrot golf hot",
+                "golf hotel india jul",
+                "hotel india juliett kilo lima mike november"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "india juliett kilo ",
+                "juli",
+                "kilo lima m",
+                "lima mike november ",
+                "mike november osc"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "nove",
+                "oscar papa "
+              ],
+              "tags": [
+                "papa quebec romeo si"
+              ]
+            },
+            {
+              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo fox",
+              "textEn": null,
+              "emphasisSource": [
+                "romeo sierra tango uniform vic",
+                "sierra tango uniform",
+                "tango unifor"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "unifo",
+                "victor whi",
+                "whiskey ",
+                "xray yankee zulu alp"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "yanke",
+                "zulu alpha"
+              ],
+              "tags": [
+                "alpha br"
+              ]
+            },
+            {
+              "textSource": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec",
+              "textEn": null,
+              "emphasisSource": [
+                "charlie delta echo foxtro",
+                "delta echo ",
+                "echo foxtrot golf ho"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "foxtr",
+                "golf hotel indi",
+                "hotel india j",
+                "india juliett kilo l"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "julie",
+                "kilo lima mike "
+              ],
+              "tags": [
+                "lima mik"
+              ]
+            },
+            {
+              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo ch",
+              "textEn": null,
+              "emphasisSource": [
+                "november oscar papa quebec ro",
+                "oscar papa q",
+                "papa quebec r",
+                "quebec romeo "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "romeo sierra tango unif"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "sierra tango uni"
+              ]
+            },
+            {
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel ind",
+              "textEn": null,
+              "emphasisSource": [
+                "uniform victo",
+                "victor whiskey xray yank",
+                "whiskey xray ya"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "xra",
+                "yankee zul",
+                "zulu al",
+                "alpha b"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "bra",
+                "charlie delta e"
+              ],
+              "tags": [
+                "delta echo fo",
+                "ech"
+              ]
+            },
+            {
+              "textSource": "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victo",
+              "textEn": null,
+              "emphasisSource": [
+                "golf hotel india juliet",
+                "hote",
+                "india juliett kilo lima mike november osca"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "juliet",
+                "kilo lima mike november oscar p"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "lima m"
+              ],
+              "tags": [
+                "mike n"
+              ]
             }
           ]
         }
@@ -503,1141 +582,1288 @@
     },
     {
       "kind": "projects",
-      "title": "oscar pa",
+      "title": "november",
       "entries": [
         {
-          "title": "papa quebec romeo sierra tango uniform v",
+          "title": "oscar papa quebec romeo sierra tango uni",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tan",
+              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebe",
               "textEn": null,
               "emphasisSource": [
-                "uniform vi",
-                "victor whi",
-                "whiskey xray yankee zulu alph",
-                "xray yanke"
+                "quebec romeo sierra tango uniform victo",
+                "romeo sierra tango uniform victor whiskey xray yankee zul",
+                "sierra tango uniform victor whisk"
               ],
               "emphasisEn": [],
               "skills": [
-                "yankee ",
-                "zulu alpha",
-                "alpha bravo charli",
-                "bravo ch",
-                "charlie delta echo fox"
+                "tango u",
+                "uniform vi",
+                "victor whiskey xra",
+                "whiskey ",
+                "xray yankee zulu alpha",
+                "yankee zulu alpha bravo"
               ],
               "metrics": [
-                "de"
+                "zu"
               ],
               "properNouns": [
-                "echo foxtrot golf ",
-                "foxtrot "
+                "alpha b",
+                "bravo charlie delt",
+                "charlie "
               ],
-              "tags": []
+              "tags": [
+                "delta echo foxt"
+              ]
             },
             {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett",
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel ",
               "textEn": null,
               "emphasisSource": [
-                "india juliett ",
-                "juliett kilo lima mike november oscar papa q",
-                "kilo lima mike novembe"
+                "foxtrot golf hotel india juliett kil",
+                "golf hotel ind",
+                "hotel india juliett kilo lim",
+                "india juliett kilo lim"
               ],
               "emphasisEn": [],
               "skills": [
-                "lima mike november os",
-                "mike november oscar p"
+                "juliett kilo lima mik",
+                "kilo lima mike nove",
+                "lima mik"
               ],
               "metrics": [
-                "n",
-                "oscar papa qu"
+                "m",
+                "november osca"
               ],
               "properNouns": [
+                "oscar ",
                 "papa q",
                 "quebec",
-                "romeo ",
-                "sierra t",
-                "tango unif"
+                "romeo si",
+                "sierra tan"
               ],
-              "tags": []
+              "tags": [
+                "tango uniform v"
+              ]
             },
             {
               "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uni",
               "textEn": null,
               "emphasisSource": [
-                "whiskey xray yankee zulu alph",
+                "victor whiskey xray yankee zu",
+                "whiskey xray yankee zulu ",
                 "xray yankee zulu alpha",
-                "yankee zulu alpha bravo c"
+                "yankee zulu alpha b"
               ],
               "emphasisEn": [],
               "skills": [
-                "zulu alpha brav",
-                "alpha bravo ch",
-                "bravo charlie delta echo f"
-              ],
-              "metrics": [
-                "charlie",
-                "delta ec"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtr",
-              "textEn": null,
-              "emphasisSource": [
-                "golf hotel india jul",
-                "hotel india julie",
-                "india juliett kilo li"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "julie",
-                "kilo lima mike",
-                "lima",
-                "mike ",
-                "novembe"
-              ],
-              "metrics": [
-                "osca"
-              ],
-              "properNouns": [
-                "papa ",
-                "quebec "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo s",
-              "textEn": null,
-              "emphasisSource": [
-                "tango uniform victor whiskey xray",
-                "uniform victor whiskey xray",
-                "victor whiskey xray yankee zulu alpha brav"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "whiskey xray",
-                "xray yankee zulu alp",
-                "yanke",
-                "zulu alpha br",
-                "alpha bravo charlie "
-              ],
-              "metrics": [],
-              "properNouns": [
-                "bravo charlie delta ",
-                "charlie delta"
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "delta echo foxtrot golf hotel india juli",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo li",
-              "textEn": null,
-              "emphasisSource": [
-                "india juliett kilo lima mike november os",
-                "juliett kilo lima mike novem",
-                "kilo lima mike november oscar"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "lima mike november oscar papa queb",
-                "mike november os",
-                "november o",
-                "osca",
-                "papa quebec romeo sier"
-              ],
-              "metrics": [
-                "que"
-              ],
-              "properNouns": [
-                "romeo sierra tan",
-                "sierra tan",
-                "tango uniform v",
-                "uniform vic"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yanke",
-              "textEn": null,
-              "emphasisSource": [
-                "xray yankee zulu alp",
-                "yankee zulu alpha",
-                "zulu alpha bravo charl",
-                "alpha bravo charlie de"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "bravo charlie delt",
-                "char",
-                "delt",
-                "echo foxtrot golf hotel",
-                "foxt",
-                "golf hotel in"
-              ],
-              "metrics": [
-                "hotel india",
-                "ind",
-                "juliett kilo",
-                "ki",
-                "lima mik"
-              ],
-              "properNouns": [
-                "mike",
-                "nov",
-                "oscar papa que"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo s",
-              "textEn": null,
-              "emphasisSource": [
-                "romeo sierra tango uniform victor wh",
-                "sierra tango unifor",
-                "tango uniform victor w"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform",
-                "victor w",
-                "whiskey xray",
-                "xray yankee zulu",
-                "yankee zulu alpha brav"
-              ],
-              "metrics": [
-                "zul",
-                "a",
-                "brav"
-              ],
-              "properNouns": [
-                "charlie",
-                "delta ec"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india ju",
-              "textEn": null,
-              "emphasisSource": [
-                "golf hotel india j",
-                "hotel india juliett kilo lima mik",
-                "india juliett kilo lima mike novemb"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "juliett kilo lima "
-              ],
-              "metrics": [
-                "k"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yan",
-              "textEn": null,
-              "emphasisSource": [
-                "november oscar",
-                "oscar papa",
-                "papa quebec romeo sierra"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "quebe",
-                "romeo sier",
-                "sierra tango uniform"
-              ],
-              "metrics": [
-                "tango u"
-              ],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "uniform victor whiskey xray yankee ",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtro",
-              "textEn": null,
-              "emphasisSource": [
-                "zulu alpha bravo charlie delta ec",
-                "alpha bravo charlie delta ",
-                "bravo c",
-                "charlie delta echo"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "delta echo foxt",
-                "echo fo",
-                "foxtr",
-                "golf hotel indi"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot g",
-              "textEn": null,
-              "emphasisSource": [
-                "juliett kil",
-                "kilo lima mike no",
-                "lima mike",
-                "mike november oscar pap"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "novemb",
-                "oscar ",
-                "papa quebec rom",
-                "quebec romeo sie",
-                "romeo sierra tango u"
-              ],
-              "metrics": [
-                "sierr",
-                "tang",
-                "unifor",
-                "victor"
-              ],
-              "properNouns": [
-                "whiskey xra",
-                "xray yank"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ec",
-              "textEn": null,
-              "emphasisSource": [
-                "alpha bravo charlie delt",
-                "bravo charlie delta echo f",
-                "charlie d",
-                "delta echo foxtrot go"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "echo foxtrot golf ",
-                "foxtrot gol",
-                "golf hotel india"
-              ],
-              "metrics": [
-                "hotel ind",
-                "india juliett kilo li"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa queb",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november ",
-                "mike novem",
-                "november oscar papa quebe",
-                "oscar papa quebec romeo sierra tango u"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "papa quebec rome",
-                "quebec romeo si",
-                "romeo ",
-                "sierra"
-              ],
-              "metrics": [
-                "tango",
-                "un",
-                "victor wh",
-                "whiskey xray yankee "
-              ],
-              "properNouns": [
-                "xray y"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ",
-              "textEn": null,
-              "emphasisSource": [
-                "alpha bravo charlie delta ",
-                "bravo charlie delta echo fo",
-                "charlie delta echo foxtrot golf hotel "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "delta",
-                "echo foxtrot golf ho",
-                "foxtrot golf hote"
-              ],
-              "metrics": [
-                "golf hote"
-              ],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "hotel india juliett kil",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa que",
-              "textEn": null,
-              "emphasisSource": [
-                "mike november oscar papa q",
-                "november oscar papa quebec romeo sierra ta",
-                "oscar papa quebec "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "papa",
-                "quebec rome",
-                "romeo sierra",
-                "sierra tango ",
-                "tango un"
-              ],
-              "metrics": [
-                "un",
-                "vic",
-                "w"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu ",
-              "textEn": null,
-              "emphasisSource": [
-                "zulu alpha b",
-                "alpha bravo char",
-                "bravo charlie d",
-                "charlie delta echo foxtrot golf hotel"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "delta ec",
-                "echo foxtrot golf hot",
-                "foxt",
-                "golf hotel india j",
-                "hotel india ju",
-                "indi"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar pap",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november o",
-                "mike november oscar pa",
-                "november oscar papa q",
-                "oscar papa quebec romeo sier"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "papa quebec romeo si",
-                "queb",
-                "romeo sierra t",
-                "sierra "
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uni",
-              "textEn": null,
-              "emphasisSource": [
-                "victor whiskey xray y",
-                "whiskey xray yankee zulu alpha bravo charl",
-                "xray yankee zulu "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "yankee zulu al",
-                "zulu alpha bravo ",
-                "alpha bra",
-                "bravo charlie"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "charlie delta echo fo",
-                "delta ech"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf h",
-              "textEn": null,
-              "emphasisSource": [
-                "golf hotel india juliett kil",
-                "hotel i",
-                "india juliett kilo lima mike november ",
-                "juliett kil"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "kilo lima mike novem",
-                "lima ",
-                "mike november o",
-                "november ",
-                "oscar ",
-                "papa quebec romeo si"
-              ],
-              "metrics": [
-                "q"
-              ],
-              "properNouns": [
-                "romeo"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray",
-              "textEn": null,
-              "emphasisSource": [
-                "uniform victor whiskey",
-                "victor whiskey xray yanke",
-                "whiskey xray yankee zu",
-                "xray yankee zulu alpha "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "yankee",
                 "zulu alpha bra",
-                "alpha bravo char",
-                "bravo char",
-                "charlie delta"
+                "alpha bravo cha"
               ],
               "metrics": [
-                "delta echo "
+                "bravo c",
+                "charlie "
               ],
               "properNouns": [
-                "echo f",
-                "foxtrot golf h"
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "golf hotel india juliett kilo lima mike november oscar papa quebec ro",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike ",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november",
-                "mike november oscar papa ",
-                "november oscar papa queb"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "oscar papa quebec romeo sie",
-                "papa quebec ",
-                "quebec r"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor ",
-              "textEn": null,
-              "emphasisSource": [
-                "tango uniform victor whiskey x",
-                "uniform victor whiske",
-                "vict",
-                "whiskey xray yanke"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "xray yankee zulu al",
-                "yank",
-                "zulu alpha bravo c",
-                "alpha bravo "
-              ],
-              "metrics": [
-                "bra",
-                "charlie"
-              ],
-              "properNouns": [
-                "delta ",
-                "echo"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf h",
-              "textEn": null,
-              "emphasisSource": [
-                "hotel india juliett kilo ",
-                "india juliett kilo lima",
-                "juliett kilo lima mike",
-                "kilo lima mike nov"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "li",
-                "mike n",
-                "november osc",
-                "oscar papa ",
-                "papa quebec romeo "
-              ],
-              "metrics": [
-                "que",
-                "rom",
-                "sierr",
-                "ta",
-                "unif"
-              ],
-              "properNouns": [
-                "victor w",
-                "whiske"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo",
-              "textEn": null,
-              "emphasisSource": [
-                "zulu alpha bravo c",
-                "alpha bravo charl",
-                "bravo charlie de"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "charli",
-                "de",
-                "echo foxtrot golf hotel india",
-                "foxtrot golf hotel ind",
-                "golf hotel india juliett kilo lima",
-                "hotel india juli"
-              ],
-              "metrics": [
-                "india ",
-                "juliet"
-              ],
-              "properNouns": [
-                "kilo l",
-                "lima mik",
-                "mik",
-                "nove",
-                "oscar"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec ",
-              "textEn": null,
-              "emphasisSource": [
-                "romeo sierra tango uniform victor",
-                "sierra tango uniform victor ",
-                "tango un"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "unifor",
-                "vi",
-                "whiskey xray yanke"
-              ],
-              "metrics": [
-                "xra"
-              ],
-              "properNouns": [
-                "yankee",
-                "zulu alp"
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "alpha bravo charlie delta echo f",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ech",
-              "textEn": null,
-              "emphasisSource": [
-                "foxtrot golf hotel india julie",
-                "golf hotel india juliett kil",
-                "hotel india juliett kilo lima "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "india juliett ki",
-                "juliett ki",
-                "kilo li",
-                "lima m",
-                "mike novem"
-              ],
-              "metrics": [
-                "no",
-                "os"
-              ],
-              "properNouns": [
-                "papa quebe",
-                "quebec rom",
-                "romeo sie",
-                "sierra t",
-                "tango un"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whi",
-              "textEn": null,
-              "emphasisSource": [
-                "whiskey",
-                "xray yankee zulu alpha b",
-                "yankee zulu alpha bra"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "zulu al",
-                "alp",
-                "brav",
-                "charlie delta echo foxt",
-                "delta ech",
-                "echo fo"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "foxtrot",
-                "golf hote"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juli",
-              "textEn": null,
-              "emphasisSource": [
-                "juliett kilo lima mike november o",
-                "kilo lima mike",
-                "lima mike november o",
-                "mike no"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "november oscar papa que",
-                "oscar pa",
-                "papa quebec romeo si",
-                "quebec ",
-                "rom",
-                "sie"
-              ],
-              "metrics": [
-                "tango"
-              ],
-              "properNouns": [
-                "uniform ",
-                "victor whiskey xray "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform vic",
-              "textEn": null,
-              "emphasisSource": [
-                "yankee zulu alpha bravo charlie delta ",
-                "zulu alpha bravo ",
-                "alpha bravo charlie delta echo foxt"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "bravo charlie delta echo",
-                "charlie delta ech",
-                "delta e",
-                "echo foxtrot gol",
-                "foxtrot"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "golf ho",
-                "hotel india juli",
-                "india j"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hot",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november oscar ",
-                "mike november oscar papa quebec ",
-                "november oscar papa qu",
-                "oscar papa quebec "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "papa quebec rome",
-                "quebec romeo sier",
-                "romeo sierra tango u"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "sierra"
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "tango uniform victor whiskey xray ",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo cha",
-              "textEn": null,
-              "emphasisSource": [
-                "yankee zulu alpha bra",
-                "zulu alp",
-                "alpha brav",
-                "bravo charlie delta echo fox"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "charlie",
-                "delta",
-                "echo foxtr",
-                "foxtrot golf hotel ind",
-                "golf hotel india juli"
-              ],
-              "metrics": [
-                "ho",
-                "in",
-                "juliett kilo li"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november osc",
-              "textEn": null,
-              "emphasisSource": [
-                "mike november oscar papa quebec r",
-                "november oscar papa que",
-                "oscar papa quebec romeo sierra t",
-                "papa quebec romeo si"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "quebec rom",
-                "romeo sierra tango un",
-                "sierra "
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform v",
-              "textEn": null,
-              "emphasisSource": [
-                "victor whisk",
-                "whiskey xray yankee ",
-                "xray yankee zulu alpha bravo charl",
-                "yankee zulu alp"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "zulu alpha bravo char",
-                "alpha bravo charlie de",
-                "bravo charli",
-                "charlie d",
                 "del"
               ],
-              "metrics": [
-                "echo "
-              ],
-              "properNouns": [
-                "foxtrot g"
-              ],
-              "tags": []
+              "tags": [
+                "echo foxtrot golf h"
+              ]
             },
             {
-              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo cha",
+              "textSource": "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot go",
               "textEn": null,
               "emphasisSource": [
-                "india juliett kilo li",
-                "juliett kilo lima mike november ",
-                "kilo lima mike novembe"
+                "golf hotel india juliett kilo",
+                "hotel india juliett ",
+                "india juliett kil",
+                "juliett kilo lima mik"
               ],
               "emphasisEn": [],
               "skills": [
-                "lima mike nov",
-                "mike november oscar p"
-              ],
-              "metrics": [
-                "nov"
-              ],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november",
-              "textEn": null,
-              "emphasisSource": [
-                "quebec romeo sierra tango un",
-                "romeo sierra tango uniform vict",
-                "sierra tango uniform vi",
-                "tango uniform "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform victor whiskey xra",
-                "victor ",
-                "whiskey x",
-                "xray yankee z",
-                "yankee zulu alpha bra",
-                "zul",
-                "alpha "
-              ],
-              "metrics": [],
-              "properNouns": [
-                "bravo cha",
-                "cha",
-                "delta "
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "echo foxtrot golf hotel india juliett kilo lima m",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey x",
-              "textEn": null,
-              "emphasisSource": [
-                "juliett kil",
-                "kilo lima mike november oscar papa q",
-                "lima mike november os"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "mike november oscar papa quebec ",
-                "november oscar ",
-                "oscar papa q"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta e",
-              "textEn": null,
-              "emphasisSource": [
-                "romeo sier",
-                "sierra tango uni",
-                "tango uniform "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "unifor",
-                "victo",
-                "whiske",
-                "xray yankee zul"
-              ],
-              "metrics": [
-                "yanke"
-              ],
-              "properNouns": [
-                "zulu ",
-                "alpha "
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sier",
-              "textEn": null,
-              "emphasisSource": [
-                "delta echo foxtro",
-                "echo foxtrot golf hotel i",
-                "foxtrot golf hotel india juliett kil"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "golf hotel i",
-                "hotel india ju",
-                "india juliett ki"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "juliett kilo lima mike ",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yank",
-              "textEn": null,
-              "emphasisSource": [
-                "oscar papa q",
-                "papa quebec romeo sierra tango u",
-                "quebec romeo"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "romeo",
-                "sierra ",
-                "tango uniform victor whi",
-                "uniform victor whiskey xray "
-              ],
-              "metrics": [
-                "victor w"
-              ],
-              "properNouns": [
-                "whisk"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray y",
-              "textEn": null,
-              "emphasisSource": [
-                "zulu alpha bravo charlie delt",
-                "alpha bravo charlie delta echo foxt",
-                "bravo charlie delta echo foxt"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "charlie delta echo foxt",
-                "delta echo foxtrot golf ho",
-                "echo foxtrot golf hot"
-              ],
-              "metrics": [],
-              "properNouns": [
-                "foxtrot golf hotel indi"
-              ],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "golf hotel india juliett kilo lima mike n",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray",
-              "textEn": null,
-              "emphasisSource": [
-                "lima mike november oscar",
-                "mike november",
-                "november oscar p"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "oscar papa qu",
-                "papa qu"
+                "kilo ",
+                "lima mike nove",
+                "mike",
+                "novem",
+                "oscar p",
+                "papa quebec romeo sierr"
               ],
               "metrics": [
                 "queb"
               ],
               "properNouns": [
-                "romeo s"
+                "romeo",
+                "sie",
+                "tang",
+                "uniform"
               ],
-              "tags": []
+              "tags": [
+                "victor whiskey xray"
+              ]
             },
             {
-              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf",
+              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey",
               "textEn": null,
               "emphasisSource": [
-                "uniform victor ",
-                "victor whiskey xray y",
-                "whiskey xray yankee zu"
+                "xray yankee zulu alpha b",
+                "yankee zulu alpha bravo charlie d",
+                "zulu alpha bravo charlie de",
+                "alpha bravo charlie delta echo foxtrot gol"
               ],
               "emphasisEn": [],
               "skills": [
-                "xray",
-                "yankee zulu alpha",
-                "zulu alpha b"
+                "bravo charli",
+                "charlie delta echo f",
+                "delta",
+                "echo foxtrot ",
+                "foxtrot golf hotel i"
               ],
               "metrics": [],
-              "properNouns": [],
-              "tags": []
+              "properNouns": [
+                "golf hotel india jul",
+                "hotel india j"
+              ],
+              "tags": [
+                "india ju"
+              ]
             }
           ]
         },
         {
-          "title": "alpha bravo charlie delta",
+          "title": "juliett kilo lima mike november oscar pa",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tang",
+              "textSource": "kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar pa",
               "textEn": null,
               "emphasisSource": [
-                "foxtrot golf hotel india ",
-                "golf hotel india juliett kilo l"
+                "lima mike november oscar papa quebec rom",
+                "mike november oscar papa quebec romeo sierra tango uniform vict",
+                "november oscar papa "
               ],
               "emphasisEn": [],
               "skills": [
-                "hotel indi",
-                "india",
-                "juliett ",
-                "kilo lima m"
+                "oscar papa quebec romeo sierra tan",
+                "papa quebec rome",
+                "quebec rom",
+                "rome",
+                "sierra tango uniform v"
               ],
               "metrics": [
-                "li"
+                "tan"
               ],
               "properNouns": [
-                "mike novembe"
+                "uniform victor w",
+                "victor whi",
+                "whiskey xray ya",
+                "xray yankee"
               ],
-              "tags": []
+              "tags": [
+                "yankee zulu a"
+              ]
             },
             {
-              "textSource": "november oscar papa quebec romeo sierra tango uniform victor whiskey xray y",
+              "textSource": "zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie ",
+              "textEn": null,
+              "emphasisSource": [
+                "alpha bravo charlie ",
+                "bravo charlie del",
+                "charlie delta echo foxtrot",
+                "delta echo foxtrot gol"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "ech",
+                "foxtr",
+                "golf",
+                "hotel india juliett kil",
+                "indi",
+                "juliett kilo lima ",
+                "kilo lima mik"
+              ],
+              "metrics": [
+                "lima mike n",
+                "mik",
+                "november osc",
+                "os",
+                "papa que"
+              ],
+              "properNouns": [
+                "queb",
+                "rom",
+                "sierra tango u"
+              ],
+              "tags": [
+                "tango uniform vict"
+              ]
+            },
+            {
+              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whis",
+              "textEn": null,
+              "emphasisSource": [
+                "victor whiskey xray yankee zulu alph",
+                "whiskey xray yankee",
+                "xray yankee zulu alpha",
+                "yankee zulu alpha br"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "zulu al",
+                "alpha br",
+                "bravo charli",
+                "charlie delta ec",
+                "delta echo foxtrot gol"
+              ],
+              "metrics": [
+                "ech",
+                "foxtrot",
+                "golf"
+              ],
+              "properNouns": [
+                "hotel i",
+                "india ju"
+              ],
+              "tags": [
+                "juliett kil"
+              ]
+            },
+            {
+              "textSource": "kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar pa",
+              "textEn": null,
+              "emphasisSource": [
+                "lima mike november",
+                "mike november oscar papa quebec r",
+                "november oscar papa quebec romeo si",
+                "oscar papa quebec romeo s"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "papa quebec romeo "
+              ],
+              "metrics": [
+                "q"
+              ],
+              "properNouns": [],
+              "tags": [
+                "romeo sierra "
+              ]
+            },
+            {
+              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo fox",
+              "textEn": null,
+              "emphasisSource": [
+                "tango uniform ",
+                "uniform vi",
+                "victor whiskey xray yank"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "whisk",
+                "xray yanke",
+                "yankee zulu alpha br"
+              ],
+              "metrics": [
+                "zulu al"
+              ],
+              "properNouns": [
+                "alpha",
+                "bravo char"
+              ],
+              "tags": [
+                "charlie "
+              ]
+            }
+          ]
+        },
+        {
+          "title": "delta echo foxtrot golf hotel india",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike n",
+              "textEn": null,
+              "emphasisSource": [
+                "foxtrot golf hotel india juliett ",
+                "golf hotel india juliett k",
+                "hotel i",
+                "india juliett kilo"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "juliett kilo li",
+                "kilo li",
+                "lima ",
+                "mike november o",
+                "november oscar papa"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "oscar p",
+                "papa "
+              ],
+              "tags": [
+                "quebec romeo si"
+              ]
+            },
+            {
+              "textSource": "romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa que",
+              "textEn": null,
+              "emphasisSource": [
+                "sierra tango uniform victor ",
+                "tango unifo",
+                "uniform victor wh",
+                "victor whiskey xray yan"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "whiske",
+                "xray y",
+                "yankee zulu alp",
+                "zulu alpha bravo",
+                "alpha bravo charlie "
+              ],
+              "metrics": [
+                "bravo",
+                "char",
+                "delta ",
+                "echo f"
+              ],
+              "properNouns": [
+                "foxtrot gol",
+                "golf hote"
+              ],
+              "tags": [
+                "hotel india juli"
+              ]
+            },
+            {
+              "textSource": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november os",
+              "textEn": null,
+              "emphasisSource": [
+                "juliett kilo lima mike n",
+                "kilo lima mike november os",
+                "lima mike november oscar papa quebec ",
+                "mike november oscar p"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "november oscar pap",
+                "oscar papa ",
+                "papa qu",
+                "quebec rom"
+              ],
+              "metrics": [
+                "romeo sie",
+                "sierra tango uniform "
+              ],
+              "properNouns": [],
+              "tags": [
+                "tango unif"
+              ]
+            },
+            {
+              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha b",
+              "textEn": null,
+              "emphasisSource": [
+                "victor whiskey xray yankee zulu alpha",
+                "whiskey xray yankee zulu ",
+                "xray yankee zulu alpha bravo charlie d"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "yankee zulu alpha b",
+                "zulu alpha brav",
+                "alpha ",
+                "bravo "
+              ],
+              "metrics": [
+                "charl",
+                "de",
+                "echo foxt",
+                "foxtrot golf hotel i"
+              ],
+              "properNouns": [
+                "golf h",
+                "hotel "
+              ],
+              "tags": [
+                "india juliett ki"
+              ]
+            },
+            {
+              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar ",
+              "textEn": null,
+              "emphasisSource": [
+                "kilo lima mike november os",
+                "lima mike november oscar pa",
+                "mike november oscar papa quebec romeo ",
+                "november "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "oscar",
+                "papa quebec romeo si",
+                "quebec romeo sier"
+              ],
+              "metrics": [
+                "romeo sie"
+              ],
+              "properNouns": [
+                "sierr"
+              ],
+              "tags": [
+                "tango un"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "uniform victor whiskey ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha ",
+              "textEn": null,
+              "emphasisSource": [
+                "whiskey xray yankee zulu alpha bravo cha",
+                "xray yankee zulu alpha bravo charlie delta",
+                "yankee zulu alpha "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "zulu alpha bravo ch",
+                "alpha bravo c",
+                "brav",
+                "charlie del",
+                "delta echo f",
+                "echo fox"
+              ],
+              "metrics": [
+                "fo",
+                "gol",
+                "h"
+              ],
+              "properNouns": [
+                "indi",
+                "juliett kil",
+                "kilo lima mi"
+              ],
+              "tags": [
+                "lima mike november o"
+              ]
+            },
+            {
+              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november osc",
+              "textEn": null,
+              "emphasisSource": [
+                "november osc",
+                "oscar papa quebe",
+                "papa quebec rom",
+                "quebec romeo sierra tango uniform vic"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "romeo si",
+                "sierra tango uniform ",
+                "tang",
+                "uniform victor whi",
+                "victor whiskey",
+                "whis"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "xray"
+              ],
+              "tags": [
+                "yankee zulu alp"
+              ]
+            },
+            {
+              "textSource": "zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtr",
+              "textEn": null,
+              "emphasisSource": [
+                "alpha bravo charlie ",
+                "bravo charlie delta ec",
+                "charlie delta echo fo",
+                "delta echo foxtrot golf hotel india "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "echo foxtrot golf ho",
+                "foxt",
+                "golf hotel ind",
+                "hotel i"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "india juliett kilo l",
+                "juliett"
+              ],
+              "tags": [
+                "kilo lima mik"
+              ]
+            },
+            {
+              "textSource": "lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike",
+              "textEn": null,
+              "emphasisSource": [
+                "mike november oscar p",
+                "november oscar papa quebec romeo sierra ta",
+                "oscar papa quebec romeo sie",
+                "papa quebec romeo"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "quebec romeo s",
+                "romeo sierra tang",
+                "sierra ta",
+                "tango uniform"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "uniform victor whiske",
+                "victor wh"
+              ],
+              "tags": [
+                "whiskey xray "
+              ]
+            },
+            {
+              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu al",
+              "textEn": null,
+              "emphasisSource": [
+                "yankee zulu alpha bravo char",
+                "zulu al",
+                "alpha bravo charlie delta echo foxtrot",
+                "bravo charl"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "charlie delta echo f",
+                "delta",
+                "echo foxtrot go",
+                "foxtrot g",
+                "golf h",
+                "hotel india juliett "
+              ],
+              "metrics": [
+                "i"
+              ],
+              "properNouns": [
+                "julie",
+                "kilo lima mike ",
+                "lima mike",
+                "mike n"
+              ],
+              "tags": [
+                "november"
+              ]
+            },
+            {
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uni",
+              "textEn": null,
+              "emphasisSource": [
+                "papa quebec romeo sier",
+                "quebec romeo sierra tango",
+                "romeo sierra tango uni",
+                "sierra tango uniform vi"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "tango ",
+                "uniform victor",
+                "victor whiskey x",
+                "whiskey xr",
+                "xray yankee z"
+              ],
+              "metrics": [
+                "yankee zulu"
+              ],
+              "properNouns": [
+                "zulu a",
+                "alpha bravo ch"
+              ],
+              "tags": [
+                "bravo "
+              ]
+            }
+          ]
+        },
+        {
+          "title": "charlie delta echo foxtrot golf hotel india juliett kilo lima mike no",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf",
+              "textEn": null,
+              "emphasisSource": [
+                "echo foxtrot golf ",
+                "foxtrot golf hotel india ",
+                "golf hotel india juliet",
+                "hotel india juliett kilo"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "india juliett kilo lima mik",
+                "juliett kilo",
+                "kilo lim"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "lima mike nove"
+              ]
+            },
+            {
+              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec ro",
+              "textEn": null,
+              "emphasisSource": [
+                "november oscar papa quebec",
+                "oscar papa quebec romeo sierra",
+                "papa quebec romeo sie",
+                "queb"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "romeo sierra tango ",
+                "sier",
+                "tango uniform vict",
+                "uniform vict"
+              ],
+              "metrics": [
+                "vic",
+                "whiskey"
+              ],
+              "properNouns": [
+                "xray y",
+                "yank"
+              ],
+              "tags": [
+                "zulu alpha bravo"
+              ]
+            },
+            {
+              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo ch",
+              "textEn": null,
+              "emphasisSource": [
+                "bravo charlie delta echo ",
+                "charlie delta echo foxt",
+                "delta echo foxtrot gol",
+                "echo foxtrot golf hotel india juliett kilo"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "fo",
+                "golf h",
+                "hotel india ",
+                "india julie",
+                "juliett kilo lima "
+              ],
+              "metrics": [
+                "kil",
+                "lim",
+                "mike ",
+                "no",
+                "osca"
+              ],
+              "properNouns": [
+                "papa que",
+                "quebec"
+              ],
+              "tags": [
+                "romeo sierra tan"
+              ]
+            },
+            {
+              "textSource": "sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor ",
+              "textEn": null,
+              "emphasisSource": [
+                "tango uniform vict",
+                "uniform victor wh",
+                "victor whiskey x",
+                "whiskey xray yankee zulu alpha bravo charlie delta "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "xray y",
+                "ya",
+                "zulu alpha bravo charlie delt",
+                "alpha bravo charlie de",
+                "bravo charlie delta echo foxtrot g",
+                "charlie delta "
+              ],
+              "metrics": [
+                "delta ",
+                "echo f"
+              ],
+              "properNouns": [
+                "foxtro",
+                "golf hot",
+                "hot",
+                "indi",
+                "julie"
+              ],
+              "tags": [
+                "kilo lima mike n"
+              ]
+            },
+            {
+              "textSource": "lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike no",
+              "textEn": null,
+              "emphasisSource": [
+                "mike november oscar papa quebec r",
+                "november oscar pa",
+                "oscar papa quebec romeo sier",
+                "papa que"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "quebec",
+                "ro",
+                "sierra tango unifo"
+              ],
+              "metrics": [
+                "tan"
+              ],
+              "properNouns": [
+                "unifor",
+                "victor w"
+              ],
+              "tags": [
+                "whiskey xray yan"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "xray yankee zulu alpha bravo cha",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zu",
+              "textEn": null,
+              "emphasisSource": [
+                "zulu alpha bravo charlie delta",
+                "alpha bravo charlie delta echo",
+                "bravo charlie delta echo fox",
+                "charlie delta echo foxtrot gol"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "delta echo foxtr",
+                "echo foxtr",
+                "foxtrot",
+                "golf h",
+                "hotel indi"
+              ],
+              "metrics": [
+                "in",
+                "ju"
+              ],
+              "properNouns": [
+                "kilo lima ",
+                "lima mike ",
+                "mike nove",
+                "november",
+                "oscar pa"
+              ],
+              "tags": [
+                "papa quebec r"
+              ]
+            },
+            {
+              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierr",
+              "textEn": null,
+              "emphasisSource": [
+                "romeo s",
+                "sierra tango uniform vic",
+                "tango uniform victor whiskey xray yankee zulu alph",
+                "uniform victor whiske"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "victor ",
+                "whi",
+                "xray",
+                "yankee zulu alph",
+                "zulu alph",
+                "alpha b"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "bravo c",
+                "charlie d"
+              ],
+              "tags": [
+                "delta echo foxtr"
+              ]
+            },
+            {
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot gol",
+              "textEn": null,
+              "emphasisSource": [
+                "foxtrot golf hotel ind",
+                "golf hotel india juliett kilo lim",
+                "hotel india juliett kilo lima mike no",
+                "india juliett kilo lima mike"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "juliett kilo li",
+                "kilo lim",
+                "lima mike no",
+                "mike no",
+                "nov",
+                "osc"
+              ],
+              "metrics": [
+                "papa "
+              ],
+              "properNouns": [
+                "quebec r",
+                "romeo sierra tango u"
+              ],
+              "tags": [
+                "sierra tango uni"
+              ]
+            },
+            {
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sie",
+              "textEn": null,
+              "emphasisSource": [
+                "uniform victor whiskey",
+                "victor whiskey xray yankee zulu alpha ",
+                "whiskey xray yank",
+                "xray yankee zulu alpha bravo charli"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "yankee zulu alpha",
+                "zulu al",
+                "alpha bravo char",
+                "bravo c",
+                "charlie delta echo foxtrot"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "delta e",
+                "echo foxtrot gol",
+                "foxtrot",
+                "golf hotel i"
+              ],
+              "tags": [
+                "hotel india juli"
+              ]
+            },
+            {
+              "textSource": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot go",
+              "textEn": null,
+              "emphasisSource": [
+                "juliett kilo lima mike no",
+                "kilo lima mike november oscar pa",
+                "lima mike november osc",
+                "mike november osca"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "november oscar p",
+                "oscar papa quebec",
+                "papa quebec romeo si"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "quebec"
+              ],
+              "tags": [
+                "romeo sierra "
+              ]
+            }
+          ]
+        },
+        {
+          "title": "sierra tango uniform victor whiske",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee",
+              "textEn": null,
+              "emphasisSource": [
+                "uniform victor whiskey xray yankee zulu alpha b",
+                "victor whiskey xray yankee z",
+                "whiskey xray yankee zulu alpha bravo c"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "xray ya",
+                "yanke",
+                "zulu alpha",
+                "alpha bravo charlie de",
+                "bravo charlie delta "
+              ],
+              "metrics": [
+                "ch",
+                "de",
+                "echo foxtrot go"
+              ],
+              "properNouns": [
+                "foxtrot",
+                "golf "
+              ],
+              "tags": [
+                "hotel india jul"
+              ]
+            },
+            {
+              "textSource": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mik",
+              "textEn": null,
+              "emphasisSource": [
+                "juliett kilo lima mike november o",
+                "kilo lima mike november",
+                "lima mike november oscar papa qu",
+                "mike november oscar "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "november o",
+                "oscar papa quebec rom",
+                "papa qu"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "quebec r"
+              ]
+            },
+            {
+              "textSource": "romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra ta",
+              "textEn": null,
+              "emphasisSource": [
+                "sierra tango",
+                "tango uniform victor",
+                "uniform victor whiskey xray yankee",
+                "victor whiskey "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "whiskey xray yankee z",
+                "xray yankee zulu alpha",
+                "yankee zulu ",
+                "zulu alph",
+                "alp"
+              ],
+              "metrics": [
+                "bravo"
+              ],
+              "properNouns": [
+                "charlie delt",
+                "delta ech"
+              ],
+              "tags": [
+                "echo "
+              ]
+            },
+            {
+              "textSource": "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha b",
+              "textEn": null,
+              "emphasisSource": [
+                "golf hotel india juli",
+                "hotel india juliett kilo lima mi",
+                "india juliett kilo li",
+                "juliett kilo lima mike"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "kilo lima mik",
+                "lima mike novembe"
+              ],
+              "metrics": [
+                "mik"
+              ],
+              "properNouns": [],
+              "tags": [
+                "november"
+              ]
+            },
+            {
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november",
+              "textEn": null,
+              "emphasisSource": [
+                "papa quebec romeo sierra tan",
+                "quebec romeo sierra tango unifo",
+                "romeo sierra tango unif",
+                "sierra tango u"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "tango uniform victor whisk",
+                "uniform",
+                "victor wh",
+                "whiskey xray ",
+                "xray yankee zulu alph",
+                "yan",
+                "zulu a"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "alpha bravo charlie ",
+                "bravo cha",
+                "cha",
+                "delta "
+              ],
+              "tags": [
+                "echo foxtrot go"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "foxtrot golf hotel india juliett kilo lima mike n",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whis",
+              "textEn": null,
+              "emphasisSource": [
+                "hotel india",
+                "india juliett kilo lima mike novembe",
+                "juliett kilo lima mike novemb"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "kilo lima mike november oscar pa",
+                "lima mike novem",
+                "mike novembe"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "november osc"
+              ]
+            },
+            {
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie d",
+              "textEn": null,
+              "emphasisSource": [
+                "papa quebe",
+                "quebec romeo sie",
+                "romeo sierra t"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "sierra",
+                "tango",
+                "unifor",
+                "victor whiskey "
+              ],
+              "metrics": [
+                "whisk"
+              ],
+              "properNouns": [
+                "xray y",
+                "yanke",
+                "zulu a"
+              ],
+              "tags": [
+                "alpha bravo "
+              ]
+            },
+            {
+              "textSource": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sier",
+              "textEn": null,
+              "emphasisSource": [
+                "charlie delta ech",
+                "delta echo foxtrot golf h",
+                "echo foxtrot golf hotel india juliett kilo lima mi"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "foxtrot golf hotel",
+                "golf hotel"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "hotel india "
+              ]
+            }
+          ]
+        },
+        {
+          "title": "india juliett kilo lima",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor",
+              "textEn": null,
+              "emphasisSource": [
+                "kilo lima mi",
+                "lima mike november oscar papa qu",
+                "mike novembe"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "novem",
+                "oscar p",
+                "papa quebec romeo sierra",
+                "quebec romeo sierra tango un"
+              ],
+              "metrics": [
+                "romeo si"
+              ],
+              "properNouns": [
+                "sierr"
+              ],
+              "tags": [
+                "tango uniform vi"
+              ]
+            },
+            {
+              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango unifor",
+              "textEn": null,
+              "emphasisSource": [
+                "victor whiskey xray yankee zu",
+                "whiskey xray yankee zulu alpha brav",
+                "xray yankee zulu alpha bravo ",
+                "yankee zulu alpha bravo "
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "zulu alpha bravo charli",
+                "alpha bravo charlie delta ",
+                "bravo charlie delta e"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "charlie delta echo foxt"
+              ],
+              "tags": [
+                "delta echo",
+                "echo foxtrot gol"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "foxtrot golf hotel india juliett kilo lim",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform vi",
+              "textEn": null,
+              "emphasisSource": [
+                "hotel india juliett kilo",
+                "india juliett",
+                "juliett kilo lim"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "kilo lima mik",
+                "lima mi"
+              ],
+              "metrics": [
+                "mike"
+              ],
+              "properNouns": [
+                "novembe"
+              ],
+              "tags": [
+                "oscar papa quebec rom"
+              ]
+            },
+            {
+              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta",
+              "textEn": null,
+              "emphasisSource": [
+                "quebec romeo si",
+                "romeo sierra tango un",
+                "sierra tango uniform victor w"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "tango uniform v",
+                "uniform victor wh",
+                "victor whisk"
+              ],
+              "metrics": [],
+              "properNouns": [
+                "whis",
+                "xra"
+              ],
+              "tags": [
+                "yankee zulu alpha bra"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "zulu alpha bravo charlie ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa queb",
+              "textEn": null,
+              "emphasisSource": [
+                "bravo charlie delta echo ",
+                "charlie delt",
+                "delta echo foxtrot golf hotel i"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "echo foxtr",
+                "foxtr",
+                "golf hot",
+                "hotel india"
+              ],
+              "metrics": [
+                "in"
+              ],
+              "properNouns": [
+                "juliett kilo",
+                "kilo lima ",
+                "lima ",
+                "mike nov"
+              ],
+              "tags": [
+                "november osc"
+              ]
+            },
+            {
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zul",
               "textEn": null,
               "emphasisSource": [
                 "papa quebec romeo sierra ",
@@ -1645,16 +1871,19 @@
               ],
               "emphasisEn": [],
               "skills": [
-                "romeo sierra tang"
+                "romeo sierra tang",
+                "sierra tan"
               ],
               "metrics": [],
               "properNouns": [],
-              "tags": []
+              "tags": [
+                "tango unif"
+              ]
             }
           ]
         },
         {
-          "title": "sierra tango uniform victor whis",
+          "title": "uniform victor whiskey xray yank",
           "organization": "",
           "location": "",
           "startDate": null,
@@ -1664,259 +1893,294 @@
               "textSource": "victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo li",
               "textEn": null,
               "emphasisSource": [
-                "xray yankee zulu alpha ",
-                "yankee zulu alpha bravo ",
-                "zulu alpha bravo charlie d"
+                "whiskey xray yankee zul",
+                "xray yankee zulu alpha b",
+                "yankee zulu alpha bravo ch"
               ],
               "emphasisEn": [],
               "skills": [
-                "alpha",
-                "bravo charlie delta ec",
-                "charlie delta echo fox",
-                "delta e"
+                "zulu ",
+                "alpha bravo charlie de",
+                "bravo ch",
+                "charlie"
               ],
               "metrics": [],
               "properNouns": [
-                "echo "
+                "delta"
               ],
-              "tags": []
+              "tags": [
+                "echo foxtrot golf hot"
+              ]
             },
             {
               "textSource": "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform ",
               "textEn": null,
               "emphasisSource": [
-                "hotel india juliet",
-                "india juli",
+                "golf hotel india j",
+                "hotel indi",
+                "india juliett k",
                 "juliett kilo lima"
               ],
               "emphasisEn": [],
               "skills": [
                 "kil",
-                "lima mike n"
+                "lima mike november osc"
               ],
               "metrics": [],
-              "properNouns": [],
-              "tags": []
+              "properNouns": [
+                "mik"
+              ],
+              "tags": [
+                "november oscar papa q"
+              ]
             },
             {
-              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alph",
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charli",
               "textEn": null,
               "emphasisSource": [
-                "oscar papa quebec rom",
-                "papa quebec romeo si",
-                "quebec romeo sierra tang"
+                "papa quebec romeo sie",
+                "quebec romeo sierra ",
+                "romeo sierra tango unifo"
               ],
               "emphasisEn": [],
               "skills": [
-                "romeo sierra tango uniform",
-                "sie",
-                "tang",
-                "unifo"
+                "sierra tango uniform victo",
+                "tan",
+                "unif",
+                "victo"
               ],
               "metrics": [],
-              "properNouns": [],
-              "tags": []
+              "properNouns": [
+                "whi",
+                "xray",
+                "yanke"
+              ],
+              "tags": [
+                "zulu alpha bra"
+              ]
             }
           ]
         },
         {
-          "title": "victor whiskey xray ",
+          "title": "alpha bravo charlie ",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray ya",
+              "textSource": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha br",
               "textEn": null,
               "emphasisSource": [
-                "alpha bravo cha",
-                "bravo charlie delta echo foxtrot ",
-                "charlie delta echo"
+                "charlie delta echo foxtrot gol",
+                "delta echo foxt",
+                "echo foxtrot golf hotel india jul",
+                "foxtrot golf hotel"
               ],
               "emphasisEn": [],
               "skills": [
-                "delt",
-                "echo f",
-                "foxtrot golf hotel india ju",
-                "golf hotel india juli",
-                "hotel india juliett kilo lima m"
+                "golf",
+                "hotel ",
+                "india juliett kilo lima mik",
+                "juliett kilo lima mik",
+                "kilo lima mike november oscar p"
               ],
               "metrics": [],
               "properNouns": [
-                "india "
+                "lima",
+                "mike n"
               ],
-              "tags": []
+              "tags": [
+                "november oscar papa"
+              ]
             },
             {
-              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee",
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ",
               "textEn": null,
               "emphasisSource": [
-                "lima mike novemb",
-                "mike november oscar papa qu",
-                "november oscar papa quebec romeo "
+                "papa quebec rome",
+                "quebec romeo sierra tango u",
+                "romeo sierra tango uniform victor"
               ],
               "emphasisEn": [],
               "skills": [
-                "oscar papa quebe"
+                "sierra tan"
               ],
               "metrics": [],
               "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo fox",
-              "textEn": null,
-              "emphasisSource": [
-                "romeo sierra ",
-                "sierra tango uniform",
-                "tango uniform victor w"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform victor whiskey x",
-                "victor whisk",
-                "whiskey xray yan"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf h",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot ",
-              "textEn": null,
-              "emphasisSource": [
-                "charlie delta echo",
-                "delta echo foxtrot golf",
-                "echo foxtrot golf ho"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "foxtrot golf hotel india ju",
-                "golf hot",
-                "hotel india jul",
-                "india juliett kilo"
-              ],
-              "metrics": [
-                "juliett"
-              ],
-              "properNouns": [
-                "kilo lima mike november oscar papa quebec romeo sierra tango uniform victo",
-                "lima mike novemb",
-                "mik",
-                "novembe"
-              ],
-              "tags": []
-            },
-            {
-              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike nove",
-              "textEn": null,
-              "emphasisSource": [
-                "quebec rom",
-                "romeo sierra tango uniform",
-                "sierra tango uniform vic",
-                "tango uniform victor whiskey xray "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "uniform victo",
-                "victor whiskey",
-                "whiskey xray ya"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            },
-            {
-              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee",
-              "textEn": null,
-              "emphasisSource": [
-                "zulu alpha bravo charlie delta echo foxtr",
-                "alpha bravo charlie delta echo foxtrot g",
-                "bravo charlie delta echo foxtrot golf "
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "charlie delta echo fox",
-                "delta e",
-                "echo fox",
-                "foxtrot golf hotel india juli",
-                "golf ho",
-                "hotel i",
-                "india j",
-                "juliett ki",
-                "kilo lima mike nov"
-              ],
-              "metrics": [
-                "li"
-              ],
-              "properNouns": [
-                "mik",
-                "novembe",
-                "oscar pa",
-                "pap",
-                "quebec ",
-                "romeo s",
-                "sierra ",
+              "tags": [
                 "tango unif"
-              ],
-              "tags": []
+              ]
             },
             {
-              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec r",
+              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett k",
               "textEn": null,
               "emphasisSource": [
-                "whiskey xray ya",
-                "xray yankee zulu alpha bravo charlie delt"
+                "victor whiske",
+                "whiskey xray yankee ",
+                "xray yankee zulu alpha bravo charlie"
               ],
               "emphasisEn": [],
               "skills": [
-                "yankee zulu alph"
+                "yankee zulu alpha bravo ",
+                "zulu alpha b",
+                "alpha bravo char"
               ],
-              "metrics": [
-                "zulu ",
-                "alpha",
-                "bravo ch"
-              ],
+              "metrics": [],
               "properNouns": [],
-              "tags": []
-            },
+              "tags": [
+                "bravo charlie delta"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "charlie delta echo foxtrot golf hotel india juliett kilo lima ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
             {
-              "textSource": "charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta ",
+              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india jul",
               "textEn": null,
               "emphasisSource": [
-                "ech",
-                "foxtrot golf",
-                "golf ho",
-                "hotel india ju"
+                "echo foxtrot golf ",
+                "foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec r",
+                "golf hotel india juliet",
+                "hotel india juliett "
               ],
               "emphasisEn": [],
               "skills": [
-                "india j",
-                "juliett kilo lima mike novemb",
-                "kilo lima mike november o",
-                "lima mike novemb",
-                "mike november oscar "
+                "india juliett kilo lima mik",
+                "juliett kilo li",
+                "kilo lim"
               ],
               "metrics": [
-                "nov",
-                "osc"
+                "lima mi"
               ],
               "properNouns": [
-                "papa qu",
-                "que",
-                "rom"
+                "mike november oscar papa quebec romeo sierra tango uniform victor whiskey ",
+                "november oscar p",
+                "osc",
+                "papa qu"
               ],
-              "tags": []
+              "tags": [
+                "quebec romeo s"
+              ]
+            },
+            {
+              "textSource": "romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa qu",
+              "textEn": null,
+              "emphasisSource": [
+                "sierra tan",
+                "tango uniform victor whisk",
+                "uniform victor whiskey x",
+                "victor whiskey xray yankee zulu al"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "whiskey xray ",
+                "xray yankee zu",
+                "yankee zulu alp"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "zulu alpha bravo"
+              ]
+            },
+            {
+              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo",
+              "textEn": null,
+              "emphasisSource": [
+                "bravo charlie delta echo foxtrot golf hot",
+                "charlie delta echo foxtrot golf hotel in",
+                "delta echo foxtrot golf hotel india ju"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "echo foxtrot golf hote",
+                "foxtrot",
+                "golf hot",
+                "hotel india juliett kilo lima",
+                "india j",
+                "juliett",
+                "kilo li",
+                "lima mike ",
+                "mike november osca"
+              ],
+              "metrics": [
+                "no"
+              ],
+              "properNouns": [
+                "osc",
+                "papa qu",
+                "quebec r",
+                "rom",
+                "sierra ",
+                "tango u",
+                "uniform",
+                "victor whi"
+              ],
+              "tags": [
+                "whiskey xray yan"
+              ]
+            },
+            {
+              "textSource": "xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango unifo",
+              "textEn": null,
+              "emphasisSource": [
+                "yankee zulu alpha bravo c",
+                "zulu alpha brav",
+                "alpha bravo charlie delta echo foxtrot golf hotel"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "bravo charlie de",
+                "charlie ",
+                "delta ec",
+                "echo foxt",
+                "foxtro"
+              ],
+              "metrics": [
+                "golf ",
+                "hotel"
+              ],
+              "properNouns": [],
+              "tags": [
+                "india juliett ki"
+              ]
+            },
+            {
+              "textSource": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo l",
+              "textEn": null,
+              "emphasisSource": [
+                "kil",
+                "lima mike no",
+                "mike no",
+                "november oscar papa quebec romeo sierra tango uniform"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "oscar p",
+                "papa quebec rome",
+                "quebec romeo sierra ",
+                "romeo sierra tango uniform vi",
+                "sierra tango uniform vict"
+              ],
+              "metrics": [
+                "tan",
+                "uni"
+              ],
+              "properNouns": [
+                "victor ",
+                "whi",
+                "xra"
+              ],
+              "tags": [
+                "yankee zulu alph"
+              ]
             }
           ]
         }
@@ -1924,125 +2188,133 @@
     },
     {
       "kind": "skills",
-      "title": "sierra tan",
+      "title": "zulu alpha",
       "entries": [
         {
-          "title": "tango uniform victor ",
+          "title": "alpha bravo charlie d",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike novemb",
+              "textSource": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sier",
               "textEn": null,
               "emphasisSource": [
-                "yankee zulu alpha bravo charlie delt",
-                "zulu alpha b",
-                "alpha bravo cha",
-                "bravo charlie d"
+                "charlie delta echo foxtrot golf hote",
+                "delta echo f",
+                "echo foxtrot go",
+                "foxtrot golf hotel"
               ],
               "emphasisEn": [],
               "skills": [
-                "char",
-                "delta ",
-                "echo foxtr",
-                "foxtrot go",
-                "golf ho",
-                "hot",
-                "ind",
-                "juliett kilo ",
-                "k",
-                "lima mike nov"
+                "golf",
+                "hotel ",
+                "india juli",
+                "juliett ki",
+                "kilo li",
+                "lim",
+                "mik",
+                "november osca",
+                "o",
+                "papa quebec r"
               ],
               "metrics": [
-                "mike"
+                "queb"
               ],
               "properNouns": [],
-              "tags": []
+              "tags": [
+                "romeo sierra tango un"
+              ]
             }
           ]
         },
         {
-          "title": "november oscar papa que",
+          "title": "sierra tango uniform vi",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike novembe",
+              "textSource": "tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec ",
               "textEn": null,
               "emphasisSource": [
-                "sierra tango uniform victor whiskey xray ya",
-                "tango uniform victor wh",
-                "uniform victor",
-                "victor whiskey xray yankee"
+                "uniform victor whiskey xray yankee zulu alp",
+                "victor whiskey xray yan",
+                "whiskey xray y",
+                "xray yankee zulu alpha bravo charlie delt"
               ],
               "emphasisEn": [],
               "skills": [
-                "whiskey xra",
-                "xray yankee ",
-                "yankee zulu alpha br",
-                "zulu alpha bra",
-                "alpha bra",
+                "yankee zulu",
+                "zulu alpha b",
+                "alpha bravo charlie ",
+                "bravo charlie ",
+                "charlie d",
+                "delta ec",
+                "echo ",
+                "foxtrot",
+                "golf hotel indi",
+                "hotel ind",
+                "india juliett ",
+                "juliett kilo lima mi",
+                "kilo lima mike novemb"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "lima mi",
+                "mike november"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "november oscar papa quebec ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot ",
+              "textEn": null,
+              "emphasisSource": [
+                "papa quebec romeo sierra ta",
+                "quebec romeo sierr",
+                "romeo sierra tango un",
+                "sierra tango un"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "tango",
+                "uniform",
+                "victor whisk",
+                "whis",
+                "xray yanke",
+                "yankee zu",
+                "zulu alp",
+                "alpha"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
                 "bravo ch",
-                "charl",
-                "delta e",
-                "echo foxtrot go",
-                "foxtrot g",
-                "golf hotel ind",
-                "hotel india juliett ",
-                "india juliett kilo li"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
+                "cha"
+              ]
             }
           ]
         },
         {
-          "title": "juliett kilo lima mike nove",
+          "title": "delta echo foxtrot golf hotel india",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta",
-              "textEn": null,
-              "emphasisSource": [
-                "oscar papa quebec romeo sie",
-                "papa quebec romeo ",
-                "quebec romeo sierra t",
-                "romeo sierra ta"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "sierr",
-                "tango u",
-                "uniform vict",
-                "vict",
-                "whiskey xr",
-                "xray yank",
-                "yankee z",
-                "zulu "
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "alpha bravo charlie delta echo foxt",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor",
+              "textSource": "echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whisk",
               "textEn": null,
               "emphasisSource": [
                 "foxtrot golf hotel india j",
@@ -2062,134 +2334,198 @@
                 "quebec romeo sierra tango unifor"
               ],
               "metrics": [],
-              "properNouns": [
+              "properNouns": [],
+              "tags": [
                 "romeo sierra tan",
-                "sierra t",
-                "tango ",
-                "uniform vi",
-                "victor",
-                "whisk"
-              ],
-              "tags": []
+                "sierra tango uniform ",
+                "tango unifor"
+              ]
             }
           ]
         },
         {
-          "title": "xray yankee zulu alpha b",
+          "title": "uniform victor whiskey x",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu",
+              "textSource": "victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform",
               "textEn": null,
               "emphasisSource": [
-                "charlie delta echo ",
-                "delta echo foxtrot golf ho",
-                "echo foxtrot golf hotel india juliett kilo lima mike ",
-                "foxtrot golf hotel"
+                "whiskey xray yankee",
+                "xray yankee zulu alpha bra",
+                "yankee zulu al",
+                "zulu alpha bravo charlie delta echo foxtrot golf hote"
               ],
               "emphasisEn": [],
               "skills": [
-                "golf ho",
-                "hotel indi",
-                "india juliett kilo li",
-                "ju",
-                "kilo l",
-                "lima mi",
-                "mike n",
-                "novemb",
-                "oscar papa quebec romeo sierra tan",
-                "papa quebec rome",
-                "queb",
-                "romeo s",
-                "sier",
-                "tango uniform victor whiske",
-                "unif",
-                "victor"
-              ],
-              "metrics": [],
-              "properNouns": [],
-              "tags": []
-            }
-          ]
-        },
-        {
-          "title": "whiskey xray yankee zulu alp",
-          "organization": "",
-          "location": "",
-          "startDate": null,
-          "endDate": null,
-          "atoms": [
-            {
-              "textSource": "zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yank",
-              "textEn": null,
-              "emphasisSource": [
-                "bravo charlie delta echo foxtrot go",
-                "charlie delta echo foxtrot golf hotel in",
-                "delta echo foxt",
-                "echo foxtrot gol"
-              ],
-              "emphasisEn": [],
-              "skills": [
-                "foxtrot golf hot",
+                "alpha b",
+                "bravo char",
+                "charlie delta echo fo",
+                "de",
+                "echo f",
+                "foxtrot",
                 "golf h",
-                "hotel ind",
-                "india j",
-                "juliett kilo",
-                "kilo li",
+                "hotel ",
+                "india juliett kilo lima mike novem",
+                "juliett kilo lim",
+                "kilo",
                 "lima mi",
-                "mike nov",
-                "novem",
-                "oscar papa q",
-                "papa quebec r",
-                "que",
-                "rome",
-                "sierr"
+                "mike",
+                "november oscar papa quebec ",
+                "osca",
+                "papa q"
               ],
               "metrics": [],
               "properNouns": [],
-              "tags": []
+              "tags": [
+                "quebec romeo sierra tan",
+                "romeo sierra tan",
+                "sierra tango un"
+              ]
             }
           ]
         },
         {
-          "title": "tango uniform victor whis",
+          "title": "tango uniform victor whiskey",
           "organization": "",
           "location": "",
           "startDate": null,
           "endDate": null,
           "atoms": [
             {
-              "textSource": "whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango ",
+              "textSource": "uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tan",
               "textEn": null,
               "emphasisSource": [
-                "yankee zulu alpha brav",
-                "zulu alpha bravo charlie delta",
-                "alpha bravo charlie delta echo fox",
-                "bravo charlie delta echo foxtro"
+                "victor whiskey xray yankee zulu alpha bravo ",
+                "whiskey xray yankee zulu alpha ",
+                "xray yankee zul",
+                "yankee zulu alpha bravo charlie delt"
               ],
               "emphasisEn": [],
               "skills": [
-                "charli",
-                "delta echo fox",
-                "ech",
-                "foxtro",
-                "golf ",
-                "hotel in",
-                "india j",
-                "juliett",
-                "kilo li",
-                "lima m",
-                "mike",
-                "november",
-                "oscar",
-                "papa que"
+                "zulu alpha bravo",
+                "alpha ",
+                "bravo cha",
+                "charlie",
+                "delta echo f",
+                "echo fo",
+                "foxtrot",
+                "golf hot",
+                "hotel",
+                "india juliet",
+                "juliett kilo ",
+                "kil",
+                "lima",
+                "mike "
               ],
               "metrics": [],
               "properNouns": [],
-              "tags": []
+              "tags": [
+                "november osca",
+                "oscar papa quebec rom"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "papa quebec romeo sierra ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike novem",
+              "textEn": null,
+              "emphasisSource": [
+                "romeo sierra tango uniform victor w",
+                "sierra tango unif",
+                "tango uniform victor whiskey xray ",
+                "uniform victor whiskey xray yan"
+              ],
+              "emphasisEn": [],
+              "skills": [
+                "victor",
+                "whiskey xray y",
+                "xra",
+                "yankee",
+                "zulu ",
+                "alpha br",
+                "bravo c",
+                "charlie",
+                "delta e",
+                "echo f",
+                "foxt",
+                "golf hot",
+                "hotel",
+                "india ju"
+              ],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "juliet",
+                "kilo lima",
+                "lima "
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "languages",
+      "title": "mike nove",
+      "entries": [
+        {
+          "title": "novembe",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "oscar papa queb",
+              "textEn": null,
+              "emphasisSource": [
+                "papa qu",
+                "quebec"
+              ],
+              "emphasisEn": [],
+              "skills": [],
+              "metrics": [],
+              "properNouns": [],
+              "tags": [
+                "romeo sierra ta"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "sierra ",
+          "organization": "",
+          "location": "",
+          "startDate": null,
+          "endDate": null,
+          "atoms": [
+            {
+              "textSource": "tango unifo",
+              "textEn": null,
+              "emphasisSource": [
+                "uniform",
+                "vi"
+              ],
+              "emphasisEn": [],
+              "skills": [],
+              "metrics": [
+                "wh"
+              ],
+              "properNouns": [],
+              "tags": [
+                "xray yankee zulu alp"
+              ]
             }
           ]
         }
@@ -2197,70 +2533,29 @@
     },
     {
       "kind": "custom",
-      "title": "quebec romeo sierra ta",
+      "title": "yankee zulu ",
       "entries": [
         {
-          "title": "",
-          "organization": "",
+          "title": "zulu alpha bravo charlie d",
+          "organization": "alpha bravo charli",
           "location": "",
           "startDate": null,
           "endDate": null,
-          "atoms": [
-            {
-              "textSource": "uniform victor whiskey xray yankee zulu al",
-              "textEn": null,
-              "emphasisSource": [
-                "whiskey xray ya",
-                "xray yankee zulu alpha bra"
-              ],
-              "emphasisEn": [],
-              "skills": [],
-              "metrics": [],
-              "properNouns": [
-                "yankee zulu alpha "
-              ],
-              "tags": [
-                "zulu alp",
-                "alpha bravo"
-              ]
-            },
-            {
-              "textSource": "bravo charl",
-              "textEn": null,
-              "emphasisSource": [
-                "delta e",
-                "ec"
-              ],
-              "emphasisEn": [],
-              "skills": [],
-              "metrics": [
-                "fo"
-              ],
-              "properNouns": [],
-              "tags": [
-                "golf hot"
-              ]
-            }
-          ]
+          "atoms": []
         }
       ]
     }
   ],
   "warnings": [
     {
-      "code": "ambiguous_date",
-      "detail": "india juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victo",
-      "path": "sections[1].entries[0]"
-    },
-    {
-      "code": "unclear_section",
-      "detail": "juliett kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu al",
-      "path": "sections[5]"
+      "code": "overlapping_dates",
+      "detail": "bravo charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango un",
+      "path": "sections[2].entries[0]"
     },
     {
       "code": "scrambled_text",
-      "detail": "kilo lima mike november oscar papa quebec romeo sierra tango uniform victor whiskey xray yankee zulu alpha",
-      "path": "sections[5].entries[0].atoms[0]"
+      "detail": "charlie delta echo foxtrot golf hotel india juliett kilo lima mike november oscar papa quebec romeo sierra tango ",
+      "path": "sections[5]"
     }
   ]
 }
