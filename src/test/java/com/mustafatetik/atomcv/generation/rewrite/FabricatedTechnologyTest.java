@@ -301,6 +301,40 @@ class FabricatedTechnologyTest {
                 .contains(RewriteIssue.UNSUPPORTED_CLAIM);
     }
 
+    /**
+     * The dictionary applied to one side of the comparison, which
+     * {@link SkillNames}'s own javadoc calls worse than no dictionary at all.
+     *
+     * <p>{@code AboutValidator} and {@code CoverLetterValidator} canonicalise
+     * the page's skills before looking a term up in them. This one did not: it
+     * put the atom's skills in a set as they were stored and then asked for
+     * {@code SkillNames.canonical(term)}, so an atom carrying {@code Spring
+     * Boot} did not match the posting's {@code spring boot} and the rewrite that
+     * named the atom's own skill was refused as an invention.
+     *
+     * <p><strong>Reachable, not hypothetical.</strong> Ingestion canonicalises
+     * what it writes ({@code ProfileNormalizer}), but
+     * {@code AtomService.patch} stores the list a client sends verbatim — so
+     * anybody who edits their skills in the profile editor can produce exactly
+     * this. What hid it is the escape hatch below the lookup: an atom whose
+     * text repeats the word is allowed by the original-text check, and most do.
+     */
+    @Test
+    void askillTheAtomCarriesIsAllowedHoweverItWasStored() {
+        var candidate = new RewriteCandidate(UUID.randomUUID(), UUID.randomUUID(),
+                RichContent.plain("Built the nightly ingestion path for the billing team."),
+                List.of("Spring Boot"), List.of(), List.of(),
+                0.8, 500, RewriteIntent.ADAPT, null);
+
+        var issues = RewriteValidator.validate(candidate,
+                "Built the nightly ingestion path with Spring Boot.",
+                List.of("spring boot"), null, null);
+
+        assertThat(issues)
+                .as("the atom lists it, so the rewrite may name it")
+                .doesNotContain(RewriteIssue.UNSUPPORTED_CLAIM);
+    }
+
     private static RewriteCandidate bullet(String original) {
         return new RewriteCandidate(UUID.randomUUID(), UUID.randomUUID(),
                 RichContent.plain(original), List.of("etl"), List.of(), List.of(),
