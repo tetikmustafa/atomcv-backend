@@ -15,22 +15,16 @@
   üretim dağıtımını bekliyor.
 - **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra"
   demeli (§ 9) — frontend'in işi.
-- **§ 44.3'ün limiter'ı hâlâ yok** — 3.3'ünki **girişe** bağlı; § 44.3 ağır
-  kullanıcının **üretim** hakkını kısmak istiyor, yeri `QuotaService`.
-- **ATS metin çıkarma (§ 23.2) yok.** Engeli kalktı (PDFBox 3.4), `FitReport`
-  `F-008`'de indi; kalanı üretilen PDF'i geri okumak.
 - **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor,
   `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler.
 
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
 **Tam kayıt `kapanis-denetimi.md`'de**; kalıcı olanlar `spec/`'e işlendi
-(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). Hâlâ canlı ikisi:
+(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). Hâlâ canlı biri:
 **sığmayan bir başlık-adayı için `RejectedAtom` üretilmiyor** (o liste atom atom
-gösteriliyor, hiçbir atoma çözülmeyen bir entry id'si sessizlikten kötü); ve
-**`SelectionPhase.openEntries` `LinkedHashSet` olmak zorunda** — `HashSet` iken
-bir kaldırmanın iadesi koşudan koşuya değişiyordu. **İterasyon sırası bir sayıya
-dönüşüyorsa `Linked*` gerekiyor.**
+gösteriliyor, hiçbir atoma çözülmeyen bir entry id'si sessizlikten kötü).
+`SelectionPhase.openEntries`'in `LinkedHashSet` zorunluluğu CLAUDE.md'de.
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
@@ -49,8 +43,7 @@ Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
 - **Kayıtlı beş `cover_letter` fixture'ının üçü sentetik girdiyle koşulmuş**
   (`synthetic-631`); gerçek olan iki tanesi `6b34bdf1ae6e` ve `a57ecb1d54d1`.
 - **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
-- **`cover_letter` prompt'u eski cümleyi taşıyor** — `v2` model seçimini
-  bekliyor. (`job_analysis` v2 dilim H'de indi.)
+- **`cover_letter` prompt'u eski cümleyi taşıyor** — `v2` model seçimini bekliyor.
 - **Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi:** `postgresql`
   42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59; Boot'un BOM'u yetişince gider.
 
@@ -58,9 +51,9 @@ Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
 
 Dört bulgu, yedi ayrı kusur; dilim A-G'nin tam kaydı
 `archive/stage-3-post-closure-e2e.md`'de, **dilim K'nınki de orada**.
-**Geliştiricide (tek liste):** fiyat tablosu — **o güne kadar günlük bütçe freni
-ölü**, ve dilim K bunu telde gördü: `openai/gpt-5.6-sol` fiyatsız, iki gerçek
-çağrı `cost_usd = 0` yazdı. Sonra VPS kurulumu ve restore testi.
+**Geliştiricide (tek liste):** fiyat tablosu — **o güne kadar bütçe freni ölü**,
+ve dilim K telde gördü: `openai/gpt-5.6-sol` fiyatsız, iki gerçek çağrı
+`cost_usd = 0` yazdı. Sonra VPS ve restore testi.
 
 ## Kapanış sonrası · dilim I-J-H ve K — sayfanın şekli (2026-09-07)
 
@@ -79,15 +72,6 @@ içerikte değil); `PARAGRAPH` `INLINE_LIST`'e katlanmadı.
   v4'te çevirmek yedi fixture'ın maliyetlerini yeniden ölçmeyi ister.
 - **Faz D eşikleri ölçüldü:** en yüksek atom skoru 0.3577-0.4313, § 21.2'nin
   tabanı 0.40. **Ayarlamak yeni ölçüm ister**, karar spec'in.
-- **`to-frontend.md` 100 satırı aşıyor** ve sebebi arşivleme değil: `B-071`,
-  `B-072` ve `B-073` ACK bekliyor.
-- **`about_synthesis` bu ilanda her seferinde reddediliyor** (iki gerçek deneme,
-  ikisi de `UNSUPPORTED_CLAIM`); dört makul özetin üçü düşüyor, ikisi **yanlış
-  pozitif**. Sebep `introducedNames`'in kaynak listesini harfiyen aramasi:
-  `OOP` düşüyor ama becerilerde `object-oriented-programming` var, `Scrum`
-  düşüyor çünkü `RewriteContext.canonical()` ilanın `name`'ini atıp yalnız
-  `canonical`'ı taşıyor. Üçüncüsü **doğru** (§ 21.7). Güvenli yönde düşüyor ama
-  her üretimde iki çağrı boşa gidiyor; **P3 muhafızı kendi dilimini istiyor.**
 
 **Ders — golden fixture yazılmaz, okunur.** `master_cv_en` beş elle yazılmış
 profilin taşımadığını taşıyor: **ilanla ilgisi olmayan çok fazla içerik.** İlk
@@ -102,34 +86,32 @@ artık referansın kendisi; şablon sürümü **v4**, yedi fixture'ın maliyetle
 yeniden ölçüldü.
 
 **Düzeltme — ölçüm kutusu sayfanın satır kırma kuralını kullanmıyordu.**
-`\parbox` çevresindeki paragraf şeklini devralmıyor: LaTeX girişte
-`\@parboxrestore` çalıştırıp `\rightskip`'i sıfırlıyor, yani kutu **yaslı**
-diziliyor. Sayfa `\raggedright` ve satırı sıkıştıramıyor; yaslı kutu on sekiz
-kelime arasını üçte bir daraltabiliyor. Marjinal bir madde tek satır ölçülüp iki
-satır dizildi, kırk tanesi tek sayfa sözünü iki sayfaya çevirdi. Yalnız **kalın**
-metinde göründü: satırı `\linewidth`'i aşacak kadar iten tek şey işaretli
-koşulardı. **Ders: ölçüm belgesinin sayfayla aynı preamble'ı paylaşması yetmiyor
-— paragraf şeklini de paylaşmalı.**
+`\parbox` girişte `\@parboxrestore` çalıştırıp `\rightskip`'i sıfırlıyor, yani
+sayfa `\raggedright` iken kutu **yaslı** diziliyor ve on sekiz kelime arasını
+üçte bir daraltabiliyor: marjinal bir madde tek satır ölçülüp iki satır dizildi,
+kırk tanesi tek sayfa sözünü iki sayfaya çevirdi. Yalnız **kalın** metinde
+göründü — satırı `\linewidth`'i aşacak kadar iten tek şey işaretli koşulardı.
+**Ders: ölçüm belgesinin sayfayla aynı preamble'ı paylaşması yetmiyor, paragraf
+şeklini de paylaşmalı.**
 
 **Ekleme — `SECTION_LIST_CLOSE` (12.0pt).** Birinci seviye madde listesinden
 sonraki bölüm başlığı tam bir küçük satır daha pahalı: `\resumeItemListEnd`'in
 `\vspace{-5pt}`'ini başlığın `\addvspace`'i yutuyor, `\topsep` kalıyor. Bir
-maddede de üçünde de aynı; paragraf ve inline listede sıfır. **Başlığa değil
-listeye yazıldı** ve açık bölümler üzerinden her değişiklikte yeniden
-hesaplanıyor — seçim puan sırasına, sayfa okuma sırasına göre diziyor.
-**Bilinçli fazla ücret:** sayfanın son bölümü bir madde listesiyse o 12pt boşa
-gidiyor; alternatifi her başlığa yazmaktı, beş bölümde 60pt.
+maddede de üçünde de aynı, paragraf ve inline listede sıfır. **Başlığa değil
+listeye yazıldı** ve açık bölümler üzerinden yeniden hesaplanıyor (seçim puana,
+sayfa okuma sırasına göre diziyor). **Bilinçli fazla ücret:** son bölüm madde
+listesiyse o 12pt boşa gidiyor; alternatifi her başlığa yazmak, beş bölümde 60pt.
 
 **Ekleme — `TechStackEditor`, ilana göre madde süzme (§ 33.4, kural B).** Bir öğe
 ya ilanın andığı ya da sayfanın kalanının zaten konuştuğu şeyse kalıyor;
 kategori boşalırsa düşüyor. **LLM yok** — kategorinin uydurulamayacağını garanti
 etmenin yolu uyduracak kodun olmaması. Üç okuma kusuru: `.tex`'ten gelen Tech
-Stack her kategoriyi kendi entry'sine asıyor (yalnız serbest atomları okumak
-hiçbir şeyi süzmedi); `Spring Cloud (Gateway, Eureka)` tek öğe ve düz virgül
-bölmesi ikiye ayırıyordu; **`RewriteContext.postingSkills` `SkillNames`'den
-geçmiyor** — ilan `spring boot`, sayfa `spring-boot`. Sonuncusu burada yerel
-olarak düzeltildi; **`RewriteValidator` ve `AboutValidator` aynı listeyi okuyor,
-onlarda da olabilir — ölçülmedi.** `LANGUAGES` süzülmüyor (karar (c)).
+Stack her kategoriyi kendi entry'sine asıyor (serbest atomları okumak hiçbir şeyi
+süzmedi); `Spring Cloud (Gateway, Eureka)` tek öğe ve düz virgül bölmesi ikiye
+ayırıyordu; `RewriteContext.postingSkills` `SkillNames`'den
+geçmiyordu (ilan `spring boot`, sayfa `spring-boot`) ve burada yerel düzeltildi
+— aynı listeyi okuyan iki muhafız **aşağıda ölçüldü.** `LANGUAGES` süzülmüyor
+(karar (c)).
 
 **Yedinci golden profil `stress_long_career`** — bu **yazıldı**, okunmadı: altı
 işin onar maddesi, iki sayfa hatasını üreten şekil. Elle yazılmış beşi
@@ -138,6 +120,24 @@ tutacak kadar kısa. **Canlı:** `MeasurementDriftIT.heightOnThePage`'in okuduğ
 `\pagetotal` yalnız içinde bulunulan sayfayı sayıyor, yani iki sayfalık bir
 belgede verdiği sapma anlamsız — bilerek bırakıldı,
 `theRealDocumentNeverRunsPastThePage` sayfa sayısını ayrıca tutuyor.
+
+## Kapanış sonrası · P3'ün yanlış pozitifleri ölçüldü (2026-09-08)
+
+**Düzeltme — teşhis yanlıştı; sebep alias sözlüğü değil, tire.** Kelime sınırı
+tireyi kelime karakteri sayıyordu, yani sayfanın kanonik taşıdığı
+`spring-cloud-gateway`'in *içinde* `Gateway` bulunamıyordu: on altı kayıtlı
+`about_synthesis` cevabında **on token, dört özet, bir verdict** (tam ölçüm
+`5ce0d94` ve `a4c5736`'nın gövdesinde). Ayırıcılar iki tarafta da katlanıyor
+artık, ön yazı muhafızı da aynı fonksiyonu okuyor; gerçek ret kalkmadı.
+
+**Ekleme — `postingSkillNames`: kaynak evet, sözlük ve prompt hayır.** İlan
+`Scrum`'ı yalnız `name`'inde adlandırıyor (on sekizin beşi kanonik formunun
+taşımadığı bir kelime yazıyor); yazımlarını ayrı liste taşıyor ve yalnız "bu adı
+bir kaynak taşıyor mu?" okuyor, yani prompt'un listesi de muhafızın sözlüğü de
+aynı kaldı — fixture'lar ve prompt sürümü yerinde (§ 53.2). **Tek listeye koyan
+hâli önce ölçüldü:** verdict değişmedi, çoğul `Code reviews` iki yeni ret açtı.
+**Bilerek açık, ölçülmedi:** kaynağın kısalttığını cevabın açtığı yön. **Ders:** bir
+redaksiyon, durduğu kayıt yenilenince bayatlar — nöbetçi 84/85 atomda yakaladı.
 
 ---
 
