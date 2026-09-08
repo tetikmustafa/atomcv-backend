@@ -124,6 +124,7 @@ public class BulletRewriteService {
 
         List<RewriteIssue> issues = RewriteValidator.validate(
                 candidate, rewritten.text(), context.postingSkills(),
+                context.postingSkillNames(),
                 vectorOf(rewritten.text()), candidate.originalVector());
         if (!issues.isEmpty()) {
             log.info("A rewrite of atom {} was refused: {}", candidate.atomId(), issues);

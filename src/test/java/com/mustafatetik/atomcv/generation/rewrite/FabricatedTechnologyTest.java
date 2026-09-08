@@ -2,6 +2,8 @@ package com.mustafatetik.atomcv.generation.rewrite;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.shared.text.ClaimVocabulary;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
@@ -242,6 +244,61 @@ class FabricatedTechnologyTest {
                 "Applies OOP across the service layer.",
                 List.of("object-oriented-programming")))
                 .isEmpty();
+    }
+
+    /**
+     * The posting's own spelling, which its canonical form can drop.
+     *
+     * <p>Measured on the golden posting: five of its eighteen skills spell a
+     * word their canonical form does not carry, and the loudest is
+     * {@code Agile frameworks (Scrum, Kanban)} beside the canonical
+     * {@code agile methodologies}. A summary writing {@code Scrum} was reported
+     * as inventing a technology the posting had asked for <em>by name</em>,
+     * because only the canonical form ever reached the guard.
+     *
+     * <p><strong>A source of names, not of permission</strong>, and the three
+     * assertions are what say so: the prompt's list is untouched, the word
+     * stops being an invention when the posting's wording is a source, and a
+     * name neither list carries is refused exactly as before. The middle one is
+     * the measured failure — the three-argument form is the code as it stood.
+     */
+    @Test
+    void thepostingsOwnSpellingIsASourceOfNamesAndNotOfPermission() {
+        var posting = new JobAnalysis(
+                new JobAnalysis.Role("Senior Software Engineer", null, "backend", null, null),
+                new JobAnalysis.Company("", null),
+                List.of(new JobAnalysis.Skill(
+                        "Agile frameworks (Scrum, Kanban)", "agile methodologies", null)),
+                List.of(), List.of(), List.of(), null, List.of(), "technical", "en", 0.9,
+                List.of());
+        var context = RewriteContext.of(posting, "", "en", Tone.FORMAL, "bucket");
+
+        assertThat(context.postingSkills())
+                .as("the list the prompt is shown is the one it always was")
+                .containsExactly("agile methodologies");
+        assertThat(context.postingSkillNames())
+                .as("and the posting's own wording is kept beside it")
+                .containsExactly("agile frameworks (scrum, kanban)");
+
+        var candidate = new AboutCandidate(UUID.randomUUID(),
+                RichContent.plain("Backend engineer who has worked in agile teams."),
+                List.of("agile"), List.of(), "", NO_POSTING, 400);
+        String withScrum = "Backend engineer applying Agile and Scrum in delivery teams.";
+
+        assertThat(AboutValidator.validate(candidate, withScrum, context.postingSkills()))
+                .as("what was measured: the canonical form alone refuses it")
+                .contains(RewriteIssue.UNSUPPORTED_CLAIM);
+
+        assertThat(AboutValidator.validate(candidate, withScrum,
+                context.postingSkills(), context.postingSkillNames()))
+                .as("Scrum is a word the posting wrote, so it is not an invention")
+                .doesNotContain(RewriteIssue.UNSUPPORTED_CLAIM);
+
+        assertThat(AboutValidator.validate(candidate,
+                "Backend engineer applying Agile and " + ABSENT + " in delivery teams.",
+                context.postingSkills(), context.postingSkillNames()))
+                .as("and a name neither list carries is refused exactly as before")
+                .contains(RewriteIssue.UNSUPPORTED_CLAIM);
     }
 
     private static RewriteCandidate bullet(String original) {

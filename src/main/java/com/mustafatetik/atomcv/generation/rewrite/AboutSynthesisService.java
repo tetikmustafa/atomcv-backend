@@ -108,8 +108,8 @@ public class AboutSynthesisService {
         }
         String text = answer.orElseThrow().data().text();
 
-        List<RewriteIssue> issues =
-                AboutValidator.validate(candidate, text, context.postingSkills());
+        List<RewriteIssue> issues = AboutValidator.validate(
+                candidate, text, context.postingSkills(), context.postingSkillNames());
         if (!issues.isEmpty()) {
             log.info("An About for atom {} was refused: {}", candidate.atomId(), issues);
             tally.refused(issues);

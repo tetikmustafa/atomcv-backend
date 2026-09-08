@@ -42,6 +42,18 @@ public final class AboutValidator {
      */
     public static List<RewriteIssue> validate(
             AboutCandidate candidate, String synthesised, List<String> postingSkills) {
+        return validate(candidate, synthesised, postingSkills, List.of());
+    }
+
+    /**
+     * @param postingSpellings the posting's own wording for those skills, a
+     *                         source of names and not a vocabulary term. A
+     *                         caller with none in hand passes the three-argument
+     *                         form; see {@code RewriteContext.postingSkillNames}
+     */
+    public static List<RewriteIssue> validate(
+            AboutCandidate candidate, String synthesised, List<String> postingSkills,
+            List<String> postingSpellings) {
         List<RewriteIssue> issues = new ArrayList<>();
         String answer = synthesised == null ? "" : synthesised;
         String folded = answer.toLowerCase(Locale.ROOT);
@@ -54,7 +66,8 @@ public final class AboutValidator {
         }
 
         // 1. Bolum 21.7, verbatim: every technology is one the page carries.
-        if (namesSomethingThePageDoesNot(candidate, answer, folded, postingSkills)) {
+        if (namesSomethingThePageDoesNot(
+                candidate, answer, folded, postingSkills, postingSpellings)) {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
         }
 
@@ -82,7 +95,7 @@ public final class AboutValidator {
      */
     private static boolean namesSomethingThePageDoesNot(
             AboutCandidate candidate, String answer, String foldedAnswer,
-            List<String> postingSkills) {
+            List<String> postingSkills, List<String> postingSpellings) {
 
         Set<String> allowed = new LinkedHashSet<>();
         for (String skill : candidate.skills()) {
@@ -110,6 +123,10 @@ public final class AboutValidator {
         sources.add(candidate.originalText());
         sources.add(candidate.ownWords());
         sources.addAll(postingSkills);
+        // And the posting as it spells itself. Only here: a spelling is
+        // evidence that a name is not invented, never permission to claim it —
+        // the loop above is what decides whether the page supports it.
+        sources.addAll(postingSpellings);
         return !ClaimVocabulary.introducedNames(answer, sources).isEmpty();
     }
 
