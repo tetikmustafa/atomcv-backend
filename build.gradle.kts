@@ -116,7 +116,7 @@ dependencies {
     implementation("org.apache.pdfbox:pdfbox:3.0.8")
     // Likewise for DOCX, and for the same reason: POI's text API reads
     // document parts and never runs a macro.
-    implementation("org.apache.poi:poi-ooxml:5.4.1")
+    implementation("org.apache.poi:poi-ooxml:5.5.1")
     // EK C.1 asks that errors reach somewhere a person looks. Axiom takes the
     // logs and the metrics; a stack trace with the request that produced it is
     // a different question and this answers it. Inert with no DSN, which is
