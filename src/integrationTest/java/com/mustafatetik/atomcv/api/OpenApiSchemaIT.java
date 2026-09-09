@@ -329,6 +329,53 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void theChallengeTokenIsAFormFieldOnTheImportAndNotAQueryParameter()
+            throws Exception {
+        // F-029. springdoc builds a multipart body from the @RequestParts and
+        // publishes every @RequestParam beside them as a *query* parameter.
+        // `mode` is one, correctly. `challengeToken` became one by accident,
+        // and § 35.7.4 calls it a form field -- the difference is that a token
+        // in a URL is written to access logs, proxy logs and browser history,
+        // which is most of what it exists to make hard.
+        //
+        // Both halves are asserted: the field is in the body, and it is not in
+        // the query. Only the first would still pass if the parameter came back.
+        String importPost = "$.paths['/api/v1/profile/import'].post";
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath(importPost + ".requestBody.content"
+                        + "['multipart/form-data'].schema.properties.challengeToken")
+                        .exists())
+                // The upload itself has to survive the hand-written body: an
+                // explicit @RequestBody replaces what springdoc derived, so a
+                // schema that forgot `file` would publish an endpoint nobody
+                // could call.
+                .andExpect(jsonPath(importPost + ".requestBody.content"
+                        + "['multipart/form-data'].schema.properties.file.format")
+                        .value("binary"))
+                .andExpect(jsonPath(importPost + ".parameters[?(@.name == 'challengeToken')]")
+                        .value(Matchers.empty()))
+                // `mode` stays where it is: it is not a secret, it is published,
+                // and moving it would break a client for nothing.
+                .andExpect(jsonPath(importPost + ".parameters[?(@.name == 'mode')].in")
+                        .value(Matchers.contains("query")));
+    }
+
+    @Test
+    void theCapabilityBlockHasABooleanForEveryFeatureThatCanBeRefused()
+            throws Exception {
+        // F-028. The block had no field for the covering letter, so the
+        // frontend closed that control on `canSaveHistory` -- true today, and
+        // true for a reason that is not the letter. Every AccountFeature has a
+        // boolean here to be refused against, and this is the pairing.
+        String capabilities = "$.components.schemas.CapabilitiesResponse.properties";
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath(capabilities + ".canWriteCoverLetter").exists())
+                .andExpect(jsonPath(capabilities + ".canEditAtomControls").exists())
+                .andExpect(jsonPath(capabilities + ".canAddAlternatives").exists())
+                .andExpect(jsonPath(capabilities + ".canSaveHistory").exists());
+    }
+
+    @Test
     void theFitReportIsPublishedAsCountsAndAClosedVocabulary() throws Exception {
         // F-008. The frontend cannot draw a result screen from a report that
         // is not in the schema, and Bolum 23.3 forbids a percentage by name —

@@ -566,8 +566,16 @@ Challenge, karşıda bir insan olup olmadığını soran tek şey.
 **Yokluk başarısızlıktır.** Token'ı göndermeyen istemci, bunun durdurmak için var
 olduğu istemcinin tam kendisi — boş ve null ikisi de reddediliyor.
 
-**`GenerationRequest.challengeToken`** ve `POST /profiles/import`'un
+**`GenerationRequest.challengeToken`** ve `POST /profile/import`'un
 `challengeToken` form alanı. `CHALLENGE_FAILED` (403).
+
+> **Duzeltme (F-029):** uc **tekil** — `POST /api/v1/profile/import`, ve
+> `B-051`'den beri oyle. Bu satir bir sure `/profiles/import` diyordu;
+> `07-subsystems.md` § 31.10 ve `08b-api-contract.md`'nin uc satiri hep
+> tekildi, yani yazim hatasi buradaydi. Form alani da artik gercekten
+> form alani: springdoc `@RequestParam`'i cok parcali bir ucta *query*
+> parametresi diye yayimliyordu, ve bir challenge token'inin URL'de
+> gitmesi onu erisim kayitlarina yaziyordu.
 
 **Ve bu muhafız hiçbir lane'de kendini kanıtlamıyor:** `ChallengeConfig` sırrı
 olmayan dağıtımda `token -> true` veriyor (prod dışı her profil). O yüzden

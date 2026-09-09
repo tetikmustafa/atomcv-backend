@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -106,6 +108,35 @@ public class ProfileImportController {
                     + "Resolutions: replace_profile, keep_existing_profile",
             content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                     schema = @Schema(implementation = ApiErrorResponse.class)))
+    /*
+     * Written out by hand, and F-029 is why. springdoc builds this body from
+     * the `@RequestPart`s alone and publishes every `@RequestParam` beside them
+     * as a *query* parameter — which is what `mode` is, correctly, and what
+     * `challengeToken` became by accident. § 35.7.4 calls it a form field, and
+     * the difference is not cosmetic: a challenge token in a URL is written to
+     * access logs, proxy logs and browser history, which is most of what the
+     * token exists to make hard. Binding stays on `@RequestParam` — it reads a
+     * multipart form field and a query string both, so a client that already
+     * sends it the published way keeps working.
+     */
+    @RequestBody(required = true, content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+            schemaProperties = {
+                    @SchemaProperty(name = "file", schema = @Schema(
+                            type = "string", format = "binary",
+                            description = "The CV. PDF, DOCX, TEX, TXT or MD, "
+                                    + "up to ten megabytes.",
+                            requiredMode = Schema.RequiredMode.REQUIRED)),
+                    @SchemaProperty(name = "challengeToken", schema = @Schema(
+                            type = "string",
+                            description = "What the challenge widget produced. "
+                                    + "Required for a caller with no account and "
+                                    + "ignored for one with an account (Bolum 44.4): "
+                                    + "this is the most expensive single call the "
+                                    + "product makes. Absent or blank is refused "
+                                    + "with `403 CHALLENGE_FAILED`.",
+                            requiredMode = Schema.RequiredMode.NOT_REQUIRED))
+            }))
     @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AcceptedJobResponse> importCv(
             @RequestPart("file") MultipartFile file,
@@ -115,10 +146,9 @@ public class ProfileImportController {
                     + "discarded and this CV becomes the new one. Absent means "
                     + "an account that already has a profile is refused.")
             @RequestParam(value = "mode", required = false) String mode,
-            @Parameter(description = "What the challenge widget produced. Required for a "
-                    + "caller with no account and ignored for one with an account "
-                    + "(Bolum 44.4): this is the most expensive single call the "
-                    + "product makes.")
+            // Hidden here and declared on the body above: the schema has to say
+            // "form field", and this annotation would say "query parameter".
+            @Parameter(hidden = true)
             @RequestParam(value = "challengeToken", required = false) String challengeToken,
             HttpServletRequest request) {
 
