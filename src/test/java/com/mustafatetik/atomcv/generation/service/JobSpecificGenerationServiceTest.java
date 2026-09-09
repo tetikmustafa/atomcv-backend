@@ -99,7 +99,7 @@ class JobSpecificGenerationServiceTest {
         when(rewrites.rewrite(any(), any(), any(), any()))
                 .thenReturn(RewriteOutcome.of(RewrittenContent.none()));
         letters = mock(CoverLetterWriter.class);
-        service = new JobSpecificGenerationService(profiles, assembler, tags, analysis,
+        service = new JobSpecificGenerationService(assembler, tags, analysis,
                 relevance, renderCosts, rewrites, letters, pipeline);
 
         head = new Profile(USER);
@@ -117,7 +117,7 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
@@ -137,7 +137,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        var result = service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
@@ -165,7 +165,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
@@ -185,7 +185,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(user(), POSTING, true, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, true, null, null, false, ProgressSink.NONE, null);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, null);
     }
@@ -206,7 +206,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(user(), POSTING, true, null, null, false,
+        service.generateForJob(subject(), POSTING, true, null, null, false,
                 ProgressSink.NONE, jobId);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, jobId);
@@ -214,6 +214,15 @@ class JobSpecificGenerationServiceTest {
 
     private static UserContext user() {
         return UserContext.of(USER);
+    }
+
+    /**
+     * The subject the pipeline now takes. It carries the profile already
+     * resolved, so the resolver is no longer a dependency of the service --
+     * which is why this test builds one rather than stubbing a lookup.
+     */
+    private GenerationSubject subject() {
+        return GenerationSubject.account(new ProfileResolver.OwnedProfile(head, ref), USER);
     }
 
     /**
@@ -234,7 +243,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
         verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
@@ -264,7 +273,7 @@ class JobSpecificGenerationServiceTest {
                 new RewriteTally(Map.of(AboutSynthesisService.PROMPT_ID, 1), Map.of(), 0)));
 
         var made = service.generateForJob(
-                user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(AboutSynthesisService.PROMPT_ID)
@@ -283,7 +292,7 @@ class JobSpecificGenerationServiceTest {
                         Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 2), 0)));
 
         var made = service.generateForJob(
-                user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(BulletRewriteService.PROMPT_ID);
@@ -319,7 +328,7 @@ class JobSpecificGenerationServiceTest {
     void nocoverLetterIsWrittenUnlessItWasAskedFor() {
         aGenerationThatReachesThePipeline();
 
-        service.generateForJob(user(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
 
         verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
@@ -335,7 +344,7 @@ class JobSpecificGenerationServiceTest {
         when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(null);
 
-        service.generateForJob(user(), POSTING, false, null, null, true, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, true, ProgressSink.NONE, null);
 
         verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }

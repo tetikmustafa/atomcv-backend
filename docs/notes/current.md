@@ -12,7 +12,6 @@
 ## Aşama 1-2'den taşınanlar — hâlâ açık
 
 - **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
-- **Anonim TTL etkinlikle kayıyor**; metin "son etkinliğinden iki saat sonra" demeli (§ 9) — frontend'in işi.
 - **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor,
   `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler.
 
@@ -110,12 +109,10 @@ ayırıyordu; `RewriteContext.postingSkills` `SkillNames`'den geçmiyordu ve
 burada yerel düzeltildi (süpürmenin kalanı aşağıda). `LANGUAGES` süzülmüyor
 (karar (c)).
 
-**Yedinci golden profil `stress_long_career`** — bu **yazıldı**, okunmadı: altı
-işin onar maddesi, iki sayfa hatasını üreten şekil. Elle yazılmış beşi
-yakalayamıyordu; hepsi sistematik bir az-ücretlendirmeyi sapma bütçesinin içinde
-tutacak kadar kısa. **Canlı:** `MeasurementDriftIT.heightOnThePage`'in okuduğu
-`\pagetotal` yalnız içinde bulunulan sayfayı sayıyor, yani iki sayfalık bir
-belgede verdiği sapma anlamsız — bilerek bırakıldı,
+**Yedinci golden profil `stress_long_career`** — bu **yazıldı**, okunmadı: iki
+sayfa hatasını üreten şekil, elle yazılmış beşi yakalayamıyordu. **Canlı:**
+`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan sayfayı
+sayıyor, iki sayfalık belgede sapması anlamsız — bilerek bırakıldı,
 `theRealDocumentNeverRunsPastThePage` sayfa sayısını ayrıca tutuyor.
 
 ## Kapanış sonrası · P3'ün yanlış pozitifleri ölçüldü (2026-09-08)
@@ -177,8 +174,11 @@ basılır.
   zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
   (`B-079`); üretim dilimi inince 5'e döner. **(ii) de indi:** profil uçları
   anonim oturumu kabul ediyor (`CallerProfiles`) ve § 35.7'nin üç limiti artık
-  *zorlanıyor* (§ 35.7.2, `B-081`). Sıradaki: (iii) üretim, (iv) challenge,
-  (v) hesap açmada üretimlerin de taşınması, (vi) kota + `B-nnn`.
+  *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) başladı:** boru hattı
+  `GenerationSubject` alıyor, handler sahipsiz işi hâlâ reddediyor — kalan üçü
+  reddin yorumunda yazılı. **Migration gerekmiyor:** `generations.profile_id`
+  cascade ediyor, anonim üretim profiliyle ölüyor. Sonra (iv) challenge,
+  (v) üretimlerin taşınması, (vi) kota.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

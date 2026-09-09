@@ -65,8 +65,22 @@ class GenerationJobHandlerTest {
         records = mock(GenerationRepository.class);
         general = mock(CvGenerationService.class);
         quotas = mock(com.mustafatetik.atomcv.billing.QuotaService.class);
+        // The handler resolves the profile now and hands it to the pipeline as a
+        // subject, so this stub is what used to live inside the service. Answered
+        // from the argument rather than fixed, so the ref is a persistent one
+        // belonging to whoever the job says -- an ephemeral stub would make every
+        // account case here read as anonymous.
+        var profiles = mock(com.mustafatetik.atomcv.profile.service.ProfileResolver.class);
+        when(profiles.owned(any())).thenAnswer(call -> {
+            var acting = (com.mustafatetik.atomcv.shared.security.UserContext) call.getArgument(0);
+            var profile = new com.mustafatetik.atomcv.profile.domain.Profile(acting.userId());
+            return new com.mustafatetik.atomcv.profile.service.ProfileResolver.OwnedProfile(
+                    profile,
+                    com.mustafatetik.atomcv.shared.security.ProfileRef.persistent(
+                            acting, profile.getId(), acting.userId()));
+        });
         handler = new GenerationJobHandler(
-                generations, general, records, quotas, new ErrorPresenter());
+                generations, general, records, profiles, quotas, new ErrorPresenter());
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 
