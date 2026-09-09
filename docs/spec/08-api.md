@@ -472,6 +472,44 @@ saydırırdı.
 **Uç oturumu kendisi basıyor.** İstemci ilk olarak burayı çağırıyor; aksi hâlde
 "henüz yok" diye bir durumu ele alması gerekirdi.
 
+#### 35.7.2 Kararlar — küme artık zorlanıyor (2026-09-09)
+
+§ 35.7 *"Sunucu yine de doğrular — istemci kontrolü sadece UX"* diyor ve o
+cümlenin doğrulanacak bir şeyi yoktu: anonim kişi profil uçlarına hiç
+erişemiyordu, bu yüzden üç limit ilan edilip hiç uygulanmıyordu ve
+`ATOM_LIMIT_EXCEEDED` hiçbir şey tarafından fırlatılmıyordu. Anonim düzenleme
+inince üçü de `AnonymousLimits`'te uygulanıyor.
+
+**Kapsam denetimin kendisi.** Profilin altındaki her yazma bir `ProfileRef`
+alıyor, ve `EPHEMERAL` olan "karşı tarafta hesap yok" demek. Yani limit yazmanın
+olduğu yerde uygulanıyor — dört ucun ayrı ayrı hatırlaması gereken bir şey değil,
+ve sonradan eklenen beşinci uç aynı argümanı aldığı için devralıyor.
+
+**Hangi alanlar "atom kontrolü" — tahmin değil.** `04-data-model.md` şemanın
+içinde etiketliyor (`-- kullanıcı kontrolleri`): `importance`, `active`,
+`always_include`, `verbatim`. Yanındaki skorlama girdileri değil: `skills`,
+`metrics` ve `proper_nouns` CV'nin *söylediği* şey, ve onları reddetmek anonim
+kişinin kendi cümlesini düzeltmesini engellerdi — düzenlemenin tamamı bunun için
+açıldı.
+
+**Yama bütün olarak reddediliyor**, alan alan değil: bir kontrolü sessizce düşüren
+kısmi yazma, ekranda sunucunun tutmadığı bir değer bırakırdı.
+
+**Ret sürümden önce geliyor.** Kontrol yaması `403` alıyor, `If-Match` hiç
+okunmuyor — "bunun için hesap aç" cevabı kullanıcının hangi sürüme baktığına
+bağlı değil.
+
+**Mevcut yazımı düzeltmek "alternatif" değil.** `POST /atoms/{id}/variants`
+reddediliyor (`canAddAlternatives: false`), ama `PATCH .../variants/{id}` açık:
+içe aktarımın ürettiği cümleyi düzeltmek o cümlenin kendisidir, ikinci bir
+seçenek değil.
+
+**Ve o yamanın çeviri adımı anonimde atlanıyor.** § 32.2'nin işleri kullanıcı
+başına kuyruğa giriyor; anonim oturumun ne talebi sahiplenecek bir id'si var ne
+de çevrilecek ikinci bir dili (§ 35.7 ona `["en"]` veriyor). Bozulmuş bir yol
+değil, kısa bir yol — `AtomService.patchVariant` bu yüzden `Optional<UserContext>`
+alıyor.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:

@@ -5,12 +5,11 @@ import com.mustafatetik.atomcv.profile.api.dto.SectionCreateRequest;
 import com.mustafatetik.atomcv.profile.api.dto.SectionPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.SectionResponse;
 import com.mustafatetik.atomcv.profile.domain.Section;
-import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.service.CallerProfiles;
 import com.mustafatetik.atomcv.profile.service.SectionDraft;
 import com.mustafatetik.atomcv.profile.service.SectionPatch;
 import com.mustafatetik.atomcv.profile.service.SectionService;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
-import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,13 +58,11 @@ import org.springframework.web.bind.annotation.RestController;
 })
 public class SectionController {
 
-    private final CurrentUser currentUser;
-    private final ProfileResolver profiles;
+    private final CallerProfiles callers;
     private final SectionService sections;
 
-    SectionController(CurrentUser currentUser, ProfileResolver profiles, SectionService sections) {
-        this.currentUser = currentUser;
-        this.profiles = profiles;
+    SectionController(CallerProfiles callers, SectionService sections) {
+        this.callers = callers;
         this.sections = sections;
     }
 
@@ -157,7 +154,13 @@ public class SectionController {
                 .toList();
     }
 
+    /**
+     * <strong>Account or anonymous session, and this endpoint does not know
+     * which.</strong> It asks for the profile of whoever is calling and gets a
+     * scope back; the scope is what says whether § 35.7's limits apply, which is
+     * why nothing here has to check.
+     */
     private ProfileRef profile() {
-        return profiles.resolve(currentUser.require());
+        return callers.ref();
     }
 }

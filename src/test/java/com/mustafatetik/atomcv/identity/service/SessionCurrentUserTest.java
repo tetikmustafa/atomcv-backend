@@ -35,6 +35,10 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /** Who a request is, and what happens when it is nobody. */
 class SessionCurrentUserTest {
 
+    /** Defaults: the record fills in the 2h anonymous TTL of Bolum 9 itself. */
+    private static final SessionProperties SESSION_PROPERTIES =
+            new SessionProperties(null, null, null, null, null, null);
+
     private static final Instant NOW = Instant.parse("2026-08-26T09:00:00Z");
 
     private static final UUID SOMEONE = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -64,7 +68,7 @@ class SessionCurrentUserTest {
         when(store.find("a-session-id")).thenReturn(Optional.of(session));
         bindRequestCarrying("a-session-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find()).contains(session.asUserContext());
         assertThat(currentUser.session()).contains(session);
@@ -79,7 +83,7 @@ class SessionCurrentUserTest {
     void withoutASessionRequireEndsTheRequestWithTheCatalogueCode() {
         bindRequestWithoutCookies();
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find()).isEmpty();
         assertThatThrownBy(currentUser::require)
@@ -104,7 +108,7 @@ class SessionCurrentUserTest {
         when(store.find("a-revoked-id")).thenReturn(Optional.empty());
         bindRequestCarrying("a-revoked-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find()).isEmpty();
     }
@@ -113,7 +117,7 @@ class SessionCurrentUserTest {
     void withoutACookieTheLocalStandInAnswersAndNeverTouchesTheStore() {
         bindRequestWithoutCookies();
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find())
                 .map(user -> user.userId())
@@ -131,7 +135,7 @@ class SessionCurrentUserTest {
                 "a-session-id", SOMEONE, UserRole.USER, AuthMethod.MAGIC_LINK, NOW)));
         bindRequestCarrying("a-session-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean(), SESSION_PROPERTIES);
         currentUser.find();
         currentUser.require();
         currentUser.session();
@@ -155,7 +159,7 @@ class SessionCurrentUserTest {
         when(accounts.byId(SOMEONE)).thenReturn(Optional.empty());
         bindRequestCarrying("a-session-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find()).isEmpty();
         assertThatThrownBy(currentUser::require)
@@ -178,7 +182,7 @@ class SessionCurrentUserTest {
         when(accounts.byId(LocalDevUser.DEV_USER_ID)).thenReturn(Optional.empty());
         bindRequestWithoutCookies();
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable(), SESSION_PROPERTIES);
 
         assertThat(currentUser.find()).isEmpty();
         assertThat(currentUser.session()).isEmpty();
@@ -194,7 +198,7 @@ class SessionCurrentUserTest {
                 .thenReturn(Optional.of(Session.anonymous("an-anonymous-id", NOW)));
         bindRequestCarrying("an-anonymous-id");
 
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, noLocalDevBean(), SESSION_PROPERTIES);
 
         assertThat(currentUser.anonymousSession()).isPresent();
         assertThat(currentUser.find()).isEmpty();
@@ -207,7 +211,7 @@ class SessionCurrentUserTest {
      */
     @Test
     void outsideARequestThereIsNobodyRatherThanAFailure() {
-        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable());
+        var currentUser = new SessionCurrentUser(store, cookies, accounts, localDevBeanAvailable(), SESSION_PROPERTIES);
 
         assertThat(currentUser.session()).isEmpty();
         assertThat(currentUser.find()).isEmpty();

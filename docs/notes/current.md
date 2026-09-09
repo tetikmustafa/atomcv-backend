@@ -175,9 +175,10 @@ basılır.
   **anonim profil artık Redis belgesi değil, sahibi olmayan + `expires_at`
   taşıyan satır.** Kalıcı sapma, altı yere işlendi — gerekçe, yedek bedeli ve
   zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
-  (`B-079`); üretim dilimi inince 5'e döner. Sıradaki: (ii) profil uçlarının
-  anonim oturumu kabul etmesi, (iii) üretim, (iv) challenge, (v) hesap açmada
-  üretimlerin de taşınması, (vi) kota + `B-nnn`.
+  (`B-079`); üretim dilimi inince 5'e döner. **(ii) de indi:** profil uçları
+  anonim oturumu kabul ediyor (`CallerProfiles`) ve § 35.7'nin üç limiti artık
+  *zorlanıyor* (§ 35.7.2, `B-081`). Sıradaki: (iii) üretim, (iv) challenge,
+  (v) hesap açmada üretimlerin de taşınması, (vi) kota + `B-nnn`.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

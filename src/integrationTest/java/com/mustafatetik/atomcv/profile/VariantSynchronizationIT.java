@@ -18,6 +18,7 @@ import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.profile.service.VariantPatch;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +117,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
     void aneditThatDoesNotTouchTheWordsChangesNothing() {
         AtomVariant english = derived(false);
 
-        atomService.patchVariant(profile, user, atom.getId(), turkish.getId(),
+        atomService.patchVariant(profile, Optional.of(user), atom.getId(), turkish.getId(),
                 etagOf(turkish), new VariantPatch(null, null, null, null, null));
 
         assertThat(reload(english).isStale()).isFalse();
@@ -165,7 +166,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
         assertThat(queuedTranslations()).isZero();
 
         AtomVariant reloaded = reload(mine);
-        atomService.patchVariant(profile, user, atom.getId(), mine.getId(),
+        atomService.patchVariant(profile, Optional.of(user), atom.getId(), mine.getId(),
                 etagOf(reloaded), new VariantPatch(null, null, null, null, false));
 
         assertThat(reload(mine).isUserEdited()).isFalse();
@@ -177,7 +178,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
     void handingBackAWordingThatIsNotStaleQueuesNothing() {
         AtomVariant mine = derived(true);
 
-        atomService.patchVariant(profile, user, atom.getId(), mine.getId(),
+        atomService.patchVariant(profile, Optional.of(user), atom.getId(), mine.getId(),
                 etagOf(mine), new VariantPatch(null, null, null, null, false));
 
         assertThat(reload(mine).isUserEdited()).isFalse();
@@ -206,7 +207,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
     }
 
     private void edit(String words) {
-        atomService.patchVariant(profile, user, atom.getId(), turkish.getId(),
+        atomService.patchVariant(profile, Optional.of(user), atom.getId(), turkish.getId(),
                 etagOf(turkish), new VariantPatch(RichContent.plain(words), null, null, null, null));
     }
 

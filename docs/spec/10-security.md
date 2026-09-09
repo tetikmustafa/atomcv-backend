@@ -343,6 +343,15 @@ profilin kendisi. `AnonymousProfiles` onu iki filtreyle veriyor: ref
 satırda, yani sahiplenilmiş bir profile ulaşan bir yol yok — bu yüzden tip bir
 controller'dan çağrılmaya da güvenli.
 
+**Oturumun bitiş anı `CurrentUser`'da, ve bunu ArchUnit söyledi.** Anonim
+profilin süresi oturumun süresidir; onu yazan kod bu anı bilmek zorunda. İlk
+yazdığım hâl `profile`'dan `identity`'nin `SessionProperties`'ini okuyordu ve
+**döngü** oldu — `identity` zaten `profile`'a bağlı (giriş akışı profili
+devralıyor). Çözüm bastırma değil: `CurrentUser.anonymousSessionEndsAt()`, iki
+tarafın da paylaştığı port. Yan faydası daha büyük — değer artık *oturumun
+kendi* bitişi, TTL + saat ile yeniden hesaplanan bir kopya değil, yani
+pencerenin nerede kaydığına karar veren tek bir yer var.
+
 **Ve `@Repository` istisna çevirisi bir tuzak kurdu, ölçülerek bulundu.**
 Muhafızın `IllegalArgumentException`'ı `InvalidDataAccessApiUsageException`'a
 dönüşüyor; `SignInHandover` giriş akışını korumak için `DataAccessException`

@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +45,11 @@ public class SessionCurrentUser implements CurrentUser {
     private final SessionCookies cookies;
     private final SignInAccounts accounts;
     private final ObjectProvider<LocalDevSessions> localDev;
+    private final SessionProperties properties;
 
     SessionCurrentUser(SessionStore sessions, SessionCookies cookies, SignInAccounts accounts,
-            ObjectProvider<LocalDevSessions> localDev) {
+            ObjectProvider<LocalDevSessions> localDev, SessionProperties properties) {
+        this.properties = properties;
         this.sessions = sessions;
         this.cookies = cookies;
         this.accounts = accounts;
@@ -87,6 +90,21 @@ public class SessionCurrentUser implements CurrentUser {
         return session()
                 .filter(Session::isAnonymous)
                 .map(session -> AnonymousSessionId.of(session.id()));
+    }
+
+    /**
+     * When this anonymous session ends, computed the one way it is computed
+     * (EK D.6.6): the last request that touched it, plus the anonymous TTL.
+     *
+     * <p>The window slides, so this moves with activity — which is what makes it
+     * the right value to hang an anonymous profile's expiry on rather than a
+     * fresh two hours from whenever a writer happened to run.
+     */
+    @Override
+    public Optional<Instant> anonymousSessionEndsAt() {
+        return session()
+                .filter(Session::isAnonymous)
+                .map(session -> session.lastSeenAt().plus(properties.anonymousTtl()));
     }
 
     /** The session itself, for the endpoint whose subject is the session. */
