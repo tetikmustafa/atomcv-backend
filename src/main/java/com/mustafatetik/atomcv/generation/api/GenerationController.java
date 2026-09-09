@@ -21,6 +21,7 @@ import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
@@ -367,6 +368,13 @@ public class GenerationController {
                     **It can refuse.** A letter has no original to fall back                     on, so a draft that claims a skill the page does not carry,                     overstates the experience, or greets the wrong company is                     thrown away twice and then reported as                     `COVER_LETTER_REJECTED`. Another press is a different                     draft.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The letter"),
+            @ApiResponse(responseCode = "403",
+                    description = "FEATURE_REQUIRES_ACCOUNT — `params.feature` is "
+                            + "`cover_letter`, and the resolution is `sign_up`. An "
+                            + "anonymous session may hold this generation and "
+                            + "still not have this control",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "404",
                     description = "No such generation, or it belongs to someone else",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
@@ -393,14 +401,19 @@ public class GenerationController {
                 ? new CoverLetterRequest(null, null)
                 : request;
 
+        // Ahead of the lookup: a letter is what § 35.7 gives an account, and
+        // an anonymous session asking for one is a closed control, not a
+        // generation it cannot find (F-030).
+        UserContext user = accountFor(AccountFeature.COVER_LETTER);
+
         // Scoped, and it is the IDOR defense on this endpoint too: someone
         // else's generation answers 404, because that an id exists is itself
         // information (absolute rule 3).
-        Generation generation = coverLetters.find(currentUser.require(), generationId)
+        Generation generation = coverLetters.find(user, generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         RateLimitDecision allowed = rateLimiter.check("cover_letter",
-                currentUser.require().userId().toString(),
+                user.userId().toString(),
                 LETTERS_PER_HOUR, Duration.ofHours(1));
         if (!allowed.allowed()) {
             throw new ApiException(UserFacingError.with(ErrorCode.RATE_LIMITED)
@@ -409,7 +422,7 @@ public class GenerationController {
         }
 
         Result<CoverLetterDraft> written = coverLetters.rewrite(
-                currentUser.require(), generation, asked.styleOrDefault(),
+                user, generation, asked.styleOrDefault(),
                 asked.companyNoteOrBlank());
 
         CoverLetterDraft draft = switch (written) {
@@ -438,6 +451,13 @@ public class GenerationController {
                     description = "VALIDATION_FAILED — rating is 1 or -1",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "403",
+                    description = "FEATURE_REQUIRES_ACCOUNT — `params.feature` is "
+                            + "`feedback`, and the resolution is `sign_up`. An "
+                            + "anonymous session may hold this generation and "
+                            + "still not have this control",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "404",
                     description = "No such generation, or it belongs to someone else",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
@@ -448,12 +468,17 @@ public class GenerationController {
             @PathVariable UUID generationId,
             @Valid @RequestBody FeedbackRequest request) {
 
+        // A verdict is a row keyed to a user and the support grant is an
+        // account's consent, so there is nothing an anonymous session can
+        // record. Ahead of the lookup for the same reason as above (F-030).
+        UserContext user = accountFor(AccountFeature.FEEDBACK);
+
         // Scoped, and it is the IDOR defense here too: a verdict on somebody
         // else's generation answers 404 (absolute rule 3).
-        feedback.find(currentUser.require(), generationId)
+        feedback.find(user, generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
-        var recorded = feedback.record(currentUser.require(), generationId,
+        var recorded = feedback.record(user, generationId,
                 request.ratingValue(), request.domainCategory(), request.comment(),
                 request.granted());
 
@@ -461,6 +486,38 @@ public class GenerationController {
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(FeedbackResponse.of(generationId, recorded.verdict(),
                         recorded.grant(), clock.instant()));
+    }
+
+    /**
+     * The caller, when this endpoint is one § 35.7 gives an account and not a
+     * session (F-030).
+     *
+     * <p><strong>Not {@code currentUser.require()}, and the difference is what
+     * the user reads.</strong> Both of these endpoints called it, so an
+     * anonymous session pressing a thumb or asking for a letter was answered
+     * {@code 401 AUTHENTICATION_REQUIRED} — which says a session was needed and
+     * none arrived, to somebody holding a perfectly good one. The screen writes
+     * "your session ended" from that, and the diagnosis is wrong.
+     * {@code FEATURE_REQUIRES_ACCOUNT} is the code {@code ErrorCode}'s own note
+     * reserves for a feature an anonymous caller cannot reach, it carries
+     * {@code sign_up}, and it names which control was pressed.
+     *
+     * <p>A request carrying <em>nothing</em> still gets the 401: that is the
+     * plain case the other code is for, and claiming a session exists when
+     * none does would be the same wrong sentence in the other direction.
+     */
+    private UserContext accountFor(AccountFeature feature) {
+        Optional<UserContext> account = currentUser.find();
+        if (account.isPresent()) {
+            return account.get();
+        }
+        if (currentUser.anonymousSession().isEmpty()) {
+            throw ApiException.of(ErrorCode.AUTHENTICATION_REQUIRED);
+        }
+        throw new ApiException(UserFacingError.with(ErrorCode.FEATURE_REQUIRES_ACCOUNT)
+                .param("feature", feature.wireValue())
+                .resolution(ResolutionAction.SIGN_UP)
+                .build());
     }
 
     /**
