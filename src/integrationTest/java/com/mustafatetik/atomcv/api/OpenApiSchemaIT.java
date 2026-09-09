@@ -306,7 +306,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(5)))
+                        .value(Matchers.aMapWithSize(6)))
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -315,8 +315,13 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.language").exists())
-                // Bolum 34, opt-in. The count above is what makes this a
-                // guard: a fifth property nobody meant to publish fails here.
+                // Bolum 44.4's token, sent by a caller with no account. Six and
+                // not five since Bolum 9's flow landed -- the count above is what
+                // makes this a guard, so it moves when a property is meant and
+                // fails when one is not.
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.challengeToken").exists())
+                // Bolum 34, opt-in.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.coverLetter").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"

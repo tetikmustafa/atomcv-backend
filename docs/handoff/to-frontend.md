@@ -12,8 +12,40 @@
 
 ## OPEN
 
-_Yedi madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+_Sekiz madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
 backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-083 · Anonim içe aktarım ve üretim challenge token istiyor
+
+**Since:** commit `<bu PR>` · **Spec:** § 35.7.4, § 44.4 · `identity/challenge/CallerChallenge`
+
+**Ne oldu:** oturumsuz çağıran artık bu iki istekte Turnstile token'ı göndermek
+zorunda. **Hesaplı çağıran göndermiyor** — giriş zaten bir challenge cevaplıyor
+(§ 40.4.1) ve aynı kişiye ikinci kez sormak boş sürtünme.
+
+| istek | nereye |
+|---|---|
+| `POST /generations` | gövdede **`challengeToken`** (yeni alan) |
+| `POST /profiles/import` | multipart'ta **`challengeToken`** form alanı |
+
+Eksik ya da geçersizse **`403 CHALLENGE_FAILED`**. **Boş göndermek yokluk
+sayılmıyor, başarısızlık sayılıyor** — token'ı atlayan istemci bunun durdurmak
+için var olduğu istemcinin kendisi.
+
+**Neden kota yetmiyor:** § 44.1'in sayaçları *ne kadar* diyor, *kim* demiyor.
+Adres başına beş üretim, adresini döndürebilen biri için beş demektir; § 44.3'ün
+sıkılaştırması ise harcamadan *sonra* koşan bir dedektör. Challenge, karşıda bir
+insan olup olmadığını soran tek şey — ve anonim akış artık gerçekten model
+parası harcıyor.
+
+**Action:** anonim akışta Turnstile widget'ını **CV yükleme** ve **üret**
+ekranlarına koyun; token'ı yukarıdaki iki yere ekleyin. Hesaplı kullanıcıda
+widget'a gerek yok, gönderirseniz de yok sayılıyor. `403 CHALLENGE_FAILED`
+geldiğinde widget'ı sıfırlayıp tekrar denetmek doğru davranış.
+
+**Yerelde göndermeseniz de çalışır** — sırrı olmayan dağıtım her token'ı
+geçiriyor. Yani "lokalde çalıştı" bu alanı doğru gönderdiğinizin kanıtı değil;
+staging'de sır varsa orada görülür.
 
 ### B-082 · Anonim üretim çalışıyor; kota 5'e döndü, ön yazı yok
 

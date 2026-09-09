@@ -552,6 +552,28 @@ derlemeyi satır içi ödüyor.
 **Genel CV modu hâlâ hesaba özel** — reddedilmiyor, sunulmuyor: § 35.7 anonime tek
 dil veriyor ve akış "bu ilana karşı" diye kuruldu. İsteyen çıkınca gelir.
 
+#### 35.7.4 Kararlar — challenge iki uç daha kapsıyor (2026-09-09)
+
+**Anonim içe aktarım ve anonim üretim challenge istiyor** (§ 44.4). Hesap
+istemiyor: giriş zaten bir challenge cevaplıyor (§ 40.4.1), ve aynı kişiye ikinci
+kez sormak arkasında bir şey olmayan sürtünmedir.
+
+**Kota bunun yerini tutmuyor, ve asıl gerekçe bu.** § 44.1'in sayaçları *ne kadar*
+diyor, *kim* demiyor: adres başına beş üretim, adresini döndürebilen için beş
+demektir, ve § 44.3'ün sıkılaştırması harcamadan *sonra* koşan bir dedektör.
+Challenge, karşıda bir insan olup olmadığını soran tek şey.
+
+**Yokluk başarısızlıktır.** Token'ı göndermeyen istemci, bunun durdurmak için var
+olduğu istemcinin tam kendisi — boş ve null ikisi de reddediliyor.
+
+**`GenerationRequest.challengeToken`** ve `POST /profiles/import`'un
+`challengeToken` form alanı. `CHALLENGE_FAILED` (403).
+
+**Ve bu muhafız hiçbir lane'de kendini kanıtlamıyor:** `ChallengeConfig` sırrı
+olmayan dağıtımda `token -> true` veriyor (prod dışı her profil). O yüzden
+`CallerChallengeTest` gerçek reddeden bir uygulamaya karşı doğrudan koşuyor
+(§ 51.7) — yeşil bir suite'i reddin çalıştığının kanıtı sanmamak için.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:

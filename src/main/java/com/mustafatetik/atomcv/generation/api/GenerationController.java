@@ -31,6 +31,7 @@ import com.mustafatetik.atomcv.shared.ratelimit.RateLimitDecision;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
 import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.generation.repository.AnonymousGenerations;
+import com.mustafatetik.atomcv.identity.challenge.CallerChallenge;
 import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.profile.service.CallerProfiles;
 import com.mustafatetik.atomcv.shared.ratelimit.ClientIp;
@@ -85,6 +86,7 @@ public class GenerationController {
 
     private final CurrentUser currentUser;
     private final CallerProfiles callers;
+    private final CallerChallenge challenge;
     private final AnonymousGenerations anonymousRecords;
     private final GenerationEnqueueService enqueue;
     private final GenerationDownloadService downloads;
@@ -131,6 +133,7 @@ public class GenerationController {
                     + "that is still right when the client's own clock is wrong.";
 
     GenerationController(CurrentUser currentUser, CallerProfiles callers,
+            CallerChallenge challenge,
             AnonymousGenerations anonymousRecords,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
@@ -139,6 +142,7 @@ public class GenerationController {
 
         this.currentUser = currentUser;
         this.callers = callers;
+        this.challenge = challenge;
         this.anonymousRecords = anonymousRecords;
         this.enqueue = enqueue;
         this.downloads = downloads;
@@ -177,6 +181,10 @@ public class GenerationController {
             @Valid @RequestBody GenerationRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             jakarta.servlet.http.HttpServletRequest http) {
+
+        // Bolum 44.4, and first: an anonymous request that cannot show a person
+        // behind it must not reach the quota, let alone a model.
+        challenge.requireOfAnonymous(request.challengeToken());
 
         JobOwner owner = JobOwner.of(currentUser);
         Result<Job> queued = enqueue.enqueue(
