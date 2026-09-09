@@ -17,7 +17,6 @@ import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
-import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -45,7 +44,6 @@ public class GenerationEnqueueService {
 
     private static final Logger log = LoggerFactory.getLogger(GenerationEnqueueService.class);
 
-    private final ProfileResolver profiles;
     private final ProfileAssembler assembler;
     private final JobQueue queue;
     private final JobRepository jobs;
@@ -53,13 +51,12 @@ public class GenerationEnqueueService {
     private final FeatureFlags flags;
     private final Clock clock;
 
-    GenerationEnqueueService(ProfileResolver profiles, ProfileAssembler assembler,
+    GenerationEnqueueService(ProfileAssembler assembler,
             JobQueue queue, JobRepository jobs, QuotaService quotas, FeatureFlags flags,
             Clock clock) {
 
         this.quotas = quotas;
         this.flags = flags;
-        this.profiles = profiles;
         this.assembler = assembler;
         this.queue = queue;
         this.jobs = jobs;
@@ -73,7 +70,9 @@ public class GenerationEnqueueService {
      *                       two identical ones a second apart.
      */
     public Result<Job> enqueue(
-            UserContext user,
+            JobOwner owner,
+            QuotaSubject allowance,
+            ProfileResolver.OwnedProfile owned,
             String jobDescription,
             boolean preflightAcknowledged,
             Integer maxPages,
@@ -81,7 +80,7 @@ public class GenerationEnqueueService {
             boolean coverLetter,
             String idempotencyKey) {
 
-        Optional<Job> already = jobs.findByIdempotencyKey(JobOwner.of(user), idempotencyKey);
+        Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
         if (already.isPresent()) {
             // Answered with the job that already exists, not with a conflict:
             // the caller asked for one generation and there is one.
@@ -94,23 +93,32 @@ public class GenerationEnqueueService {
             return Result.err(new PipelineError.GenerationPaused());
         }
 
-        Result<Void> spent = quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
+        if (coverLetter && owned.ref().scope() == ProfileRef.Scope.EPHEMERAL) {
+            // § 35.7, and ahead of the quota for the same reason the pause is:
+            // a request that will be refused must not spend anybody's day. A
+            // letter is a second model call on top of the CV, and the anonymous
+            // flow is a trial of the product paid for by whoever runs it.
+            return Result.err(new PipelineError.FeatureNeedsAnAccount("cover_letter"));
+        }
+
+        Result<Void> spent = quotas.consume(allowance, QuotaMetric.GENERATION);
         if (spent.isErr()) {
             return spent.map(ignored -> null);
         }
 
-        Result<Void> refused = preflight(user, jobDescription, preflightAcknowledged);
+        Result<Void> refused = preflight(owned, jobDescription, preflightAcknowledged);
         if (refused.isErr()) {
             // Bolum 44.2: nothing was generated, so nothing was spent. Without
             // this a user could burn a day's allowance on typos.
-            quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
+            quotas.refund(allowance, QuotaMetric.GENERATION);
             return refused.map(ignored -> null);
         }
 
-        var job = new Job(JobType.GENERATION, user.userId(),
+        var job = new Job(JobType.GENERATION, owner.userId(),
                 new GenerationPayload(jobDescription, preflightAcknowledged, maxPages,
-                        language, coverLetter).toMap(),
+                        language, coverLetter, allowance).toMap(),
                 clock.instant());
+        job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);
         return Result.ok(queue.enqueue(job));
     }
@@ -124,7 +132,8 @@ public class GenerationEnqueueService {
      * the retry budget allows.
      */
     private Result<Void> preflight(
-            UserContext user, String jobDescription, boolean preflightAcknowledged) {
+            ProfileResolver.OwnedProfile owned, String jobDescription,
+            boolean preflightAcknowledged) {
 
         // A blank posting is general CV mode, not a bad request: Bolum 18.1's
         // check accepts it for exactly that reason.
@@ -138,10 +147,8 @@ public class GenerationEnqueueService {
             }
         }
 
-        var owned = profiles.owned(user);
         Profile head = owned.profile();
-        ProfileRef profile = owned.ref();
-        ProfileTree tree = assembler.load(profile);
+        ProfileTree tree = assembler.load(owned.ref());
         return ProfilePreflight.check(head, tree);
     }
 }

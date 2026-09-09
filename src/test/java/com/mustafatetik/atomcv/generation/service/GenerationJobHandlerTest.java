@@ -80,7 +80,10 @@ class GenerationJobHandlerTest {
                             acting, profile.getId(), acting.userId()));
         });
         handler = new GenerationJobHandler(
-                generations, general, records, profiles, quotas, new ErrorPresenter());
+                generations, general, records,
+                mock(com.mustafatetik.atomcv.generation.repository.AnonymousGenerations.class),
+                mock(com.mustafatetik.atomcv.profile.repository.AnonymousProfiles.class),
+                profiles, quotas, new ErrorPresenter());
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 
@@ -291,22 +294,47 @@ class GenerationJobHandlerTest {
     }
 
     /**
-     * Bolum 9's anonymous flow is Stage 3. Inventing an owner would write a row
-     * belonging to nobody, which every scoped read would then refuse to
-     * anybody — including the person who asked for it.
+     * A job that belongs to neither an account nor a session is a row that
+     * should not exist. Inventing an owner would write a generation belonging to
+     * nobody, which every scoped read would then refuse to everybody —
+     * including the person who asked for it.
      */
     @Test
-    void anAnonymousJobIsRefusedRatherThanGivenAnOwner() {
+    void ajobBelongingToNobodyAtAllIsRefused() {
+        var orphan = new Job(JobType.GENERATION, null, payload(), Instant.EPOCH);
+
+        JobOutcome outcome = handler.handle(orphan, ProgressSink.NONE);
+
+        assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Failed.class, failed -> {
+            assertThat(failed.retryable()).isFalse();
+            assertThat(failed.error().code()).isEqualTo(ErrorCode.ANONYMOUS_SESSION_EXPIRED);
+        });
+        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(),
+                anyBoolean(), any(), any());
+    }
+
+    /**
+     * <strong>And an anonymous job whose session ended is refused for what it
+     * is.</strong> Between the request and the worker the two hours ran out and
+     * the sweep took the profile, so there is nothing to generate from. Not
+     * retryable: the next attempt reads the same absence, and the retry budget
+     * would turn one honest refusal into three.
+     */
+    @Test
+    void ananonymousJobWhoseProfileIsGoneSaysSoRatherThanGeneratingNothing() {
         var anonymous = new Job(JobType.GENERATION, null, payload(), Instant.EPOCH);
+        anonymous.setAnonSessionId("a-session-that-ended");
 
         JobOutcome outcome = handler.handle(anonymous, ProgressSink.NONE);
 
         assertThat(outcome).isInstanceOfSatisfying(JobOutcome.Failed.class, failed -> {
             assertThat(failed.retryable()).isFalse();
-            assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
+            assertThat(failed.error().code()).isEqualTo(ErrorCode.ANONYMOUS_SESSION_EXPIRED);
+            assertThat(failed.error().resolutions()).extracting("action")
+                    .containsExactly(com.mustafatetik.atomcv.shared.error.ResolutionAction.SIGN_UP);
         });
-        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any());
+        verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(),
+                anyBoolean(), any(), any());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
@@ -316,7 +344,10 @@ class GenerationJobHandlerTest {
     }
 
     private static Map<String, Object> payload() {
-        return new GenerationPayload(POSTING, false, 1, "en", false).toMap();
+        return new GenerationPayload(POSTING, false, 1, "en", false,
+                com.mustafatetik.atomcv.billing.QuotaSubject.of(
+                        com.mustafatetik.atomcv.shared.security.UserContext.of(USER)))
+                .toMap();
     }
 
     private static GeneratedGeneration generated() {

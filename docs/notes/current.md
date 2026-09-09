@@ -174,11 +174,11 @@ basılır.
   zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
   (`B-079`); üretim dilimi inince 5'e döner. **(ii) de indi:** profil uçları
   anonim oturumu kabul ediyor (`CallerProfiles`) ve § 35.7'nin üç limiti artık
-  *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) başladı:** boru hattı
-  `GenerationSubject` alıyor, handler sahipsiz işi hâlâ reddediyor — kalan üçü
-  reddin yorumunda yazılı. **Migration gerekmiyor:** `generations.profile_id`
-  cascade ediyor, anonim üretim profiliyle ölüyor. Sonra (iv) challenge,
-  (v) üretimlerin taşınması, (vi) kota.
+  *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) ve (vi) indi:** anonim üretim
+  çalışıyor, kota beşe döndü (§ 35.7.3, `B-082`). **Migration gerekmedi** —
+  `generations.profile_id` cascade ediyor — ve **sayfa garantisi kendiliğinden
+  sağlandı**: `measureMissing` boru hattının içinde, profil-kapsamlı. Kalan:
+  (iv) challenge, (v) hesap açmada üretimlerin de taşınması.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

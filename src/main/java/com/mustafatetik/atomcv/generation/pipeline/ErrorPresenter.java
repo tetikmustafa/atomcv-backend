@@ -51,6 +51,19 @@ public class ErrorPresenter {
             case PipelineError.GenerationPaused ignored -> UserFacingError.of(
                     ErrorCode.GENERATION_PAUSED, new Resolution(ResolutionAction.RETRY, null));
 
+            case PipelineError.FeatureNeedsAnAccount needed -> UserFacingError
+                    .with(ErrorCode.FEATURE_REQUIRES_ACCOUNT)
+                    .param("feature", needed.feature())
+                    .resolution(ResolutionAction.SIGN_UP)
+                    .build();
+
+            // § 35.7's own answer for a window that closed, and the resolution
+            // is the only one there is: the work is gone and an account is what
+            // would have kept it.
+            case PipelineError.SessionEnded ignored -> UserFacingError.of(
+                    ErrorCode.ANONYMOUS_SESSION_EXPIRED,
+                    new Resolution(ResolutionAction.SIGN_UP, null));
+
             case PipelineError.QuotaExceeded spent -> UserFacingError
                     .with(ErrorCode.QUOTA_EXCEEDED)
                     .param("metric", spent.metric())

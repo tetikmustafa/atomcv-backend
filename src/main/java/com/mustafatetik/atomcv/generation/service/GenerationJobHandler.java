@@ -1,7 +1,6 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.billing.QuotaMetric;
-import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.generation.domain.EngineVersion;
 import com.mustafatetik.atomcv.generation.domain.Generation;
@@ -10,7 +9,11 @@ import com.mustafatetik.atomcv.generation.domain.StoredSelection;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
+import com.mustafatetik.atomcv.generation.repository.AnonymousGenerations;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
+import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
@@ -21,10 +24,8 @@ import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
-import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
-import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,14 +57,19 @@ public class GenerationJobHandler implements JobHandler {
     private final JobSpecificGenerationService generations;
     private final CvGenerationService general;
     private final GenerationRepository records;
+    private final AnonymousGenerations anonymousRecords;
+    private final AnonymousProfiles anonymous;
     private final ProfileResolver profiles;
     private final QuotaService quotas;
     private final ErrorPresenter errors;
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
-            GenerationRepository records, ProfileResolver profiles, QuotaService quotas,
+            GenerationRepository records, AnonymousGenerations anonymousRecords,
+            AnonymousProfiles anonymous, ProfileResolver profiles, QuotaService quotas,
             ErrorPresenter errors) {
 
+        this.anonymousRecords = anonymousRecords;
+        this.anonymous = anonymous;
         this.profiles = profiles;
         this.quotas = quotas;
         this.generations = generations;
@@ -83,52 +89,83 @@ public class GenerationJobHandler implements JobHandler {
 
     @Override
     public JobOutcome handle(Job job, ProgressSink progress) {
-        UUID userId = job.getOwnerId();
-        if (userId == null) {
-            // Bolum 9's anonymous flow is being built and this is the switch
-            // that is not thrown yet. The pipeline behind it no longer needs an
-            // account -- it takes a GenerationSubject, and there is a factory
-            // for a session -- but three things still have to arrive: the quota
-            // subject has to travel in the payload so a refund has an address to
-            // go to, the measurement job has to run for an anonymous profile so
-            // the page limit stays a measurement rather than an estimate, and
-            // the read and download endpoints have to accept a session. Until
-            // then, refusing beats writing a row nobody can reach.
-            log.error("An anonymous generation reached the queue; job {}", job.getId());
-            return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
-        }
-
         GenerationPayload payload = GenerationPayload.from(job.getPayload());
-        UserContext user = UserContext.of(userId);
-        GenerationSubject subject = GenerationSubject.account(profiles.owned(user), userId);
+        Result<GenerationSubject> resolved = subjectFor(job);
+        if (resolved instanceof Result.Err<GenerationSubject> refused) {
+            return failed(refused.error());
+        }
+        GenerationSubject subject = resolved.orElseThrow();
 
         // Bolum 19.4: no posting means no Faz A and no Faz B. Everything from
         // selection onwards is the same code, which is what separating scoring
         // from selection bought.
+        //
+        // General mode is still account-only. Nothing refuses it here because
+        // nothing offers it: § 35.7 gives an anonymous session one language and
+        // the flow it was built for is "against this posting". It arrives when
+        // somebody asks for it, not before.
         Result<GeneratedGeneration> result = isGeneralMode(payload)
-                ? general.generateGeneralCv(user, payload.maxPages(), payload.language(),
-                        progress)
+                ? general.generateGeneralCv(UserContext.of(job.getOwnerId()),
+                        payload.maxPages(), payload.language(), progress)
                 : generations.generateForJob(
                         subject, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
                         progress, job.getId());
 
         return switch (result) {
-            case Result.Ok<GeneratedGeneration> ok -> completed(user, payload, ok.value());
+            case Result.Ok<GeneratedGeneration> ok -> completed(subject, payload, ok.value());
             case Result.Err<GeneratedGeneration> failed -> {
                 // Bolum 44.2: the unit was taken when this was queued and no
                 // document came out of it. User error or system error, the
-                // section refunds both.
-                quotas.refund(QuotaSubject.of(user), QuotaMetric.GENERATION);
+                // section refunds both -- to the subject that paid, which the
+                // payload carries because the worker has no request to read an
+                // address from.
+                quotas.refund(payload.allowance(), QuotaMetric.GENERATION);
                 yield failed(failed.error());
             }
         };
     }
 
-    private JobOutcome completed(
-            UserContext user, GenerationPayload payload, GeneratedGeneration generated) {
+    /**
+     * Who this job is for, resolved from the job rather than assumed.
+     *
+     * <p><strong>The one place the two kinds of caller diverge.</strong> An
+     * account's profile is created on first use, so resolving it always
+     * succeeds. An anonymous session's has to be there already -- the import or
+     * the editor made it -- and if it is not, the session ended between the
+     * request and the worker and there is nothing to generate from. That is a
+     * refusal with an honest reason rather than an empty CV.
+     */
+    private Result<GenerationSubject> subjectFor(Job job) {
+        UUID userId = job.getOwnerId();
+        if (userId != null) {
+            UserContext user = UserContext.of(userId);
+            return Result.ok(GenerationSubject.account(profiles.owned(user), userId));
+        }
 
-        Generation record = persist(user, payload, generated);
+        String session = job.getAnonSessionId();
+        if (session == null) {
+            // Neither an account nor a session: a row that should not exist.
+            log.error("A generation belonging to nobody reached the queue; job {}", job.getId());
+            return Result.err(new PipelineError.SessionEnded());
+        }
+
+        ProfileRef ref = ProfileRef.ephemeral(AnonymousSessionId.of(session));
+        return anonymous.find(ref)
+                .<Result<GenerationSubject>>map(profile -> Result.ok(GenerationSubject.anonymous(
+                        new ProfileResolver.OwnedProfile(profile, ref))))
+                .orElseGet(() -> {
+                    // Counts and ids, never content (absolute rule 4).
+                    log.info("An anonymous generation outlived its profile; job {}", job.getId());
+                    return Result.err(new PipelineError.SessionEnded());
+                });
+    }
+
+    private JobOutcome completed(
+            GenerationSubject subject, GenerationPayload payload,
+            GeneratedGeneration generated) {
+
+        Generation record = persist(subject, payload, generated);
         GeneratedDocument document = generated.document();
 
         // Counts, never content (absolute rule 4). What the terminal SSE event
@@ -148,14 +185,19 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     private Generation persist(
-            UserContext user, GenerationPayload payload, GeneratedGeneration generated) {
+            GenerationSubject subject, GenerationPayload payload,
+            GeneratedGeneration generated) {
 
         GenerationOptions options = generated.options();
         GeneratedDocument document = generated.document();
         SelectionState selection = document.selection();
 
+        // Null for an anonymous session, which the column has allowed since V1.
+        // Nothing else about the row differs and nothing has to expire it:
+        // generations.profile_id cascades from profiles, so this dies with the
+        // profile the sweep deletes (§ 51.6.1).
         var record = new Generation(
-                user.userId(),
+                subject.userId(),
                 generated.profileId(),
                 storedOptions(options),
                 StoredSelection.of(selection, options.language(), options.customization()),
@@ -176,7 +218,12 @@ public class GenerationJobHandler implements JobHandler {
         record.setCoverLetter(generated.coverLetter());
         record.setTrace(trace(generated));
 
-        return records.save(user, record);
+        // The one write that differs, and only in which door it goes through: a
+        // generation with no owner cannot pass a user-scoped save, and the row
+        // is already filed under the profile it belongs to.
+        return subject.isAnonymous()
+                ? anonymousRecords.save(subject.profile(), record)
+                : records.save(UserContext.of(subject.userId()), record);
     }
 
     /** Bolum 14.4, minus the fields whose features have not arrived. */

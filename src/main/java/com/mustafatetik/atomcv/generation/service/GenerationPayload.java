@@ -1,6 +1,8 @@
 package com.mustafatetik.atomcv.generation.service;
 
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -21,13 +23,16 @@ public record GenerationPayload(
         boolean preflightAcknowledged,
         Integer maxPages,
         String language,
-        boolean coverLetter) {
+        boolean coverLetter,
+        QuotaSubject allowance) {
 
     private static final String JOB_DESCRIPTION = "jobDescription";
     private static final String PREFLIGHT_ACKNOWLEDGED = "preflightAcknowledged";
     private static final String MAX_PAGES = "maxPages";
     private static final String LANGUAGE = "language";
     private static final String COVER_LETTER = "coverLetter";
+    private static final String ALLOWANCE_TYPE = "allowanceType";
+    private static final String ALLOWANCE_ID = "allowanceId";
 
     /**
      * Ordered, because the map becomes a JSONB column and the JDK's immutable
@@ -40,6 +45,14 @@ public record GenerationPayload(
         payload.put(MAX_PAGES, maxPages);
         payload.put(LANGUAGE, language);
         payload.put(COVER_LETTER, coverLetter);
+        // Whose ceiling this took, so the worker can give it back -- the shape
+        // ProfileExtractionPayload already uses, for the same reason. An account
+        // pays by user id and an anonymous caller by address (Bolum 44.1), and
+        // the worker has no request to read an address from. Refunding a
+        // different subject than the one that paid is worse than not refunding:
+        // it credits somebody who never spent.
+        payload.put(ALLOWANCE_TYPE, allowance.type().wireValue());
+        payload.put(ALLOWANCE_ID, allowance.id());
         return payload;
     }
 
@@ -52,7 +65,24 @@ public record GenerationPayload(
                 // Absent on a job queued by the release before this one, and
                 // absent reads as "no letter" — which is what those jobs were
                 // asked for.
-                Boolean.TRUE.equals(payload.get(COVER_LETTER)));
+                Boolean.TRUE.equals(payload.get(COVER_LETTER)),
+                allowanceIn(payload));
+    }
+
+    /**
+     * The subject that paid, or a user-typed one with an empty id for a job
+     * queued by the release before this field existed.
+     *
+     * <p>Absent reads as "nobody named", and {@code QuotaService.refund} on an
+     * empty id credits a subject nothing was ever taken from — which is the
+     * harmless direction. Failing the job instead would throw away a generation
+     * that was paid for over bookkeeping.
+     */
+    private static QuotaSubject allowanceIn(Map<String, Object> payload) {
+        return new QuotaSubject(
+                QuotaSubject.Type.valueOf(String.valueOf(
+                        payload.getOrDefault(ALLOWANCE_TYPE, "user")).toUpperCase(Locale.ROOT)),
+                String.valueOf(payload.getOrDefault(ALLOWANCE_ID, "")));
     }
 
     private static String string(Map<String, Object> payload, String key) {

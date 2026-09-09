@@ -65,6 +65,15 @@ public final class JobRetryPolicy {
             // anything is accepted, so this cannot reach a worker.
             case PipelineError.GenerationPaused ignored -> false;
 
+            // Nor this one, and for a stronger reason: the answer is about who
+            // the caller is rather than about the world. A retry would ask the
+            // same session for an account it still does not have (§ 35.7).
+            case PipelineError.FeatureNeedsAnAccount ignored -> false;
+
+            // The profile it needed is deleted. A retry reads the same absence,
+            // and the retry budget would turn one honest refusal into three.
+            case PipelineError.SessionEnded ignored -> false;
+
             // Adim 3.4. The same document goes back to the same model, and
             // the answer that could not settle a language or found nothing in
             // it will not settle or find anything on the second reading. Both

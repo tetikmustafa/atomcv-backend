@@ -17,6 +17,8 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -52,7 +54,7 @@ class GenerationEnqueueServiceTest {
             short note describing the systems you have operated.
             """;
 
-    private ProfileResolver profiles;
+    private Profile head;
     private ProfileAssembler assembler;
     private JobQueue queue;
     private JobRepository jobs;
@@ -64,7 +66,6 @@ class GenerationEnqueueServiceTest {
 
     @BeforeEach
     void wireTheMocks() {
-        profiles = mock(ProfileResolver.class);
         assembler = mock(ProfileAssembler.class);
         queue = mock(JobQueue.class);
         jobs = mock(JobRepository.class);
@@ -72,12 +73,11 @@ class GenerationEnqueueServiceTest {
         when(quotas.consume(any(), any())).thenReturn(Result.ok(null));
         flags = mock(com.mustafatetik.atomcv.billing.FeatureFlags.class);
         when(flags.isEnabled(any())).thenReturn(true);
-        service = new GenerationEnqueueService(profiles, assembler, queue, jobs, quotas, flags,
+        service = new GenerationEnqueueService(assembler, queue, jobs, quotas, flags,
                 Clock.fixed(Instant.parse("2026-08-24T09:00:00Z"), ZoneOffset.UTC));
 
-        var head = new Profile(USER);
+        head = new Profile(USER);
         profile = ProfileRef.persistent(user(), UUID.randomUUID(), USER);
-        when(profiles.owned(any())).thenReturn(new ProfileResolver.OwnedProfile(head, profile));
         when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.empty());
         when(queue.enqueue(any())).thenAnswer(call -> call.getArgument(0));
     }
@@ -88,12 +88,12 @@ class GenerationEnqueueServiceTest {
      */
     @Test
     void apostingIsCheckedBeforeTheProfileIsLoaded() {
-        var result = service.enqueue(user(), "hire me plz", false, null, null, false, null);
+        var result = service.enqueue(owner(), allowance(), owned(), "hire me plz", false, null, null, false, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
-        verify(profiles, never()).owned(any());
+        verify(assembler, never()).load(any());
         verify(queue, never()).enqueue(any());
     }
 
@@ -102,7 +102,7 @@ class GenerationEnqueueServiceTest {
     void anemptyProfileIsRefusedBeforeTheQueue() {
         when(assembler.load(profile)).thenReturn(new ProfileTree(profile.id(), List.of()));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
+        var result = service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
@@ -114,12 +114,12 @@ class GenerationEnqueueServiceTest {
     void anacknowledgedPostingSkipsTheTextCheckButNotTheProfileOne() {
         when(assembler.load(profile)).thenReturn(new ProfileTree(profile.id(), List.of()));
 
-        var result = service.enqueue(user(), "hire me plz", true, null, null, false, null);
+        var result = service.enqueue(owner(), allowance(), owned(), "hire me plz", true, null, null, false, null);
 
         // Past the text gate — it reached the profile gate, and failed there.
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.InsufficientProfile.class);
-        verify(profiles).owned(any());
+        verify(assembler).load(any());
     }
 
     /**
@@ -131,10 +131,10 @@ class GenerationEnqueueServiceTest {
         var existing = new Job(JobType.GENERATION, USER, java.util.Map.of(), Instant.EPOCH);
         when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.of(existing));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, false, "key-1");
+        var result = service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false, "key-1");
 
         assertThat(result.orElseThrow()).isEqualTo(existing);
-        verify(profiles, never()).owned(any());
+        verify(assembler, never()).load(any());
         verify(queue, never()).enqueue(any());
     }
 
@@ -146,7 +146,7 @@ class GenerationEnqueueServiceTest {
     void thekeyIsStoredOnTheJobItMade() {
         when(assembler.load(profile)).thenReturn(profileWithOneAtom());
 
-        service.enqueue(user(), POSTING, false, 2, "tr", false, "key-1");
+        service.enqueue(owner(), allowance(), owned(), POSTING, false, 2, "tr", false, "key-1");
 
         var queued = ArgumentCaptor.forClass(Job.class);
         verify(queue).enqueue(queued.capture());
@@ -154,7 +154,7 @@ class GenerationEnqueueServiceTest {
         assertThat(queued.getValue().getType()).isEqualTo(JobType.GENERATION);
         assertThat(queued.getValue().getOwnerId()).isEqualTo(USER);
         assertThat(GenerationPayload.from(queued.getValue().getPayload()))
-                .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr", false));
+                .isEqualTo(new GenerationPayload(POSTING, false, 2, "tr", false, allowance()));
     }
 
     /**
@@ -165,12 +165,12 @@ class GenerationEnqueueServiceTest {
     void thebrakeStopsGenerationWithoutSpendingAnything() {
         when(flags.isEnabled(any())).thenReturn(false);
 
-        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
+        var result = service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.GenerationPaused.class);
         verify(quotas, never()).consume(any(), any());
-        verify(profiles, never()).owned(any());
+        verify(assembler, never()).load(any());
         verify(queue, never()).enqueue(any());
     }
 
@@ -183,11 +183,11 @@ class GenerationEnqueueServiceTest {
         when(quotas.consume(any(), any())).thenReturn(Result.err(
                 new PipelineError.QuotaExceeded("generation", Instant.EPOCH)));
 
-        var result = service.enqueue(user(), POSTING, false, null, null, false, null);
+        var result = service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false, null);
 
         assertThat(((Result.Err<Job>) result).error())
                 .isInstanceOf(PipelineError.QuotaExceeded.class);
-        verify(profiles, never()).owned(any());
+        verify(assembler, never()).load(any());
         verify(queue, never()).enqueue(any());
     }
 
@@ -197,7 +197,7 @@ class GenerationEnqueueServiceTest {
      */
     @Test
     void arefusedRequestGivesTheUnitBack() {
-        service.enqueue(user(), "hire me plz", false, null, null, false, null);
+        service.enqueue(owner(), allowance(), owned(), "hire me plz", false, null, null, false, null);
 
         verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
     }
@@ -208,9 +208,27 @@ class GenerationEnqueueServiceTest {
         var existing = new Job(JobType.GENERATION, USER, java.util.Map.of(), Instant.EPOCH);
         when(jobs.findByIdempotencyKey(any(), any())).thenReturn(Optional.of(existing));
 
-        service.enqueue(user(), POSTING, false, null, null, false, "key-1");
+        service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false, "key-1");
 
         verify(quotas, never()).consume(any(), any());
+    }
+
+    /** The caller, as the queue addresses one -- an account here. */
+    private static JobOwner owner() {
+        return JobOwner.of(user());
+    }
+
+    /** Whose ceiling this takes; the payload carries it to the worker. */
+    private static QuotaSubject allowance() {
+        return QuotaSubject.of(user());
+    }
+
+    /**
+     * The profile, resolved by the caller now rather than looked up in here --
+     * which is why this test no longer stubs a resolver.
+     */
+    private ProfileResolver.OwnedProfile owned() {
+        return new ProfileResolver.OwnedProfile(head, profile);
     }
 
     private static UserContext user() {
