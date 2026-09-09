@@ -126,6 +126,35 @@ yalnız "bu adı bir kaynak taşıyor mu?" okuyor, yani prompt da muhafızın s�
 de aynı kaldı (§ 53.2). **Bilerek açık, ölçülmedi:** kaynağın kısalttığını
 cevabın açtığı yön. **Ders:** bir redaksiyon, durduğu kayıt yenilenince bayatlar.
 
+## Kapanış sonrası · `F-028`-`F-030` (2026-09-09)
+
+**Düzeltme — springdoc çok parçalı bir uçta `@RequestParam`'ı *query
+parametresi* diye yayımlıyor.** Gövdeyi yalnız `@RequestPart`'lardan kuruyor,
+yanındaki her `@RequestParam` `parameters`'a düşüyor. `POST /profile/import`'un
+`challengeToken`'ı böyle URL'e taşınmıştı — § 35.7.4 "form alanı" diyor, ve bir
+challenge token'ının erişim/vekil kayıtlarına ve tarayıcı geçmişine yazılması
+var olma sebebinin çoğunu siliyor. Gövde şeması elle yazıldı (`@RequestBody`
++ `schemaProperties`); bağlama `@RequestParam`'da kaldı, ikisini de okuyor.
+**Sonraki çok parçalı uçta aynısı olur:** dosya olmayan her parça elle
+bildirilmezse query parametresi olur. `mode` bilerek query'de bırakıldı.
+
+**Ders (ikinci kez, `F-027`'den sonra) — dev stub ölçümü yiyor.**
+`SessionCurrentUser.resolve` çerez *yoksa* `LocalDevSessions`'a düşüyor ve dev
+kullanıcısı gibi cevap veriyor. Yani **çerezsiz istekle yazılmış hiçbir test
+kimlik davranışını ölçmüyor** — 401 bekleyen testim stub yüzünden 404 aldı.
+Doğru kurgu **çözülmeyen bir çerez**: çerez dalına giriyor, boşa filtreleniyor,
+ve gerçekten olan bir tarayıcı durumu (iptal edilmiş/süresi geçmiş oturum).
+
+**Ekleme — hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor.**
+`ErrorCatalogueSpecTest` onu birebir ayrıştırıyor (virgülle bölüp `ad: tip`
+okuyor), yani bir hücreye eklenen açıklama testi düşürüyor. `F-030`'un iki
+notu bu yüzden § D.6.1'in düzyazısına girdi, tabloya değil.
+
+**`feature` sözlüğü ve blok eşleşmesi `spec/08b` § D.6.1'e işlendi**, burada
+tekrarlanmıyor. Frontend aksiyonları: `B-085`-`B-087`.
+
+---
+
 ---
 
 ## Kapanan adımların arşiv haritası
