@@ -73,6 +73,35 @@ public class AnonymousGenerations {
         return jpa.save(generation);
     }
 
+    /**
+     * Every generation this session made becomes the account's (Adim 3.6).
+     *
+     * <p><strong>Rows loaded rather than updated in bulk, on purpose.</strong> A
+     * session may make five (§ 35.7), so the whole set is a handful and the
+     * domain rule stays where it belongs: {@code Generation.adoptedBy} refuses a
+     * row that already has an owner, and a {@code @Modifying} update would have
+     * moved that rule into a WHERE clause and taken the version and the
+     * timestamps with it.
+     *
+     * <p>Called inside the same transaction that adopts the profile, and it has
+     * to be: a CV made from that profile is the reason somebody signs up, and
+     * carrying the profile while leaving the generations behind would delete the
+     * very thing they were keeping.
+     *
+     * @return how many were carried across, for the log line -- a count, never
+     *         a line of anybody's CV (absolute rule 4)
+     */
+    @Transactional
+    public int adoptAll(ProfileRef profile, UUID owner) {
+        requireEphemeral(profile);
+        java.util.Objects.requireNonNull(owner, "owner");
+
+        var waiting = jpa.findByProfileIdAndUserIdIsNullOrderByCreatedAtAsc(profile.id());
+        waiting.forEach(generation -> generation.adoptedBy(owner));
+        jpa.saveAll(waiting);
+        return waiting.size();
+    }
+
     private static void requireEphemeral(ProfileRef profile) {
         if (profile == null || profile.scope() != ProfileRef.Scope.EPHEMERAL) {
             throw new IllegalArgumentException(

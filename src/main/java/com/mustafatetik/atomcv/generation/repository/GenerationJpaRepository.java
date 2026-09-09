@@ -15,6 +15,16 @@ interface GenerationJpaRepository extends JpaRepository<Generation, UUID> {
     List<Generation> findByUserIdOrderByCreatedAtDescIdDesc(UUID userId, Limit limit);
 
     /**
+     * One anonymous session's generations, oldest first.
+     *
+     * <p>Both halves of the condition matter. The profile is what a session owns
+     * and the null owner is what makes the row still anonymous, so a profile that
+     * has just been adopted answers nothing here — which is what makes signing in
+     * twice from one session harmless.
+     */
+    List<Generation> findByProfileIdAndUserIdIsNullOrderByCreatedAtAsc(UUID profileId);
+
+    /**
      * The page after a cursor, keyset rather than offset (EK D.8.7).
      *
      * <p>Written out rather than derived because the condition is a comparison

@@ -12,8 +12,7 @@
 ## Aşama 1-2'den taşınanlar — hâlâ açık
 
 - **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
-- **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor,
-  `JpaRepository`'de yok. Alt sınıflar kendi bulucularını ekler.
+- **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor, `JpaRepository`'de yok; alt sınıflar kendi bulucularını ekler.
 
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
@@ -177,8 +176,9 @@ basılır.
   çalışıyor, kota beşe döndü (§ 35.7.3, `B-082`). **Migration gerekmedi** —
   `generations.profile_id` cascade ediyor — ve **sayfa garantisi kendiliğinden
   sağlandı**: `measureMissing` boru hattının içinde. **(iv) de indi:** anonim
-  içe aktarım ve üretim challenge istiyor (§ 35.7.4, `B-083`). Kalan tek dilim:
-  (v) hesap açmada üretimlerin de taşınması.
+  içe aktarım ve üretim challenge istiyor (§ 35.7.4, `B-083`). **(v) ile akış
+  kapandı:** hesap açmak üretimleri de taşıyor (§ 35.7.5), bir olayla — çağrı
+  `profile` → `generation` döngüsü olurdu.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

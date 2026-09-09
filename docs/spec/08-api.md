@@ -574,6 +574,31 @@ olmayan dağıtımda `token -> true` veriyor (prod dışı her profil). O yüzde
 `CallerChallengeTest` gerçek reddeden bir uygulamaya karşı doğrudan koşuyor
 (§ 51.7) — yeşil bir suite'i reddin çalıştığının kanıtı sanmamak için.
 
+#### 35.7.5 Kararlar — hesap açmak üretimleri de taşıyor (2026-09-09)
+
+**Profil taşınırken üretimleri de taşınıyor**, aynı transaction içinde. Kişi tam
+da az önce yaptığı CV'yi saklamak için hesap açıyor; profili taşıyıp belgeyi
+bırakmak, geldiği şeyi silmek olurdu — anonim profilin süresi süpürmenin okuduğu
+şey ve `generations.profile_id` ondan cascade ediyor.
+
+**Satırlar taşınmıyor, sahip kazanıyor.** Üretim profile bağlı olduğu için zaten
+doğru yerde duruyor; değişen tek şey `user_id`. Profilin `adoptedBy`'ı gibi bu da
+alan nesnesinde ve sahibi olan bir satırı reddediyor — bir hesabın üretimini
+başkasına devretmek, reddetmekten çok daha kötü bir hata.
+
+**Hesap kendi profilini koruyorsa üretimler de kalıyor** (`KEPT_EXISTING`):
+ait oldukları profil taşınmıyor, o profille birlikte sönüyorlar. Onları
+sahiplenmek, bir profilden yapılmış CV'yi başka bir profilin altına dosyalamak
+olurdu.
+
+**Ve bu bir *olayla* yapılıyor, çağrıyla değil — çünkü alternatifi döngü.**
+`profile` modülü `AnonymousProfileAdopted` yayımlıyor ve generation'ın ne
+olduğunu bilmiyor; `generation` zaten `profile`'a bağlı, yani bağımlılık tek yöne
+akıyor. Düz `@EventListener` senkron ve yayımlayanın transaction'ı içinde koşuyor
+(`ProviderChain` → `LlmInvocationRecorder`'ın deseni), yani ikisi birlikte oluyor
+ya da hiç olmuyor. Anonim profile ileride başka bir şey bağlanırsa **ikinci bir
+dinleyici** yazılır, yükseltme düzenlenmez.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:

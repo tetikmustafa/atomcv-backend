@@ -12,8 +12,32 @@
 
 ## OPEN
 
-_Sekiz madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+_Dokuz madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
 backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-084 · Hesap açmak artık anonim oturumun üretimlerini de taşıyor
+
+**Since:** commit `<bu PR>` · **Spec:** § 35.7.5 · `generation/service/AdoptedGenerations`
+
+**Ne oldu:** anonim oturumda CV üretip sonra hesap açan kişi, **ürettiği CV'leri
+de yanında götürüyor**. Daha önce yalnız profil taşınıyordu. `profileUpgrade`
+yanıtı değişmedi (`upgraded` / `kept_existing` / `none` / `unavailable`);
+değişen, `upgraded` dendiğinde arkada olan şey.
+
+**Neden:** kişi tam da az önce yaptığı CV'yi saklamak için hesap açıyor. Profili
+taşıyıp belgeyi bırakmak, geldiği şeyi silmek olurdu — anonim profil süresi
+dolunca siliniyor ve üretimler ona bağlı.
+
+**`kept_existing` durumunda taşınmıyor:** hesabın kendi profili duruyorsa anonim
+profil de üretimleri de kendi penceresinde sönüyor. Bir profilden yapılmış CV'yi
+başka bir profilin altına dosyalamıyoruz.
+
+**Action:** neredeyse hiçbir şey — ama bir fırsat var. `upgraded` aldığınızda
+kullanıcıyı **geçmiş/CV listesine** düşürebilirsiniz: artık orada gerçekten bir
+şey var. Önceden liste boş olacağı için o yönlendirme yanlış olurdu.
+
+Hatırlatma: anonim oturumun **listesi yok** (`canSaveHistory: false`), yalnız id
+ile okuma var. Liste hesap açıldıktan sonra anlamlı.
 
 ### B-083 · Anonim içe aktarım ve üretim challenge token istiyor
 
