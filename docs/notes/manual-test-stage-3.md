@@ -305,9 +305,38 @@ cevabının dağılımı şu:
 Eylül'den sonraki her gerçek taslak bandın içinde. Yani v2 işleyen bir isteği
 kaldırıyordu. Aktif sürüm `v1`; v2 diskte duruyor ve **tek bir değer** uzakta.
 
-**Ölçmek isteyen ne yapar.** `application.yml`'da `cover_letter: v2` (ya da
-`prompts.experiment` ile trafiğin bir kısmı) ve bir kayıt turu — para harcar,
-`cover_letter` başına birkaç kuruş:
+### Ölçüldü (2026-09-09): v2 mektupları kısaltıyor, `v1` kalıyor
+
+Tur koşuldu, tek v2 taslağı kaydedildi: **169 kelime.** Bant 255-290'dı, yani
+**86 kelime altında** ve yedi gerçek v1 taslağının hepsinden kısa. Alan alan
+bakınca eksiğin **tamamı gövdede**:
+
+| | v2 (169) | gerçek v1 (255) |
+|---|---|---|
+| opening | 30 | 41 |
+| **body** | **102** | **181** |
+| closing | 32 | 29 |
+
+Yani v2 farklı *şekilde* bir mektup yazmadı, **kanıt paragraflarını inceltti** —
+ve kaldırdığı tek şey 250-400 isteğiydi. Muhafız onu yine de geçiriyor (169 >
+120), dolayısıyla bu bir ret değil, bir kalite gerilemesi.
+
+**Tek örnek, ve neden yetiyor.** Bir taslak bir popülasyon değil; v2'yi *kabul
+etmek* için yetmezdi. Ama karar statükoyu korumak, ve ölçüt ölçümden **önce**
+yazılmıştı — 255-290'ı tutmazsa v1 kalır. 169 marjinal bir kaçış değil. İkinci
+bir örnek isteyen aynı tarifi tekrar koşabilir; maliyeti birkaç kuruş.
+
+Aktif sürüm `v1`. v2 diskte duruyor ve hâlâ **tek bir değer** uzakta.
+
+**Kanıt bu satırların kendisi, fixture değil.** `cover_letter/` dizini
+`.gitignore`'da: cevabı CV'den türeyen her prompt öyle (`profile_extraction`,
+`about_synthesis`, `bullet_rewrite` de). Yani on üç fixture yalnız kaydeden
+makinede duruyor ve yalnız orada replay olur — sayıları buraya yazmak, onları
+saklamanın tek yolu.
+
+**Tarif, ikinci bir örnek isteyene.** `application.yml`'da `cover_letter: v2`
+(ya da `prompts.experiment` ile trafiğin bir kısmı) ve bir kayıt turu — para
+harcar, `cover_letter` başına birkaç kuruş:
 
     # Kabuk 1
     make dev-full
@@ -331,4 +360,7 @@ mektupları kısaltmış olur ve v1 kalır. Tutuyorsa v2'nin eklediği şey beda
 gelir: modele muhafızın gerçek eşiklerini (120/400) söylemek.
 
 **Ders:** bir prompt iddiasını fixture'ların *tamamına* karşı ölç, ilk beşine
-karşı değil — ve sentetik girdiyle koşulmuş olanı sayma.
+karşı değil — ve sentetik girdiyle koşulmuş olanı sayma. **İkinci ders, aynı
+madenin öteki yüzü:** ölçütü ölçümden önce yaz. Bir taslak v2'yi kabul etmeye
+yetmezdi ama reddetmeye yetti, çünkü nereye bakılacağı önceden yazılıydı —
+sonradan yazılsaydı 169'a bakıp bir gerekçe uydurmak serbest olurdu.
