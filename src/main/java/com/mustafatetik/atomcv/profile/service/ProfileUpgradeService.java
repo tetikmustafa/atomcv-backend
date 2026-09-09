@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,10 +47,13 @@ public class ProfileUpgradeService {
     private final ProfileResolver resolver;
     private final ProfileRepository profiles;
     private final JobQueue queue;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
 
     ProfileUpgradeService(AnonymousProfiles anonymous, ProfileResolver resolver,
-            ProfileRepository profiles, JobQueue queue, Clock clock) {
+            ProfileRepository profiles, JobQueue queue,
+            ApplicationEventPublisher events, Clock clock) {
+        this.events = events;
         this.anonymous = anonymous;
         this.resolver = resolver;
         this.profiles = profiles;
@@ -89,6 +93,11 @@ public class ProfileUpgradeService {
         });
 
         anonymous.adopt(ref, user.userId());
+        // Whatever else the session made hangs off this profile and changes owner
+        // with it. Published rather than called: the profile module has no
+        // business knowing what a generation is, and depending on the module that
+        // does would be a cycle (see AnonymousProfileAdopted).
+        events.publishEvent(new AnonymousProfileAdopted(ref, user.userId()));
         queueBackgroundWork(user);
         // Counts, never a line of the CV (absolute rule 4).
         log.info("Upgraded an anonymous profile to an account");

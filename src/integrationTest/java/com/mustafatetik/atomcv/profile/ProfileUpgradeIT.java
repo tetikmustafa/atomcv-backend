@@ -150,6 +150,43 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
         assertThat(anonymous.find(ProfileRef.ephemeral(session))).isEmpty();
     }
 
+    /**
+     * <strong>The CV follows the profile, and it is the reason somebody signs
+     * up.</strong> A generation hangs off the profile, so its rows never move —
+     * what changes is that they gain an owner, in the same transaction. Carrying
+     * the profile and leaving the document behind would have deleted the very
+     * thing the account was opened to keep: the anonymous profile's expiry is
+     * what the sweep reads, and `generations.profile_id` cascades from it.
+     */
+    @Test
+    void thegenerationsTheSessionMadeBecomeTheAccountsToo() {
+        Profile carried = anonymousProfile();
+        UUID generationId = aGenerationOf(carried.getId());
+
+        assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.UPGRADED);
+
+        assertThat(jdbc.queryForObject("SELECT user_id FROM generations WHERE id = ?",
+                UUID.class, generationId)).isEqualTo(user.userId());
+    }
+
+    /**
+     * And when the account keeps its own profile, the session's generations stay
+     * with the profile they belong to — which expires. Adopting them would file a
+     * CV made from one profile under another.
+     */
+    @Test
+    void generationsAreLeftBehindWhenTheProfileIs() {
+        UUID existing = emptyProfileRow();
+        withASection(existing);
+        Profile notCarried = anonymousProfile();
+        UUID generationId = aGenerationOf(notCarried.getId());
+
+        assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.KEPT_EXISTING);
+
+        assertThat(jdbc.queryForObject("SELECT user_id FROM generations WHERE id = ?",
+                UUID.class, generationId)).isNull();
+    }
+
     // -- and when it does not ----------------------------------------------
 
     /** Most sign-ins. Nobody was carrying anything, and nothing is written. */
@@ -207,6 +244,16 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
     }
 
     // -- fixtures ----------------------------------------------------------
+
+    /** A finished generation of that profile, owned by nobody. */
+    private UUID aGenerationOf(UUID profileId) {
+        return jdbc.queryForObject(
+                "INSERT INTO generations (id, user_id, profile_id, options, selection_state,"
+                        + " engine_version, status, created_at)"
+                        + " VALUES (gen_random_uuid(), NULL, ?, '{}'::jsonb, '{}'::jsonb,"
+                        + " '{}'::jsonb, 'completed', now()) RETURNING id",
+                UUID.class, profileId);
+    }
 
     /** What signing in once and opening the application leaves behind. */
     private UUID emptyProfileRow() {

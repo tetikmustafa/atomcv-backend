@@ -154,6 +154,30 @@ public class Generation implements UserOwned {
     }
 
     /** Null for an anonymous generation, which no scoped read may then return. */
+    /**
+     * This generation stops belonging to nobody and starts belonging to
+     * somebody (Adim 3.6).
+     *
+     * <p>The mirror of {@code Profile.adoptedBy}, and it happens in the same
+     * transaction: signing up from an anonymous session carries the profile, and
+     * a CV made from that profile is the reason somebody signs up. Leaving the
+     * generations behind would delete the very thing they were keeping.
+     *
+     * <p>No expiry to clear, unlike a profile's: a generation never had one.
+     * {@code generations.profile_id} cascades, so what kept this row mortal was
+     * the profile above it — and that profile has just become permanent.
+     *
+     * @throws IllegalStateException if it already has an owner. Reassigning one
+     *         account's generation to another is a far worse bug than a refusal.
+     */
+    public void adoptedBy(UUID owner) {
+        Objects.requireNonNull(owner, "owner");
+        if (userId != null) {
+            throw new IllegalStateException("This generation already belongs to somebody");
+        }
+        this.userId = owner;
+    }
+
     @Override
     public UUID getOwnerId() {
         return userId;
