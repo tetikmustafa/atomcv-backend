@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.service;
 
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
@@ -47,12 +48,13 @@ final class AnonymousLimits {
      *
      * @param feature what goes in the error's {@code feature} parameter, so the
      *                screen can say which button needs an account rather than
-     *                offering a generic sign-up wall
+     *                offering a generic sign-up wall. A closed set since
+     *                F-030 — the frontend writes a sentence per value
      */
-    static void requireAccountFor(ProfileRef profile, String feature) {
+    static void requireAccountFor(ProfileRef profile, AccountFeature feature) {
         if (isAnonymous(profile)) {
             throw new ApiException(UserFacingError.with(ErrorCode.FEATURE_REQUIRES_ACCOUNT)
-                    .param("feature", feature)
+                    .param("feature", feature.wireValue())
                     .resolution(ResolutionAction.SIGN_UP)
                     .build());
         }

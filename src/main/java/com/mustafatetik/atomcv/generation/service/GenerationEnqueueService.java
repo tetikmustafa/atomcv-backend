@@ -14,6 +14,7 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -98,7 +99,8 @@ public class GenerationEnqueueService {
             // a request that will be refused must not spend anybody's day. A
             // letter is a second model call on top of the CV, and the anonymous
             // flow is a trial of the product paid for by whoever runs it.
-            return Result.err(new PipelineError.FeatureNeedsAnAccount("cover_letter"));
+            return Result.err(
+                    new PipelineError.FeatureNeedsAnAccount(AccountFeature.COVER_LETTER));
         }
 
         Result<Void> spent = quotas.consume(allowance, QuotaMetric.GENERATION);

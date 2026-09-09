@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.mustafatetik.atomcv.profile.domain.AtomKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
@@ -42,7 +43,8 @@ class AnonymousLimitsTest {
 
     @Test
     void ananonymousCallerIsRefusedAFeatureAnAccountHas() {
-        assertThatThrownBy(() -> AnonymousLimits.requireAccountFor(ANONYMOUS, "alternatives"))
+        assertThatThrownBy(() -> AnonymousLimits.requireAccountFor(
+                ANONYMOUS, AccountFeature.ALTERNATIVES))
                 .isInstanceOf(ApiException.class)
                 .satisfies(thrown -> {
                     var error = ((ApiException) thrown).error();
@@ -58,7 +60,8 @@ class AnonymousLimitsTest {
 
     @Test
     void anaccountIsRefusedNothing() {
-        assertThatCode(() -> AnonymousLimits.requireAccountFor(ACCOUNT, "alternatives"))
+        assertThatCode(() -> AnonymousLimits.requireAccountFor(
+                ACCOUNT, AccountFeature.ALTERNATIVES))
                 .doesNotThrowAnyException();
         assertThatCode(() -> AnonymousLimits.requireRoomForAnotherAtom(ACCOUNT, 10_000))
                 .doesNotThrowAnyException();

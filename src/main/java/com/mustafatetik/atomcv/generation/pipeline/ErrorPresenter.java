@@ -53,7 +53,7 @@ public class ErrorPresenter {
 
             case PipelineError.FeatureNeedsAnAccount needed -> UserFacingError
                     .with(ErrorCode.FEATURE_REQUIRES_ACCOUNT)
-                    .param("feature", needed.feature())
+                    .param("feature", needed.feature().wireValue())
                     .resolution(ResolutionAction.SIGN_UP)
                     .build();
 
