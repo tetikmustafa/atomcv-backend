@@ -17,6 +17,7 @@ import com.mustafatetik.atomcv.shared.util.EntityTags;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -76,6 +77,13 @@ public class AtomService {
 
     @Transactional
     public Atom create(ProfileRef profile, AtomDraft draft) {
+        // § 35.7, before anything is written. Both are limits an account does
+        // not have, and both are read off the scope rather than off a second
+        // lookup of who is calling.
+        AnonymousLimits.requireRoomForAnotherAtom(profile, atoms.findAll(profile).size());
+        if (AnonymousLimits.touchesAtomControls(draft)) {
+            AnonymousLimits.requireAccountFor(profile, "atom_controls");
+        }
         sections.findById(profile, draft.sectionId()).orElseThrow(() -> invalid("sectionId"));
         if (draft.entryId() != null) {
             var entry = entries.findById(profile, draft.entryId())
@@ -113,6 +121,12 @@ public class AtomService {
 
     @Transactional
     public Atom patch(ProfileRef profile, UUID id, String ifMatch, AtomPatch patch) {
+        // Refused whole rather than field by field: a write that silently
+        // dropped the control would leave the screen showing a value the server
+        // does not hold (§ 35.7).
+        if (AnonymousLimits.touchesAtomControls(patch)) {
+            AnonymousLimits.requireAccountFor(profile, "atom_controls");
+        }
         Atom atom = requireAtom(profile, id);
         EntityTags.requireMatch(ifMatch, atom.getVersion());
 
@@ -185,6 +199,10 @@ public class AtomService {
 
     @Transactional
     public AtomVariant addVariant(ProfileRef profile, UUID atomId, VariantDraft draft) {
+        // § 35.7's `canAddAlternatives: false`. Editing the wording an import
+        // produced stays open -- correcting your own sentence is not an
+        // alternative, it is the sentence -- and this is the second one.
+        AnonymousLimits.requireAccountFor(profile, "alternatives");
         requireAtom(profile, atomId);
         String language = draft.language() == null ? "en" : draft.language();
         requireFreeSlot(profile, atomId, language, draft.tone(), null);
@@ -212,7 +230,7 @@ public class AtomService {
      *             everywhere, so both travel rather than one being derived
      *             from the other.
      */
-    public AtomVariant patchVariant(ProfileRef profile, UserContext user, UUID atomId,
+    public AtomVariant patchVariant(ProfileRef profile, Optional<UserContext> user, UUID atomId,
             UUID variantId, String ifMatch, VariantPatch patch) {
 
         AtomVariant variant = requireVariant(profile, atomId, variantId);
@@ -247,13 +265,17 @@ public class AtomService {
             variant.setUserEdited(false);
         }
         AtomVariant saved = variants.save(profile, variant);
+        // Bolum 32.2's translation work is queued per user, and an anonymous
+        // session has neither a user to claim the job nor a second language to
+        // translate into: § 35.7 gives it `["en"]` alone. So the wording is
+        // saved and nothing is queued -- not a degraded path, a shorter one.
         if (Boolean.FALSE.equals(patch.userEdited()) && saved.isStale()) {
-            synchronization.regenerate(profile, user, saved);
+            user.ifPresent(owner -> synchronization.regenerate(profile, owner, saved));
         }
         if (patch.content() != null) {
             // Bolum 32.2, and only when the words moved. A promote or a tone
             // change leaves every translation of this wording still accurate.
-            synchronization.afterEdit(profile, user, saved);
+            user.ifPresent(owner -> synchronization.afterEdit(profile, owner, saved));
         }
         return saved;
     }

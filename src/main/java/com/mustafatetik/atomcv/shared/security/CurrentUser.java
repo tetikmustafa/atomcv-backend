@@ -45,4 +45,26 @@ public interface CurrentUser {
     default Optional<AnonymousSessionId> anonymousSession() {
         return Optional.empty();
     }
+
+    /**
+     * When the anonymous session behind this request ends (Bolum 9, EK D.6.6).
+     *
+     * <p><strong>Part of "who is calling", which is why it is here.</strong>
+     * Anything an anonymous session owns has to stop existing when the session
+     * does — its profile above all (§ 51.6.1) — so whatever writes that has to
+     * know the moment. Deriving it instead, from a TTL plus a clock, would make
+     * every writer a second place the window is decided: two hours from *when*
+     * is the session's own answer, it slides with activity, and a copy of the
+     * rule would eventually slide differently.
+     *
+     * <p>It also keeps the module graph honest. The profile module needs this
+     * and identity already depends on profile, so reading identity's session
+     * properties from there would have been a cycle — ArchUnit says so. The port
+     * both sides already share is the place a shared fact belongs.
+     *
+     * <p>Empty exactly when {@link #anonymousSession()} is.
+     */
+    default Optional<java.time.Instant> anonymousSessionEndsAt() {
+        return Optional.empty();
+    }
 }

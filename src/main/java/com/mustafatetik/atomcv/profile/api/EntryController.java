@@ -8,9 +8,8 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.service.EntryDraft;
 import com.mustafatetik.atomcv.profile.service.EntryPatch;
 import com.mustafatetik.atomcv.profile.service.EntryService;
-import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.service.CallerProfiles;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
-import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,13 +59,11 @@ import org.springframework.web.bind.annotation.RestController;
 })
 public class EntryController {
 
-    private final CurrentUser currentUser;
-    private final ProfileResolver profiles;
+    private final CallerProfiles callers;
     private final EntryService entries;
 
-    EntryController(CurrentUser currentUser, ProfileResolver profiles, EntryService entries) {
-        this.currentUser = currentUser;
-        this.profiles = profiles;
+    EntryController(CallerProfiles callers, EntryService entries) {
+        this.callers = callers;
         this.entries = entries;
     }
 
@@ -164,7 +161,13 @@ public class EntryController {
                 .toList();
     }
 
+    /**
+     * <strong>Account or anonymous session, and this endpoint does not know
+     * which.</strong> It asks for the profile of whoever is calling and gets a
+     * scope back; the scope is what says whether § 35.7's limits apply, which is
+     * why nothing here has to check.
+     */
     private ProfileRef profile() {
-        return profiles.resolve(currentUser.require());
+        return callers.ref();
     }
 }

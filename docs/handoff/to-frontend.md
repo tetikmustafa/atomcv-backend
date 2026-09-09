@@ -12,8 +12,44 @@
 
 ## OPEN
 
-_Beş madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+_Altı madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
 backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-081 · Profil editörü anonim oturumda çalışıyor, üç limit `403` veriyor
+
+**Since:** commit `<bu PR>` · **Spec:** § 35.7.2 · `profile/service/CallerProfiles`
+
+**Ne oldu:** `/api/v1/profile/**` uçları (profil, bölümler, entry'ler, atomlar)
+artık **anonim oturumla** çalışıyor — hesapla aynı uçlar, aynı gövdeler, aynı
+`If-Match` semantiği. Profil ilk istekte kendiliğinden oluşuyor, tıpkı hesapta
+olduğu gibi.
+
+**Ve § 35.7'nin ilan ettiği üç limit artık gerçekten uygulanıyor.** Şimdiye
+kadar `capabilities` onları yazıyordu, sunucu uygulamıyordu (uygulanacak bir uç
+yoktu). Üçü de `403 FEATURE_REQUIRES_ACCOUNT` + `resolutions: [sign_up]` veriyor,
+ve `params.feature` hangisi olduğunu söylüyor:
+
+| istek | `params.feature` |
+|---|---|
+| `PATCH /atoms/{id}` gövdesinde `importance`, `active`, `alwaysInclude` ya da `verbatim` | `atom_controls` |
+| `POST /atoms/{id}/variants` | `alternatives` |
+| 61. atomu yaratmak | — `422 ATOM_LIMIT_EXCEEDED`, `params.limit=60`, `params.current` |
+
+**Action:** üç şey.
+
+1. Anonim oturumda **atom kontrol alanlarını gönderme**; UI'da onları
+   `canEditAtomControls: false` ile gizli/kilitli tut. Bir yamaya kazara
+   `importance` eklerseniz **yama bütün olarak reddedilir** — kısmi yazma yok.
+2. "Alternatif ekle" düğmesini `canAddAlternatives: false` ile kapat. **Mevcut
+   yazımı düzenlemek açık** (`PATCH .../variants/{id}`) — içe aktarımın ürettiği
+   cümleyi düzeltmek bir alternatif değil.
+3. `403`'te `params.feature`'ı okuyup **hangi düğmenin hesap istediğini** söyle;
+   genel bir kayıt duvarı yerine o düğmeye bağlı bir davet. `422`'de `limit` ve
+   `current` birlikte geliyor, yani "60'ın 60'ı dolu" cümlesini yazabilirsin.
+
+**Bir de bilmeniz gereken bir yokluk:** anonim oturumda çeviri işi kuyruğa
+girmiyor — § 35.7 ona zaten `["en"]` veriyor, yani ikinci dil yok. Yazımı
+düzenlemek çalışıyor, arkasından bir çeviri gelmiyor.
 
 ### B-080 · Gizlilik metni: anonim veri artık veritabanına yazılıyor
 

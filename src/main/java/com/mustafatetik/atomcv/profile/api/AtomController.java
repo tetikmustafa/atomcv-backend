@@ -12,11 +12,10 @@ import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.service.AtomDraft;
 import com.mustafatetik.atomcv.profile.service.AtomPatch;
 import com.mustafatetik.atomcv.profile.service.AtomService;
-import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.service.CallerProfiles;
 import com.mustafatetik.atomcv.profile.service.VariantDraft;
 import com.mustafatetik.atomcv.profile.service.VariantPatch;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
-import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.util.EntityTags;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,13 +68,11 @@ import org.springframework.web.bind.annotation.RestController;
 })
 public class AtomController {
 
-    private final CurrentUser currentUser;
-    private final ProfileResolver profiles;
+    private final CallerProfiles callers;
     private final AtomService atoms;
 
-    AtomController(CurrentUser currentUser, ProfileResolver profiles, AtomService atoms) {
-        this.currentUser = currentUser;
-        this.profiles = profiles;
+    AtomController(CallerProfiles callers, AtomService atoms) {
+        this.callers = callers;
         this.atoms = atoms;
     }
 
@@ -227,7 +224,7 @@ public class AtomController {
             @Valid @RequestBody VariantPatchRequest request) {
 
         AtomVariant patched = atoms.patchVariant(
-                profile(), currentUser.require(), id, variantId, ifMatch,
+                profile(), callers.user(), id, variantId, ifMatch,
                 new VariantPatch(
                         request.content() == null ? null : request.content().toRichContent(),
                         request.language(),
@@ -271,7 +268,13 @@ public class AtomController {
         return byAtom.getOrDefault(atomId, List.of()).stream().map(VariantResponse::of).toList();
     }
 
+    /**
+     * <strong>Account or anonymous session, and this endpoint does not know
+     * which.</strong> It asks for the profile of whoever is calling and gets a
+     * scope back; the scope is what says whether § 35.7's limits apply, which is
+     * why nothing here has to check.
+     */
     private ProfileRef profile() {
-        return profiles.resolve(currentUser.require());
+        return callers.ref();
     }
 }
