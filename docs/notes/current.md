@@ -37,10 +37,10 @@ Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
 Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
-- **Düzeltme — `cover_letter` v2 aktiflikten alındı, gerekçesi çürüdü.** "Model
-  250-400'ü yok sayıyor" iddiası ilk beş fixture'a dayanıyordu; on ikisine bakınca
-  üçü sentetik ve 09-02 sonrası yedi gerçek taslak 255-290 kelime. Aktif `v1`, v2
-  diskte; tarife `manual-test-stage-3.md`'de. **Ders: tamamına karşı ölç.**
+- **Düzeltme — `cover_letter` v2 kapandı, iki ölçümle.** "Model 250-400'ü yok
+  sayıyor" iddiası ilk beş fixture'aydı; on ikisi, 09-02 sonrası hepsi gerçek,
+  255-290 diyor. v2 turu (09-09) **169** kelime verdi, eksik tamamen gövdede
+  (102/181). Aktif `v1`. **Ders: tamamına karşı ölç, ölçütü önce yaz.**
 
 ## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
 

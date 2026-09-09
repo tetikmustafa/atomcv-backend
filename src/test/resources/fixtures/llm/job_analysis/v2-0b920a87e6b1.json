@@ -1,0 +1,62 @@
+{
+  "role" : {
+    "title" : "Senior Backend Engineer",
+    "seniority" : "senior",
+    "domain" : "payments backend engineering",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Not specified",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Java",
+    "canonical" : "java",
+    "importance" : "critical"
+  }, {
+    "name" : "Go",
+    "canonical" : "go",
+    "importance" : "critical"
+  }, {
+    "name" : "distributed services",
+    "canonical" : "distributed systems",
+    "importance" : "critical"
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : "high"
+  }, {
+    "name" : "observability tooling",
+    "canonical" : "observability",
+    "importance" : "high"
+  }, {
+    "name" : "production systems reliability",
+    "canonical" : "site reliability engineering",
+    "importance" : "high"
+  }, {
+    "name" : "mentoring engineers",
+    "canonical" : "engineering mentorship",
+    "importance" : "medium"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Kubernetes",
+    "canonical" : "kubernetes",
+    "importance" : null
+  }, {
+    "name" : "Terraform",
+    "canonical" : "terraform",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Design and operate distributed services using Java and Go.", "Own the reliability of a high-throughput ledger.", "Mentor other engineers as the team grows.", "Ship production systems." ],
+  "keywords" : [ "senior backend engineer", "payments", "distributed services", "java", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "production systems", "kubernetes", "terraform" ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Concise, direct, and professional",
+  "jdLanguage" : "en",
+  "confidence" : 0.97,
+  "extractionNotes" : [ "The employer's name, size, employment type, and work mode are not specified.", "The posting asks for several years of production experience but provides no exact minimum.", "A short application note about systems the candidate has operated is requested." ]
+}
