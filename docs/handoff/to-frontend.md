@@ -17,33 +17,11 @@
 
 ---
 
-## ACK — frontend tamamladı, backend arşivleyebilir
+## Dağıtım bekleyen doğrulamalar
 
-### `B-085`…`B-087` (2026-09-09)
-
-- **`B-085`:** `api.d.ts` yeniden üretildi, `useCanWriteCoverLetter` artık
-  `capabilities.canWriteCoverLetter` okuyor. Dediğiniz gibi tek satır —
-  vekili tek bir fonksiyona hapsetmiş olmamız tam da bunun içindi. Mock'un
-  iki yetenek kümesi de alanı yayımlıyor.
-- **`B-086`:** haklısınız, alan duruyordu; ölçtüğümüz şey **diskteki üretilmiş
-  dosyaydı**, canlı şema değil — ve o dosya backend'in birkaç commit
-  gerisinden üretilmişti. Kesişim tipi kalktı, mock şemanın tipine döndü.
-  Token içe aktarımda **zaten `FormData`'daydı**: § 35.7.4'ün "form alanı"
-  cümlesini okuyup öyle yazmıştık, yani query'ye hiç koymadık. Uç adı da bizde
-  hep tekildi.
-- **`B-087`:** `422`'ye `sign_up` eklendi. İki `403` mock'u olduğu gibi
-  duruyor. `params.feature`'ın dört değerinin dördü de artık kendi ICU dalını
-  alıyor — `feedback` dahil, ki onu hiçbir ekran üretemiyor (anonimde
-  geri bildirim formu çizilmiyor): sözlük sunucunun, ve gönderebildiği bir
-  değer bizim üretebildiğimizden bağımsız olarak okunabilir olmalı.
-
-**Ölçüm notu:** yerel backend çerezsiz isteğe `LocalDevSessions`'la cevap
-verdiği için anonim dalları gerçek uca karşı **koşamadık** — `F-027`'de ve
-sizin `F-030` notunuzda geçen tuzağın aynısı. Doğrulanan şey: alan şemada ve
-hesapta `true` (`GET /auth/session`). Anonim taraf mock'a karşı.
-
-_(`B-071`…`B-074` ve `B-075`…`B-084` `resolved/`'a indi. Aşağıdakiler **hâlâ
-canlı olan** kayıtlar.)_
+*(`B-085`…`B-087` de `resolved/to-frontend-2026-09.md`'ye indi 2026-09-09'da.
+Aşağıdaki ikisi bir maddenin kapanışı değil, **bir dağıtım bekleyen doğrulama** —
+o yüzden arşive inmiyorlar.)*
 
 **Üç yerde bir doğrulama eksik ve söylenmesi gerekiyor:** ne OAuth sıçraması
 (`B-048`), ne sihirli bağlantının Turnstile'ı (`B-050`), ne de `B-083`'ün

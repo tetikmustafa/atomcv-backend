@@ -194,20 +194,9 @@ basılır.
   **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
 - **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
   (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
-- **Anonim akış inşa ediliyor** (karar 2026-09-09: CV'den profil, düzenleme,
-  ilana göre üretim; veri saklanmaz, kota düşük, ön yazı yok). Dilim (i) indi:
-  **anonim profil artık Redis belgesi değil, sahibi olmayan + `expires_at`
-  taşıyan satır.** Kalıcı sapma, altı yere işlendi — gerekçe, yedek bedeli ve
-  zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
-  (`B-079`); üretim dilimi inince 5'e döner. **(ii) de indi:** profil uçları
-  anonim oturumu kabul ediyor (`CallerProfiles`) ve § 35.7'nin üç limiti artık
-  *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) ve (vi) indi:** anonim üretim
-  çalışıyor, kota beşe döndü (§ 35.7.3, `B-082`). **Migration gerekmedi** —
-  `generations.profile_id` cascade ediyor — ve **sayfa garantisi kendiliğinden
-  sağlandı**: `measureMissing` boru hattının içinde. **(iv) de indi:** anonim
-  içe aktarım ve üretim challenge istiyor (§ 35.7.4, `B-083`). **(v) ile akış
-  kapandı:** hesap açmak üretimleri de taşıyor (§ 35.7.5), bir olayla — çağrı
-  `profile` → `generation` döngüsü olurdu.
+- **Anonim akış kapandı** (2026-09-09, altı dilim). Yuvarlanan kaydı
+  `archive/stage-3-anonymous.md`'de; kalıcı kararlar § 51.6.1 ve
+  § 35.7.2-.5'te. Frontend aksiyonları: `B-079`, `B-081`-`B-083`.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

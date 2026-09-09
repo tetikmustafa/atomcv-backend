@@ -67,3 +67,27 @@ yerde duruyor.*
 **Taşınan carry-over kendiliğinden kapandı** — yükseltme yeniden içe
 aktarmıyor, satırları kendi id'leriyle yazıyor. İçe aktarımlar arası id
 kararsızlığı duruyor, yükseltmenin sorunu değil.
+
+---
+
+## Akışın altı dilimi — yuvarlanan kayıt (indi `current.md`'den 2026-09-09)
+
+> Altı dilim de indi ve son cümlesi akışın kapandığını söylüyor; kalıcı
+> kararların hepsi `spec/`'te (§ 51.6.1, § 35.7.2-.5). Bir satırı kendi
+> içinde bayat: `dailyGenerationQuota` 0 değil, iki cümle sonra beşe
+> döndüğü yazıyor.
+
+- **Anonim akış inşa ediliyor** (karar 2026-09-09: CV'den profil, düzenleme,
+  ilana göre üretim; veri saklanmaz, kota düşük, ön yazı yok). Dilim (i) indi:
+  **anonim profil artık Redis belgesi değil, sahibi olmayan + `expires_at`
+  taşıyan satır.** Kalıcı sapma, altı yere işlendi — gerekçe, yedek bedeli ve
+  zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
+  (`B-079`); üretim dilimi inince 5'e döner. **(ii) de indi:** profil uçları
+  anonim oturumu kabul ediyor (`CallerProfiles`) ve § 35.7'nin üç limiti artık
+  *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) ve (vi) indi:** anonim üretim
+  çalışıyor, kota beşe döndü (§ 35.7.3, `B-082`). **Migration gerekmedi** —
+  `generations.profile_id` cascade ediyor — ve **sayfa garantisi kendiliğinden
+  sağlandı**: `measureMissing` boru hattının içinde. **(iv) de indi:** anonim
+  içe aktarım ve üretim challenge istiyor (§ 35.7.4, `B-083`). **(v) ile akış
+  kapandı:** hesap açmak üretimleri de taşıyor (§ 35.7.5), bir olayla — çağrı
+  `profile` → `generation` döngüsü olurdu.

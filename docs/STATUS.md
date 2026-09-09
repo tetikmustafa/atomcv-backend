@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-09** · **`B-076`-`B-084` açık, dokuz madde** (frontend'de) · açık `F-nnn` yok
+**2026-09-09** · **kanal iki yönde de boş** — açık `B-nnn` ve `F-nnn` yok
 
 ## Backend — `atomcv-backend`
 
@@ -20,9 +20,11 @@
 
 **Ölçümler:** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (`PhaseDReachTest`, sebep aritmetik); `cover_letter` **v1** (v2 turu 169 kelime, bant 255-290); yazıyla sayı muhafızda; üç BOM override'ı hâlâ gerekli, `SecurityPatchFloorTest` tutuyor.
 
+**`F-028`-`F-030` cevaplandı (PR #164), ve ikisi gerçek kusurdu.** Yetenek bloğunda **`canWriteCoverLetter`** var artık — ön yazı `canSaveHistory` vekilinden okunuyordu. `FEATURE_REQUIRES_ACCOUNT`'ın `feature`'ı **kapalı sözlük** (`AccountFeature`, § D.6.1) ve her değerinin blokta bir boolean karşılığı var. İki uç (`feedback`, `cover-letter/regenerate`) anonime **401 yerine 403** dönüyor — 401 "oturumunuz bitti" dedirtiyordu, oysa oturum yerindeydi. **`POST /profile/import`'un `challengeToken`'ı şemada query parametresiydi**, artık form alanı (springdoc çok parçalı uçta `@RequestParam`'ı query diye yayımlıyor — sonraki çok parçalı uç için de geçerli).
+
 **Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4), OAuth ve Turnstile'ın gerçek uca karşı denenmesi.
 
-**Test:** 1284 birim · 471 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1287 birim · 476 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -35,6 +37,7 @@
 On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027`'yi çıkardı; ölçülmeyen OAuth ile Turnstile.
 
 **`B-071`-`B-074` (2026-09-08).** Yedinci uyarı kodu ve silinen `no_responsibilities` dalı ICU tarafında karşılandı; `paragraph` ile yedinci kod `gen:api` ile üretilen tipe girdi ve birliği genişletmekten başka bir şey yapmadı. `B-073` ve `B-074` kod işi çıkarmadı: düzen seçtiren arayüz de, elde hazırlanmış `classic` önizlemesi de yok. `F-016`'nın "sayımı suçlama" nöbeti, dayandığı yakalanmış yük silinince `errorCatalogue`'a taşındı.
+**`B-085`-`B-087` (2026-09-09), geldikleri gün karşılandı.** Şema yeniden üretildi ve kesişim tipi kalktı; ön yazı kontrolü artık `canWriteCoverLetter` okuyor; `params.feature`'ın dördü de kendi ICU dalını aldı. **`F-029`'un ölçüm hatası frontend'deydi:** ölçülen şey diskteki üretilmiş `api.d.ts`'ti, canlı şema değil.
 **Test:** 658 birim · 51 e2e · **bundle** profil 252.5 / geçmiş 213.9 / üretim 220.3 / onboarding 217.3 / ayarlar 229.8 KB.
 
 ## Açık kararlar
@@ -47,6 +50,7 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de, dokuz madde.** `B-075`+`B-078` birlikte ACK'lenir; **`B-079`'u `B-082` geçersiz kıldı**, tarih olarak duruyor. Anonim akış: `B-080` gizlilik metni (yedek cümlesi atlanmamalı), `B-081` editörün üç limiti, `B-082` üretim + kota 5, `B-083` **challenge token** (iki uçta yeni alan), `B-084` üretimlerin taşınması. Ayrıca `B-076` sağlayıcı listesi, `B-077` beceri yankısı.
-
-**İki handoff dosyası da sınırın üstünde**, sebebi arşivleme değil: ACK verilmeden taşınacak yer yok.
+**Sıra kimsede değil — iki kanal da boş.** `F-001`-`F-030` ve `B-001`-`B-087`
+kapandı ve `handoff/resolved/`'a indi (2026-09-09). Bir sonraki madde
+dağıtımdan gelir: OAuth sıçraması, sihirli bağlantının Turnstile'ı ve
+`B-083`'ün challenge'ı hâlâ gerçek uca karşı denenmedi.

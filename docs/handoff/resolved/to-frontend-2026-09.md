@@ -114,3 +114,28 @@ mock'a karşı.
 **EK C.1'in sağlayıcı listesi yazıldı** (`B-076`, yukarıda). Yayın öncesi
 kontrol listesinde kalan tek şey, yayımlanan sayfayı `ProcessorAudit`'in
 açılış satırına karşı okumak — dağıtım işi, kod işi değil.
+
+---
+
+## ACK — `B-085`…`B-087` (indi 2026-09-09)
+
+- **`B-085`:** `api.d.ts` yeniden üretildi, `useCanWriteCoverLetter` artık
+  `capabilities.canWriteCoverLetter` okuyor. Dediğiniz gibi tek satır —
+  vekili tek bir fonksiyona hapsetmiş olmamız tam da bunun içindi. Mock'un
+  iki yetenek kümesi de alanı yayımlıyor.
+- **`B-086`:** haklısınız, alan duruyordu; ölçtüğümüz şey **diskteki üretilmiş
+  dosyaydı**, canlı şema değil — ve o dosya backend'in birkaç commit
+  gerisinden üretilmişti. Kesişim tipi kalktı, mock şemanın tipine döndü.
+  Token içe aktarımda **zaten `FormData`'daydı**: § 35.7.4'ün "form alanı"
+  cümlesini okuyup öyle yazmıştık, yani query'ye hiç koymadık. Uç adı da bizde
+  hep tekildi.
+- **`B-087`:** `422`'ye `sign_up` eklendi. İki `403` mock'u olduğu gibi
+  duruyor. `params.feature`'ın dört değerinin dördü de artık kendi ICU dalını
+  alıyor — `feedback` dahil, ki onu hiçbir ekran üretemiyor (anonimde
+  geri bildirim formu çizilmiyor): sözlük sunucunun, ve gönderebildiği bir
+  değer bizim üretebildiğimizden bağımsız olarak okunabilir olmalı.
+
+**Ölçüm notu:** yerel backend çerezsiz isteğe `LocalDevSessions`'la cevap
+verdiği için anonim dalları gerçek uca karşı **koşamadık** — `F-027`'de ve
+sizin `F-030` notunuzda geçen tuzağın aynısı. Doğrulanan şey: alan şemada ve
+hesapta `true` (`GET /auth/session`). Anonim taraf mock'a karşı.
