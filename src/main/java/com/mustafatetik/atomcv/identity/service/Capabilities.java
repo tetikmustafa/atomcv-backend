@@ -83,6 +83,9 @@ public class Capabilities {
                 true,
                 true,
                 true,
+                // The letter an anonymous caller is refused, and the one thing
+                // in this block that was being read off canSaveHistory.
+                true,
                 true,
                 generations.limit(),
                 generations.used(),
@@ -107,6 +110,9 @@ public class Capabilities {
                 templates(),
                 false,
                 false,
+                false,
+                // § 35.7.3: refused ahead of the quota, so the control is
+                // closed here rather than met as a 403.
                 false,
                 false,
                 ANONYMOUS_GENERATIONS,

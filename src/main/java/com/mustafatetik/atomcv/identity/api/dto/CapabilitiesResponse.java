@@ -19,6 +19,17 @@ import java.util.List;
  *                             registry holds one, and publishing a template
  *                             the renderer cannot produce is a selectable
  *                             option that fails at generation time
+ * @param canWriteCoverLetter  whether a covering letter may be asked for, with
+ *                             the CV or afterwards (Bolum 34, § 35.7.3).
+ *                             <strong>Added for F-030's sake as much as
+ *                             F-028's:</strong> the block had no field for it,
+ *                             so the frontend closed the control on
+ *                             {@code canSaveHistory} — true today and true for
+ *                             the wrong reason, because that field means "this
+ *                             is an account" and the day the two capabilities
+ *                             separate the proxy is silently wrong. Every
+ *                             {@link com.mustafatetik.atomcv.shared.error.AccountFeature}
+ *                             now has a boolean here to be refused against
  * @param maxAtoms             the anonymous ceiling behind
  *                             {@code ATOM_LIMIT_EXCEEDED}; {@code null} for an
  *                             account, which has none. Absent from the JSON
@@ -36,6 +47,7 @@ public record CapabilitiesResponse(
         boolean canCustomizeTemplate,
         boolean canEditAtomControls,
         boolean canAddAlternatives,
+        boolean canWriteCoverLetter,
         boolean canSaveHistory,
         int dailyGenerationQuota,
         int generationsUsedToday,

@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.QuotaService;
 import com.mustafatetik.atomcv.identity.CapabilityProperties;
 import com.mustafatetik.atomcv.identity.api.dto.CapabilitiesResponse;
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Instant;
 import java.util.List;
@@ -39,6 +40,7 @@ class CapabilitiesTest {
         assertThat(capabilities.canCustomizeTemplate()).isFalse();
         assertThat(capabilities.canEditAtomControls()).isFalse();
         assertThat(capabilities.canAddAlternatives()).isFalse();
+        assertThat(capabilities.canWriteCoverLetter()).isFalse();
         assertThat(capabilities.canSaveHistory()).isFalse();
         assertThat(capabilities.dailyProfileQuota()).isEqualTo(3);
         assertThat(capabilities.maxAtoms()).isEqualTo(60);
@@ -121,7 +123,33 @@ class CapabilitiesTest {
         assertThat(capabilities.canCustomizeTemplate()).isTrue();
         assertThat(capabilities.canEditAtomControls()).isTrue();
         assertThat(capabilities.canAddAlternatives()).isTrue();
+        assertThat(capabilities.canWriteCoverLetter()).isTrue();
         assertThat(capabilities.canSaveHistory()).isTrue();
+    }
+
+    /**
+     * <strong>F-028, and the pairing is the point.</strong> § 35.7.3 refuses an
+     * anonymous covering letter with {@code FEATURE_REQUIRES_ACCOUNT} and
+     * {@code params.feature = cover_letter}, but the block carried no field for
+     * it — so the frontend closed the control on {@code canSaveHistory}, which
+     * is true today and true for the wrong reason. Every
+     * {@link AccountFeature} now has a boolean here to be refused against, and
+     * this test is what says the two agree.
+     *
+     * <p>Asserted next to {@code canSaveHistory} deliberately: the proxy worked
+     * because the two happen to move together, and the day they separate is the
+     * day this test stops passing for the right reason.
+     */
+    @Test
+    void theCoverLetterIsAClosedControlAnonymouslyAndAnOpenOneForAnAccount() {
+        stubUsage();
+
+        assertThat(capabilities().of(Optional.empty(), null).canWriteCoverLetter())
+                .as("§ 35.7.3 refuses it ahead of the quota, so the control is closed")
+                .isFalse();
+        assertThat(capabilities().of(Optional.of(SOMEONE), null).canWriteCoverLetter())
+                .as("an account may ask for one, with the CV or afterwards")
+                .isTrue();
     }
 
     /**
