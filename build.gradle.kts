@@ -39,6 +39,23 @@ repositories {
 // release on the 3.5 line and its BOM still pins postgresql 42.7.11, netty
 // 4.1.135.Final and tomcat 10.1.55 — every one of them below the fix.
 //
+// The same check, run against GitHub's advisory database rather than by eye,
+// moved netty on and left pgjdbc alone — and the two answers came out opposite
+// to what the release lists suggested, because the newest release and the
+// newest fix are different questions.
+//
+// pgjdbc's newest advisory is patched at exactly 42.7.12, which is where this
+// already is; 42.7.13 answers nothing, so it is not taken. Netty went to
+// 4.1.137.Final for CVE-2026-59903 — with one honest qualification, measured in
+// the image rather than assumed: the advisory is against `netty-codec-http`,
+// and this image does not carry it. `docker run` on the built image lists seven
+// netty artifacts (buffer, codec, common, handler, resolver, transport,
+// transport-native-unix-common) and the HTTP codec is not one of them, because
+// netty is here as the transport under Lettuce and the mail client while Tomcat
+// serves the HTTP. So that bump is keeping the line current, not closing an
+// exposure. The override itself exists for CVE-2026-59901, which is against
+// `netty-codec` — and that one does ship.
+//
 // **Nothing here is watched automatically, and Deploy is hand-run.** Dependabot
 // cannot see a Gradle `extra` property, which is why it has bumped five declared
 // dependencies in this repository and never these three, and Trivy only runs on
@@ -48,7 +65,7 @@ repositories {
 // green, and a mistyped property name fails it. Newly published advisories are
 // still a hand check — the test holds the ground already won.
 extra["postgresql.version"] = "42.7.12"   // CVE-2026-54291, SCRAM downgrade
-extra["netty.version"] = "4.1.136.Final"  // CVE-2026-59901, decoder loop
+extra["netty.version"] = "4.1.137.Final"  // CVE-2026-59901, -59903
 // Three CRITICALs at once, all published after 2026-09-02 — the scan was clean
 // on the push that added the two above and failed on the next one without
 // anything in this repository having changed. A security constraint bypass, an

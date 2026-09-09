@@ -36,14 +36,41 @@ import org.junit.jupiter.api.Test;
  * Dependabot cannot see a Gradle {@code extra} property, which is why it has
  * bumped five declared dependencies in this repository and never these three.
  * Reading the versions is a hand check; this only holds the ground already won.
+ *
+ * <p>The hand check worth repeating, because it found something the first time
+ * it was run — ask GitHub's advisory database per artifact and compare the
+ * newest {@code first_patched_version} against the floors below:
+ *
+ * <pre>
+ *   gh api "/advisories?ecosystem=maven&amp;affects=io.netty:netty-codec-http"
+ * </pre>
+ *
+ * <p>On 2026-09-09 it said netty was one patch short of a fix and pgjdbc was
+ * exactly on one, which is not what the release lists said: the newest release
+ * and the newest fix are different questions, and only the second one is a
+ * reason to move.
  */
 class SecurityPatchFloorTest {
 
     /** CVE-2026-54291, the SCRAM downgrade. Boot 3.5.16's BOM pins 42.7.11. */
     private static final String PGJDBC_FIX = "42.7.12";
 
-    /** CVE-2026-59901, the decoder loop. Boot 3.5.16's BOM pins 4.1.135.Final. */
-    private static final String NETTY_FIX = "4.1.136";
+    /**
+     * CVE-2026-59901, the decoder loop, and CVE-2026-59903, the CORS {@code Vary}
+     * header overwrite — {@code netty-codec-http} up to and including
+     * 4.1.136.Final. Boot 3.5.16's BOM pins 4.1.135.Final.
+     *
+     * <p>The second one does not apply to this image, and that was measured
+     * rather than reasoned: the built image carries seven netty artifacts —
+     * buffer, codec, common, handler, resolver, transport and
+     * transport-native-unix-common — and {@code netty-codec-http} is not one of
+     * them. Netty is here as the transport under Lettuce and the mail client;
+     * Tomcat serves the HTTP. The version moved anyway, because keeping every
+     * artifact on the newest patched release costs one character and makes this
+     * floor mean something. The override exists for CVE-2026-59901, which is
+     * against {@code netty-codec}, and that one does ship.
+     */
+    private static final String NETTY_FIX = "4.1.137";
 
     /** CVE-2026-65182, -65905 and -68525. Boot 3.5.16's BOM pins 10.1.55. */
     private static final String TOMCAT_FIX = "10.1.59";
