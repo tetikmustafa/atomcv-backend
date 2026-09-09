@@ -161,6 +161,82 @@ class AnonymousGenerationIT extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    // -- the two controls that answered the wrong refusal --------------------
+
+    /**
+     * <strong>F-030, and it was a 401 until now.</strong> Both of these
+     * endpoints called {@code currentUser.require()}, so a session holding a
+     * perfectly good cookie and its own generation was told
+     * {@code AUTHENTICATION_REQUIRED} — from which the screen writes "your
+     * session ended". The session had not ended; the feature was never theirs.
+     *
+     * <p>The frontend had mocked {@code 403 FEATURE_REQUIRES_ACCOUNT} with
+     * {@code params.feature = feedback}, said so, and asked whether the token
+     * was real. It was not, and now it is.
+     */
+    @Test
+    void feedbackFromASessionIsAMissingFeatureAndNotAMissingSession() throws Exception {
+        UUID generationId = aFinishedGeneration();
+
+        mvc.perform(post("/api/v1/generations/" + generationId + "/feedback")
+                        .cookie(cookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"rating\":1}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FEATURE_REQUIRES_ACCOUNT"))
+                .andExpect(jsonPath("$.params.feature").value("feedback"))
+                .andExpect(jsonPath("$.resolutions[0].action").value("sign_up"));
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM generation_feedback",
+                Integer.class)).isZero();
+    }
+
+    /**
+     * The same refusal on the letter, and it names the same feature the
+     * generation endpoint does — one token per control, whichever door it is
+     * asked through.
+     */
+    @Test
+    void regeneratingALetterFromASessionNamesTheFeatureToo() throws Exception {
+        UUID generationId = aFinishedGeneration();
+
+        mvc.perform(post("/api/v1/generations/" + generationId
+                        + "/cover-letter/regenerate")
+                        .cookie(cookie()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FEATURE_REQUIRES_ACCOUNT"))
+                .andExpect(jsonPath("$.params.feature").value("cover_letter"))
+                .andExpect(jsonPath("$.resolutions[0].action").value("sign_up"));
+    }
+
+    /**
+     * The other half, and without it the change above would just be a renamed
+     * 401. A caller whose session resolves to <em>nothing</em> still gets
+     * {@code AUTHENTICATION_REQUIRED}: that is the plain case EK D.6 keeps the
+     * code for, and telling them they need an *account* would be the same
+     * wrong sentence pointing the other way.
+     *
+     * <p><strong>A stale cookie and not a missing one, and the lane is why.</strong>
+     * A request with no cookie at all does not reach this branch here:
+     * {@code SessionCurrentUser.resolve} falls through to {@code LocalDevSessions}
+     * and answers as the dev user, so the test would measure the stub rather
+     * than the product — the same trap F-027's {@code 204} was hiding in. A
+     * cookie that no longer resolves takes the cookie branch, is filtered to
+     * empty, and is a browser state that actually happens: a revoked or expired
+     * session posting a thumb.
+     */
+    @Test
+    void acookieThatNoLongerResolvesStillGetsTheAuthenticationCode() throws Exception {
+        UUID generationId = aFinishedGeneration();
+
+        mvc.perform(post("/api/v1/generations/" + generationId + "/feedback")
+                        .cookie(new Cookie(cookies.name(), UUID.randomUUID().toString()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"rating\":1}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+    }
+
     // -- fixtures ------------------------------------------------------------
 
     /**
