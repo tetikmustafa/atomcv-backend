@@ -1716,13 +1716,30 @@ ve her zaman bir gerisinde. Burada iki dilde bin, milyon ve milyar; o dillere
 ait bir olgu. Bilinmeyen bir sözcük bir birleştirmeyi kaçırır, yanlış bir
 birleştirme üretmez.
 
-**Bilinen ve kapatılmayan boşluk: sayı kontrolü yalnız rakam görüyor.** Aynı
-kayıtta model `800 ms'den 90 ms'ye` metriğini "from over eighty milliseconds
-to ninety milliseconds" diye yazdı — hem yanlış hem de anlamsız (artış), ve
-hiçbir muhafız görmedi çünkü ortada rakam yok. Deneyim süresi kontrolü de aynı
-kaçağa açık ("thirteen years"). Yazıyla yazılmış sayıları çözmek iki dilde
-açık uçlu bir sözlük demek; `F-025`'in reddettiği türden. **Ölçülmüş bir
-boşluk olarak duruyor.**
+**Ekleme (2026-09-09) — yazıyla yazılmış sayı da sayfanın taşıması gereken
+sayıdır.** Aynı kayıtta model `800 ms'den 90 ms'ye` metriğini "from over
+eighty milliseconds to ninety milliseconds" diye yazdı — hem yanlış hem
+anlamsız (artış) — ve hiçbir muhafız görmedi çünkü ortada rakam yoktu. Bu
+boşluk açık bırakılmıştı; kapatan şey sözlük değil, **çapa**.
+
+Üç şekil sayılır, başkası sayılmaz: sayı-kelimesi + birim ("thirteen years",
+"eighty milliseconds", "altı kişilik"), önünde "of" ile grup adı ("a team of
+six"), ve tek başına sıfır — bir şeyin sıfırını söylemenin iddia olmayan bir
+yolu yok. **Çapanın kendisi karardır:** "particularly *one* focused on Java"
+nicelik değildir, Türkçe "bir araya getiren" hiç değildir, ve **Türkçe'nin
+"on"u İngilizce'nin "on" edatıdır** — yani "focused on building" her İngilizce
+cümleye bir sayı kelimesi sokar. Her sayı kelimesini okuyan bir kural on iki
+kayıtlı taslağın sekizini çöpe atardı. Ölçüldü: **sıfır yanlış pozitif**,
+iddiada bulunan üç mektuptan çıkanlar 13, 6, 0, 50, 4, 80, 90 — 80 dahil.
+
+**İki boşluk bilerek açık, ikisi de "kaçırmak asla yanlış sayı olmasın"
+diye.** Yan yana iki sayı kelimesi ("twenty five") komple atlanır: beşi
+okumak mektuba mal olur. Ölçek sözcüğü önündeki yazılı sayı ("two million")
+okunmaz: sayfa "2M" yazabilir ve sayfanın kendi tarafı onu `2` okur.
+
+Deneyim süresi kontrolü de kelime okur, ve okumak zorundaydı: iki kontrol
+sıralı çalışıyor, biri "thirteen years"ı görüp öteki görmeseydi tarihleri on
+üç yıl diyen bir sayfada doğru mektup uydurma sayı diye reddedilirdi.
 
 ### 34.5 Şirket bilgisi eksikliği
 

@@ -12,8 +12,30 @@
 
 ## OPEN
 
-_Üç madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
-backlog. Üçü de ACK'lendiğinde `resolved/`'a iner._
+_Dört madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-079 · Anonim `dailyGenerationQuota` artık 0 — tutulamayan bir sözdü
+
+**Since:** commit `<bu PR>` · **Spec:** § 35.7 (sapma) · `identity/service/Capabilities`
+
+**Ne oldu:** oturumsuz çağıranın `capabilities` bloğunda
+`dailyGenerationQuota` **5 yerine 0** dönüyor. `dailyProfileQuota` **3 olarak
+kalıyor**, `maxAtoms` 60 olarak kalıyor.
+
+**Neden:** anonim üretim kurulmadı. `POST /generations` hesap istiyor ve
+oturumsuz çağırana `AUTHENTICATION_REQUIRED` dönüyor; blok ise "bugün beş
+hakkın var" diyordu. Blokta bunu söyleyen başka bir alan da yok —
+`canSaveHistory` üretmekle değil, üretileni saklamakla ilgili. Yani ekran
+doğru okuyup yanlış şey gösteriyordu ve kullanıcı ilk tıklamada 401 alıyordu.
+Profil tarafı böyle değil: `POST /profiles/import` anonim oturumu kabul ediyor
+ve çıkan profil giriş anında hesaba geçiyor — o yüzden o sayı duruyor.
+
+**Action:** anonim ziyaretçiye "üret" yolunu **kotaya bakarak** açıyorsanız
+artık kendiliğinden kapanır; ayrı bir bayrak beklemeyin, `canGenerate` diye bir
+alan yok. Kotayı okumayıp butonu her zaman gösteriyorsanız, 0 gördüğünüzde
+kayıt/giriş çağrısına çevirin. Anonim üretim indiği gün bu sayı 5'e döner ve
+size yeni bir madde gelir.
 
 ### B-077 · Beceriler artık yazılırken kanonikleşiyor: yankı gönderileni tutmaz
 
