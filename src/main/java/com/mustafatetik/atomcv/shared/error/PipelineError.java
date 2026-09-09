@@ -169,7 +169,7 @@ public sealed interface PipelineError {
      *                screen can say which button needs an account rather than
      *                raising a generic sign-up wall
      */
-    record FeatureNeedsAnAccount(String feature) implements PipelineError {
+    record FeatureNeedsAnAccount(AccountFeature feature) implements PipelineError {
 
         public FeatureNeedsAnAccount {
             java.util.Objects.requireNonNull(feature, "feature");

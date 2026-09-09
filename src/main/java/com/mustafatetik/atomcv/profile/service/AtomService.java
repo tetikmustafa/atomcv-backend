@@ -8,6 +8,7 @@ import com.mustafatetik.atomcv.profile.repository.AtomRepository;
 import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
 import com.mustafatetik.atomcv.profile.repository.EntryRepository;
 import com.mustafatetik.atomcv.profile.repository.SectionRepository;
+import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
@@ -82,7 +83,7 @@ public class AtomService {
         // lookup of who is calling.
         AnonymousLimits.requireRoomForAnotherAtom(profile, atoms.findAll(profile).size());
         if (AnonymousLimits.touchesAtomControls(draft)) {
-            AnonymousLimits.requireAccountFor(profile, "atom_controls");
+            AnonymousLimits.requireAccountFor(profile, AccountFeature.ATOM_CONTROLS);
         }
         sections.findById(profile, draft.sectionId()).orElseThrow(() -> invalid("sectionId"));
         if (draft.entryId() != null) {
@@ -125,7 +126,7 @@ public class AtomService {
         // dropped the control would leave the screen showing a value the server
         // does not hold (§ 35.7).
         if (AnonymousLimits.touchesAtomControls(patch)) {
-            AnonymousLimits.requireAccountFor(profile, "atom_controls");
+            AnonymousLimits.requireAccountFor(profile, AccountFeature.ATOM_CONTROLS);
         }
         Atom atom = requireAtom(profile, id);
         EntityTags.requireMatch(ifMatch, atom.getVersion());
@@ -202,7 +203,7 @@ public class AtomService {
         // § 35.7's `canAddAlternatives: false`. Editing the wording an import
         // produced stays open -- correcting your own sentence is not an
         // alternative, it is the sentence -- and this is the second one.
-        AnonymousLimits.requireAccountFor(profile, "alternatives");
+        AnonymousLimits.requireAccountFor(profile, AccountFeature.ALTERNATIVES);
         requireAtom(profile, atomId);
         String language = draft.language() == null ? "en" : draft.language();
         requireFreeSlot(profile, atomId, language, draft.tone(), null);

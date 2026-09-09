@@ -37,6 +37,12 @@ public enum ErrorCode {
     UNPARSEABLE_JOB_DESCRIPTION(422,
             param("reason", STRING), param("confidence", NUMBER), param("skillsFound", INTEGER)),
     CONFLICTING_PREFERENCES(409, param("pinnedPages", NUMBER), param("maxPages", INTEGER)),
+    /**
+     * {@code feature} is the closed vocabulary of {@link AccountFeature}, not
+     * free text (F-030). It was declared {@code STRING} and still is on the
+     * wire, but every value that reaches it now comes from the enum — the
+     * frontend writes one sentence per value and could not find the list.
+     */
     FEATURE_REQUIRES_ACCOUNT(403, param("feature", STRING)),
     QUOTA_EXCEEDED(429, param("metric", STRING), param("resetsAt", TIMESTAMP)),
 
