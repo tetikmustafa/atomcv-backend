@@ -37,6 +37,35 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 | `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
 | `retry` | Geçici hata | Değiştirmeden yeniden gönder |
 
+**`FEATURE_REQUIRES_ACCOUNT.params.feature`** — katalog `feature: string`
+diyordu ve tam küme hiçbir yerde yazılı değildi (`F-030`). Frontend eksik
+değeri tahmin etti, ve tahmini doğru çıktı — ama dışarıdan bakınca tahminle
+sözleşme aynı görünüyordu. Tam küme, ve kodda `AccountFeature`:
+
+| feature | Ne istendi | Bloğun karşılığı |
+|---|---|---|
+| `atom_controls` | `importance`, `active`, `always_include`, `verbatim` | `canEditAtomControls` |
+| `alternatives` | Bir atomun ikinci yazımı | `canAddAlternatives` |
+| `cover_letter` | Ön yazı (üretimle ya da sonradan) | `canWriteCoverLetter` |
+| `feedback` | Bir üretime verdict, ve yanındaki destek izni | `canSaveHistory` |
+
+**Her değerin blokta bir boolean karşılığı var, ve eşleşme kuralın kendisi.**
+Blok neyin reddedileceğini *sorulmadan önce* söylüyor, bu kod hangisinin yine de
+sorulduğunu. Karşılığı olmayan yeni bir değer, istemcinin önleyemediği bir
+ret demektir — `canWriteCoverLetter` tam da bu yüzden eklendi (`F-028`).
+
+**İki uç 401 yerine 403 dönüyor artık** (`F-030`, 2026-09-09): anonim
+`POST /generations/{id}/feedback` ve `POST /generations/{id}/cover-letter/regenerate`
+`currentUser.require()` çağırıyordu, yani geçerli bir oturum tutan kişiye
+`AUTHENTICATION_REQUIRED` diyordu — ekranın oradan yazdığı cümle "oturumunuz
+bitti", ve teşhis yanlış. **Hiçbir şey taşımayan istek hâlâ 401 alıyor**; o,
+öteki kodun var olduğu düz durum.
+
+**`ATOM_LIMIT_EXCEEDED` `sign_up` taşıyor** (`F-030`), ve başından beri
+taşıyordu — tabloda yazmıyordu. Hesap açmak sınırı kaldırdığı için tek
+anlamlı çıkış yolu o.
+
+
 **Sayı olan bir kapalı sözlük springdoc'ta üç şeyi birden istiyor**
 (`F-019`): `@Schema(type = "integer", format = "int32", allowableValues =
 {"1", "-1"})`, ve **enum bildiriminin üstünde**, onu taşıyan özelliğin

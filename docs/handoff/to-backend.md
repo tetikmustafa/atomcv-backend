@@ -11,68 +11,8 @@
 
 ## OPEN
 
-*(Üçü de `B-081`-`B-083`'ü uygularken çıktı. **Hiçbiri bir şeyi engellemiyor** —
-üçünün de bugün çalışan bir karşılığı var; sorulan şey, o karşılığın
-tahminimiz mi yoksa sözleşme mi olduğu.)*
-
-### F-028 · `capabilities` ön yazı hakkında bir şey söylemiyor
-
-**Since:** frontend commit `<bu PR>` · `B-082` · `src/hooks/useSession.ts`
-
-**Neden:** `B-082` "ön yazı kutusunu `capabilities` ile kapatın" diyor, ama
-`CapabilitiesResponse` blokta ön yazıya dair bir alan taşımıyor:
-`allowedLanguages`, `allowedTemplates`, `canCustomizeTemplate`,
-`canEditAtomControls`, `canAddAlternatives`, `canSaveHistory` ve dört sayaç.
-Kutuyu bunlardan biriyle kapatmak zorundaydık ve `canSaveHistory`'yi vekil
-aldık — anlamı ön yazı değil, "bu bir hesap".
-
-**İstenen:** ya `canWriteCoverLetter` (ya da eşdeğeri) bloğa eklensin, ya da
-"anonimde ön yazı yok"un `canSaveHistory`'den okunması **sözleşme olarak**
-onaylansın. Vekil tek bir fonksiyonun içinde (`useCanWriteCoverLetter`), alan
-gelirse değişecek tek satır orası.
-
-**Spec:** § 35.7 (yetenek tablosu), § 35.7.3
-
-### F-029 · `challengeToken` şemada yok, ve uç adı handoff'takinden farklı
-
-**Since:** frontend commit `<bu PR>` · `B-083` · `src/lib/api/endpoints/`
-
-**Neden:** iki şey. (1) `POST /generations`'ın gövdesinde `challengeToken`
-**yayımlanmıyor** — `npm run gen:api` alanı getirmiyor, mutlak kural 2
-`api.d.ts`'i elle düzenlemeyi yasaklıyor, o yüzden alan istemci tarafında
-kesişim tipiyle eklendi (`Accepts<'generate'> & { challengeToken?: string }`).
-Şema alanı yayımladığı gün bu üye gereksizleşir; bugün onsuz alan hiç
-gönderilemiyor. (2) `B-083`'ün tablosu **`POST /profiles/import`** diyor;
-bizim gönderdiğimiz uç `POST /api/v1/profile/import` (tekil), ve `B-051`'den
-beri öyle. İkisinden biri yazım hatası.
-
-**İstenen:** `challengeToken` OpenAPI'de görünsün (gövde alanı ve multipart
-form alanı olarak), ve uç adının tekil olduğu doğrulansın.
-
-**Spec:** § 35.7.4, § 44.4
-
-### F-030 · İki reddin şeklini tahmin ettik — doğrulayın ya da düzeltin
-
-**Since:** frontend commit `<bu PR>` · `B-081`, `B-082` · `src/mocks/`
-
-**Neden:** `B-081` üç limitin **hangi kodla** geldiğini yazıyor, iki noktayı
-yazmıyor, ve mock'un bir şey üretmesi gerekiyordu:
-
-1. **`422 ATOM_LIMIT_EXCEEDED` `resolutions` taşıyor mu?** Maddedeki tablo
-   yalnız `params.limit`/`params.current` diyor. Mock **boş** liste üretiyor —
-   sunucunun göndermediği bir düğmeyi öğretmemek için. Hesap açmak sınırı
-   kaldırdığına göre `sign_up` mantıklı olurdu; gönderiliyorsa söyleyin,
-   ekran onu zaten çizecek.
-2. **Anonim `POST /generations/{id}/feedback` neyle reddediliyor?** `B-082`
-   yalnız okumada `feedback: null` diyor. Mock `403 FEATURE_REQUIRES_ACCOUNT`
-   + `params.feature=feedback` üretiyor; `feedback` **bizim uydurduğumuz bir
-   jeton**, kapalı sözlükte var mı bilmiyoruz. Ekran anonimde formu hiç
-   çizmediği için istemcide bir şey buna bağlı değil.
-
-**İstenen:** iki cevap. Yanlışsa mock düzeltilir; `params.feature`'ın kapalı
-sözlüğünün tamamı yazılıysa nerede olduğunu söylemeniz yeter.
-
-**Spec:** § 35.7.2, § 35.7.3, `spec/08b-api-contract.md` (hata kataloğu)
+*(açık madde yok — `F-028`…`F-030`'un üçü de cevaplandı ve `ACK`'e indi
+2026-09-09'da. Karşılıkları `to-frontend.md`'de `B-085`…`B-087`.)*
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -88,6 +28,74 @@ sözlüğünün tamamı yazılıysa nerede olduğunu söylemeniz yeter.
 
 *(`F-001`…`F-024` `resolved/to-backend-2026-08.md`'de — üçünün de cevabı
 oraya indi 2026-08-30'da, dosya sınırı.)*
+
+### F-030 · Biri zaten doğruydu, biri sizin dediğiniz oldu, biri hiç yazılı değildi
+
+**1. `resolutions` gönderiliyor.** `ATOM_LIMIT_EXCEEDED` `sign_up` taşıyor ve
+başından beri taşıyordu — `AnonymousLimits` onu `.resolution(SIGN_UP)` ile
+kuruyor, `ProblemDetails` boş olmadığı sürece yazıyor. `B-081`'in tablosu
+yalnız `params`'ı yazdığı için görünmüyordu; tablo düzeltilmedi çünkü o
+sütun makine tarafından okunuyor (`ErrorCatalogueSpecTest` `params`'ı birebir
+ayrıştırıyor), kural § D.6.1'in düzyazısına girdi. **Mock'un boş listesi
+yanlış** — düğmeyi çizin.
+
+**2. `feedback` uydurmaydı, ve şimdi gerçek — ama düzeltilen sizin tarafınız
+değil, bizimki.** Bugünkü cevap 403 değil **401**'di: iki uç da
+`currentUser.require()` çağırıyordu, yani geçerli bir oturum ve kendi üretimini
+tutan kişiye `AUTHENTICATION_REQUIRED` diyordu. Ekranın oradan yazdığı cümle
+"oturumunuz bitti"; oturum bitmemişti, özellik hiç onların değildi.
+`ErrorCode`'un kendi notu `FEATURE_REQUIRES_ACCOUNT`'ı zaten "anonim
+kullanıcının erişemediği özellik" için ayırıyor. **Tahmininiz doğru şekildi**
+ve uygulandı — `feedback` ve `cover_letter`, ikisi de `sign_up` ile. Mock'u
+değiştirmeyin.
+
+**Hiçbir şey taşımayan istek hâlâ 401.** Bunu ölçen test çerezsiz istekle
+yazılamıyor: `SessionCurrentUser` çerez yoksa `LocalDevSessions`'a düşüyor ve
+dev kullanıcısı gibi cevap veriyor — `F-027`'nin `204`'ünün saklandığı tuzağın
+aynısı. Test **çözülmeyen bir çerezle** yazıldı, ki o da gerçekten olan bir
+tarayıcı durumu.
+
+**3. Kapalı sözlük hiçbir yerde yazılı değildi, ve asıl bulgu bu.** Katalog
+`feature: string` diyordu; dışarıdan bakınca tahminle sözleşme aynı
+görünüyordu. Artık kodda bir enum (`AccountFeature`) ve § D.6.1'de bir tablo:
+`atom_controls`, `alternatives`, `cover_letter`, `feedback` — her birinin
+yetenek bloğunda bir boolean karşılığıyla.
+
+### F-029 · Alan yayımlanıyordu; `api.d.ts`'iniz eski, ve import'ta gerçek bir kusur vardı
+
+**`GenerationRequest.challengeToken` şemada duruyor**, `8c72199`'dan beri —
+`OpenApiSchemaIT` hem varlığını hem özellik sayısının **altı** olduğunu iddia
+ediyor. Sizdeki `src/types/api.d.ts` o commit'ten önce koşan bir backend'e
+karşı üretilmiş: içinde `MagicLinkRequest.challengeToken` var (daha eski
+commit), `GenerationRequest`'te beş özellik. `gen:api` canlı `localhost:8080`'i
+okuduğu için tek gereken güncel backend'e karşı yeniden koşmak; kesişim tipi
+bugün gereksiz.
+
+**Uç tekil**, ve yazım hatası `B-083`'te değil onun aldığı yerdeydi:
+`spec/08-api.md` § 35.7.4 bir süre `/profiles/import` diyordu, `07-subsystems.md`
+§ 31.10 ve `08b-api-contract.md`'nin üç satırı hep tekildi. Düzeltildi.
+
+**Ama sorduğunuzdan büyük bir şey çıktı.** springdoc çok parçalı bir uçta
+`@RequestParam`'ı **query parametresi** diye yayımlıyor — `mode`'un sizdeki
+tipte `query` altında çıkması kanıtı. `challengeToken` de öyle çıkıyordu, yani
+şema token'ı **URL'e koymayı** söylüyordu: erişim kayıtlarına, vekil sunucu
+kayıtlarına ve tarayıcı geçmişine yazılan bir challenge token'ı var olma
+sebebinin çoğunu kaybeder, ve § 35.7.4 zaten "form alanı" diyor. Gövde
+şeması elle yazıldı; bağlama `@RequestParam`'da kaldığı için bugün query ile
+gönderen bir istemci kırılmıyor. `mode` query'de kalıyor — sır değil.
+
+### F-028 · Vekil değil, alan — ve dediğiniz gibi tek satır
+
+**Haklıydınız ve alan eklendi:** `canWriteCoverLetter`, anonimde `false`,
+hesapta `true`. `canSaveHistory`'yi sözleşme yapmadık çünkü anlamı o değil —
+bugün doğru cevap vermesi ikisinin birlikte hareket etmesinden, ve ayrıştıkları
+gün ortada düzeltilecek bir şey olmazdı, sessizce yanlış bir ekran olurdu.
+
+**Ve `F-030` bunu bir kurala çevirdi:** `FEATURE_REQUIRES_ACCOUNT`'ın her
+`feature` değerinin blokta bir boolean karşılığı var. Blok neyin
+reddedileceğini sorulmadan önce söylüyor, kod hangisinin yine de sorulduğunu;
+karşılığı olmayan bir değer, istemcinin önleyemediği bir ret demek. Ön yazı
+tam da bu boşluğa düşmüştü.
 
 ### F-026 · İkisi de sistematikti, ve ölçümünüz zaten diskteydi
 
