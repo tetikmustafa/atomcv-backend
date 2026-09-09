@@ -388,6 +388,16 @@ if (!embeddingProvider.isHealthy()) {
 
 Kalite düşer ama sistem çalışır. Kullanıcıya bilgi verilmez (iç detay), ama telemetriye kaydedilir.
 
+**Ölçüldü (2026-09-09) — "kalite düşer" Faz D için doğru değil; Faz D durur.**
+Vektör yokken embedding bileşeni 0.0 ve kalan üç terim atom başına küçüktür:
+gerçek ilana karşı gerçek profilde en yüksek atom skoru **0.0959**, § 21.2'nin
+tabanı 0.40. DEFAULT ağırlıklarla ama vektörsüz koşulduğunda nötr 0.5 her atoma
+sabit **0.20** ekliyor; dağılım 0.20-0.26'ya sıkışıyor ve tabana yine
+ulaşılmıyor — skorlar birlikte yükseliyor, birbirinden ayrışmıyor. Yani bu geri
+çekilme Faz B'nin sıralamasını bozmakla kalmıyor, **Faz D'yi tamamen kapatıyor**:
+§ 21.2'nin eşikleri hangi ağırlık setinin koştuğuna bağlıdır. Sayıları
+`PhaseDReachTest` tutuyor.
+
 **`isHealthy()` TEI'nin kendi `/health`'ini sorar, port testi yapmaz.** Container portu ağırlıklar yüklenmeden çok önce açar; "bir şey dinliyor mu" diye soran bir kontrol, 2.5 GB'lık ilk açılışın tamamı boyunca *sağlıklı* raporlar ve skorlama her çağrıya 503 dönen bir servise karşı çalışır.
 
 **`isHealthy()` bir sinyaldir, garanti değil.** Geçmiş bir anı anlatır, ve

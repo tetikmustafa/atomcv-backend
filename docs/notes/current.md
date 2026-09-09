@@ -48,11 +48,10 @@ Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
 
 ## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
 
-Dört bulgu, yedi ayrı kusur; dilim A-G'nin tam kaydı
-`archive/stage-3-post-closure-e2e.md`'de, **dilim K'nınki de orada**.
-**Geliştiricide (tek liste):** fiyat tablosu — **o güne kadar bütçe freni ölü**,
-ve dilim K telde gördü: `openai/gpt-5.6-sol` fiyatsız, iki gerçek çağrı
-`cost_usd = 0` yazdı. Sonra VPS ve restore testi.
+Dört bulgu, yedi ayrı kusur; dilim A-G ve K'nın tam kaydı
+`archive/stage-3-post-closure-e2e.md`'de. **Fiyat tablosu indi** (2026-09-09;
+`usage.cost` da okunuyor, slug'ın yedi endpoint'i $1-$5.50 arası).
+**Geliştiricide kalan: VPS ve restore testi.**
 
 ## Kapanış sonrası · dilim I-J-H ve K — sayfanın şekli (2026-09-07)
 
@@ -64,13 +63,20 @@ bir tavandır talep değil; `reservedByFloor` `forcedByLock`'tan ayrı bir küme
 bir inline satırın öğeleri **ve** etiketi sade diziliyor (karar render'da,
 içerikte değil); `PARAGRAPH` `INLINE_LIST`'e katlanmadı.
 
-**Canlı kalanlar:**
-- **`emphasis` kalın oldu** (karar 2026-09-09, § 22.3) ve **bedeli ölçüldü:
-  sıfır.** Yedi golden profilde hiçbir ifadenin maliyeti 0.01pt'den fazla
-  oynamadı (`stress_long_career` dahil) — maliyet yüksekliktir, kalın ancak satır
-  kırılmasını değiştirirse yüksekliği değiştirir. Yeniden kayıt gerekmedi.
-- **Faz D eşikleri ölçüldü:** en yüksek atom skoru 0.3577-0.4313, § 21.2'nin
-  tabanı 0.40. **Ayarlamak yeni ölçüm ister**, karar spec'in.
+**Canlı kalan:**
+- **Faz D eşikleri ölçüldü, teste sabitlendi (`PhaseDReachTest`), karar
+  ertelendi (2026-09-09).** Gerçek embedding'le en yüksek atom skoru
+  0.2741-0.4313; vektörsüz 0.0959, DEFAULT ağırlıklarla vektörsüz 0.2578.
+  § 21.2'nin tam uyarlama eşiği **0.65'e hiçbirinde yaklaşılmadı**, 0.40 tabanı
+  yalnız bir profilde aşıldı. **Sebep ayar değil aritmetik:** § 19.2'nin yetenek
+  terimi ilanın *tüm* isteklerine bölünüyor (bu ilanda on yedi; en isabetli madde
+  üçünü taşıyor = 0.176), etiketlenmemiş profilde etiket terimi 0.0, ve vektörsüz
+  koşuda nötr 0.5 her atoma sabit 0.20 ekliyor (§ 28.4'e işlendi).
+  **Normalizasyon ertelendi:** üç aday da yer değiştirmeli bir çarpıklık taşıyor
+  ve veri olmadan seçilemiyor. **Yeni ölçüm gerekmiyor:** `engine_version`
+  ağırlık setini, `selection_state` atom skorlarını, `trace.D.calls` Faz D'nin
+  ateşleyip ateşlemediğini zaten yazıyor — `default` setli üretim biriktiğinde
+  karar veriye dayanır ve test o gün yeni sayılarla düşer.
 
 **Ders — golden fixture yazılmaz, okunur.** `master_cv_en` beş elle yazılmış
 profilin taşımadığını taşıyor: **ilanla ilgisi olmayan çok fazla içerik.** İlk
@@ -122,20 +128,15 @@ belgede verdiği sapma anlamsız — bilerek bırakıldı,
 ## Kapanış sonrası · P3'ün yanlış pozitifleri ölçüldü (2026-09-08)
 
 **Düzeltme — teşhis yanlıştı; sebep alias sözlüğü değil, tire.** Kelime sınırı
-tireyi kelime karakteri sayıyordu, yani sayfanın kanonik taşıdığı
-`spring-cloud-gateway`'in *içinde* `Gateway` bulunamıyordu: on altı kayıtlı
-`about_synthesis` cevabında **on token, dört özet, bir verdict** (tam ölçüm
-`5ce0d94` ve `a4c5736`'nın gövdesinde). Ayırıcılar iki tarafta da katlanıyor
-artık, ön yazı muhafızı da aynı fonksiyonu okuyor; gerçek ret kalkmadı.
+tireyi kelime karakteri sayıyordu: on altı kayıtlı `about_synthesis` cevabında
+**on token, dört özet, bir verdict** (tam ölçüm `5ce0d94` ve `a4c5736`'nın
+gövdesinde). Ayırıcılar iki tarafta katlanıyor artık; gerçek ret kalkmadı.
 
 **Ekleme — `postingSkillNames`: kaynak evet, sözlük ve prompt hayır.** İlan
-`Scrum`'ı yalnız `name`'inde adlandırıyor (on sekizin beşi kanonik formunun
-taşımadığı bir kelime yazıyor); yazımlarını ayrı liste taşıyor ve yalnız "bu adı
-bir kaynak taşıyor mu?" okuyor, yani prompt'un listesi de muhafızın sözlüğü de
-aynı kaldı — fixture'lar ve prompt sürümü yerinde (§ 53.2). **Tek listeye koyan
-hâli önce ölçüldü:** verdict değişmedi, çoğul `Code reviews` iki yeni ret açtı.
-**Bilerek açık, ölçülmedi:** kaynağın kısalttığını cevabın açtığı yön. **Ders:** bir
-redaksiyon, durduğu kayıt yenilenince bayatlar — nöbetçi 84/85 atomda yakaladı.
+`Scrum`'ı yalnız `name`'inde adlandırıyor; yazımlarını ayrı liste taşıyor ve
+yalnız "bu adı bir kaynak taşıyor mu?" okuyor, yani prompt da muhafızın sözlüğü
+de aynı kaldı (§ 53.2). **Bilerek açık, ölçülmedi:** kaynağın kısalttığını
+cevabın açtığı yön. **Ders:** bir redaksiyon, durduğu kayıt yenilenince bayatlar.
 
 ---
 
@@ -174,8 +175,8 @@ basılır.
 - **Faz D sekize kadar eşzamanlı çağrı yapıyor**, her biri `REQUIRES_NEW` ile
   bağlantı alıyor. Havuz 10, işçi eşzamanlılığı 2 → tepede 16 kısa ödünç.
   **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
-- **`support_grants.accessed_at`'i hiçbir şey yazmıyor**; **R2'deki PDF'ler**
-  § 57.4'ün silme listesinde ama R2 istemcisi yok (7. karar: MVP'ye girmiyor).
+- **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
+  (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
   **Anonim işler yükseltmede taşınmıyor** ve anonim oturumun kullanıcı indeksi
   yok; anonim *üretim* inince değişir.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
@@ -186,9 +187,8 @@ basılır.
   `support` profili) grant'i kimlik belgesi sayıp sahibinin bağlamında okuyor ve
   damgalıyor; **tek kapsanmamış adım grant aramasıdır** (`SupportGrantLookup`,
   `JobQueue` emsali, API'den erişilemez — ArchUnit kuralı var). Uç açmadık.
-- **Düzeltme — `PGVectorTypeContributor`'daki `NoClassDefFoundError` flake değildi:**
-  run 33091345512 `main` değil **PR #86'nın dalıydı** (hibernate-vector 7.4.6). **Ders:
-  flake demeden önce dalına bak.** `dependabot.yml` o majörü/minörü yok sayıyor artık.
+- **Düzeltme — `PGVectorTypeContributor`'ın `NoClassDefFoundError`'ı flake değildi:**
+  koşu `main` değil **PR #86'nın dalıydı**. **Ders: flake demeden önce dalına bak.**
 
 **Ders (3.4, dilim 1'de ikinci kez):** *bir javadoc ne zaman çalıştığını
 söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değildir.*
