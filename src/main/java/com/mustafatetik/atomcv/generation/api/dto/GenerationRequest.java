@@ -35,6 +35,12 @@ public record GenerationRequest(
                 defaultValue = "false")
         Boolean acknowledgePreflight,
 
+        @Schema(description = "What the challenge widget produced. Required for a "
+                + "caller with no account and ignored for one with an account "
+                + "(Bolum 44.4): signing in already answered a challenge, and "
+                + "generating spends real money on a model.")
+        String challengeToken,
+
         @Schema(description = "How many pages the CV may take", example = "1",
                 minimum = "1", maximum = "10")
         @Min(1) @Max(10)

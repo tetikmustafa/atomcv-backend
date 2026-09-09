@@ -31,7 +31,7 @@ public class ChallengeConfig {
     Challenge challenge(TurnstileProperties properties, ObjectMapper json,
             Environment environment) {
         if (properties.configured()) {
-            log.info("Sign-in requests are challenged through Turnstile");
+            log.info("Sign-in, CV import and generation are challenged through Turnstile");
             return new TurnstileChallenge(properties, json);
         }
         if (environment.acceptsProfiles(Profiles.of("prod"))) {
@@ -43,8 +43,9 @@ public class ChallengeConfig {
         // Local development and the test suite. Said, rather than silently
         // waved through, so a deployment that ends up here by accident is not
         // discovered by reading the traffic.
-        log.warn("No challenge configured: sign-in requests are not checked for a person. "
-                + "Set TURNSTILE_SECRET_KEY outside local development.");
+        log.warn("No challenge configured: nothing checks for a person behind a sign-in, a "
+                + "CV import or a generation. Set TURNSTILE_SECRET_KEY outside local "
+                + "development.");
         return token -> true;
     }
 }

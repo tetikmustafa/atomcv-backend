@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.shared.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.ingestion.service.ProfileImportService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.identity.challenge.CallerChallenge;
 import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
@@ -53,8 +54,11 @@ public class ProfileImportController {
 
     private final ProfileImportService imports;
     private final CurrentUser currentUser;
+    private final CallerChallenge challenge;
 
-    ProfileImportController(ProfileImportService imports, CurrentUser currentUser) {
+    ProfileImportController(ProfileImportService imports, CurrentUser currentUser,
+            CallerChallenge challenge) {
+        this.challenge = challenge;
         this.imports = imports;
         this.currentUser = currentUser;
     }
@@ -111,7 +115,16 @@ public class ProfileImportController {
                     + "discarded and this CV becomes the new one. Absent means "
                     + "an account that already has a profile is refused.")
             @RequestParam(value = "mode", required = false) String mode,
+            @Parameter(description = "What the challenge widget produced. Required for a "
+                    + "caller with no account and ignored for one with an account "
+                    + "(Bolum 44.4): this is the most expensive single call the "
+                    + "product makes.")
+            @RequestParam(value = "challengeToken", required = false) String challengeToken,
             HttpServletRequest request) {
+
+        // Bolum 44.4, ahead of the quota and the file: a request that cannot show
+        // a person behind it must not reach a model.
+        challenge.requireOfAnonymous(challengeToken);
 
         JobOwner owner = JobOwner.of(currentUser);
         Job job = imports.importCv(owner, allowanceFor(owner, request),

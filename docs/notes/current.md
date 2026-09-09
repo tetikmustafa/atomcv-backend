@@ -27,10 +27,9 @@ kalmadı** — sığmayan başlık-adayı `rejectedEntries`'e giriyor (tek sebep
 Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok** —
   `ExtractionWarningCode` kapalı; § 31.6'nın üçüncü kuralı **silindi**.
-- **`ImportWarning.code` `String`, şeması enum** — değer JSONB'den geri
-  okunuyor, enum yapmak adı değişmiş satırı düşürür. **`OpenApiSchemaIT`'in
-  okuduğu altı değer de elle yazılı**: `values()`'tan türetilirse yedinciye de
-  "evet" der.
+- **`ImportWarning.code` `String`, şeması enum** — değer JSONB'den geri okunuyor,
+  enum yapmak adı değişmiş satırı düşürür. **`OpenApiSchemaIT`'in okuduğu altı
+  değer elle yazılı**: `values()`'tan türetilirse yedinciye de "evet" der.
 - **`shared.wire` bir sonraki kapalı sözlüğün yeri**; `shared.error` retlerin.
 
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
@@ -177,8 +176,9 @@ basılır.
   *zorlanıyor* (§ 35.7.2, `B-081`). **(iii) ve (vi) indi:** anonim üretim
   çalışıyor, kota beşe döndü (§ 35.7.3, `B-082`). **Migration gerekmedi** —
   `generations.profile_id` cascade ediyor — ve **sayfa garantisi kendiliğinden
-  sağlandı**: `measureMissing` boru hattının içinde, profil-kapsamlı. Kalan:
-  (iv) challenge, (v) hesap açmada üretimlerin de taşınması.
+  sağlandı**: `measureMissing` boru hattının içinde. **(iv) de indi:** anonim
+  içe aktarım ve üretim challenge istiyor (§ 35.7.4, `B-083`). Kalan tek dilim:
+  (v) hesap açmada üretimlerin de taşınması.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran
