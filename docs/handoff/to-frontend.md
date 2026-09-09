@@ -12,295 +12,84 @@
 
 ## OPEN
 
-_Dokuz madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
-backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
-
-### B-084 · Hesap açmak artık anonim oturumun üretimlerini de taşıyor
-
-**Since:** commit `<bu PR>` · **Spec:** § 35.7.5 · `generation/service/AdoptedGenerations`
-
-**Ne oldu:** anonim oturumda CV üretip sonra hesap açan kişi, **ürettiği CV'leri
-de yanında götürüyor**. Daha önce yalnız profil taşınıyordu. `profileUpgrade`
-yanıtı değişmedi (`upgraded` / `kept_existing` / `none` / `unavailable`);
-değişen, `upgraded` dendiğinde arkada olan şey.
-
-**Neden:** kişi tam da az önce yaptığı CV'yi saklamak için hesap açıyor. Profili
-taşıyıp belgeyi bırakmak, geldiği şeyi silmek olurdu — anonim profil süresi
-dolunca siliniyor ve üretimler ona bağlı.
-
-**`kept_existing` durumunda taşınmıyor:** hesabın kendi profili duruyorsa anonim
-profil de üretimleri de kendi penceresinde sönüyor. Bir profilden yapılmış CV'yi
-başka bir profilin altına dosyalamıyoruz.
-
-**Action:** neredeyse hiçbir şey — ama bir fırsat var. `upgraded` aldığınızda
-kullanıcıyı **geçmiş/CV listesine** düşürebilirsiniz: artık orada gerçekten bir
-şey var. Önceden liste boş olacağı için o yönlendirme yanlış olurdu.
-
-Hatırlatma: anonim oturumun **listesi yok** (`canSaveHistory: false`), yalnız id
-ile okuma var. Liste hesap açıldıktan sonra anlamlı.
-
-### B-083 · Anonim içe aktarım ve üretim challenge token istiyor
-
-**Since:** commit `<bu PR>` · **Spec:** § 35.7.4, § 44.4 · `identity/challenge/CallerChallenge`
-
-**Ne oldu:** oturumsuz çağıran artık bu iki istekte Turnstile token'ı göndermek
-zorunda. **Hesaplı çağıran göndermiyor** — giriş zaten bir challenge cevaplıyor
-(§ 40.4.1) ve aynı kişiye ikinci kez sormak boş sürtünme.
-
-| istek | nereye |
-|---|---|
-| `POST /generations` | gövdede **`challengeToken`** (yeni alan) |
-| `POST /profiles/import` | multipart'ta **`challengeToken`** form alanı |
-
-Eksik ya da geçersizse **`403 CHALLENGE_FAILED`**. **Boş göndermek yokluk
-sayılmıyor, başarısızlık sayılıyor** — token'ı atlayan istemci bunun durdurmak
-için var olduğu istemcinin kendisi.
-
-**Neden kota yetmiyor:** § 44.1'in sayaçları *ne kadar* diyor, *kim* demiyor.
-Adres başına beş üretim, adresini döndürebilen biri için beş demektir; § 44.3'ün
-sıkılaştırması ise harcamadan *sonra* koşan bir dedektör. Challenge, karşıda bir
-insan olup olmadığını soran tek şey — ve anonim akış artık gerçekten model
-parası harcıyor.
-
-**Action:** anonim akışta Turnstile widget'ını **CV yükleme** ve **üret**
-ekranlarına koyun; token'ı yukarıdaki iki yere ekleyin. Hesaplı kullanıcıda
-widget'a gerek yok, gönderirseniz de yok sayılıyor. `403 CHALLENGE_FAILED`
-geldiğinde widget'ı sıfırlayıp tekrar denetmek doğru davranış.
-
-**Yerelde göndermeseniz de çalışır** — sırrı olmayan dağıtım her token'ı
-geçiriyor. Yani "lokalde çalıştı" bu alanı doğru gönderdiğinizin kanıtı değil;
-staging'de sır varsa orada görülür.
-
-### B-082 · Anonim üretim çalışıyor; kota 5'e döndü, ön yazı yok
-
-**Since:** commit `<bu PR>` · **Spec:** § 35.7.3 · `generation/service/GenerationSubject`
-
-**Ne oldu:** oturumsuz çağıran artık **ilana göre CV üretebiliyor**.
-`POST /generations`, `GET /generations/{id}` ve `.../download` anonim oturumu
-kabul ediyor. `dailyGenerationQuota` **0'dan 5'e döndü** — `B-079`'da "akış inince
-döner" demiştim, indi.
-
-**Değişmeyen:** istek gövdesi, yanıt şekli, iş akışı (`202` + job id + SSE),
-indirme. Hesapla **birebir aynı**.
-
-**Üç fark var, üçü de ilan edilmiş:**
-
-| ne | ne oluyor |
-|---|---|
-| `coverLetter: true` | `403 FEATURE_REQUIRES_ACCOUNT`, `params.feature=cover_letter` — **kotadan önce**, yani hakkı yanmıyor |
-| oturum üretim sırasında bitti | `ANONYMOUS_SESSION_EXPIRED` + `sign_up`; iş **tekrar denenmiyor** |
-| `GET /generations/{id}` içindeki `feedback` | anonimde **null** — geri bildirim ve destek izni hesabın |
-
-**Action:** üç şey.
-
-1. Anonim ziyaretçide "üret" yolunu açın; kota 5 diyor ve gerçekten 5.
-2. "Ön yazı da yaz" kutusunu `capabilities` ile kapatın — açık bırakırsanız
-   `403` gelir ve `params.feature` hangi kutu olduğunu söyler.
-3. Üretim sırasında oturum biterse gelen `ANONYMOUS_SESSION_EXPIRED`'ı **iş
-   sonucu** olarak da ele alın (yalnız istek anında değil): iki saat CV
-   üretiminin ortasında dolabilir, ve tek çıkış yolu `sign_up`.
-
-**Liste ve geçmiş hâlâ hesaba özel** (`canSaveHistory: false`): anonim oturum
-kendi üretimini id ile okur, ama bir listesi yok.
-
-### B-081 · Profil editörü anonim oturumda çalışıyor, üç limit `403` veriyor
-
-**Since:** commit `<bu PR>` · **Spec:** § 35.7.2 · `profile/service/CallerProfiles`
-
-**Ne oldu:** `/api/v1/profile/**` uçları (profil, bölümler, entry'ler, atomlar)
-artık **anonim oturumla** çalışıyor — hesapla aynı uçlar, aynı gövdeler, aynı
-`If-Match` semantiği. Profil ilk istekte kendiliğinden oluşuyor, tıpkı hesapta
-olduğu gibi.
-
-**Ve § 35.7'nin ilan ettiği üç limit artık gerçekten uygulanıyor.** Şimdiye
-kadar `capabilities` onları yazıyordu, sunucu uygulamıyordu (uygulanacak bir uç
-yoktu). Üçü de `403 FEATURE_REQUIRES_ACCOUNT` + `resolutions: [sign_up]` veriyor,
-ve `params.feature` hangisi olduğunu söylüyor:
-
-| istek | `params.feature` |
-|---|---|
-| `PATCH /atoms/{id}` gövdesinde `importance`, `active`, `alwaysInclude` ya da `verbatim` | `atom_controls` |
-| `POST /atoms/{id}/variants` | `alternatives` |
-| 61. atomu yaratmak | — `422 ATOM_LIMIT_EXCEEDED`, `params.limit=60`, `params.current` |
-
-**Action:** üç şey.
-
-1. Anonim oturumda **atom kontrol alanlarını gönderme**; UI'da onları
-   `canEditAtomControls: false` ile gizli/kilitli tut. Bir yamaya kazara
-   `importance` eklerseniz **yama bütün olarak reddedilir** — kısmi yazma yok.
-2. "Alternatif ekle" düğmesini `canAddAlternatives: false` ile kapat. **Mevcut
-   yazımı düzenlemek açık** (`PATCH .../variants/{id}`) — içe aktarımın ürettiği
-   cümleyi düzeltmek bir alternatif değil.
-3. `403`'te `params.feature`'ı okuyup **hangi düğmenin hesap istediğini** söyle;
-   genel bir kayıt duvarı yerine o düğmeye bağlı bir davet. `422`'de `limit` ve
-   `current` birlikte geliyor, yani "60'ın 60'ı dolu" cümlesini yazabilirsin.
-
-**Bir de bilmeniz gereken bir yokluk:** anonim oturumda çeviri işi kuyruğa
-girmiyor — § 35.7 ona zaten `["en"]` veriyor, yani ikinci dil yok. Yazımı
-düzenlemek çalışıyor, arkasından bir çeviri gelmiyor.
-
-### B-080 · Gizlilik metni: anonim veri artık veritabanına yazılıyor
-
-**Since:** commit `<bu PR>` · **Spec:** § 51.6.1 (sapma), § 57.4 · `retention/RetentionSweeper`
-
-**Ne oldu:** anonim oturumun profili Redis belgesi değil, `profiles` tablosunda
-**sahibi olmayan ve süresi olan** bir satır. Veritabanından **beş dakikada bir**
-süpürülüyor; ama § 49.2'nin yedek saklaması 7 gün + 4 hafta + 6 ay olduğu için
-bir yedeğe yakalanan anonim CV **şifreli arşivde en fazla altı aya kadar**
-kalabilir.
-
-**Neden:** anonim kişi artık profilini düzenleyip ilana göre CV üretecek, ve bu
-hesabın kullandığı kod yolunun aynısı. İkinci bir depo her adımın ikinci bir
-uygulaması demekti — ve zaten sapmıştı: eski efemer yazıcı bir bölüm başlığını
-iki kez basıyordu. Bedeli bilerek kabul edildi ve küçültülmedi.
-
-**Action:** § 57'nin gizlilik metnindeki **"NE KADAR SAKLIYORUZ"** maddesini
-güncelleyin. Backend'in yazdığı hâli: *"anonim mod son etkinlikten 2 saat sonra
-(veritabanından beş dakika içinde silinir; şifreli yedeklerde en fazla altı aya
-kadar kalabilir)"*. Parantez içi **atlanmamalı** — kaldırıldığında metin
-tutmayan bir söz verir. Ekranda ayrıca bir uyarı gerekmiyor; bu, politika
-metninin cümlesi.
-
-### B-079 · Anonim `dailyGenerationQuota` artık 0 — tutulamayan bir sözdü
-
-> **`B-082` bunu geçersiz kıldı (aynı gün).** Sayı 5'e döndü çünkü akış indi.
-> Aşağıdakini **tarih olarak** okuyun, talimat olarak değil — ve ikisini
-> birlikte ACK'leyin. Duruyor olmasının sebebi: 0 gören bir sürüm dağıtıldıysa
-> ekranın neden öyle davrandığını açıklayan tek kayıt bu.
-
-
-**Since:** commit `<bu PR>` · **Spec:** § 35.7 (sapma) · `identity/service/Capabilities`
-
-**Ne oldu:** oturumsuz çağıranın `capabilities` bloğunda
-`dailyGenerationQuota` **5 yerine 0** dönüyor. `dailyProfileQuota` **3 olarak
-kalıyor**, `maxAtoms` 60 olarak kalıyor.
-
-**Neden:** anonim üretim kurulmadı. `POST /generations` hesap istiyor ve
-oturumsuz çağırana `AUTHENTICATION_REQUIRED` dönüyor; blok ise "bugün beş
-hakkın var" diyordu. Blokta bunu söyleyen başka bir alan da yok —
-`canSaveHistory` üretmekle değil, üretileni saklamakla ilgili. Yani ekran
-doğru okuyup yanlış şey gösteriyordu ve kullanıcı ilk tıklamada 401 alıyordu.
-Profil tarafı böyle değil: `POST /profiles/import` anonim oturumu kabul ediyor
-ve çıkan profil giriş anında hesaba geçiyor — o yüzden o sayı duruyor.
-
-**Action:** anonim ziyaretçiye "üret" yolunu **kotaya bakarak** açıyorsanız
-artık kendiliğinden kapanır; ayrı bir bayrak beklemeyin, `canGenerate` diye bir
-alan yok. Kotayı okumayıp butonu her zaman gösteriyorsanız, 0 gördüğünüzde
-kayıt/giriş çağrısına çevirin. Anonim üretim indiği gün bu sayı 5'e döner ve
-size yeni bir madde gelir.
-
-### B-077 · Beceriler artık yazılırken kanonikleşiyor: yankı gönderileni tutmaz
-
-**Since:** commit `<bu PR>` · **Spec:** § 31.5 · `profile/service/AtomService`
-
-**Ne oldu:** `POST`/`PATCH` ile gönderilen `skills`, saklanmadan önce
-`SkillNames`'den geçiyor — ve yanıt **saklanan biçimi** döndürüyor. Yani
-`"Spring Boot"` gönderirsiniz, `"spring-boot"` okursunuz; `"postgresql"`
-gönderirsiniz, sözlük onu `"postgres"`'e çevirdiği için o gelir. İki farklı
-yazım tek beceriye düşerse liste kısalır.
-
-**Neden:** o kolon bir **anahtar** olarak okunuyor — Faz B puanlaması ve
-`RunMarking`'in bir vurgunun teknoloji olup olmadığına karar vermesi ona bakıyor.
-İçe aktarım bunu zaten yapıyordu, editör yapmıyordu: aynı kolonun bir satırı
-anahtar, öteki satırı düz yazıydı, ve ham saklanan bir beceri kalın yazımını
-kaybediyordu.
-
-**Action:** iki şey. (1) Kaydettikten sonra ekrandaki listeyi **yanıttan**
-tazeleyin, gönderdiğinizden değil — yoksa kullanıcı yazdığını görür, sunucu
-başkasını saklar. (2) Kullanıcı "Spring Boot" yazıp `spring-boot` görecek;
-bunu bir hata gibi göstermeyin. İçe aktarılmış profillerde zaten böyle
-görünüyordu, yani ekran açısından yeni bir şekil değil.
-
-### B-076 · EK C.1'in AI sağlayıcı listesi — yayımlanacak gerçekler
-
-**Since:** commit `<bu PR>` · **Spec:** EK C.1 (*"AI sağlayıcı listesi güncel ve
-açık"*) · `llm/telemetry/ProcessorAudit`
-
-**Neden:** madde model seçimini bekliyordu; model belli. Aşağıdakiler ölçüldü —
-sağlayıcının endpoint API'sinden ve gönderdiğimiz gövdeden.
-
-**Kimler.** Biz → **OpenRouter** (broker) → yukarı akış. Bu modelin **yedi
-endpoint'i** var: **OpenAI** (üç varyant), **Microsoft Azure** (`azure`,
-`azure/us`, `azure/eu`), **Amazon Bedrock** (`us-east-1`) — istek yalnız modeli
-adlandırdığı için dördü de listede olmalı, hangisinin karşıladığı yanıtta yazmaz.
-Zincirin ikinci halkası **Gemini**, yani anahtarı olan dağıtımda **Google** da
-listede.
-
-**Ne gidiyor.** CV metni, ilan metni, madde metinleri, özet ve ön yazı girdileri
-(`profile_extraction`, `job_analysis`, `bullet_rewrite`, …) — **kişisel veri**.
-
-**Eğitim.** Her istekte `provider.data_collection: "deny"` gidiyor. Metinde
-*"sağlayıcılar eğitmiyor"* değil **"eğitebilecek sağlayıcıya yönlendirilmiyor"**
-demek doğru: OpenRouter'ın kendi loglama politikası ayrı, hesap ayarında.
-
-**Liste yapılandırmadan türüyor, sabit değil** (karar 2026-09-09: model
-kısıtlanmıyor — yarın Claude ya da DeepSeek olabilir). Metni **"şu an kullanılan
-model"** diye yazın ve model değişince sayfayı gözden geçirin. Backend açılışta
-kendi listesini logluyor (`ProcessorAudit`: *"Content may be sent to […]"*) —
-**yayımlanan sayfayı o satıra karşı kontrol edin.**
-
-**Bugünkü model:** `openai/gpt-5.6-sol`, bağlam 1.050.000; fiyat (standart OpenAI
-endpoint'i, %50 kampanyalı) milyon token başına 2 / 10 / 0.2 USD.
-
-**Action:** gizlilik politikasının alt işleyen bölümünü bu adlarla ve "ne
-gidiyor" listesiyle yazın.
-
-### B-078 · `contentGrant.accessedAt` geri döndü — artık yazan bir şey var
-
-**Since:** commit `<bu PR>` · **Spec:** § 48.4 · `generation/support/SupportRead`
-
-**Ne oldu:** `B-075` alanı telden kaldırmıştı çünkü onu **yazacak hiçbir şey**
-yoktu. Şimdi var: **çevrimdışı destek okuyucusu** (karar 2026-09-09) grant
-açıkken üretimi sahibinin bağlamında okuyor ve `accessed_at`'i damgalıyor. Uç
-değil, sunucuda elle çalıştırılan bir komut — mutlak kural 3 çapraz-kullanıcı
-okuma yolu bırakmıyor ve yılda birkaç kez olan bir şey için kalıcı bir delik
-açmaya değmez.
-
-**Action:** `B-075`'te kaldırmanızı istediğim dalı **geri getirin** —
-`grant.accessedAt` varsa "şu tarihte okundu", yoksa "henüz okunmadı". Bu kez
-cümle doğru: alan artık yapısal olarak null değil, gerçekten okunmadığı için
-null. `npm run gen:api` alanı tipe geri koyacak.
-
-**İlk okuma sabittir:** kolon tek bir an tutuyor, yani "bakıldı mı, ve ne
-zamandan beri" sorusunu cevaplıyor. İkinci bir okuma damgayı **oynatmıyor**.
-
-_(`B-075` bu maddeyle kapandı sayılır — ikisini birlikte ACK'leyin.)_
-
-### B-075 · `contentGrant.accessedAt` telden kalktı — tutulamayan bir sözdü
-
-**Since:** commit `<bu PR>` · **Spec:** `spec/…` § 48.4 ·
-`generation/api/dto/FeedbackResponse.Grant`
-
-**Ne oldu:** `contentGrant` artık `open`, `expiresAt` ve `revokedAt` taşıyor;
-**`accessedAt` yok.** Kolon (`support_grants.accessed_at`) yerinde duruyor.
-
-**Neden:** o alanı **hiçbir şey yazmıyor** ve yazamaz — başka bir kullanıcının
-içeriğini okumak destek tarafına bakan bir yol ister, mutlak kural 3 böyle bir yol
-bırakmıyor. Alan her zaman null, yani ekran gerçekten bakılmış olsa da **"kimse
-bakmadı"** diyor: denetim izi değil, denetim izi kılığında bir varsayım.
-
-**Action:** `Feedback.tsx`'te `grant.accessedAt`'ten üretilen dalı ve
-`feedbackGrantRead` metnini **kaldırın** (mock'takini de). Kullanıcıya izin
-hakkında söylenebilecek doğru şeyler duruyor: açık mı, ne zaman doluyor, geri
-çekildi mi. "Okundu / okunmadı" bunlardan biri değil — ve "okunmadı" demek,
-söyleyemediğimiz şeyi söylemek. `npm run gen:api` alanı tipten de düşürecek.
-
-**Söz geri gelecek:** çevrimdışı destek okuyucusu (karar 2026-09-09) `accessed_at`'i
-damgaladığı gün alan aynı adla döner.
+*(açık madde yok — `B-075`…`B-084`'ün dokuzu da karşılandı ve `ACK`'e indi
+2026-09-09'da. Dokuzunun kaydı aşağıda; kod tarafındaki gerekçeler
+`docs/notes/current.md`'de.)*
+
+---
 
 ## ACK — frontend tamamladı, backend arşivleyebilir
+
+### `B-075`…`B-084` — dokuzu birden (2026-09-09)
+
+- **`B-075` + `B-078` birlikte, ve net etki sıfır kod.** `grant.accessedAt`
+  dalı hiç kaldırılmamıştı — `B-075` geldiğinde `Feedback.tsx` zaten "okundu /
+  henüz okunmadı" cümlesini kuruyordu ve `B-078` onu geri istedi. Alan
+  `api.d.ts`'te duruyor (o dosya `B-075` sonrası yeniden üretilmedi), yani
+  cümle bugün de doğru: null artık "yazacak bir şey yok" değil, "kimse
+  bakmadı".
+- **`B-076` yazıldı.** Gizlilik metninin alt işleyen bölümü artık
+  OpenRouter'ı broker olarak, OpenAI · Microsoft Azure (küresel/ABD/AB) ·
+  Amazon Bedrock (us-east-1) · Google'ı yukarı akış olarak adlandırıyor; ne
+  gittiğini sayıyor ("kişisel veri" diyerek), "eğitebilecek sağlayıcıya
+  yönlendirilmiyor" ifadesini kullanıyor ve modeli **şu an kullanılan model**
+  olarak yazıyor (`openai/gpt-5.6-sol`). Model değişince sayfa gözden
+  geçirilecek. `ProcessorAudit` satırına karşı kontrol **yapılmadı** — backend
+  ayakta değildi; dağıtım gelince ilk iş.
+- **`B-077` çalışıyordu, bir yanlış anlaşılma kaldı.** `usePatchAtom` yanıtı
+  zaten iki önbelleğe de yazıyor ve `TagInput` tamamen `values`'tan çiziliyor,
+  yani kanonik biçim ekrana kendiliğinden geliyor. Eklenen: mock artık
+  gerçekten kanonikleştiriyor (küçük harf + tire, `postgresql`→`postgres`,
+  tekrar edenleri düşürüyor — yani liste **kısalabiliyor**), ve alanın ipucu
+  bunu önden söylüyor, hata gibi göstermeden.
+- **`B-079` + `B-082` birlikte.** Kota hiç 0 görmedi: mock'ta 5'ti, 5 kaldı,
+  o yüzden "0 gören sürüm" hiç dağıtılmadı. Anonim üretim yolu açık;
+  `ANONYMOUS_SESSION_EXPIRED` **iş sonucu olarak** da ele alınıyor — akıştan
+  gelen refüz aynı panele düşüyor ve `sign_up` gerçekten `/login`'e götürüyor
+  (birim testi var). `feedback` anonimde null: sonuç ekranı o bölümü hiç
+  çizmiyor.
+- **`B-080` yazıldı**, parantez içi dahil: *"anonim mod son etkinlikten 2 saat
+  sonra (veritabanından beş dakika içinde silinir; şifreli yedeklerde en fazla
+  altı aya kadar kalabilir)"*. Ekranda ayrıca uyarı yok, dediğiniz gibi.
+- **`B-081` — üçünden ikisi kod işi çıktı.** (1) Atom kontrolleri zaten
+  `canEditAtomControls` ile gizliydi. (2) **"Alternatif ekle" düğmesi henüz
+  hiç yok** — `POST /atoms/{id}/variants` istemcide tanımlı, hiçbir ekran onu
+  çağırmıyor; düğme çizildiği gün `canAddAlternatives` ile kapanacak, ve
+  mevcut yazımı düzenlemek zaten açık. (3) `params.feature` artık cümleyi
+  seçiyor: üç jetonun üçü de kendi cümlesini alıyor, jeton ekrana hiç
+  çıkmıyor. Ayrıca **sessiz bir kusur düzeldi**: profil editöründeki paneller
+  sunucunun `sign_up` düğmesini çiziyor ama basılınca hiçbir şey yapmıyordu.
+- **`B-083` bağlandı.** Turnstile widget'ı anonim çağıranda hem CV yükleme
+  hem üret ekranında; token gövdede (`challengeToken`) ve multipart'ta form
+  alanı olarak. **Token yoksa alan hiç gönderilmiyor** — boş göndermek
+  başarısızlık sayıldığı için. Her denemeden sonra widget sıfırlanıyor
+  (yalnız refüzde değil: kabul edilen istek de token'ı harcıyor), ve iş
+  ekranında da duruyor, çünkü başarısız bir işten çıkan her yol yeni bir
+  istek. Hesaplı çağıranda hiç çizilmiyor. **Gerçek uca karşı denenmedi** —
+  sırrı olan bir dağıtım gerekiyor.
+- **`B-084` fırsatı alındı.** `upgraded` artık geçmişe düşürüyor: sihirli
+  bağlantıda doğrudan, OAuth dönüşünde yalnız `next` yoksa (bir `next`
+  kullanıcının gönderildiği ekran, ve o kazanıyor). `kept_existing` ve
+  `unavailable` eskisi gibi. Cümle de düzeldi: profil **ve ondan üretilen
+  CV'ler** deniyor.
+
+**Üç soru `to-backend.md`'ye gitti:** `F-028` (blokta ön yazı alanı yok),
+`F-029` (`challengeToken` şemada yok + uç adı tekil mi), `F-030` (`422`'nin
+`resolutions`'ı ve anonim `feedback` yazısının reddi — ikisini de tahmin ettik).
 
 _(`B-071`…`B-074`'ün dördü de karşılandı ve `resolved/to-frontend-2026-09.md`'ye
 indi 2026-09-09'da, dosya sınırı; `B-037`…`B-070` bir öncekinde. Aşağıdakiler
 **hâlâ canlı olan** kayıtlar.)_
 
-**İki maddede bir doğrulama eksik ve söylenmesi gerekiyor:** ne OAuth
-sıçraması (`B-048`) ne de Turnstile (`B-050`) gerçek uca karşı denendi —
-ikisi de kendi anahtarları yapılandırılmış bir dağıtım istiyor. Bugün
-doğrulanan şey mock'a karşı.
+**Üç yerde bir doğrulama eksik ve söylenmesi gerekiyor:** ne OAuth sıçraması
+(`B-048`), ne sihirli bağlantının Turnstile'ı (`B-050`), ne de `B-083`'ün
+üretim/içe aktarım challenge'ı gerçek uca karşı denendi — üçü de kendi
+anahtarları yapılandırılmış bir dağıtım istiyor. Bugün doğrulanan şey
+mock'a karşı.
 
-**EK C.1'in sağlayıcı listesi maddesi artık `B-076`'da** — model seçildi ve
-gerekler orada yazılı. Yayın öncesi kontrol listesi o madde kapanınca kapanıyor.
+**EK C.1'in sağlayıcı listesi yazıldı** (`B-076`, yukarıda). Yayın öncesi
+kontrol listesinde kalan tek şey, yayımlanan sayfayı `ProcessorAudit`'in
+açılış satırına karşı okumak — dağıtım işi, kod işi değil.
 
 ---
 

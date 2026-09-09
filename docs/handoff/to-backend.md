@@ -11,9 +11,68 @@
 
 ## OPEN
 
-*(açık madde yok — `F-025`, `F-026` ve `F-027`'nin üçü de cevaplandı ve
-`ACK`'e indi. **Dosya sınırın üstünde ve öyle kalacak**: cevaplar siz ACK
-verene kadar taşınacak bir yere sahip değil.)*
+*(Üçü de `B-081`-`B-083`'ü uygularken çıktı. **Hiçbiri bir şeyi engellemiyor** —
+üçünün de bugün çalışan bir karşılığı var; sorulan şey, o karşılığın
+tahminimiz mi yoksa sözleşme mi olduğu.)*
+
+### F-028 · `capabilities` ön yazı hakkında bir şey söylemiyor
+
+**Since:** frontend commit `<bu PR>` · `B-082` · `src/hooks/useSession.ts`
+
+**Neden:** `B-082` "ön yazı kutusunu `capabilities` ile kapatın" diyor, ama
+`CapabilitiesResponse` blokta ön yazıya dair bir alan taşımıyor:
+`allowedLanguages`, `allowedTemplates`, `canCustomizeTemplate`,
+`canEditAtomControls`, `canAddAlternatives`, `canSaveHistory` ve dört sayaç.
+Kutuyu bunlardan biriyle kapatmak zorundaydık ve `canSaveHistory`'yi vekil
+aldık — anlamı ön yazı değil, "bu bir hesap".
+
+**İstenen:** ya `canWriteCoverLetter` (ya da eşdeğeri) bloğa eklensin, ya da
+"anonimde ön yazı yok"un `canSaveHistory`'den okunması **sözleşme olarak**
+onaylansın. Vekil tek bir fonksiyonun içinde (`useCanWriteCoverLetter`), alan
+gelirse değişecek tek satır orası.
+
+**Spec:** § 35.7 (yetenek tablosu), § 35.7.3
+
+### F-029 · `challengeToken` şemada yok, ve uç adı handoff'takinden farklı
+
+**Since:** frontend commit `<bu PR>` · `B-083` · `src/lib/api/endpoints/`
+
+**Neden:** iki şey. (1) `POST /generations`'ın gövdesinde `challengeToken`
+**yayımlanmıyor** — `npm run gen:api` alanı getirmiyor, mutlak kural 2
+`api.d.ts`'i elle düzenlemeyi yasaklıyor, o yüzden alan istemci tarafında
+kesişim tipiyle eklendi (`Accepts<'generate'> & { challengeToken?: string }`).
+Şema alanı yayımladığı gün bu üye gereksizleşir; bugün onsuz alan hiç
+gönderilemiyor. (2) `B-083`'ün tablosu **`POST /profiles/import`** diyor;
+bizim gönderdiğimiz uç `POST /api/v1/profile/import` (tekil), ve `B-051`'den
+beri öyle. İkisinden biri yazım hatası.
+
+**İstenen:** `challengeToken` OpenAPI'de görünsün (gövde alanı ve multipart
+form alanı olarak), ve uç adının tekil olduğu doğrulansın.
+
+**Spec:** § 35.7.4, § 44.4
+
+### F-030 · İki reddin şeklini tahmin ettik — doğrulayın ya da düzeltin
+
+**Since:** frontend commit `<bu PR>` · `B-081`, `B-082` · `src/mocks/`
+
+**Neden:** `B-081` üç limitin **hangi kodla** geldiğini yazıyor, iki noktayı
+yazmıyor, ve mock'un bir şey üretmesi gerekiyordu:
+
+1. **`422 ATOM_LIMIT_EXCEEDED` `resolutions` taşıyor mu?** Maddedeki tablo
+   yalnız `params.limit`/`params.current` diyor. Mock **boş** liste üretiyor —
+   sunucunun göndermediği bir düğmeyi öğretmemek için. Hesap açmak sınırı
+   kaldırdığına göre `sign_up` mantıklı olurdu; gönderiliyorsa söyleyin,
+   ekran onu zaten çizecek.
+2. **Anonim `POST /generations/{id}/feedback` neyle reddediliyor?** `B-082`
+   yalnız okumada `feedback: null` diyor. Mock `403 FEATURE_REQUIRES_ACCOUNT`
+   + `params.feature=feedback` üretiyor; `feedback` **bizim uydurduğumuz bir
+   jeton**, kapalı sözlükte var mı bilmiyoruz. Ekran anonimde formu hiç
+   çizmediği için istemcide bir şey buna bağlı değil.
+
+**İstenen:** iki cevap. Yanlışsa mock düzeltilir; `params.feature`'ın kapalı
+sözlüğünün tamamı yazılıysa nerede olduğunu söylemeniz yeter.
+
+**Spec:** § 35.7.2, § 35.7.3, `spec/08b-api-contract.md` (hata kataloğu)
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
