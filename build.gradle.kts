@@ -34,6 +34,19 @@ repositories {
 // **Each goes when Boot's BOM catches up.** An override that outlives its
 // reason is a pin that quietly holds a library back, which is the same failure
 // in the other direction.
+//
+// Checked 2026-09-09: none of the three may go yet. Boot 3.5.16 is the newest
+// release on the 3.5 line and its BOM still pins postgresql 42.7.11, netty
+// 4.1.135.Final and tomcat 10.1.55 — every one of them below the fix.
+//
+// **Nothing here is watched automatically, and Deploy is hand-run.** Dependabot
+// cannot see a Gradle `extra` property, which is why it has bumped five declared
+// dependencies in this repository and never these three, and Trivy only runs on
+// a workflow nobody triggers until there is a VPS. So `SecurityPatchFloorTest`
+// asserts the three versions on the runtime classpath instead: a floor rather
+// than an equality, so deleting an override once the BOM catches up keeps it
+// green, and a mistyped property name fails it. Newly published advisories are
+// still a hand check — the test holds the ground already won.
 extra["postgresql.version"] = "42.7.12"   // CVE-2026-54291, SCRAM downgrade
 extra["netty.version"] = "4.1.136.Final"  // CVE-2026-59901, decoder loop
 // Three CRITICALs at once, all published after 2026-09-02 — the scan was clean
