@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-09** · **`B-075`+`B-078`, `B-076`, `B-077` açık** (frontend'de) · açık `F-nnn` yok
+**2026-09-09** · **`B-076`-`B-084` açık, dokuz madde** (frontend'de) · açık `F-nnn` yok
 
 ## Backend — `atomcv-backend`
 
@@ -14,21 +14,15 @@
 
 **Aşama 3 · dilim 9-14:** on bir `F-nnn`. Kapanış sonrası ölçüm: dört bulgu, on kusur; **dilim I-J-H** sayfaya bir şekil verdi (`notes/archive/`).
 
-**Dilim K — sayfa referans belgeye karşı ölçüldü.** Gerçek `master_cv.tex` gerçek bir çağrıyla içe aktarıldı: **84 atom, 6 bölüm**, kaynağa karşı **4/4 About · 7/7 Tech Stack · 14/14 proje · 56/56 madde** birebir, sadakat muhafızında **0 yanlış pozitif**.
-İnen dördü: About `paragraph` düzeni (beşinci `SectionLayout`, `V9`, **`B-073`**); Tech Stack satırları ve ölçümün aynı şekli görmesi; Faz D'ye `SKILL`/`LANGUAGE`/`ABOUT_PARAGRAPH` gitmiyor; `.tex` çıkarıcısı bitişik argümanları ayırıyor.
+**Dilim K-M** (`notes/archive/`): sayfa referansa karşı ölçüldü (84 atom; 4/4 About · 7/7 Tech Stack · 14/14 proje · 56/56 madde, 0 yanlış pozitif); şablon referansın kendisi (`classic:v4`, `B-074`), iki ölçüm hatası kapandı; Tech Stack ilana göre süzülüyor (§ 33.4, LLM'siz); **maliyet `usage.cost`**, her istekte `data_collection: deny`.
 
-**Dilim L — şablon referans belgenin kendisi oldu (`classic:v4`, `B-074`).**
-Preamble birebir portlandı, yedi fixture yeniden ölçüldü; iki ölçüm hatası kapandı
-(`\parbox` ölçüm kutusunu **yaslı** diziyordu — kırk marjinal madde tek sayfa
-sözünü iki sayfa etti; madde listesinden sonraki başlık **12pt daha pahalı**,
-`SECTION_LIST_CLOSE`). **Tech Stack artık ilana göre süzülüyor** (§ 33.4,
-LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
+**Anonim akış indi — beş dilim, § 35.7.2-5 ve § 51.6.1.** Hesapsız kişi profil çıkarıyor, **düzenliyor**, ilana göre CV üretiyor, okuyup indiriyor, ve hesap açınca **profilini ve ürettiklerini** götürüyor; kod yolu hesabınkiyle aynı. **Sapma:** anonim profil Redis belgesi değil, sahibi olmayan + `expires_at` taşıyan satır — beş dakikada süpürülüyor ama yedeğe yakalanırsa şifreli arşivde **altı aya kadar** kalabilir (`B-080` gizlilik metni). § 35.7'nin üç limiti *zorlanıyor*; içe aktarım ve üretim **challenge** istiyor; ön yazı hesabın.
 
-**Dilim M — P3'ün yanlış pozitifleri, maliyet ve sağlayıcı politikası.** On altı kayıtlı `about_synthesis` oynatıldı: kelime sınırı tireyi kelime sayıyordu, **on token / bir verdict** haksız reddedilmiş; ilanın yazımı muhafıza kaynak oldu (prompt'a değil, § 53.2); sığmayan atomsuz entry `rejectedEntries`'e giriyor; `cover_letter` **v2**; **maliyet artık sağlayıcının bildirdiği `usage.cost`** (tablo tabanda, model fiyatlandı); her istekte `data_collection: deny`; `accessedAt` telden kalktı (`B-075`).
+**Ölçümler:** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (`PhaseDReachTest`, sebep aritmetik); `cover_letter` **v1** (v2 turu 169 kelime, bant 255-290); yazıyla sayı muhafızda; üç BOM override'ı hâlâ gerekli, `SecurityPatchFloorTest` tutuyor.
 
-**Geliştiricide:** VPS/restore, ve OAuth ile Turnstile'ın gerçek uca karşı denenmesi. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
+**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4), OAuth ve Turnstile'ın gerçek uca karşı denenmesi.
 
-**Test:** 1255 birim · 458 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1284 birim · 471 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -47,14 +41,12 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 
 | Soru | Bekleyen taraf |
 |---|---|
-| Anonim çalışma hesabın profiliyle birleşecek mi | **ürün** · bugün `kept_existing` |
-| Faz D eşikleri (§ 21.2'nin 0.40/0.65'i) | **spec** · ölçüm elde |
+| Faz D eşiklerinin normalizasyonu | **veri** · `default` setli üretim biriktiğinde |
 
-_Kapandı 2026-09-09: model `openai/gpt-5.6-sol` (OpenRouter, kısıtlanmadı); `emphasis` **kalın** ve bedeli ölçüldü, sıfır._
+_Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; anonim çalışma **profiliyle üretimleriyle** taşınıyor (hesabın profili varsa `kept_existing`, ikisi de sönüyor)._
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de, üç madde.** `B-075`+`B-078` birlikte ACK'lenir: alan telden
-kalktı (yazıcısı yoktu) ve **geri döndü** — çevrimdışı destek okuyucusu damgalıyor.
-`B-076` EK C.1'in sağlayıcı listesini taşıyor, yani **gizlilik politikası
-yazılabilir**. `B-077` beceri yankısının kanonikleştiğini söylüyor.
+**Sıra frontend'de, dokuz madde.** `B-075`+`B-078` birlikte ACK'lenir; **`B-079`'u `B-082` geçersiz kıldı**, tarih olarak duruyor. Anonim akış: `B-080` gizlilik metni (yedek cümlesi atlanmamalı), `B-081` editörün üç limiti, `B-082` üretim + kota 5, `B-083` **challenge token** (iki uçta yeni alan), `B-084` üretimlerin taşınması. Ayrıca `B-076` sağlayıcı listesi, `B-077` beceri yankısı.
+
+**İki handoff dosyası da sınırın üstünde**, sebebi arşivleme değil: ACK verilmeden taşınacak yer yok.
