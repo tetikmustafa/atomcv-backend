@@ -56,7 +56,7 @@
 | **PostgreSQL 17** | Ana veritabanı | Veri ilişkisel (kullanıcı→profil→bölüm→atom→varyant). NoSQL burada elle tutarlılık yönetmek demek olurdu. |
 | **pgvector** | Vektör arama | Ayrı vektör veritabanı, semantik aramayı üç servise dokunan bir işe çevirir (uygulama DB'si + vektör DB'si + embedding API'si). pgvector ile iki servise iner; dokümanlar ve vektörler aynı tabloda, tutarlılık transactional, senkronizasyon problemi hiç oluşmuyor. |
 | **JSONB** | Esnek şema alanları | `content`, `tags`, `render_costs`, `preferences` gibi şema-esnek veriler. Klasik "ilişkisel çekirdek + JSONB kenarlar" deseni. |
-| **Redis** | Oturum, cache, anonim depolama, rate limit sayaçları | TTL desteği anonim mod için doğal |
+| **Redis** | Oturum, cache, rate limit sayaçları | TTL desteği oturum için doğal |
 | **PostgreSQL kuyruğu** | İş kuyruğu | `SELECT FOR UPDATE SKIP LOCKED` ile atomik iş alma. Ayrı kuyruk altyapısı (RabbitMQ/Kafka) bu ölçekte gereksiz karmaşıklık. Transactional kalıcılık bedava. |
 | **Postgres LISTEN/NOTIFY** | Instance'lar arası pub/sub | SSE olaylarının dağıtımı; Redis pub/sub'a gerek yok |
 

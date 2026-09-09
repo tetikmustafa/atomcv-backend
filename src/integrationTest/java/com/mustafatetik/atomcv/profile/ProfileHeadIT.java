@@ -63,7 +63,12 @@ class ProfileHeadIT extends AbstractIntegrationTest {
         var second = resolver.resolve(user);
 
         assertThat(second).isEqualTo(first);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles", Integer.class)).isEqualTo(1);
+        // Narrowed to this user, and it had to be: since Bolum 9's profiles
+        // became rows with an expiry rather than a Redis document, the shared
+        // test database carries anonymous profiles belonging to nobody. A global
+        // count now measures the rest of the suite instead of this case.
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE user_id = ?",
+                Integer.class, user.userId())).isEqualTo(1);
     }
 
     @Test

@@ -4,21 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
-import com.mustafatetik.atomcv.ingestion.service.EphemeralProfileWriter;
-import com.mustafatetik.atomcv.profile.domain.Atom;
+import com.mustafatetik.atomcv.ingestion.service.ProfileWriter;
 import com.mustafatetik.atomcv.profile.domain.Contact;
-import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.Mark;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
-import com.mustafatetik.atomcv.profile.service.EphemeralProfile;
-import com.mustafatetik.atomcv.profile.service.EphemeralProfileStore;
+import com.mustafatetik.atomcv.profile.domain.Profile;
+import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
 import com.mustafatetik.atomcv.profile.service.ProfileUpgrade;
 import com.mustafatetik.atomcv.profile.service.ProfileUpgradeService;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
@@ -42,10 +42,10 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
     private ProfileUpgradeService upgrades;
 
     @Autowired
-    private EphemeralProfileWriter ephemeral;
+    private ProfileWriter writer;
 
     @Autowired
-    private EphemeralProfileStore store;
+    private AnonymousProfiles anonymous;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -68,35 +68,37 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
 
     @Test
     void theanonymousProfileBecomesTheAccountsWithItsOwnId() {
-        EphemeralProfile anonymous = anonymousProfile();
+        Profile carried = anonymousProfile();
 
         assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.UPGRADED);
 
-        assertThat(profileIdOf(user)).isEqualTo(anonymous.profileId());
-        assertThat(count("sections", anonymous.profileId())).isEqualTo(2);
-        assertThat(count("entries", anonymous.profileId())).isEqualTo(2);
-        assertThat(count("atoms", anonymous.profileId())).isEqualTo(3);
-        assertThat(count("atom_variants", anonymous.profileId())).isEqualTo(5);
+        assertThat(profileIdOf(user)).isEqualTo(carried.getId());
+        assertThat(count("sections", carried.getId())).isEqualTo(2);
+        assertThat(count("entries", carried.getId())).isEqualTo(2);
+        assertThat(count("atoms", carried.getId())).isEqualTo(3);
+        assertThat(count("atom_variants", carried.getId())).isEqualTo(5);
     }
 
     /**
-     * <strong>Every id survives.</strong> Rebuilding the rows under fresh ids
-     * would look identical from outside and would mean a copier naming each
-     * field it carried — the failure mode being a field added later that the
-     * copier silently drops.
+     * <strong>Every id survives, and now it survives structurally.</strong> The
+     * rows never move: the upgrade sets an owner on the head and the tree below
+     * it was always addressed by {@code profile_id}. This used to guard against
+     * a copier dropping a field added later; it now guards against anybody
+     * reintroducing one.
      */
     @Test
     void everyRowKeepsTheIdItHadWhileItWasAnonymous() {
-        EphemeralProfile anonymous = anonymousProfile();
+        Profile carried = anonymousProfile();
+        List<UUID> sectionsBefore = idsIn("sections", carried.getId());
+        List<UUID> atomsBefore = idsIn("atoms", carried.getId());
 
         upgrades.upgrade(user, session);
 
-        assertThat(idsIn("sections", anonymous.profileId()))
-                .containsExactlyInAnyOrderElementsOf(
-                        anonymous.sections().stream().map(Section::getId).toList());
-        assertThat(idsIn("atoms", anonymous.profileId()))
-                .containsExactlyInAnyOrderElementsOf(
-                        anonymous.atoms().stream().map(Atom::getId).toList());
+        assertThat(sectionsBefore).isNotEmpty();
+        assertThat(idsIn("sections", carried.getId()))
+                .containsExactlyInAnyOrderElementsOf(sectionsBefore);
+        assertThat(idsIn("atoms", carried.getId()))
+                .containsExactlyInAnyOrderElementsOf(atomsBefore);
     }
 
     /** And the header block with it — a profile row that lost the name would be new. */
@@ -129,14 +131,23 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
                 user.userId())).containsExactly("embedding", "measurement");
     }
 
-    /** Nothing is left in Redis: the document was moved, not duplicated. */
+    /**
+     * It stops expiring in the same statement that gives it an owner, and it
+     * stops being reachable as anonymous.
+     *
+     * <p>{@code profiles_owner_xor_expiry} is what makes the first half
+     * impossible to forget: a row that kept its expiry would have been swept out
+     * from under the account that had just signed up for it.
+     */
     @Test
-    void theanonymousDocumentIsGoneAfterwards() {
-        anonymousProfile();
+    void theProfileStopsExpiringAndStopsBeingAnonymous() {
+        Profile carried = anonymousProfile();
 
         upgrades.upgrade(user, session);
 
-        assertThat(store.find(ProfileRef.ephemeral(session))).isEmpty();
+        assertThat(jdbc.queryForObject("SELECT expires_at FROM profiles WHERE id = ?",
+                java.sql.Timestamp.class, carried.getId())).isNull();
+        assertThat(anonymous.find(ProfileRef.ephemeral(session))).isEmpty();
     }
 
     // -- and when it does not ----------------------------------------------
@@ -166,9 +177,9 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
 
         assertThat(profileIdOf(user)).isEqualTo(existing);
         assertThat(count("atoms", existing)).isZero();
-        // Left alone rather than discarded: nothing was written, so nothing
-        // may be thrown away either.
-        assertThat(store.find(ProfileRef.ephemeral(session))).isPresent();
+        // Left alone rather than deleted: nothing was written, so nothing may
+        // be thrown away either. It goes when its own window closes.
+        assertThat(anonymous.find(ProfileRef.ephemeral(session))).isPresent();
     }
 
     /**
@@ -182,14 +193,14 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
     @Test
     void anEmptyProfileRowIsNotAProfileAndIsOverwritten() {
         UUID placeholder = emptyProfileRow();
-        var anonymous = anonymousProfile();
+        Profile carried = anonymousProfile();
 
         assertThat(upgrades.upgrade(user, session)).isEqualTo(ProfileUpgrade.UPGRADED);
 
         assertThat(profileIdOf(user))
-                .isEqualTo(anonymous.profileId())
+                .isEqualTo(carried.getId())
                 .isNotEqualTo(placeholder);
-        assertThat(count("atoms", anonymous.profileId())).isPositive();
+        assertThat(count("atoms", carried.getId())).isPositive();
         // One row per user is a unique constraint, so the placeholder is gone
         // rather than orphaned beside the adopted one.
         assertThat(count("profiles")).isEqualTo(1);
@@ -216,8 +227,9 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
                 """, profileId);
     }
 
-    private EphemeralProfile anonymousProfile() {
-        return ephemeral.write(ProfileRef.ephemeral(session), cv());
+    private Profile anonymousProfile() {
+        return writer.writeAnonymously(ProfileRef.ephemeral(session),
+                Instant.now().plus(Duration.ofHours(2)), cv());
     }
 
     private UUID profileIdOf(UserContext owner) {

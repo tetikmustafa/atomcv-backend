@@ -29,8 +29,32 @@ public class Profile implements UserOwned {
     @Id
     private UUID id = UUID.randomUUID();
 
-    @Column(name = "user_id", nullable = false, updatable = false)
+    /**
+     * Null for an anonymous session's profile (Bolum 9), which is the one kind
+     * of profile nobody owns.
+     *
+     * <p><strong>Updatable, and only for one statement.</strong> It was
+     * {@code updatable = false} while every profile had an owner from the
+     * moment it existed. Signing up from an anonymous session is the case that
+     * changes: the rows are already written and what happens is that they gain
+     * an owner. The database refuses to let that happen halfway —
+     * {@code profiles_owner_xor_expiry} means setting this must clear
+     * {@link #expiresAt} in the same statement.
+     */
+    @Column(name = "user_id")
     private UUID userId;
+
+    /**
+     * When this profile stops existing, or null for one that is kept
+     * (Bolum 9, Bolum 57.4).
+     *
+     * <p>Exactly one of this and {@link #userId} is set, enforced by
+     * {@code profiles_owner_xor_expiry}: a row with neither could not be
+     * reached and would never be removed, and a row with both would be an
+     * account's profile with a deletion date on it.
+     */
+    @Column(name = "expires_at")
+    private Instant expiresAt;
 
     /** One line under the name. User content. */
     private String headline;
@@ -90,6 +114,70 @@ public class Profile implements UserOwned {
     public Profile(UUID userId, UUID id) {
         this(userId);
         this.id = Objects.requireNonNull(id, "id");
+    }
+
+    /**
+     * An anonymous session's profile: no owner, and an id derived from the
+     * session rather than drawn at random (Bolum 9, Adim 3.6).
+     *
+     * <p>The id <em>is</em> {@code ProfileRef.ephemeral(session).id()}, which is
+     * what makes this row reachable without an owner to scope by: holding the
+     * session is the only way to compute the id, and the derivation is one-way.
+     * A second identifier stored beside the session would be a second thing to
+     * keep in step.
+     *
+     * @param id        the session-derived profile id
+     * @param expiresAt when the session ends, and with it this
+     */
+    public static Profile forAnonymousSession(UUID id, Instant expiresAt) {
+        var profile = new Profile();
+        profile.id = Objects.requireNonNull(id, "id");
+        profile.expiresAt = Objects.requireNonNull(expiresAt, "expiresAt");
+        return profile;
+    }
+
+    /**
+     * The one statement the XOR constraint is written for: this profile stops
+     * expiring and starts belonging to somebody (Adim 3.6).
+     *
+     * @throws IllegalStateException if it already has an owner. Signing in
+     *         twice from one session is not a second upgrade, and quietly
+     *         reassigning a profile from one account to another is the shape of
+     *         a much worse bug than a refusal.
+     */
+    public void adoptedBy(UUID owner) {
+        Objects.requireNonNull(owner, "owner");
+        if (userId != null) {
+            throw new IllegalStateException("This profile already belongs to somebody");
+        }
+        this.userId = owner;
+        this.expiresAt = null;
+    }
+
+    /**
+     * Pushes the expiry out to match a session that is still in use.
+     *
+     * @throws IllegalStateException if this profile has an owner. An account's
+     *         profile has no expiry and the XOR constraint would refuse one, so
+     *         failing here says which call was wrong instead of leaving the
+     *         database to say that something was.
+     */
+    public void renewUntil(Instant when) {
+        Objects.requireNonNull(when, "when");
+        if (userId != null) {
+            throw new IllegalStateException("An owned profile does not expire");
+        }
+        this.expiresAt = when;
+    }
+
+    /** Null for an account's profile; when the session ends for an anonymous one. */
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    /** Whether this profile belongs to nobody and will be swept (Bolum 9). */
+    public boolean isAnonymous() {
+        return userId == null;
     }
 
     public UUID getId() {

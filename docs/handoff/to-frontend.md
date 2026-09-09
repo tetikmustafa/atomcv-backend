@@ -12,8 +12,30 @@
 
 ## OPEN
 
-_Dört madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+_Beş madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
 backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-080 · Gizlilik metni: anonim veri artık veritabanına yazılıyor
+
+**Since:** commit `<bu PR>` · **Spec:** § 51.6.1 (sapma), § 57.4 · `retention/RetentionSweeper`
+
+**Ne oldu:** anonim oturumun profili Redis belgesi değil, `profiles` tablosunda
+**sahibi olmayan ve süresi olan** bir satır. Veritabanından **beş dakikada bir**
+süpürülüyor; ama § 49.2'nin yedek saklaması 7 gün + 4 hafta + 6 ay olduğu için
+bir yedeğe yakalanan anonim CV **şifreli arşivde en fazla altı aya kadar**
+kalabilir.
+
+**Neden:** anonim kişi artık profilini düzenleyip ilana göre CV üretecek, ve bu
+hesabın kullandığı kod yolunun aynısı. İkinci bir depo her adımın ikinci bir
+uygulaması demekti — ve zaten sapmıştı: eski efemer yazıcı bir bölüm başlığını
+iki kez basıyordu. Bedeli bilerek kabul edildi ve küçültülmedi.
+
+**Action:** § 57'nin gizlilik metnindeki **"NE KADAR SAKLIYORUZ"** maddesini
+güncelleyin. Backend'in yazdığı hâli: *"anonim mod son etkinlikten 2 saat sonra
+(veritabanından beş dakika içinde silinir; şifreli yedeklerde en fazla altı aya
+kadar kalabilir)"*. Parantez içi **atlanmamalı** — kaldırıldığında metin
+tutmayan bir söz verir. Ekranda ayrıca bir uyarı gerekmiyor; bu, politika
+metninin cümlesi.
 
 ### B-079 · Anonim `dailyGenerationQuota` artık 0 — tutulamayan bir sözdü
 

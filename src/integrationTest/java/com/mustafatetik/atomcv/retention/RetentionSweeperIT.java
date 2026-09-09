@@ -35,7 +35,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
         "atomcv.jobs.worker.enabled=false",
         "atomcv.anomaly.enabled=false",
         "atomcv.retention.enabled=true",
-        "atomcv.retention.cron=0 0 3 1 1 *"})
+        "atomcv.retention.cron=0 0 3 1 1 *",
+        // And the anonymous pass, which in production runs every five minutes.
+        // Left on its own schedule it would fire in the middle of the cases
+        // below and delete rows they had just written.
+        "atomcv.retention.anonymous-cron=0 0 3 1 1 *"})
 class RetentionSweeperIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -56,6 +60,40 @@ class RetentionSweeperIT extends AbstractIntegrationTest {
     void profile() {
         profileId = jdbc.queryForObject("SELECT id FROM profiles WHERE user_id = ?",
                 UUID.class, LocalDevUser.DEV_USER_ID);
+    }
+
+    // -- the anonymous pass (Bolum 9) --------------------------------------
+
+    /**
+     * <strong>The sapma's other half.</strong> An anonymous profile is a row
+     * now, so the promise that it is not kept is made by this sweep and by
+     * nothing else. Deleting the head takes the whole CV with it: sections,
+     * entries, atoms, variants and tags all cascade from {@code profiles(id)}.
+     */
+    @Test
+    void anexpiredAnonymousProfileIsDeletedWithEverythingUnderIt() {
+        UUID expired = anonymousProfile("-1 minute");
+        UUID live = anonymousProfile("2 hours");
+
+        assertThat(sweeper.deleteExpiredProfiles()).isGreaterThanOrEqualTo(1);
+
+        assertThat(exists(expired)).isFalse();
+        assertThat(sectionsUnder(expired)).isZero();
+        assertThat(exists(live)).isTrue();
+        assertThat(sectionsUnder(live)).isEqualTo(1);
+    }
+
+    /**
+     * And an account's profile is never a candidate, whatever its age. The
+     * predicate is the expiry rather than a date: {@code profiles_owner_xor_expiry}
+     * means an owned row has none, so there is nothing for the comparison to be
+     * true of.
+     */
+    @Test
+    void anownedProfileIsNeverSwept() {
+        sweeper.deleteExpiredProfiles();
+
+        assertThat(exists(profileId)).isTrue();
     }
 
     @Test
@@ -142,6 +180,29 @@ class RetentionSweeperIT extends AbstractIntegrationTest {
                 RETURNING id
                 """, UUID.class, LocalDevUser.DEV_USER_ID, profileId, posting,
                 posting == null ? null : "a-digest", age);
+    }
+
+    /** An anonymous profile row with one section under it, expiring when told. */
+    private UUID anonymousProfile(String interval) {
+        UUID id = jdbc.queryForObject(
+                "INSERT INTO profiles (id, expires_at, contact, preferences, source_language,"
+                        + " enabled_languages, completeness, created_at, updated_at, version)"
+                        + " VALUES (gen_random_uuid(), now() + ?::interval, '{}'::jsonb,"
+                        + " '{}'::jsonb, 'en', ARRAY['en'], 0, now(), now(), 0) RETURNING id",
+                UUID.class, interval);
+        jdbc.update("INSERT INTO sections (profile_id, kind, title, display_order)"
+                + " VALUES (?, 'experience', 'Experience', 0)", id);
+        return id;
+    }
+
+    private boolean exists(UUID profile) {
+        return jdbc.queryForObject("SELECT count(*) FROM profiles WHERE id = ?",
+                Integer.class, profile) == 1;
+    }
+
+    private int sectionsUnder(UUID profile) {
+        return jdbc.queryForObject("SELECT count(*) FROM sections WHERE profile_id = ?",
+                Integer.class, profile);
     }
 
     private String payloadOf(UUID job) {

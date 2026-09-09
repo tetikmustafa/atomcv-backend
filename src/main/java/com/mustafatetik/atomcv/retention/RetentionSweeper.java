@@ -64,6 +64,28 @@ public class RetentionSweeper {
               AND created_at < ?
             """;
 
+    /**
+     * <strong>Deleting, not clearing, and it is the one place in this class that
+     * does.</strong> Everything above keeps its row because somebody owns it. An
+     * anonymous profile is owned by nobody — the session it belonged to is gone
+     * — and Bolum 9 promises it is not kept. The row is the promise.
+     *
+     * <p>One statement for the whole tree: {@code sections}, {@code entries},
+     * {@code atoms}, {@code atom_variants} and {@code tags} all reference
+     * {@code profiles(id) ON DELETE CASCADE}, so the head going takes the CV
+     * with it. Writing five deletes by hand would be a list to keep in step with
+     * the schema, and the schema already says this.
+     *
+     * <p>{@code expires_at IS NOT NULL} is redundant against the comparison and
+     * is there for the index: {@code idx_profiles_expires_at} is partial, and a
+     * predicate that does not mention its condition does not use it.
+     */
+    private static final String DELETE_EXPIRED_PROFILES = """
+            DELETE FROM profiles
+            WHERE expires_at IS NOT NULL
+              AND expires_at < ?
+            """;
+
     private final JdbcTemplate jdbc;
     private final RetentionProperties properties;
     private final Clock clock;
@@ -86,6 +108,29 @@ public class RetentionSweeper {
             log.info("Retention sweep cleared {} job payloads and {} postings",
                     payloads, postings);
         }
+    }
+
+    /**
+     * Its own schedule, minutes apart rather than once a night (Bolum 9).
+     *
+     * <p>The two sweeps answer different promises. The nightly one keeps a
+     * retention window measured in days, where a few hours either way changes
+     * nothing. This one keeps "we do not store it", and that sentence is only
+     * true to the resolution of the pass that makes it true — a nightly sweep
+     * would leave a two-hour session's CV in the database until the small hours.
+     */
+    @Scheduled(cron = "${atomcv.retention.anonymous-cron:0 */5 * * * *}")
+    public void sweepAnonymousProfiles() {
+        int profiles = deleteExpiredProfiles();
+        if (profiles > 0) {
+            // A count, and it is the whole of what there is to say: these rows
+            // were somebody's CV (absolute rule 4).
+            log.info("Deleted {} expired anonymous profiles", profiles);
+        }
+    }
+
+    int deleteExpiredProfiles() {
+        return jdbc.update(DELETE_EXPIRED_PROFILES, Timestamp.from(clock.instant()));
     }
 
     int clearPayloads() {

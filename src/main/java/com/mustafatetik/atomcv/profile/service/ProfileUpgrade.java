@@ -29,7 +29,20 @@ public enum ProfileUpgrade {
      */
     KEPT_EXISTING,
 
-    /** The store could not be read. The work is lost, and saying so is the point. */
+    /**
+     * The hand-over failed. The work is lost, and saying so is the point.
+     *
+     * <p>It used to mean "Redis could not be read", and now that the profile is
+     * a row it means the write did not go through — a lock timeout, a constraint
+     * the delete-then-adopt sequence hit. Rarer, and still worth a value of its
+     * own: {@link #NONE} says there was nothing to carry, and telling somebody
+     * that when there was is the one wrong answer here.
+     *
+     * <p>Produced by {@code SignInHandover} rather than by the upgrade itself.
+     * A transaction that has failed cannot report on itself and keep going —
+     * catching inside it would leave the caller committing a rollback-only
+     * transaction — so the catch belongs to the bean that calls it.
+     */
     UNAVAILABLE;
 
     public String wireValue() {

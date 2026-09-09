@@ -182,6 +182,39 @@ void anonymousGenerationWritesNothingToDatabase() {
 
 Gizlilik vaadi, dokümanda yazan bir cümle değil, **CI'da zorlanan bir kural.**
 
+#### 51.6.1 Sapma — anonim profil artık satır (2026-09-09)
+
+**Yukarıdaki test kaldırıldı ve yerine tersi geldi.** Anonim profil Redis
+belgesi değil, `profiles` tablosunda **sahibi olmayan ve `expires_at` taşıyan**
+bir satır. `AnonymousProfileIT` artık satırların yazıldığını doğruluyor;
+`AnonymousImportIT`'in ilgili vakası "hiçbir satır" yerine "sahipsiz satır"
+diyor.
+
+**Gerekçe.** Anonim kişinin yapabildikleri genişledi: CV'den profil, **profil
+düzenleme**, ilana göre üretim. Üçü de hesabın kullandığı kod yolu, ve ikinci
+bir depo her adımın ikinci bir uygulaması demek. Zaten öyleydi ve zaten
+sapmıştı: `EphemeralProfileWriter` içe aktarım yazıcısını yeniden uyguluyordu ve
+kendi yorumu bedelini kaydetmiş — *"Languages başlığını iki kez, kimsenin
+yazmadığı bir başlık altında özet basmasının sebebi buydu."* Alttaki beş kapsamlı
+repo `ProfileRef` ile adresleniyor ve `ProfileRef.ephemeral(session)` zaten
+vardı, yani satırlar hesabın satırlarıyla **aynı** muhafızdan geçiyor.
+
+**Bedeli, ve küçültülmedi.** Silinen testin javadoc'u tam bunu öngörmüştü:
+*"a profile in Postgres with a nullable owner and a cleanup job keeps it on paper
+and breaks it in a backup."* Doğrudur. Süpürme beş dakikada bir siliyor
+(`atomcv.retention.anonymous-cron`), ama § 49.2'nin yedek saklaması **7 günlük +
+4 haftalık + 6 aylık** — yani bir yedeğe yakalanan anonim CV şifreli arşivde
+**altı aya kadar** yaşayabilir. Gizlilik metni bunu söylemek zorunda (§ 57.4), ve
+restore prosedürü anonim satırları silmek zorunda (§ 49.3).
+
+**Karşılığında zorlanan şey ne.** Birinci vaat verildiğine göre ikincisinin her
+parçası tutmalı, yoksa boşuna verilmiş olur: satırın sahibi yok, süresi var,
+`profiles_owner_xor_expiry` ikisinden tam birini şart koşuyor, hiçbir
+kullanıcı-kapsamlı okuma ona ulaşamıyor (`UserScopedRepository` sahip tarafını
+ikinci karşılaştırıyor), başka bir oturum kendi ref'iyle bulamıyor, ve süpürme
+ağacın tamamını cascade ile götürüyor. Altısının da testi var ve süpürmenin
+düştüğü görüldü (§ 51.7).
+
 ### 51.7 Testin kendisi hakkındaki dört kural
 
 > Bunlar `CLAUDE.md`'de yaşıyordu ve oraya "hiçbir spec dosyası zorlamıyor" diye

@@ -242,6 +242,9 @@ atomcv:
   retention:
     enabled: ${RETENTION_ENABLED:true}
     cron: ${RETENTION_CRON:0 30 3 * * *}
+    # Bolum 9's promise, and it needs its own pass: an anonymous session lasts
+    # two hours, so a nightly sweep would keep its CV until the small hours.
+    anonymous-cron: ${RETENTION_ANONYMOUS_CRON:0 */5 * * * *}
     job-payload: ${RETENTION_JOB_PAYLOAD:7d}
     job-description: ${RETENTION_JOB_DESCRIPTION:30d}
 
