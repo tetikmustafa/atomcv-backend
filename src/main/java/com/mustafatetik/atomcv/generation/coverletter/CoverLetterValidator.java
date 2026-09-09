@@ -73,6 +73,99 @@ public final class CoverLetterValidator {
     private static final Pattern SEPARATORS = Pattern.compile("[.,\\u00A0\\u202F ]");
 
     /**
+     * <strong>Ekleme — numbers said in words, which nothing used to read
+     * (Bolum 34.4.2).</strong>
+     *
+     * <p>Measured on the twelve recorded drafts: four of them spell a number
+     * out, and one is a claim the page does not support — the page says a
+     * response time went from 800 ms to 90 ms and the letter wrote "from over
+     * eighty milliseconds to ninety milliseconds". Read as digits that is 80
+     * against a page carrying 800, which is exactly what this check exists to
+     * refuse, and it walked through because the digits were never written.
+     *
+     * <p><strong>Single words only, and a run of two is skipped entirely.</strong>
+     * "twenty five people" must not be read as five: getting a quantity wrong
+     * is worse than not reading it, because this check throws the letter away.
+     * A compound therefore costs a miss, never a wrong number — the same rule
+     * the scale words are held to.
+     *
+     * <p><strong>A spelled number in front of a scale word is a deliberate
+     * gap.</strong> "two million events" appears in two of the twelve drafts
+     * and is not read, though the machinery to read it is right here. Reading
+     * it would mean a letter claiming 2000000 against a page that may well
+     * write "2M" — and the page's side turns that into the digit run 2. That
+     * asymmetry already exists for digits and is accepted there; extending it
+     * to two drafts that pass today, without the pages to check against, is
+     * how a guard starts refusing honest letters.
+     */
+    private static final java.util.Map<String, String> SPELLED = java.util.Map.ofEntries(
+            java.util.Map.entry("zero", "0"), java.util.Map.entry("sıfır", "0"),
+            java.util.Map.entry("sifir", "0"),
+            java.util.Map.entry("one", "1"), java.util.Map.entry("bir", "1"),
+            java.util.Map.entry("two", "2"), java.util.Map.entry("iki", "2"),
+            java.util.Map.entry("three", "3"), java.util.Map.entry("üç", "3"),
+            java.util.Map.entry("uc", "3"),
+            java.util.Map.entry("four", "4"), java.util.Map.entry("dört", "4"),
+            java.util.Map.entry("dort", "4"),
+            java.util.Map.entry("five", "5"), java.util.Map.entry("beş", "5"),
+            java.util.Map.entry("bes", "5"),
+            java.util.Map.entry("six", "6"), java.util.Map.entry("altı", "6"),
+            java.util.Map.entry("alti", "6"),
+            java.util.Map.entry("seven", "7"), java.util.Map.entry("yedi", "7"),
+            java.util.Map.entry("eight", "8"), java.util.Map.entry("sekiz", "8"),
+            java.util.Map.entry("nine", "9"), java.util.Map.entry("dokuz", "9"),
+            java.util.Map.entry("ten", "10"), java.util.Map.entry("on", "10"),
+            java.util.Map.entry("eleven", "11"), java.util.Map.entry("twelve", "12"),
+            java.util.Map.entry("thirteen", "13"), java.util.Map.entry("fourteen", "14"),
+            java.util.Map.entry("fifteen", "15"), java.util.Map.entry("sixteen", "16"),
+            java.util.Map.entry("seventeen", "17"), java.util.Map.entry("eighteen", "18"),
+            java.util.Map.entry("nineteen", "19"),
+            java.util.Map.entry("twenty", "20"), java.util.Map.entry("yirmi", "20"),
+            java.util.Map.entry("thirty", "30"), java.util.Map.entry("otuz", "30"),
+            java.util.Map.entry("forty", "40"), java.util.Map.entry("kırk", "40"),
+            java.util.Map.entry("kirk", "40"),
+            java.util.Map.entry("fifty", "50"), java.util.Map.entry("elli", "50"),
+            java.util.Map.entry("sixty", "60"), java.util.Map.entry("altmış", "60"),
+            java.util.Map.entry("altmis", "60"),
+            java.util.Map.entry("seventy", "70"), java.util.Map.entry("yetmiş", "70"),
+            java.util.Map.entry("yetmis", "70"),
+            java.util.Map.entry("eighty", "80"), java.util.Map.entry("seksen", "80"),
+            java.util.Map.entry("ninety", "90"), java.util.Map.entry("doksan", "90"));
+
+    /**
+     * What turns a number word into a measurement rather than a turn of phrase.
+     *
+     * <p>This is the whole reason the check is anchored. English writes
+     * "particularly <em>one</em> focused on Java" and means no quantity at all;
+     * a rule reading every number word would throw that letter away for the
+     * word "one". A number followed by a unit is saying how many, and a letter
+     * has no reason to say how many about anything the page does not carry.
+     */
+    private static final Set<String> UNITS = Set.of(
+            "year", "years", "yıl", "yil", "sene", "yila", "yıla",
+            "month", "months", "ay", "aylık", "aylik",
+            "week", "weeks", "hafta", "haftalık", "haftalik",
+            "day", "days", "gün", "gun", "günlük", "gunluk",
+            "hour", "hours", "saat", "saatlik",
+            "minute", "minutes", "dakika", "dakikalık", "dakikalik",
+            "second", "seconds", "saniye", "saniyelik",
+            "millisecond", "milliseconds", "ms", "milisaniye",
+            "percent", "percentage", "yüzde", "yuzde",
+            "people", "person", "kişi", "kisi", "kişilik", "kisilik",
+            "engineer", "engineers", "developer", "developers",
+            "member", "members", "mühendis", "muhendis", "geliştirici", "gelistirici");
+
+    /** The units that make a number a claim about length of service. */
+    private static final Set<String> YEARS = Set.of("year", "years", "yıl", "yil", "sene");
+
+    /** "a team of six" — the anchor comes before the number instead of after. */
+    private static final Set<String> GROUPS = Set.of(
+            "team", "group", "squad", "crew", "ekip", "takım", "takim", "grup");
+
+    /** Words, in order, lowercased — the unit of the spelled-number scan. */
+    private static final Pattern WORDS = Pattern.compile("[\\p{L}\\p{N}%]+");
+
+    /**
      * A number said about time: "eight years", "8 yıl". Both languages the
      * product ships in, because the claim is the same claim in either.
      */
@@ -247,8 +340,32 @@ public final class CoverLetterValidator {
         return stripped.isEmpty() ? 0 : stripped.split("\\s+").length;
     }
 
+    /**
+     * Every claim about length of service, in digits or in words.
+     *
+     * <p>The spelled half has to be here and not only in the quantity scan.
+     * These two checks are ordered — a supported "eight years" is removed from
+     * the invented-number comparison because the dates already answered it —
+     * and a spelled year read by one check and not the other would refuse
+     * "thirteen years" on a page whose dates say thirteen. It would be a
+     * quantity nothing had accounted for, which is the worst kind of false
+     * positive: correct letter, thrown away, no original behind it.
+     */
     private static List<String> yearsClaimedIn(String letter) {
-        return YEARS_CLAIM.matcher(letter).results().map(match -> match.group(1)).toList();
+        List<String> claimed = new ArrayList<>(
+                YEARS_CLAIM.matcher(letter).results().map(match -> match.group(1)).toList());
+
+        List<String> words = WORDS.matcher(letter).results()
+                .map(match -> match.group().toLowerCase(Locale.ROOT))
+                .toList();
+        for (int at = 0; at + 1 < words.size(); at++) {
+            boolean alone = !SPELLED.containsKey(words.get(at + 1))
+                    && (at == 0 || !SPELLED.containsKey(words.get(at - 1)));
+            if (alone && SPELLED.containsKey(words.get(at)) && YEARS.contains(words.get(at + 1))) {
+                claimed.add(SPELLED.get(words.get(at)));
+            }
+        }
+        return claimed;
     }
 
     /**
@@ -287,9 +404,72 @@ public final class CoverLetterValidator {
         if (value == null) {
             return List.of();
         }
-        return QUANTITY.matcher(value).results()
+        List<String> stated = new ArrayList<>(QUANTITY.matcher(value).results()
                 .map(CoverLetterValidator::quantityOf)
+                .toList());
+        stated.addAll(spelledQuantitiesIn(value));
+        return stated;
+    }
+
+    /**
+     * The numbers this text says in words, as the digits they stand for.
+     *
+     * <p>Three shapes count, and nothing else does:
+     *
+     * <ul>
+     *   <li>a number word followed by a unit — "thirteen years", "eighty
+     *       milliseconds", "altı kişilik"</li>
+     *   <li>a group noun, "of", then a number word — "a team of six", where
+     *       the anchor is in front</li>
+     *   <li>"zero" and "sıfır" on their own, because there is no way to say
+     *       zero of something and not be making a claim about it: "zero
+     *       duplicate charges" is a measurement whether or not the noun after
+     *       it is a unit this knows</li>
+     * </ul>
+     *
+     * <p>Everything else is left alone on purpose. "one focused on Java",
+     * "three reasons", "one of the things I did" are turns of phrase, and this
+     * check throws the whole letter away — a rule that read them would refuse
+     * an honest draft for its grammar.
+     */
+    // Package-private so the scan can be asserted on real letters, not only through validate().
+    static List<String> spelledQuantitiesIn(String value) {
+        List<String> words = WORDS.matcher(value).results()
+                .map(match -> match.group().toLowerCase(Locale.ROOT))
                 .toList();
+
+        List<String> stated = new ArrayList<>();
+        for (int at = 0; at < words.size(); at++) {
+            if (!SPELLED.containsKey(words.get(at))) {
+                continue;
+            }
+            int end = at;
+            while (end + 1 < words.size() && SPELLED.containsKey(words.get(end + 1))) {
+                end++;
+            }
+            if (end > at) {
+                // A run of two or more: "twenty five" is twenty-five and this
+                // does not do arithmetic on words. Reading it as five would be
+                // a wrong number, which costs the letter.
+                at = end;
+                continue;
+            }
+            if (isAQuantity(words, at)) {
+                stated.add(SPELLED.get(words.get(at)));
+            }
+        }
+        return stated;
+    }
+
+    private static boolean isAQuantity(List<String> words, int at) {
+        String word = words.get(at);
+        if ("0".equals(SPELLED.get(word))) {
+            return true;
+        }
+        if (at + 1 < words.size() && UNITS.contains(words.get(at + 1))) {
+            return true;
+        }
+        return at >= 2 && "of".equals(words.get(at - 1)) && GROUPS.contains(words.get(at - 2));
     }
 
     /**

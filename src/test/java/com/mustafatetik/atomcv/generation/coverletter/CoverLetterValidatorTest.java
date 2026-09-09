@@ -238,6 +238,85 @@ class CoverLetterValidatorTest {
         assertThat(issues).contains(CoverLetterIssue.CLICHE);
     }
 
+    // -- numbers said in words (Bolum 34.4.2) ------------------------------
+
+    /**
+     * <strong>The measured failure.</strong> The page says a response time
+     * went from 800 ms to 90 ms; the recorded draft says "from over eighty
+     * milliseconds to ninety milliseconds". Eighty is not 800, and until the
+     * scan read words the letter walked through with a number nothing on the
+     * page supports.
+     */
+    @Test
+    void aspelledNumberThePageDoesNotCarryIsAnInvention() {
+        var issues = CoverLetterValidator.validate(pageCarrying("800"),
+                draft("Dear Acme,", padded("Cut response times to eighty milliseconds.")));
+
+        assertThat(issues).containsExactly(CoverLetterIssue.NUMBER_INVENTED);
+    }
+
+    @Test
+    void aspelledNumberThePageCarriesIsNotAnInvention() {
+        var issues = CoverLetterValidator.validate(pageCarrying("90"),
+                draft("Dear Acme,", padded("Cut response times to ninety milliseconds.")));
+
+        assertThat(issues).isEmpty();
+    }
+
+    /**
+     * A spelled claim about years is answered by the dates, exactly as a
+     * digit one is — and is then not reported as an invented number as well.
+     * The fixture's profile is six years old and says nothing else about six.
+     */
+    @Test
+    void aspelledYearsClaimIsCheckedAgainstTheDatesAndNotTwice() {
+        var supported = CoverLetterValidator.validate(input(),
+                draft("Dear Acme,", padded("Across six years of Postgres work.")));
+        assertThat(supported).isEmpty();
+
+        var overstated = CoverLetterValidator.validate(input(),
+                draft("Dear Acme,", padded("Across thirteen years of Postgres work.")));
+        assertThat(overstated).containsExactly(CoverLetterIssue.EXPERIENCE_OVERSTATED);
+    }
+
+    /**
+     * <strong>The reason the scan is anchored to a unit at all.</strong> Every
+     * line here is from a recorded draft that passed, and a rule reading every
+     * number word would have thrown all of them away — including for the
+     * Turkish word for ten, which is the English word "on".
+     */
+    @Test
+    void aturnOfPhraseIsNotAQuantity() {
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "the position, particularly one focused on Java, microservices")).isEmpty();
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "a role focused on service architecture, drawing on my CV")).isEmpty();
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "monolitik bir backend sistemini bir araya getiren")).isEmpty();
+    }
+
+    /** The three shapes that do count, each from a recorded draft. */
+    @Test
+    void anumberAgainstAUnitAGroupOrZeroIsAQuantity() {
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "over the course of thirteen years, I")).containsExactly("13");
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "led a team of six members and")).containsExactly("6");
+        assertThat(CoverLetterValidator.spelledQuantitiesIn(
+                "resulting in zero duplicate charges")).containsExactly("0");
+    }
+
+    /**
+     * A run of two number words is skipped whole. Reading "twenty five" as
+     * five would be a wrong number, and a wrong number here costs the letter —
+     * so a compound this cannot add up costs a miss instead.
+     */
+    @Test
+    void acompoundNumberIsSkippedRatherThanMisread() {
+        assertThat(CoverLetterValidator.spelledQuantitiesIn("a team of twenty five people"))
+                .isEmpty();
+    }
+
     // -- fixtures ----------------------------------------------------------
 
     /** Six years of dates, one past employer, Postgres and a 40. */
