@@ -112,8 +112,8 @@ class FeedbackApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contentGrant.open").value(true))
                 .andExpect(jsonPath("$.contentGrant.expiresAt").isNotEmpty())
-                // Off the wire until something writes it (B-075): a field that
-                // is always null would say nobody looked whatever happened.
+                // Absent because nobody has looked, not because nothing could:
+                // the offline support reader is what stamps it (B-078).
                 .andExpect(jsonPath("$.contentGrant.accessedAt").doesNotExist());
 
         assertThat(jdbc.queryForObject("""
@@ -216,14 +216,13 @@ class FeedbackApiIT extends AbstractIntegrationTest {
      * The sharper half of F-019: the grant comes back tomorrow, when the person
      * who most needs to check on it is the one who returns.
      *
-     * <p><strong>And what comes back is what can be known.</strong> Bolum 48.4
-     * promises the person can see when their content was actually read, and
-     * nothing in this system can tell them: {@code support_grants.accessed_at}
-     * has no writer, because reading another user's content needs a
-     * support-facing path and absolute rule 3 leaves none. So the field is off
-     * the wire (`B-075`) rather than published as a permanent null, which would
-     * say "nobody looked" whatever had happened. This asserts the absence, so
-     * that adding the reader has to come back through here.
+     * <p><strong>And the audit trail comes back with it.</strong> Bolum 48.4
+     * promises the person can see when their content was actually read.
+     * {@code accessedAt} left the wire in `B-075` because nothing could write it
+     * — absolute rule 3 leaves no cross-user read path — and the offline support
+     * reader stamps it now (`B-078`), so it is published again. Absent here
+     * because nobody has read this one, which is the honest value rather than
+     * the structural one it used to be.
      */
     @Test
     void agrantComesBackWithWhatCanBeKnownAboutIt() throws Exception {

@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-09** · **`B-075`, `B-076` açık** (frontend'de) · açık `F-nnn` yok
+**2026-09-09** · **`B-075`+`B-078`, `B-076`, `B-077` açık** (frontend'de) · açık `F-nnn` yok
 
 ## Backend — `atomcv-backend`
 
@@ -28,7 +28,7 @@ LLM'siz); yedinci golden profil `stress_long_career` o hatayı üretiyor.
 
 **Geliştiricide:** VPS/restore, ve OAuth ile Turnstile'ın gerçek uca karşı denenmesi. **`make dev` bedava** — `.env`'in `LLM_CHAIN_*`'i `local-fake`'i ezmiyor, ölçüldü.
 
-**Test:** 1248 birim · 457 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1255 birim · 458 entegrasyon · latex 64/64 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -48,13 +48,13 @@ On iki dilim. **Gerçek uca karşı ölçüldü** (2026-08-30) ve `F-024`-`F-027
 | Soru | Bekleyen taraf |
 |---|---|
 | Anonim çalışma hesabın profiliyle birleşecek mi | **ürün** · bugün `kept_existing` |
-| Hangi LLM modeli — fiyat tablosu ona bağlı | **ürün** |
 | Faz D eşikleri (§ 21.2'nin 0.40/0.65'i) | **spec** · ölçüm elde |
-| Maddede `emphasis` italik mi kalın mı — referans belge kalın | **spec** · çevirmek her ölçümü yeniler |
+
+_Kapandı 2026-09-09: model `openai/gpt-5.6-sol` (OpenRouter, kısıtlanmadı); `emphasis` **kalın** ve bedeli ölçüldü, sıfır._
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de: `B-075`, `B-076`, `B-077`.** İlki `accessedAt`'i ekrandan kaldırıyor
-(yazıcısı yok), ikincisi EK C.1'in sağlayıcı listesini taşıyor — **gizlilik
-politikası yazılabilir**; üçüncüsü beceri yankısının kanonikleştiğini söylüyor.
-Model kısıtlanmıyor (2026-09-09); liste yapılandırmadan türüyor.
+**Sıra frontend'de, üç madde.** `B-075`+`B-078` birlikte ACK'lenir: alan telden
+kalktı (yazıcısı yoktu) ve **geri döndü** — çevrimdışı destek okuyucusu damgalıyor.
+`B-076` EK C.1'in sağlayıcı listesini taşıyor, yani **gizlilik politikası
+yazılabilir**. `B-077` beceri yankısının kanonikleştiğini söylüyor.

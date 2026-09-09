@@ -98,6 +98,30 @@ public class SupportGrant implements UserOwned {
     }
 
     /**
+     * Somebody looked, and the person is shown when (Bolum 48.4).
+     *
+     * <p><strong>The first read wins.</strong> The column holds one instant, so
+     * it answers "was this looked at, and from when" rather than "how many
+     * times" — and an audit trail that moved every time somebody opened it
+     * would be a worse answer to the question the person is asking. A second
+     * read is still a read of a window they were told about.
+     *
+     * <p>Only while the window is open. Stamping a closed grant would record an
+     * access the consent did not cover, which is the opposite of an audit
+     * trail: the caller is refused instead, and that is where the refusal
+     * belongs — nothing else can tell the difference afterwards.
+     *
+     * @return whether this call is the one that stamped it
+     */
+    public boolean markAccessed(Instant now) {
+        if (!isOpenAt(now) || accessedAt != null) {
+            return false;
+        }
+        this.accessedAt = now;
+        return true;
+    }
+
+    /**
      * Whether the content may be read right now.
      *
      * <p>Three ways to be closed and they are not the same event: never
