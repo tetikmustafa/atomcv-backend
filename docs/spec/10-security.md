@@ -325,6 +325,31 @@ uygulamayla değil.
 **Okumak pencereyi kaydırıyor**, çünkü okumak etkinliktir (EK D.6.6). Mutlak
 iki saat, gözden geçirme ekranının ortasında birini keserdi.
 
+#### 41.3.2 Sapma — depo değişti, muhafız değişmedi (2026-09-09)
+
+**Anonim profil Redis'te değil, `profiles` tablosunda.** Sahibi olmayan ve
+`expires_at` taşıyan bir satır; `profiles_owner_xor_expiry` ikisinden tam
+birini şart koşuyor. Gerekçe ve bedeli § 51.6.1'de — burada önemli olan
+**erişim denetiminin ne kadarının değiştiği: hiçbiri.**
+
+Yukarıdaki iki karar bunu zaten mümkün kılmış: id oturumdan tek yönlü
+türetiliyor, ve `EPHEMERAL` yalnız `AnonymousSessionId` ile üretilebiliyor.
+Yani satırı adresleyebilmek için çerezi tutmak gerekiyor. Alttaki beş kapsamlı
+repo `ProfileRef` aldığı için hiç değişmedi.
+
+**Değişen tek şey baş satır**, çünkü kapsanacak bir `profile_id`'si yok — o
+profilin kendisi. `AnonymousProfiles` onu iki filtreyle veriyor: ref
+`EPHEMERAL` olmalı **ve** satırın sahibi olmamalı. İkincisi argümanda değil
+satırda, yani sahiplenilmiş bir profile ulaşan bir yol yok — bu yüzden tip bir
+controller'dan çağrılmaya da güvenli.
+
+**Ve `@Repository` istisna çevirisi bir tuzak kurdu, ölçülerek bulundu.**
+Muhafızın `IllegalArgumentException`'ı `InvalidDataAccessApiUsageException`'a
+dönüşüyor; `SignInHandover` giriş akışını korumak için `DataAccessException`
+yakalıyordu, yani bir programlama hatası kullanıcıya **şanssızlık**
+(`UNAVAILABLE`) olarak raporlanacaktı. Artık o tip ayrıca yakalanıp yeniden
+fırlatılıyor.
+
 **Redis cevap veremezse fırlatıyor, boş dönmüyor.** Anonim profilin ikinci bir
 evi yok; "hiçbir şey yüklememişsin" cümlesi, az önce yükleyen birine
 verilebilecek en kötü cevap — ve onu, hâlâ çökük olan bir depoya karşı yeniden

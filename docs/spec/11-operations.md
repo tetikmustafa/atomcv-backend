@@ -537,6 +537,20 @@ age -d -i key.txt backup.sql.gz.age | gunzip | docker exec -i restore-test psql 
 
 R2'nin egress'i ücretsiz olduğu için bu test bedava.
 
+> **⚠️ Restore'dan sonra anonim satırları sil (2026-09-09).** Anonim profil
+> artık `profiles` tablosunda sahibi olmayan bir satır (§ 51.6.1), yani yedeğe
+> yakalanmış olabilir — ve bir restore onu **canlıya geri getirir**, sahibi hiç
+> olmamış, silinmesi gereken bir CV olarak. Süpürme onu bir sonraki turda
+> alır, ama araya giren pencere hiç açılmamalı:
+>
+> ```sql
+> DELETE FROM profiles WHERE expires_at IS NOT NULL;
+> ```
+>
+> Gerçek bir kurtarmada da, restore testinde de. Yedeğin kendisinden silmek
+> mümkün değil (`pg_dump` satır süzmüyor) ve arşiv saklaması **7 gün + 4 hafta +
+> 6 ay** — gizlilik metni bu yüzden "en fazla altı ay" diyor.
+
 ### 49.5 Felaket kurtarma senaryosu
 
 ```

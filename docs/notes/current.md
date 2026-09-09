@@ -170,15 +170,14 @@ basılır.
   **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
 - **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
   (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
-- **Sapma — anonim `dailyGenerationQuota` 5 değil 0 (2026-09-09, `B-079`).**
-  § 35.7 beşi yazıyor ama anonim üretim kurulmadı: `POST /generations`
-  `require()` çağırıyor, `GenerationJobHandler` sahipsiz işi ikinci savunma
-  olarak reddediyor. Blok "beş hakkın var" deyip ilk tıklamada 401 verdiriyordu
-  ve bunu söyleyen başka alan yok. **Profil tarafı gerçek, dokunulmadı:**
-  `JobOwner.of` anonim oturuma düşüyor, `ProfileExtractionJobHandler` efemer
-  profili yazıyor, giriş anında `ProfileUpgradeService` onu *kopyalamadan
-  sahipleniyor*. Yani "anonim iş birleştirme" diye açık bir madde yoktu —
-  taşınacak üretim hiç oluşmuyor. Beş, akış inince geri döner.
+- **Anonim akış inşa ediliyor** (karar 2026-09-09: CV'den profil, düzenleme,
+  ilana göre üretim; veri saklanmaz, kota düşük, ön yazı yok). Dilim (i) indi:
+  **anonim profil artık Redis belgesi değil, sahibi olmayan + `expires_at`
+  taşıyan satır.** Kalıcı sapma, altı yere işlendi — gerekçe, yedek bedeli ve
+  zorlanan altı iddia **§ 51.6.1**'de. `dailyGenerationQuota` hâlâ 0
+  (`B-079`); üretim dilimi inince 5'e döner. Sıradaki: (ii) profil uçlarının
+  anonim oturumu kabul etmesi, (iii) üretim, (iv) challenge, (v) hesap açmada
+  üretimlerin de taşınması, (vi) kota + `B-nnn`.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

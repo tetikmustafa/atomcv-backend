@@ -4,11 +4,8 @@ import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.profile.domain.Profile;
-import com.mustafatetik.atomcv.profile.repository.AtomRepository;
-import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
-import com.mustafatetik.atomcv.profile.repository.EntryRepository;
+import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
 import com.mustafatetik.atomcv.profile.repository.ProfileRepository;
-import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -45,27 +42,17 @@ public class ProfileUpgradeService {
 
     private static final Logger log = LoggerFactory.getLogger(ProfileUpgradeService.class);
 
-    private final EphemeralProfileStore store;
+    private final AnonymousProfiles anonymous;
     private final ProfileResolver resolver;
     private final ProfileRepository profiles;
-    private final SectionRepository sections;
-    private final EntryRepository entries;
-    private final AtomRepository atoms;
-    private final AtomVariantRepository variants;
     private final JobQueue queue;
     private final Clock clock;
 
-    ProfileUpgradeService(EphemeralProfileStore store, ProfileResolver resolver,
-            ProfileRepository profiles,
-            SectionRepository sections, EntryRepository entries, AtomRepository atoms,
-            AtomVariantRepository variants, JobQueue queue, Clock clock) {
-        this.store = store;
+    ProfileUpgradeService(AnonymousProfiles anonymous, ProfileResolver resolver,
+            ProfileRepository profiles, JobQueue queue, Clock clock) {
+        this.anonymous = anonymous;
         this.resolver = resolver;
         this.profiles = profiles;
-        this.sections = sections;
-        this.entries = entries;
-        this.atoms = atoms;
-        this.variants = variants;
         this.queue = queue;
         this.clock = clock;
     }
@@ -80,53 +67,32 @@ public class ProfileUpgradeService {
      */
     @Transactional
     public ProfileUpgrade upgrade(UserContext user, AnonymousSessionId session) {
-        ProfileRef anonymous = ProfileRef.ephemeral(session);
-        Optional<EphemeralProfile> stored;
-        try {
-            stored = store.find(anonymous);
-        } catch (EphemeralProfileUnavailableException unreachable) {
-            log.warn("Could not read an anonymous profile to upgrade it: {}",
-                    unreachable.getClass().getSimpleName());
-            return ProfileUpgrade.UNAVAILABLE;
-        }
-        if (stored.isEmpty()) {
+        ProfileRef ref = ProfileRef.ephemeral(session);
+        Optional<Profile> waiting = anonymous.find(ref);
+        if (waiting.isEmpty()) {
             return ProfileUpgrade.NONE;
         }
+
         Optional<Profile> existing = profiles.findOwn(user);
         if (existing.isPresent() && resolver.hasContent(user)) {
             // The account brought real work of its own. Nothing is written and
-            // nothing is deleted; the anonymous one runs out on its TTL.
+            // nothing is deleted; the anonymous one runs out on its expiry.
             log.info("An account with a profile signed in from an anonymous session");
             return ProfileUpgrade.KEPT_EXISTING;
         }
         existing.ifPresent(empty -> {
             profiles.delete(user, empty);
-            // Before the adopted row is written, not after: one profile per
-            // user is a unique constraint and Hibernate would otherwise order
-            // the insert first. See UserScopedRepository.flush.
+            // Before the adopted row is owned, not after: one profile per user
+            // is a unique constraint and Hibernate would otherwise order the
+            // update first. See UserScopedRepository.flush.
             profiles.flush();
         });
 
-        adopt(user, stored.get());
-        store.discard(anonymous);
+        anonymous.adopt(ref, user.userId());
         queueBackgroundWork(user);
         // Counts, never a line of the CV (absolute rule 4).
-        log.info("Upgraded an anonymous profile: {}", stored.get().shape());
+        log.info("Upgraded an anonymous profile to an account");
         return ProfileUpgrade.UPGRADED;
-    }
-
-    private void adopt(UserContext user, EphemeralProfile anonymous) {
-        Profile profile = new Profile(user.userId(), anonymous.profileId());
-        profile.setContact(anonymous.contact());
-        profile.setSourceLanguage(anonymous.sourceLanguage());
-        profiles.save(user, profile);
-
-        ProfileRef ref = ProfileRef.persistent(user, profile.getId(), profile.getOwnerId());
-        // In this order because that is the order the foreign keys point in.
-        anonymous.sections().forEach(section -> sections.save(ref, section));
-        anonymous.entries().forEach(entry -> entries.save(ref, entry));
-        anonymous.atoms().forEach(atom -> atoms.save(ref, atom));
-        anonymous.variants().forEach(variant -> variants.save(ref, variant));
     }
 
     /**

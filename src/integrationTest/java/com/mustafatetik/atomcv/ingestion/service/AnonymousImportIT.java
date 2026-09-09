@@ -21,8 +21,7 @@ import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRepository;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
-import com.mustafatetik.atomcv.profile.service.EphemeralProfile;
-import com.mustafatetik.atomcv.profile.service.EphemeralProfileStore;
+import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
@@ -34,7 +33,6 @@ import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -98,10 +96,10 @@ class AnonymousImportIT extends AbstractIntegrationTest {
     private ProfileWriter writer;
 
     @Autowired
-    private EphemeralProfileWriter ephemeral;
+    private AnonymousProfiles anonymous;
 
     @Autowired
-    private EphemeralProfileStore store;
+    private com.mustafatetik.atomcv.identity.service.SessionProperties sessionProperties;
 
     @Autowired
     private QuotaService quotas;
@@ -132,7 +130,7 @@ class AnonymousImportIT extends AbstractIntegrationTest {
         jdbc.update("DELETE FROM usage_counters WHERE metric = 'profile_extract'");
         session = sessions.createAnonymous();
         handler = new ProfileExtractionJobHandler(
-                structuring, normalizer, writer, ephemeral, quotas, queue, clock);
+                structuring, normalizer, writer, sessionProperties, quotas, queue, clock);
     }
 
     @Test
@@ -179,20 +177,25 @@ class AnonymousImportIT extends AbstractIntegrationTest {
      * difference.
      */
     @Test
-    void thefinishedProfileIsInRedisAndAddsNoRowAnywhere() throws Exception {
+    void thefinishedProfileIsRowsWithNoOwnerAndAnExpiry() throws Exception {
         Map<String, Integer> before = profileTableCounts();
 
         JobOutcome outcome = runTheExtraction(uploadAndClaim(), Result.ok(oneEntry()));
 
         assertThat(outcome).isInstanceOf(JobOutcome.Completed.class);
-        Optional<EphemeralProfile> stored = store.find(profileOfTheSession());
+        var stored = anonymous.find(profileOfTheSession());
         assertThat(stored).isPresent();
-        assertThat(stored.get().atoms()).isNotEmpty();
+        assertThat(stored.get().isAnonymous()).isTrue();
+        assertThat(stored.get().getExpiresAt()).isNotNull();
 
-        assertThat(profileTableCounts()).isEqualTo(before);
-        // And nothing carries its id either — a write under a different owner
-        // would leave rows behind while these counts still moved together.
-        assertThat(rowsCarrying(profileOfTheSession())).isZero();
+        // The counts moved, which is the sapma: this test used to assert they
+        // did not. What has to hold instead is that everything written carries
+        // this session's profile id and nobody's user id.
+        assertThat(profileTableCounts()).isNotEqualTo(before);
+        assertThat(rowsCarrying(profileOfTheSession())).isPositive();
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM profiles WHERE id = ? AND user_id IS NULL",
+                Integer.class, profileOfTheSession().id())).isEqualTo(1);
     }
 
     /**
@@ -202,7 +205,7 @@ class AnonymousImportIT extends AbstractIntegrationTest {
      * nowhere to send them next.
      */
     @Test
-    void theterminalEventNamesTheProfileTheStoreHolds() throws Exception {
+    void theterminalEventNamesTheProfileTheSessionOwns() throws Exception {
         var completed = (JobOutcome.Completed)
                 runTheExtraction(uploadAndClaim(), Result.ok(oneEntry()));
 
@@ -222,7 +225,7 @@ class AnonymousImportIT extends AbstractIntegrationTest {
         ProfileRef somebodyElse =
                 ProfileRef.ephemeral(AnonymousSessionId.of(sessions.createAnonymous().id()));
 
-        assertThat(store.find(somebodyElse)).isEmpty();
+        assertThat(anonymous.find(somebodyElse)).isEmpty();
     }
 
     /**

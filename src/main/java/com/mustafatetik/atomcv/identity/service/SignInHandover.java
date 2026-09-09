@@ -3,7 +3,12 @@ package com.mustafatetik.atomcv.identity.service;
 import com.mustafatetik.atomcv.identity.domain.Session;
 import com.mustafatetik.atomcv.profile.service.ProfileUpgrade;
 import com.mustafatetik.atomcv.profile.service.ProfileUpgradeService;
+import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,6 +27,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SignInHandover {
 
+    private static final Logger log = LoggerFactory.getLogger(SignInHandover.class);
+
     private final CurrentUser caller;
     private final ProfileUpgradeService upgrades;
 
@@ -37,7 +44,38 @@ public class SignInHandover {
      */
     public ProfileUpgrade follow(Session signedIn) {
         return caller.anonymousSession()
-                .map(session -> upgrades.upgrade(signedIn.asUserContext(), session))
+                .map(session -> attempt(signedIn, session))
                 .orElse(ProfileUpgrade.NONE);
+    }
+
+    /**
+     * <strong>Signing in does not fail because the hand-over did.</strong> The
+     * person is being let into their account; losing two hours of anonymous
+     * work is bad and being unable to sign in at all is worse, so the failure is
+     * reported as {@link ProfileUpgrade#UNAVAILABLE} and the sign-in continues.
+     *
+     * <p>The catch is here and not inside the upgrade because the upgrade is one
+     * transaction. Catching within it would leave this method holding a
+     * rollback-only transaction and the commit would throw anyway — later, and
+     * somewhere with less to say about it.
+     */
+    private ProfileUpgrade attempt(Session signedIn, AnonymousSessionId session) {
+        try {
+            return upgrades.upgrade(signedIn.asUserContext(), session);
+        } catch (InvalidDataAccessApiUsageException misuse) {
+            // Not a transient failure and not to be reported as one. Spring
+            // translates exceptions thrown inside an @Repository, so the guard
+            // in AnonymousProfiles -- "this ref is not ephemeral" -- arrives
+            // here wearing a DataAccessException's clothes. Caught by the
+            // clause below it would become UNAVAILABLE: a programming error
+            // reported to the user as bad luck, and to us as nothing at all.
+            throw misuse;
+        } catch (DataAccessException failed) {
+            // The class, never the message: a constraint violation names the
+            // row it was about (absolute rule 4).
+            log.warn("Could not carry an anonymous profile into an account: {}",
+                    failed.getClass().getSimpleName());
+            return ProfileUpgrade.UNAVAILABLE;
+        }
     }
 }

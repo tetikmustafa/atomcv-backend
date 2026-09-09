@@ -12,7 +12,7 @@ import com.mustafatetik.atomcv.email.EmailMessage;
 import com.mustafatetik.atomcv.email.EmailSender;
 import com.mustafatetik.atomcv.identity.service.SessionStore;
 import com.mustafatetik.atomcv.ingestion.normalization.NormalizedProfile;
-import com.mustafatetik.atomcv.ingestion.service.EphemeralProfileWriter;
+import com.mustafatetik.atomcv.ingestion.service.ProfileWriter;
 import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
@@ -87,7 +87,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     private SessionStore sessions;
 
     @Autowired
-    private EphemeralProfileWriter ephemeral;
+    private ProfileWriter profileWriter;
 
     /**
      * The counters go too, and not as tidiness.
@@ -326,8 +326,9 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     @Test
     void aprofileBuiltWithoutAnAccountIsThereAfterSigningIn() throws Exception {
         var anonymous = sessions.createAnonymous();
-        var anonymousProfile = ephemeral.write(
-                ProfileRef.ephemeral(AnonymousSessionId.of(anonymous.id())), oneBullet());
+        var anonymousProfile = profileWriter.writeAnonymously(
+                ProfileRef.ephemeral(AnonymousSessionId.of(anonymous.id())),
+                java.time.Instant.now().plusSeconds(7200), oneBullet());
 
         requestLinkFor("carrying@link.test");
         String[] halves = halvesOfTheLastLink();
@@ -338,7 +339,14 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         assertThat(jdbc.queryForObject("""
                 SELECT count(*) FROM profiles p JOIN users u ON u.id = p.user_id
                 WHERE u.email = 'carrying@link.test' AND p.id = ?""",
-                Integer.class, anonymousProfile.profileId())).isEqualTo(1);
+                Integer.class, anonymousProfile.getId())).isEqualTo(1);
+
+        // And it stopped expiring in the same statement that gave it an owner:
+        // `profiles_owner_xor_expiry` refuses one without the other, so a row
+        // that kept its expiry would have been swept out from under the account.
+        assertThat(jdbc.queryForObject(
+                "SELECT expires_at FROM profiles WHERE id = ?",
+                java.sql.Timestamp.class, anonymousProfile.getId())).isNull();
     }
 
     private static NormalizedProfile oneBullet() {

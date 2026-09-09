@@ -21,6 +21,7 @@ import com.mustafatetik.atomcv.ingestion.normalization.ProfileNormalizer;
 import com.mustafatetik.atomcv.ingestion.structuring.ExtractedProfile;
 import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.mustafatetik.atomcv.ingestion.structuring.ProfileStructuring;
+import com.mustafatetik.atomcv.identity.service.SessionProperties;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
@@ -73,10 +74,12 @@ class ProfileExtractionJobHandlerTest {
     private final QuotaService quotas = mock(QuotaService.class);
     private final JobQueue queue = mock(JobQueue.class);
 
-    private final EphemeralProfileWriter ephemeral = mock(EphemeralProfileWriter.class);
+    /** Real, not a mock: it is a record, and the only thing read off it is a duration. */
+    private final SessionProperties sessions =
+            new SessionProperties(null, null, null, null, null, null);
 
     private final ProfileExtractionJobHandler handler = new ProfileExtractionJobHandler(
-            structuring, normalizer, writer, ephemeral, quotas, queue,
+            structuring, normalizer, writer, sessions, quotas, queue,
             Clock.fixed(Instant.parse("2026-08-27T09:00:00Z"), ZoneOffset.UTC));
 
     private final List<JobProgress> reported = new ArrayList<>();
@@ -253,27 +256,33 @@ class ProfileExtractionJobHandlerTest {
         assertThat(failed.error().code()).isEqualTo(ErrorCode.INTERNAL_ERROR);
         assertThat(failed.retryable()).isFalse();
         verify(writer, never()).write(any(), any(), anyBoolean());
-        verify(ephemeral, never()).write(any(), any());
+        verify(writer, never()).writeAnonymously(any(), any(), any());
     }
 
     // -- the anonymous half (Bolum 9, Adim 3.6) ----------------------------
 
     /**
      * <strong>The promise of Bolum 9, at the one line that could break it.</strong>
-     * Somebody who has not signed up gets a profile and leaves no row behind,
-     * and there is exactly one place that decides which of the two writers
-     * runs. A branch that fell through to the persistent one would keep every
-     * visible behaviour and quietly write a stranger's CV into the database.
+     * Somebody who has not signed up gets a profile that nobody owns and that
+     * deletes itself, and there is exactly one place that decides which of the
+     * two entry points runs. A branch falling through to the owned one would
+     * keep every visible behaviour and quietly write a stranger's CV in as
+     * somebody's permanent profile.
+     *
+     * <p>Both writers now go to the same rows, which is what made the anonymous
+     * flow worth building — and is exactly why this test matters more than it
+     * did. When one wrote to Redis, taking the wrong branch was visible in
+     * seconds; now the difference is an owner column and an expiry.
      */
     @Test
-    void ananonymousUploadIsWrittenToTheEphemeralStoreAndNowhereElse() {
+    void ananonymousUploadIsWrittenWithNoOwnerAndAnExpiry() {
         when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
         JobOutcome outcome = handler.handle(anonymousJob(ADDRESS), reported::add);
 
         assertThat(outcome).isInstanceOf(JobOutcome.Completed.class);
-        verify(ephemeral).write(eq(ProfileRef.ephemeral(SESSION)), any());
+        verify(writer).writeAnonymously(eq(ProfileRef.ephemeral(SESSION)), any(), any());
         verify(writer, never()).write(any(), any(), anyBoolean());
     }
 
@@ -284,7 +293,7 @@ class ProfileExtractionJobHandlerTest {
      * person next.
      */
     @Test
-    void ananonymousUploadAnswersWithTheProfileTheStoreHolds() {
+    void ananonymousUploadAnswersWithTheProfileTheSessionOwns() {
         when(structuring.structure(any(), any(), any(), any())).thenReturn(Result.ok(extracted()));
         when(normalizer.normalize(any(), any())).thenReturn(normalized(2, 5, 0));
 
@@ -326,7 +335,7 @@ class ProfileExtractionJobHandlerTest {
         handler.handle(anonymousJob(ADDRESS), reported::add);
 
         verify(quotas).refund(eq(ADDRESS), eq(QuotaMetric.PROFILE_EXTRACT));
-        verify(ephemeral, never()).write(any(), any());
+        verify(writer, never()).writeAnonymously(any(), any(), any());
     }
 
     /**

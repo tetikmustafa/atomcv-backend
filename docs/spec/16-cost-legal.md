@@ -108,7 +108,9 @@ Aşama 4:       sürekli
    • Depolama: Cloudflare R2
 
 4. NE KADAR SAKLIYORUZ
-   Hesap aktif olduğu sürece; anonim mod son etkinlikten 2 saat sonra;
+   Hesap aktif olduğu sürece; anonim mod son etkinlikten 2 saat sonra
+   (veritabanından beş dakika içinde silinir — ŞİFRELİ YEDEKLERDE
+   EN FAZLA ALTI AYA KADAR KALABİLİR, § 51.6.1);
    PDF 14 gün (arşivlenirse süresiz); loglar 30 gün
 
 5. HAKLAR
@@ -143,7 +145,7 @@ Sadece oturum çerezi (zorunlu) + çerezsiz analitik → **çerez izni banner'ı
 ```
 ├── PostgreSQL          (ON DELETE CASCADE ile otomatik)
 ├── Redis oturumları    (session invalidation)
-├── Redis anonim veri   (varsa)
+├── Anonim profil       (Postgres, `expires_at` — süpürme siler, § 51.6.1)
 ├── R2'deki PDF'ler     (pdf_key ile) ⚠️ HENÜZ YOK — aşağıya bak
 ├── Embedding'ler       (atoms tablosunda, cascade)
 ├── OAuth bağlantıları  (revoke + cascade)

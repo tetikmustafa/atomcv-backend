@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
+import com.mustafatetik.atomcv.identity.service.SessionProperties;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobRetryPolicy;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
@@ -68,18 +69,18 @@ public class ProfileExtractionJobHandler implements JobHandler {
     private final ProfileStructuring structuring;
     private final ProfileNormalizer normalizer;
     private final ProfileWriter writer;
-    private final EphemeralProfileWriter ephemeral;
+    private final SessionProperties sessions;
     private final QuotaService quotas;
     private final JobQueue queue;
     private final Clock clock;
 
     ProfileExtractionJobHandler(ProfileStructuring structuring, ProfileNormalizer normalizer,
-            ProfileWriter writer, EphemeralProfileWriter ephemeral, QuotaService quotas,
+            ProfileWriter writer, SessionProperties sessions, QuotaService quotas,
             JobQueue queue, Clock clock) {
         this.structuring = structuring;
         this.normalizer = normalizer;
         this.writer = writer;
-        this.ephemeral = ephemeral;
+        this.sessions = sessions;
         this.quotas = quotas;
         this.queue = queue;
         this.clock = clock;
@@ -146,19 +147,39 @@ public class ProfileExtractionJobHandler implements JobHandler {
     }
 
     /**
-     * Bolum 9: an anonymous person's profile is written to Redis and to
-     * nothing else.
+     * Bolum 9: an anonymous person's profile is rows like anybody else's, with
+     * an expiry instead of an owner.
      *
-     * <p>No background work is queued for it. Embedding and measurement exist
-     * to make the <em>first</em> generation good, and both write to rows this
-     * profile does not have — an anonymous person gets an estimate and a
-     * scoring pass without vectors, which Bolum 20.4 and Bolum 28.4 already
-     * describe as the degraded-but-working path.
+     * <p>It was a Redis document, and the sentence that used to be here said so.
+     * What changed is what an anonymous person is allowed to do with it — edit
+     * it, generate against a posting — all of which is the code an account uses,
+     * and a second store meant a second implementation of every step of it.
+     *
+     * <p><strong>No background work is queued yet, and that is now a choice
+     * rather than an impossibility.</strong> Embedding and measurement write to
+     * rows this profile finally has; what they do not yet have is a session to
+     * belong to, because both jobs are owned by a user. Nothing is lost while
+     * there is no anonymous generation to be good: an estimate costs nothing
+     * until something is charged against it. It arrives with the generation
+     * slice, which is the point at which Bolum 20.4's estimate and Bolum 28.4's
+     * vectorless scoring stop being free.
      */
     private JobOutcome completedAnonymously(String anonSession, NormalizedProfile normalized) {
         ProfileRef profile = ProfileRef.ephemeral(AnonymousSessionId.of(anonSession));
-        ephemeral.write(profile, normalized);
+        writer.writeAnonymously(profile, expiryFor(), normalized);
         return completed(profile.id(), normalized);
+    }
+
+    /**
+     * Two hours from now, which is the same rule the session itself keeps.
+     *
+     * <p>{@code SessionProperties.anonymousTtl} rather than a second duration of
+     * this module's own: an anonymous session's TTL slides with activity (§ 9 --
+     * "two hours after their last activity"), and writing a profile is activity.
+     * Two knobs that had to agree would eventually not.
+     */
+    private java.time.Instant expiryFor() {
+        return clock.instant().plus(sessions.anonymousTtl());
     }
 
     private JobOutcome completedForAccount(UserContext user, UUID userId,

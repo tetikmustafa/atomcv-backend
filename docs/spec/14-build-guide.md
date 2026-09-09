@@ -1196,6 +1196,13 @@ Nokta ile başlayan domain (`.mustafatetik.com`) çerezi portfolyo sitesine de g
 6. ⚠️ Gizlilik testi: DB'ye hiçbir satır yazmamalı
 ```
 
+> **Sapma (2026-09-09) — 1 ve 6 geçersiz.** `EphemeralProfileStore` silindi;
+> anonim profil `profiles` tablosunda sahibi olmayan, `expires_at` taşıyan bir
+> satır ve beş dakikada bir süpürülüyor. Gizlilik testi tersine döndü: artık
+> satırların yazıldığını ve **sahipsiz** olduğunu denetliyor. Gerekçesi, bedeli
+> (yedekte altı aya kadar) ve karşılığında zorlanan altı iddia **§ 51.6.1**'de.
+> 5 aynı akış ama kopyalama değil: sahip kolonunun tek statement'ta değişmesi.
+
 ### Adım 3.7 — Profil editörü
 
 ```

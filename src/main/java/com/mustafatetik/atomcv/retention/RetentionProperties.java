@@ -19,13 +19,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param jobPayload      how long a terminal job keeps the input it ran on
  * @param jobDescription  how long a generation keeps the posting it was
  *                        written against
+ * @param anonymousCron   when expired anonymous profiles are deleted. Minutes
+ *                        and not the nightly cron, because "we do not keep it"
+ *                        is only true to the resolution of the sweep that makes
+ *                        it true: a nightly pass would leave a two-hour
+ *                        session's CV in the database for up to a day
  */
 @ConfigurationProperties(prefix = "atomcv.retention")
 public record RetentionProperties(
-        boolean enabled, String cron, Duration jobPayload, Duration jobDescription) {
+        boolean enabled, String cron, String anonymousCron,
+        Duration jobPayload, Duration jobDescription) {
 
     public RetentionProperties {
         cron = cron == null || cron.isBlank() ? "0 30 3 * * *" : cron;
+        anonymousCron = anonymousCron == null || anonymousCron.isBlank()
+                ? "0 */5 * * * *" : anonymousCron;
         jobPayload = positiveOr(jobPayload, Duration.ofDays(7));
         jobDescription = positiveOr(jobDescription, Duration.ofDays(30));
     }

@@ -12,6 +12,7 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.VariantAuthor;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
 import com.mustafatetik.atomcv.profile.repository.AtomRepository;
 import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
 import com.mustafatetik.atomcv.profile.repository.EntryRepository;
@@ -22,6 +23,7 @@ import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +52,17 @@ public class ProfileWriter {
 
     private final ProfileResolver profiles;
     private final ProfileRepository profileRows;
+    private final AnonymousProfiles anonymous;
     private final SectionRepository sections;
     private final EntryRepository entries;
     private final AtomRepository atoms;
     private final AtomVariantRepository variants;
 
     ProfileWriter(ProfileResolver profiles, ProfileRepository profileRows,
+            AnonymousProfiles anonymous,
             SectionRepository sections, EntryRepository entries,
             AtomRepository atoms, AtomVariantRepository variants) {
+        this.anonymous = anonymous;
         this.profiles = profiles;
         this.profileRows = profileRows;
         this.sections = sections;
@@ -91,13 +96,54 @@ public class ProfileWriter {
         profile.setSourceLanguage(language);
         profileRows.save(user, profile);
 
-        var target = new Target(owned.ref(), profile.getId(), language);
-        for (var section : normalized.sections()) {
-            writeSection(target, section);
-        }
+        writeTree(new Target(owned.ref(), profile.getId(), language), normalized);
         // Counts and a language, never a line of the CV (absolute rule 4).
         log.info("Wrote an imported profile: {}", normalized.shape());
         return profile;
+    }
+
+    /**
+     * The same CV, written into an anonymous session's profile (Bolum 9).
+     *
+     * <p><strong>The same method body, and that is the point of it being
+     * here.</strong> This used to be {@code EphemeralProfileWriter}, a second
+     * implementation over a Redis document, and it had already drifted from this
+     * one — its own comment records the cost: a Languages heading printed twice
+     * and a summary set under a title nobody wrote. An anonymous upload is the
+     * same CV read the same way, so it is now the same code, and the only thing
+     * that differs is which row the head is and when it stops existing.
+     *
+     * <p><strong>A second import always replaces.</strong> Bolum 31.6.3 gives a
+     * session one document, so there is no {@code replace} flag to answer: the
+     * question {@code PROFILE_ALREADY_EXISTS} asks an account is a question
+     * about work worth keeping, and an anonymous session's previous upload is
+     * the same person changing their mind two minutes ago.
+     *
+     * @param expiresAt when the session ends, pushed out on every write
+     */
+    @Transactional
+    public Profile writeAnonymously(
+            ProfileRef ref, Instant expiresAt, NormalizedProfile normalized) {
+
+        Profile profile = anonymous.findOrCreate(ref, expiresAt);
+        clear(ref);
+
+        String language = normalized.language().isBlank()
+                ? profile.getSourceLanguage() : normalized.language();
+        profile.setContact(normalized.contact());
+        profile.setSourceLanguage(language);
+        anonymous.save(ref, profile);
+
+        writeTree(new Target(ref, profile.getId(), language), normalized);
+        // Counts and a language, never a line of the CV (absolute rule 4).
+        log.info("Wrote an anonymous profile: {}", normalized.shape());
+        return profile;
+    }
+
+    private void writeTree(Target target, NormalizedProfile normalized) {
+        for (var section : normalized.sections()) {
+            writeSection(target, section);
+        }
     }
 
     /**
