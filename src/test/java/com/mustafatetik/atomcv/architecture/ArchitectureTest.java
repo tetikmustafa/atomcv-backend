@@ -106,6 +106,24 @@ class ArchitectureTest {
             .haveFullyQualifiedName("com.mustafatetik.atomcv.jobs.queue.JobQueue");
 
     /**
+     * The same line for the support grant's unscoped lookup (Bolum 48.4).
+     *
+     * <p>{@code SupportGrantLookup} finds a grant without an acting user,
+     * because the grant is what says whose CV the generation is — that is the
+     * one unscoped step in the offline reader, and everything after it goes
+     * through the scoped repository as the owner. In a controller the same call
+     * would read any grant by generation id and hand back somebody else's
+     * consent record, which is the IDOR absolute rule 3 exists for on an
+     * identifier this system gives a browser.
+     */
+    @ArchTest
+    static final ArchRule theUnscopedGrantLookupIsNotReachableFromHttp = noClasses()
+            .that().resideInAPackage("..api..")
+            .should().dependOnClassesThat()
+            .haveFullyQualifiedName(
+                    "com.mustafatetik.atomcv.generation.repository.SupportGrantLookup");
+
+    /**
      * And for the generation record, which reaches a browser twice — in the
      * job's terminal event and in the download link.
      */

@@ -181,11 +181,11 @@ basılır.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran
-  `RewriteValidator`'dı, düzeldi. Kalan **saklama** tutarsızlığı (içe aktarım kanonik,
-  `AtomService` ham) eşleşmeyi etkilemiyor; editör sorusu.
-- **`accessedAt` telden kalktı (`B-075`), kolon durdu.** § 48.4 iz vaat ediyor,
-  yazacak destek yolu yok (mutlak kural 3). **Yazıcısı olmadan geri ekleme:**
-  hep-null bir alan, "kimse bakmadı" diyen bir ekran demek.
+  `RewriteValidator`'dı; saklama da kanonikleşti (`AtomService`, `B-077`).
+- **`accessedAt` geri döndü (`B-078`):** çevrimdışı okuyucu (`SupportRead`,
+  `support` profili) grant'i kimlik belgesi sayıp sahibinin bağlamında okuyor ve
+  damgalıyor; **tek kapsanmamış adım grant aramasıdır** (`SupportGrantLookup`,
+  `JobQueue` emsali, API'den erişilemez — ArchUnit kuralı var). Uç açmadık.
 - **Düzeltme — `PGVectorTypeContributor`'daki `NoClassDefFoundError` flake değildi:**
   run 33091345512 `main` değil **PR #86'nın dalıydı** (hibernate-vector 7.4.6). **Ders:
   flake demeden önce dalına bak.** `dependabot.yml` o majörü/minörü yok sayıyor artık.

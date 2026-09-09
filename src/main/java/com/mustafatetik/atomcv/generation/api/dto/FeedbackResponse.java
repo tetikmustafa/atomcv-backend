@@ -14,14 +14,14 @@ import java.util.UUID;
  * not a consent.</strong> Bolum 48.4 promises the person can see when their
  * content was actually read.
  *
- * <p><strong>And that half of the promise is not on the wire, because nothing
- * can keep it yet.</strong> {@code support_grants.accessed_at} exists and
- * nothing writes it: reading somebody else's content needs a support-facing
- * path, and absolute rule 3 means there is deliberately none — every read goes
- * through a repository scoped to the owner. A field that is structurally always
- * null is not an audit trail, it is a screen telling the person nobody looked
- * whatever happened, so it is withheld until there is a reader to stamp it.
- * The column stays; the claim comes back with the path (`B-075`).
+ * <p><strong>And it is on the wire again, because something writes it now.</strong>
+ * It came off in `B-075`: the column existed and nothing stamped it, so the
+ * field was structurally null and the screen told the person nobody had looked
+ * whatever had happened. The offline support reader stamps it — a command run on
+ * the server under this grant, not an endpoint, because absolute rule 3 leaves
+ * no cross-user read path and adding one would have been a permanent hole for
+ * something that happens by hand. So the field says what it always claimed to:
+ * null until somebody looked, and then when (`B-078`).
  *
  * @param comment deliberately absent. They wrote it, they have it, and
  *                sending it back is a copy of their words travelling for no
@@ -41,12 +41,18 @@ public record FeedbackResponse(
      * @param open      whether the content may be read right now — false once
      *                  it is withdrawn or run out, which are different events
      *                  and the timestamps say which
+     * @param accessedAt when somebody first read it, or absent because nobody
+     *                  has. The audit trail Bolum 48.4 promises, and the first
+     *                  read is what it holds: the column answers "was this
+     *                  looked at, and from when"
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public record Grant(boolean open, Instant expiresAt, Instant revokedAt) {
+    public record Grant(boolean open, Instant expiresAt, Instant accessedAt,
+            Instant revokedAt) {
 
         static Grant of(SupportGrant grant, Instant now) {
-            return new Grant(grant.isOpenAt(now), grant.getExpiresAt(), grant.getRevokedAt());
+            return new Grant(grant.isOpenAt(now), grant.getExpiresAt(),
+                    grant.getAccessedAt(), grant.getRevokedAt());
         }
     }
 

@@ -71,6 +71,27 @@ endpoint'i, %50 kampanyalı) milyon token başına 2 / 10 / 0.2 USD.
 **Action:** gizlilik politikasının alt işleyen bölümünü bu adlarla ve "ne
 gidiyor" listesiyle yazın.
 
+### B-078 · `contentGrant.accessedAt` geri döndü — artık yazan bir şey var
+
+**Since:** commit `<bu PR>` · **Spec:** § 48.4 · `generation/support/SupportRead`
+
+**Ne oldu:** `B-075` alanı telden kaldırmıştı çünkü onu **yazacak hiçbir şey**
+yoktu. Şimdi var: **çevrimdışı destek okuyucusu** (karar 2026-09-09) grant
+açıkken üretimi sahibinin bağlamında okuyor ve `accessed_at`'i damgalıyor. Uç
+değil, sunucuda elle çalıştırılan bir komut — mutlak kural 3 çapraz-kullanıcı
+okuma yolu bırakmıyor ve yılda birkaç kez olan bir şey için kalıcı bir delik
+açmaya değmez.
+
+**Action:** `B-075`'te kaldırmanızı istediğim dalı **geri getirin** —
+`grant.accessedAt` varsa "şu tarihte okundu", yoksa "henüz okunmadı". Bu kez
+cümle doğru: alan artık yapısal olarak null değil, gerçekten okunmadığı için
+null. `npm run gen:api` alanı tipe geri koyacak.
+
+**İlk okuma sabittir:** kolon tek bir an tutuyor, yani "bakıldı mı, ve ne
+zamandan beri" sorusunu cevaplıyor. İkinci bir okuma damgayı **oynatmıyor**.
+
+_(`B-075` bu maddeyle kapandı sayılır — ikisini birlikte ACK'leyin.)_
+
 ### B-075 · `contentGrant.accessedAt` telden kalktı — tutulamayan bir sözdü
 
 **Since:** commit `<bu PR>` · **Spec:** `spec/…` § 48.4 ·

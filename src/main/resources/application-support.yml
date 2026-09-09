@@ -1,0 +1,28 @@
+# The offline support reader (Bolum 48.4). Started deliberately, on the server:
+#
+#   --spring.profiles.active=prod,support --support.generation=<uuid>
+#
+# It reads one generation under the permission its owner gave, prints it to the
+# terminal, stamps `support_grants.accessed_at`, and stops. Everything that
+# would otherwise wake up alongside it is off:
+spring:
+  main:
+    # No port, and the process ends when the runner returns — a support read is
+    # a command. Left as a web application it would sit there serving traffic
+    # from a shell somebody opened to answer one question.
+    web-application-type: none
+
+atomcv:
+  jobs:
+    worker:
+      # A second worker on the same queue would claim rows the real one is
+      # waiting for, and `FOR UPDATE SKIP LOCKED` makes that silent rather than
+      # loud. This process is here to read one row.
+      enabled: false
+
+logging:
+  level:
+    # The content goes to stdout on purpose and nowhere else (absolute rule 4).
+    # Quieting the startup chatter is what keeps the two apart on screen.
+    root: warn
+    com.mustafatetik.atomcv: warn

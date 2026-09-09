@@ -10,4 +10,10 @@ interface SupportGrantJpaRepository extends JpaRepository<SupportGrant, UUID> {
 
     Optional<SupportGrant> findFirstByGenerationIdAndUserIdOrderByGrantedAtDesc(
             UUID generationId, UUID userId);
+
+    /**
+     * Without the owner, for {@link SupportGrantLookup} only — the grant is what
+     * says who the owner is, so the reader cannot name one before reading it.
+     */
+    Optional<SupportGrant> findFirstByGenerationIdOrderByGrantedAtDesc(UUID generationId);
 }
