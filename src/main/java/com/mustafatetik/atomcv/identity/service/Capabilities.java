@@ -27,9 +27,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class Capabilities {
 
-    /** § 35.7's example body, which is the only place these were written. */
-    private static final int ANONYMOUS_GENERATIONS = 5;
+    /**
+     * <strong>Sapma against § 35.7, which writes five.</strong> Anonymous
+     * generation is not built, and this block was promising it.
+     *
+     * <p>{@code POST /generations} calls {@code CurrentUser.require()} and
+     * answers {@code AUTHENTICATION_REQUIRED} to a caller with no account;
+     * {@code GenerationJobHandler} refuses a job with no owner as a second
+     * line, logging that nothing should have enqueued one. So an anonymous
+     * visitor was told they had five generations today and got a refusal on
+     * the first click — and nothing else in the block says otherwise, because
+     * {@code canSaveHistory} is about keeping a generation, not about making
+     * one.
+     *
+     * <p>Zero is what the API does. Five goes back the day the flow lands, and
+     * {@code CapabilitiesTest} is where that is said out loud rather than
+     * remembered.
+     */
+    private static final int ANONYMOUS_GENERATIONS = 0;
 
+    /**
+     * Three, and unlike the line above this one is real: {@code JobOwner.of}
+     * falls back to the anonymous session on {@code POST /profiles/import},
+     * and {@code ProfileExtractionJobHandler} writes the ephemeral profile
+     * that signing in later adopts. § 35.7's number stands.
+     */
     private static final int ANONYMOUS_PROFILES = 3;
 
     private static final int ANONYMOUS_MAX_ATOMS = 60;

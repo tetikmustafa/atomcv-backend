@@ -19,10 +19,9 @@
 ## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
 
 **Tam kayıt `kapanis-denetimi.md`'de**; kalıcı olanlar `spec/`'e işlendi
-(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). **Canlı madde kalmadı:**
-sığmayan başlık-adayı artık `rejectedEntries`'e giriyor — `headerOnlyEntries`'in yanı,
-tek sebep `BUDGET` (inaktif aday olmuyor, minimumdan muaf), eski snapshot'ta boş (EK D.6.3), telde değişiklik yok.
-`SelectionPhase.openEntries`'in `LinkedHashSet` zorunluluğu CLAUDE.md'de.
+(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). **Canlı madde
+kalmadı** — sığmayan başlık-adayı `rejectedEntries`'e giriyor (tek sebep
+`BUDGET`, eski snapshot'ta boş, EK D.6.3).
 
 ## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
 
@@ -38,13 +37,10 @@ Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
 ## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
 
 Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
-- **Yazıyla yazılmış sayıyı hiçbir muhafız görmüyor** (§ 34.4.2). Bilerek açık.
 - **Düzeltme — `cover_letter` v2 aktiflikten alındı, gerekçesi çürüdü.** "Model
   250-400'ü yok sayıyor" iddiası ilk beş fixture'a dayanıyordu; on ikisine bakınca
   üçü sentetik ve 09-02 sonrası yedi gerçek taslak 255-290 kelime. Aktif `v1`, v2
   diskte; tarife `manual-test-stage-3.md`'de. **Ders: tamamına karşı ölç.**
-- **Geçici — `build.gradle.kts`'te üç BOM geçersizleştirmesi:** `postgresql`
-  42.7.12, `netty` 4.1.136.Final, `tomcat` 10.1.59; Boot'un BOM'u yetişince gider.
 
 ## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
 
@@ -91,13 +87,10 @@ artık referansın kendisi; şablon sürümü **v4**, yedi fixture'ın maliyetle
 yeniden ölçüldü.
 
 **Düzeltme — ölçüm kutusu sayfanın satır kırma kuralını kullanmıyordu.**
-`\parbox` girişte `\@parboxrestore` çalıştırıp `\rightskip`'i sıfırlıyor, yani
-sayfa `\raggedright` iken kutu **yaslı** diziliyor ve on sekiz kelime arasını
-üçte bir daraltabiliyor: marjinal bir madde tek satır ölçülüp iki satır dizildi,
-kırk tanesi tek sayfa sözünü iki sayfaya çevirdi. Yalnız **kalın** metinde
-göründü — satırı `\linewidth`'i aşacak kadar iten tek şey işaretli koşulardı.
-**Ders: ölçüm belgesinin sayfayla aynı preamble'ı paylaşması yetmiyor, paragraf
-şeklini de paylaşmalı.**
+`\parbox` girişte `\@parboxrestore` çalıştırıp `\rightskip`'i sıfırlıyor: sayfa
+`\raggedright` iken kutu **yaslı** diziliyor, on sekiz kelime arasını üçte bir
+daraltıyor, marjinal madde tek satır ölçülüp iki satır dizildi ve kırk tanesi
+tek sayfa sözünü iki sayfaya çevirdi. Yalnız **kalın** metinde göründü.
 
 **Ekleme — `SECTION_LIST_CLOSE` (12.0pt).** Birinci seviye madde listesinden
 sonraki bölüm başlığı tam bir küçük satır daha pahalı: `\resumeItemListEnd`'in
@@ -177,8 +170,15 @@ basılır.
   **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
 - **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
   (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
-  **Anonim işler yükseltmede taşınmıyor** ve anonim oturumun kullanıcı indeksi
-  yok; anonim *üretim* inince değişir.
+- **Sapma — anonim `dailyGenerationQuota` 5 değil 0 (2026-09-09, `B-079`).**
+  § 35.7 beşi yazıyor ama anonim üretim kurulmadı: `POST /generations`
+  `require()` çağırıyor, `GenerationJobHandler` sahipsiz işi ikinci savunma
+  olarak reddediyor. Blok "beş hakkın var" deyip ilk tıklamada 401 verdiriyordu
+  ve bunu söyleyen başka alan yok. **Profil tarafı gerçek, dokunulmadı:**
+  `JobOwner.of` anonim oturuma düşüyor, `ProfileExtractionJobHandler` efemer
+  profili yazıyor, giriş anında `ProfileUpgradeService` onu *kopyalamadan
+  sahipleniyor*. Yani "anonim iş birleştirme" diye açık bir madde yoktu —
+  taşınacak üretim hiç oluşmuyor. Beş, akış inince geri döner.
 - **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
   (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
 - **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran

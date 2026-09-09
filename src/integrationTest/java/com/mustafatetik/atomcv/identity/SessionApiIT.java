@@ -80,7 +80,12 @@ class SessionApiIT extends AbstractIntegrationTest {
                 // Bolum 9's limits, not an account's.
                 .andExpect(jsonPath("$.capabilities.canSaveHistory").value(false))
                 .andExpect(jsonPath("$.capabilities.maxAtoms").value(60))
-                .andExpect(jsonPath("$.capabilities.dailyGenerationQuota").value(5))
+                // Zero, and not Bolum 9's five: POST /generations refuses a
+                // caller with no account, so a quota here would be a promise
+                // broken on the first click. See Capabilities.
+                .andExpect(jsonPath("$.capabilities.dailyGenerationQuota").value(0))
+                // The half that is built keeps its number.
+                .andExpect(jsonPath("$.capabilities.dailyProfileQuota").value(3))
                 // EK D.6.6: the countdown the client renders.
                 .andExpect(jsonPath("$.capabilities.anonymousExpiresAt").exists())
                 .andReturn();
