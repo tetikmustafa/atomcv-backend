@@ -20,6 +20,7 @@ import com.mustafatetik.atomcv.jobs.queue.JobRetryPolicy;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
 import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -55,12 +56,15 @@ public class GenerationJobHandler implements JobHandler {
     private final JobSpecificGenerationService generations;
     private final CvGenerationService general;
     private final GenerationRepository records;
+    private final ProfileResolver profiles;
     private final QuotaService quotas;
     private final ErrorPresenter errors;
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
-            GenerationRepository records, QuotaService quotas, ErrorPresenter errors) {
+            GenerationRepository records, ProfileResolver profiles, QuotaService quotas,
+            ErrorPresenter errors) {
 
+        this.profiles = profiles;
         this.quotas = quotas;
         this.generations = generations;
         this.general = general;
@@ -81,15 +85,22 @@ public class GenerationJobHandler implements JobHandler {
     public JobOutcome handle(Job job, ProgressSink progress) {
         UUID userId = job.getOwnerId();
         if (userId == null) {
-            // Bolum 9's anonymous flow is Stage 3 and nothing enqueues one
-            // yet. Refusing beats inventing an owner for a row that would then
-            // belong to nobody and be readable by everybody.
+            // Bolum 9's anonymous flow is being built and this is the switch
+            // that is not thrown yet. The pipeline behind it no longer needs an
+            // account -- it takes a GenerationSubject, and there is a factory
+            // for a session -- but three things still have to arrive: the quota
+            // subject has to travel in the payload so a refund has an address to
+            // go to, the measurement job has to run for an anonymous profile so
+            // the page limit stays a measurement rather than an estimate, and
+            // the read and download endpoints have to accept a session. Until
+            // then, refusing beats writing a row nobody can reach.
             log.error("An anonymous generation reached the queue; job {}", job.getId());
             return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
         }
 
         GenerationPayload payload = GenerationPayload.from(job.getPayload());
         UserContext user = UserContext.of(userId);
+        GenerationSubject subject = GenerationSubject.account(profiles.owned(user), userId);
 
         // Bolum 19.4: no posting means no Faz A and no Faz B. Everything from
         // selection onwards is the same code, which is what separating scoring
@@ -98,7 +109,7 @@ public class GenerationJobHandler implements JobHandler {
                 ? general.generateGeneralCv(user, payload.maxPages(), payload.language(),
                         progress)
                 : generations.generateForJob(
-                        user, payload.jobDescription(), payload.preflightAcknowledged(),
+                        subject, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
                         progress, job.getId());
 

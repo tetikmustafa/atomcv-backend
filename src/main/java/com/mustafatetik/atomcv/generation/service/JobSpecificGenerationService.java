@@ -25,14 +25,12 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.repository.TagRepository;
 import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
-import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
-import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +65,6 @@ public class JobSpecificGenerationService {
 
     private static final Logger log = LoggerFactory.getLogger(JobSpecificGenerationService.class);
 
-    private final ProfileResolver profiles;
     private final ProfileAssembler assembler;
     private final TagRepository tags;
     private final JobAnalysisPhase analysis;
@@ -78,7 +75,6 @@ public class JobSpecificGenerationService {
     private final GenerationPipeline pipeline;
 
     JobSpecificGenerationService(
-            ProfileResolver profiles,
             ProfileAssembler assembler,
             TagRepository tags,
             JobAnalysisPhase analysis,
@@ -88,7 +84,6 @@ public class JobSpecificGenerationService {
             CoverLetterWriter letters,
             GenerationPipeline pipeline) {
 
-        this.profiles = profiles;
         this.assembler = assembler;
         this.tags = tags;
         this.analysis = analysis;
@@ -112,7 +107,7 @@ public class JobSpecificGenerationService {
      *                              {@code auto} means following the posting
      */
     public Result<GeneratedGeneration> generateForJob(
-            UserContext user,
+            GenerationSubject subject,
             String jobDescription,
             boolean preflightAcknowledged,
             Integer maxPages,
@@ -121,9 +116,8 @@ public class JobSpecificGenerationService {
             ProgressSink progress,
             java.util.UUID jobId) {
 
-        var owned = profiles.owned(user);
-        Profile head = owned.profile();
-        ProfileRef profile = owned.ref();
+        Profile head = subject.head();
+        ProfileRef profile = subject.profile();
 
         ProfileTree tree = assembler.load(profile);
         Result<Void> preflight = ProfilePreflight.check(head, tree);
@@ -131,13 +125,14 @@ public class JobSpecificGenerationService {
             return preflight.map(ignored -> null);
         }
 
-        // Faz A. The bucket key is the user id, so an A/B experiment keeps one
-        // person on one prompt version across their generations (Bolum 53.3).
+        // Faz A. The bucket key keeps one person on one prompt version across
+        // their generations (Bolum 53.3) -- their user id, or the profile id when
+        // there is no account behind the request.
         progress.report(GenerationPhase.ANALYSING.at(10));
-        String bucketKey = user.userId().toString();
+        String bucketKey = subject.bucketKey();
         Result<JobAnalysis> analysed =
                 analysis.analyse(jobDescription, preflightAcknowledged, bucketKey,
-                        user.userId(), jobId);
+                        subject.userId(), jobId);
         if (analysed instanceof Result.Err<JobAnalysis> refused) {
             return Result.err(refused.error());
         }
@@ -206,7 +201,7 @@ public class JobSpecificGenerationService {
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
                 options.language(), head.getPreferences().writingStyle().tone(), bucketKey,
-                user.userId(), jobId);
+                subject.userId(), jobId);
         var rewritten = new AtomicReference<>(RewrittenContent.none());
         // Accumulated across the compile loop rather than overwritten. A
         // document that came out too long has already paid for the pass before
@@ -251,7 +246,7 @@ public class JobSpecificGenerationService {
                 .map(made -> coverLetter
                         ? made.withCoverLetter(letters.writeQuietly(
                                 head, rendered, made.document().selection(), posting,
-                                "", CoverLetterStyle.DEFAULT, bucketKey, user.userId(),
+                                "", CoverLetterStyle.DEFAULT, bucketKey, subject.userId(),
                                 jobId))
                         : made);
     }
