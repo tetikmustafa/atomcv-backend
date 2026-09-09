@@ -45,27 +45,23 @@ class CapabilitiesTest {
     }
 
     /**
-     * <strong>Sapma against § 35.7's five, and the reason is measured.</strong>
-     * Anonymous generation is not built: {@code POST /generations} calls
-     * {@code CurrentUser.require()} and answers {@code AUTHENTICATION_REQUIRED}
-     * to a caller with no account, and {@code GenerationJobHandler} refuses a
-     * job with no owner as a second line. Advertising five was a promise the
-     * API breaks on the first click, and no other field in the block says
-     * otherwise — {@code canSaveHistory} is about keeping a generation, not
-     * about making one.
+     * <strong>Five again, and the flow behind it exists.</strong> This assertion
+     * was zero for a day, while the block advertised a generation the API
+     * refused. Now the request is queued as the session's own work, the pipeline
+     * takes a subject rather than a user, and the result is readable by the
+     * session that made it — so the number is a promise again rather than a
+     * screen the user hits a 401 behind.
      *
-     * <p>The profile number beside it stays three because that half <em>is</em>
-     * built, which is the whole point of stating them separately: this is not
-     * "anonymous callers can do nothing", it is "they cannot do this one".
+     * <p>The profile number beside it never moved: that half was built all along,
+     * which is the whole reason they are stated separately.
      */
     @Test
-    void thegenerationAnonymousCallersCannotStartIsNotAdvertisedToThem() {
+    void thegenerationAnonymousCallersCanNowStartIsAdvertisedAgain() {
         CapabilitiesResponse capabilities = capabilities().of(Optional.empty(), null);
 
         assertThat(capabilities.dailyGenerationQuota())
-                .as("POST /generations refuses an anonymous caller, so the block "
-                        + "must not offer them a quota for it")
-                .isZero();
+                .as("the anonymous flow can generate, so § 35.7's five stands")
+                .isEqualTo(5);
         assertThat(capabilities.dailyProfileQuota())
                 .as("importing a CV anonymously is built and stays advertised")
                 .isEqualTo(3);

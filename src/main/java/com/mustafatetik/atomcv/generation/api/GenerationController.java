@@ -29,6 +29,11 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimitDecision;
 import com.mustafatetik.atomcv.shared.ratelimit.RateLimiter;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
+import com.mustafatetik.atomcv.generation.repository.AnonymousGenerations;
+import com.mustafatetik.atomcv.jobs.queue.JobOwner;
+import com.mustafatetik.atomcv.profile.service.CallerProfiles;
+import com.mustafatetik.atomcv.shared.ratelimit.ClientIp;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +47,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -78,6 +84,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class GenerationController {
 
     private final CurrentUser currentUser;
+    private final CallerProfiles callers;
+    private final AnonymousGenerations anonymousRecords;
     private final GenerationEnqueueService enqueue;
     private final GenerationDownloadService downloads;
     private final GenerationRepository generations;
@@ -122,13 +130,16 @@ public class GenerationController {
                     + "`params.resetsAt`, as a duration: it is the one of the two "
                     + "that is still right when the client's own clock is wrong.";
 
-    GenerationController(CurrentUser currentUser,
+    GenerationController(CurrentUser currentUser, CallerProfiles callers,
+            AnonymousGenerations anonymousRecords,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
             RateLimiter rateLimiter, FeedbackService feedback, Clock clock,
             ErrorPresenter errors) {
 
         this.currentUser = currentUser;
+        this.callers = callers;
+        this.anonymousRecords = anonymousRecords;
         this.enqueue = enqueue;
         this.downloads = downloads;
         this.generations = generations;
@@ -164,10 +175,13 @@ public class GenerationController {
     @PostMapping
     public ResponseEntity<AcceptedJobResponse> generate(
             @Valid @RequestBody GenerationRequest request,
-            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            jakarta.servlet.http.HttpServletRequest http) {
 
+        JobOwner owner = JobOwner.of(currentUser);
         Result<Job> queued = enqueue.enqueue(
-                currentUser.require(), request.jobDescription(), request.acknowledged(),
+                owner, allowanceFor(owner, http), callers.owned(),
+                request.jobDescription(), request.acknowledged(),
                 request.maxPages(), request.language(), request.wantsCoverLetter(),
                 idempotencyKey);
 
@@ -262,7 +276,7 @@ public class GenerationController {
         // generation id reaches a browser twice and this is the third place it
         // can be spent (absolute rule 3). Someone else's id answers 404 rather
         // than 403 — that an id exists is itself information.
-        Generation generation = generations.findById(currentUser.require(), generationId)
+        Generation generation = forCaller(generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         // F-019: the verdict and its grant ride along, so a reload shows the
@@ -270,7 +284,14 @@ public class GenerationController {
         // person can still see, the day after granting it, whether it is open,
         // when it runs out and whether anybody has read it (Bolum 48.4) — the
         // last of those since the offline reader stamps it (B-078).
-        FeedbackResponse verdict = feedback.read(currentUser.require(), generationId)
+        //
+        // Absent for an anonymous session, and absent rather than refused: a
+        // verdict is a row keyed by user and a support grant is consent an
+        // account gives, so there is nothing to read and nothing to say. Asking
+        // for a user here is what made the whole endpoint answer 401 to a caller
+        // whose generation it had already found.
+        FeedbackResponse verdict = currentUser.find()
+                .flatMap(user -> feedback.read(user, generationId))
                 .map(recorded -> FeedbackResponse.of(generationId, recorded.verdict(),
                         recorded.grant(), clock.instant()))
                 .orElse(null);
@@ -300,7 +321,7 @@ public class GenerationController {
     })
     @GetMapping(path = "/{generationId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> download(@PathVariable UUID generationId) {
-        Generation generation = downloads.find(currentUser.require(), generationId)
+        Generation generation = forCaller(generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
         if (generation.getContentSnapshot() == null) {
@@ -446,4 +467,45 @@ public class GenerationController {
         return TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC)
                 .orElseThrow().pageTextHeightPt();
     }
+    /**
+     * Whose ceiling this generation takes (Bolum 44.1).
+     *
+     * <p>An account pays by its own id; a caller with no account pays by
+     * address, because a session is a cookie and counting by one would give an
+     * unlimited allowance to whoever clears theirs. The same shape
+     * {@code ProfileImportController} uses, and the value travels into the
+     * payload so the worker can give it back.
+     */
+    private static QuotaSubject allowanceFor(
+            JobOwner owner, jakarta.servlet.http.HttpServletRequest http) {
+
+        return owner.isAnonymous()
+                ? QuotaSubject.ofAddress(ClientIp.of(http))
+                : QuotaSubject.of(UserContext.of(owner.userId()));
+    }
+
+    /**
+     * One generation belonging to whoever is calling (Bolum 9, absolute rule 3).
+     *
+     * <p><strong>Two doors and no third.</strong> An account's generations are
+     * user-scoped, and a row with no owner reads as absent there — correctly. An
+     * anonymous session's are profile-scoped, because a generation already
+     * carries the {@code profile_id} the session owns. Which door is taken is
+     * decided by whether there is an account, never by trying both: handing a
+     * persistent ref to the anonymous reader is a programming error and it
+     * refuses rather than falling through.
+     *
+     * <p>Absent for somebody else's id, and 404 rather than 403 at the call
+     * site — that an id exists is itself information. The generation id reaches
+     * a browser twice, in the job's terminal event and in the download link, so
+     * this is the third place it can be spent and the whole defence on both
+     * endpoints.
+     */
+    private Optional<Generation> forCaller(UUID generationId) {
+        Optional<UserContext> account = currentUser.find();
+        return account.isPresent()
+                ? generations.findById(account.get(), generationId)
+                : anonymousRecords.findById(callers.ref(), generationId);
+    }
+
 }

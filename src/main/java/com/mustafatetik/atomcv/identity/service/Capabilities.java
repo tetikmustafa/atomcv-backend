@@ -28,23 +28,20 @@ import org.springframework.stereotype.Service;
 public class Capabilities {
 
     /**
-     * <strong>Sapma against § 35.7, which writes five.</strong> Anonymous
-     * generation is not built, and this block was promising it.
+     * § 35.7's five, and it is true again.
      *
-     * <p>{@code POST /generations} calls {@code CurrentUser.require()} and
-     * answers {@code AUTHENTICATION_REQUIRED} to a caller with no account;
-     * {@code GenerationJobHandler} refuses a job with no owner as a second
-     * line, logging that nothing should have enqueued one. So an anonymous
-     * visitor was told they had five generations today and got a refusal on
-     * the first click — and nothing else in the block says otherwise, because
-     * {@code canSaveHistory} is about keeping a generation, not about making
-     * one.
+     * <p>It was zero for a day: the block was advertising a generation
+     * {@code POST /generations} refused, because the anonymous flow had a profile
+     * and no pipeline. Both ends exist now — the request is queued as the
+     * session's own work and paid for by the address (Bolum 44.1), the pipeline
+     * takes a subject rather than a user, and the finished generation is readable
+     * and downloadable by the session that owns it.
      *
-     * <p>Zero is what the API does. Five goes back the day the flow lands, and
-     * {@code CapabilitiesTest} is where that is said out loud rather than
-     * remembered.
+     * <p>What the number does <em>not</em> cover is the cover letter: § 35.7 gives
+     * that to an account, and asking for one is refused before the quota is
+     * touched.
      */
-    private static final int ANONYMOUS_GENERATIONS = 0;
+    private static final int ANONYMOUS_GENERATIONS = 5;
 
     /**
      * Three, and unlike the line above this one is real: {@code JobOwner.of}

@@ -12,8 +12,40 @@
 
 ## OPEN
 
-_Altı madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
+_Yedi madde açık ve dosya sınırın üstünde: sebep arşivleme değil, ACK bekleyen
 backlog. Hepsi ACK'lendiğinde `resolved/`'a iner._
+
+### B-082 · Anonim üretim çalışıyor; kota 5'e döndü, ön yazı yok
+
+**Since:** commit `<bu PR>` · **Spec:** § 35.7.3 · `generation/service/GenerationSubject`
+
+**Ne oldu:** oturumsuz çağıran artık **ilana göre CV üretebiliyor**.
+`POST /generations`, `GET /generations/{id}` ve `.../download` anonim oturumu
+kabul ediyor. `dailyGenerationQuota` **0'dan 5'e döndü** — `B-079`'da "akış inince
+döner" demiştim, indi.
+
+**Değişmeyen:** istek gövdesi, yanıt şekli, iş akışı (`202` + job id + SSE),
+indirme. Hesapla **birebir aynı**.
+
+**Üç fark var, üçü de ilan edilmiş:**
+
+| ne | ne oluyor |
+|---|---|
+| `coverLetter: true` | `403 FEATURE_REQUIRES_ACCOUNT`, `params.feature=cover_letter` — **kotadan önce**, yani hakkı yanmıyor |
+| oturum üretim sırasında bitti | `ANONYMOUS_SESSION_EXPIRED` + `sign_up`; iş **tekrar denenmiyor** |
+| `GET /generations/{id}` içindeki `feedback` | anonimde **null** — geri bildirim ve destek izni hesabın |
+
+**Action:** üç şey.
+
+1. Anonim ziyaretçide "üret" yolunu açın; kota 5 diyor ve gerçekten 5.
+2. "Ön yazı da yaz" kutusunu `capabilities` ile kapatın — açık bırakırsanız
+   `403` gelir ve `params.feature` hangi kutu olduğunu söyler.
+3. Üretim sırasında oturum biterse gelen `ANONYMOUS_SESSION_EXPIRED`'ı **iş
+   sonucu** olarak da ele alın (yalnız istek anında değil): iki saat CV
+   üretiminin ortasında dolabilir, ve tek çıkış yolu `sign_up`.
+
+**Liste ve geçmiş hâlâ hesaba özel** (`canSaveHistory: false`): anonim oturum
+kendi üretimini id ile okur, ama bir listesi yok.
 
 ### B-081 · Profil editörü anonim oturumda çalışıyor, üç limit `403` veriyor
 
@@ -74,6 +106,12 @@ tutmayan bir söz verir. Ekranda ayrıca bir uyarı gerekmiyor; bu, politika
 metninin cümlesi.
 
 ### B-079 · Anonim `dailyGenerationQuota` artık 0 — tutulamayan bir sözdü
+
+> **`B-082` bunu geçersiz kıldı (aynı gün).** Sayı 5'e döndü çünkü akış indi.
+> Aşağıdakini **tarih olarak** okuyun, talimat olarak değil — ve ikisini
+> birlikte ACK'leyin. Duruyor olmasının sebebi: 0 gören bir sürüm dağıtıldıysa
+> ekranın neden öyle davrandığını açıklayan tek kayıt bu.
+
 
 **Since:** commit `<bu PR>` · **Spec:** § 35.7 (sapma) · `identity/service/Capabilities`
 

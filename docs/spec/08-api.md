@@ -510,6 +510,48 @@ de çevrilecek ikinci bir dili (§ 35.7 ona `["en"]` veriyor). Bozulmuş bir yol
 değil, kısa bir yol — `AtomService.patchVariant` bu yüzden `Optional<UserContext>`
 alıyor.
 
+#### 35.7.3 Kararlar — anonim üretim indi (2026-09-09)
+
+**Kota beşe döndü.** Bir gün sıfırdı (§ 35.7.2'nin sapması): blok, API'nin
+reddettiği bir üretimi ilan ediyordu. İki uç da var artık, yani sayı yine bir söz.
+
+**Boru hattı `UserContext` değil `GenerationSubject` alıyor.** Kullanıcıyı üç
+ayrı iş için kullanıyordu — profili çözmek, A/B kovası (§ 53.3), LLM maliyet
+atfı — ve yalnız üçüncüsü hesap gerektiriyor. Anonimde kova **profil id'si**
+(`ProfileExtractionJobHandler`'ın emsali), atıf ise boş: `llm_invocations.user_id`
+nullable ve § 51.6'nın notu bunu zaten öngörmüş.
+
+**Kota adrese göre, oturuma göre değil** (§ 44.1) — ve özne **payload'da
+yolculuk ediyor**, çünkü işçinin adres okuyacağı bir istek yok. Ödemeyenden
+farkına iade etmek, hiç iade etmemekten kötü.
+
+**Ön yazı anonimde yok** (karar 2026-09-09), ve ret **kotadan önce**: reddedilecek
+bir istek kimsenin gününü harcamamalı. `FEATURE_REQUIRES_ACCOUNT`,
+`params.feature = cover_letter`.
+
+**Oturum bitmişse üretim yapılmıyor, söyleniyor.** İstekle işçi arasında iki saat
+dolup süpürme profili almışsa üretilecek bir şey yok: `ANONYMOUS_SESSION_EXPIRED`
++ `sign_up`, ve **tekrar denenmiyor** — sonraki deneme aynı yokluğu okur.
+
+**Okuma iki kapıdan, üçüncüsü yok.** Hesabın üretimleri kullanıcı-kapsamlı;
+oturumun üretimleri **profil-kapsamlı**, çünkü satır zaten oturumun sahip olduğu
+`profile_id`'yi taşıyor. Hangi kapı, hesabın olup olmadığına göre seçiliyor —
+ikisini de denemek yok: anonim okuyucuya kalıcı ref vermek programlama hatasıdır
+ve reddediyor.
+
+**Verdict anonimde yok, reddedilmiyor.** Geri bildirim kullanıcıya anahtarlı bir
+satır, destek izni de hesabın verdiği bir onay; okunacak şey yok. Burada
+kullanıcı istemek, bulduğu üretimi tüm ucun `401` ile reddetmesine yol açıyordu.
+
+**Sayfa garantisi kendiliğinden sağlandı, ve bu (i)'in karşılığı.** `measureMissing`
+boru hattının *içinde*, seçim sayı istemeden önce koşuyor ve profil-kapsamlı —
+yani anonim profilin satırlarına karşı çalışıyor. Arka plan ölçüm işi ilk üretimi
+*hızlandırmak* için var, *doğru* kılmak için değil. Bedeli: ilk anonim üretim bir
+derlemeyi satır içi ödüyor.
+
+**Genel CV modu hâlâ hesaba özel** — reddedilmiyor, sunulmuyor: § 35.7 anonime tek
+dil veriyor ve akış "bu ilana karşı" diye kuruldu. İsteyen çıkınca gelir.
+
 ### 35.8 Tip üretimi (repolar arası)
 
 Backend ve frontend ayrı repolarda olduğu için tip senkronizasyonu **OpenAPI şeması üzerinden** yapılır:

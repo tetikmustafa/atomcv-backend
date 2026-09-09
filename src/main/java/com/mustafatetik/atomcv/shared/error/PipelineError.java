@@ -158,6 +158,36 @@ public sealed interface PipelineError {
     }
 
     /**
+     * The caller asked for something § 35.7 gives an account and not a session.
+     *
+     * <p>A pipeline error rather than an exception thrown at the endpoint,
+     * because the refusal belongs where the decision is: the enqueue service
+     * knows the scope, and putting the check at the door would mean a second
+     * endpoint could queue the same work without it.
+     *
+     * @param feature what goes in the error's {@code feature} parameter, so the
+     *                screen can say which button needs an account rather than
+     *                raising a generic sign-up wall
+     */
+    record FeatureNeedsAnAccount(String feature) implements PipelineError {
+
+        public FeatureNeedsAnAccount {
+            java.util.Objects.requireNonNull(feature, "feature");
+        }
+    }
+
+    /**
+     * The anonymous session this work belonged to is gone (Bolum 9).
+     *
+     * <p>Between the request and the worker the two hours ran out and the sweep
+     * took the profile, so there is nothing to generate from. Not a system
+     * failure and not the person's mistake: the window closed, and the only
+     * thing that changes the answer is signing up.
+     */
+    record SessionEnded() implements PipelineError {
+    }
+
+    /**
      * The document did not compile, or the compiler was not there (Bolum 29).
      *
      * @param kind   which of the four, so the caller knows whether to retry
