@@ -84,7 +84,8 @@ class GenerationJobHandlerTest {
                 generations, general, records,
                 mock(com.mustafatetik.atomcv.generation.repository.AnonymousGenerations.class),
                 mock(com.mustafatetik.atomcv.profile.repository.AnonymousProfiles.class),
-                profiles, quotas, mock(GenerationRerunService.class), new ErrorPresenter());
+                profiles, quotas, mock(GenerationRerunService.class),
+                mock(NaturalLanguageEditService.class), new ErrorPresenter());
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 

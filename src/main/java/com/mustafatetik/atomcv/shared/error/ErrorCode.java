@@ -144,6 +144,16 @@ public enum ErrorCode {
      * resource the caller named, not a version they carried.
      */
     GENERATION_SUPERSEDED(409),
+
+    /**
+     * A natural-language edit named no line of the CV (Bolum 24.2).
+     *
+     * <p>422 rather than 400: the request was well formed and was read: what
+     * could not be done is what it asked for. The way out is another sentence,
+     * so the resolution is a retry -- and the screen should say what this
+     * endpoint can do, because "not understood" without that is a dead end.
+     */
+    EDIT_NOT_UNDERSTOOD(422),
     CSRF_TOKEN_INVALID(403),
 
     /**

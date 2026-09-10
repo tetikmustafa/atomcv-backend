@@ -83,7 +83,7 @@ class SelectionEditHandlerTest {
                 mock(com.mustafatetik.atomcv.generation.repository.AnonymousGenerations.class),
                 mock(com.mustafatetik.atomcv.profile.repository.AnonymousProfiles.class),
                 profiles, mock(com.mustafatetik.atomcv.billing.QuotaService.class),
-                reruns, new ErrorPresenter());
+                reruns, mock(NaturalLanguageEditService.class), new ErrorPresenter());
 
         parent = parentGeneration();
         when(records.findById(any(), any())).thenReturn(Optional.of(parent));

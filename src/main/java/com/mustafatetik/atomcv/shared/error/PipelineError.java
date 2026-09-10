@@ -249,6 +249,27 @@ public sealed interface PipelineError {
     }
 
     /**
+     * Faz G read the sentence and it named no line (Bolum 24.2).
+     *
+     * <p><strong>An ordinary answer, not a broken one.</strong> "Make it
+     * shorter" names no bullet, "reword the first one" asks for something this
+     * endpoint does not do, and a sentence about two lines that could each be
+     * what was meant is not understood either. The prompt asks for this in
+     * preference to a guess, because removing the wrong bullet from somebody's
+     * CV is worse than telling them nothing happened -- they may not notice.
+     *
+     * <p>It also carries the half-understood case: a model that named one line
+     * in range and one out of it understood half the sentence, and applying
+     * half is showing the person something other than what they asked for.
+     *
+     * <p>No parameters. What the model made of the sentence is a fact about
+     * the model, and repeating the sentence back would put the user's own
+     * writing into an error body for no purpose.
+     */
+    record EditNotUnderstood() implements PipelineError {
+    }
+
+    /**
      * Bolum 34.4 refused the letter twice, and there is nothing to print
      * instead.
      *

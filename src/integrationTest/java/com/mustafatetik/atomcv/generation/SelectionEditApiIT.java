@@ -161,6 +161,60 @@ class SelectionEditApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.code").value("GENERATION_SUPERSEDED"));
     }
 
+    // ── the natural-language half (Bolum 24.2) ───────────────────────────
+
+    @Test
+    void asentenceIsAcceptedAndQueuedWithTheSentenceOnIt() throws Exception {
+        mvc.perform(post("/api/v1/generations/" + parent.getId() + "/edits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"instruction\":\"take out the android bullet\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(header().exists("Location"));
+
+        Job job = queue.claim("test-reader").flatMap(queue::find).orElseThrow();
+        assertThat(job.getPayload())
+                .containsEntry("parentGenerationId", parent.getId().toString())
+                .containsEntry("instruction", "take out the android bullet");
+    }
+
+    /**
+     * Bolum 44.2, and it is the difference between the two endpoints: reading
+     * a sentence is a model call, so it comes off the day's generations. The
+     * toggle next door takes nothing.
+     */
+    @Test
+    void asentenceSpendsAgeneration() throws Exception {
+        jdbc.update("DELETE FROM usage_counters");
+
+        mvc.perform(post("/api/v1/generations/" + parent.getId() + "/edits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"instruction\":\"drop the last one\"}"))
+                .andExpect(status().isAccepted());
+
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM usage_counters", Integer.class)).isPositive();
+    }
+
+    @Test
+    void anemptySentenceIsRefused() throws Exception {
+        mvc.perform(post("/api/v1/generations/" + parent.getId() + "/edits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"instruction\":\"   \"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void asentenceAimedAtAreplacedGenerationIsRefused() throws Exception {
+        parent.markSuperseded();
+        generations.save(user(), parent);
+
+        mvc.perform(post("/api/v1/generations/" + parent.getId() + "/edits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"instruction\":\"drop the last one\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("GENERATION_SUPERSEDED"));
+    }
+
     /** Absolute rule 3, and it is the whole IDOR defence on this endpoint. */
     @Test
     void anotherAccountsGenerationReadsAsAbsent() throws Exception {

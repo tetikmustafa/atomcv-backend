@@ -8,6 +8,7 @@ import com.mustafatetik.atomcv.generation.api.dto.FeedbackResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationPage;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
+import com.mustafatetik.atomcv.generation.api.dto.NaturalLanguageEditRequest;
 import com.mustafatetik.atomcv.generation.api.dto.SelectionEditRequest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.repository.GenerationCursor;
@@ -447,6 +448,80 @@ public class GenerationController {
         }
 
         Job job = edits.enqueue(JobOwner.of(currentUser), parent, asked);
+
+        return ResponseEntity.accepted()
+                .location(URI.create("/api/v1/jobs/" + job.getId()))
+                .body(AcceptedJobResponse.of(job));
+    }
+
+    @Operation(
+            summary = "Say what should change, in your own words",
+            description = """
+                    Bolum 24.2, and the other half of the toggle next door. \
+                    One sentence is read into a change of **which atoms are on \
+                    the page**, and the CV is re-made from its own selection \
+                    state — so the page limit is re-checked and still holds, \
+                    however many sentences it takes.
+
+                    202 with a job, and the model is asked exactly once: it \
+                    sees the lines **numbered**, never their ids, and answers \
+                    with numbers. It cannot name a bullet that does not exist.
+
+                    **This one costs a generation** off the day's allowance, \
+                    unlike the hand toggle. Refunded when the sentence named \
+                    no line.
+
+                    What it does *not* do: reword a line, change the tone, or \
+                    resize the page. A sentence asking for any of those is \
+                    answered `EDIT_NOT_UNDERSTOOD` rather than guessed at — \
+                    removing the wrong bullet is worse than saying nothing, \
+                    because the person may not notice.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — an empty or over-long sentence",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409",
+                    description = "GENERATION_SUPERSEDED — a newer generation has "
+                            + "replaced this one; edit that",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "429",
+                    description = "QUOTA_EXCEEDED — the day's generations are spent",
+                    headers = @Header(name = HttpHeaders.RETRY_AFTER,
+                            description = RETRY_AFTER_DESCRIPTION,
+                            schema = @Schema(type = "integer")),
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{generationId}/edits", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcceptedJobResponse> edit(
+            @PathVariable UUID generationId,
+            @Valid @RequestBody NaturalLanguageEditRequest request,
+            jakarta.servlet.http.HttpServletRequest http) {
+
+        // Scoped, and it is the IDOR defence here too (absolute rule 3).
+        Generation parent = forCaller(generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (edits.isStale(parent)) {
+            throw ApiException.of(ErrorCode.GENERATION_SUPERSEDED);
+        }
+
+        JobOwner owner = JobOwner.of(currentUser);
+        Result<Job> queued = edits.enqueue(
+                owner, allowanceFor(owner, http), parent, request.instruction());
+
+        Job job = switch (queued) {
+            case Result.Ok<Job> ok -> ok.value();
+            case Result.Err<Job> refused -> throw new ApiException(
+                    errors.present(refused.error(), pageHeightPt()));
+        };
 
         return ResponseEntity.accepted()
                 .location(URI.create("/api/v1/jobs/" + job.getId()))

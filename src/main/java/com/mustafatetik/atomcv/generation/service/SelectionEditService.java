@@ -1,5 +1,8 @@
 package com.mustafatetik.atomcv.generation.service;
 
+import com.mustafatetik.atomcv.billing.QuotaMetric;
+import com.mustafatetik.atomcv.billing.QuotaService;
+import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
@@ -8,6 +11,7 @@ import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.jobs.queue.JobQueue;
 import com.mustafatetik.atomcv.jobs.queue.JobType;
+import com.mustafatetik.atomcv.shared.error.Result;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.util.ArrayList;
@@ -19,10 +23,11 @@ import org.springframework.stereotype.Service;
 /**
  * The manual half of Faz G: a toggle, checked and queued (Bolum 24.4).
  *
- * <p>No quota and no model. Everything an edit re-runs is deterministic —
- * selection, render, compile — so there is nothing here for a day's allowance
- * to be spent on, and § 44's ceiling stays where it belongs: on the calls that
- * cost money.
+ * <p><strong>Two doors and two prices.</strong> A hand toggle re-runs nothing
+ * but deterministic work — selection, render, compile — so there is nothing
+ * for a day's allowance to be spent on. A sentence has to be read first, and
+ * that reading is a model call, so it comes off the same ceiling a generation
+ * does. § 44 stays where it belongs: on the calls that cost money.
  *
  * <p><strong>Checked against the parent's own snapshot.</strong> An id that was
  * never a candidate for this CV is refused rather than ignored. Ignoring it
@@ -35,16 +40,22 @@ import org.springframework.stereotype.Service;
 public class SelectionEditService {
 
     private final JobQueue queue;
+    private final QuotaService quotas;
     private final MeterRegistry meters;
     private final Clock clock;
 
-    SelectionEditService(JobQueue queue, MeterRegistry meters, Clock clock) {
+    SelectionEditService(
+            JobQueue queue, QuotaService quotas, MeterRegistry meters, Clock clock) {
+
         this.queue = queue;
+        this.quotas = quotas;
         this.meters = meters;
         this.clock = clock;
     }
 
     /**
+     * A hand toggle: the ids are already decided, so nothing is spent.
+     *
      * @param parent the generation being edited, already read through a scoped
      *               repository — this never loads it, so the IDOR defence stays
      *               where absolute rule 3 puts it
@@ -56,9 +67,39 @@ public class SelectionEditService {
 
         countManualEdits(parent.getSelectionState(), asked);
 
-        var job = new Job(JobType.GENERATION, owner.userId(),
-                new SelectionEditPayload(parent.getId(), merged).toMap(),
-                clock.instant());
+        return enqueue(owner, new SelectionEditPayload(parent.getId(), merged));
+    }
+
+    /**
+     * A sentence: the ids are not decided yet, and reading it costs a call
+     * (Bolum 24.2).
+     *
+     * <p>The ceiling is taken here rather than in the worker, for the reason
+     * Bolum 44.2 takes it at every other queue point: a request that is going
+     * to be refused must not have been accepted first. The worker gives it
+     * back when the sentence named no line, or when the re-run failed.
+     *
+     * <p>The parent's own directives ride along and the parse merges onto
+     * them, so "and take the other one out too" is a second edit of the same
+     * document rather than a fresh one.
+     *
+     * @return the queued job, or the refusal the quota gave
+     */
+    public Result<Job> enqueue(
+            JobOwner owner, QuotaSubject allowance, Generation parent, String instruction) {
+
+        Result<Void> spent = quotas.consume(allowance, QuotaMetric.GENERATION);
+        if (spent.isErr()) {
+            return spent.map(ignored -> null);
+        }
+
+        var payload = new SelectionEditPayload(parent.getId(),
+                GenerationDirectives.fromMap(parent.getDirectives()), instruction, allowance);
+        return Result.ok(enqueue(owner, payload));
+    }
+
+    private Job enqueue(JobOwner owner, SelectionEditPayload payload) {
+        var job = new Job(JobType.GENERATION, owner.userId(), payload.toMap(), clock.instant());
         job.setAnonSessionId(owner.anonSessionId());
         return queue.enqueue(job);
     }
