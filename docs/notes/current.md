@@ -4,156 +4,139 @@
 > Kayıt tipleri: **Sapma** (doküman başka diyor) · **Ekleme** (doküman sessiz) · **Düzeltme** (doküman yanlış).
 > Bir sapma kalıcıysa `spec/`'e işlenir ve buradan silinir.
 
-**Aktif aşama:** Aşama 3 — hesap ve MVP. **Plan:** `spec/14-build-guide.md`
-§ XI-A.6; gerekçesi § 55. Aşama 1-2: `archive/stage-1.md`, `archive/stage-2.md`.
+**Aktif aşama:** Aşama 4 — Olgunlaşma. **Plan:** `spec/14-build-guide.md`
+§ XI-A.7 (sabit sıra yok, öncelik önerisi var); gerekçesi § 55.
+Aşama 1-2: `archive/stage-1.md`, `archive/stage-2.md`. **Aşama 3 ve kapanış
+sonrasının yuvarlanan özetleri `archive/stage-3-closeout.md`'ye indi
+(2026-09-10)** — aşağıdaki "hâlâ canlı" bölümü onlardan çıkarılanlar.
 
 ---
 
-## Aşama 1-2'den taşınanlar — hâlâ açık
+## Aşama 4 · Faz G — düzenleme döngüsü (2026-09-10)
 
-- **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
-- **`UserScopedRepository`'de `findAll` yok** — § 41.2 `findByUserId` çağırıyor, `JpaRepository`'de yok; alt sınıflar kendi bulucularını ekler.
+Dört dilim, dördü de indi: yönlendirmeler (`313c3ee`), `rewritten_content`
+kolonu (`1a8cca2`), manuel toggle (`9758764`), doğal dil (`d12dc07`), ve
+gerçek derleyiciye karşı uçtan uca test (`b729525`).
 
-## Kapanış denetimi (2026-08-28) — sekiz dilimin yedisi indi
+**Sapma — § 24.2'nin değişiklik seti atom id'si taşımıyor.** Spec modele
+`atomId` yazdırıyor; biz satırları **numaralandırıp indeks** istiyoruz
+(`NumberedLines`). Bir UUID modelin uydurabileceği ya da yanlış kopyalayabileceği
+tam o token, ve uydurulmuş bir UUID aranana kadar gerçeğinden ayırt edilemez.
+İndeks aralık dışıysa bariz. Kalıcı, § 24.2'ye işlenmeli.
 
-**Tam kayıt `kapanis-denetimi.md`'de**; kalıcı olanlar `spec/`'e işlendi
-(§ 47, § 57.4, § 3.2, § 51.7, atomsuz entry'nin § 20.2'si). **Canlı madde
-kalmadı** — sığmayan başlık-adayı `rejectedEntries`'e giriyor (tek sebep
-`BUDGET`, eski snapshot'ta boş, EK D.6.3).
+**Ekleme — yarım cümle hiç uygulanmıyor.** Biri aralıkta biri dışında iki sayı
+döndüren model cümlenin yarısını anlamış; doğru anladığı yarıyı uygulamak kişiye
+istediğinden başka bir şey göstermek olur. `understood: false` de bir cevap,
+arıza değil — ve **sık dönecek**.
 
-## Aşama 3 · dilim 9-13 — `F-017`-`F-024` (2026-08-29/30)
+**Ekleme — `GENERATION_SUPERSEDED` (409) ve `EDIT_NOT_UNDERSTOOD` (422).**
+İkisi de § D.6.1 tablosunda. 409, zaten değiştirilmiş bir üretimi düzenlemeyi
+reddediyor: uygulamak soyağacını çatallardı — bir ebeveynin iki bitmiş çocuğu
+ve hangisinin "güncel" olduğunu söyleyen hiçbir veri yok.
 
-Kayıtları `archive/stage-3-handoff-answers.md`'de. Canlı olanlar:
+**Sapma — geçmiş `total`'ı artık satır değil CV sayıyor.** Liste `superseded`
+gizliyor, sayı da gizlemek zorunda (yoksa "23 üretim" yazıp on bir satır
+gösterir). Ama o sayıyı **hesap silme ekranı** okuyor (`F-020`). Silme yine
+emekli taslakları götürüyor; metin "N CV" derse doğru.
+
+**Ekleme — yeniden koşu Faz C'den, skorlar snapshot'tan.** § 24.1 "Faz C'den
+itibaren" diyor, dolayısıyla Faz B koşmuyor ve skorlar `selection_state`'ten
+okunuyor (`StoredSelection.scoresByCandidate`). **Sonucu:** yeniden koşu,
+üretimden sonra profilde yapılanları görmez — yeni yazılmış bir atom skorsuzdur,
+ama adıyla istenebilir (yönlendirme skoru yener).
+
+**Canlı — Faz G'nin prompt'u gerçek modele hiç sorulmadı.** Cevap işleme her
+şekle karşı ölçüldü; *bu prompt'un* gerçek modelden doğru sayıları alıp almadığı
+bir `make record` turu. Fixture inene kadar açık.
+
+**Ders — koşullu bir döngü içindeki iddia test değildir.** Devralmayı ölçen ilk
+latexTest vakası `if (before.contains(...))` içinde iddia ediyordu ve **geçti**;
+iddiayı önden isimlendirince düştü. Sebep kod değildi: bu lane'in sahte
+sağlayıcısı `bullet_rewrite`'a şemadan üretilmiş bir cümle veriyor, doğrulayıcı
+reddediyor, `rewritten_content` boş kalıyor — yani V11'in var olma sebebi olan
+devralma **birim testlerinden başka hiçbir yerde koşmamıştı** (§ 51.7).
+Vaka artık yazımı ebeveyn satıra ekip basılan belgede arıyor.
+
+**Düzeltme — `jsonb` nesne anahtar sırasını korumaz** (uzunluk+bayt sırasına
+diziyor). `RewrittenContent`'in ilk javadoc'u "iki koşu JSONB'ye iki farklı sıra
+yazar" diyordu; yanlıştı, kolon zaten normalize ediyor. `Map.copyOf` →
+`LinkedHashMap` değişikliği duruyor ama gerekçesi **bellekte** haritayı gezen şey
+(trace, log, assertion), kolon değil. CLAUDE.md'nin kuralı `json` kolonları,
+cevaplar ve assertion'lar için geçerli; `jsonb` **dizileri** sırayı korur.
+
+---
+
+## Aşama 1-3'ten taşınanlar — hâlâ canlı
+
+**Tamir etmeye kalkma — hepsi bilinçli, gerekçeleri arşivde:** `SectionFloor`
+bir tavandır talep değil; `reservedByFloor` `forcedByLock`'tan ayrı bir küme;
+bir inline satırın öğeleri **ve** etiketi sade diziliyor; `PARAGRAPH`
+`INLINE_LIST`'e katlanmadı. `suspicious_output` telde hiç görülmedi (enjeksiyon
+tripwire'ı); `bullet_rewrite` / `about_synthesis` fixture'ı olmayan girdide
+anlamsız — doğrulayıcı reddeder, orijinal basılır.
+
+**Sözlükler ve şemalar:**
 - **"Kritik uyarı" diye bir şey yok, `critical` bayrağı da yok** —
   `ExtractionWarningCode` kapalı; § 31.6'nın üçüncü kuralı **silindi**.
 - **`ImportWarning.code` `String`, şeması enum** — değer JSONB'den geri okunuyor,
   enum yapmak adı değişmiş satırı düşürür. **`OpenApiSchemaIT`'in okuduğu altı
   değer elle yazılı**: `values()`'tan türetilirse yedinciye de "evet" der.
 - **`shared.wire` bir sonraki kapalı sözlüğün yeri**; `shared.error` retlerin.
+- **Hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor** —
+  `ErrorCatalogueSpecTest` birebir ayrıştırıyor, bir hücreye eklenen açıklama
+  testi düşürür.
 
-## Aşama 3 · dilim 14 — `F-027`, `F-025`, `F-026` (2026-09-02)
-
-Tam kayıt `archive/stage-3-slice-14.md`'de. Canlı olanlar:
-- **Düzeltme — `cover_letter` v2 kapandı, iki ölçümle.** "Model 250-400'ü yok
-  sayıyor" iddiası ilk beş fixture'aydı; on ikisi, 09-02 sonrası hepsi gerçek,
-  255-290 diyor. v2 turu (09-09) **169** kelime verdi, eksik tamamen gövdede
-  (102/181). Aktif `v1`. **Ders: tamamına karşı ölç, ölçütü önce yaz.**
-
-## Aşama 3 kapanışından sonra · uçtan uca ölçüm (2026-09-03/07)
-
-Dört bulgu, yedi ayrı kusur; dilim A-G ve K'nın tam kaydı
-`archive/stage-3-post-closure-e2e.md`'de. **Fiyat tablosu indi** (2026-09-09;
-`usage.cost` da okunuyor, slug'ın yedi endpoint'i $1-$5.50 arası).
-**Geliştiricide kalan: VPS ve restore testi.**
-
-## Kapanış sonrası · dilim I-J-H ve K — sayfanın şekli (2026-09-07)
-
-Tam kayıt `archive/stage-3-post-closure-shape.md`'de; kalıcı kararlar § 18.4,
-§ 20, § 31.3.1, § 33.4.1, § 21.2 ve § 22.4.1'de. Yalnız **canlı** olanlar:
-
-**Tamir etmeye kalkma — hepsi bilinçli, gerekçeleri arşivde:** `SectionFloor`
-bir tavandır talep değil; `reservedByFloor` `forcedByLock`'tan ayrı bir küme;
-bir inline satırın öğeleri **ve** etiketi sade diziliyor (karar render'da,
-içerikte değil); `PARAGRAPH` `INLINE_LIST`'e katlanmadı.
-
-**Canlı kalan:**
+**Ölçümler ve eşikler:**
 - **Faz D eşikleri ölçüldü, teste sabitlendi (`PhaseDReachTest`), karar
-  ertelendi (2026-09-09).** Gerçek embedding'le en yüksek atom skoru
-  0.2741-0.4313; vektörsüz 0.0959, DEFAULT ağırlıklarla vektörsüz 0.2578.
-  § 21.2'nin tam uyarlama eşiği **0.65'e hiçbirinde yaklaşılmadı**, 0.40 tabanı
-  yalnız bir profilde aşıldı. **Sebep ayar değil aritmetik:** § 19.2'nin yetenek
-  terimi ilanın *tüm* isteklerine bölünüyor (bu ilanda on yedi; en isabetli madde
-  üçünü taşıyor = 0.176), etiketlenmemiş profilde etiket terimi 0.0, ve vektörsüz
-  koşuda nötr 0.5 her atoma sabit 0.20 ekliyor (§ 28.4'e işlendi).
-  **Normalizasyon ertelendi:** üç aday da yer değiştirmeli bir çarpıklık taşıyor
-  ve veri olmadan seçilemiyor. **Yeni ölçüm gerekmiyor:** `engine_version`
-  ağırlık setini, `selection_state` atom skorlarını, `trace.D.calls` Faz D'nin
-  ateşleyip ateşlemediğini zaten yazıyor — `default` setli üretim biriktiğinde
-  karar veriye dayanır ve test o gün yeni sayılarla düşer.
+  ertelendi.** Gerçek embedding'le en yüksek atom skoru 0.2741-0.4313; § 21.2'nin
+  0.65'ine hiçbirinde yaklaşılmadı. **Sebep ayar değil aritmetik** (§ 28.4'e
+  işlendi). **Yeni ölçüm gerekmiyor:** `default` setli üretim biriktiğinde karar
+  veriye dayanır ve test o gün yeni sayılarla düşer.
+- **`cover_letter` aktif `v1`.** v2 turu (09-09) 169 kelime verdi, bant 255-290.
+  **Ders: tamamına karşı ölç, ölçütü önce yaz.**
+- **`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan
+  sayfayı sayıyor** — iki sayfalık belgede sapması anlamsız, bilerek bırakıldı;
+  `theRealDocumentNeverRunsPastThePage` sayfa sayısını ayrıca tutuyor.
 
-**Ders — golden fixture yazılmaz, okunur.** `master_cv_en` beş elle yazılmış
-profilin taşımadığını taşıyor: **ilanla ilgisi olmayan çok fazla içerik.** İlk
-koşusunda Faz C'de belirlenimsizlik yakaladı (İlke 2).
+**Test yazarken:**
+- **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.** Silmeyen bir
+  kimlik testi dördüncüde ilgisiz bir 429'da düşer, flake gibi okunur.
+- **`profiles` entegrasyon paketinde hiç boş değil** (`DevSeeder`) — anonim
+  gizlilik iddiası "satır sayısı değişmedi" diye kuruluyor, ve dev kullanıcısına
+  ikinci bir profil eklenemez (tek-profil unique index'i).
+- **`local` profilinde LLM sağlayıcısı yok** — entegrasyon lane'inde her çağrı
+  `ALL_PROVIDERS_UNAVAILABLE` alır; `CoverLetterApiIT` kasten öyle kuruyor.
+  **`AccountDeletionIT` tablo listesini `information_schema`'dan okuyor.**
+- **Dev stub ölçümü yiyor** (ikinci kez, `F-027` ve `F-030`'da).
+  `SessionCurrentUser.resolve` çerez *yoksa* `LocalDevSessions`'a düşüyor, yani
+  **çerezsiz istekle yazılmış hiçbir test kimlik davranışını ölçmüyor.** Doğru
+  kurgu **çözülmeyen bir çerez**.
 
-## Kapanış sonrası · dilim L — referans belgenin kendisi (2026-09-08)
+**Sınırlar ve açıklar:**
+- **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
+- **`UserScopedRepository`'de `findAll` yok** — alt sınıflar kendi bulucularını ekler.
+- **Faz D sekize kadar eşzamanlı çağrı yapıyor**, havuz 10, işçi eşzamanlılığı 2
+  → tepede 16 kısa ödünç. **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
+- **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
+  (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
+- **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
+  (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
+- **`accessedAt` (`B-078`):** çevrimdışı okuyucu grant'i kimlik belgesi sayıp
+  sahibinin bağlamında okuyor; **tek kapsanmamış adım grant aramasıdır**
+  (`SupportGrantLookup`, API'den erişilemez — ArchUnit kuralı var).
+- **Geliştiricide kalan: VPS ve restore testi** (§ 49.4: restore sonrası anonim
+  satırları silmek), OAuth ve Turnstile'ın gerçek uca karşı denenmesi.
+- **springdoc çok parçalı bir uçta `@RequestParam`'ı query parametresi diye
+  yayımlıyor.** Sonraki çok parçalı uçta aynısı olur: dosya olmayan her parça
+  elle bildirilmezse query'ye düşer.
 
-**Düzeltme — dilim F'nin üç kararı geri alındı.** `\small`'ın ve negatif aralığın
-kaldırılması, Termes: üçü de o günkü maliyet modeli için doğruydu, ama
-**taşınması gereken modeldi** — referansa *yakın* bir CV başka bir CV. Preamble
-artık referansın kendisi; şablon sürümü **v4**, yedi fixture'ın maliyetleri
-yeniden ölçüldü.
-
-**Düzeltme — ölçüm kutusu sayfanın satır kırma kuralını kullanmıyordu.**
-`\parbox` girişte `\@parboxrestore` çalıştırıp `\rightskip`'i sıfırlıyor: sayfa
-`\raggedright` iken kutu **yaslı** diziliyor, on sekiz kelime arasını üçte bir
-daraltıyor, marjinal madde tek satır ölçülüp iki satır dizildi ve kırk tanesi
-tek sayfa sözünü iki sayfaya çevirdi. Yalnız **kalın** metinde göründü.
-
-**Ekleme — `SECTION_LIST_CLOSE` (12.0pt).** Birinci seviye madde listesinden
-sonraki bölüm başlığı tam bir küçük satır daha pahalı: `\resumeItemListEnd`'in
-`\vspace{-5pt}`'ini başlığın `\addvspace`'i yutuyor, `\topsep` kalıyor. Bir
-maddede de üçünde de aynı, paragraf ve inline listede sıfır. **Başlığa değil
-listeye yazıldı** ve açık bölümler üzerinden yeniden hesaplanıyor (seçim puana,
-sayfa okuma sırasına göre diziyor). **Bilinçli fazla ücret:** son bölüm madde
-listesiyse o 12pt boşa gidiyor; alternatifi her başlığa yazmak, beş bölümde 60pt.
-
-**Ekleme — `TechStackEditor`, ilana göre madde süzme (§ 33.4, kural B).** Bir öğe
-ya ilanın andığı ya da sayfanın kalanının zaten konuştuğu şeyse kalıyor;
-kategori boşalırsa düşüyor. **LLM yok** — kategorinin uydurulamayacağını garanti
-etmenin yolu uyduracak kodun olmaması. Üç okuma kusuru: `.tex`'ten gelen Tech
-Stack her kategoriyi kendi entry'sine asıyor (serbest atomları okumak hiçbir şeyi
-süzmedi); `Spring Cloud (Gateway, Eureka)` tek öğe ve düz virgül bölmesi ikiye
-ayırıyordu; `RewriteContext.postingSkills` `SkillNames`'den geçmiyordu ve
-burada yerel düzeltildi (süpürmenin kalanı aşağıda). `LANGUAGES` süzülmüyor
-(karar (c)).
-
-**Yedinci golden profil `stress_long_career`** — bu **yazıldı**, okunmadı: iki
-sayfa hatasını üreten şekil, elle yazılmış beşi yakalayamıyordu. **Canlı:**
-`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan sayfayı
-sayıyor, iki sayfalık belgede sapması anlamsız — bilerek bırakıldı,
-`theRealDocumentNeverRunsPastThePage` sayfa sayısını ayrıca tutuyor.
-
-## Kapanış sonrası · P3'ün yanlış pozitifleri ölçüldü (2026-09-08)
-
-**Düzeltme — teşhis yanlıştı; sebep alias sözlüğü değil, tire.** Kelime sınırı
-tireyi kelime karakteri sayıyordu: on altı kayıtlı `about_synthesis` cevabında
-**on token, dört özet, bir verdict** (tam ölçüm `5ce0d94` ve `a4c5736`'nın
-gövdesinde). Ayırıcılar iki tarafta katlanıyor artık; gerçek ret kalkmadı.
-
-**Ekleme — `postingSkillNames`: kaynak evet, sözlük ve prompt hayır.** İlan
-`Scrum`'ı yalnız `name`'inde adlandırıyor; yazımlarını ayrı liste taşıyor ve
-yalnız "bu adı bir kaynak taşıyor mu?" okuyor, yani prompt da muhafızın sözlüğü
-de aynı kaldı (§ 53.2). **Bilerek açık, ölçülmedi:** kaynağın kısalttığını
-cevabın açtığı yön. **Ders:** bir redaksiyon, durduğu kayıt yenilenince bayatlar.
-
-## Kapanış sonrası · `F-028`-`F-030` (2026-09-09)
-
-**Düzeltme — springdoc çok parçalı bir uçta `@RequestParam`'ı *query
-parametresi* diye yayımlıyor.** Gövdeyi yalnız `@RequestPart`'lardan kuruyor,
-yanındaki her `@RequestParam` `parameters`'a düşüyor. `POST /profile/import`'un
-`challengeToken`'ı böyle URL'e taşınmıştı — § 35.7.4 "form alanı" diyor, ve bir
-challenge token'ının erişim/vekil kayıtlarına ve tarayıcı geçmişine yazılması
-var olma sebebinin çoğunu siliyor. Gövde şeması elle yazıldı (`@RequestBody`
-+ `schemaProperties`); bağlama `@RequestParam`'da kaldı, ikisini de okuyor.
-**Sonraki çok parçalı uçta aynısı olur:** dosya olmayan her parça elle
-bildirilmezse query parametresi olur. `mode` bilerek query'de bırakıldı.
-
-**Ders (ikinci kez, `F-027`'den sonra) — dev stub ölçümü yiyor.**
-`SessionCurrentUser.resolve` çerez *yoksa* `LocalDevSessions`'a düşüyor ve dev
-kullanıcısı gibi cevap veriyor. Yani **çerezsiz istekle yazılmış hiçbir test
-kimlik davranışını ölçmüyor** — 401 bekleyen testim stub yüzünden 404 aldı.
-Doğru kurgu **çözülmeyen bir çerez**: çerez dalına giriyor, boşa filtreleniyor,
-ve gerçekten olan bir tarayıcı durumu (iptal edilmiş/süresi geçmiş oturum).
-
-**Ekleme — hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor.**
-`ErrorCatalogueSpecTest` onu birebir ayrıştırıyor (virgülle bölüp `ad: tip`
-okuyor), yani bir hücreye eklenen açıklama testi düşürüyor. `F-030`'un iki
-notu bu yüzden § D.6.1'in düzyazısına girdi, tabloya değil.
-
-**`feature` sözlüğü ve blok eşleşmesi `spec/08b` § D.6.1'e işlendi**, burada
-tekrarlanmıyor. Frontend aksiyonları: `B-085`-`B-087`.
-
----
+**Dersler:** *bir javadoc ne zaman çalıştığını söylüyorsa çağıranı da ara* (3.4)
+· *doğru davranan kod, korunan değildir* (3.5) · *bir ölçüm belgesi, sayfayla
+aynı preamble'ı paylaştığı için aynı belge olmuyor* (dilim L) · *golden fixture
+yazılmaz, okunur* — ama `stress_long_career` yazıldı, çünkü iki sayfa hatasını
+üreten şekli elle yazılmış beşi yakalayamıyordu · *flake demeden önce dalına
+bak* · *bir redaksiyon, durduğu kayıt yenilenince bayatlar* · **§ 51.7: bir
+muhafızın düştüğünü görmeden yazıldı sayma.**
 
 ---
 
@@ -164,55 +147,11 @@ tekrarlanmıyor. Frontend aksiyonları: `B-085`-`B-087`.
 | 3.3 kimlik | `stage-3-identity.md` | § 40.4.1, § 40.5.1, § 40.6.1, § 46.5 |
 | 3.4 çıkarım | `stage-3-ingestion.md` | § 31.3.1, § 31.4.1, § 31.5.1, § 31.6.1-2, § 43.1, § 53.1 |
 | 3.5 çok dillilik | `stage-3-multilingual.md` | § 32.2.1, § 32.3.1 |
-| 3.6 anonim | `stage-3-anonymous.md` | § 35.7.1, § 41.3.1-3, § 44.1.1, § 44.2, § 31.6.3 |
+| 3.6 anonim | `stage-3-anonymous.md` | § 35.7.1, § 41.3.1-3, § 44.1.1, § 44.2, § 31.6.3, § 51.6.1 |
 | 3.8 Faz D | `stage-3-faz-d.md` | § 21.1 notu, § 21.3.1, § 21.5.1-7.1, § 34.4.1 |
 | 3.9 hukuki | — | § 57.4.1, § 48.4.1 |
+| dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
+| kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
+| kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
 
-Hepsi `archive/` altında. Frontend aksiyonları: `B-055`-`B-058`.
-
-## Kapanan adımlardan hâlâ canlı olanlar
-
-**Tamir etmeye kalkma — ikisi de beklenen davranış:** `suspicious_output` telde
-hiç görülmedi (enjeksiyon tripwire'ı, uslu bir modelle açılmaması doğru sonuç);
-`bullet_rewrite` / `about_synthesis` fixture'ı olmayan girdide anlamsız —
-`SyntheticAnswer` şema şeklinde bir cümle üretir, doğrulayıcı reddeder, orijinal
-basılır.
-
-**Test yazarken:**
-- **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.** Silmeyen bir
-  kimlik testi dördüncüde ilgisiz bir 429'da düşer, flake gibi okunur.
-- **`profiles` entegrasyon paketinde hiç boş değil** (`DevSeeder`) — anonim
-  gizlilik iddiası "satır sayısı değişmedi" diye kuruluyor.
-- **`local` profilinde LLM sağlayıcısı yok** — entegrasyon lane'inde her çağrı
-  `ALL_PROVIDERS_UNAVAILABLE` alır; `CoverLetterApiIT` kasten öyle kuruyor.
-  **`AccountDeletionIT` tablo listesini `information_schema`'dan okuyor** — elle
-  yazılmış liste sonradan eklenen tabloda sonsuza kadar geçerdi.
-
-**Sınırlar ve açıklar:**
-- **Faz D sekize kadar eşzamanlı çağrı yapıyor**, her biri `REQUIRES_NEW` ile
-  bağlantı alıyor. Havuz 10, işçi eşzamanlılığı 2 → tepede 16 kısa ödünç.
-  **Havuz büyütülmeden işçi eşzamanlılığı artırılmamalı.**
-- **R2'deki PDF'ler** § 57.4'ün silme listesinde ama R2 istemcisi yok
-  (7. karar: MVP'ye girmiyor; `pdf_key`'i hiçbir şey yazmıyor).
-- **Anonim akış kapandı** (2026-09-09, altı dilim). Yuvarlanan kaydı
-  `archive/stage-3-anonymous.md`'de; kalıcı kararlar § 51.6.1 ve
-  § 35.7.2-.5'te. Frontend aksiyonları: `B-079`, `B-081`-`B-083`.
-- **`ExtractedContact`, `Contact` ve şema aynı şekli üç yerde taşıyor**
-  (§ 31.4.1). **`Contact.linkedin`** CV alanı, LinkedIn *girişiyle* ilgisiz.
-- **`SkillNames` süpürmesi bitti:** tek taraflı uygulayan tek çağıran
-  `RewriteValidator`'dı; saklama da kanonikleşti (`AtomService`, `B-077`).
-- **`accessedAt` geri döndü (`B-078`):** çevrimdışı okuyucu (`SupportRead`,
-  `support` profili) grant'i kimlik belgesi sayıp sahibinin bağlamında okuyor ve
-  damgalıyor; **tek kapsanmamış adım grant aramasıdır** (`SupportGrantLookup`,
-  `JobQueue` emsali, API'den erişilemez — ArchUnit kuralı var). Uç açmadık.
-- **Düzeltme — `PGVectorTypeContributor`'ın `NoClassDefFoundError`'ı flake değildi:**
-  koşu `main` değil **PR #86'nın dalıydı**. **Ders: flake demeden önce dalına bak.**
-
-**Ders (3.4, dilim 1'de ikinci kez):** *bir javadoc ne zaman çalıştığını
-söylüyorsa çağıranı da ara.* **(3.5):** *doğru davranan kod, korunan değildir.*
-**(dilim L):** *bir ölçüm belgesi, sayfayla aynı preamble'ı paylaştığı için aynı
-belge olmuyor.*
-
-Sekiz dilimin kaydı **`kapanis-denetimi.md` § 6**'da; oradan çıkan tek kural
-§ 51.7'de: *bir muhafızın düştüğünü görmeden yazıldı sayma.* Dilim 14, kapanış
-sonrası A, G, J, K ve L'de yine gerekti.
+Frontend aksiyonları: `B-055`-`B-089`.
