@@ -213,7 +213,24 @@ tasks.register<Test>("integrationTest") {
     // The LaTeX image is a couple of gigabytes and takes minutes to build.
     // Paying that on every run would push the suite from half a minute to
     // several, and the thing it guards changes rarely.
-    useJUnitPlatform { excludeTags("latex") }
+    useJUnitPlatform { excludeTags("latex", "llm-eval") }
+}
+
+// Bolum 53.4. Real calls to a real model, so it is not wired into anything --
+// not `check`, not `integrationTest`, and deliberately not nightly: Bolum 53.7
+// says production telemetry (`llm_invocations`) gives the same information for
+// nothing. Run it when a prompt changes, which is about $0.30.
+tasks.register<Test>("llmEval") {
+    group = "verification"
+    description = "Scores a prompt against Bolum 53.5's thresholds. COSTS MONEY; "
+        .plus("needs a provider key and the local-record or local-real profile.")
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform { includeTags("llm-eval") }
+    timeout.set(Duration.ofMinutes(30))
+    // The suite prints its table through the report renderer, and a person
+    // reading it is the point of running it at all.
+    testLogging { showStandardStreams = true }
 }
 
 tasks.register<Test>("latexTest") {
