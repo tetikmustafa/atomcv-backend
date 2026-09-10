@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -38,9 +39,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  *
  * <p>The golden tests run without Docker, which is only possible because the
  * costs are committed next to the fixtures. A committed number is a claim
- * about what TeX does, and a claim nobody re-checks decays: this measures all
- * five profiles against the real compiler and fails when a stored cost has
- * drifted.
+ * about what TeX does, and a claim nobody re-checks decays: this measures every
+ * profile in every shipped template against the real compiler and fails when a
+ * stored cost has drifted.
  *
  * <p>Run with {@code -Dgolden.record=true} to write the files instead of
  * checking them — after changing a fixture's text, or after the template's
@@ -50,7 +51,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class GoldenCostsIT {
 
-    private static final String COST_KEY = TemplateCustomization.CLASSIC.costKey();
+    /**
+     * All three shipped templates, not just the default one.
+     *
+     * <p>The page guarantee is a claim about a rendered page, and compact and
+     * modern render different pages: a 10pt body over a 0.4in margin is not
+     * classic with a smaller font, it is a different number of points per row.
+     * A golden set that only ever measured classic proved the guarantee for the
+     * template nobody had to choose.
+     */
+    private static final List<TemplateCustomization> TEMPLATES = List.of(
+            TemplateCustomization.CLASSIC,
+            TemplateCustomization.COMPACT,
+            TemplateCustomization.MODERN);
+
     private static final double TOLERANCE_PT = 0.01;
     private static final Path FIXTURES = Path.of("src/main/resources/golden/profiles");
 
@@ -72,13 +86,18 @@ class GoldenCostsIT {
     @MethodSource("names")
     void theStoredCostsAreWhatTheCompilerSays(String name) throws Exception {
         GoldenProfile golden = GoldenProfileReader.read(name, UUID.randomUUID());
-        Map<String, Double> measured = measure(golden);
 
-        assertThat(measured).as("every wording came back from one compilation")
-                .hasSameSizeAs(golden.variants());
+        var measuredByTemplate = new LinkedHashMap<String, Map<String, Double>>();
+        for (TemplateCustomization template : TEMPLATES) {
+            Map<String, Double> measured = measure(golden, template);
+            assertThat(measured)
+                    .as("every wording came back from one %s compilation", template.costKey())
+                    .hasSameSizeAs(golden.variants());
+            measuredByTemplate.put(template.costKey(), measured);
+        }
 
         if (RECORDING) {
-            record(name, measured);
+            record(name, measuredByTemplate);
             return;
         }
 
@@ -86,28 +105,30 @@ class GoldenCostsIT {
         assertThat(byTemplate)
                 .as("no costs recorded for %s — run gradlew latexTest -Dgolden.record=true", name)
                 .isNotEmpty();
-        // The file says which template it was measured against, and this is
+        // The file says which templates it was measured against, and this is
         // where a stale one is caught: a recording made before a geometry
         // change keys its costs under the old version, every lookup misses, and
-        // selection quietly falls back to the estimate.
+        // selection quietly falls back to the estimate. A file that names two
+        // of the three is the same failure for the template it leaves out.
         assertThat(byTemplate)
-                .as("%s was measured against another template version — re-record it", name)
-                .containsOnlyKeys(COST_KEY);
-        Map<String, Double> stored = byTemplate.get(COST_KEY);
+                .as("%s was measured against another set of templates — re-record it", name)
+                .containsOnlyKeys(measuredByTemplate.keySet().toArray(String[]::new));
 
-        measured.forEach((hash, cost) -> assertThat(stored.get(hash))
-                .as("wording %s has drifted or is missing", hash.substring(0, 8))
-                .isNotNull()
-                .isCloseTo(cost, org.assertj.core.data.Offset.offset(TOLERANCE_PT)));
-        assertThat(stored.keySet())
-                .as("a stored cost for a wording that no longer exists")
-                .containsExactlyInAnyOrderElementsOf(measured.keySet());
+        measuredByTemplate.forEach((costKey, measured) -> {
+            Map<String, Double> stored = byTemplate.get(costKey);
+            measured.forEach((hash, cost) -> assertThat(stored.get(hash))
+                    .as("wording %s under %s has drifted or is missing", hash.substring(0, 8), costKey)
+                    .isNotNull()
+                    .isCloseTo(cost, org.assertj.core.data.Offset.offset(TOLERANCE_PT)));
+            assertThat(stored.keySet())
+                    .as("a stored %s cost for a wording that no longer exists", costKey)
+                    .containsExactlyInAnyOrderElementsOf(measured.keySet());
+        });
     }
 
     /** One compilation for the whole profile, keyed by content hash. */
-    private Map<String, Double> measure(GoldenProfile golden) {
-        CapacityModel capacity =
-                TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
+    private Map<String, Double> measure(GoldenProfile golden, TemplateCustomization template) {
+        CapacityModel capacity = TemplateRegistry.capacityOf(template).orElseThrow();
         var client = new LatexCompilerClient(new CompilationProperties(
                 "http://" + LATEX.getHost() + ":" + LATEX.getMappedPort(8090),
                 Duration.ofSeconds(120)));
@@ -125,7 +146,7 @@ class GoldenCostsIT {
                 .toList();
 
         Map<String, RenderCost> costs = measurements.measure(
-                new MeasurementRequest(items, TemplateCustomization.CLASSIC));
+                new MeasurementRequest(items, template));
 
         var byHash = new LinkedHashMap<String, Double>();
         for (AtomVariant variant : golden.variants()) {
@@ -158,10 +179,12 @@ class GoldenCostsIT {
     }
 
     /** Sorted, so a re-recording produces a diff a person can read. */
-    private static void record(String name, Map<String, Double> measured) throws Exception {
+    private static void record(String name, Map<String, Map<String, Double>> measured)
+            throws Exception {
         Path file = FIXTURES.resolve(name + ".costs.json");
-        JSON.writerWithDefaultPrettyPrinter().writeValue(Files.newBufferedWriter(file),
-                Map.of(COST_KEY, new TreeMap<>(measured)));
-        System.out.println("[golden] recorded " + measured.size() + " costs into " + file);
+        var sorted = new TreeMap<String, Map<String, Double>>();
+        measured.forEach((costKey, costs) -> sorted.put(costKey, new TreeMap<>(costs)));
+        JSON.writerWithDefaultPrettyPrinter().writeValue(Files.newBufferedWriter(file), sorted);
+        System.out.println("[golden] recorded " + sorted.size() + " templates into " + file);
     }
 }
