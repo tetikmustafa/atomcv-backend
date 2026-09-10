@@ -12,92 +12,65 @@ sonrasının yuvarlanan özetleri `archive/stage-3-closeout.md`'ye indi
 
 ---
 
-## Aşama 4 · Faz G — düzenleme döngüsü (2026-09-10)
+## Aşama 4 · bütçeler ve golden set (2026-09-10/11)
 
-Dört dilim, dördü de indi: yönlendirmeler (`313c3ee`), `rewritten_content`
-kolonu (`1a8cca2`), manuel toggle (`9758764`), doğal dil (`d12dc07`), ve
-gerçek derleyiciye karşı uçtan uca test (`b729525`).
+**Düzeltme — golden set üç şablona genişletilince sayfa garantisi compact'te
+tutmuyor çıktı** (`B-095`): az tahmin, yani taşma yönü, ve bir profil taştı.
+Dört sebep, **dördü de aynı kusurun yüzü — kullanıcı metni taşıyan bir parçayı,
+o metni taşımayan bir şeyden fiyatlamak** — ve dördü de yalnız gerçek
+derleyiciye sorunca göründü:
 
-**Sapma — § 24.2'nin değişiklik seti atom id'si taşımıyor.** Spec modele
-`atomId` yazdırıyor; biz satırları **numaralandırıp indeks** istiyoruz
-(`NumberedLines`). Bir UUID modelin uydurabileceği ya da yanlış kopyalayabileceği
-tam o token, ve uydurulmuş bir UUID aranana kadar gerçeğinden ayırt edilemez.
-İndeks aralık dışıysa bariz. Kalıcı, § 24.2'ye işlenmeli.
+1. **Listeden sonraki bölüm başlığı compact'te 10pt pahalı** (`nosep` üstte
+   boşluk bırakmıyor); kalibrasyon yalnız *ilk* başlığın konumunu ölçüyordu,
+   diğerinin probu belgede duruyordu ama okunmuyordu. Pahalı sayı her başlığa
+   yazılıp okuma sırasındaki ilkine iade ediliyor (`retuneFirstSectionHeader`)
+   — "pahalıyı her yere yaz" ilk denemem bölüm başına 10pt israftı, ölçtüm.
+2. **Başlık bloğu artık ölçülen sayı** (V13, `profiles.header_costs`): metin
+   sarmalıyor, compact başlığı 65.2pt iken sabit 48.99'du. Geometri **ve dil**
+   ile anahtarlanıyor, metni değişince siliniyor.
+3. **`\resumeItem`, ifadeyle ardındaki negatif `\vspace` arasına bir kelime
+   arası boşluk koyuyordu** (compact'te yok). Ölçüm kutusu o boşluksuz diziyor,
+   yani genişliği satıra bir boşluk kadar yakın madde kutuda sığıp sayfada
+   sarmalıyordu; stress_long_career'ın altmış maddesi o bantta ve modern'deki
+   ikinci sayfanın tamamı buydu. Sürümler yükseldi (classic 5, modern 2),
+   maliyetler aynı çıktı — değişen kutu değil sayfa.
+4. **Compact aynı boşluğu iki kez yazıyordu:** `SECTION_LIST_CLOSE` ile
+   `SECTION_HEADER_AFTER_LIST` classic'te iki ayrı şey, compact'te aynı 10 puan.
+   Kalibrasyon artık primi düşerek saklıyor.
 
-**Ekleme — yarım cümle hiç uygulanmıyor.** Biri aralıkta biri dışında iki sayı
-döndüren model cümlenin yarısını anlamış; doğru anladığı yarıyı uygulamak kişiye
-istediğinden başka bir şey göstermek olur. `understood: false` de bir cevap,
-arıza değil — ve **sık dönecek**.
+**Durum:** classic ve compact yedi profilde de doğrulandı
+(`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil; ikinci bir test
+dışarıda kalanı isimlendiriyor). Modern'de `stress_long_career` %6.9 sapıyor:
+**iç içe listenin ilk maddesi modern'de iki satır, aynı ifade aşağıda tek.**
+Girdi başlığı, `\vspace`, tabular genişliği, eksik `\par` ve liste seviyesi
+elendi; `EntryFurnitureIT` primi de elenenleri de taşıyor. Yükseklikler "iki
+satır" derken kural probunun genişlikleri eşit ölçmesi çelişkisi, ipin ucu.
 
-**Ekleme — `GENERATION_SUPERSEDED` (409) ve `EDIT_NOT_UNDERSTOOD` (422).**
-İkisi de § D.6.1 tablosunda. 409, zaten değiştirilmiş bir üretimi düzenlemeyi
-reddediyor: uygulamak soyağacını çatallardı — bir ebeveynin iki bitmiş çocuğu
-ve hangisinin "güncel" olduğunu söyleyen hiçbir veri yok.
+**Ders — ölçüm belgesiyle sayfa arasındaki her fark bir hatadır** (§ 22.4'ün
+üçüncü kuralı üç ayrı ayrıntıda kırılmıştı). Sapma testi yetmiyor: bir maddedeki
+bir satır yedi yüz puanın içinde kaybolur — `WordingCostIT` bir ifadenin,
+`EntryFurnitureIT` bir girdinin marjinal bedelini ölçüyor. Ve `\pagetotal`
+sayfa kırıldıktan sonra okunmaz (730.6 beklenirken 39.8): sayı küçük değil
+**anlamsız**, artık drift probunda da reddediliyor.
 
-**Sapma — geçmiş `total`'ı artık satır değil CV sayıyor.** Liste `superseded`
-gizliyor, sayı da gizlemek zorunda (yoksa "23 üretim" yazıp on bir satır
-gösterir). Ama o sayıyı **hesap silme ekranı** okuyor (`F-020`). Silme yine
-emekli taslakları götürüyor; metin "N CV" derse doğru.
-
-**Ekleme — yeniden koşu Faz C'den, skorlar snapshot'tan.** § 24.1 "Faz C'den
-itibaren" diyor, dolayısıyla Faz B koşmuyor ve skorlar `selection_state`'ten
-okunuyor (`StoredSelection.scoresByCandidate`). **Sonucu:** yeniden koşu,
-üretimden sonra profilde yapılanları görmez — yeni yazılmış bir atom skorsuzdur,
-ama adıyla istenebilir (yönlendirme skoru yener).
-
-**Ders — koşullu bir döngü içindeki iddia test değildir.** Devralmayı ölçen ilk
-latexTest vakası `if (before.contains(...))` içinde iddia ediyordu ve **geçti**;
-iddiayı önden isimlendirince düştü. Sebep kod değildi: bu lane'in sahte
-sağlayıcısı `bullet_rewrite`'a şemadan üretilmiş bir cümle veriyor, doğrulayıcı
-reddediyor, `rewritten_content` boş kalıyor — yani V11'in var olma sebebi olan
-devralma **birim testlerinden başka hiçbir yerde koşmamıştı** (§ 51.7).
-Vaka artık yazımı ebeveyn satıra ekip basılan belgede arıyor.
-
-**Düzeltme — `jsonb` nesne anahtar sırasını korumaz** (uzunluk+bayt sırasına
-diziyor). `RewrittenContent`'in ilk javadoc'u "iki koşu JSONB'ye iki farklı sıra
-yazar" diyordu; yanlıştı, kolon zaten normalize ediyor. `Map.copyOf` →
-`LinkedHashMap` değişikliği duruyor ama gerekçesi **bellekte** haritayı gezen şey
-(trace, log, assertion), kolon değil. CLAUDE.md'nin kuralı `json` kolonları,
-cevaplar ve assertion'lar için geçerli; `jsonb` **dizileri** sırayı korur.
-
----
-
-## Aşama 4 · bütçeler ve golden set (2026-09-10)
-
-**Düzeltme — compact'in sayfa garantisi tutmuyor, modern'inki bir profilde.**
-Golden set yalnız classic'i ölçüyordu; üç şablona genişletilince
-`MeasurementDriftIT` compact'i sayfaya sığan **her** profilde az tahmin ederken
-buldu (minimal_edge +12.9pt, senior_backend_tr +45.6pt — %4-12, tolerans %3) ve
-master_cv_en compact'te ikinci sayfaya taştı; modern'de stress_long_career taştı.
-Az tahmin, sayfanın taştığı yön. **İkisi de indi ve sunuluyor** (`B-090`,
-`B-092`), yani bu fixture eksiği değil canlı bir arıza (`B-095`).
-
-**Kök neden kanıtlanmadı.** Negatif liste maliyeti hipotezi (`ITEMIZE_OVERHEAD
--5.10`) tutmadı: artıklar liste sayısıyla orantılı çıkmadı, ve ara problar `\par`
-ekleyip aralıkları bozduğu için yalnız **toplam** güvenilir. `CalibrationServiceIT`
-servisin yazılı sayıları birebir ürettiğini söylüyor — yani şüphe sabitlerde
-değil kalibrasyon belgesinin türetiminde, ki **Katman B her özel geometride onu
-kullanıyor.** Classic'te hatalar birbirini götürüyor (başlık ~4pt eksik, bölüm
-başlığı ~3.8pt fazla).
-
-**Ekleme — %3'e tutulan şablonlar yazılı bir liste**
-(`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil); ikinci bir test
-dışarıda kalanları iddia ediyor, ki compact düzeltilip eklenmezse düşsün.
-Main'de kırmızı bir lane okunmaz olur, yazılmamış bir boşluk ise düzeltilmez.
-
-**Düzeltme — sayfa kırıldıktan sonra `\pagetotal` okunmaz.** Compact'in
-master_cv_en'i 730.6pt beklenirken 39.8pt okudu (%95 "sapma"): sayı küçük değil,
-**anlamsız**. `ranPastThePage` ile aynı tuzak, artık drift probunda da reddediliyor.
-
-**Ders — görev girdisi olmayan bir bütçe dosyası kimseyi bağlamaz.**
-`performance-budgets.yaml`'daki oranı 1.0'a çekince test düşmedi: Gradle dosyayı
-göremediği için `:test UP-TO-DATE` deyip hiç koşturmadı — § 52.6'nın "bütçe
-değiştirmek bilinçli bir karardır" cümlesi böyle sessizce boşa çıkıyordu.
-`inputs.file` ile kapatıldı; § 52.2'nin sorgu tavanı da artık dosyadan okunuyor.
+**Ders — görev girdisi olmayan bir bütçe dosyası kimseyi bağlamaz.** Oranı 1.0'a
+çekince test düşmedi; Gradle dosyayı göremediği için `:test UP-TO-DATE` deyip
+koşturmadı. `inputs.file` ile kapatıldı, § 52.2'nin sorgu tavanı da dosyadan
+okunuyor. Ölçekleme oranı medyan değil **en hızlı** koşuyu alıyor — medyan
+gürültüyü oranın içine iki kez taşıyordu.
 
 ---
 
 ## Aşama 1-3'ten taşınanlar — hâlâ canlı
+
+**Faz G'den taşınanlar** (tam gerekçe `archive/stage-4-faz-g.md`): değişiklik
+seti modele **atom id'si değil satır numarası** gösteriyor — uydurulmuş bir UUID
+aranana kadar gerçeğinden ayrılmaz, aralık dışı bir indeks bariz (**kalıcı,
+§ 24.2'ye işlenmeli**). Yarım anlaşılmış cümle **hiç** uygulanmıyor;
+`understood: false` arıza değil ve sık dönecek. Geçmişin `total`'ı satır değil
+**CV** sayıyor ve onu hesap silme ekranı okuyor (`F-020`). Yeniden koşu Faz
+C'den başlıyor, skorlar snapshot'tan — üretimden sonra profile eklenen atom
+skorsuzdur ama adıyla istenebilir.
 
 **Tamir etmeye kalkma — hepsi bilinçli, gerekçeleri arşivde:** `SectionFloor`
 bir tavandır talep değil; `reservedByFloor` `forcedByLock`'tan ayrı bir küme;
@@ -197,5 +170,6 @@ muhafızın düştüğünü görmeden yazıldı sayma.**
 | dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
+| Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2 (bekliyor) |
 
-Frontend aksiyonları: `B-055`-`B-089`.
+Frontend aksiyonları: `B-055`-`B-095`.

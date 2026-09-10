@@ -265,35 +265,40 @@ bugünkü profilden değil. Yani sonradan bir maddeyi düzenlemek, gönderilmiş
 CV'nin Word hâlini de değiştirmiyor. Ve metin katmanı gerçek metin — bir ATS
 kelimeleri okuyabiliyor, resim değil.
 
-### B-095 · Compact'in sayfa garantisi şu an tutmuyor — modern'inki bir şekilde
+### B-095 · Compact düzeldi, modern'de bir şekil hâlâ dışarıda
 
-**Since:** backend `df5dad9` · Aşama 4 · § 23.1, § 26.4, XI-A.3
+**Since:** backend `df5dad9`, `2fd22e8` · Aşama 4 · § 23.1, § 26.4, XI-A.3
+· **güncellendi 2026-09-11**
 
-**Neden:** Golden set yalnız `classic`'i gerçek derleyiciye karşı ölçüyordu.
-Üç şablona genişletince şu çıktı: **compact, sayfaya sığan her golden profilde
-sayfayı olduğundan kısa sanıyor** (%4-12; tolerans %3), ve yedi profilden biri
-compact'te **ikinci sayfaya taşıyor**. Modern altı profilde tutuyor, birinde
-taşıyor. Az tahmin, sayfanın taştığı yön — yani "bir sayfa" diyen bir kullanıcı
-compact seçtiğinde iki sayfalık bir PDF alabilir.
+**Neden (özet):** Golden set yalnız `classic`'i gerçek derleyiciye karşı
+ölçüyordu. Üç şablona genişletince compact'in sayfayı olduğundan kısa sandığı,
+bir profilde de ikinci sayfaya taştığı çıktı. Sebep tek bir şey değildi, üçü
+birden çıktı ve hepsi aynı kusurun yüzleriydi: **kullanıcı metni taşıyan bir
+parçanın, o metni taşımayan bir şeyden fiyatlanması.**
 
-**Bu bir tahmin değil, ölçüm:** TeX'e belgeyi dizdikten sonra sayfada nerede
-olduğu soruluyor ve seçim aşamasının harcadığını sandığı puanla karşılaştırılıyor.
+**Şu an durum:**
 
-**İstenen — iki şey:**
+- **`classic` — doğrulandı.** Yedi golden profilin hepsi %3 içinde.
+- **`compact` — doğrulandı** (2026-09-11). Aynı yedi profil, hepsi %3 içinde.
+- **`modern` — biri hariç.** Altı profil %3 içinde; `stress_long_career`
+  şeklinde %6.9 sapıyor ve **az tahmin ediyor**, yani o şekilde bir sayfa
+  taşabilir. Sebep bilinen ve ölçülü: modern'de iç içe bir listenin **ilk
+  maddesi** iki satıra diziliyor, aynı ifade listenin aşağısında tek satır.
 
-1. **Şimdilik bir şey yapmayın, ama bilin.** Uç, alanlar, `templateId`
-   sözleşmesi değişmedi (`B-090`, `B-092` aynen geçerli). Kullanıcıya
-   gösterdiğiniz sayfa sayısı hâlâ backend'in söylediği sayı; compact'te bu sayı
-   **iyimser olabilir**. Bir hata bildirimi "compact'te CV iki sayfa oldu"
-   diyorsa, bu bilinen arızadır — bize açmayın, düzeltiliyor.
+**İstenen — iki şey değişti:**
 
-2. **Compact'i öne çıkaran bir varsayılan/öneri varsa geri alın.** "En çok
-   sığdıran şablon" gibi bir vurgunuz varsa, düzeltilene kadar kaldırın: şu an
-   en çok sığdırdığını *sanan* şablon.
+1. **Compact üzerindeki kısıtı kaldırabilirsiniz.** `B-095`'in ilk hâli
+   "compact'i öne çıkaran bir varsayılan/öneri varsa geri alın" diyordu; o
+   gerekçe kalktı. Compact artık sayfa vaadini gerçek derleyiciye karşı
+   tutuyor.
+2. **Modern için uyarı gerekmiyor, ama bilin.** Uç, alanlar, `templateId`
+   sözleşmesi hiç değişmedi. Modern'de taşan şekil, tek bir bölüm altında çok
+   sayıda uzun maddesi olan CV'ler. Böyle bir hata bildirimi gelirse bilinen
+   arızadır — bize açmayın.
 
-**Kapanış:** Düzeltme indiğinde bu madde `resolved/`'a iner ve size ölçülen yeni
-sapma yazılır. Backend tarafında `TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`
-listesi hangi şablonların doğrulandığını taşıyor; classic hep içindeydi.
+**Kapanış:** Modern de listeye girdiğinde bu madde `resolved/`'a iner. Backend
+tarafında `TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE` hangi şablonların
+doğrulandığını taşıyor ve dışarıda kalanı isimlendiren bir test var.
 
 ---
 
