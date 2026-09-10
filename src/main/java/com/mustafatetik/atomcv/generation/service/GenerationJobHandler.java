@@ -15,6 +15,7 @@ import com.mustafatetik.atomcv.profile.repository.AnonymousProfiles;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobHandler;
@@ -29,6 +30,7 @@ import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +63,13 @@ public class GenerationJobHandler implements JobHandler {
     private final AnonymousProfiles anonymous;
     private final ProfileResolver profiles;
     private final QuotaService quotas;
+    private final GenerationRerunService reruns;
     private final ErrorPresenter errors;
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
             GenerationRepository records, AnonymousGenerations anonymousRecords,
             AnonymousProfiles anonymous, ProfileResolver profiles, QuotaService quotas,
-            ErrorPresenter errors) {
+            GenerationRerunService reruns, ErrorPresenter errors) {
 
         this.anonymousRecords = anonymousRecords;
         this.anonymous = anonymous;
@@ -75,6 +78,7 @@ public class GenerationJobHandler implements JobHandler {
         this.generations = generations;
         this.general = general;
         this.records = records;
+        this.reruns = reruns;
         this.errors = errors;
     }
 
@@ -89,6 +93,15 @@ public class GenerationJobHandler implements JobHandler {
 
     @Override
     public JobOutcome handle(Job job, ProgressSink progress) {
+        // Asked before the payload is parsed as anything else.
+        // GenerationPayload.from is forgiving about absence, so an edit read as
+        // a generation would come out as general CV mode and quietly rebuild
+        // the document from scratch -- same person, same profile, none of their
+        // edits, and no error anywhere to say so (Bolum 24.4).
+        if (SelectionEditPayload.isEdit(job.getPayload())) {
+            return handleEdit(job, progress);
+        }
+
         GenerationPayload payload = GenerationPayload.from(job.getPayload());
         Result<GenerationSubject> resolved = subjectFor(job);
         if (resolved instanceof Result.Err<GenerationSubject> refused) {
@@ -124,6 +137,119 @@ public class GenerationJobHandler implements JobHandler {
                 yield failed(failed.error());
             }
         };
+    }
+
+    /**
+     * Faz G's manual toggle, once the queue has reached it (Bolum 24.4).
+     *
+     * <p>Nothing is refunded on failure and nothing was consumed: a hand edit
+     * re-runs selection, the renderer and the compiler and asks no model
+     * anything, so there is no allowance in the payload to give back.
+     *
+     * <p><strong>The parent is marked superseded last, and only if a document
+     * came out.</strong> A run that failed after the row was flipped would
+     * leave the person with a history whose newest entry is retired and no
+     * replacement for it — every screen would show them a CV they had already
+     * moved on from, and nothing would say why.
+     */
+    private JobOutcome handleEdit(Job job, ProgressSink progress) {
+        SelectionEditPayload payload = SelectionEditPayload.from(job.getPayload());
+        Result<GenerationSubject> resolved = subjectFor(job);
+        if (resolved instanceof Result.Err<GenerationSubject> refused) {
+            return failed(refused.error());
+        }
+        GenerationSubject subject = resolved.orElseThrow();
+
+        Optional<Generation> found = subject.isAnonymous()
+                ? anonymousRecords.findById(subject.profile(), payload.parentGenerationId())
+                : records.findById(
+                        UserContext.of(subject.userId()), payload.parentGenerationId());
+        if (found.isEmpty()) {
+            // Between the request and the worker the row went: an account
+            // deleted, an anonymous session swept. Absolute rule 3 is why this
+            // is a scoped read and why "gone" and "somebody else's" are the
+            // same answer here.
+            log.info("The generation an edit was queued against is gone; job {}", job.getId());
+            return failed(new PipelineError.SessionEnded());
+        }
+        Generation parent = found.get();
+
+        Result<GeneratedGeneration> result =
+                reruns.rerun(subject, parent, payload.directives(), progress);
+
+        return switch (result) {
+            case Result.Ok<GeneratedGeneration> ok ->
+                    completedEdit(subject, parent, payload.directives(), ok.value());
+            case Result.Err<GeneratedGeneration> failed -> failed(failed.error());
+        };
+    }
+
+    private JobOutcome completedEdit(
+            GenerationSubject subject, Generation parent,
+            GenerationDirectives directives, GeneratedGeneration generated) {
+
+        Generation record = persistEdit(subject, parent, directives, generated);
+        GeneratedDocument document = generated.document();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("generationId", record.getId().toString());
+        result.put("pageCount", document.pageCount());
+        if (generated.fitReport() != null) {
+            result.put("matchLevel", generated.fitReport().level().name());
+        }
+        // The row the screen was looking at, so a client holding the old id
+        // knows which one it has been replaced by without re-reading history.
+        result.put("supersededGenerationId", parent.getId().toString());
+        return JobOutcome.completed(result);
+    }
+
+    private Generation persistEdit(
+            GenerationSubject subject, Generation parent,
+            GenerationDirectives directives, GeneratedGeneration generated) {
+
+        GenerationOptions options = generated.options();
+        GeneratedDocument document = generated.document();
+        var record = new Generation(
+                subject.userId(),
+                generated.profileId(),
+                parent.getOptions(),
+                StoredSelection.of(document.selection(), options.language(),
+                        options.customization()),
+                // Faz B did not run, so the weight set is the parent's rather
+                // than a fresh reading. Saying "general-mode" here -- which is
+                // what a null weights object means -- would file a job-specific
+                // CV under the one mode it was not made in.
+                new EngineVersion(EngineVersion.PIPELINE,
+                        parent.getEngineVersion().scoringWeights(),
+                        options.customization().costKey(),
+                        parent.getEngineVersion().promptVersions()));
+
+        if (parent.getJobDescription() != null) {
+            record.recordPosting(parent.getJobDescription(), parent.getJdHash(),
+                    parent.getJdAnalysis());
+        }
+        // Everything asked for so far, not just this edit: the payload
+        // carries the sum, and the next edit merges onto this row.
+        record.setDirectives(directives.asMap());
+        record.supersede(parent.getId());
+        record.setPageCount(document.pageCount());
+        record.setFitReport(generated.fitReport());
+        record.setContentSnapshot(RenderedContent.of(document.rendered()));
+        record.setRewrittenContent(document.rewritten());
+        record.setCoverLetter(generated.coverLetter());
+        record.setTrace(trace(generated));
+
+        Generation saved = subject.isAnonymous()
+                ? anonymousRecords.save(subject.profile(), record)
+                : records.save(UserContext.of(subject.userId()), record);
+
+        parent.markSuperseded();
+        if (subject.isAnonymous()) {
+            anonymousRecords.save(subject.profile(), parent);
+        } else {
+            records.save(UserContext.of(subject.userId()), parent);
+        }
+        return saved;
     }
 
     /**

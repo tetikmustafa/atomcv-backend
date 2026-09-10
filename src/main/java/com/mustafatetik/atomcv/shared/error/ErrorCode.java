@@ -132,6 +132,18 @@ public enum ErrorCode {
 
     // ── Artifacts and sessions (EK D.6) ──
     GENERATION_ARTIFACT_EXPIRED(410),
+
+    /**
+     * A newer generation has replaced this one, so the edit was aimed at a CV
+     * that is no longer anybody's current one (Bolum 24.4).
+     *
+     * <p>Refused rather than applied, because applying it would fork the
+     * lineage: two children of one parent, both finished, and nothing in the
+     * data saying which of them the person means. 409 and not 412 -- no
+     * precondition was sent and none was expected; what is stale is the
+     * resource the caller named, not a version they carried.
+     */
+    GENERATION_SUPERSEDED(409),
     CSRF_TOKEN_INVALID(403),
 
     /**
