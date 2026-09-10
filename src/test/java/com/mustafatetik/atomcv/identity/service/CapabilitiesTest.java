@@ -171,7 +171,11 @@ class CapabilitiesTest {
         List<String> account = capabilities.of(Optional.of(SOMEONE), null).allowedTemplates();
 
         assertThat(anonymous).isEqualTo(account);
-        assertThat(anonymous).containsExactly("classic");
+        // Compact joined it (Bolum 33.5). Named rather than derived from the
+        // registry: this list is published to the frontend, and a test that
+        // read the same source as the code would agree with it about a
+        // template nobody had measured.
+        assertThat(anonymous).containsExactly("classic", "compact");
         assertThat(anonymous).isSorted();
     }
 

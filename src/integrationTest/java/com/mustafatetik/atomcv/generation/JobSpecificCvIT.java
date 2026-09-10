@@ -155,6 +155,44 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
+     * <strong>Compact, as a document (Bolum 33.5).</strong>
+     *
+     * <p>{@code CompactCalibrationIT} proves the seventeen numbers are what
+     * the compiler says. It does not prove that a CV comes out of them: the
+     * preamble could define a command the renderer never calls, or fail to
+     * define one it does, and every calibration probe would still measure
+     * cleanly. This is the only place that can tell — a real profile, the real
+     * renderer, a real XeLaTeX run.
+     *
+     * <p>The template is chosen the way a person chooses it: through the
+     * profile's own preference. No request field carries one.
+     */
+    @Test
+    void thecompactTemplateProducesArealOnePagePdf() throws Exception {
+        seedCareer();
+        preferCompact();
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).as("the queued generation was taken").isTrue();
+
+        String generationId = completedGenerationId(jobId);
+        byte[] pdf = download(generationId);
+
+        assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+        assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
+        assertThat(jdbc.queryForObject(
+                "SELECT page_count FROM generations WHERE id = ?::uuid",
+                Integer.class, generationId)).isEqualTo(1);
+        // The measured costs are keyed by it, so a run that quietly fell back
+        // to classic would look identical here without this.
+        assertThat(jdbc.queryForObject(
+                "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
+                String.class, generationId)).isEqualTo("compact:v1");
+        assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
+        assertThat(atsChecks()).as("the check actually ran").isPositive();
+    }
+
+    /**
      * The record has to describe a job-specific run, not a general one. An
      * empty {@code jd_analysis} here would mean Faz A ran and its answer was
      * thrown away — the CV would still look fine and nothing else would say so.
@@ -244,6 +282,18 @@ class JobSpecificCvIT extends AbstractLatexTest {
     // ── fixtures ─────────────────────────────────────────────────────────
 
     /** Read as bytes and decoded explicitly: the digest must not depend on a default charset. */
+    /** What a person does in the settings screen, as one statement. */
+    private void preferCompact() {
+        jdbc.update("""
+                UPDATE profiles
+                SET preferences = jsonb_set(
+                        COALESCE(preferences, '{}'::jsonb),
+                        '{defaults}',
+                        '{"maxPages":1,"templateId":"compact","cvLanguage":"en","coverLetterLanguage":"auto"}'::jsonb,
+                        true)
+                WHERE user_id = ?""", LocalDevUser.DEV_USER_ID);
+    }
+
     private static String posting(String name) {
         try (var in = JobSpecificCvIT.class.getResourceAsStream("/postings/" + name)) {
             if (in == null) {

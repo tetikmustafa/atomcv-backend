@@ -20,7 +20,7 @@ public final class TemplateRegistry {
      * leaves old measurements looking valid for a document that no longer
      * matches them, and the page guarantee fails quietly rather than loudly.
      */
-    private static final Map<String, Integer> VERSIONS = Map.of("classic", 4);
+    private static final Map<String, Integer> VERSIONS = Map.of("classic", 4, "compact", 1);
 
     /**
      * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
@@ -118,6 +118,92 @@ public final class TemplateRegistry {
             """;
 
     /**
+     * Compact (Bolum 33.5): high density, for a career that does not fit.
+     *
+     * <p><strong>The same furniture, closer together.</strong> Every command
+     * classic defines is defined here under the same name, because the renderer
+     * writes one document and chooses a preamble — a template that renamed
+     * anything would be a second renderer. What differs is the spacing: the
+     * negative leading around a section heading is deeper, the lists set their
+     * items with no separation at all, and the name at the top is one size down.
+     *
+     * <p>Its density is not only here. Bolum 33.1 calls font size, margin and
+     * line spacing layer B, and {@link TemplateCustomization#COMPACT} moves all
+     * three — 10pt on a 0.4in margin at 0.95 leading. This preamble is what
+     * cannot be reached from a slider.
+     *
+     * <p>Still ATS-safe: no columns, no graphics, no colour by default.
+     * Bolum 33.5 gives density to a person with too much history, not a
+     * different kind of document.
+     */
+    private static final String COMPACT_BASE = """
+            \\usepackage{titlesec}
+            \\usepackage{enumitem}
+            \\usepackage[hidelinks]{hyperref}
+            \\usepackage{tabularx}
+            \\pagestyle{empty}
+            \\raggedbottom
+            \\raggedright
+            \\setlength{\\tabcolsep}{0in}
+            \\urlstyle{same}
+            % Classic's own -10 and -3, unchanged. The first draft deepened
+            % them to -13 and -5 and the calibration refused it: with `nosep`
+            % below there is no list separation left for a negative space to
+            % come out of, so it comes out of the text instead. Compact's
+            % density is the font, the margin and `nosep` -- not more of the
+            % correction classic needed for a list that pads itself.
+            \\titleformat{\\section}{%
+              \\vspace{-10pt}\\raggedright\\large\\bfseries\\color{accent}%
+            }{}{0em}{}[\\color{accent}\\titlerule \\vspace{-3pt}]
+            % No \\vspace at all, where classic pulls back four points. Its
+            % four are spent against the separation an itemize sets between two
+            % items; `nosep` has already taken that away, and pulling back
+            % again measured a bullet at 5.45pt against a 10.45pt line -- text
+            % over text, which the calibration is what caught.
+            \\newcommand{\\resumeItem}[1]{%
+              \\item\\small{{#1}}
+            }
+            \\newcommand{\\resumeSubheading}[4]{%
+              \\vspace{-2pt}\\item
+                \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+                  \\textbf{#1} & #2 \\\\
+                  \\textit{\\small#3} & \\textit{\\small #4} \\\\
+                \\end{tabular*}\\vspace{-4pt}%
+            }
+            \\newcommand{\\resumeProjectHeading}[2]{%
+                \\item
+                \\begin{tabularx}{0.97\\textwidth}{X r}
+                  \\textbf{#1} & #2 \\\\
+                \\end{tabularx}\\vspace{-3pt}%
+            }
+            \\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+            % `nosep` is most of the difference between these lists and
+            % classic's: no space above, below or between items. It is a
+            % geometric change, so it lands inside every number the calibration
+            % measures rather than being something the renderer knows about.
+            \\newcommand{\\resumeSubHeadingListStart}%
+              {\\begin{itemize}[leftmargin=0.15in, label={}, nosep]}
+            \\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
+            \\newcommand{\\resumeItemListStart}{\\begin{itemize}[nosep]}
+            \\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-2pt}}
+            \\newcommand{\\resumeParagraphListStart}%
+              {\\begin{itemize}[leftmargin=0.15in, label={}, nosep]}
+            \\newcommand{\\resumeParagraphListEnd}{\\end{itemize}}
+            \\newcommand{\\resumeInlineList}[1]%
+              {\\begin{itemize}[leftmargin=0.15in, label={}, nosep]%
+                \\small{\\item{#1}}\\end{itemize}}
+            % One size down from classic's \\Huge, and six points under it
+            % rather than ten. The name still reads first; it just stops
+            % costing a fifth of an inch.
+            \\newcommand{\\atomcvHeader}[2]{%
+              \\begin{center}
+                \\textbf{\\LARGE #1} \\\\ \\vspace{6pt}
+                \\small #2
+              \\end{center}
+            }
+            """;
+
+    /**
      * Classic at its default customization, measured against the compiler
      * rather than estimated (Bolum 26.4).
      *
@@ -170,6 +256,48 @@ public final class TemplateRegistry {
                     Map.entry(CapacityModel.INLINE_ROW, 12.0),
                     Map.entry(CapacityModel.INLINE_LIST_OVERHEAD, 7.04999)));
 
+    /**
+     * Compact at its default customization, measured the same way classic was
+     * (Bolum 26.4) — never estimated, and never derived from classic's numbers
+     * by arithmetic.
+     *
+     * <p>Two of these say the template is doing what it claims. A bullet
+     * advances the page by exactly one small baseline, 10.44996 against
+     * 10.44997, because {@code nosep} leaves nothing between two items — and
+     * that is also why {@code SECTION_ITEM_LINE} equals {@code ITEM_LINE} here
+     * where classic charges five points more for a bullet in a list of its
+     * own. The separation classic is paying for does not exist in this
+     * template.
+     *
+     * <p>The page holds about seventy bullet lines against classic's sixty,
+     * which is Bolum 33.5's "~64 lines" once the furniture is taken out of it.
+     */
+    private static final CapacityModel COMPACT_CAPACITY = new CapacityModel(
+            // 0.4in all round rather than 0.5, which is 14.45pt more in each
+            // direction than classic and exactly what these two are.
+            737.15489,
+            556.47990,
+            11.39996,
+            10.44997,
+            Map.ofEntries(
+                    // \LARGE and six points, against classic's \Huge and ten.
+                    Map.entry(CapacityModel.HEADER_BLOCK, 48.99124),
+                    Map.entry(CapacityModel.SECTION_HEADER, 19.58898),
+                    Map.entry(CapacityModel.ENTRY_HEADER, 16.79989),
+                    Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 20.12094),
+                    Map.entry(CapacityModel.PROJECT_HEADING, 8.40395),
+                    Map.entry(CapacityModel.PROJECT_HEADING_AFTER_LIST, 11.50493),
+                    Map.entry(CapacityModel.ITEMIZE_OVERHEAD, -5.10497),
+                    Map.entry(CapacityModel.ITEM_LINE, 10.44996),
+                    // Equal to the line above, and classic's are five points
+                    // apart. `nosep` is the whole of the difference.
+                    Map.entry(CapacityModel.SECTION_ITEM_LINE, 10.44997),
+                    Map.entry(CapacityModel.SECTION_LIST_OVERHEAD, -6.10499),
+                    Map.entry(CapacityModel.SECTION_LIST_CLOSE, 10.00000),
+                    Map.entry(CapacityModel.PARAGRAPH_LIST_OVERHEAD, -4.10499),
+                    Map.entry(CapacityModel.INLINE_ROW, 10.44997),
+                    Map.entry(CapacityModel.INLINE_LIST_OVERHEAD, -4.10499)));
+
     private TemplateRegistry() {
     }
 
@@ -184,9 +312,38 @@ public final class TemplateRegistry {
     public static java.util.Optional<CapacityModel> capacityOf(
             TemplateCustomization customization) {
 
-        return TemplateCustomization.CLASSIC.equals(customization)
-                ? java.util.Optional.of(CLASSIC_CAPACITY)
-                : java.util.Optional.empty();
+        if (TemplateCustomization.CLASSIC.equals(customization)) {
+            return java.util.Optional.of(CLASSIC_CAPACITY);
+        }
+        if (TemplateCustomization.COMPACT.equals(customization)) {
+            return java.util.Optional.of(COMPACT_CAPACITY);
+        }
+        // Still equality and still exhaustive, and it has to stay that way
+        // until layer B exists. Two entries do not make this a lookup by
+        // template id: compact's numbers hold for compact's font, margin and
+        // leading, and a caller who moved one of those has a customization
+        // nobody has measured.
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * The settings a template is meant to be read at (Bolum 33.5).
+     *
+     * <p>A template id on its own does not describe a document: three of
+     * compact's four differences from classic are layer-B numbers, and a
+     * compact preamble at classic's 11pt on a half-inch margin is neither
+     * template. This is the pairing, and it is the only customization each
+     * template has a measured capacity for.
+     *
+     * <p><strong>An unknown id falls back to classic rather than failing.</strong>
+     * The id comes off a stored preference, and a profile naming a template
+     * that has since been withdrawn should produce a CV in the default rather
+     * than no CV at all.
+     */
+    public static TemplateCustomization defaultsFor(String templateId) {
+        return "compact".equals(templateId)
+                ? TemplateCustomization.COMPACT
+                : TemplateCustomization.CLASSIC;
     }
 
     public static Set<String> ids() {
@@ -207,9 +364,10 @@ public final class TemplateRegistry {
 
     /** The template's own preamble lines, appended after the shared ones. */
     public static String baseOf(String templateId) {
-        if (!"classic".equals(templateId)) {
-            throw new IllegalArgumentException("No such template");
-        }
-        return CLASSIC_BASE;
+        return switch (templateId == null ? "" : templateId) {
+            case "classic" -> CLASSIC_BASE;
+            case "compact" -> COMPACT_BASE;
+            default -> throw new IllegalArgumentException("No such template");
+        };
     }
 }

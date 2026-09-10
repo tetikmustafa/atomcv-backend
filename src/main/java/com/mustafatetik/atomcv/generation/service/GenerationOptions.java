@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import java.util.Locale;
 
 /**
@@ -36,7 +37,11 @@ public record GenerationOptions(
         return new GenerationOptions(
                 defaults.maxPages(),
                 resolveLanguage(defaults.cvLanguage(), profile.getSourceLanguage()),
-                TemplateCustomization.CLASSIC);
+                // The preference has carried a templateId since Bolum 14.4 and
+                // this ignored it, so every CV came out classic whatever the
+                // profile asked for. Reading it is the whole of what makes a
+                // second template selectable (Bolum 33.5).
+                TemplateRegistry.defaultsFor(defaults.templateId()));
     }
 
     public GenerationOptions withMaxPages(Integer pages) {
@@ -80,7 +85,7 @@ public record GenerationOptions(
             return defaultsOf(profile);
         }
         return new GenerationOptions(defaults.maxPages(), posting,
-                TemplateCustomization.CLASSIC);
+                TemplateRegistry.defaultsFor(defaults.templateId()));
     }
 
     public GenerationOptions withLanguage(String requested) {
