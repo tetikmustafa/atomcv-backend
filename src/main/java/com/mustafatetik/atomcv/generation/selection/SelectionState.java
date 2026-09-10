@@ -88,6 +88,17 @@ public record SelectionState(
         /** The user switched it off. */
         INACTIVE,
 
+        /**
+         * The user took it off <em>this</em> CV (Bolum 24.4).
+         *
+         * <p>Its own reason and not {@link #INACTIVE}. The two look identical
+         * to the algorithm and are opposites to the person: one is a standing
+         * decision about the profile, the other is an edit of one document that
+         * the next generation will not repeat. A screen offering to undo the
+         * second must not offer to undo the first.
+         */
+        EXCLUDED_BY_DIRECTIVE,
+
         /** Its entry could not reach the minimum worth printing, so the entry went whole. */
         ENTRY_BELOW_MINIMUM
     }

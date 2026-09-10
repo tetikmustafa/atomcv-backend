@@ -188,14 +188,28 @@ public final class SelectionPhase {
                     List.copyOf(rejectedEntries)));
         }
 
-        /** An atom the user switched off is not a candidate at all (constraint 3). */
+        /**
+         * An atom the user switched off is not a candidate at all
+         * (constraint 3), and neither is one they took off this CV
+         * (Bolum 24.4).
+         *
+         * <p>The profile's switch is asked first. An atom that is both off and
+         * excluded is reported as {@code INACTIVE}, because that is the older
+         * and the wider statement: undoing the edit would still not put it on
+         * the page, and saying {@code EXCLUDED_BY_DIRECTIVE} would promise that
+         * it would.
+         */
         private void partitionByActivity() {
+            GenerationDirectives directives = request.directives();
             for (AtomCandidate atom : allAtoms()) {
-                if (atom.active()) {
-                    pool.put(atom.atomId(), atom);
-                } else {
+                if (!atom.active()) {
                     rejected.add(new RejectedAtom(
                             atom.atomId(), atom.score(), RejectionReason.INACTIVE));
+                } else if (directives.excludes(atom.atomId())) {
+                    rejected.add(new RejectedAtom(atom.atomId(), atom.score(),
+                            RejectionReason.EXCLUDED_BY_DIRECTIVE));
+                } else {
+                    pool.put(atom.atomId(), atom);
                 }
             }
         }
@@ -209,10 +223,18 @@ public final class SelectionPhase {
          * minimum is forced only where a lock already commits the entry;
          * everywhere else it is enforced after the fact, all or nothing
          * (EK D.8.5).
+         *
+         * <p>An atom the user asked for by hand is placed here too, and is
+         * recorded as {@code forcedByLock}. The flag's name is narrower than
+         * what it now means, and its meaning in the snapshot is unchanged:
+         * this atom did not compete for the page. A directive that only made an
+         * atom a stronger candidate would fail exactly when it is asked for —
+         * on a full page, which is the only time anyone reaches for it.
          */
         private Result<Void> placeMandatory() {
+            GenerationDirectives directives = request.directives();
             for (AtomCandidate atom : sortedByScore(pool.values())) {
-                if (atom.alwaysInclude()) {
+                if (atom.alwaysInclude() || directives.includes(atom.atomId())) {
                     include(atom, true);
                 }
             }
