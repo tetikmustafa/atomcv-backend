@@ -112,10 +112,16 @@ public class CalibrationService {
         var fixed = new LinkedHashMap<String, Double>();
         fixed.put(CapacityModel.HEADER_BLOCK, delta(probes, "start", "afterHeaderBlock"));
         fixed.put(CapacityModel.SECTION_HEADER, sectionHeader);
-        // The probe for this was already in the document and the derivation
-        // simply never read it: between afterOneEntry and beforeTwoEntries
-        // stands a section heading with an entry list closed above it, which is
-        // the position every heading but the first is actually in.
+        // A heading with a list closed above it, which is the position every
+        // heading but the first is in.
+        //
+        // Measured between afterOneEntry and beforeTwoEntries -- an entry list
+        // closes, a section heading follows -- rather than at the labelled
+        // beforeSectionAfterList further down, which somebody laid there for
+        // exactly this and which cannot be used: modern's calibration document
+        // breaks its page at that heading, so the reading runs backwards and
+        // the whole geometry is refused. The pair here sits early enough to be
+        // measurable in every template.
         fixed.put(CapacityModel.SECTION_HEADER_AFTER_LIST,
                 delta(probes, "afterOneEntry", "beforeTwoEntries"));
         fixed.put(CapacityModel.ENTRY_HEADER, entryHeader);
@@ -194,6 +200,7 @@ public class CalibrationService {
             {"beforeBareEntry", "afterBareEntry"},
             {"beforeOneEntry", "afterOneEntry"},
             {"afterOneEntry", "beforeTwoEntries"},
+
             {"beforeEntryThreeItems", "afterEntryThreeItems"},
             {"beforeTwoEntries", "afterTwoEntries"},
             {"beforeOneProject", "afterOneProject"},
