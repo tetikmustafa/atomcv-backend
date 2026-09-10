@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.RenderedContent;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
+import com.mustafatetik.atomcv.generation.phases.edit.EditPlan;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.pipeline.GeneratedDocument;
 import com.mustafatetik.atomcv.generation.repository.AnonymousGenerations;
@@ -64,12 +65,14 @@ public class GenerationJobHandler implements JobHandler {
     private final ProfileResolver profiles;
     private final QuotaService quotas;
     private final GenerationRerunService reruns;
+    private final NaturalLanguageEditService language;
     private final ErrorPresenter errors;
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
             GenerationRepository records, AnonymousGenerations anonymousRecords,
             AnonymousProfiles anonymous, ProfileResolver profiles, QuotaService quotas,
-            GenerationRerunService reruns, ErrorPresenter errors) {
+            GenerationRerunService reruns, NaturalLanguageEditService language,
+            ErrorPresenter errors) {
 
         this.anonymousRecords = anonymousRecords;
         this.anonymous = anonymous;
@@ -79,6 +82,7 @@ public class GenerationJobHandler implements JobHandler {
         this.general = general;
         this.records = records;
         this.reruns = reruns;
+        this.language = language;
         this.errors = errors;
     }
 
@@ -174,14 +178,46 @@ public class GenerationJobHandler implements JobHandler {
         }
         Generation parent = found.get();
 
-        Result<GeneratedGeneration> result =
-                reruns.rerun(subject, parent, payload.directives(), progress);
+        // Bolum 24.2. A sentence has to be read before it can be applied, and
+        // that reading is the only thing an edit ever pays for. A hand toggle
+        // arrives with its ids already decided and skips it entirely.
+        GenerationDirectives directives = payload.directives();
+        if (payload.isNaturalLanguage()) {
+            progress.report(GenerationPhase.ANALYSING.at(15));
+            Result<EditPlan> read = language.plan(
+                    subject, parent, payload.instruction(), job.getId());
+            if (read instanceof Result.Err<EditPlan> refused) {
+                // Refunded here rather than at the end: the parse is what was
+                // paid for, and a sentence that named no line got nothing for
+                // it (Bolum 44.2).
+                refund(payload);
+                return failed(refused.error());
+            }
+            directives = directives.and(read.orElseThrow().asDirectives());
+        }
 
+        Result<GeneratedGeneration> result =
+                reruns.rerun(subject, parent, directives, progress);
+
+        GenerationDirectives applied = directives;
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok ->
-                    completedEdit(subject, parent, payload.directives(), ok.value());
-            case Result.Err<GeneratedGeneration> failed -> failed(failed.error());
+                    completedEdit(subject, parent, applied, ok.value());
+            case Result.Err<GeneratedGeneration> failed -> {
+                refund(payload);
+                yield failed(failed.error());
+            }
         };
+    }
+
+    /**
+     * A hand toggle took nothing, so there is nothing to give back; a
+     * natural-language edit paid for its parse when it was queued.
+     */
+    private void refund(SelectionEditPayload payload) {
+        if (payload.allowance() != null) {
+            quotas.refund(payload.allowance(), QuotaMetric.GENERATION);
+        }
     }
 
     private JobOutcome completedEdit(

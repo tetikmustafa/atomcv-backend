@@ -132,6 +132,12 @@ public class ErrorPresenter {
             case PipelineError.TranslationRejected ignored -> UserFacingError.of(
                     ErrorCode.TRANSLATION_FAILED, new Resolution(ResolutionAction.RETRY, null));
 
+            // Another sentence is a different sentence, and this one cost
+            // almost nothing -- Bolum 24.2's parse is the cheapest call the
+            // product makes.
+            case PipelineError.EditNotUnderstood ignored -> UserFacingError.of(
+                    ErrorCode.EDIT_NOT_UNDERSTOOD, new Resolution(ResolutionAction.RETRY, null));
+
             case PipelineError.CoverLetterRejected refused -> UserFacingError
                     .with(ErrorCode.COVER_LETTER_REJECTED)
                     // Kinds, not the letter. The screen turns these into a

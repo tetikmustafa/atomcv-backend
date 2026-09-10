@@ -61,6 +61,13 @@ public final class JobRetryPolicy {
             // against a limit is three failures instead of one.
             case PipelineError.QuotaExceeded ignored -> false;
 
+            // Bolum 24.2. The same sentence goes back to the same model
+            // against the same numbered list, and a retry that happened to
+            // land differently would be worse than one that did not: the
+            // person would have got an answer the first reading said it could
+            // not give. Another sentence is theirs to write.
+            case PipelineError.EditNotUnderstood ignored -> false;
+
             // Never queued in the first place: the brake is checked before
             // anything is accepted, so this cannot reach a worker.
             case PipelineError.GenerationPaused ignored -> false;

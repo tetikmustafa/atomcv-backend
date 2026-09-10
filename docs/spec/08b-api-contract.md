@@ -149,6 +149,7 @@ yalnızca yerine koyar.
 | `PROFILE_ALREADY_EXISTS` | 409 | — |
 | `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
 | `GENERATION_SUPERSEDED` | 409 | — |
+| `EDIT_NOT_UNDERSTOOD` | 422 | — |
 | `CSRF_TOKEN_INVALID` | 403 | — |
 | `AUTHENTICATION_REQUIRED` | 401 | — |
 | `OAUTH_FAILED` | 400 | `reason: string` |
