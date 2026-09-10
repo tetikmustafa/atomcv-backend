@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["keep", "drop", "understood"],
+  "properties": {
+    "keep": {
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "drop": {
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "understood": { "type": "boolean" }
+  }
+}
