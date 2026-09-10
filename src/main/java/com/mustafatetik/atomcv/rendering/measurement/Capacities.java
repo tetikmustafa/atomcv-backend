@@ -44,7 +44,21 @@ public class Capacities {
         if (builtIn.isPresent()) {
             return builtIn;
         }
-        return measured.find(customization.costKey());
+        return measured.find(customization.costKey()).filter(Capacities::isComplete);
+    }
+
+    /**
+     * Whether a stored capacity still has everything the model asks of it.
+     *
+     * <p>A row measured before the model grew a piece of furniture is missing
+     * that piece, and charging it as zero is how a page silently over-fills.
+     * Treated as never measured instead: the caller falls back to the
+     * estimator's scaled guess with its 8% margin, a measurement is asked for,
+     * and the row is written again complete. Under-filling a page while that
+     * happens is a bullet; charging nothing for real furniture is a second page.
+     */
+    private static boolean isComplete(CapacityModel capacity) {
+        return capacity.fixedCosts().keySet().containsAll(CapacityModel.REQUIRED_COSTS);
     }
 
     /** Whether a generation could run at these settings without estimating. */
