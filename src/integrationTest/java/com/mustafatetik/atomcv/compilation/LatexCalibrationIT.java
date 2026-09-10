@@ -166,11 +166,16 @@ class LatexCalibrationIT {
     void asectionHeadingAfterAlistOfLooseBulletsCostsAlineMore() {
         double base = capacity().fixedCost(CapacityModel.SECTION_HEADER);
         double close = capacity().fixedCost(CapacityModel.SECTION_LIST_CLOSE);
+        // Zero in classic, where a heading costs the same in both positions.
+        // Compact is where it is not, and where charging the leftover and the
+        // premium both spent the same ten points twice.
+        double premium =
+                capacity().fixedCost(CapacityModel.SECTION_HEADER_AFTER_LIST) - base;
 
-        assertThat(delta("afterListUnderSection", "beforeThreeUnderSection") - base)
+        assertThat(delta("afterListUnderSection", "beforeThreeUnderSection") - base - premium)
                 .as("after one loose bullet")
                 .isCloseTo(close, offset());
-        assertThat(delta("afterThreeUnderSection", "beforeBareEntry") - base)
+        assertThat(delta("afterThreeUnderSection", "beforeBareEntry") - base - premium)
                 .as("after three, so it is the end of the list and not its length")
                 .isCloseTo(close, offset());
         assertThat(close)

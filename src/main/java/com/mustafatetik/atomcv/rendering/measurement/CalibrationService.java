@@ -137,8 +137,20 @@ public class CalibrationService {
         fixed.put(CapacityModel.SECTION_LIST_OVERHEAD, sectionOne - sectionItemLine);
         // Charged to the list rather than to the heading below it, which is
         // where CapacityModel.SECTION_LIST_CLOSE says why.
+        // What is left after the heading premium has already been charged for
+        // it. The two numbers measure one piece of space from opposite sides:
+        // this one asks what a section's list leaves behind, and
+        // SECTION_HEADER_AFTER_LIST asks what a heading costs when a list
+        // closed above it. In classic they are genuinely different -- a heading
+        // costs the same in both positions and the list leaves twelve points --
+        // but in compact the heading premium IS the leftover, and charging both
+        // spent the same ten points twice on every section with loose atoms.
+        // career_changer was 10.74 pt over a real page for exactly that.
+        double leftoverAfterList =
+                delta(probes, "afterListUnderSection", "beforeThreeUnderSection") - sectionHeader;
+        double headingPremium = entryAfterListPremium(fixed, sectionHeader);
         fixed.put(CapacityModel.SECTION_LIST_CLOSE,
-                delta(probes, "afterListUnderSection", "beforeThreeUnderSection") - sectionHeader);
+                Math.max(0, leftoverAfterList - headingPremium));
         fixed.put(CapacityModel.PARAGRAPH_LIST_OVERHEAD,
                 delta(probes, "beforeParagraphOne", "afterParagraphOne") - sectionItemLine);
         fixed.put(CapacityModel.INLINE_ROW, inlineRow);
@@ -150,6 +162,14 @@ public class CalibrationService {
                 probes.get("baselineskip"),
                 probes.get("itembaselineskip"),
                 fixed);
+    }
+
+    /** How much dearer a section heading is where a list closed above it. */
+    private static double entryAfterListPremium(
+            java.util.Map<String, Double> fixed, double sectionHeader) {
+
+        Double afterList = fixed.get(CapacityModel.SECTION_HEADER_AFTER_LIST);
+        return afterList == null ? 0 : Math.max(0, afterList - sectionHeader);
     }
 
     /**

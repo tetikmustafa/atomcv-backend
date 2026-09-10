@@ -384,7 +384,11 @@ public final class TemplateRegistry {
                     // apart. `nosep` is the whole of the difference.
                     Map.entry(CapacityModel.SECTION_ITEM_LINE, 10.44997),
                     Map.entry(CapacityModel.SECTION_LIST_OVERHEAD, -6.10499),
-                    Map.entry(CapacityModel.SECTION_LIST_CLOSE, 10.00000),
+                    // Nothing, and that is the measurement rather than a
+                    // rounding: compact's leftover after a section list is the
+                    // ten points its next heading is already charged, and
+                    // charging both spent them twice.
+                    Map.entry(CapacityModel.SECTION_LIST_CLOSE, 0.00001),
                     Map.entry(CapacityModel.PARAGRAPH_LIST_OVERHEAD, -4.10499),
                     Map.entry(CapacityModel.INLINE_ROW, 10.44997),
                     Map.entry(CapacityModel.INLINE_LIST_OVERHEAD, -4.10499)));
