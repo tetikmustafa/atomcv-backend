@@ -108,7 +108,7 @@ public record TemplateCustomization(
      * black, and charge them a compilation to learn the same numbers again.
      *
      * <p><strong>A template at its own defaults keeps the bare key.</strong>
-     * {@code classic:v5} is what every measurement in the database and in the
+     * {@code classic:v6} is what every measurement in the database and in the
      * golden set is filed under, and those were taken at exactly those
      * settings — suffixing them would orphan work that is still correct. The
      * suffix is for a document that differs from the default, which is the

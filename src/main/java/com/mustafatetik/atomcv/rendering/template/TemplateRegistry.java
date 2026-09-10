@@ -20,12 +20,16 @@ public final class TemplateRegistry {
      * leaves old measurements looking valid for a document that no longer
      * matches them, and the page guarantee fails quietly rather than loudly.
      */
-    // Classic 5 and modern 2 on 2026-09-10. Their \resumeItem left an
-    // interword space between the wording and the negative \vspace that
-    // follows it, so the page had to fit one space more than the measurement
-    // ever saw. Compact's macro has no such space and stays at 1.
+    // All three moved twice on one fault, in one day. \resumeItem let a space
+    // reach the page that the measurement never saw: first an interword space
+    // written between the wording and the negative \vspace after it (classic 5,
+    // modern 2), then the space every line break inside the macro's own body
+    // turns into (classic 6, compact 2, modern 3). A bullet whose natural width
+    // lands within one space of the line is then set a line longer than it
+    // measured -- and only where it is the last of its list, which is why it
+    // took a fixture of sixty such bullets to show.
     private static final Map<String, Integer> VERSIONS =
-            Map.of("classic", 5, "compact", 1, "modern", 2);
+            Map.of("classic", 6, "compact", 2, "modern", 3);
 
     /**
      * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
@@ -77,9 +81,7 @@ public final class TemplateRegistry {
             % the capacity model carries both. Reading it back as a single
             % number is what put every prediction 24-43% over what the page held.
             \\newcommand{\\resumeItem}[1]{%
-              \\item\\small{
-                {#1\\vspace{-4pt}}
-              }
+              \\item\\small{{#1\\vspace{-4pt}}}%
             }
             \\newcommand{\\resumeSubheading}[4]{%
               \\vspace{-2pt}\\item
@@ -166,7 +168,7 @@ public final class TemplateRegistry {
             % again measured a bullet at 5.45pt against a 10.45pt line -- text
             % over text, which the calibration is what caught.
             \\newcommand{\\resumeItem}[1]{%
-              \\item\\small{{#1}}
+              \\item\\small{{#1}}%
             }
             \\newcommand{\\resumeSubheading}[4]{%
               \\vspace{-2pt}\\item
@@ -247,9 +249,7 @@ public final class TemplateRegistry {
               \\vspace{-5pt}\\raggedright\\large\\bfseries%
             }{}{0em}{}[\\color{accent}\\titlerule \\vspace{-1pt}]
             \\newcommand{\\resumeItem}[1]{%
-              \\item\\small{
-                {#1\\vspace{-2pt}}
-              }
+              \\item\\small{{#1\\vspace{-2pt}}}%
             }
             \\newcommand{\\resumeSubheading}[4]{%
               \\vspace{-1pt}\\item

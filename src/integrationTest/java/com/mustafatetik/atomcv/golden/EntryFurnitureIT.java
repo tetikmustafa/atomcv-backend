@@ -25,42 +25,29 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * What the first bullet of a list costs, against what a later one costs.
  *
  * <p>{@code WordingCostIT} compares the second bullet of a list with the third,
- * so the first one cancels and is never looked at. This looks at it, and modern
- * is where that matters: a wording at the line's edge is set on two lines as
- * the first bullet under an entry heading and on one as any later bullet. The
- * measurement measures a bullet on its own, so it reports the later one, and
- * every list in the document is charged a line short of what it prints.
+ * so the first one cancels and is never looked at. This looks at it, and it is
+ * where modern's last drift was found and fixed on 2026-09-11: a wording at the
+ * line's edge was set on two lines as the <em>last</em> bullet of a list and on
+ * one anywhere else, so every list was charged a line short of what it printed.
  *
- * <p>That is the whole of modern's remaining drift. With a bullet reading
- * "Probe" -- a word that could not wrap at any width -- all three templates
- * spend exactly what they are charged, to fifteen decimal places. It appears
- * only with a wording that sits in the band where one line's worth of width
- * decides the answer, which is the same band the interword space decided.
+ * <p>The cause was a space, again. {@code
+esumeItem} was written across three
+ * lines, and every line break inside a macro body is a space -- so the page had
+ * to fit the wording plus a space the measurement never boxed. The premium here
+ * fell from 17.05 to 5.50 when the body was closed up, and modern joined the
+ * templates whose page promise is confirmed.
  *
- * <p><strong>What it is not</strong>, each ruled out against the compiler on
- * 2026-09-11 and left here so the next attempt does not start where this one
- * did. Not the entry heading: a plain {@code \item} above the list shows the
- * same premium. Not the heading's trailing {@code space}: removing it makes
- * the premium larger, and classic's value does not change it. Not the
- * {@code tabular*} width. Not a missing paragraph break: an explicit
- * {@code \par} before the list makes it larger too. And <em>not the level of
- * the list</em> -- a bullet list opened straight under a section heading has no
- * premium at all in any template, which is what makes this a property of the
- * nested list rather than of the bullet.
+ * <p>What is left is the list's own overhead, which is what this number is for:
+ * 0.55 in classic, -5.10 in compact, 2.55 in modern, plus about three points
+ * that a long last line leaves behind and a following bullet absorbs. Compact,
+ * whose {@code
+esumeItem} has no {@code space} at all, keeps only half a
+ * point of it -- so that residue is the negative space being discarded at the
+ * end of a list rather than spent.
  *
- * <p>One measurement disagrees with the rest and is the thread to pull. Setting
- * two rules with a space between them and widening the first until they part
- * says the first item and the second are set at exactly the same width -- 486 pt
- * in modern, 492 in classic -- while the heights say the same wording is two
- * lines in the first position and one in the second. Both cannot be true, so
- * one of those instruments is lying, and finding out which is where the fix
- * starts.
- *
- * <p><strong>The difference is asserted rather than tolerated.</strong> A test
- * that only checked classic and compact would go on passing while modern stayed
- * wrong, and a comment would go on being read after it stopped being true. Each
- * template is held to what it measures at today, so the day this is fixed, this
- * is what says the number moved.
+ * <p><strong>The premium is asserted rather than tolerated.</strong> Each
+ * template is held to what it measures at today, which is how this test noticed
+ * its own subject being fixed: the number moved and the lane went red.
  */
 @Tag("latex")
 @Testcontainers
@@ -71,20 +58,17 @@ class EntryFurnitureIT {
 
     /**
      * What the first bullet of a list costs above a later one, measured
-     * 2026-09-10 with the golden set's boundary wording.
+     * 2026-09-11 with the golden set's boundary wording.
      *
-     * <p>Some of this is furniture and is meant to be there: opening the list
-     * is charged {@code ITEMIZE_OVERHEAD}, which is 0.55 in classic, -5.10 in
-     * compact and 2.55 in modern. Take that away and classic keeps 2.95,
-     * compact 2.64 -- an entry list's close, which nothing charges for -- and
-     * <strong>modern keeps 14.50, which is those same points and a whole
-     * line.</strong> That line is the defect: the same wording is set on two
-     * lines here and on one further down the list.
+     * <p>Most of it is furniture and is meant to be there: opening the list is
+     * charged {@code ITEMIZE_OVERHEAD}, 0.55 in classic, -5.10 in compact and
+     * 2.55 in modern. What is left over -- 2.95, 2.64 and 2.95 -- is a long
+     * last line's leftover, and a bullet after it absorbs the lot.
      */
     private static final Map<String, Double> FIRST_BULLET_PREMIUM_PT = Map.of(
             "classic", 3.50,
             "compact", -2.46,
-            "modern", 17.05);
+            "modern", 5.50);
 
     private static final Offset<Double> A_TENTH = Offset.offset(0.1);
 

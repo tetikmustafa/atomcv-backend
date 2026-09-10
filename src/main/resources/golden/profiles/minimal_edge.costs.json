@@ -1,5 +1,5 @@
 {
-  "classic:v5" : {
+  "classic:v6" : {
     "0984447dfeb52bec91c301fe21972875a65e77ce85e81db2ac48c885dcfd7d79" : 17.0,
     "0f737baa417bbd9678f293ca7076f7d4002020dedc1f8edef733f3725d088707" : 12.0,
     "108dcfcb96396e75e449c3031fbfc558d3e5155547fc5ada2925e01f500aafeb" : 17.0,
@@ -11,7 +11,7 @@
     "b826af5e2d970d8f369270ceba655cfbc354de9c69b9de8af4d8baf6297b76f5" : 12.0,
     "header" : 67.35588
   },
-  "compact:v1" : {
+  "compact:v2" : {
     "0984447dfeb52bec91c301fe21972875a65e77ce85e81db2ac48c885dcfd7d79" : 10.44997,
     "0f737baa417bbd9678f293ca7076f7d4002020dedc1f8edef733f3725d088707" : 10.44996,
     "108dcfcb96396e75e449c3031fbfc558d3e5155547fc5ada2925e01f500aafeb" : 10.44997,
@@ -23,7 +23,7 @@
     "b826af5e2d970d8f369270ceba655cfbc354de9c69b9de8af4d8baf6297b76f5" : 10.44996,
     "header" : 52.7418
   },
-  "modern:v2" : {
+  "modern:v3" : {
     "0984447dfeb52bec91c301fe21972875a65e77ce85e81db2ac48c885dcfd7d79" : 19.0,
     "0f737baa417bbd9678f293ca7076f7d4002020dedc1f8edef733f3725d088707" : 14.0,
     "108dcfcb96396e75e449c3031fbfc558d3e5155547fc5ada2925e01f500aafeb" : 19.0,

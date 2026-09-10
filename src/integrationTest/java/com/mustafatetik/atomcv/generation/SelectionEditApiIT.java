@@ -272,7 +272,7 @@ class SelectionEditApiIT extends AbstractIntegrationTest {
     }
 
     private static EngineVersion engineVersion() {
-        return new EngineVersion(EngineVersion.PIPELINE, "default", "classic:v5",
+        return new EngineVersion(EngineVersion.PIPELINE, "default", "classic:v6",
                 Map.of("job_analysis", "v1"));
     }
 

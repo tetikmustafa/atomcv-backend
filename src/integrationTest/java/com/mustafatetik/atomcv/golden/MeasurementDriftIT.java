@@ -47,47 +47,35 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * compares that with what selection thought it had spent. The checklist wants
  * the two within three percent.
  *
- * <p><strong>Only the templates whose promise has been confirmed.</strong>
- * Running this across all three found that compact's did not hold and that
- * modern ran a golden profile onto a second page. Three causes have been fixed
- * since, and each was the same mistake in a different place: <em>a piece of
- * furniture that carries user text was priced from something that did not.</em>
+ * <p><strong>All three templates hold it now</strong>, on all seven golden
+ * profiles. Getting there took five fixes, and each was the same mistake in a
+ * different place: <em>something the page sets that the measurement never saw.</em>
  *
  * <ul>
  * <li>A section heading after a list costs ten points more in compact, and the
- * calibration document only ever measured the other position.</li>
- * <li>The header block was one constant per template. It is text, it wraps, and
- * senior_backend_tr's measures 65.2 pt against a charge of 48.99.</li>
- * <li><strong>{@code
-esumeItem} left an interword space between the wording
- * and the negative {@code space} after it.</strong> The measurement boxed the
- * wording without that space, so a bullet whose natural width landed inside one
- * space of the line wrapped on the page and not in the box. Every wording in
- * stress_long_career sat in that band under modern: 60 bullets measured at one
- * line and set at two, which is what made the page a second one. Compact never
- * had the space and never showed it.</li>
+ * calibration only ever measured the other position.</li>
+ * <li>The header block was one constant per template; it is text, it wraps, and
+ * one profile's measures 65.2 pt against a charge of 48.99.</li>
+ * <li>{@code
+esumeItem} left an interword space between the wording and the
+ * negative {@code space} after it.</li>
+ * <li>The same macro was written across three lines, and every line break
+ * inside a macro body is another space.</li>
+ * <li>Compact charged one gap twice, as the list's leftover and again as the
+ * heading's premium.</li>
  * </ul>
  *
- * <p><strong>Compact holds on all seven now.</strong> Its last miss was
- * career_changer at 3.84% <em>over</em> a real page, and the cause was one
- * piece of space charged twice: {@code SECTION_LIST_CLOSE} asks what a
- * section's bullet list leaves behind and {@code SECTION_HEADER_AFTER_LIST}
- * asks what the heading below it costs, and in compact those are the same ten
- * points. In classic they are not -- a heading costs the same in both positions
- * and the list really does leave twelve points -- which is why classic never
- * showed it. The calibration now subtracts the heading's premium before storing
- * the leftover, and compact's comes out at zero.
+ * <p>The two space bugs are worth reading together. Either one puts a bullet
+ * whose natural width lands within a space of the line onto a second line, and
+ * only where it is the last of its list -- which is why it took a fixture of
+ * sixty such bullets to make either visible, and why the drift test alone could
+ * never have named them. {@code WordingCostIT} and {@code EntryFurnitureIT}
+ * measure a bullet and an entry against what the page pays for them, which is
+ * where a single line's error is still a whole line rather than 2% of a page.
  *
- * <p><strong>modern / stress_long_career</strong> is the last one, at 6.90%,
- * and its cause is one sentence: in modern the first bullet of a nested list is
- * set on two lines where the same wording further down the list is set on one.
- * The measurement measures a bullet on its own and reports the second answer,
- * so every list is charged a line short of what it prints.
- * {@code EntryFurnitureIT} holds that premium and records what has been ruled
- * out.
- *
- * <p>So the list below stays short, and the test under it names what is
- * missing rather than leaving a comment somebody can lose.
+ * <p>The list below is therefore every shipped template, and the test under it
+ * asserts that nothing is missing from it rather than leaving a comment
+ * somebody can lose.
  */
 @Tag("latex")
 @Testcontainers
@@ -114,7 +102,7 @@ class MeasurementDriftIT {
      * stops being fixed. This is the written-down version.
      */
     private static final java.util.List<String> TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE =
-            java.util.List.of("classic", "compact");
+            java.util.List.of("classic", "compact", "modern");
 
     /**
      * Sorted: {@code ids()} is the key set of a {@code Map.of} and its order is
@@ -137,8 +125,8 @@ class MeasurementDriftIT {
                 .toList();
 
         assertThat(missing)
-                .as("modern's first-bullet premium is the last one out; anything else is new")
-                .containsExactly("modern");
+                .as("every shipped template is held to the three percent")
+                .isEmpty();
     }
 
     @ParameterizedTest(name = "{1}: {0}")
