@@ -11,17 +11,27 @@ import java.util.UUID;
  *
  * <p>No text: what a bullet says does not change what it costs or what it
  * scores, and both of those are already here. Selection works on numbers,
- * which is what makes it deterministic and testable without a database.
+ * which is what makes it deterministic and testable without a database. The
+ * directives are ids for the same reason — the two fields of Bolum 18.7 that
+ * are prose are read by Faz B and Faz D, and do not come in here.
+ *
+ * @param directives what the user asked for by hand on this one document
+ *                   (Bolum 24.4). Carried here rather than applied by the
+ *                   builder because a rejection has to say <em>why</em>, and
+ *                   an atom switched off in the profile and one taken off this
+ *                   CV are two different sentences to the person reading them
  */
 public record SelectionRequest(
         List<SectionPlan> sections,
         int maxPages,
         CapacityModel capacity,
-        double budgetFactor) {
+        double budgetFactor,
+        GenerationDirectives directives) {
 
     public SelectionRequest {
         sections = List.copyOf(Objects.requireNonNull(sections, "sections"));
         Objects.requireNonNull(capacity, "capacity");
+        directives = directives == null ? GenerationDirectives.none() : directives;
         if (maxPages < 1) {
             throw new IllegalArgumentException("A CV has at least one page");
         }
@@ -31,9 +41,16 @@ public record SelectionRequest(
         }
     }
 
-    /** The ordinary case: the whole page is available. */
+    /** The ordinary case: the whole page is available, and nobody has edited. */
     public SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity) {
-        this(sections, maxPages, capacity, 1.0);
+        this(sections, maxPages, capacity, 1.0, GenerationDirectives.none());
+    }
+
+    /** The first run of an edited generation, before the budget has to shrink. */
+    public SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity,
+            GenerationDirectives directives) {
+
+        this(sections, maxPages, capacity, 1.0, directives);
     }
 
     /**
@@ -44,7 +61,7 @@ public record SelectionRequest(
      * again against a budget shrunk by that much rather than the same one.
      */
     public SelectionRequest withBudgetFactor(double factor) {
-        return new SelectionRequest(sections, maxPages, capacity, factor);
+        return new SelectionRequest(sections, maxPages, capacity, factor, directives);
     }
 
     /** A heading, its entries, and any atoms hanging straight off it. */
