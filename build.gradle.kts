@@ -86,6 +86,12 @@ sourceSets {
     create("integrationTest") {
         compileClasspath += sourceSets.main.get().output
         runtimeClasspath += sourceSets.main.get().output
+        // And the unit lane's output, for the one thing both lanes share:
+        // Bolum 52.6's budget reader. The alternative was a second copy of it,
+        // and two readers of one file drift apart exactly when the file
+        // changes -- which is the moment the budget is supposed to be read.
+        compileClasspath += sourceSets.test.get().output
+        runtimeClasspath += sourceSets.test.get().output
     }
 }
 
@@ -200,6 +206,13 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Bolum 52.6's budget file is read by tests and is not on any classpath,
+    // so Gradle cannot see it. Without this a loosened budget leaves the task
+    // UP-TO-DATE and the guard it governs never runs -- which is how "changing
+    // a budget is a deliberate decision" quietly stops being one.
+    inputs.file(rootProject.file("performance-budgets.yaml"))
+        .withPropertyName("performanceBudgets")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and

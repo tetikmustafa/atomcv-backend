@@ -1,0 +1,34 @@
+# Bolum 52.6. Read by tests; changing a number here is a deliberate decision
+# that shows up in a pull request.
+#
+# **Deliberately generous — two to three times Bolum 52.1's figures.** The aim
+# is not micro-optimisation: a CI machine's speed varies by more than the
+# difference these would measure, so a tight budget would fail for the weather.
+# What these catch is somebody adding an O(n squared) loop, and that shows up
+# at any multiple.
+#
+# The sharper guards are elsewhere and are not timings at all: a query count
+# for the N+1 that Bolum 52.2 calls the most likely performance bug, and a
+# scaling ratio for the pure phases, which is immune to how fast the machine is
+# because it compares one run to another on the same one.
+backend:
+  # Bolum 52.1 says 30/60ms. Faz B is pure arithmetic over atoms in memory
+  # once the vectors are there.
+  phase_scoring: { p50_ms: 90, p95_ms: 180 }
+  # 15/40ms. Faz C is bin packing over the same atoms.
+  phase_selection: { p50_ms: 45, p95_ms: 120 }
+  # 80/200ms for a 200-atom profile, and the four queries below matter more
+  # than the milliseconds.
+  profile_load: { p50_ms: 240, p95_ms: 600 }
+
+# Bolum 52.2's real budget: flat queries and an in-memory join, never a walk
+# that asks per row. Six is the specification's own ceiling and it is a count
+# rather than a duration, so it means the same thing on every machine.
+queries:
+  profile_load_max: 6
+
+# What a doubling of the input is allowed to cost. Linear work doubles;
+# anything quadratic is four times, so a ceiling between the two catches the
+# loop without caring about the machine.
+scaling:
+  max_growth_when_input_doubles: 3.0
