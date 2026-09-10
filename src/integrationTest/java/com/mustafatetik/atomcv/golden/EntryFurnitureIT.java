@@ -37,6 +37,25 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * only with a wording that sits in the band where one line's worth of width
  * decides the answer, which is the same band the interword space decided.
  *
+ * <p><strong>What it is not</strong>, each ruled out against the compiler on
+ * 2026-09-11 and left here so the next attempt does not start where this one
+ * did. Not the entry heading: a plain {@code \item} above the list shows the
+ * same premium. Not the heading's trailing {@code space}: removing it makes
+ * the premium larger, and classic's value does not change it. Not the
+ * {@code tabular*} width. Not a missing paragraph break: an explicit
+ * {@code \par} before the list makes it larger too. And <em>not the level of
+ * the list</em> -- a bullet list opened straight under a section heading has no
+ * premium at all in any template, which is what makes this a property of the
+ * nested list rather than of the bullet.
+ *
+ * <p>One measurement disagrees with the rest and is the thread to pull. Setting
+ * two rules with a space between them and widening the first until they part
+ * says the first item and the second are set at exactly the same width -- 486 pt
+ * in modern, 492 in classic -- while the heights say the same wording is two
+ * lines in the first position and one in the second. Both cannot be true, so
+ * one of those instruments is lying, and finding out which is where the fix
+ * starts.
+ *
  * <p><strong>The difference is asserted rather than tolerated.</strong> A test
  * that only checked classic and compact would go on passing while modern stayed
  * wrong, and a comment would go on being read after it stopped being true. Each
