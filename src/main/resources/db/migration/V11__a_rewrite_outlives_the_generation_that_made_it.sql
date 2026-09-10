@@ -1,0 +1,26 @@
+-- Bolum 24: Faz D's wording has to survive its own generation, because Faz G
+-- re-runs the pipeline and must not pay for the same sentences twice.
+--
+-- `content_snapshot` looks like it already holds this and does not. Bolum 22.2
+-- built `RenderRequest` to carry no ids, no scores and no locks -- only what
+-- prints -- so the text in that column cannot be mapped back to the atom it
+-- belongs to. Re-running selection with one bullet switched off would leave
+-- every surviving atom without its rewrite: the edit the person asked for is
+-- one line, and what they would get back is the whole document in its
+-- pre-Faz-D voice.
+--
+-- Keyed by atom id, which is the join the other column deliberately drops. The
+-- two are not redundant: `content_snapshot` is the render, this is the input
+-- that produced part of it, and only this one can be carried into a re-run.
+--
+-- Nullable, and null means one thing only: a row written before this column
+-- existed. Every generation from here on stores a map, empty when no atom
+-- carries a Faz D wording -- general mode, a provider that could not be
+-- reached, every rewrite refused. Those are one answer to the phase that reads
+-- it back, and inventing a difference the row cannot actually tell apart would
+-- put a distinction in the schema that nothing upstream can honour.
+--
+-- No new class of data. The same sentences are already in `content_snapshot`
+-- and in `atom_variants`, so account deletion, the retention sweep and the
+-- anonymous sweep reach this by reaching the row (Bolum 57.4, § 51.6.1).
+ALTER TABLE generations ADD COLUMN rewritten_content JSONB;

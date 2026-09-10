@@ -1,6 +1,8 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,14 +22,24 @@ import java.util.UUID;
  * atoms that survive have already been rewritten — paying for them again
  * would buy the same sentences twice.
  *
+ * <p>Since V11 it is also a column, and the copy below is ordered for what
+ * happens <em>before</em> the column: {@code Map.copyOf} iterates in an order
+ * salted per JVM run, so a trace, a log line or an assertion walking this map
+ * read differently on two runs of one input (CLAUDE.md). The column itself is
+ * safe either way and cannot be made to keep an order — {@code jsonb} stores
+ * an object's keys sorted by length and bytes, so what goes in as insertion
+ * order comes back sorted by atom id. Nothing here depends on that: this is a
+ * lookup, and Faz E asks it for one atom at a time.
+ *
  * @param byAtom the accepted rewrite for each atom it covers
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record RewrittenContent(Map<UUID, RichContent> byAtom) {
 
     private static final RewrittenContent NONE = new RewrittenContent(Map.of());
 
     public RewrittenContent {
-        byAtom = Map.copyOf(byAtom);
+        byAtom = Collections.unmodifiableMap(new LinkedHashMap<>(byAtom));
     }
 
     /** Faz D did not run, or changed nothing. */

@@ -10,9 +10,11 @@ import com.mustafatetik.atomcv.generation.domain.StoredSelection;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import com.mustafatetik.atomcv.generation.validation.MatchLevel;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -28,7 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * The generation record against the real schema (Bolum 14).
  *
- * <p>Six JSONB columns and an enum converted to text, none of which schema
+ * <p>Nine JSONB columns and an enum converted to text, none of which schema
  * validation checks the shape of. What is being proved is that the snapshot
  * survives a round trip intact — because EK D.6.3 rests on it: in Stage 2 the
  * snapshot is not a fallback for an expired PDF, it is the only way to get the
@@ -214,6 +216,66 @@ class GenerationRecordIT extends AbstractIntegrationTest {
         assertThat(recent).extracting(Generation::getId)
                 .containsExactlyInAnyOrder(first.getId(), second.getId());
         assertThat(generations.findRecent(user(), 1)).hasSize(1);
+    }
+
+    /**
+     * V11, and the column exists because the one next to it cannot answer this
+     * question (Bolum 24).
+     *
+     * <p>{@code content_snapshot} holds the same sentence and no atom id —
+     * Bolum 22.2 built the render to carry none — so an edit that re-runs
+     * selection could not tell which surviving atom already had a Faz D
+     * wording. Round-tripping it by id is the whole point, and nothing else
+     * checks that a {@code Map<UUID, RichContent>} survives JSONB: a key that
+     * failed to deserialise would come back as an empty map, which looks
+     * exactly like a generation whose rewrites were all refused.
+     */
+    @Test
+    void thefazDwordingSurvivesTheRoundTripByAtom() {
+        var first = UUID.randomUUID();
+        var second = UUID.randomUUID();
+        var byAtom = new LinkedHashMap<UUID, RichContent>();
+        byAtom.put(first, RichContent.plain("Cut checkout latency by 40%."));
+        byAtom.put(second, RichContent.plain("Led the migration to Go."));
+        var generation = record(snapshot());
+        generation.setRewrittenContent(new RewrittenContent(byAtom));
+
+        var saved = generations.save(user(), generation);
+        var reloaded = generations.findById(user(), saved.getId()).orElseThrow();
+
+        assertThat(reloaded.getRewrittenContent().byAtom())
+                .containsOnlyKeys(first, second);
+        assertThat(reloaded.getRewrittenContent().orOriginal(first, RichContent.plain("x")))
+                .isEqualTo(RichContent.plain("Cut checkout latency by 40%."));
+        assertThat(reloaded.getRewrittenContent().orOriginal(second, RichContent.plain("x")))
+                .isEqualTo(RichContent.plain("Led the migration to Go."));
+        // And the order it went in with is gone. `jsonb` stores an object's
+        // keys sorted by length and bytes, so this comes back sorted by atom
+        // id however it was written -- asserted rather than assumed, because
+        // the opposite was assumed first and this test is what said otherwise.
+        // Nothing reads it in order: it is a lookup, one atom at a time.
+        assertThat(reloaded.getRewrittenContent().byAtom().keySet())
+                .containsExactlyInAnyOrder(first, second);
+    }
+
+    /**
+     * Empty is what almost every row carries, and it has to survive as itself.
+     * Null would mean a row written before V11 — a different sentence, and the
+     * only one that column may say.
+     */
+    @Test
+    void arunThatRewroteNothingStoresAnEmptyMapAndNotNull() {
+        var generation = record(snapshot());
+        generation.setRewrittenContent(RewrittenContent.none());
+
+        var saved = generations.save(user(), generation);
+
+        assertThat(generations.findById(user(), saved.getId()).orElseThrow()
+                .getRewrittenContent().byAtom()).isEmpty();
+        assertThat(jdbc.queryForObject(
+                "SELECT rewritten_content FROM generations WHERE id = ?",
+                String.class, saved.getId()))
+                .isNotNull();
     }
 
     /** Absolute rule 4: the posting and the wordings are the user's content. */

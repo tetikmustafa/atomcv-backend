@@ -21,6 +21,7 @@ import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteIssue;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteTally;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobOutcome;
@@ -383,7 +384,7 @@ class GenerationJobHandlerTest {
                                         .ProfileHeader("Ada", "", List.of()),
                                 List.of(), TemplateCustomization.CLASSIC,
                                 java.util.Locale.ENGLISH),
-                        1, 1.0, 0),
+                        1, 1.0, RewrittenContent.none()),
                 null, null);
     }
 

@@ -212,6 +212,10 @@ public class GenerationJobHandler implements JobHandler {
         record.setPageCount(document.pageCount());
         record.setFitReport(generated.fitReport());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
+        // V11. The snapshot above cannot stand in for it: it is the render, and
+        // Bolum 22.2 built the render to carry no atom ids. Faz G reads this
+        // one back so an edit keeps the sentences it did not touch.
+        record.setRewrittenContent(document.rewritten());
         // Absent when it was not asked for, and absent when it was asked for
         // and refused — Bolum 34 does not print a letter it could not check,
         // and the CV is what the person came for.
