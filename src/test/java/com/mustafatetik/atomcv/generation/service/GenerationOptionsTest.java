@@ -6,6 +6,7 @@ import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomKind;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Preferences;
+import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Section;
@@ -50,6 +51,51 @@ class GenerationOptionsTest {
 
         assertThat(GenerationOptions.forPosting(profile, tree, "").language()).isEqualTo("tr");
         assertThat(GenerationOptions.forPosting(profile, tree, null).language()).isEqualTo("tr");
+    }
+
+    // -- the template the profile asked for (Bolum 33.5) ---------------------
+
+    /**
+     * <strong>The preference has carried a templateId since Bolum 14.4 and
+     * this ignored it.</strong> Every CV came out classic whatever the profile
+     * said, and nothing failed, because there was only one template to be
+     * wrong about.
+     */
+    @Test
+    void thetemplateThePreferenceNamesIsTheOneThatIsUsed() {
+        var profile = profileWritten("en");
+        profile.setPreferences(new Preferences(Preferences.WritingStyle.DEFAULTS,
+                new Preferences.Defaults(1, "compact", "en", "auto")));
+
+        assertThat(GenerationOptions.defaultsOf(profile).customization())
+                .isEqualTo(TemplateCustomization.COMPACT);
+        assertThat(GenerationOptions.forPosting(profile, writtenIn("en"), "en").customization())
+                .isEqualTo(TemplateCustomization.COMPACT);
+    }
+
+    @Test
+    void aprofileThatNamesNoTemplateGetsClassic() {
+        var profile = profileWritten("en");
+        profile.setPreferences(new Preferences(Preferences.WritingStyle.DEFAULTS,
+                new Preferences.Defaults(1, null, "en", "auto")));
+
+        assertThat(GenerationOptions.defaultsOf(profile).customization())
+                .isEqualTo(TemplateCustomization.CLASSIC);
+    }
+
+    /**
+     * A template that has since been withdrawn produces a CV in the default
+     * rather than no CV: the id is a stored preference and the person did not
+     * do anything wrong.
+     */
+    @Test
+    void anunknownTemplateFallsBackRatherThanFailing() {
+        var profile = profileWritten("en");
+        profile.setPreferences(new Preferences(Preferences.WritingStyle.DEFAULTS,
+                new Preferences.Defaults(1, "art-deco", "en", "auto")));
+
+        assertThat(GenerationOptions.defaultsOf(profile).customization())
+                .isEqualTo(TemplateCustomization.CLASSIC);
     }
 
     /** A preference that names a language is a decision, not a default. */

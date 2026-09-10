@@ -42,6 +42,22 @@ public record TemplateCustomization(
     public static final TemplateCustomization CLASSIC = new TemplateCustomization(
             "classic", FontFamily.MODERN, 11.0, 0.5, 1.0, HexColor.of("000000"));
 
+    /**
+     * Compact at its own settings (Bolum 33.5).
+     *
+     * <p>Three of the four differences from classic are layer B — 10pt rather
+     * than 11, a 0.4in margin rather than 0.5, 0.95 leading rather than 1.0 —
+     * and the fourth is the preamble the id names. They are separated on
+     * purpose: a person who wants classic's furniture at compact's density can
+     * have it by moving the sliders, and a person who wants compact can start
+     * here rather than discovering the combination.
+     *
+     * <p>0.4in is the floor {@link #requireInRange} allows, and it is a floor
+     * because an ATS that crops a margin loses a line rather than a space.
+     */
+    public static final TemplateCustomization COMPACT = new TemplateCustomization(
+            "compact", FontFamily.MODERN, 10.0, 0.4, 0.95, HexColor.of("000000"));
+
     public TemplateCustomization {
         Objects.requireNonNull(baseTemplateId, "baseTemplateId");
         fontFamily = fontFamily == null ? FontFamily.SERIF : fontFamily;
