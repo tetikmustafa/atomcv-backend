@@ -20,8 +20,12 @@ public final class TemplateRegistry {
      * leaves old measurements looking valid for a document that no longer
      * matches them, and the page guarantee fails quietly rather than loudly.
      */
+    // Classic 5 and modern 2 on 2026-09-10. Their \resumeItem left an
+    // interword space between the wording and the negative \vspace that
+    // follows it, so the page had to fit one space more than the measurement
+    // ever saw. Compact's macro has no such space and stays at 1.
     private static final Map<String, Integer> VERSIONS =
-            Map.of("classic", 4, "compact", 1, "modern", 1);
+            Map.of("classic", 5, "compact", 1, "modern", 2);
 
     /**
      * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
@@ -74,7 +78,7 @@ public final class TemplateRegistry {
             % number is what put every prediction 24-43% over what the page held.
             \\newcommand{\\resumeItem}[1]{%
               \\item\\small{
-                {#1 \\vspace{-4pt}}
+                {#1\\vspace{-4pt}}
               }
             }
             \\newcommand{\\resumeSubheading}[4]{%
@@ -244,7 +248,7 @@ public final class TemplateRegistry {
             }{}{0em}{}[\\color{accent}\\titlerule \\vspace{-1pt}]
             \\newcommand{\\resumeItem}[1]{%
               \\item\\small{
-                {#1 \\vspace{-2pt}}
+                {#1\\vspace{-2pt}}
               }
             }
             \\newcommand{\\resumeSubheading}[4]{%

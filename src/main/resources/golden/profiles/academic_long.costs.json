@@ -1,5 +1,5 @@
 {
-  "classic:v4" : {
+  "classic:v5" : {
     "0466d7be63abeedb9d464b9a58a6cfa487fcc536c97c7d2beb22010c260ed0cf" : 17.0,
     "069cf4f7f60c08945ff1cbe85da41a3ccfc815bf953ac908e65c353c493f6e76" : 17.0,
     "0acc3681af7e675aec39435ced8ec4c73bfba873fe0264ff6b1b125b1493376e" : 12.0,
@@ -67,7 +67,7 @@
     "edd288450840aad764f15ff3762f4978bb277e65d09075e784abe578ca5592b1" : 10.44997,
     "header" : 52.7418
   },
-  "modern:v1" : {
+  "modern:v2" : {
     "0466d7be63abeedb9d464b9a58a6cfa487fcc536c97c7d2beb22010c260ed0cf" : 19.0,
     "069cf4f7f60c08945ff1cbe85da41a3ccfc815bf953ac908e65c353c493f6e76" : 19.0,
     "0acc3681af7e675aec39435ced8ec4c73bfba873fe0264ff6b1b125b1493376e" : 14.0,

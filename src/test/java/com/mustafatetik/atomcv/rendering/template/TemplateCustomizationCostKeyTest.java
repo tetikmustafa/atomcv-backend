@@ -21,7 +21,7 @@ class TemplateCustomizationCostKeyTest {
      */
     @Test
     void atemplateAtItsOwnDefaultsKeepsTheBareKey() {
-        assertThat(TemplateCustomization.CLASSIC.costKey()).isEqualTo("classic:v4");
+        assertThat(TemplateCustomization.CLASSIC.costKey()).isEqualTo("classic:v5");
         assertThat(TemplateCustomization.COMPACT.costKey()).isEqualTo("compact:v1");
     }
 
@@ -37,7 +37,7 @@ class TemplateCustomizationCostKeyTest {
         var smaller = withFontSize(9.0);
 
         assertThat(smaller.costKey()).isNotEqualTo(TemplateCustomization.CLASSIC.costKey());
-        assertThat(smaller.costKey()).isEqualTo("classic:v4:modern-9.0-0.50-1.00");
+        assertThat(smaller.costKey()).isEqualTo("classic:v5:modern-9.0-0.50-1.00");
     }
 
     @Test
@@ -91,7 +91,7 @@ class TemplateCustomizationCostKeyTest {
 
         assertThat(classicAtCompactSettings.costKey())
                 .isNotEqualTo(TemplateCustomization.COMPACT.costKey())
-                .isEqualTo("classic:v4:modern-10.0-0.40-0.95");
+                .isEqualTo("classic:v5:modern-10.0-0.40-0.95");
     }
 
     /**
@@ -106,7 +106,7 @@ class TemplateCustomizationCostKeyTest {
         var moved = new TemplateCustomization("classic", FontFamily.SANS, 9.5, 0.65, 1.25,
                 HexColor.of("000000"));
 
-        assertThat(moved.costKey()).isEqualTo("classic:v4:sans-9.5-0.65-1.25");
+        assertThat(moved.costKey()).isEqualTo("classic:v5:sans-9.5-0.65-1.25");
     }
 
     private static TemplateCustomization withFontSize(double points) {
