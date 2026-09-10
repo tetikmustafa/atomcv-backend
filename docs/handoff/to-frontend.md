@@ -12,8 +12,47 @@
 
 ## OPEN
 
-*(açık madde yok — `B-085`…`B-087` karşılandı 2026-09-09'da, geldikleri gün.
-`B-075`…`B-084` `resolved/to-frontend-2026-09.md`'de.)*
+### B-088 · Faz G'nin manuel toggle'ı indi — yeni uç, yeni hata kodu, yeni sonuç alanı
+
+**Since:** backend `f07db3d`, `9758764` · Aşama 4 · § 24.4, § 35.3
+
+**Neden:** Aşama 4 Faz G ile açıldı. Kullanıcı artık üretilmiş bir CV'den elle
+madde çıkarabiliyor ve geri ekleyebiliyor. Düzenleme **render edilmiş belgeye
+değil selection state'e** uygulanıyor (§ 24.1) — sayfa sınırı yirmi düzenleme
+sonra da duruyor, çünkü her düzenleme sözü veren seçimden tekrar geçiyor.
+
+**İstenen — dört şey:**
+
+1. **`POST /api/v1/generations/{id}/selection`** · gövde `{ include?: uuid[],
+   exclude?: uuid[] }` · **202 + job**, üretimle aynı SSE akışı. Şekil için
+   OpenAPI otorite; burada olan şey ekranın nasıl davranması gerektiği.
+   **Kota harcamıyor, LLM çağırmıyor** — "günlük hakkın gidecek" uyarısı
+   göstermeyin.
+
+2. **İş bittiğinde dönen `generationId` yeni bir üretimdir.** Terminal olay
+   ayrıca **`supersededGenerationId`** taşıyor: düzenlenen satırın id'si.
+   Elinde eski id'yi tutan ekran, geçmişi yeniden okumadan hangisine
+   taşındığını buradan öğrenir.
+
+3. **`GENERATION_SUPERSEDED` (409)** yeni bir hata kodu, `params` taşımıyor
+   (§ D.6.1 tablosuna işlendi). Zaten değiştirilmiş bir üretimi düzenlemeye
+   çalışınca dönüyor. Cümlesi "bu CV'nin daha yenisi var, onu düzenleyin"
+   yönünde olmalı; **çözüm eylemi eklemedik**, `ResolutionAction` sözlüğü
+   büyümedi.
+   Diğer retler: boş düzenleme, aynı atom iki listede, ve **bu üretimin hiç
+   tartmadığı bir atom** → hepsi `400 VALIDATION_FAILED`, `params.fields`
+   suçlu id'leri taşıyor.
+
+4. **`GET /generations` artık `superseded` satırları listelemiyor** ve
+   **`total` de onları saymıyor.** Yirmi düzenleme yirmi bir satır demek, biri
+   CV. **Dikkat:** `total`'ı hesap silme ekranı okuyor (`F-020`) — artık satır
+   değil **CV** sayıyor. Silme yine emekli taslakları da götürüyor; metin
+   "N CV" diyorsa doğru, "N kayıt" diyorsa güncellenmeli.
+   Emekli satır **kaybolmuyor**: `GET /generations/{id}` ve indirme hâlâ
+   çalışıyor — işverene gönderilen CV'nin durduğu söz buna dayanıyor.
+
+**Not:** Faz G'nin **doğal dil** yarısı (`POST /{id}/edits`) henüz yok. O bir
+LLM çağrısı ve kotadan düşecek; ayrı bir madde olarak gelecek.
 
 ---
 
