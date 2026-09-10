@@ -72,12 +72,25 @@ esumeItem} left an interword space between the wording
  * career_changer</strong> over-predicts by 3.84% -- it charges more than the
  * page holds, which under-fills rather than overflows, and it was inside the
  * tolerance before only because the header's under-charge cancelled it.
- * <strong>modern / stress_long_career</strong> drifts 6.90%, and the cause is
- * measured rather than guessed: the residual tracks the number of entries at
- * 12.56 pt each and is flat in the number of bullets. An entry heading carries
- * a title, an organisation and a location -- user text again -- and it is still
- * priced from a calibration document that puts the word "Probe" in all three.
- * That is the same fix as the header's, one level down.
+ *
+ * <p><strong>modern / stress_long_career</strong> drifts 6.90%, and the cause
+ * is now one sentence: <em>in modern, the first bullet of a list is set on two
+ * lines where the same wording further down the list is set on one.</em> The
+ * measurement measures a bullet on its own and reports the second answer, so
+ * every list in the document is charged a line short of what it prints. With
+ * four entries that is 12.11 pt an entry, which is the residual measured.
+ *
+ * <p>Three things it is not, each ruled out by measurement rather than by
+ * argument. Not the heading's text: a heading reading "Senior Backend Engineer
+ * / Acme Payments / Istanbul" and one reading "Probe" four times cost the same
+ * to the hundredth of a point in all three templates. Not the entry furniture:
+ * with a bullet reading "Probe", which could not wrap at any width, all three
+ * templates spend exactly what they are charged, to fifteen decimal places.
+ * And not the macros, which differ from classic's only in two {@code space}
+ * values the calibration already measures correctly.
+ *
+ * <p>{@code EntryFurnitureIT} holds each template to that premium, so the
+ * number cannot drift back unnoticed and cannot be fixed unnoticed either.
  *
  * <p>So the list below stays short, and the test under it names what is
  * missing rather than leaving a comment somebody can lose.
