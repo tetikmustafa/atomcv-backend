@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
 import com.mustafatetik.atomcv.rendering.measurement.Capacities;
+import com.mustafatetik.atomcv.rendering.measurement.CapacityEstimator;
 import com.mustafatetik.atomcv.rendering.repository.MeasuredCapacities;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
@@ -95,6 +96,49 @@ class TemplateCapacityIT extends AbstractIntegrationTest {
 
         assertThat(lookup.find(MOVED)).isPresent();
         assertThat(lookup.isMeasured(MOVED)).isTrue();
+    }
+
+    // -- what resolve() does with an unmeasured geometry (Bolum 33.3) --------
+
+    /**
+     * A person who has just moved a slider is waiting and the measurement is a
+     * compilation away. Bolum 33.3 prints them a CV rather than a spinner.
+     */
+    @Test
+    void anunmeasuredGeometryIsEstimatedRatherThanRefused() {
+        var resolved = lookup.resolve(MOVED).orElseThrow();
+
+        assertThat(resolved.estimated()).isTrue();
+        assertThat(resolved.capacity().pageTextHeightPt()).isPositive();
+    }
+
+    /** And it spends less of the page for it. */
+    @Test
+    void anestimatedRunSpendsLessOfThePage() {
+        assertThat(lookup.resolve(MOVED).orElseThrow().budgetFactor())
+                .isEqualTo(CapacityEstimator.SAFE_BUDGET)
+                .isLessThan(1.0);
+    }
+
+    /** A measurement, once it exists, is spent in full and is not an estimate. */
+    @Test
+    void ameasuredGeometryIsSpentInFull() {
+        capacities.store(MOVED.costKey(), aCapacity());
+
+        var resolved = lookup.resolve(MOVED).orElseThrow();
+
+        assertThat(resolved.estimated()).isFalse();
+        assertThat(resolved.budgetFactor()).isEqualTo(1.0);
+        assertThat(resolved.capacity().pageTextHeightPt()).isEqualTo(700.5);
+    }
+
+    /** A built-in template is measured by definition, so it is never estimated. */
+    @Test
+    void abuiltInTemplateIsNeverEstimated() {
+        assertThat(lookup.resolve(TemplateCustomization.CLASSIC).orElseThrow().estimated())
+                .isFalse();
+        assertThat(lookup.resolve(TemplateCustomization.COMPACT).orElseThrow().estimated())
+                .isFalse();
     }
 
     /**

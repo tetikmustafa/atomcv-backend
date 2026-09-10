@@ -78,7 +78,11 @@ public class GenerationPipeline {
             Locale contentLanguage) {
 
         int maxPages = request.maxPages();
-        double factor = 1.0;
+        // The request's own, not 1.0. A run against an estimated capacity
+        // arrives asking for less of the page than there is (Bolum 33.3), and
+        // starting the loop at one would have thrown that away on the first
+        // attempt -- the one attempt most documents ever take.
+        double factor = request.budgetFactor();
         int lastPageCount = 0;
         RewrittenContent rewritten = RewrittenContent.none();
 

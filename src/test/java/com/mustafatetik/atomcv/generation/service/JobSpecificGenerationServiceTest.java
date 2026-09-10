@@ -103,9 +103,12 @@ class JobSpecificGenerationServiceTest {
         // did before Capacities existed: these cases are about the phases, not
         // about where a capacity is looked up.
         var capacities = mock(com.mustafatetik.atomcv.rendering.measurement.Capacities.class);
-        when(capacities.find(any())).thenAnswer(call ->
+        when(capacities.resolve(any())).thenAnswer(call ->
                 com.mustafatetik.atomcv.rendering.template.TemplateRegistry
-                        .capacityOf(call.getArgument(0)));
+                        .capacityOf(call.<com.mustafatetik.atomcv.rendering.template
+                                .TemplateCustomization>getArgument(0))
+                        .map(capacity -> new com.mustafatetik.atomcv.rendering.measurement
+                                .Capacities.Resolved(capacity, false)));
         service = new JobSpecificGenerationService(assembler, tags, analysis,
                 relevance, renderCosts, rewrites, letters, pipeline, capacities);
 

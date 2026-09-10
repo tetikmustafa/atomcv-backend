@@ -80,9 +80,13 @@ public class CvGenerationService {
                 .withMaxPages(maxPages)
                 .withLanguage(language);
 
-        CapacityModel capacity = capacities.find(options.customization())
+        // Measured if anybody has compiled this geometry, estimated if not
+        // (Bolum 33.3). Empty now means only that the template itself has no
+        // measured default, which would be estimating from nothing.
+        Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
-                        "This customization has never been calibrated; measure it first"));
+                        "This template has never been calibrated; measure it first"));
+        CapacityModel capacity = resolved.capacity();
 
         ProfileTree tree = assembler.load(profile);
         Result<Void> preflight = ProfilePreflight.check(head, tree);
@@ -124,7 +128,8 @@ public class CvGenerationService {
 
         // No posting, so no Faz D: Bolum 21.2's tiers are Faz B scores, and
         // there is nothing here to be relevant to (Bolum 19.4).
-        return pipeline.run(head, tree, built.request(), ContentRewriter.none(),
+        return pipeline.run(head, tree, built.request().withBudgetFactor(resolved.budgetFactor()),
+                        ContentRewriter.none(),
                         options.customization(), options.locale())
                 // No posting and no Faz B: both are null, and the record says
                 // so rather than pretending a comparison happened (Bolum 19.4).

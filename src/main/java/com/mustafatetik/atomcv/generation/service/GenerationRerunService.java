@@ -89,9 +89,13 @@ public class GenerationRerunService {
         GenerationOptions options = new GenerationOptions(
                 maxPagesOf(parent), snapshot.language(), snapshot.customization());
 
-        CapacityModel capacity = capacities.find(options.customization())
+        // Measured if anybody has compiled this geometry, estimated if not
+        // (Bolum 33.3). Empty now means only that the template itself has no
+        // measured default, which would be estimating from nothing.
+        Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
-                        "This customization has never been calibrated; measure it first"));
+                        "This template has never been calibrated; measure it first"));
+        CapacityModel capacity = resolved.capacity();
 
         // No measurement pass. Every atom the snapshot knows about was costed
         // when the parent was made, and the cost lives on the variant rather
@@ -117,7 +121,9 @@ public class GenerationRerunService {
         }
 
         ProfileTree rendered = tree;
-        return pipeline.run(head, tree, built.request().withDirectives(directives),
+        return pipeline.run(head, tree,
+                        built.request().withBudgetFactor(resolved.budgetFactor())
+                                .withDirectives(directives),
                         ContentRewriter.carrying(parent.getRewrittenContent()),
                         options.customization(), options.locale())
                 .map(document -> new GeneratedGeneration(
