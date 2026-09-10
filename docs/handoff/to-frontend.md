@@ -188,6 +188,52 @@ uçta **iki kez** yazılı. Aralık dışı saklanmış eski bir tercih üretimi
 düşürmüyor, şablonun kendi ayarına düşüyor — yani bir kullanıcı asla
 "CV üretilemiyor" durumunda kalmıyor.
 
+### B-093 · Başvuru takibi indi — dört uç, ETag'li düzenleme
+
+**Since:** backend `4d3f0b4` · Aşama 4 · § 55, § 35.3, § 35.6
+
+**Neden:** Aşama 4'ün üçüncü maddesi. Kullanıcı nereye başvurduğunu, hangi
+CV'yle başvurduğunu ve ne olduğunu kaydedebiliyor. Tablo V1'den beri
+duruyordu; **migration yok.**
+
+**İstenen — dört uç, hepsi hesap gerektiriyor:**
+
+| | |
+|---|---|
+| `GET /api/v1/applications` | Tamamı, yeniden eskiye. **Sayfalama yok** — cursor beklemeyin. |
+| `POST /api/v1/applications` | `201` + `Location` + `ETag`. |
+| `PATCH /api/v1/applications/{id}` | **`If-Match` zorunlu** (§ 35.6). |
+| `DELETE /api/v1/applications/{id}` | **`If-Match` zorunlu** — düzenlemeyle aynı sebep. |
+
+**Dört şeye dikkat:**
+
+1. **`PATCH` kısmi.** Göndermediğiniz alan **olduğu gibi kalıyor** — bir satırı
+   `applied`'dan `interview`'a taşımak için notları geri göndermeniz gerekmiyor,
+   ve göndermemeniz daha doğru: başka bir sekmedeki düzenlemeyi ezmezsiniz.
+   **Notu temizlemek `clearNotes: true` istiyor** — `notes: null` "dokunma"
+   demek, "boşalt" değil.
+
+2. **`If-Match` yoksa `428 PRECONDITION_REQUIRED`, bayatsa `412 VERSION_CONFLICT`.**
+   Yeni hata kodu yok, ikisi de var olan sözlükte. `ETag` her yazma
+   cevabında dönüyor; bir sonraki düzenleme için onu saklayın.
+
+3. **`generationId` null olabilir ve iki farklı şey demek değil.** Null =
+   **o CV silinmiş**. Başvuru kaydı belgeden uzun yaşıyor (`ON DELETE SET
+   NULL`), yani satır duruyor ama indirme yok — **o satırlar için indirme
+   düğmesi göstermeyin.**
+
+4. **Başkasının `generationId`'si `400`, `404` değil** — alan yanlış, satır
+   eksik değil. `params.fields` `["generationId"]` taşıyor.
+
+**Durum sözlüğü kapalı:** `applied` · `interview` · `offer` · `rejected` ·
+`withdrawn`. **Hiçbir geçiş yasak değil** — kapanmış bir süreci yeniden açan
+şirket bir veri hatası değil, ve backend kullanıcıyla başına ne geldiği
+konusunda tartışmıyor. Arayüzde de bir geçişi kilitlemeyin.
+
+**Henüz yok:** PDF arşivleme (§ 55'in aynı maddesinde anılıyor ama R2 istiyor,
+7. karar hâlâ geçerli) ve duruma göre süzme. İkincisi sayfalama gerektiğinde
+birlikte gelir.
+
 ---
 
 ## Dağıtım bekleyen doğrulamalar
