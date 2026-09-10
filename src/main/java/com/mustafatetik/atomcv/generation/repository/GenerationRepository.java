@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.repository;
 
 import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserScopedRepository;
 import java.util.List;
@@ -39,7 +40,8 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
      * year of history to show ten rows.
      */
     public List<Generation> findRecent(UserContext user, int limit) {
-        return jpa.findByUserIdOrderByCreatedAtDescIdDesc(user.userId(), Limit.of(limit));
+        return jpa.findByUserIdAndStatusNotOrderByCreatedAtDescIdDesc(
+                user.userId(), GenerationStatus.SUPERSEDED, Limit.of(limit));
     }
 
     /**
@@ -53,9 +55,10 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
      */
     public Page findPage(UserContext user, GenerationCursor cursor, int limit) {
         List<Generation> found = cursor == null
-                ? jpa.findByUserIdOrderByCreatedAtDescIdDesc(user.userId(), Limit.of(limit + 1))
-                : jpa.findPageAfter(user.userId(), cursor.createdAt(), cursor.id(),
-                        Limit.of(limit + 1));
+                ? jpa.findByUserIdAndStatusNotOrderByCreatedAtDescIdDesc(
+                        user.userId(), GenerationStatus.SUPERSEDED, Limit.of(limit + 1))
+                : jpa.findPageAfter(user.userId(), GenerationStatus.SUPERSEDED,
+                        cursor.createdAt(), cursor.id(), Limit.of(limit + 1));
 
         boolean more = found.size() > limit;
         List<Generation> items = more ? found.subList(0, limit) : found;
@@ -68,14 +71,22 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
     }
 
     /**
-     * How many this person has, all of them.
+     * How many this person has, counted the way the page is filtered.
      *
      * <p>Here rather than derived from a page: the account-deletion screen has
      * to say what goes, and a number that meant "at least this many" in the one
      * irreversible place would be worse than no number (F-020).
+     *
+     * <p><strong>It stopped counting every row when Faz G arrived.</strong> An
+     * edit writes a new generation and retires the one it replaced (Bolum
+     * 24.4), and those retired rows are not listed -- a total that counted them
+     * would print "23 generations" over eleven of them. The deletion screen
+     * therefore names CVs rather than rows, and deleting the account still
+     * takes the retired drafts with it: they are intermediate steps of the CVs
+     * being counted, not CVs somebody would miss going unmentioned.
      */
     public long countFor(UserContext user) {
-        return jpa.countByUserId(user.userId());
+        return jpa.countByUserIdAndStatusNot(user.userId(), GenerationStatus.SUPERSEDED);
     }
 
     /**

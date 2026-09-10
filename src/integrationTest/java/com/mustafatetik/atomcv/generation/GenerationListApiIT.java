@@ -266,6 +266,39 @@ class GenerationListApiIT extends AbstractIntegrationTest {
     }
 
     /**
+     * Bolum 24.4. Twenty hand edits of one CV is twenty-one rows and one of
+     * them is the CV; the other twenty are steps the person walked through and
+     * would not recognise as separate generations.
+     *
+     * <p>Not listed and not counted, and those two have to agree: a total that
+     * counted the retired rows would print a number the list under it
+     * contradicts.
+     */
+    @Test
+    void agenerationAnEditReplacedIsNotInTheHistory() throws Exception {
+        Generation replaced = save();
+        save();
+        replaced.markSuperseded();
+        generations.save(user(), replaced);
+
+        mvc.perform(get("/api/v1/generations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.total").value(1));
+    }
+
+    /** It is retired, not gone: the CV that was sent to an employer stays. */
+    @Test
+    void aretiredGenerationIsStillThereToBeReadById() throws Exception {
+        Generation replaced = save();
+        replaced.markSuperseded();
+        generations.save(user(), replaced);
+
+        mvc.perform(get("/api/v1/generations/" + replaced.getId()))
+                .andExpect(status().isOk());
+    }
+
+    /**
      * A cursor is opaque and a client only ever echoes one back, so a broken
      * one is the client's mistake and is answered as one. Left alone it would
      * reach the catch-all and say the server was at fault.

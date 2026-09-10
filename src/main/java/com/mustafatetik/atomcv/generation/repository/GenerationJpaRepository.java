@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.repository;
 
 import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,17 @@ import org.springframework.data.repository.query.Param;
 /** Package-private; reached through {@link GenerationRepository}. */
 interface GenerationJpaRepository extends JpaRepository<Generation, UUID> {
 
-    List<Generation> findByUserIdOrderByCreatedAtDescIdDesc(UUID userId, Limit limit);
+    /**
+     * The history a person has, newest first.
+     *
+     * <p>Superseded rows are left out. Faz G writes a new generation for every
+     * hand edit and retires the one it replaced (Bolum 24.4), so twenty edits
+     * of one CV is twenty-one rows and one of them is the CV. The rows stay --
+     * nothing is deleted and every one of them can still be downloaded by id --
+     * they are simply not what "my generations" means.
+     */
+    List<Generation> findByUserIdAndStatusNotOrderByCreatedAtDescIdDesc(
+            UUID userId, GenerationStatus status, Limit limit);
 
     /**
      * One anonymous session's generations, oldest first.
@@ -36,15 +47,23 @@ interface GenerationJpaRepository extends JpaRepository<Generation, UUID> {
     @Query("""
             SELECT g FROM Generation g
             WHERE g.userId = :userId
+              AND g.status <> :superseded
               AND (g.createdAt < :createdAt
                    OR (g.createdAt = :createdAt AND g.id < :id))
             ORDER BY g.createdAt DESC, g.id DESC
             """)
     List<Generation> findPageAfter(
             @Param("userId") UUID userId,
+            @Param("superseded") GenerationStatus superseded,
             @Param("createdAt") Instant createdAt,
             @Param("id") UUID id,
             Limit limit);
 
-    long countByUserId(UUID userId);
+    /**
+     * Counted the same way the page is filtered, and it has to be.
+     *
+     * <p>A total that included the retired drafts would disagree with the list
+     * printed under it -- "23 generations" over eleven rows and no next page.
+     */
+    long countByUserIdAndStatusNot(UUID userId, GenerationStatus status);
 }
