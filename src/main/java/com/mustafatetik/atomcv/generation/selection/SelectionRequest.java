@@ -64,6 +64,18 @@ public record SelectionRequest(
         return new SelectionRequest(sections, maxPages, capacity, factor, directives);
     }
 
+    /**
+     * The same candidates, with what the user asked for by hand (Bolum 24.4).
+     *
+     * <p>Applied after the build rather than inside it, because
+     * {@link SelectionRequestBuilder} answers "what could go on the page" and
+     * that answer does not change when somebody edits — an excluded atom is
+     * still a candidate with a score, and the snapshot has to say so.
+     */
+    public SelectionRequest withDirectives(GenerationDirectives directives) {
+        return new SelectionRequest(sections, maxPages, capacity, budgetFactor, directives);
+    }
+
     /** A heading, its entries, and any atoms hanging straight off it. */
     /**
      * @param priority where this section sits in the order the page is built
