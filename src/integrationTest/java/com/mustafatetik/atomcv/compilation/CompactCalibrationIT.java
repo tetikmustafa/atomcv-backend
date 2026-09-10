@@ -137,8 +137,19 @@ class CompactCalibrationIT {
         assertThat(sectionOne() - sectionItemLine())
                 .as("opening that list")
                 .isCloseTo(cost(CapacityModel.SECTION_LIST_OVERHEAD), offset());
-        assertThat(delta("afterListUnderSection", "beforeThreeUnderSection") - sectionHeader())
-                .as("closing it, charged to the list")
+        // The leftover a section's list puts under the heading below it, less
+        // whatever that heading is already charged for standing after a list.
+        // In compact those are the same ten points, so what is stored is
+        // nothing -- and charging both spent them twice, which is what put
+        // career_changer 10.74 pt over a real page. The subtraction is asserted
+        // here rather than copied from the service: what has to hold is the
+        // relationship between the two stored numbers, and this says so from
+        // its own probes.
+        double headingPremium =
+                cost(CapacityModel.SECTION_HEADER_AFTER_LIST) - cost(CapacityModel.SECTION_HEADER);
+        assertThat(delta("afterListUnderSection", "beforeThreeUnderSection")
+                - sectionHeader() - headingPremium)
+                .as("closing it, less what the next heading already pays for")
                 .isCloseTo(cost(CapacityModel.SECTION_LIST_CLOSE), offset());
         assertThat(delta("beforeParagraphOne", "afterParagraphOne") - sectionItemLine())
                 .as("opening a paragraph list")
