@@ -45,10 +45,6 @@ okunuyor (`StoredSelection.scoresByCandidate`). **Sonucu:** yeniden koşu,
 üretimden sonra profilde yapılanları görmez — yeni yazılmış bir atom skorsuzdur,
 ama adıyla istenebilir (yönlendirme skoru yener).
 
-**Canlı — Faz G'nin prompt'u gerçek modele hiç sorulmadı.** Cevap işleme her
-şekle karşı ölçüldü; *bu prompt'un* gerçek modelden doğru sayıları alıp almadığı
-bir `make record` turu. Fixture inene kadar açık.
-
 **Ders — koşullu bir döngü içindeki iddia test değildir.** Devralmayı ölçen ilk
 latexTest vakası `if (before.contains(...))` içinde iddia ediyordu ve **geçti**;
 iddiayı önden isimlendirince düştü. Sebep kod değildi: bu lane'in sahte
@@ -63,6 +59,41 @@ yazar" diyordu; yanlıştı, kolon zaten normalize ediyor. `Map.copyOf` →
 `LinkedHashMap` değişikliği duruyor ama gerekçesi **bellekte** haritayı gezen şey
 (trace, log, assertion), kolon değil. CLAUDE.md'nin kuralı `json` kolonları,
 cevaplar ve assertion'lar için geçerli; `jsonb` **dizileri** sırayı korur.
+
+---
+
+## Aşama 4 · bütçeler ve golden set (2026-09-10)
+
+**Düzeltme — compact'in sayfa garantisi tutmuyor, modern'inki bir profilde.**
+Golden set yalnız classic'i ölçüyordu; üç şablona genişletilince
+`MeasurementDriftIT` compact'i sayfaya sığan **her** profilde az tahmin ederken
+buldu (minimal_edge +12.9pt, senior_backend_tr +45.6pt — %4-12, tolerans %3) ve
+master_cv_en compact'te ikinci sayfaya taştı; modern'de stress_long_career taştı.
+Az tahmin, sayfanın taştığı yön. **İkisi de indi ve sunuluyor** (`B-090`,
+`B-092`), yani bu fixture eksiği değil canlı bir arıza (`B-095`).
+
+**Kök neden kanıtlanmadı.** Negatif liste maliyeti hipotezi (`ITEMIZE_OVERHEAD
+-5.10`) tutmadı: artıklar liste sayısıyla orantılı çıkmadı, ve ara problar `\par`
+ekleyip aralıkları bozduğu için yalnız **toplam** güvenilir. `CalibrationServiceIT`
+servisin yazılı sayıları birebir ürettiğini söylüyor — yani şüphe sabitlerde
+değil kalibrasyon belgesinin türetiminde, ki **Katman B her özel geometride onu
+kullanıyor.** Classic'te hatalar birbirini götürüyor (başlık ~4pt eksik, bölüm
+başlığı ~3.8pt fazla).
+
+**Ekleme — %3'e tutulan şablonlar yazılı bir liste**
+(`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil); ikinci bir test
+dışarıda kalanları iddia ediyor, ki compact düzeltilip eklenmezse düşsün.
+Main'de kırmızı bir lane okunmaz olur, yazılmamış bir boşluk ise düzeltilmez.
+
+**Düzeltme — sayfa kırıldıktan sonra `\pagetotal` okunmaz.** Compact'in
+master_cv_en'i 730.6pt beklenirken 39.8pt okudu (%95 "sapma"): sayı küçük değil,
+**anlamsız**. `ranPastThePage` ile aynı tuzak, artık drift probunda da reddediliyor.
+
+**Ders — görev girdisi olmayan bir bütçe dosyası kimseyi bağlamaz.**
+`performance-budgets.yaml`'daki oranı 1.0'a çekince test düşmedi: Gradle dosyayı
+göremediği için `:test UP-TO-DATE` deyip hiç koşturmadı — § 52.6'nın "bütçe
+değiştirmek bilinçli bir karardır" cümlesi böyle sessizce boşa çıkıyordu.
+`inputs.file` ile kapatıldı; § 52.2'nin sorgu tavanı da artık dosyadan okunuyor.
 
 ---
 

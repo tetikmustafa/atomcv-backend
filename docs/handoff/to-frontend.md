@@ -265,6 +265,36 @@ bugünkü profilden değil. Yani sonradan bir maddeyi düzenlemek, gönderilmiş
 CV'nin Word hâlini de değiştirmiyor. Ve metin katmanı gerçek metin — bir ATS
 kelimeleri okuyabiliyor, resim değil.
 
+### B-095 · Compact'in sayfa garantisi şu an tutmuyor — modern'inki bir şekilde
+
+**Since:** backend `df5dad9` · Aşama 4 · § 23.1, § 26.4, XI-A.3
+
+**Neden:** Golden set yalnız `classic`'i gerçek derleyiciye karşı ölçüyordu.
+Üç şablona genişletince şu çıktı: **compact, sayfaya sığan her golden profilde
+sayfayı olduğundan kısa sanıyor** (%4-12; tolerans %3), ve yedi profilden biri
+compact'te **ikinci sayfaya taşıyor**. Modern altı profilde tutuyor, birinde
+taşıyor. Az tahmin, sayfanın taştığı yön — yani "bir sayfa" diyen bir kullanıcı
+compact seçtiğinde iki sayfalık bir PDF alabilir.
+
+**Bu bir tahmin değil, ölçüm:** TeX'e belgeyi dizdikten sonra sayfada nerede
+olduğu soruluyor ve seçim aşamasının harcadığını sandığı puanla karşılaştırılıyor.
+
+**İstenen — iki şey:**
+
+1. **Şimdilik bir şey yapmayın, ama bilin.** Uç, alanlar, `templateId`
+   sözleşmesi değişmedi (`B-090`, `B-092` aynen geçerli). Kullanıcıya
+   gösterdiğiniz sayfa sayısı hâlâ backend'in söylediği sayı; compact'te bu sayı
+   **iyimser olabilir**. Bir hata bildirimi "compact'te CV iki sayfa oldu"
+   diyorsa, bu bilinen arızadır — bize açmayın, düzeltiliyor.
+
+2. **Compact'i öne çıkaran bir varsayılan/öneri varsa geri alın.** "En çok
+   sığdıran şablon" gibi bir vurgunuz varsa, düzeltilene kadar kaldırın: şu an
+   en çok sığdırdığını *sanan* şablon.
+
+**Kapanış:** Düzeltme indiğinde bu madde `resolved/`'a iner ve size ölçülen yeni
+sapma yazılır. Backend tarafında `TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`
+listesi hangi şablonların doğrulandığını taşıyor; classic hep içindeydi.
+
 ---
 
 ## Dağıtım bekleyen doğrulamalar
