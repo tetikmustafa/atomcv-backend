@@ -234,6 +234,37 @@ konusunda tartışmıyor. Arayüzde de bir geçişi kilitlemeyin.
 7. karar hâlâ geçerli) ve duruma göre süzme. İkincisi sayfalama gerektiğinde
 birlikte gelir.
 
+### B-094 · DOCX indirme — ve yanına yazmanız gereken bir cümle
+
+**Since:** backend `4b1f692` · Aşama 4 · § 22.6, § 35.3
+
+**Neden:** Bazı ATS'ler Word istiyor. Aynı üretim, aynı içerik, ikinci bir
+biçim.
+
+**İstenen — üç şey:**
+
+1. **`GET /api/v1/generations/{id}/download?format=docx`.** Var olan uç, yeni
+   bir parametre. `format` verilmezse **`pdf`** — mevcut çağrılarınız aynen
+   çalışıyor. İçerik tipi
+   `application/vnd.openxmlformats-officedocument.wordprocessingml.document`,
+   dosya adı `.docx` uzantılı.
+
+2. **`format=source` şu an `400 VALIDATION_FAILED`.** § 35.3'ün haritasında
+   var ama hiçbir şey servis etmiyor. Sessizce PDF döndürmüyoruz — döndürseydik
+   "kaynağı indir" düğmeniz PDF indirirdi. İstiyorsanız `F-nnn` ile isteyin.
+
+3. **Sayfa sınırı DOCX'te yaklaşıktır ve bunu söylemeniz gerekiyor** (§ 22.6).
+   Maddeler **dizilmiş bir sayfaya sığanlar**; Word onları kendi fontlarının
+   aldığı yere koyuyor, yani bir sayfalık bir CV Word'de biraz taşabilir.
+   Backend hiçbir yerde DOCX için sayfa sayısı iddia etmiyor — çünkü dürüstçe
+   edemez. **Düğmenin yanına kısa bir cümle koyun**; "PDF birebir, Word
+   yaklaşık" fikri yeterli.
+
+**Bilmenizde fayda var:** DOCX de PDF gibi `content_snapshot`'tan üretiliyor,
+bugünkü profilden değil. Yani sonradan bir maddeyi düzenlemek, gönderilmiş bir
+CV'nin Word hâlini de değiştirmiyor. Ve metin katmanı gerçek metin — bir ATS
+kelimeleri okuyabiliyor, resim değil.
+
 ---
 
 ## Dağıtım bekleyen doğrulamalar
