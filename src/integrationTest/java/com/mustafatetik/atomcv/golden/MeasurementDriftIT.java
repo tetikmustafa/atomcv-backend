@@ -11,6 +11,7 @@ import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
+import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.measurement.TexLogParser;
@@ -47,20 +48,26 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * the two within three percent.
  *
  * <p><strong>Only the templates whose promise has been confirmed.</strong>
- * Running this across all three on 2026-09-10 found that compact's did not
- * hold, and the largest cause has since been fixed: a section heading that
- * follows a list costs ten points more in compact than one at the top of the
- * page, and the calibration document only ever measured the second position.
- * Six of the seven profiles are inside three percent now and master_cv_en no
- * longer runs onto a second page.
+ * Running this across all three found that compact's did not hold, and two
+ * causes have been fixed since. A section heading that follows a list costs ten
+ * points more in compact, and the calibration document only ever measured the
+ * other position. The header block was one constant for every profile, and a
+ * header is text: senior_backend_tr's measures 65.2 pt against a charge of
+ * 48.99, because its contact line wraps.
  *
- * <p>What is left is smaller and is not compact's: senior_backend_tr misses by
- * 3.7%, and most of that is a header block measured at 65.3 pt against a model
- * that charges a fixed 48.99 for every profile. The real one grows with the
- * contact line and the headline, so it is under-charged for anyone whose header
- * wraps -- in every template, classic included, where offsetting errors hide
- * it. Modern still runs stress_long_career onto a second page for a reason
- * nothing here has isolated yet.
+ * <p>What is left is one profile per template and both are smaller than what
+ * was fixed. **compact / career_changer over-predicts by 3.84%** -- it now
+ * charges more than the page holds, which under-fills rather than overflows.
+ * It was inside the tolerance before the header was measured, and only because
+ * two errors cancelled: the header was charged 4.3 pt too little and something
+ * else about 6 pt too much. Measuring the header removed one of them. The other
+ * looks like 1.76 pt per section heading and per entry heading in the after-list
+ * position -- both measured dearer in the calibration document than in a real
+ * one -- and it is in the safe direction.
+ *
+ * <p>**modern / stress_long_career** still runs onto a second page, and nothing
+ * has isolated why; modern's two heading positions are identical and its header
+ * is the same as classic's, so neither fix touches it.
  *
  * <p>So the list below stays short, and the test under it names what is
  * missing rather than leaving a comment somebody can lose.
@@ -155,7 +162,12 @@ class MeasurementDriftIT {
 
         CapacityModel capacity = TemplateRegistry.capacityOf(customization).orElseThrow();
         var request = SelectionRequestBuilder.build(golden.tree(), customization, capacity, 1,
-                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
+                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY,
+                // The header this profile measured, not the template's constant
+                // for every profile. English, because that is what renderFinal
+                // prints below.
+                golden.profile().getHeaderCosts().get(
+                        Profile.headerKey(customization.costKey(), "en"))).request();
         return SelectionPhase.select(request).orElseThrow();
     }
 
