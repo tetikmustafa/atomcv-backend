@@ -54,9 +54,25 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
             int maxPages,
             String templateId,
             String cvLanguage,
-            String coverLetterLanguage) {
+            String coverLetterLanguage,
+            /**
+             * The sliders of Bolum 33.1, or null for the template's own
+             * settings.
+             *
+             * <p>Nullable rather than defaulted, and that is what makes every
+             * row written before it existed still correct: absent means "what
+             * the template says", which is exactly what those rows got.
+             */
+            Appearance appearance) {
 
-        public static final Defaults DEFAULTS = new Defaults(1, "classic", "auto", "auto");
+        public static final Defaults DEFAULTS = new Defaults(1, "classic", "auto", "auto", null);
+
+        /** The shape before a person could move anything but the template. */
+        public Defaults(int maxPages, String templateId, String cvLanguage,
+                String coverLetterLanguage) {
+
+            this(maxPages, templateId, cvLanguage, coverLetterLanguage, null);
+        }
 
         public Defaults {
             if (maxPages < 1) {
@@ -65,6 +81,32 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
             templateId = templateId == null ? "classic" : templateId;
             cvLanguage = cvLanguage == null ? "auto" : cvLanguage;
             coverLetterLanguage = coverLetterLanguage == null ? "auto" : coverLetterLanguage;
+        }
+    }
+
+    /**
+     * What a person changed about how their CV looks (Bolum 33.1, 33.2).
+     *
+     * <p>Every field is nullable and null means "leave the template's own".
+     * A person who moved one slider has one number here, not five, and a
+     * template whose defaults change later carries them along — which is the
+     * behaviour somebody who never touched a slider should get.
+     *
+     * <p>The four geometric ones cost a measurement (layer B); the colour does
+     * not (layer A), and {@code TemplateCustomization.costKey()} is where that
+     * distinction is actually enforced.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public record Appearance(
+            Double fontSizePt,
+            Double marginInches,
+            Double lineSpacing,
+            String fontFamily,
+            String accentColor) {
+
+        public boolean isEmpty() {
+            return fontSizePt == null && marginInches == null && lineSpacing == null
+                    && fontFamily == null && accentColor == null;
         }
     }
 }

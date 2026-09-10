@@ -64,9 +64,15 @@ public class RenderCostService {
      */
     @Transactional
     public int measureMissing(ProfileRef profile, TemplateCustomization customization) {
-        CapacityModel capacity = capacities.find(customization).orElseThrow(
-                () -> new IllegalStateException(
-                        "This customization has never been calibrated; measure it first"));
+        // Resolved rather than found: a person who has just moved a slider has
+        // no measured capacity yet, and this is where their atoms get costed.
+        // Refusing here would have made Bolum 33.3's estimate unreachable --
+        // the generation would fail before selection ever saw it, which is
+        // exactly what the first end-to-end run of a moved slider did.
+        CapacityModel capacity = capacities.resolve(customization)
+                .map(Capacities.Resolved::capacity)
+                .orElseThrow(() -> new IllegalStateException(
+                        "This template has never been calibrated; measure it first"));
 
         String costKey = customization.costKey();
         List<AtomVariant> pending = variants.findAll(profile).stream()

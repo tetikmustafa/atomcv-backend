@@ -193,6 +193,42 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
+     * <strong>Layer B, as a document (Bolum 33.1, 33.3).</strong>
+     *
+     * <p>Nobody has ever compiled this geometry, so there is no measured
+     * capacity for it: the run is made against an estimate that spends a
+     * little less of the page, and the page limit still holds. That last
+     * clause is the whole promise, and this is the only lane that can check
+     * it — everything else measures a CV before it is a PDF.
+     *
+     * <p>The cost key carries the sliders, so the row also proves the
+     * customization reached the document rather than falling back.
+     */
+    @Test
+    void amovedSliderProducesArealOnePagePdfOnAnEstimate() throws Exception {
+        seedCareer();
+        moveTheSliders();
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).as("the queued generation was taken").isTrue();
+
+        String generationId = completedGenerationId(jobId);
+        byte[] pdf = download(generationId);
+
+        assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+        assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
+        assertThat(jdbc.queryForObject(
+                "SELECT page_count FROM generations WHERE id = ?::uuid",
+                Integer.class, generationId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
+                String.class, generationId))
+                .as("the sliders reached the document rather than falling back")
+                .isEqualTo("classic:v4:sans-9.5-0.60-1.10");
+        assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
+    }
+
+    /**
      * The record has to describe a job-specific run, not a general one. An
      * empty {@code jd_analysis} here would mean Faz A ran and its answer was
      * thrown away — the CV would still look fine and nothing else would say so.
@@ -290,6 +326,18 @@ class JobSpecificCvIT extends AbstractLatexTest {
                         COALESCE(preferences, '{}'::jsonb),
                         '{defaults}',
                         '{"maxPages":1,"templateId":"compact","cvLanguage":"en","coverLetterLanguage":"auto"}'::jsonb,
+                        true)
+                WHERE user_id = ?""", LocalDevUser.DEV_USER_ID);
+    }
+
+    /** What a person does with the sliders, as one statement. */
+    private void moveTheSliders() {
+        jdbc.update("""
+                UPDATE profiles
+                SET preferences = jsonb_set(
+                        COALESCE(preferences, '{}'::jsonb),
+                        '{defaults}',
+                        '{"maxPages":1,"templateId":"classic","cvLanguage":"en","coverLetterLanguage":"auto","appearance":{"fontSizePt":9.5,"marginInches":0.6,"lineSpacing":1.1,"fontFamily":"SANS"}}'::jsonb,
                         true)
                 WHERE user_id = ?""", LocalDevUser.DEV_USER_ID);
     }
