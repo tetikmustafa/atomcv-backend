@@ -3,12 +3,14 @@ package com.mustafatetik.atomcv.golden;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.shared.error.Result;
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequest;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.Atom;
+import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
@@ -197,7 +199,10 @@ class GoldenSelectionTest {
                                 .toList(),
                         section.atoms()))
                 .toList();
-        return new SelectionRequest(sections, request.maxPages(), request.capacity());
+        // Every component but the sections, or the two runs differ by the
+        // header as well as by the entry and the difference measures both.
+        return new SelectionRequest(sections, request.maxPages(), request.capacity(),
+                request.budgetFactor(), request.directives(), request.measuredHeaderPt());
     }
 
     @Test
@@ -329,6 +334,59 @@ class GoldenSelectionTest {
         });
     }
 
+    /**
+     * <strong>The measured header is what the page is charged.</strong>
+     *
+     * <p>Without this the plumbing could break in silence: a request built
+     * without the measurement still fits its page, still balances its budget
+     * and still passes every case above — it just charges the template's
+     * constant, which is what the header block was before it was measured.
+     * senior_backend_tr's compact header measures 65.2 pt against that
+     * constant's 48.99, a bullet and a half of page.
+     *
+     * <p>Two assertions rather than one, because the obvious single one is
+     * wrong: comparing the budgets of two runs that differ by the header
+     * compares two different packings, since a taller header leaves room for
+     * less and what is left is charged different furniture. It passed on six
+     * of the seven fixtures and master_cv_en said so.
+     */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("everyProfileName")
+    void theHeaderIsChargedWhatItMeasured(String name) {
+        var golden = GoldenProfileReader.read(name, OWNER);
+        var customization = TemplateRegistry.defaultsFor("compact");
+        Double measured = golden.profile().getHeaderCosts()
+                .get(Profile.headerKey(customization.costKey(), "en"));
+
+        assertThat(measured)
+                .as("%s has no measured header; re-record the golden costs", name)
+                .isNotNull();
+        assertThat(builtRequest(golden, "compact", "en", 1).request().measuredHeaderPt())
+                .as("the builder carries it into the request")
+                .isEqualTo(measured);
+    }
+
+    /** And the page pays it: nothing selected, so the budget is the header alone. */
+    @Test
+    void anemptyPageIsChargedTheMeasuredHeaderAndNothingElse() {
+        var capacity = capacityOf("compact");
+        double measured = 65.24568;
+
+        var charged = SelectionPhase.select(new SelectionRequest(List.of(), 1, capacity,
+                1.0, GenerationDirectives.none(), measured)).orElseThrow();
+        var fallback = SelectionPhase.select(
+                new SelectionRequest(List.of(), 1, capacity)).orElseThrow();
+
+        assertThat(charged.budget().fixedPt()).isEqualTo(measured);
+        assertThat(fallback.budget().fixedPt())
+                .as("and an unmeasured header falls back to the template's constant")
+                .isEqualTo(capacity.fixedCost(CapacityModel.HEADER_BLOCK));
+    }
+
+    static Stream<Arguments> everyProfileName() {
+        return GoldenProfileReader.NAMES.stream().map(Arguments::of);
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────
 
     private static void assertEntriesAreWholeOrAbsent(
@@ -372,8 +430,11 @@ class GoldenSelectionTest {
     private static SelectionRequestBuilder.BuiltRequest builtRequest(
             GoldenProfile golden, String template, String language, int pages) {
 
-        return SelectionRequestBuilder.build(golden.tree(), TemplateRegistry.defaultsFor(template),
-                capacityOf(template), pages, language, Tone.FORMAL, TODAY);
+        var customization = TemplateRegistry.defaultsFor(template);
+        return SelectionRequestBuilder.build(golden.tree(), customization,
+                capacityOf(template), pages, language, Tone.FORMAL, TODAY,
+                golden.profile().getHeaderCosts().get(
+                        Profile.headerKey(customization.costKey(), "en")));
     }
 
     private static CapacityModel capacityOf(String template) {
