@@ -7,7 +7,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
@@ -62,6 +64,25 @@ public class Profile implements UserOwned {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
     private Contact contact = Contact.EMPTY;
+
+    /**
+     * What this profile's header block measured, by geometry and language
+     * (Bolum 26.4).
+     *
+     * <p>The header is text and text wraps, so how tall it is depends on the
+     * words in it, on the width they are set at, and on the language its
+     * contact labels are printed in. It was a single measured constant for
+     * every profile in every template, calibrated for a name and two centred
+     * lines, and a header that ran to three was charged for two.
+     *
+     * <p>Cleared when the header's own text changes, exactly as an atom
+     * variant's costs are cleared when its wording does. An unmeasured header
+     * falls back and is measured again; a stale one would be charged with
+     * confidence.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "header_costs", nullable = false)
+    private Map<String, Double> headerCosts = new LinkedHashMap<>();
 
     /** Free text the user writes about themselves. User content. */
     private String selfDescription;
@@ -194,6 +215,9 @@ public class Profile implements UserOwned {
     }
 
     public void setHeadline(String headline) {
+        if (!Objects.equals(this.headline, headline)) {
+            headerCosts = new LinkedHashMap<>();
+        }
         this.headline = headline;
     }
 
@@ -201,8 +225,38 @@ public class Profile implements UserOwned {
         return contact;
     }
 
+    /**
+     * Where a measured header is filed: the geometry it was set at and the
+     * language its labels were printed in.
+     *
+     * <p>Here because this is the entity that holds the map, and a key format
+     * written twice is a cost stored under one spelling and looked for under
+     * another.
+     */
+    public static String headerKey(String costKey, String languageTag) {
+        return Objects.requireNonNull(costKey, "costKey")
+                + "|" + (languageTag == null || languageTag.isBlank() ? "en" : languageTag);
+    }
+
+    /** What the header measured, by geometry and language. Never null. */
+    public Map<String, Double> getHeaderCosts() {
+        return Map.copyOf(headerCosts);
+    }
+
+    /**
+     * @param key what geometry and language this was measured at
+     * @param costPt the height of the whole header block, in points
+     */
+    public void recordHeaderCost(String key, double costPt) {
+        headerCosts.put(Objects.requireNonNull(key, "key"), costPt);
+    }
+
     public void setContact(Contact contact) {
-        this.contact = contact == null ? Contact.EMPTY : contact;
+        Contact replacement = contact == null ? Contact.EMPTY : contact;
+        if (!replacement.equals(this.contact)) {
+            headerCosts = new LinkedHashMap<>();
+        }
+        this.contact = replacement;
     }
 
     public String getSelfDescription() {
