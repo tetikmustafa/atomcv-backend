@@ -68,29 +68,23 @@ esumeItem} left an interword space between the wording
  * had the space and never showed it.</li>
  * </ul>
  *
- * <p>What is left is one profile per template. <strong>compact /
- * career_changer</strong> over-predicts by 3.84% -- it charges more than the
- * page holds, which under-fills rather than overflows, and it was inside the
- * tolerance before only because the header's under-charge cancelled it.
+ * <p><strong>Compact holds on all seven now.</strong> Its last miss was
+ * career_changer at 3.84% <em>over</em> a real page, and the cause was one
+ * piece of space charged twice: {@code SECTION_LIST_CLOSE} asks what a
+ * section's bullet list leaves behind and {@code SECTION_HEADER_AFTER_LIST}
+ * asks what the heading below it costs, and in compact those are the same ten
+ * points. In classic they are not -- a heading costs the same in both positions
+ * and the list really does leave twelve points -- which is why classic never
+ * showed it. The calibration now subtracts the heading's premium before storing
+ * the leftover, and compact's comes out at zero.
  *
- * <p><strong>modern / stress_long_career</strong> drifts 6.90%, and the cause
- * is now one sentence: <em>in modern, the first bullet of a list is set on two
- * lines where the same wording further down the list is set on one.</em> The
- * measurement measures a bullet on its own and reports the second answer, so
- * every list in the document is charged a line short of what it prints. With
- * four entries that is 12.11 pt an entry, which is the residual measured.
- *
- * <p>Three things it is not, each ruled out by measurement rather than by
- * argument. Not the heading's text: a heading reading "Senior Backend Engineer
- * / Acme Payments / Istanbul" and one reading "Probe" four times cost the same
- * to the hundredth of a point in all three templates. Not the entry furniture:
- * with a bullet reading "Probe", which could not wrap at any width, all three
- * templates spend exactly what they are charged, to fifteen decimal places.
- * And not the macros, which differ from classic's only in two {@code space}
- * values the calibration already measures correctly.
- *
- * <p>{@code EntryFurnitureIT} holds each template to that premium, so the
- * number cannot drift back unnoticed and cannot be fixed unnoticed either.
+ * <p><strong>modern / stress_long_career</strong> is the last one, at 6.90%,
+ * and its cause is one sentence: in modern the first bullet of a nested list is
+ * set on two lines where the same wording further down the list is set on one.
+ * The measurement measures a bullet on its own and reports the second answer,
+ * so every list is charged a line short of what it prints.
+ * {@code EntryFurnitureIT} holds that premium and records what has been ruled
+ * out.
  *
  * <p>So the list below stays short, and the test under it names what is
  * missing rather than leaving a comment somebody can lose.
@@ -120,7 +114,7 @@ class MeasurementDriftIT {
      * stops being fixed. This is the written-down version.
      */
     private static final java.util.List<String> TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE =
-            java.util.List.of("classic");
+            java.util.List.of("classic", "compact");
 
     /**
      * Sorted: {@code ids()} is the key set of a {@code Map.of} and its order is
@@ -143,9 +137,8 @@ class MeasurementDriftIT {
                 .toList();
 
         assertThat(missing)
-                .as("compact and modern each have one profile left outside the three"
-                        + " percent; anything else here is new")
-                .containsExactly("compact", "modern");
+                .as("modern's first-bullet premium is the last one out; anything else is new")
+                .containsExactly("modern");
     }
 
     @ParameterizedTest(name = "{1}: {0}")
