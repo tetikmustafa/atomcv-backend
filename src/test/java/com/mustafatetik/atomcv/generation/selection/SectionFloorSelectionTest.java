@@ -394,6 +394,7 @@ class SectionFloorSelectionTest {
     private static Map<String, Double> fixedCosts() {
         var costs = new LinkedHashMap<String, Double>();
         for (String name : List.of(CapacityModel.HEADER_BLOCK, CapacityModel.SECTION_HEADER,
+                CapacityModel.SECTION_HEADER_AFTER_LIST,
                 CapacityModel.ENTRY_HEADER, CapacityModel.ENTRY_HEADER_AFTER_LIST,
                 CapacityModel.ITEMIZE_OVERHEAD, CapacityModel.SECTION_LIST_OVERHEAD,
                 CapacityModel.SECTION_LIST_CLOSE,
