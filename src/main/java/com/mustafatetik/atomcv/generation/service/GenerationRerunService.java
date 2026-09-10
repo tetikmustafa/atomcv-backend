@@ -16,6 +16,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.rendering.measurement.Capacities;
+import com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -58,11 +59,13 @@ public class GenerationRerunService {
 
     private final ProfileAssembler assembler;
     private final Capacities capacities;
+    private final TemplateMeasurements measurements;
     private final GenerationPipeline pipeline;
 
     GenerationRerunService(ProfileAssembler assembler, GenerationPipeline pipeline,
-            Capacities capacities) {
+            Capacities capacities, TemplateMeasurements measurements) {
         this.capacities = capacities;
+        this.measurements = measurements;
         this.assembler = assembler;
         this.pipeline = pipeline;
     }
@@ -96,6 +99,13 @@ public class GenerationRerunService {
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
+        if (resolved.estimated()) {
+            // Bolum 33.3's third step, asked for at the moment somebody
+            // actually falls back to a guess. This run still produces a CV --
+            // against the estimate, spending a little less of the page -- and
+            // the next one at these settings is exact.
+            measurements.request(options.customization());
+        }
 
         // No measurement pass. Every atom the snapshot knows about was costed
         // when the parent was made, and the cost lives on the variant rather

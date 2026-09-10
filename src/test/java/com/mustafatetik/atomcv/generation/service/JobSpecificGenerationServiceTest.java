@@ -110,7 +110,8 @@ class JobSpecificGenerationServiceTest {
                         .map(capacity -> new com.mustafatetik.atomcv.rendering.measurement
                                 .Capacities.Resolved(capacity, false)));
         service = new JobSpecificGenerationService(assembler, tags, analysis,
-                relevance, renderCosts, rewrites, letters, pipeline, capacities);
+                relevance, renderCosts, rewrites, letters, pipeline, capacities,
+                mock(com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements.class));
 
         head = new Profile(USER);
         ref = ProfileRef.persistent(UserContext.of(USER), UUID.randomUUID(), USER);

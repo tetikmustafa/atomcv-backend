@@ -27,6 +27,7 @@ import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
 import com.mustafatetik.atomcv.rendering.measurement.Capacities;
+import com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -67,6 +68,7 @@ public class JobSpecificGenerationService {
 
     private final ProfileAssembler assembler;
     private final Capacities capacities;
+    private final TemplateMeasurements measurements;
     private final TagRepository tags;
     private final JobAnalysisPhase analysis;
     private final RelevanceScoringService relevance;
@@ -84,8 +86,9 @@ public class JobSpecificGenerationService {
             RewritePhase rewrites,
             CoverLetterWriter letters,
             GenerationPipeline pipeline,
-            Capacities capacities) {
+            Capacities capacities, TemplateMeasurements measurements) {
         this.capacities = capacities;
+        this.measurements = measurements;
 
         this.assembler = assembler;
         this.tags = tags;
@@ -161,6 +164,13 @@ public class JobSpecificGenerationService {
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
+        if (resolved.estimated()) {
+            // Bolum 33.3's third step, asked for at the moment somebody
+            // actually falls back to a guess. This run still produces a CV --
+            // against the estimate, spending a little less of the page -- and
+            // the next one at these settings is exact.
+            measurements.request(options.customization());
+        }
 
         progress.report(GenerationPhase.MEASURING.at(30));
 

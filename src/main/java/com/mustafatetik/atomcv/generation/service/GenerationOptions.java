@@ -3,10 +3,8 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.profile.domain.Preferences;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
-import com.mustafatetik.atomcv.rendering.template.FontFamily;
-import com.mustafatetik.atomcv.rendering.template.HexColor;
+import com.mustafatetik.atomcv.rendering.template.CustomizationFactory;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
-import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import java.util.Locale;
 
 /**
@@ -23,9 +21,6 @@ import java.util.Locale;
  */
 public record GenerationOptions(
         int maxPages, String language, TemplateCustomization customization) {
-
-    private static final org.slf4j.Logger log =
-            org.slf4j.LoggerFactory.getLogger(GenerationOptions.class);
 
     public GenerationOptions {
         if (maxPages < 1 || maxPages > 10) {
@@ -108,45 +103,15 @@ public record GenerationOptions(
         return preferred == null || "auto".equals(preferred) ? sourceLanguage : preferred;
     }
 
-    /**
-     * The template the profile named, with whatever sliders it moved
-     * (Bolum 33.1).
-     *
-     * <p>Null means "the template's own", field by field, so a person who
-     * moved one slider carries one number and a template whose defaults change
-     * later brings the rest along.
-     *
-     * <p><strong>An unusable stored value falls back rather than failing.</strong>
-     * The ranges live on {@link TemplateCustomization} and a preference that
-     * fell outside them -- written before a range moved, or by a release that
-     * validated differently -- would otherwise throw here and take the CV with
-     * it. A document in the template's own settings is a worse answer than the
-     * one asked for and a much better one than no document.
-     */
+    /** The template the profile named, with whatever sliders it moved. */
     private static TemplateCustomization customizationFor(Preferences.Defaults defaults) {
-        TemplateCustomization base = TemplateRegistry.defaultsFor(defaults.templateId());
         Preferences.Appearance moved = defaults.appearance();
-        if (moved == null || moved.isEmpty()) {
-            return base;
-        }
-        try {
-            return new TemplateCustomization(
-                    base.baseTemplateId(),
-                    moved.fontFamily() == null
-                            ? base.fontFamily()
-                            : FontFamily.valueOf(moved.fontFamily().toUpperCase(Locale.ROOT)),
-                    moved.fontSizePt() == null ? base.fontSizePt() : moved.fontSizePt(),
-                    moved.marginInches() == null ? base.marginInches() : moved.marginInches(),
-                    moved.lineSpacing() == null ? base.lineSpacing() : moved.lineSpacing(),
-                    moved.accentColor() == null
-                            ? base.accentColor()
-                            : HexColor.of(moved.accentColor()));
-        } catch (IllegalArgumentException unusable) {
-            // The value, never a name: there is nothing personal in a font
-            // size, and the message is what says which knob was refused.
-            log.warn("A stored appearance could not be used ({}); falling back to {}",
-                    unusable.getMessage(), base.baseTemplateId());
-            return base;
-        }
+        return CustomizationFactory.from(
+                defaults.templateId(),
+                moved == null ? null : moved.fontSizePt(),
+                moved == null ? null : moved.marginInches(),
+                moved == null ? null : moved.lineSpacing(),
+                moved == null ? null : moved.fontFamily(),
+                moved == null ? null : moved.accentColor());
     }
 }

@@ -72,6 +72,23 @@ public class JobQueue {
      * <p>Unscoped, and it is the reason this type is separate: the worker
      * loading what it just won has no acting user to check against.
      */
+    /**
+     * Whether an ownerless job under this key is still in flight (Bolum 30.7).
+     *
+     * <p>{@code enqueue} does not deduplicate — the caller does, and every
+     * caller until now had an owner to look the key up under. A capacity
+     * measurement has none: it belongs to a geometry, so the key is the
+     * geometry and the question is whether anybody is already compiling it.
+     *
+     * <p>Only queued and running count. A measurement that failed should be
+     * asked for again, and one that completed left a row that makes the
+     * question moot.
+     */
+    public boolean isPending(String idempotencyKey) {
+        return jpa.existsByIdempotencyKeyAndUserIdIsNullAndStatusIn(
+                idempotencyKey, java.util.List.of(JobStatus.QUEUED, JobStatus.RUNNING));
+    }
+
     public Optional<Job> find(UUID jobId) {
         return jpa.findById(jobId);
     }
