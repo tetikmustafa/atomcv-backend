@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.performance.PerformanceBudgets;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -27,9 +28,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Bolum 52.2: a profile load must stay inside six queries no matter how large
- * the profile is. The failure this guards against is not slow — it is invisible
- * until production, because the code that causes it looks ordinary.
+ * Bolum 52.2: a profile load must stay inside its query budget no matter how
+ * large the profile is. The failure this guards against is not slow — it is
+ * invisible until production, because the code that causes it looks ordinary.
+ *
+ * <p>The ceiling comes from {@code performance-budgets.yaml} rather than from
+ * a number here (Bolum 52.6). It is the sharpest figure in that file and the
+ * only one that means the same thing on every machine: a count does not care
+ * how fast the box is.
  */
 class ProfileAssemblerIT extends AbstractIntegrationTest {
 
@@ -63,7 +69,7 @@ class ProfileAssemblerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void loadingALargeProfileStaysInsideSixQueries() {
+    void loadingALargeProfileStaysInsideItsQueryBudget() {
         seed(profile, 4, 5, 3);
 
         var statistics = statistics();
@@ -75,7 +81,7 @@ class ProfileAssemblerIT extends AbstractIntegrationTest {
         // silently returned zero would make this pass without measuring.
         assertThat(statistics.getPrepareStatementCount())
                 .as("a profile load must not grow a query per section, entry or atom")
-                .isBetween(4L, 6L);
+                .isBetween(4L, (long) PerformanceBudgets.maxQueriesForProfileLoad());
     }
 
     @Test
