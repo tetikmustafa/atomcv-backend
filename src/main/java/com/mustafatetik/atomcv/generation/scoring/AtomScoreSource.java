@@ -3,6 +3,8 @@ package com.mustafatetik.atomcv.generation.scoring;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.Entry;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Where selection gets its scores (Bolum 19.4).
@@ -59,6 +61,45 @@ public interface AtomScoreSource {
             @Override
             public double scoreOfEntry(Entry entry) {
                 return GeneralModeScorer.scoreOfEntry(entry, today);
+            }
+        };
+    }
+
+    /**
+     * The scores a finished generation already paid for (Bolum 24.1).
+     *
+     * <p>Faz G re-runs the pipeline <em>from Faz C</em>, which is the whole
+     * reason an edit is cheap: Faz A read the posting once and Faz B ranked
+     * the profile against it once, and switching one bullet off changes
+     * neither answer. The numbers come back out of
+     * {@code generations.selection_state}, where every candidate is recorded —
+     * chosen or rejected — with the score it competed on.
+     *
+     * <p>Entry headings are in the same map and need no special case: a
+     * heading competes as a candidate whose id <em>is</em> the entry's
+     * (Bolum 20.2), so it is stored under that id and looked up under it.
+     *
+     * <p><strong>Zero for anything the snapshot never scored.</strong> An atom
+     * written after the generation was made was not part of this CV's world
+     * and does not get to walk into it by being new; if the person wants it
+     * there they can ask for it by name, and a directive outranks a score.
+     * The alternative is re-running Faz B, which is the thing Bolum 24.1 says
+     * not to do.
+     *
+     * @param byId score by atom id, and by entry id for a heading
+     */
+    static AtomScoreSource remembered(Map<UUID, Double> byId) {
+        Map<UUID, Double> scores = Map.copyOf(byId);
+        return new AtomScoreSource() {
+
+            @Override
+            public double scoreOf(Atom atom, Entry entry) {
+                return scores.getOrDefault(atom.getId(), 0.0);
+            }
+
+            @Override
+            public double scoreOfEntry(Entry entry) {
+                return entry == null ? 0.0 : scores.getOrDefault(entry.getId(), 0.0);
             }
         };
     }

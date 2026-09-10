@@ -3,7 +3,10 @@ package com.mustafatetik.atomcv.generation.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -85,5 +88,34 @@ public record StoredSelection(
     public SelectionState toSelectionState() {
         return new SelectionState(selected, rejected, budget, headerOnlyEntries,
                 rejectedEntries);
+    }
+
+    /**
+     * Every candidate this generation weighed, chosen or not, with the score it
+     * competed on (Bolum 20.5).
+     *
+     * <p>What Faz G re-runs against. Bolum 24.1 restarts the pipeline at Faz C,
+     * so the scores cannot be recomputed without doing the thing that rule
+     * forbids — they are read back out of here instead.
+     *
+     * <p>Entry headings need no special case: a heading competes as a candidate
+     * whose id <em>is</em> the entry's (Bolum 20.2), so it is already in
+     * {@code selected} or {@code rejectedEntries} under that id.
+     *
+     * <p>Ordered, because it is walked to build a selection request and Bolum
+     * 19.6 wants two runs of one input to produce one request.
+     */
+    public Map<UUID, Double> scoresByCandidate() {
+        var scores = new LinkedHashMap<UUID, Double>();
+        for (SelectionState.SelectedAtom atom : selected) {
+            scores.put(atom.atomId(), atom.score());
+        }
+        for (SelectionState.RejectedAtom atom : rejected) {
+            scores.put(atom.atomId(), atom.score());
+        }
+        for (SelectionState.RejectedEntry entry : rejectedEntries) {
+            scores.put(entry.entryId(), entry.score());
+        }
+        return Collections.unmodifiableMap(scores);
     }
 }

@@ -2,6 +2,9 @@ package com.mustafatetik.atomcv.generation.pipeline;
 
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
+import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import java.util.LinkedHashMap;
+import java.util.UUID;
 
 /**
  * Faz D, as the pipeline sees it (Bolum 21).
@@ -25,5 +28,41 @@ public interface ContentRewriter {
     /** No posting to write towards: every sentence is printed as written. */
     static ContentRewriter none() {
         return (selection, carried) -> carried;
+    }
+
+    /**
+     * A re-run that keeps what Faz D already wrote and asks it nothing new
+     * (Bolum 24.1).
+     *
+     * <p>This is what makes a hand edit free. Switching one bullet off changes
+     * neither the posting nor what the model would say about the bullets that
+     * stayed, so the sentences come back out of
+     * {@code generations.rewritten_content} and no request goes out. An atom
+     * the edit newly puts on the page has no rewrite here and is printed the
+     * way the person wrote it — which is not a gap but Bolum 21.6's own rule:
+     * absent means original, and Faz E cannot get that wrong.
+     *
+     * <p>Pruned to what is on the page. The map is stored again with the
+     * generation this produces, and carrying a rewrite for an atom that was
+     * removed three edits ago would grow the column forever with sentences no
+     * document contains.
+     *
+     * @param inherited what the generation being replaced had written
+     */
+    static ContentRewriter carrying(RewrittenContent inherited) {
+        RewrittenContent held = inherited == null ? RewrittenContent.none() : inherited;
+        return (selection, carried) -> {
+            var kept = new LinkedHashMap<UUID, RichContent>();
+            for (SelectionState.SelectedAtom atom : selection.selected()) {
+                RichContent line = held.byAtom().get(atom.atomId());
+                if (line != null) {
+                    kept.put(atom.atomId(), line);
+                }
+            }
+            // What this run produced wins: on the second turn of the compile
+            // loop `carried` is the previous attempt's answer, and it is newer
+            // than the row we inherited from.
+            return new RewrittenContent(kept).and(carried.byAtom());
+        };
     }
 }
