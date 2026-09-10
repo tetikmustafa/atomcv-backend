@@ -3,6 +3,8 @@ package com.mustafatetik.atomcv.generation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
@@ -258,6 +260,64 @@ class JobSpecificCvIT extends AbstractLatexTest {
         assertThat(atsDefects())
                 .as("a coloured rule does not disturb the text layer")
                 .isZero();
+    }
+
+    /**
+     * <strong>The same CV as a Word document (Bolum 22.6).</strong>
+     *
+     * <p>Downloaded from a generation that really ran, so what is checked is
+     * the thing a unit test cannot reach: that a document made from a real
+     * snapshot -- one Faz D wrote and a compiler set -- opens, and that its
+     * words are in the text layer where an applicant tracking system will
+     * look for them.
+     *
+     * <p>The page limit does not travel with it and this does not pretend
+     * otherwise: no page count is asserted, because Word decides that and
+     * nothing here measures it.
+     */
+    @Test
+    void thesameGenerationDownloadsAsAwordDocument() throws Exception {
+        seedCareer();
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).isTrue();
+        String generationId = completedGenerationId(jobId);
+
+        byte[] docx = mvc.perform(get("/api/v1/generations/" + generationId + "/download")
+                        .param("format", "docx"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString(".docx")))
+                .andReturn().getResponse().getContentAsByteArray();
+
+        try (var document = new org.apache.poi.xwpf.usermodel.XWPFDocument(
+                        new java.io.ByteArrayInputStream(docx));
+                var extractor = new org.apache.poi.xwpf.extractor.XWPFWordExtractor(document)) {
+
+            assertThat(extractor.getText())
+                    .as("the bullets this profile was seeded with reach the text layer")
+                    .contains("Ran distributed Go services on PostgreSQL");
+        }
+    }
+
+    /**
+     * Bolum 35.3's map offers `source` too and nothing serves it. Named rather
+     * than ignored: a client asking for one and silently getting a PDF would
+     * ship a .tex button that downloads a PDF.
+     */
+    @Test
+    void aformatNobodyServesIsRefusedRatherThanSubstituted() throws Exception {
+        seedCareer();
+        String jobId = enqueue();
+        worker().runOne();
+        String generationId = completedGenerationId(jobId);
+
+        mvc.perform(get("/api/v1/generations/" + generationId + "/download")
+                        .param("format", "source"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }
 
     /**
