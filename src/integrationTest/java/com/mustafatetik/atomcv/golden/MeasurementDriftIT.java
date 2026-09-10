@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.testcontainers.containers.GenericContainer;
@@ -44,6 +45,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * <p>This asks TeX where it is on the page after the real document, and
  * compares that with what selection thought it had spent. The checklist wants
  * the two within three percent.
+ *
+ * <p><strong>Only the templates whose promise has been confirmed.</strong>
+ * Running this across all three on 2026-09-10 is what found that compact's
+ * does not hold: it under-predicts a real page on every golden profile that
+ * fits one — by 12.9 pt on minimal_edge and 45.6 pt on senior_backend_tr, 4%
+ * to 12% — and master_cv_en runs onto a second page under it. Modern holds
+ * except on stress_long_career, which also runs onto a second page. Both are
+ * shipped, so this is a live defect rather than a gap in the fixtures, and
+ * {@link #TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE} is where it is written down
+ * rather than in a comment somebody can lose: adding a template back is one
+ * word, and until then this file names the ones that are missing.
  */
 @Tag("latex")
 @Testcontainers
@@ -53,8 +65,6 @@ class MeasurementDriftIT {
     private static final double ALLOWED_DRIFT = 0.03;
 
     private static final LocalDate TODAY = LocalDate.of(2026, 8, 15);
-    private static final CapacityModel CAPACITY =
-            TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
 
     @Container
     static final GenericContainer<?> LATEX = new GenericContainer<>(
@@ -63,45 +73,90 @@ class MeasurementDriftIT {
             .withExposedPorts(8090)
             .withStartupTimeout(Duration.ofMinutes(5));
 
-    static java.util.stream.Stream<String> names() {
-        return GoldenProfileReader.NAMES.stream();
+    /**
+     * The templates this file is allowed to hold to the three percent.
+     *
+     * <p>Deliberately not {@code TemplateRegistry.ids()}. Compact and modern
+     * fail it today for the reason in this class's own documentation, and a
+     * lane that is red on main stops being read — but a list nobody wrote down
+     * stops being fixed. This is the written-down version.
+     */
+    private static final java.util.List<String> TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE =
+            java.util.List.of("classic");
+
+    /**
+     * Sorted: {@code ids()} is the key set of a {@code Map.of} and its order is
+     * salted per JVM run, which would shuffle a slow lane's report every time.
+     */
+    static java.util.stream.Stream<org.junit.jupiter.params.provider.Arguments> everyTemplate() {
+        return TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE.stream().sorted()
+                .flatMap(template -> GoldenProfileReader.NAMES.stream()
+                        .map(name -> org.junit.jupiter.params.provider.Arguments.of(name, template)));
     }
 
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("names")
-    void whatSelectionSpentIsWhatThePageHolds(String name) {
+    /**
+     * And the ones left out are named, so the list above cannot quietly become
+     * the whole story. A template that is fixed and not added back fails here.
+     */
+    @Test
+    void everyTemplateLeftOutOfTheGuaranteeIsOneWeKnowAbout() {
+        var missing = TemplateRegistry.ids().stream().sorted()
+                .filter(id -> !TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE.contains(id))
+                .toList();
+
+        assertThat(missing)
+                .as("compact and modern under-fill their model against the real compiler"
+                        + " (measured 2026-09-10); anything else here is new")
+                .containsExactly("compact", "modern");
+    }
+
+    @ParameterizedTest(name = "{1}: {0}")
+    @MethodSource("everyTemplate")
+    void whatSelectionSpentIsWhatThePageHolds(String name, String template) {
+        TemplateCustomization customization = TemplateRegistry.defaultsFor(template);
         GoldenProfile golden = GoldenProfileReader.read(name, UUID.randomUUID());
-        var request = SelectionRequestBuilder.build(golden.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1,
-                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
-        SelectionState state = SelectionPhase.select(request).orElseThrow();
+        SelectionState state = selectOnePage(golden, customization);
 
         double predictedPt = state.budget().fixedPt() + state.budget().usedPt();
-        double actualPt = heightOnThePage(golden, state);
+        double actualPt = heightOnThePage(golden, state, customization);
 
         double drift = Math.abs(actualPt - predictedPt) / predictedPt;
         assertThat(drift)
-                .as("%s: predicted %.1fpt, the page holds %.1fpt", name, predictedPt, actualPt)
+                .as("%s under %s: predicted %.1fpt, the page holds %.1fpt",
+                        name, template, predictedPt, actualPt)
                 .isLessThan(ALLOWED_DRIFT);
     }
 
-    @ParameterizedTest(name = "{0}")
-    @MethodSource("names")
-    void theRealDocumentNeverRunsPastThePage(String name) {
+    @ParameterizedTest(name = "{1}: {0}")
+    @MethodSource("everyTemplate")
+    void theRealDocumentNeverRunsPastThePage(String name, String template) {
+        TemplateCustomization customization = TemplateRegistry.defaultsFor(template);
         GoldenProfile golden = GoldenProfileReader.read(name, UUID.randomUUID());
-        var request = SelectionRequestBuilder.build(golden.tree(),
-                TemplateCustomization.CLASSIC, CAPACITY, 1,
-                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
-        SelectionState state = SelectionPhase.select(request).orElseThrow();
+        SelectionState state = selectOnePage(golden, customization);
 
         var client = compiler();
-        String source = new LatexDocumentRenderer().renderFinal(RenderPhase.build(
-                golden.profile(), golden.tree(), state,
-                RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
+        String source = sourceOf(golden, state, customization);
 
         assertThat(client.compile(source).pageCount())
-                .as("%s fills one page and not two", name)
+                .as("%s fills one %s page and not two", name, template)
                 .isEqualTo(1);
+    }
+
+    private static SelectionState selectOnePage(
+            GoldenProfile golden, TemplateCustomization customization) {
+
+        CapacityModel capacity = TemplateRegistry.capacityOf(customization).orElseThrow();
+        var request = SelectionRequestBuilder.build(golden.tree(), customization, capacity, 1,
+                golden.profile().getSourceLanguage(), Tone.FORMAL, TODAY).request();
+        return SelectionPhase.select(request).orElseThrow();
+    }
+
+    private static String sourceOf(GoldenProfile golden, SelectionState state,
+            TemplateCustomization customization) {
+
+        return new LatexDocumentRenderer().renderFinal(RenderPhase.build(
+                golden.profile(), golden.tree(), state,
+                RewrittenContent.none(), customization, Locale.ENGLISH)).value();
     }
 
     /**
@@ -111,10 +166,10 @@ class MeasurementDriftIT {
      * than rendered differently: a drift measured on a different document
      * would be a drift in the probe.
      */
-    private double heightOnThePage(GoldenProfile golden, SelectionState state) {
-        String source = new LatexDocumentRenderer().renderFinal(RenderPhase.build(
-                        golden.profile(), golden.tree(), state,
-                        RewrittenContent.none(), TemplateCustomization.CLASSIC, Locale.ENGLISH)).value();
+    private double heightOnThePage(GoldenProfile golden, SelectionState state,
+            TemplateCustomization customization) {
+
+        String source = sourceOf(golden, state, customization);
 
         String probed = source.replace("\\end{document}",
                 "\\par\\typeout{CALIB|pagetotal|\\the\\pagetotal}\n\\end{document}");
@@ -122,6 +177,16 @@ class MeasurementDriftIT {
         Map<String, Double> probes = TexLogParser.parseCalibration(compiler().measure(probed));
         assertThat(probes).as("the document has to compile for its height to mean anything")
                 .containsKey("pagetotal");
+
+        // A reading taken after a page break is a reading of the second page.
+        // Compact's master_cv_en produced 39.8 pt against a predicted 730.6 --
+        // a 95% "drift" that says nothing about the model and everything about
+        // where the probe was standing. The same reset once made a calibration
+        // report a heading at -646.7 pt. Refused here rather than reported,
+        // because the number is not small, it is meaningless.
+        assertThat(compiler().compile(source).pageCount())
+                .as("the height of a page cannot be read once the document has left it")
+                .isEqualTo(1);
         return probes.get("pagetotal");
     }
 
