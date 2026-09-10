@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.rendering.template;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -74,9 +75,56 @@ public record TemplateCustomization(
      * <p>It carries the template version, so a geometric change to the
      * renderer invalidates old measurements instead of silently keeping them —
      * which is how a page guarantee breaks without an error.
+     *
+     * <p><strong>And it carries the geometry, which it did not.</strong> Until
+     * layer B this was {@code templateId:vN} and nothing else, so a CV at 9pt
+     * would have read the bullet costs measured at 11pt out of the same entry.
+     * Nothing could reach that yet — {@link TemplateRegistry#capacityOf}
+     * refuses a customization nobody has measured, so such a generation never
+     * ran — but it is the trap waiting for the sliders, and a stored cost that
+     * describes a different document is the quiet failure this whole subsystem
+     * exists to prevent.
+     *
+     * <p><strong>Colour is not in it, on purpose.</strong> Bolum 33.1 puts
+     * colours in layer A — "no re-measurement" — because they move no box on
+     * the page. A key that included the accent would throw away every
+     * measurement a person owns the first time they changed a heading from
+     * black, and charge them a compilation to learn the same numbers again.
+     *
+     * <p><strong>A template at its own defaults keeps the bare key.</strong>
+     * {@code classic:v4} is what every measurement in the database and in the
+     * golden set is filed under, and those were taken at exactly those
+     * settings — suffixing them would orphan work that is still correct. The
+     * suffix is for a document that differs from the default, which is the
+     * only case that needs telling apart.
      */
     public String costKey() {
-        return baseTemplateId + ":v" + TemplateRegistry.versionOf(baseTemplateId);
+        String base = baseTemplateId + ":v" + TemplateRegistry.versionOf(baseTemplateId);
+        // Compared on the geometry rather than on the whole record, and the
+        // first draft did the latter: an accent that was not black made the
+        // customization unequal to the default and earned a suffix, which is
+        // the layer-A promise broken in the direction that costs a person a
+        // compilation. The test named the colour case for that reason.
+        String geometry = geometry();
+        return geometry.equals(TemplateRegistry.defaultsFor(baseTemplateId).geometry())
+                ? base
+                : base + ":" + geometry;
+    }
+
+    /**
+     * The four knobs that move a box, as a readable, stable suffix.
+     *
+     * <p>Readable rather than a digest because it lands in a JSONB column and
+     * in a golden fixture, and a person reading either should be able to tell
+     * what a row describes without running anything. {@code Locale.ROOT} on
+     * both the numbers and the enum: absolute rule 7, and under a Turkish
+     * locale this would otherwise write {@code 9,5} and turn {@code SANS} into
+     * {@code sans} through a different path than every other reader uses.
+     */
+    private String geometry() {
+        return String.format(Locale.ROOT, "%s-%.1f-%.2f-%.2f",
+                fontFamily.name().toLowerCase(Locale.ROOT),
+                fontSizePt, marginInches, lineSpacing);
     }
 
     private static void requireInRange(String field, double value, double min, double max) {
