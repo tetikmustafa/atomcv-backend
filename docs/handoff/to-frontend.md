@@ -115,11 +115,50 @@ aynı yapı, daha sıkı geometri — sayfa ~70 madde satırı tutuyor, klasik 6
 şablon alanı **eklenmedi** — "bu üretim için şu şablon" diye tek seferlik bir
 seçim yok, kişi ayarından seçiyor. İhtiyaç varsa `F-nnn` ile isteyin.
 
-**Henüz yok — Katman B.** § 33.1'in font boyutu / margin / satır aralığı
-sliderları hâlâ çalışmıyor: her şablonun ölçülmüş kapasitesi **yalnız kendi
-varsayılan ayarları** için geçerli, ve ölçülmemiş bir ayarla üretim
-reddediliyor. Yani iki şablon var, altı slider yok. § 33.3'ün "yeniden
-hesaplanıyor" akışı geldiğinde ayrı bir madde olarak gelir.
+**Katman B `B-091`'de** — `B-090` yazıldığında henüz yoktu.
+
+### B-091 · Katman B indi — slider'lar çalışıyor
+
+**Since:** backend `a2f82c7`, `d101600` · Aşama 4 · § 33.1, § 33.2, § 33.3
+
+**Neden:** `B-090`'da "altı slider yok" demiştim; artık var. Kullanıcı font
+boyutunu, margin'i, satır aralığını, font ailesini ve vurgu rengini
+değiştirebiliyor, ve CV o ayarlarda çıkıyor — **sayfa sınırı hâlâ tutarak.**
+
+**İstenen — üç şey:**
+
+1. **`PATCH /profile/preferences` gövdesindeki `defaults` artık bir
+   `appearance` nesnesi kabul ediyor.** Beş alan, **hepsi opsiyonel**:
+   `fontSizePt` (9–12), `marginInches` (0.4–1.0), `lineSpacing` (0.9–1.3),
+   `fontFamily` (`MODERN` \| `SERIF` \| `SANS`), `accentColor` (6 hane hex,
+   `#` yok). Şekil için OpenAPI otorite.
+   **Bir alanı göndermemek "şablonun kendi ayarı" demek** — sıfırlamak için
+   `null` gönderin, "0" ya da varsayılan değeri değil. Bir slider'ı oynatan
+   kişi tek bir alan gönderir; şablonun varsayılanı sonra değişirse gerisini
+   beraberinde götürür.
+   Aralık dışı bir değer **400**. Aralıklar dar, çünkü § 33.2 kötü görünen bir
+   sonucun fiziksel olarak imkânsız olmasını istiyor; 9pt yasal ve ATS
+   okunabilirliği için bir uyarı yazmaya değer, ama **engellenmiyor.**
+
+2. **İlk üretim biraz daha temkinli, ve bu görünmüyor.** Hiç derlenmemiş bir
+   geometri için sayfanın **%92'si** harcanıyor (§ 33.3'ün "tahmin + %8 pay"ı),
+   arka planda bir ölçüm kuyruğa giriyor, ve o indikten sonra aynı ayarda
+   üretimler sayfanın tamamını kullanıyor. **Ekranda bir şey yapmanız
+   gerekmiyor** — bekleme yok, hata yok, yalnız ilk CV birkaç satır daha az
+   tutabilir.
+   § 33.3'ün "yeniden hesaplanıyor…" göstergesini istiyorsanız, o durumu
+   yayımlayan bir uca ihtiyacınız var — **şu an yok**, bir `F-nnn` ile isteyin.
+
+3. **Renk bedava, diğer dördü değil** (§ 33.1). Rengi değiştirmek hiçbir
+   ölçümü geçersizleştirmiyor, geometrik dördü değiştirmek bir derleme
+   demek — arka planda, ve kullanıcıyı bekletmeden. Arayüzde bu farkı
+   göstermek zorunda değilsiniz; sadece "renk değiştirmek yavaş" gibi bir
+   uyarı yazmayın, doğru değil.
+
+**Bilmenizde fayda var:** aralıklar backend'de `TemplateCustomization`'da ve
+uçta **iki kez** yazılı. Aralık dışı saklanmış eski bir tercih üretimi
+düşürmüyor, şablonun kendi ayarına düşüyor — yani bir kullanıcı asla
+"CV üretilemiyor" durumunda kalmıyor.
 
 ---
 
