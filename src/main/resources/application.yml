@@ -101,6 +101,7 @@ atomcv:
       bullet_rewrite: v1
       about_synthesis: v1
       cover_letter: v1
+      selection_edit: v1
   # Bolum 28. Self-hosted BGE-M3 behind text-embeddings-inference; the CV
   # content never leaves the deployment.
   embedding:
