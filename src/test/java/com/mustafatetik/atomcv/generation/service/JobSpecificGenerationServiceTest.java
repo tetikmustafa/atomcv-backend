@@ -152,7 +152,7 @@ class JobSpecificGenerationServiceTest {
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
-        verify(renderCosts, never()).measureMissing(any(), any());
+        verify(renderCosts, never()).measureMissing(any(), any(), any(), any());
         verify(relevance, never()).scoreAgainst(any(), any(), any());
     }
 

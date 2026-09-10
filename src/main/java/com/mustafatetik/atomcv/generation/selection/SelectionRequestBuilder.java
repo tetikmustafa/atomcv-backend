@@ -66,7 +66,22 @@ public final class SelectionRequestBuilder {
             LocalDate today) {
 
         return build(tree, customization, capacity, maxPages, language, tone,
-                AtomScoreSource.generalMode(today));
+                AtomScoreSource.generalMode(today), null);
+    }
+
+    /** General CV mode, with the header this profile measured. */
+    public static BuiltRequest build(
+            ProfileTree tree,
+            TemplateCustomization customization,
+            CapacityModel capacity,
+            int maxPages,
+            String language,
+            Tone tone,
+            LocalDate today,
+            Double measuredHeaderPt) {
+
+        return build(tree, customization, capacity, maxPages, language, tone,
+                AtomScoreSource.generalMode(today), measuredHeaderPt);
     }
 
     /**
@@ -88,6 +103,23 @@ public final class SelectionRequestBuilder {
             String language,
             Tone tone,
             AtomScoreSource scores) {
+
+        return build(tree, customization, capacity, maxPages, language, tone, scores, null);
+    }
+
+    /**
+     * @param measuredHeaderPt what this profile's header block measured at this
+     *        geometry and in this language, or null for one nobody has measured
+     */
+    public static BuiltRequest build(
+            ProfileTree tree,
+            TemplateCustomization customization,
+            CapacityModel capacity,
+            int maxPages,
+            String language,
+            Tone tone,
+            AtomScoreSource scores,
+            Double measuredHeaderPt) {
 
         var run = new Run(customization, capacity, language, tone, scores);
         List<SectionPlan> sections = new ArrayList<>();
@@ -167,7 +199,8 @@ public final class SelectionRequestBuilder {
         sections.sort(Comparator.comparingInt(SectionPlan::priority));
 
         return new BuiltRequest(
-                new SelectionRequest(sections, maxPages, capacity),
+                new SelectionRequest(sections, maxPages, capacity, 1.0,
+                        GenerationDirectives.none(), measuredHeaderPt),
                 run.estimated, run.withoutWording);
     }
 
