@@ -43,10 +43,14 @@ public class MeasurementJobHandler implements JobHandler {
 
     private final RenderCostService costs;
     private final ProfileResolver profiles;
+    private final TemplateCalibrationRunner calibrations;
 
-    MeasurementJobHandler(RenderCostService costs, ProfileResolver profiles) {
+    MeasurementJobHandler(RenderCostService costs, ProfileResolver profiles,
+            TemplateCalibrationRunner calibrations) {
+
         this.costs = costs;
         this.profiles = profiles;
+        this.calibrations = calibrations;
     }
 
     @Override
@@ -58,8 +62,12 @@ public class MeasurementJobHandler implements JobHandler {
     public JobOutcome handle(Job job, ProgressSink progress) {
         UUID userId = job.getOwnerId();
         if (userId == null) {
-            log.error("An ownerless measurement job reached the queue; job {}", job.getId());
-            return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
+            // A measurement that belongs to nobody is a template calibration
+            // (Bolum 33.3): a capacity belongs to a geometry rather than to a
+            // person, so the job that produces one has no owner. That used to
+            // be an impossible state and is now the second kind of work this
+            // type carries.
+            return calibrations.run(job);
         }
         try {
             int measured = costs.measureMissing(

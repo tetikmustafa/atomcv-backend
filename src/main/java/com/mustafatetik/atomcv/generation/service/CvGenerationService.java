@@ -14,6 +14,7 @@ import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
 import com.mustafatetik.atomcv.rendering.measurement.Capacities;
+import com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
@@ -45,6 +46,7 @@ public class CvGenerationService {
 
     private final ProfileResolver profiles;
     private final Capacities capacities;
+    private final TemplateMeasurements measurements;
     private final ProfileAssembler assembler;
     private final RenderCostService renderCosts;
     private final GenerationPipeline pipeline;
@@ -56,8 +58,9 @@ public class CvGenerationService {
             RenderCostService renderCosts,
             GenerationPipeline pipeline,
             Clock clock,
-            Capacities capacities) {
+            Capacities capacities, TemplateMeasurements measurements) {
         this.capacities = capacities;
+        this.measurements = measurements;
 
         this.profiles = profiles;
         this.assembler = assembler;
@@ -87,6 +90,13 @@ public class CvGenerationService {
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
+        if (resolved.estimated()) {
+            // Bolum 33.3's third step, asked for at the moment somebody
+            // actually falls back to a guess. This run still produces a CV --
+            // against the estimate, spending a little less of the page -- and
+            // the next one at these settings is exact.
+            measurements.request(options.customization());
+        }
 
         ProfileTree tree = assembler.load(profile);
         Result<Void> preflight = ProfilePreflight.check(head, tree);
