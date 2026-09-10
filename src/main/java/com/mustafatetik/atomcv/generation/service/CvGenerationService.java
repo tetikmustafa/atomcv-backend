@@ -109,7 +109,8 @@ public class CvGenerationService {
         // One compilation for everything that has no cost yet, before
         // selection asks for numbers (Bolum 26.2).
         try {
-            if (renderCosts.measureMissing(profile, options.customization()) > 0) {
+            if (renderCosts.measureMissing(profile, options.customization(), head,
+                    java.util.Locale.forLanguageTag(options.language())) > 0) {
                 tree = assembler.load(profile);
             }
         } catch (CompilationException failed) {
@@ -119,7 +120,8 @@ public class CvGenerationService {
 
         var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
                 options.maxPages(), options.language(),
-                head.getPreferences().writingStyle().tone(), LocalDate.now(clock));
+                head.getPreferences().writingStyle().tone(), LocalDate.now(clock),
+                measuredHeaderOf(head, options));
 
         if (built.request().sections().isEmpty()) {
             // Everything was inactive, or nothing had a wording. Either way
@@ -146,4 +148,19 @@ public class CvGenerationService {
                 .map(document -> new GeneratedGeneration(
                         profile.id(), null, options, null, Map.of(), document));
     }
+
+    /**
+     * What this profile's header measured at these settings, or null.
+     *
+     * <p>Null is the ordinary state exactly once: the first generation after a
+     * person changes their name, their headline or a contact line. The
+     * measuring pass above fills it in before selection asks, so the fallback
+     * is for the run where the compiler could not be reached at all.
+     */
+    private static Double measuredHeaderOf(Profile head, GenerationOptions options) {
+        return head.getHeaderCosts().get(RenderCostService.headerKeyOf(
+                options.customization().costKey(),
+                java.util.Locale.forLanguageTag(options.language())));
+    }
+
 }

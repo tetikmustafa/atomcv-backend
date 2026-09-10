@@ -26,7 +26,8 @@ public record SelectionRequest(
         int maxPages,
         CapacityModel capacity,
         double budgetFactor,
-        GenerationDirectives directives) {
+        GenerationDirectives directives,
+        Double measuredHeaderPt) {
 
     public SelectionRequest {
         sections = List.copyOf(Objects.requireNonNull(sections, "sections"));
@@ -43,14 +44,22 @@ public record SelectionRequest(
 
     /** The ordinary case: the whole page is available, and nobody has edited. */
     public SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity) {
-        this(sections, maxPages, capacity, 1.0, GenerationDirectives.none());
+        this(sections, maxPages, capacity, 1.0, GenerationDirectives.none(), null);
     }
 
     /** The first run of an edited generation, before the budget has to shrink. */
+    /**
+     * The measured header, where somebody has paid a compilation for it.
+     *
+     * @param measuredHeaderPt how tall this profile's header block came back,
+     *        or null for one nobody has measured. It is not a fixed cost of the
+     *        template: the header is text, it wraps, and the name is set at a
+     *        size where a taller glyph is a taller line
+     */
     public SelectionRequest(List<SectionPlan> sections, int maxPages, CapacityModel capacity,
             GenerationDirectives directives) {
 
-        this(sections, maxPages, capacity, 1.0, directives);
+        this(sections, maxPages, capacity, 1.0, directives, null);
     }
 
     /**
@@ -61,7 +70,8 @@ public record SelectionRequest(
      * again against a budget shrunk by that much rather than the same one.
      */
     public SelectionRequest withBudgetFactor(double factor) {
-        return new SelectionRequest(sections, maxPages, capacity, factor, directives);
+        return new SelectionRequest(
+                sections, maxPages, capacity, factor, directives, measuredHeaderPt);
     }
 
     /**
@@ -73,7 +83,8 @@ public record SelectionRequest(
      * still a candidate with a score, and the snapshot has to say so.
      */
     public SelectionRequest withDirectives(GenerationDirectives directives) {
-        return new SelectionRequest(sections, maxPages, capacity, budgetFactor, directives);
+        return new SelectionRequest(
+                sections, maxPages, capacity, budgetFactor, directives, measuredHeaderPt);
     }
 
     /** A heading, its entries, and any atoms hanging straight off it. */

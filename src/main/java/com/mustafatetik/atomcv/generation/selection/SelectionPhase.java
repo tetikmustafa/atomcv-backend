@@ -155,8 +155,15 @@ public final class SelectionPhase {
                     }
                 }
             }
-            // The page's own header is paid before anything is chosen.
-            structurePt = capacity.fixedCost(CapacityModel.HEADER_BLOCK);
+            // The page's own header is paid before anything is chosen, and it
+            // is measured where somebody has paid a compilation for it. The
+            // constant is the fallback: it was calibrated for a name and two
+            // centred lines, and a header that wraps to three is taller than
+            // that in every template. An unmeasured profile is already running
+            // on estimates elsewhere and has the budget factor to go with them.
+            structurePt = request.measuredHeaderPt() != null
+                    ? request.measuredHeaderPt()
+                    : capacity.fixedCost(CapacityModel.HEADER_BLOCK);
         }
 
         Result<SelectionState> execute() {
