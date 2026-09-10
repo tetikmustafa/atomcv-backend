@@ -36,6 +36,14 @@ import java.util.Map;
  * every page limit, not for one hand-built fixture. The fourth test —
  * multi-tenant isolation — needs real HTTP and lives in
  * {@code MultiTenantIsolationIT}.
+ *
+ * <p><strong>Every template, not only the default one.</strong> The promise is
+ * about a rendered page, and compact and modern are different pages: a row
+ * costs 10.45 pt in one and 14 pt in another, and the packing that fits is a
+ * different packing. Proving the arithmetic against classic proved it for the
+ * template nobody had to choose. The cases come from
+ * {@link TemplateRegistry#ids()}, so a template added later joins the guarantee
+ * by existing rather than by somebody remembering this file.
  */
 class GoldenSelectionTest {
 
@@ -45,33 +53,68 @@ class GoldenSelectionTest {
             TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
 
     static Stream<Arguments> everyProfileAtEveryLimit() {
-        return GoldenProfileReader.NAMES.stream().flatMap(name ->
-                Stream.of("en", "tr").flatMap(language ->
-                        Stream.of(1, 2).map(pages ->
-                                Arguments.of(name, language, pages))));
+        return templates().flatMap(template ->
+                GoldenProfileReader.NAMES.stream().flatMap(name ->
+                        Stream.of("en", "tr").flatMap(language ->
+                                Stream.of(1, 2).map(pages ->
+                                        Arguments.of(name, template, language, pages)))));
+    }
+
+    /**
+     * Sorted on purpose. {@code ids()} is the key set of a {@code Map.of},
+     * whose iteration order is salted per JVM run, and a report whose cases
+     * arrive in a different order each time is a report nobody can diff.
+     */
+    private static Stream<String> templates() {
+        return TemplateRegistry.ids().stream().sorted();
     }
 
     // ── 1. the page limit is never exceeded ───────────────────────────────
 
-    @ParameterizedTest(name = "{0}, {1}, {2} page(s)")
+    @ParameterizedTest(name = "{1}: {0}, {2}, {3} page(s)")
     @MethodSource("everyProfileAtEveryLimit")
-    void theSelectionNeverExceedsThePage(String name, String language, int pages) {
+    void theSelectionNeverExceedsThePage(
+            String name, String template, String language, int pages) {
+
         var golden = GoldenProfileReader.read(name, OWNER);
-        var state = select(golden, language, pages).orElseThrow();
+        var state = select(golden, template, language, pages).orElseThrow();
 
         assertThat(state.budget().usedPt())
                 .as("content fits the free budget")
                 .isLessThanOrEqualTo(state.budget().freePt());
         assertThat(state.budget().fixedPt() + state.budget().usedPt())
                 .as("everything fits the page")
-                .isLessThanOrEqualTo(pages * CAPACITY.pageTextHeightPt());
+                .isLessThanOrEqualTo(pages * capacityOf(template).pageTextHeightPt());
     }
 
-    @ParameterizedTest(name = "{0}, {1}, {2} page(s)")
+    /**
+     * <strong>And the numbers above are measured ones.</strong> An atom whose
+     * cost is missing under the running template is charged an estimate and its
+     * 8% margin instead, which still fits the page and still passes the test
+     * above — so a recording keyed under the wrong template would widen the
+     * guarantee into a guess without failing anything. This is what says the
+     * golden set really covers the template it claims to.
+     */
+    @ParameterizedTest(name = "{1}: {0}, {2}, {3} page(s)")
     @MethodSource("everyProfileAtEveryLimit")
-    void everyAtomIsEitherSelectedOrGivenAReason(String name, String language, int pages) {
+    void everyWordingIsChargedWhatTheCompilerMeasured(
+            String name, String template, String language, int pages) {
+
         var golden = GoldenProfileReader.read(name, OWNER);
-        var request = request(golden, language, pages);
+        var built = builtRequest(golden, template, language, pages);
+
+        assertThat(built.estimatedAtoms())
+                .as("%s has no measured cost under %s", name, template)
+                .isZero();
+    }
+
+    @ParameterizedTest(name = "{1}: {0}, {2}, {3} page(s)")
+    @MethodSource("everyProfileAtEveryLimit")
+    void everyAtomIsEitherSelectedOrGivenAReason(
+            String name, String template, String language, int pages) {
+
+        var golden = GoldenProfileReader.read(name, OWNER);
+        var request = request(golden, template, language, pages);
         var state = SelectionPhase.select(request).orElseThrow();
 
         // Heading candidates are counted too, on both sides. They are not
@@ -234,11 +277,13 @@ class GoldenSelectionTest {
 
     // ── 4. locks and structural constraints ───────────────────────────────
 
-    @ParameterizedTest(name = "{0}, {1}, {2} page(s)")
+    @ParameterizedTest(name = "{1}: {0}, {2}, {3} page(s)")
     @MethodSource("everyProfileAtEveryLimit")
-    void locksAndStructuralConstraintsAreRespected(String name, String language, int pages) {
+    void locksAndStructuralConstraintsAreRespected(
+            String name, String template, String language, int pages) {
+
         var golden = GoldenProfileReader.read(name, OWNER);
-        var state = select(golden, language, pages).orElseThrow();
+        var state = select(golden, template, language, pages).orElseThrow();
         List<UUID> selected = idsOf(state);
 
         for (Atom atom : golden.atoms()) {
@@ -255,13 +300,13 @@ class GoldenSelectionTest {
         assertEntriesAreWholeOrAbsent(golden.tree(), selected, name);
     }
 
-    @ParameterizedTest(name = "{0}, {1}, {2} page(s)")
+    @ParameterizedTest(name = "{1}: {0}, {2}, {3} page(s)")
     @MethodSource("everyProfileAtEveryLimit")
     void nothingFromAnInactiveSectionOrEntryReachesThePage(
-            String name, String language, int pages) {
+            String name, String template, String language, int pages) {
 
         var golden = GoldenProfileReader.read(name, OWNER);
-        var state = select(golden, language, pages).orElseThrow();
+        var state = select(golden, template, language, pages).orElseThrow();
         List<UUID> selected = idsOf(state);
 
         golden.tree().sections().forEach(section -> {
@@ -302,14 +347,37 @@ class GoldenSelectionTest {
     }
 
     private static Result<SelectionState> select(
+            GoldenProfile golden, String template, String language, int pages) {
+
+        return SelectionPhase.select(request(golden, template, language, pages));
+    }
+
+    /** The default template, for the cases that are about one fixture rather than one page. */
+    private static Result<SelectionState> select(
             GoldenProfile golden, String language, int pages) {
 
-        return SelectionPhase.select(request(golden, language, pages));
+        return select(golden, "classic", language, pages);
+    }
+
+    private static SelectionRequest request(
+            GoldenProfile golden, String template, String language, int pages) {
+
+        return builtRequest(golden, template, language, pages).request();
     }
 
     private static SelectionRequest request(GoldenProfile golden, String language, int pages) {
-        return SelectionRequestBuilder.build(golden.tree(), TemplateCustomization.CLASSIC,
-                CAPACITY, pages, language, Tone.FORMAL, TODAY).request();
+        return request(golden, "classic", language, pages);
+    }
+
+    private static SelectionRequestBuilder.BuiltRequest builtRequest(
+            GoldenProfile golden, String template, String language, int pages) {
+
+        return SelectionRequestBuilder.build(golden.tree(), TemplateRegistry.defaultsFor(template),
+                capacityOf(template), pages, language, Tone.FORMAL, TODAY);
+    }
+
+    private static CapacityModel capacityOf(String template) {
+        return TemplateRegistry.capacityOf(TemplateRegistry.defaultsFor(template)).orElseThrow();
     }
 
     private static List<UUID> idsOf(SelectionState state) {
