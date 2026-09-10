@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfile;
 import com.mustafatetik.atomcv.profile.seed.GoldenProfileReader;
+import com.mustafatetik.atomcv.rendering.model.ProfileHeaders;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.measurement.MeasurementService;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCost;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -90,9 +92,10 @@ class GoldenCostsIT {
         var measuredByTemplate = new LinkedHashMap<String, Map<String, Double>>();
         for (TemplateCustomization template : TEMPLATES) {
             Map<String, Double> measured = measure(golden, template);
-            assertThat(measured)
-                    .as("every wording came back from one %s compilation", template.costKey())
-                    .hasSameSizeAs(golden.variants());
+                assertThat(measured)
+                    .as("every wording and the header came back from one %s compilation",
+                            template.costKey())
+                    .hasSize(golden.variants().size() + 1);
             measuredByTemplate.put(template.costKey(), measured);
         }
 
@@ -117,7 +120,7 @@ class GoldenCostsIT {
         measuredByTemplate.forEach((costKey, measured) -> {
             Map<String, Double> stored = byTemplate.get(costKey);
             measured.forEach((hash, cost) -> assertThat(stored.get(hash))
-                    .as("wording %s under %s has drifted or is missing", hash.substring(0, 8), costKey)
+                    .as("%s under %s has drifted or is missing", shortly(hash), costKey)
                     .isNotNull()
                     .isCloseTo(cost, org.assertj.core.data.Offset.offset(TOLERANCE_PT)));
             assertThat(stored.keySet())
@@ -145,10 +148,17 @@ class GoldenCostsIT {
                         shapeOfAtom.getOrDefault(variant.getAtomId(), RowShape.ENTRY_BULLET)))
                 .toList();
 
-        Map<String, RenderCost> costs = measurements.measure(
-                new MeasurementRequest(items, template));
+        Map<String, RenderCost> costs = measurements.measure(new MeasurementRequest(items,
+                template, ProfileHeaders.of(golden.profile(), Locale.ENGLISH)));
 
         var byHash = new LinkedHashMap<String, Double>();
+        // The header block, measured like everything else rather than taken
+        // from the template's own constant. It is text: it wraps, and the name
+        // is set at a size where a taller glyph is a taller line.
+        RenderCost header = costs.get(MeasurementRequest.HEADER_KEY);
+        if (header != null) {
+            byHash.put(GoldenProfileReader.HEADER_COST, header.heightPt());
+        }
         for (AtomVariant variant : golden.variants()) {
             RenderCost cost = costs.get(variant.getContentHash());
             if (cost != null) {
@@ -176,6 +186,11 @@ class GoldenCostsIT {
             }
         });
         return byAtom;
+    }
+
+    /** Enough of a content hash to find it, and the header block by its name. */
+    private static String shortly(String key) {
+        return key.length() > 8 ? key.substring(0, 8) : key;
     }
 
     /** Sorted, so a re-recording produces a diff a person can read. */

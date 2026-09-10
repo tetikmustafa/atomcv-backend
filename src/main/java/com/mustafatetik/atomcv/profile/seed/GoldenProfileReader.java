@@ -71,6 +71,9 @@ public final class GoldenProfileReader {
     private static final String PROFILE_PATH = "golden/profiles/%s.json";
     private static final String COSTS_PATH = "golden/profiles/%s.costs.json";
 
+    /** What the header block is filed under inside a template's costs. */
+    public static final String HEADER_COST = "header";
+
     private static final ObjectMapper JSON = new ObjectMapper()
             .registerModule(new JavaTimeModule());
 
@@ -128,6 +131,16 @@ public final class GoldenProfileReader {
                 if (cost != null) {
                     variant.recordRenderCost(costKey, cost, measuredAt);
                 }
+            }
+            // The header sits in the same map under a name no content hash can
+            // take: a hash is 64 hex characters and this is a word. It is
+            // recorded in English because that is the language the golden
+            // renders print, and a header measured in another one is a
+            // different width -- the contact labels are translated.
+            Double header = costs.get(HEADER_COST);
+            if (header != null) {
+                profile.profile().recordHeaderCost(
+                        Profile.headerKey(costKey, "en"), header);
             }
         });
     }
