@@ -10,7 +10,7 @@ import java.util.Map;
  *
  * <p>The geometry itself rather than a cost key, because the key is a summary:
  * the calibration document has to be rendered at these settings, and reading
- * "classic:v5:sans-9.5-0.65-1.25" backwards into five values would be parsing
+ * "classic:v6:sans-9.5-0.65-1.25" backwards into five values would be parsing
  * a string we wrote for people to read.
  *
  * <p>No user and no profile. A capacity belongs to a geometry -- two people at

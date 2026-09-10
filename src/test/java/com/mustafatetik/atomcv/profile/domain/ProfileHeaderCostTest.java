@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
  */
 class ProfileHeaderCostTest {
 
-    private static final String KEY = Profile.headerKey("classic:v5", "en");
+    private static final String KEY = Profile.headerKey("classic:v6", "en");
 
     @Test
     void whatWasMeasuredIsWhatComesBack() {
@@ -71,7 +71,7 @@ class ProfileHeaderCostTest {
     /** Two languages print different labels, so they are two measurements. */
     @Test
     void alanguageIsPartOfTheKey() {
-        assertThat(Profile.headerKey("classic:v5", "tr"))
-                .isNotEqualTo(Profile.headerKey("classic:v5", "en"));
+        assertThat(Profile.headerKey("classic:v6", "tr"))
+                .isNotEqualTo(Profile.headerKey("classic:v6", "en"));
     }
 }

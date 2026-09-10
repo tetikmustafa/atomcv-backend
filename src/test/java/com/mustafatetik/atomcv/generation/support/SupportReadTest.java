@@ -151,7 +151,7 @@ class SupportReadTest {
                 new StoredSelection("en", TemplateCustomization.CLASSIC,
                         new SelectionState.BudgetBreakdown(648.0, 68.4, 579.6, 0.0),
                         List.of(), List.of()),
-                new EngineVersion(null, "without-embedding", "classic:v5",
+                new EngineVersion(null, "without-embedding", "classic:v6",
                         Map.of("job_analysis", "v2")));
     }
 
