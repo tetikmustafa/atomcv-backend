@@ -70,8 +70,10 @@ public class MeasurementJobHandler implements JobHandler {
             return calibrations.run(job);
         }
         try {
-            int measured = costs.measureMissing(
-                    profiles.resolve(UserContext.of(userId)), TemplateCustomization.CLASSIC);
+            var owned = profiles.owned(UserContext.of(userId));
+            int measured = costs.measureMissing(owned.ref(), TemplateCustomization.CLASSIC,
+                    owned.profile(),
+                    java.util.Locale.forLanguageTag(owned.profile().getSourceLanguage()));
             return JobOutcome.completed(Map.of("measured", measured));
         } catch (CompilationException unavailable) {
             // The compiler is a container, and a container that is not there

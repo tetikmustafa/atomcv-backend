@@ -15,11 +15,28 @@ import java.util.Objects;
  */
 public record MeasurementRequest(
         List<MeasurableItem> items,
-        TemplateCustomization customization) {
+        TemplateCustomization customization,
+        RenderRequest.ProfileHeader header) {
+
+    /**
+     * The key the header block comes back under, which no item key can collide
+     * with: an item key is built from a UUID, and this is not one.
+     */
+    public static final String HEADER_KEY = "header";
 
     public MeasurementRequest {
         Objects.requireNonNull(customization, "customization");
         items = items == null ? List.of() : List.copyOf(items);
+    }
+
+    /** Content only, which is every caller that does not need the header measured. */
+    public MeasurementRequest(List<MeasurableItem> items, TemplateCustomization customization) {
+        this(items, customization, null);
+    }
+
+    /** Whether this request asks for anything at all. */
+    public boolean isEmpty() {
+        return items.isEmpty() && header == null;
     }
 
     /**

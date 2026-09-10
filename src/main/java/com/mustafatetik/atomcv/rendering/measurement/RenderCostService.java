@@ -2,18 +2,21 @@ package com.mustafatetik.atomcv.rendering.measurement;
 
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.Section;
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.repository.AtomRepository;
 import com.mustafatetik.atomcv.profile.repository.AtomVariantRepository;
 import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
+import com.mustafatetik.atomcv.rendering.model.ProfileHeaders;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel.RowShape;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,7 +66,18 @@ public class RenderCostService {
      * @return how many wordings were measured
      */
     @Transactional
+    /**
+     * Wordings only, for a caller with no profile entity to hand.
+     *
+     * <p>The header is left unmeasured, so selection falls back to the
+     * template's constant for it. Every generation path passes the profile.
+     */
     public int measureMissing(ProfileRef profile, TemplateCustomization customization) {
+        return measureMissing(profile, customization, null, Locale.ENGLISH);
+    }
+
+    public int measureMissing(ProfileRef profile, TemplateCustomization customization,
+            Profile head, Locale language) {
         // Resolved rather than found: a person who has just moved a slider has
         // no measured capacity yet, and this is where their atoms get costed.
         // Refusing here would have made Bolum 33.3's estimate unreachable --
@@ -79,7 +93,13 @@ public class RenderCostService {
                 .filter(variant -> !variant.getRenderCosts().containsKey(costKey))
                 .toList();
 
-        if (pending.isEmpty()) {
+        // The header is text and wraps, so it belongs to the profile and the
+        // language as much as to the geometry -- the contact labels are
+        // translated, and "E-posta" is not as wide as "Email".
+        String headerKey = headerKeyOf(costKey, language);
+        boolean headerPending = head != null && !head.getHeaderCosts().containsKey(headerKey);
+
+        if (pending.isEmpty() && !headerPending) {
             return 0;
         }
 
@@ -89,11 +109,24 @@ public class RenderCostService {
                         variant.getId().toString(), variant.getContent(),
                         shapeOfAtom.getOrDefault(variant.getAtomId(), RowShape.ENTRY_BULLET)))
                 .toList(),
-                customization);
+                customization,
+                headerPending ? ProfileHeaders.of(head, language) : null);
 
         Map<String, RenderCost> measured = measurements.measure(request);
         Instant measuredAt = Instant.now();
         int stored = 0;
+
+        if (headerPending) {
+            RenderCost header = measured.get(MeasurementRequest.HEADER_KEY);
+            if (header != null) {
+                // The whole block, from the top of the page to the baseline
+                // under it -- not a box's own height. See renderMeasurement.
+                // Inside measureMissing's own transaction, and head is a
+                // managed entity: recording it is the write.
+                head.recordHeaderCost(headerKey, header.heightPt());
+                stored++;
+            }
+        }
 
         for (AtomVariant variant : pending) {
             RenderCost cost = measured.get(variant.getId().toString());
@@ -130,6 +163,17 @@ public class RenderCostService {
      * row narrower than the page will hold. Wrong in the safe direction is
      * still wrong, and this one is wrong in the other.
      */
+    /**
+     * Where a measured header is filed: the geometry it was set at and the
+     * language its labels were printed in.
+     *
+     * <p>Public because selection has to look under the same key, and two
+     * spellings of one key is a cost that is written and never read.
+     */
+    public static String headerKeyOf(String costKey, Locale language) {
+        return Profile.headerKey(costKey, language == null ? "en" : language.toLanguageTag());
+    }
+
     private Map<UUID, RowShape> shapes(ProfileRef profile) {
         Map<UUID, SectionLayout> bySection = new HashMap<>();
         for (Section section : sections.findAll(profile)) {

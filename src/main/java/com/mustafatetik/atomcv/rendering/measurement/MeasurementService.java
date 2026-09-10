@@ -33,7 +33,7 @@ public class MeasurementService {
      *         between a background job and a generation about to start.
      */
     public Map<String, RenderCost> measure(MeasurementRequest request) {
-        if (request.items().isEmpty()) {
+        if (request.isEmpty()) {
             return Map.of();
         }
         String texLog = compiler.measure(renderer.renderMeasurement(request).value());

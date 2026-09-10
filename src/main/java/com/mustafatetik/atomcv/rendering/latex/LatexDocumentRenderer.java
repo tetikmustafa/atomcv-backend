@@ -77,6 +77,25 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         out.append("\\begin{document}\n")
                 .append("\\newsavebox{").append(BOX).append("}\n");
 
+        // The header, printed for real and then asked how tall it turned out.
+        //
+        // Not boxed like the items below it. A box reports its own dimensions
+        // and would leave out what the centre environment and the space under
+        // the name add on the page; \pagetotal after the block is the whole
+        // thing, which is what selection has to charge. It reads the same here
+        // as on the page because it is the first thing on both.
+        //
+        // Measured rather than assumed because it is text: a contact line with
+        // six fields wraps, and the name is set \Huge, where a taller glyph is
+        // a taller line. One constant for every profile was 16.3 pt short on a
+        // real one, always in the direction that overflows.
+        if (request.header() != null) {
+            header(out, request.header());
+            out.append("\\par\\typeout{ATOMCOST|")
+                    .append(MeasurementRequest.HEADER_KEY)
+                    .append("|\\the\\pagetotal|0.0pt}\n");
+        }
+
         for (MeasurementRequest.MeasurableItem item : request.items()) {
             // An \item, and the box set at \linewidth. Bolum 22.4 opens an
             // itemize with neither: LaTeX stops at "perhaps a missing \item",

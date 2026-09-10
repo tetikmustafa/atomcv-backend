@@ -5,7 +5,6 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.selection.SectionFloor;
 import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
-import com.mustafatetik.atomcv.profile.domain.Contact;
 import com.mustafatetik.atomcv.profile.domain.Entry;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
@@ -13,7 +12,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.EntryNode;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree.SectionNode;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
-import com.mustafatetik.atomcv.rendering.model.ContactKind;
+import com.mustafatetik.atomcv.rendering.model.ProfileHeaders;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.time.LocalDate;
@@ -132,47 +131,9 @@ public final class RenderPhase {
         return ordered;
     }
 
+    /** Assembled where the measurement document can build the same one. */
     private static RenderRequest.ProfileHeader header(Profile profile, Locale language) {
-        Contact contact = profile.getContact() == null ? Contact.EMPTY : profile.getContact();
-        List<RenderRequest.ContactLine> lines = new ArrayList<>();
-        addContact(lines, ContactKind.EMAIL, contact.email(), language);
-        addContact(lines, ContactKind.PHONE, contact.phone(), language);
-        addContact(lines, ContactKind.LOCATION, contact.location(), language);
-        addContact(lines, ContactKind.LINKEDIN, contact.linkedin(), language);
-        addContact(lines, ContactKind.GITHUB, contact.github(), language);
-        addContact(lines, ContactKind.WEBSITE, contact.website(), language);
-        return new RenderRequest.ProfileHeader(
-                orEmpty(contact.name()), profile.getHeadline(), lines);
-    }
-
-    private static void addContact(List<RenderRequest.ContactLine> lines,
-            ContactKind kind, String value, Locale language) {
-
-        String printed = orEmpty(value).strip();
-        if (printed.isBlank()) {
-            return;
-        }
-        lines.add(new RenderRequest.ContactLine(
-                kind.labelIn(language), printed, hrefFor(kind, printed)));
-    }
-
-    /**
-     * Where a contact line points, or nothing.
-     *
-     * <p>A phone number and a city are not links. The rest are, and the value
-     * is what the person typed — which may already carry a scheme, so one is
-     * only added when there is none. Nothing here trusts the string as LaTeX:
-     * escaping happens in the renderer, on both the href and the text.
-     */
-    private static String hrefFor(ContactKind kind, String value) {
-        return switch (kind) {
-            case EMAIL -> "mailto:" + value;
-            case PHONE, LOCATION -> "";
-            case LINKEDIN, GITHUB, WEBSITE ->
-                    value.startsWith("http://") || value.startsWith("https://")
-                            ? value
-                            : "https://" + value;
-        };
+        return ProfileHeaders.of(profile, language);
     }
 
     private static RenderRequest.RenderableEntry renderable(
