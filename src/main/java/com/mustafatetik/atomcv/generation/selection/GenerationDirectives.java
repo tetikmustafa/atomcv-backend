@@ -1,7 +1,9 @@
 package com.mustafatetik.atomcv.generation.selection;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -30,6 +32,9 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
 
     private static final GenerationDirectives NONE =
             new GenerationDirectives(List.of(), List.of());
+
+    private static final String INCLUDE = "includeAtoms";
+    private static final String EXCLUDE = "excludeAtoms";
 
     public GenerationDirectives {
         includeAtoms = distinct(includeAtoms);
@@ -71,6 +76,60 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
     /** Whether the user took this atom off this CV. */
     public boolean excludes(UUID atomId) {
         return excludeAtoms.contains(atomId);
+    }
+
+    /**
+     * The shape {@code generations.directives} holds, decided here and nowhere
+     * else.
+     *
+     * <p>The same reasoning {@code GenerationPayload} records: a reader
+     * spelling a key differently from the writer fails silently, and the
+     * failure looks like the user's edit never happening.
+     *
+     * <p>Ordered, because it is a JSONB column and the JDK's immutable maps
+     * iterate in an order salted per JVM run (CLAUDE.md).
+     */
+    public Map<String, Object> asMap() {
+        Map<String, Object> stored = new LinkedHashMap<>();
+        stored.put(INCLUDE, includeAtoms.stream().map(UUID::toString).toList());
+        stored.put(EXCLUDE, excludeAtoms.stream().map(UUID::toString).toList());
+        return stored;
+    }
+
+    /** What a row or a job payload carries, or none for a row that has neither. */
+    public static GenerationDirectives fromMap(Map<String, Object> stored) {
+        if (stored == null || stored.isEmpty()) {
+            return NONE;
+        }
+        return new GenerationDirectives(idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE));
+    }
+
+    /** This, plus one more edit. An edit is the sum of the edits before it. */
+    public GenerationDirectives and(GenerationDirectives later) {
+        if (later.isEmpty()) {
+            return this;
+        }
+        // Ordered, and the later statement wins: asking for an atom that was
+        // excluded two edits ago is how a person undoes that exclusion, and
+        // the constructor would otherwise refuse the pair outright.
+        var included = new LinkedHashSet<>(includeAtoms);
+        var excluded = new LinkedHashSet<>(excludeAtoms);
+        included.removeAll(later.excludeAtoms);
+        excluded.removeAll(later.includeAtoms);
+        included.addAll(later.includeAtoms);
+        excluded.addAll(later.excludeAtoms);
+        return new GenerationDirectives(List.copyOf(included), List.copyOf(excluded));
+    }
+
+    private static List<UUID> idsIn(Map<String, Object> stored, String key) {
+        Object value = stored.get(key);
+        if (value == null) {
+            return List.of();
+        }
+        if (!(value instanceof List<?> items)) {
+            throw new IllegalArgumentException(key + " is a list, got " + value.getClass());
+        }
+        return items.stream().map(String::valueOf).map(UUID::fromString).toList();
     }
 
     private static List<UUID> distinct(List<UUID> ids) {
