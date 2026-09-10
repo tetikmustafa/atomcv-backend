@@ -51,8 +51,43 @@ sonra da duruyor, çünkü her düzenleme sözü veren seçimden tekrar geçiyor
    Emekli satır **kaybolmuyor**: `GET /generations/{id}` ve indirme hâlâ
    çalışıyor — işverene gönderilen CV'nin durduğu söz buna dayanıyor.
 
-**Not:** Faz G'nin **doğal dil** yarısı (`POST /{id}/edits`) henüz yok. O bir
-LLM çağrısı ve kotadan düşecek; ayrı bir madde olarak gelecek.
+**Not:** Faz G'nin **doğal dil** yarısı `B-089`'da — `B-088` yazıldığında henüz
+yoktu, aynı gün indi.
+
+### B-089 · Faz G'nin doğal dil yarısı — `POST /{id}/edits`
+
+**Since:** backend `fd4368a`, `85332ba` · Aşama 4 · § 24.2
+
+**Neden:** `B-088`'in toggle'ı id istiyor; bu uç **cümle** istiyor. "Android
+maddesini çıkar ve Kubernetes olanı geri koy" tek istek. Aynı yeniden koşu
+yolundan geçiyor, yani sayfa sınırı yine korunuyor.
+
+**İstenen — dört şey:**
+
+1. **`POST /api/v1/generations/{id}/edits`** · gövde `{ instruction: string }`
+   (boş olamaz, **en fazla 500 karakter**) · **202 + job**, `B-088`'inkiyle
+   aynı SSE akışı ve aynı `supersededGenerationId`.
+
+2. **Bu uç kotadan düşüyor** — toggle'ın aksine. Bir model çağrısı, ve günün
+   üretim hakkından bir tane harcıyor. Ekranda söylenmesi gereken fark bu:
+   **elle aç/kapa bedava, cümle değil.** `429 QUOTA_EXCEEDED` dönebilir,
+   `Retry-After` taşır.
+
+3. **`EDIT_NOT_UNDERSTOOD` (422)** yeni hata kodu, `params` taşımıyor,
+   çözümü **`retry`**. Cümle hiçbir satırı adlandırmadığında dönüyor ve
+   **sık dönecek** — bu bir arıza değil, tasarım: yanlış maddeyi silmektense
+   hiçbir şey yapmamak yeğleniyor, çünkü kullanıcı fark etmeyebilir.
+   **Metniniz ne yapabildiğini söylesin**, yoksa çıkmaz sokak olur. Bu uç
+   *yapmaz*: bir maddeyi **yeniden yazmak**, tonu değiştirmek, sayfayı
+   uzatıp kısaltmak. Kota **iade ediliyor** bu durumda.
+
+4. **`GENERATION_SUPERSEDED` (409) burada da geçerli** — `B-088`'deki aynı
+   kural, aynı cümle.
+
+**Bilmenizde fayda var:** modele atom id'si hiç gösterilmiyor. Satırlar
+numaralandırılıp gösteriliyor, model sayı döndürüyor. Yani "olmayan bir
+maddeyi sildi" diye bir hata sınıfı yok; olabilecek en kötü şey yanlış ama
+**var olan** bir satır — ki kullanıcı sonucu görüyor.
 
 ---
 
