@@ -1,0 +1,50 @@
+{
+  "role" : {
+    "title" : "Senior Backend Engineer",
+    "seniority" : "senior",
+    "domain" : "Payments and backend engineering",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Unknown",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Go",
+    "canonical" : "go",
+    "importance" : "critical"
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : "high"
+  }, {
+    "name" : "observability tooling",
+    "canonical" : "observability",
+    "importance" : "high"
+  }, {
+    "name" : "track record of shipping",
+    "canonical" : "software delivery",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Kubernetes",
+    "canonical" : "kubernetes",
+    "importance" : null
+  }, {
+    "name" : "Terraform",
+    "canonical" : "terraform",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Design and operate distributed services in Go.", "Own the reliability of a high-throughput ledger.", "Mentor other engineers as the team grows." ],
+  "keywords" : [ "backend engineering", "payments", "distributed services", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "kubernetes", "terraform", "production systems" ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Direct, concise, and professional, with an emphasis on ownership and production experience.",
+  "jdLanguage" : "en",
+  "confidence" : 0.96,
+  "extractionNotes" : [ "The posting requires several years of experience but does not provide a numeric minimum.", "Company name, company size, employment type, and work mode are not specified.", "Applicants are asked to include a short note about systems they have operated." ]
+}

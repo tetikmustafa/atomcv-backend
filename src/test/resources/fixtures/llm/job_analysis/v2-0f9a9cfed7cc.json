@@ -1,0 +1,58 @@
+{
+  "role" : {
+    "title" : "Product Manager - Mobile Games",
+    "seniority" : "junior",
+    "domain" : "Hybrid-casual mobile puzzle games",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "Surpass Games",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Product management",
+    "canonical" : "product management",
+    "importance" : "critical"
+  }, {
+    "name" : "Data analysis",
+    "canonical" : "data analysis",
+    "importance" : "high"
+  }, {
+    "name" : "A/B testing",
+    "canonical" : "a/b testing",
+    "importance" : "high"
+  }, {
+    "name" : "Statistical analysis",
+    "canonical" : "statistical analysis",
+    "importance" : "high"
+  }, {
+    "name" : "QA testing",
+    "canonical" : "quality assurance testing",
+    "importance" : "high"
+  }, {
+    "name" : "Cross-functional collaboration",
+    "canonical" : "cross-functional collaboration",
+    "importance" : "high"
+  }, {
+    "name" : "Open communication",
+    "canonical" : "communication",
+    "importance" : "high"
+  }, {
+    "name" : "Creative problem-solving",
+    "canonical" : "creative problem-solving",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ ],
+  "responsibilities" : [ "Follow every stage of the game development process, beginning with game ideation.", "Define and shape the product vision in alignment with mobile player needs and business goals.", "Design unique, enjoyable, and engaging game features and levels.", "Perform quality assurance tests to identify and resolve issues.", "Analyze datasets to optimize key game performance indicators.", "Plan, execute, and monitor A/B tests and derive actionable insights through statistical analysis.", "Monitor mobile gaming market trends and actively play and analyze games.", "Collaborate with Development, Art, and Data teams." ],
+  "keywords" : [ "mobile gaming", "hybrid-casual games", "puzzle games", "game development", "game ideation", "product vision", "game features", "level design", "quality assurance", "data analysis", "game KPIs", "a/b testing", "statistical analysis", "market trends", "cross-functional collaboration", "player experience" ],
+  "experienceYears" : {
+    "min" : 0,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Ambitious, energetic, collaborative, ownership-driven, and passionate about setting high standards in mobile gaming.",
+  "jdLanguage" : "en",
+  "confidence" : 0.92,
+  "extractionNotes" : [ "The posting does not provide an explicit job title; the title is inferred from the stated product vision, product management interest, and game development responsibilities.", "The role is entry-level because the posting explicitly seeks a fresh graduate.", "Employment type and work mode are not explicitly stated; the centrally located office is presented as a benefit rather than a clear onsite requirement.", "No preferred qualifications or language requirements are identified." ]
+}
