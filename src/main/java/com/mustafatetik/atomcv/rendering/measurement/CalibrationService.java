@@ -72,6 +72,9 @@ public class CalibrationService {
                     customization.costKey());
             return Optional.empty();
         }
+        if (ranPastThePage(probes)) {
+            return Optional.empty();
+        }
         return Optional.of(derive(probes));
     }
 
@@ -136,6 +139,62 @@ public class CalibrationService {
                 probes.get("itembaselineskip"),
                 fixed);
     }
+
+    /**
+     * Whether the calibration document overflowed onto a second page.
+     *
+     * <p><strong>Every number here is a difference between two readings of
+     * {@code \pagetotal}, and that counts the page it is on.</strong> When the
+     * document breaks, the reading after the break is small and the difference
+     * comes out hugely negative — a project heading measured at −646.7pt, which
+     * is what a roomy geometry produced the first time one was tried.
+     *
+     * <p>Refused rather than repaired. A capacity is what the page guarantee is
+     * made against; storing one with a negative six hundred in it would charge
+     * a piece of furniture as a credit and over-fill every page at those
+     * settings, and nothing downstream would ever say so. Empty means "nobody
+     * has measured this", the caller falls back to
+     * {@link CapacityEstimator}'s scaled guess with its margin, and the person
+     * still gets a CV.
+     *
+     * <p>The threshold is zero rather than a tolerance: the probes are laid out
+     * in the order the page is built, so no honest pair of them runs backwards.
+     * A piece of furniture can cost negative points — several do, and they are
+     * single digits — but the page position between two probes only ever moves
+     * forward.
+     */
+    private static boolean ranPastThePage(Map<String, Double> probes) {
+        for (String[] pair : ORDERED_PROBES) {
+            Double before = probes.get(pair[0]);
+            Double after = probes.get(pair[1]);
+            if (before != null && after != null && after < before) {
+                log.warn("The calibration document ran past its page between {} and {}"
+                        + " ({} to {}); this geometry cannot be measured",
+                        pair[0], pair[1], before, after);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The probes in the order the page lays them down, pairwise. */
+    private static final String[][] ORDERED_PROBES = {
+            {"start", "afterHeaderBlock"},
+            {"afterHeaderBlock", "afterSection"},
+            {"afterSection", "afterListUnderSection"},
+            {"afterListUnderSection", "beforeThreeUnderSection"},
+            {"beforeThreeUnderSection", "afterThreeUnderSection"},
+            {"afterThreeUnderSection", "beforeBareEntry"},
+            {"beforeBareEntry", "afterBareEntry"},
+            {"beforeOneEntry", "afterOneEntry"},
+            {"beforeEntryThreeItems", "afterEntryThreeItems"},
+            {"beforeTwoEntries", "afterTwoEntries"},
+            {"beforeOneProject", "afterOneProject"},
+            {"beforeTwoProjects", "afterTwoProjects"},
+            {"beforeParagraphOne", "afterParagraphOne"},
+            {"beforeInlineOne", "afterInlineOne"},
+            {"beforeInlineThree", "afterInlineThree"},
+    };
 
     private static double delta(Map<String, Double> probes, String from, String to) {
         Double before = probes.get(from);

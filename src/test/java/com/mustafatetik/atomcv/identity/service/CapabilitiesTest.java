@@ -175,7 +175,7 @@ class CapabilitiesTest {
         // registry: this list is published to the frontend, and a test that
         // read the same source as the code would agree with it about a
         // template nobody had measured.
-        assertThat(anonymous).containsExactly("classic", "compact");
+        assertThat(anonymous).containsExactly("classic", "compact", "modern");
         assertThat(anonymous).isSorted();
     }
 

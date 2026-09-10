@@ -59,6 +59,22 @@ public record TemplateCustomization(
     public static final TemplateCustomization COMPACT = new TemplateCustomization(
             "compact", FontFamily.MODERN, 10.0, 0.4, 0.95, HexColor.of("000000"));
 
+    /**
+     * Modern at its own settings (Bolum 33.5).
+     *
+     * <p>The only template whose accent is not black, and the only reason it
+     * is a template rather than a preset: a coloured rule cannot be reached
+     * from a slider, because the slider sets a colour classic and compact then
+     * draw in black anyway.
+     *
+     * <p>Roomier than classic on both counts a slider can reach -- a 0.6in
+     * margin and 1.05 leading -- which with the preamble's halved negative
+     * spacing lands near Bolum 33.5's fifty lines against classic's
+     * fifty-four.
+     */
+    public static final TemplateCustomization MODERN = new TemplateCustomization(
+            "modern", FontFamily.MODERN, 11.0, 0.55, 1.0, HexColor.of("1D4ED8"));
+
     public TemplateCustomization {
         Objects.requireNonNull(baseTemplateId, "baseTemplateId");
         fontFamily = fontFamily == null ? FontFamily.SERIF : fontFamily;

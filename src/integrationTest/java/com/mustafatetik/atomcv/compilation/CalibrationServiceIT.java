@@ -71,7 +71,10 @@ class CalibrationServiceIT extends AbstractLatexTest {
      */
     @Test
     void ameasuresAgeometryNobodyHasCompiledBefore() {
-        var wider = new TemplateCustomization("classic", FontFamily.MODERN, 11.0, 0.7, 1.0,
+        // 0.55 rather than 0.7: past about 0.6 the calibration document runs
+        // off its page and cannot be measured at all, which
+        // ModernCalibrationIT says out loud.
+        var wider = new TemplateCustomization("classic", FontFamily.MODERN, 11.0, 0.55, 1.0,
                 HexColor.of("000000"));
 
         var measured = calibration.measure(wider).orElseThrow();
@@ -85,11 +88,11 @@ class CalibrationServiceIT extends AbstractLatexTest {
         // one that can be trusted. Guessed at twice here before the compiler
         // was asked.
         assertThat(classic.pageTextHeightPt() - measured.pageTextHeightPt())
-                .as("the page got shorter by about two tenths of an inch")
-                .isCloseTo(28.8, Offset.offset(0.5));
+                .as("the page got shorter by about a twentieth of an inch at two edges")
+                .isCloseTo(7.2, Offset.offset(0.5));
         assertThat(classic.textWidthPt() - measured.textWidthPt())
                 .as("and narrower by the same")
-                .isCloseTo(28.8, Offset.offset(0.5));
+                .isCloseTo(7.2, Offset.offset(0.5));
         // The furniture is not simply scaled: it is measured, and a heading
         // still costs what a heading costs at this font size.
         assertThat(measured.fixedCost(CapacityModel.SECTION_HEADER))
