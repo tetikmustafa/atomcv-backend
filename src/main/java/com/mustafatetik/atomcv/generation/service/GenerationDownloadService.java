@@ -3,6 +3,8 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
 import com.mustafatetik.atomcv.generation.domain.Generation;
+import com.mustafatetik.atomcv.rendering.docx.DocxDocumentWriter;
+import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.generation.domain.RenderedContent;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
@@ -36,11 +38,13 @@ import org.springframework.stereotype.Service;
 public class GenerationDownloadService {
 
     private final GenerationRepository generations;
+    private final DocxDocumentWriter docx;
     private final DocumentRenderer renderer;
     private final LatexCompilerClient compiler;
 
     GenerationDownloadService(GenerationRepository generations, DocumentRenderer renderer,
-            LatexCompilerClient compiler) {
+            LatexCompilerClient compiler, DocxDocumentWriter docx) {
+        this.docx = docx;
 
         this.generations = generations;
         this.renderer = renderer;
@@ -59,16 +63,42 @@ public class GenerationDownloadService {
      *         pipeline failure.
      */
     public Result<byte[]> render(Generation generation) {
-        RenderedContent content = generation.getContentSnapshot();
-        StoredSelection selection = generation.getSelectionState();
-        var request = content.toRenderRequest(
-                selection.customization(), java.util.Locale.forLanguageTag(selection.language()));
-
         try {
-            return Result.ok(compiler.compile(renderer.renderFinal(request).value()).pdf());
+            return Result.ok(compiler.compile(
+                    renderer.renderFinal(requestFor(generation)).value()).pdf());
         } catch (CompilationException failed) {
             return Result.err(
                     new PipelineError.CompilationFailed(failed.kind(), failed.log()));
         }
+    }
+
+    /**
+     * The same CV as a Word document (Bolum 22.6).
+     *
+     * <p>No compiler and no failure to report: POI writes the package
+     * itself, so unlike the PDF this cannot come back as a compilation
+     * error.
+     *
+     * <p><strong>The page guarantee does not travel with it.</strong> The
+     * atoms are the ones that fit a LaTeX page, and Word may set them in a
+     * little more or less room -- Bolum 22.6 calls the guarantee approximate
+     * here and the frontend is told to say so (B-094).
+     */
+    public byte[] renderDocx(Generation generation) {
+        return docx.write(requestFor(generation));
+    }
+
+    /**
+     * What was printed, read off the snapshot rather than off today's profile.
+     *
+     * <p>Shared by both formats on purpose: two readings of one row would be
+     * two documents, and the whole reason the snapshot exists is that the text
+     * under an atom keeps changing (EK D.6.3).
+     */
+    private static RenderRequest requestFor(Generation generation) {
+        RenderedContent content = generation.getContentSnapshot();
+        StoredSelection selection = generation.getSelectionState();
+        return content.toRenderRequest(
+                selection.customization(), java.util.Locale.forLanguageTag(selection.language()));
     }
 }

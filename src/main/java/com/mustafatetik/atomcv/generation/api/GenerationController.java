@@ -124,6 +124,10 @@ public class GenerationController {
     /** The ceiling a caller may ask for. Beyond it the request is clamped, not refused. */
     private static final int MAX_PAGE_SIZE = 100;
 
+    /** What a .docx is, spelled out because MediaType has no constant for it. */
+    private static final MediaType DOCX_MEDIA_TYPE = MediaType.parseMediaType(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
     /**
      * Published on every 429 here, because a header nobody documented is a
      * header nobody reads (F-021).
@@ -321,14 +325,21 @@ public class GenerationController {
     }
 
     @Operation(
-            summary = "Download a generation as a PDF",
+            summary = "Download a generation, as a PDF or a Word document",
             description = """
                     Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.
 
-                    No LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.""")
+                    No LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.
+
+                    `format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The document",
                     content = @Content(mediaType = MediaType.APPLICATION_PDF_VALUE)),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — a format that is not "
+                            + "`pdf` or `docx`",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "404",
                     description = "No such generation, or it belongs to someone else",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
@@ -338,8 +349,10 @@ public class GenerationController {
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-    @GetMapping(path = "/{generationId}/download", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> download(@PathVariable UUID generationId) {
+    @GetMapping(path = "/{generationId}/download")
+    public ResponseEntity<byte[]> download(
+            @PathVariable UUID generationId,
+            @RequestParam(required = false, defaultValue = "pdf") String format) {
         Generation generation = forCaller(generationId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 
@@ -351,6 +364,22 @@ public class GenerationController {
                     new Resolution(ResolutionAction.RETRY, null));
         }
 
+        if ("docx".equalsIgnoreCase(format)) {
+            // No compilation and so no failure to present: POI writes the
+            // package itself. The page guarantee does not travel with it
+            // either (Bolum 22.6) -- the atoms are the ones that fit a LaTeX
+            // page, and Word may set them in a little more or less room.
+            return attachment(downloads.renderDocx(generation), DOCX_MEDIA_TYPE, "docx");
+        }
+        if (!"pdf".equalsIgnoreCase(format)) {
+            // Bolum 35.3's map offers `source` too, and nothing serves it yet.
+            // Named rather than ignored: a client asking for one and silently
+            // getting a PDF would ship a .tex button that downloads a PDF.
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("format"))
+                    .build());
+        }
+
         Result<byte[]> pdf = downloads.render(generation);
         byte[] bytes = switch (pdf) {
             case Result.Ok<byte[]> ok -> ok.value();
@@ -358,10 +387,19 @@ public class GenerationController {
                     errors.present(failed.error(), pageHeightPt()));
         };
 
+        return attachment(bytes, MediaType.APPLICATION_PDF, "pdf");
+    }
+
+    /**
+     * One body, one filename rule (absolute rule 4: no name in it).
+     */
+    private static ResponseEntity<byte[]> attachment(
+            byte[] bytes, MediaType type, String extension) {
+
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
+                .contentType(type)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + filename() + "\"")
+                        "attachment; filename=\"" + filename(extension) + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(bytes);
     }
@@ -696,8 +734,8 @@ public class GenerationController {
      * The filename carries a date and nothing else — a name in it would put
      * personal data into download folders and proxy logs (absolute rule 4).
      */
-    private static String filename() {
-        return "atomcv-cv-" + LocalDate.now() + ".pdf";
+    private static String filename(String extension) {
+        return "atomcv-cv-" + LocalDate.now() + "." + extension;
     }
 
     private static double pageHeightPt() {
