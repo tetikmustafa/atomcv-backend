@@ -47,15 +47,23 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * the two within three percent.
  *
  * <p><strong>Only the templates whose promise has been confirmed.</strong>
- * Running this across all three on 2026-09-10 is what found that compact's
- * does not hold: it under-predicts a real page on every golden profile that
- * fits one — by 12.9 pt on minimal_edge and 45.6 pt on senior_backend_tr, 4%
- * to 12% — and master_cv_en runs onto a second page under it. Modern holds
- * except on stress_long_career, which also runs onto a second page. Both are
- * shipped, so this is a live defect rather than a gap in the fixtures, and
- * {@link #TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE} is where it is written down
- * rather than in a comment somebody can lose: adding a template back is one
- * word, and until then this file names the ones that are missing.
+ * Running this across all three on 2026-09-10 found that compact's did not
+ * hold, and the largest cause has since been fixed: a section heading that
+ * follows a list costs ten points more in compact than one at the top of the
+ * page, and the calibration document only ever measured the second position.
+ * Six of the seven profiles are inside three percent now and master_cv_en no
+ * longer runs onto a second page.
+ *
+ * <p>What is left is smaller and is not compact's: senior_backend_tr misses by
+ * 3.7%, and most of that is a header block measured at 65.3 pt against a model
+ * that charges a fixed 48.99 for every profile. The real one grows with the
+ * contact line and the headline, so it is under-charged for anyone whose header
+ * wraps -- in every template, classic included, where offsetting errors hide
+ * it. Modern still runs stress_long_career onto a second page for a reason
+ * nothing here has isolated yet.
+ *
+ * <p>So the list below stays short, and the test under it names what is
+ * missing rather than leaving a comment somebody can lose.
  */
 @Tag("latex")
 @Testcontainers
@@ -105,8 +113,8 @@ class MeasurementDriftIT {
                 .toList();
 
         assertThat(missing)
-                .as("compact and modern under-fill their model against the real compiler"
-                        + " (measured 2026-09-10); anything else here is new")
+                .as("compact and modern each have one profile left outside the three"
+                        + " percent; anything else here is new")
                 .containsExactly("compact", "modern");
     }
 
