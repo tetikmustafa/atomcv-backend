@@ -15,8 +15,8 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
+import com.mustafatetik.atomcv.rendering.measurement.Capacities;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
-import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -57,9 +57,12 @@ public class GenerationRerunService {
     private static final Logger log = LoggerFactory.getLogger(GenerationRerunService.class);
 
     private final ProfileAssembler assembler;
+    private final Capacities capacities;
     private final GenerationPipeline pipeline;
 
-    GenerationRerunService(ProfileAssembler assembler, GenerationPipeline pipeline) {
+    GenerationRerunService(ProfileAssembler assembler, GenerationPipeline pipeline,
+            Capacities capacities) {
+        this.capacities = capacities;
         this.assembler = assembler;
         this.pipeline = pipeline;
     }
@@ -86,7 +89,7 @@ public class GenerationRerunService {
         GenerationOptions options = new GenerationOptions(
                 maxPagesOf(parent), snapshot.language(), snapshot.customization());
 
-        CapacityModel capacity = TemplateRegistry.capacityOf(options.customization())
+        CapacityModel capacity = capacities.find(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This customization has never been calibrated; measure it first"));
 

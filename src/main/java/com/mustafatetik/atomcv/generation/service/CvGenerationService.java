@@ -13,8 +13,8 @@ import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
+import com.mustafatetik.atomcv.rendering.measurement.Capacities;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
-import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.Clock;
@@ -44,6 +44,7 @@ public class CvGenerationService {
     private static final Logger log = LoggerFactory.getLogger(CvGenerationService.class);
 
     private final ProfileResolver profiles;
+    private final Capacities capacities;
     private final ProfileAssembler assembler;
     private final RenderCostService renderCosts;
     private final GenerationPipeline pipeline;
@@ -54,7 +55,9 @@ public class CvGenerationService {
             ProfileAssembler assembler,
             RenderCostService renderCosts,
             GenerationPipeline pipeline,
-            Clock clock) {
+            Clock clock,
+            Capacities capacities) {
+        this.capacities = capacities;
 
         this.profiles = profiles;
         this.assembler = assembler;
@@ -77,7 +80,7 @@ public class CvGenerationService {
                 .withMaxPages(maxPages)
                 .withLanguage(language);
 
-        CapacityModel capacity = TemplateRegistry.capacityOf(options.customization())
+        CapacityModel capacity = capacities.find(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This customization has never been calibrated; measure it first"));
 
