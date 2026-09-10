@@ -3,7 +3,7 @@
 #
 #   Kabuk 1:  make dev-full          # containers
 #   Kabuk 2:  make record            # backend, local+local-record -- REAL calls
-#   Kabuk 3:  ./scripts/dev-record.sh /c/Users/tetik/Desktop/cv.pdf
+#   Kabuk 3:  ./scripts/dev-record.sh /c/Users/tetik/Desktop/cv.pdf [ilan.txt] ["cumle"]
 #
 # COSTS MONEY. Every phase below is a real provider call at the configured
 # model's price. It is meant to be run once, deliberately, and then never again
@@ -32,12 +32,19 @@ count_fixtures() {
     find "$FIXTURES" -name '*.json' | wc -l | tr -d ' '
 }
 
-[ -n "$CV" ] || die "Kullanim: ./scripts/dev-record.sh <cv-dosyasi> [ilan.txt]
+[ -n "$CV" ] || die "Kullanim: ./scripts/dev-record.sh <cv-dosyasi> [ilan.txt] [\"duzenleme cumlesi\"]
 Ornek: ./scripts/dev-record.sh /c/Users/tetik/Desktop/cv.pdf
-       ./scripts/dev-record.sh ~/Desktop/cv.pdf ~/Desktop/ilan.txt"
+       ./scripts/dev-record.sh ~/Desktop/cv.pdf ~/Desktop/ilan.txt
+       ./scripts/dev-record.sh ~/Desktop/cv.pdf ~/Desktop/ilan.txt \"android maddesini cikar\""
 [ -f "$CV" ] || die "Dosya yok: $CV"
 POSTING_FILE=${2:-}
 [ -z "$POSTING_FILE" ] || [ -f "$POSTING_FILE" ] || die "Ilan dosyasi yok: $POSTING_FILE"
+
+# Bolum 24.2's parse is asked about *your* CV, so a default sentence is a guess
+# about somebody else's career. This one names nothing on purpose: it is the
+# `understood: false` case, which is a real answer worth a fixture but not the
+# interesting one. Pass a sentence that names a bullet you can see.
+EDIT=${3:-}
 
 curl -sf --max-time 3 "$API/actuator/health" > /dev/null \
     || die "Backend cevap vermiyor. Baska bir kabukta: make record"
@@ -151,6 +158,37 @@ if [ -z "$JOB" ]; then
 fi
 await "$JOB" "uretim"
 
+# Bolum 24.2. The parse is shown the lines of *this* generation, numbered, so
+# the fixture key is a digest of this profile's page -- it replays here and
+# nowhere else. What this leg is for is the other thing: seeing whether the
+# prompt gets the right numbers out of a real model at all.
+say "3. selection_edit -- Faz G'nin cumlesi"
+GENERATION=$(curl -s -b "$JAR" "$API/api/v1/jobs/$JOB" | json "d.get('generationId','')")
+if [ -z "$GENERATION" ]; then
+    warn "  uretim bir generationId birakmadi -- Faz G atlaniyor"
+elif [ -z "$EDIT" ]; then
+    warn "  cumle verilmedi, atlaniyor. Uretilen CV'yi ac, bir maddeyi sec ve:"
+    warn "    ./scripts/dev-record.sh $CV ${POSTING_FILE:-<ilan>} \"o maddeyi cikar\""
+    warn "  (bu adim kendi profilinin sayfasina bagli: uydurma bir cumle"
+    warn "   EDIT_NOT_UNDERSTOOD doner, ki o da gecerli bir cevap)"
+else
+    echo "  uretim: $GENERATION"
+    BODY=$(python -c "
+import json,sys
+print(json.dumps({'instruction': sys.argv[1]}))
+" "$EDIT" | post -X POST "$API/api/v1/generations/$GENERATION/edits"         -H 'Content-Type: application/json' -d @-)
+    JOB=$(jobIdIn "$BODY")
+    if [ -z "$JOB" ]; then
+        warn "  Duzenleme kabul edilmedi:"
+        echo "    $BODY"
+    else
+        await "$JOB" "duzenleme"
+        warn "  NOT: 'failed' + EDIT_NOT_UNDERSTOOD bir ariza degil -- cumle"
+        warn "  hicbir satiri adlandirmadi demektir, ve cagri yapildigi icin"
+        warn "  fixture yine de yazilmis olur."
+    fi
+fi
+
 AFTER=$(count_fixtures)
 say "Sonuc"
 echo "fixture: $BEFORE -> $AFTER"
@@ -161,7 +199,7 @@ if [ "$AFTER" -gt "$BEFORE" ]; then
     # prompts behind it unrecorded -- and the run still looks like a success
     # because one file appeared. Name what is missing instead.
     MISSING=''
-    for prompt in job_analysis profile_extraction bullet_rewrite about_synthesis cover_letter; do
+    for prompt in job_analysis profile_extraction bullet_rewrite about_synthesis cover_letter selection_edit; do
         [ -d "$FIXTURES/$prompt" ] || MISSING="$MISSING $prompt"
     done
     if [ -n "$MISSING" ]; then
@@ -172,10 +210,10 @@ if [ "$AFTER" -gt "$BEFORE" ]; then
         warn "  ./scripts/dev-record.sh $CV ~/Desktop/ilan.txt"
     else
         echo
-        echo "Bes promptun besi de kayitli."
+        echo "Alti promptun altisi da kayitli."
     fi
     echo
-    echo "Simdi: sh ./gradlew latexTest   (48/48 bekleniyor)"
+    echo "Simdi: sh ./gradlew latexTest   (71/71 bekleniyor)"
     echo "Ve kullandigin ilani sakla -- fixture anahtari tam o metnin ozetinden turuyor."
 else
     warn "Hicbir sey kaydedilmedi. Neredeyse kesin sebep: backend local-record"
