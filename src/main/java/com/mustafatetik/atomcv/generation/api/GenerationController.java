@@ -8,9 +8,11 @@ import com.mustafatetik.atomcv.generation.api.dto.FeedbackResponse;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationPage;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
+import com.mustafatetik.atomcv.generation.api.dto.SelectionEditRequest;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.repository.GenerationCursor;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterDraft;
@@ -18,6 +20,7 @@ import com.mustafatetik.atomcv.generation.service.CoverLetterRegenerationService
 import com.mustafatetik.atomcv.generation.service.FeedbackService;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
+import com.mustafatetik.atomcv.generation.service.SelectionEditService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
@@ -49,6 +52,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
@@ -94,6 +98,7 @@ public class GenerationController {
     private final GenerationRepository generations;
     private final CoverLetterRegenerationService coverLetters;
     private final RateLimiter rateLimiter;
+    private final SelectionEditService edits;
     private final FeedbackService feedback;
     private final Clock clock;
     private final ErrorPresenter errors;
@@ -138,6 +143,7 @@ public class GenerationController {
             AnonymousGenerations anonymousRecords,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
+            SelectionEditService edits,
             RateLimiter rateLimiter, FeedbackService feedback, Clock clock,
             ErrorPresenter errors) {
 
@@ -149,6 +155,7 @@ public class GenerationController {
         this.downloads = downloads;
         this.generations = generations;
         this.coverLetters = coverLetters;
+        this.edits = edits;
         this.rateLimiter = rateLimiter;
         this.feedback = feedback;
         this.clock = clock;
@@ -354,6 +361,94 @@ public class GenerationController {
                         "attachment; filename=\"" + filename() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(bytes);
+    }
+
+    @Operation(
+            summary = "Keep or drop atoms by hand, and re-make the CV",
+            description = """
+                    Bolum 24.4. An edit applies to the **selection state**, \
+                    never to the rendered document — which is what keeps the \
+                    page limit true after twenty of them: every edit goes \
+                    back through the selection that made the promise.
+
+                    Answers 202 with a job, like a generation, because it \
+                    re-runs the renderer and a real compiler. It does not \
+                    re-run Faz A or Faz B — the posting was read once and the \
+                    profile ranked against it once, and a toggle changes \
+                    neither answer — and Faz D carries the wording it already \
+                    wrote. **No model call, and nothing off the day's \
+                    allowance.**
+
+                    The job's terminal event names a **new** generation. The \
+                    edited one stays, marked superseded, and its id comes \
+                    back as `supersededGenerationId`.
+
+                    An atom this generation never weighed is refused rather \
+                    than ignored, because ignoring it would answer 202 and \
+                    hand back the same document.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — an empty edit, an atom named in "
+                            + "both lists, or one this generation never weighed",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409",
+                    description = "GENERATION_SUPERSEDED — a newer generation has "
+                            + "replaced this one; edit that",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{generationId}/selection", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AcceptedJobResponse> editSelection(
+            @PathVariable UUID generationId,
+            @Valid @RequestBody SelectionEditRequest request) {
+
+        // Scoped, and it is the IDOR defence here: an edit of somebody else's
+        // generation answers 404 (absolute rule 3).
+        Generation parent = forCaller(generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (request.isEmpty()) {
+            // Queuing it would spend a compilation to produce the document the
+            // caller is already looking at.
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("include", "exclude"))
+                    .build());
+        }
+
+        GenerationDirectives asked;
+        try {
+            asked = new GenerationDirectives(request.include(), request.exclude());
+        } catch (IllegalArgumentException both) {
+            // One atom in both lists. The record refuses it rather than
+            // picking, because whichever we picked would be wrong half the
+            // time -- and only a client can send it.
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("include", "exclude"))
+                    .build());
+        }
+
+        if (edits.isStale(parent)) {
+            throw ApiException.of(ErrorCode.GENERATION_SUPERSEDED);
+        }
+
+        List<String> unknown = edits.unknownIn(parent, asked);
+        if (!unknown.isEmpty()) {
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", unknown)
+                    .build());
+        }
+
+        Job job = edits.enqueue(JobOwner.of(currentUser), parent, asked);
+
+        return ResponseEntity.accepted()
+                .location(URI.create("/api/v1/jobs/" + job.getId()))
+                .body(AcceptedJobResponse.of(job));
     }
 
     @Operation(
