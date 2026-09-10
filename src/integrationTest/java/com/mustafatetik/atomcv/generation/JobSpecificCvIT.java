@@ -226,7 +226,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
                 String.class, generationId))
                 .as("the sliders reached the document rather than falling back")
-                .isEqualTo("classic:v4:sans-9.5-0.60-1.10");
+                .isEqualTo("classic:v5:sans-9.5-0.60-1.10");
         assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
     }
 
@@ -256,7 +256,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 Integer.class, generationId)).isEqualTo(1);
         assertThat(jdbc.queryForObject(
                 "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
-                String.class, generationId)).isEqualTo("modern:v1");
+                String.class, generationId)).isEqualTo("modern:v2");
         assertThat(atsDefects())
                 .as("a coloured rule does not disturb the text layer")
                 .isZero();

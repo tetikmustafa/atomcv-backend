@@ -48,26 +48,36 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * the two within three percent.
  *
  * <p><strong>Only the templates whose promise has been confirmed.</strong>
- * Running this across all three found that compact's did not hold, and two
- * causes have been fixed since. A section heading that follows a list costs ten
- * points more in compact, and the calibration document only ever measured the
- * other position. The header block was one constant for every profile, and a
- * header is text: senior_backend_tr's measures 65.2 pt against a charge of
- * 48.99, because its contact line wraps.
+ * Running this across all three found that compact's did not hold and that
+ * modern ran a golden profile onto a second page. Three causes have been fixed
+ * since, and each was the same mistake in a different place: <em>a piece of
+ * furniture that carries user text was priced from something that did not.</em>
  *
- * <p>What is left is one profile per template and both are smaller than what
- * was fixed. **compact / career_changer over-predicts by 3.84%** -- it now
- * charges more than the page holds, which under-fills rather than overflows.
- * It was inside the tolerance before the header was measured, and only because
- * two errors cancelled: the header was charged 4.3 pt too little and something
- * else about 6 pt too much. Measuring the header removed one of them. The other
- * looks like 1.76 pt per section heading and per entry heading in the after-list
- * position -- both measured dearer in the calibration document than in a real
- * one -- and it is in the safe direction.
+ * <ul>
+ * <li>A section heading after a list costs ten points more in compact, and the
+ * calibration document only ever measured the other position.</li>
+ * <li>The header block was one constant per template. It is text, it wraps, and
+ * senior_backend_tr's measures 65.2 pt against a charge of 48.99.</li>
+ * <li><strong>{@code
+esumeItem} left an interword space between the wording
+ * and the negative {@code space} after it.</strong> The measurement boxed the
+ * wording without that space, so a bullet whose natural width landed inside one
+ * space of the line wrapped on the page and not in the box. Every wording in
+ * stress_long_career sat in that band under modern: 60 bullets measured at one
+ * line and set at two, which is what made the page a second one. Compact never
+ * had the space and never showed it.</li>
+ * </ul>
  *
- * <p>**modern / stress_long_career** still runs onto a second page, and nothing
- * has isolated why; modern's two heading positions are identical and its header
- * is the same as classic's, so neither fix touches it.
+ * <p>What is left is one profile per template. <strong>compact /
+ * career_changer</strong> over-predicts by 3.84% -- it charges more than the
+ * page holds, which under-fills rather than overflows, and it was inside the
+ * tolerance before only because the header's under-charge cancelled it.
+ * <strong>modern / stress_long_career</strong> drifts 6.90%, and the cause is
+ * measured rather than guessed: the residual tracks the number of entries at
+ * 12.56 pt each and is flat in the number of bullets. An entry heading carries
+ * a title, an organisation and a location -- user text again -- and it is still
+ * priced from a calibration document that puts the word "Probe" in all three.
+ * That is the same fix as the header's, one level down.
  *
  * <p>So the list below stays short, and the test under it names what is
  * missing rather than leaving a comment somebody can lose.

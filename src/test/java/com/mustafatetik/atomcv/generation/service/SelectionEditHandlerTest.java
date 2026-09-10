@@ -195,7 +195,7 @@ class SelectionEditHandlerTest {
         options.put("templateId", "classic");
         options.put("maxPages", 1);
         var record = new Generation(USER, UUID.randomUUID(), options, snapshot(),
-                new EngineVersion(EngineVersion.PIPELINE, "default", "classic:v4",
+                new EngineVersion(EngineVersion.PIPELINE, "default", "classic:v5",
                         Map.of("job_analysis", "v1")));
         record.setPageCount(1);
         return spyId(record);
