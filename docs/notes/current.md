@@ -113,6 +113,19 @@ anlamsız — doğrulayıcı reddeder, orijinal basılır.
   kurgu **çözülmeyen bir çerez**.
 
 **Sınırlar ve açıklar:**
+- **Kalibrasyon belgesi ~0.6 inç'ten ferah bir geometriye sığmıyor** (2026-09-10).
+  § 33.2 margin'i 1.0'a kadar açıyor; o aralık **kalıcı olarak tahminde**, yani
+  sayfanın %92'si harcanıyor ve tahminin güvenliği o ayarlarda **doğrulanamıyor**
+  (karşılaştırılacak ölçüm yok). Güvenli, çünkü tahmin yalnız cimri olabiliyor.
+  **Modern'in ilk taslağı bunu böyle buldu**: 0.6in/1.05'te belge on bir punto
+  taştı, `\pagetotal` sıfırlandı, bir proje başlığı **−646.7pt** ölçüldü.
+  `CalibrationService` artık geriye giden okumayı reddediyor — o olmasa Katman
+  B'nin ölçüm işi bu sayıyı `template_capacities`'e yazacaktı ve o ayardaki her
+  sayfa sessizce taşacaktı.
+  **Gerçek çözüm belgeyi sayfalara bölmek**, ama probe çiftlerinin hiçbiri bir
+  sayfa kırığını aşmamalı ve `SECTION_HEADER` kasten üstündeki bloğa bağlı
+  (`asectionHeadingCostsTheSameAfterAsectionOfEntries`) — yani klasik ve
+  kompakt'ın ölçülmüş sabitlerini de değiştirebilir. Yapılmadan önce ölçülmeli.
 - **Axiom'da loglar görünüyor** (2026-08-26); telde doğrulanması dağıtımı bekliyor.
 - **`UserScopedRepository`'de `findAll` yok** — alt sınıflar kendi bulucularını ekler.
 - **Faz D sekize kadar eşzamanlı çağrı yapıyor**, havuz 10, işçi eşzamanlılığı 2

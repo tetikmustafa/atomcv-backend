@@ -155,6 +155,34 @@ değiştirebiliyor, ve CV o ayarlarda çıkıyor — **sayfa sınırı hâlâ tu
    göstermek zorunda değilsiniz; sadece "renk değiştirmek yavaş" gibi bir
    uyarı yazmayın, doğru değil.
 
+**Ayrıca `B-092`:** üçüncü şablon `modern` indi, ve varsayılan vurgu rengi
+**siyah değil**.
+
+### B-092 · Üçüncü şablon — `modern`, ve ilk renkli varsayılan
+
+**Since:** backend `78f89eb` · Aşama 4 · § 33.5
+
+**Neden:** § 33.5'in üçüncü şablonu. Klasikten ferah (~51 madde satırı, klasik
+60), bölüm başlığının altındaki **çizgi renkli**, başlık metni siyah.
+
+**İstenen — iki şey:**
+
+1. **`capabilities.allowedTemplates` artık `["classic", "compact", "modern"]`.**
+   `B-090`'daki ile aynı mekanizma, üçüncü eleman. Şema değişmedi.
+
+2. **`modern`, varsayılan `accentColor`'ı siyah olmayan tek şablon** —
+   `1D4ED8`. Bir şablon seçicide önizleme/renk örneği gösteriyorsanız, "her
+   şablon siyah başlar" varsayımı artık yanlış. Kullanıcı yine Katman A'dan
+   değiştirebiliyor ve bu **ölçümü geçersizleştirmiyor** (`B-091`, 3. madde).
+
+**Bilinen sınır — söylüyorum ki bir uçtan beklemeyin.** § 33.2 margin'i 1.0
+inç'e kadar açıyor, ama **~0.6 inç'ten geniş bir margin ölçülemiyor**:
+kalibrasyon belgesi sayfaya sığmıyor. O aralıktaki ayarlar **her üretimde**
+tahminle koşuyor, yani sayfanın %92'si kalıcı olarak harcanıyor. Güvenli ve
+görünmez — kullanıcı yine CV alıyor — ama slider'da "bu değerden sonrası
+biraz daha az yer kullanır" gibi bir şey göstermek isterseniz o durumu
+yayımlayan bir uç **yok**, `F-nnn` ile isteyin.
+
 **Bilmenizde fayda var:** aralıklar backend'de `TemplateCustomization`'da ve
 uçta **iki kez** yazılı. Aralık dışı saklanmış eski bir tercih üretimi
 düşürmüyor, şablonun kendi ayarına düşüyor — yani bir kullanıcı asla
