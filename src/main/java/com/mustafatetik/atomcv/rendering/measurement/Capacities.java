@@ -51,4 +51,45 @@ public class Capacities {
     public boolean isMeasured(TemplateCustomization customization) {
         return find(customization).isPresent();
     }
+
+    /**
+     * A capacity to select against, measured if anybody has, estimated if not
+     * (Bolum 33.3).
+     *
+     * <p>This is where empty stops being an answer. A person who has just
+     * moved a slider is waiting, the measurement is a compilation away, and
+     * Bolum 33.3 chooses to print them a CV rather than a spinner — on an
+     * estimate, spending less of the page.
+     *
+     * <p>Still empty for a template with no measured default of its own, which
+     * would mean estimating from nothing.
+     */
+    public Optional<Resolved> resolve(TemplateCustomization customization) {
+        Optional<CapacityModel> known = find(customization);
+        if (known.isPresent()) {
+            return known.map(capacity -> new Resolved(capacity, false));
+        }
+        return CapacityEstimator.estimate(customization)
+                .map(capacity -> new Resolved(capacity, true));
+    }
+
+    /**
+     * @param estimated whether these numbers came from a compiler or from
+     *                  arithmetic. Worth carrying rather than hiding: it
+     *                  decides how much of the page the run may spend, and it
+     *                  is the honest thing to record in a trace
+     */
+    public record Resolved(CapacityModel capacity, boolean estimated) {
+
+        /**
+         * The share of the page this run allows itself.
+         *
+         * <p>Spent through the factor the compile loop already uses, so an
+         * estimated run and a run that came out too long take one road — and
+         * the loop shrinks it again if eight percent was not enough.
+         */
+        public double budgetFactor() {
+            return estimated ? CapacityEstimator.SAFE_BUDGET : 1.0;
+        }
+    }
 }

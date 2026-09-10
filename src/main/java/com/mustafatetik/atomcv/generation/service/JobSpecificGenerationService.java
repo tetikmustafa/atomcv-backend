@@ -154,9 +154,13 @@ public class JobSpecificGenerationService {
                     posting.jdLanguage().strip(), options.language());
         }
 
-        CapacityModel capacity = capacities.find(options.customization())
+        // Measured if anybody has compiled this geometry, estimated if not
+        // (Bolum 33.3). Empty now means only that the template itself has no
+        // measured default, which would be estimating from nothing.
+        Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
-                        "This customization has never been calibrated; measure it first"));
+                        "This template has never been calibrated; measure it first"));
+        CapacityModel capacity = resolved.capacity();
 
         progress.report(GenerationPhase.MEASURING.at(30));
 
@@ -228,7 +232,8 @@ public class JobSpecificGenerationService {
             return done.content();
         };
 
-        return pipeline.run(head, tree, built.request(), rewriter,
+        return pipeline.run(head, tree,
+                        built.request().withBudgetFactor(resolved.budgetFactor()), rewriter,
                         options.customization(), options.locale())
                 .map(document -> new GeneratedGeneration(
                         profile.id(), posting, options, scores.weights(),
