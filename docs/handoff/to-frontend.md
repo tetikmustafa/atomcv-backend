@@ -89,6 +89,38 @@ numaralandırılıp gösteriliyor, model sayı döndürüyor. Yani "olmayan bir
 maddeyi sildi" diye bir hata sınıfı yok; olabilecek en kötü şey yanlış ama
 **var olan** bir satır — ki kullanıcı sonucu görüyor.
 
+### B-090 · İkinci şablon indi — `compact`, ve `templateId` artık bir şey yapıyor
+
+**Since:** backend `e972432` · Aşama 4 · § 33.5, § 33.1
+
+**Neden:** Aşama 4'ün ikinci maddesi. Klasik'in yanına **kompakt** geldi:
+aynı yapı, daha sıkı geometri — sayfa ~70 madde satırı tutuyor, klasik 60.
+Çok deneyimli profiller için.
+
+**İstenen — iki şey, ikisi de yeni uç değil:**
+
+1. **`capabilities.allowedTemplates` artık `["classic", "compact"]`.** Zaten
+   registry'den türüyordu, yani şema değişmedi; **değişen, listenin artık iki
+   eleman taşıması.** Bir yerde "tek şablon var" varsayımı varsa (seçim
+   arayüzü göstermemek gibi) orası açılmalı. Liste **sıralı** ve öyle kalacak.
+
+2. **Profil tercihlerindeki `templateId` artık gerçekten etkili.** Alan
+   Bölüm 14.4'ten beri vardı ve **backend onu yok sayıyordu** — profil ne
+   derse desin her CV klasik çıkıyordu. Artık üretim onu okuyor. Yani
+   ayarlardaki şablon seçicisi (varsa) bugüne kadar sessizce hiçbir şey
+   yapmıyordu; bugünden sonra yapıyor. **Tanımadığı bir id klasiğe düşüyor**,
+   hata vermiyor.
+
+**Şablon seçimi istekte değil, tercihte.** `POST /generations` gövdesine
+şablon alanı **eklenmedi** — "bu üretim için şu şablon" diye tek seferlik bir
+seçim yok, kişi ayarından seçiyor. İhtiyaç varsa `F-nnn` ile isteyin.
+
+**Henüz yok — Katman B.** § 33.1'in font boyutu / margin / satır aralığı
+sliderları hâlâ çalışmıyor: her şablonun ölçülmüş kapasitesi **yalnız kendi
+varsayılan ayarları** için geçerli, ve ölçülmemiş bir ayarla üretim
+reddediliyor. Yani iki şablon var, altı slider yok. § 33.3'ün "yeniden
+hesaplanıyor" akışı geldiğinde ayrı bir madde olarak gelir.
+
 ---
 
 ## Dağıtım bekleyen doğrulamalar
