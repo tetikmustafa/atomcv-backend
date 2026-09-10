@@ -219,7 +219,9 @@ public class GenerationController {
 
                     Cursor pagination, not offset: the list grows from the top,                     and a page two taken after a new generation lands would                     repeat one row and hide another. Pass the `nextCursor` of                     a page back as `cursor` to get the one after it; its                     absence is the end of the history.
 
-                    `total` counts the whole account rather than the page.                     The one screen that needs it cannot page — deleting an                     account has to say what goes, and a number that meant "at                     least this many" would be worse there than none.
+                    `total` counts the whole history rather than the page.                     The one screen that needs it cannot page — deleting an                     account has to say what goes, and a number that meant "at                     least this many" would be worse there than none.
+
+                    Generations a hand edit replaced are **not listed** and not                     counted. Faz G writes a new generation per edit and retires                     the one before it, so twenty edits of one CV would otherwise                     be twenty-one rows and one of them the CV. Nothing is                     deleted: a retired row is still there and still downloadable                     by id, and deleting the account still takes it.
 
                     A row carries no posting and no letter, only whether                     there is a letter to open. The posting stays on the row                     (absolute rule 4).""")
     @ApiResponses({
