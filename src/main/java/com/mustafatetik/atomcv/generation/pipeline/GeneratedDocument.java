@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.pipeline;
 
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 
@@ -19,11 +20,11 @@ import com.mustafatetik.atomcv.rendering.model.RenderRequest;
  * @param attempts   how many compilations it took; more than one means the
  *                   measurement was optimistic and the budget had to shrink
  * @param budgetFactor the share of the page the last attempt allowed itself
- * @param rewrittenAtoms how many atoms Faz D actually replaced. Zero is a real
- *                   answer and not a missing one — general mode has no posting
- *                   to write towards — but zero <em>with</em> a posting is the
- *                   phase having quietly done nothing, which is how a scoring
- *                   run without embeddings looks from the outside
+ * @param rewritten  what Faz D replaced, by atom. Carried out whole rather
+ *                   than counted, because {@code generations.rewritten_content}
+ *                   stores it and Faz G's re-run reads it back: an edit that
+ *                   moved one bullet must not pay for every other bullet's
+ *                   sentences a second time (V11, Bolum 24)
  */
 public record GeneratedDocument(
         byte[] pdf,
@@ -32,7 +33,19 @@ public record GeneratedDocument(
         RenderRequest rendered,
         int attempts,
         double budgetFactor,
-        int rewrittenAtoms) {
+        RewrittenContent rewritten) {
+
+    /**
+     * How many atoms Faz D actually replaced.
+     *
+     * <p>Zero is a real answer and not a missing one — general mode has no
+     * posting to write towards — but zero <em>with</em> a posting is the phase
+     * having quietly done nothing, which is how a scoring run without
+     * embeddings looks from the outside.
+     */
+    public int rewrittenAtoms() {
+        return rewritten.byAtom().size();
+    }
 
     /** Shape only: the document is the user's own content. */
     @Override

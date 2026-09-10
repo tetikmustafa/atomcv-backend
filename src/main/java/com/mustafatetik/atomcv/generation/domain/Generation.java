@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.domain;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import com.mustafatetik.atomcv.shared.security.UserOwned;
 import jakarta.persistence.Column;
@@ -39,11 +40,14 @@ import org.hibernate.type.SqlTypes;
  * together in Stage 3, and until they do a {@code pdf_expires_at} would be a
  * promise nothing keeps.
  *
- * <p>Two snapshots and they answer different questions. {@code selectionState}
+ * <p>Three snapshots and they answer different questions. {@code selectionState}
  * says <em>why</em> the page looks like this — scores, rejections, the budget —
  * and is what an edit later applies to. {@code contentSnapshot} says
  * <em>what</em> was printed, and exists because the first one names atoms by id
- * while the text under those ids goes on being edited.
+ * while the text under those ids goes on being edited. {@code rewrittenContent}
+ * says which of those words were Faz D's and which atom each belongs to — the
+ * join the second one deliberately drops, and the only one an edit can carry
+ * into the run that replaces this row (V11).
  *
  * <p>No {@code @Version}: the column does not exist, and nothing updates a
  * generation concurrently — Faz G writes a <em>new</em> row and marks this one
@@ -91,6 +95,25 @@ public class Generation implements UserOwned {
     /** The words that were printed, so a download does not re-read the profile. */
     @JdbcTypeCode(SqlTypes.JSON)
     private RenderedContent contentSnapshot;
+
+    /**
+     * What Faz D wrote, by atom (V11).
+     *
+     * <p>The third snapshot, and it looks like the second one until you ask it
+     * a question the second one cannot answer. {@link #contentSnapshot} is the
+     * render — Bolum 22.2 built it to carry no ids at all — so the sentence it
+     * holds cannot be handed back to the atom it belongs to. Faz G re-runs
+     * selection, and every atom that survives the edit has to keep the wording
+     * it already has: without this column an edit of one bullet returns the
+     * whole CV in its pre-Faz-D voice, and pays a second time to avoid it.
+     *
+     * <p>Null means a row written before V11 and nothing else. Empty means no
+     * atom on this page carries a Faz D wording — general mode, an unreachable
+     * provider, every rewrite refused — and to the run that reads it back those
+     * are one answer.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private RewrittenContent rewrittenContent;
 
     private String coverLetter;
 
@@ -234,6 +257,15 @@ public class Generation implements UserOwned {
 
     public void setContentSnapshot(RenderedContent contentSnapshot) {
         this.contentSnapshot = contentSnapshot;
+    }
+
+    public RewrittenContent getRewrittenContent() {
+        return rewrittenContent;
+    }
+
+    /** What Faz G carries into the next run (V11). */
+    public void setRewrittenContent(RewrittenContent rewrittenContent) {
+        this.rewrittenContent = rewrittenContent;
     }
 
     public String getCoverLetter() {
