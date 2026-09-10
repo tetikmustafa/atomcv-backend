@@ -46,7 +46,30 @@ class CapacityEstimatorIT extends AbstractLatexTest {
 
     @Test
     void awiderMarginIsEstimatedSafely() {
-        assertSafeFor(classicAt(11.0, 0.75, 1.0));
+        assertSafeFor(classicAt(11.0, 0.55, 1.0));
+    }
+
+    /**
+     * <strong>And a margin wider than the calibration document can survive is
+     * estimated forever, which is safe and is a real limit.</strong>
+     *
+     * <p>Past about 0.6in the probe document runs off its page and
+     * {@code CalibrationService} refuses the reading rather than storing a
+     * mismeasurement. Everything above that in the slider's range — it goes to
+     * 1.0in — therefore never becomes exact: those CVs are made against the
+     * estimate with its margin, every time.
+     *
+     * <p>Safe, because the estimate is only ever too mean. Not free: the page
+     * is spent at 92% permanently, and the safety of the estimate at those
+     * settings cannot be checked the way it is checked here, because there is
+     * no measurement to check it against. Recorded rather than hidden.
+     */
+    @Test
+    void amarginTooWideToCalibrateStaysEstimated() {
+        var wide = classicAt(11.0, 0.8, 1.0);
+
+        assertThat(calibration.measure(wide)).isEmpty();
+        assertThat(CapacityEstimator.estimate(wide)).isPresent();
     }
 
     @Test
@@ -56,7 +79,7 @@ class CapacityEstimatorIT extends AbstractLatexTest {
 
     @Test
     void everyKnobAtOnceIsEstimatedSafely() {
-        assertSafeFor(classicAt(9.5, 0.65, 1.15));
+        assertSafeFor(classicAt(9.5, 0.55, 1.15));
     }
 
     /**

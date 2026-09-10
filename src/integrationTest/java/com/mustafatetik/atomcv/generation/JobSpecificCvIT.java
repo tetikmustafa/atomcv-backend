@@ -170,7 +170,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     @Test
     void thecompactTemplateProducesArealOnePagePdf() throws Exception {
         seedCareer();
-        preferCompact();
+        prefer("compact");
 
         String jobId = enqueue();
         assertThat(worker().runOne()).as("the queued generation was taken").isTrue();
@@ -226,6 +226,38 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 .as("the sliders reached the document rather than falling back")
                 .isEqualTo("classic:v4:sans-9.5-0.60-1.10");
         assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
+    }
+
+    /**
+     * Modern, as a document (Bolum 33.5).
+     *
+     * <p>The one template whose accent is not black, so this is also the only
+     * place that compiles a coloured rule at all — a {@code \color} that did
+     * not resolve would take the whole document down, and every other lane
+     * measures a CV before it is a PDF.
+     */
+    @Test
+    void themodernTemplateProducesArealOnePagePdf() throws Exception {
+        seedCareer();
+        prefer("modern");
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).as("the queued generation was taken").isTrue();
+
+        String generationId = completedGenerationId(jobId);
+        byte[] pdf = download(generationId);
+
+        assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
+        assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
+        assertThat(jdbc.queryForObject(
+                "SELECT page_count FROM generations WHERE id = ?::uuid",
+                Integer.class, generationId)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
+                String.class, generationId)).isEqualTo("modern:v1");
+        assertThat(atsDefects())
+                .as("a coloured rule does not disturb the text layer")
+                .isZero();
     }
 
     /**
@@ -319,15 +351,16 @@ class JobSpecificCvIT extends AbstractLatexTest {
 
     /** Read as bytes and decoded explicitly: the digest must not depend on a default charset. */
     /** What a person does in the settings screen, as one statement. */
-    private void preferCompact() {
+    private void prefer(String templateId) {
         jdbc.update("""
                 UPDATE profiles
                 SET preferences = jsonb_set(
                         COALESCE(preferences, '{}'::jsonb),
                         '{defaults}',
-                        '{"maxPages":1,"templateId":"compact","cvLanguage":"en","coverLetterLanguage":"auto"}'::jsonb,
+                        ('{"maxPages":1,"cvLanguage":"en","coverLetterLanguage":"auto",'
+                                || '"templateId":"' || ? || '"}')::jsonb,
                         true)
-                WHERE user_id = ?""", LocalDevUser.DEV_USER_ID);
+                WHERE user_id = ?""", templateId, LocalDevUser.DEV_USER_ID);
     }
 
     /** What a person does with the sliders, as one statement. */

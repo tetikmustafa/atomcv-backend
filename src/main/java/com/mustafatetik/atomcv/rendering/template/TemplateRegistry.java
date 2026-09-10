@@ -20,7 +20,8 @@ public final class TemplateRegistry {
      * leaves old measurements looking valid for a document that no longer
      * matches them, and the page guarantee fails quietly rather than loudly.
      */
-    private static final Map<String, Integer> VERSIONS = Map.of("classic", 4, "compact", 1);
+    private static final Map<String, Integer> VERSIONS =
+            Map.of("classic", 4, "compact", 1, "modern", 1);
 
     /**
      * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
@@ -204,6 +205,85 @@ public final class TemplateRegistry {
             """;
 
     /**
+     * Modern (Bolum 33.5): lightly coloured headings, for the technology
+     * sector.
+     *
+     * <p><strong>The colour is on the rule and not on the heading.</strong>
+     * Bolum 33.5 asks for "light", and a coloured word is not light — it is a
+     * different document. A rule carries the identity, the heading stays
+     * black, and a CV printed in black and white loses a tint rather than a
+     * weight. The accent is a slider either way (layer A), so a person who
+     * wants more can have it.
+     *
+     * <p>Classic writes {@code \\color{accent}} twice: once in the section
+     * format, which colours the words, and once before the rule. This writes
+     * it once. That is the whole visual difference — everything else here is
+     * room.
+     *
+     * <p>Roomier by design, which is the other half of Bolum 33.5's
+     * description: about fifty lines to classic's fifty-four. The negative
+     * spacing classic uses to pull its blocks together is halved rather than
+     * removed, and {@link TemplateCustomization#MODERN} adds a wider margin
+     * and looser leading on top.
+     */
+    private static final String MODERN_BASE = """
+            \\usepackage{titlesec}
+            \\usepackage{enumitem}
+            \\usepackage[hidelinks]{hyperref}
+            \\usepackage{tabularx}
+            \\pagestyle{empty}
+            \\raggedbottom
+            \\raggedright
+            \\setlength{\\tabcolsep}{0in}
+            \\urlstyle{same}
+            % No \\color in the format: the heading is black and the rule under
+            % it carries the accent. Half of classic's negative leading, which
+            % is where most of the extra room comes from.
+            \\titleformat{\\section}{%
+              \\vspace{-5pt}\\raggedright\\large\\bfseries%
+            }{}{0em}{}[\\color{accent}\\titlerule \\vspace{-1pt}]
+            \\newcommand{\\resumeItem}[1]{%
+              \\item\\small{
+                {#1 \\vspace{-2pt}}
+              }
+            }
+            \\newcommand{\\resumeSubheading}[4]{%
+              \\vspace{-1pt}\\item
+                \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+                  \\textbf{#1} & #2 \\\\
+                  \\textit{\\small#3} & \\textit{\\small #4} \\\\
+                \\end{tabular*}\\vspace{-4pt}%
+            }
+            \\newcommand{\\resumeProjectHeading}[2]{%
+                \\item
+                \\begin{tabularx}{0.97\\textwidth}{X r}
+                  \\textbf{#1} & #2 \\\\
+                \\end{tabularx}\\vspace{-3pt}%
+            }
+            \\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+            \\newcommand{\\resumeSubHeadingListStart}%
+              {\\begin{itemize}[leftmargin=0.15in, label={}]}
+            \\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
+            \\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+            \\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-3pt}}
+            \\newcommand{\\resumeParagraphListStart}%
+              {\\begin{itemize}[leftmargin=0.15in, label={}]}
+            \\newcommand{\\resumeParagraphListEnd}{\\end{itemize}}
+            \\newcommand{\\resumeInlineList}[1]%
+              {\\begin{itemize}[leftmargin=0.15in, label={}]%
+                \\small{\\item{#1}}\\end{itemize}}
+            % The name in black, like every other word on the page. An ATS
+            % cares about this line more than any other, and a colour buys
+            % nothing a reader does not already get from its size.
+            \\newcommand{\\atomcvHeader}[2]{%
+              \\begin{center}
+                \\textbf{\\Huge #1} \\\\ \\vspace{10pt}
+                \\small #2
+              \\end{center}
+            }
+            """;
+
+    /**
      * Classic at its default customization, measured against the compiler
      * rather than estimated (Bolum 26.4).
      *
@@ -298,6 +378,51 @@ public final class TemplateRegistry {
                     Map.entry(CapacityModel.INLINE_ROW, 10.44997),
                     Map.entry(CapacityModel.INLINE_LIST_OVERHEAD, -4.10499)));
 
+    /**
+     * Modern at its default customization, measured the same way the other two
+     * were (Bolum 26.4) — never estimated, never scaled from classic's.
+     *
+     * <p>About fifty-one bullet lines to a page against classic's sixty, which
+     * is where Bolum 33.5's "~50" lands once the furniture is taken out. The
+     * room is the preamble's rather than the knobs': a bullet costs a baseline
+     * and two points where classic's costs a baseline exactly, and a section
+     * heading costs seven points more.
+     *
+     * <p><strong>These are the second set of numbers this template had.</strong>
+     * The first was measured at a 0.6in margin and 1.05 leading and could not
+     * be measured at all: the calibration document ran eleven points past its
+     * page, {@code \pagetotal} reset, and a project heading came back at
+     * −646.7pt. {@code CalibrationService} refuses that now — but the lesson
+     * for a template is that its identity belongs in the preamble, where a
+     * slider cannot reach it, rather than in knobs a person could have set
+     * themselves.
+     */
+    private static final CapacityModel MODERN_CAPACITY = new CapacityModel(
+            715.47255,
+            534.79756,
+            13.60000,
+            12.00000,
+            Map.ofEntries(
+                    Map.entry(CapacityModel.HEADER_BLOCK, 63.37671),
+                    // Seven points more than classic's, which is its halved
+                    // negative leading and nothing else.
+                    Map.entry(CapacityModel.SECTION_HEADER, 27.86289),
+                    Map.entry(CapacityModel.ENTRY_HEADER, 34.19998),
+                    Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 35.17004),
+                    Map.entry(CapacityModel.PROJECT_HEADING, 22.59749),
+                    Map.entry(CapacityModel.PROJECT_HEADING_AFTER_LIST, 23.55001),
+                    Map.entry(CapacityModel.ITEMIZE_OVERHEAD, 2.54999),
+                    // A baseline and two points, where classic's bullet is a
+                    // baseline exactly: the difference between pulling back
+                    // four points after an item and pulling back two.
+                    Map.entry(CapacityModel.ITEM_LINE, 14.00000),
+                    Map.entry(CapacityModel.SECTION_ITEM_LINE, 19.00000),
+                    Map.entry(CapacityModel.SECTION_LIST_OVERHEAD, -4.95002),
+                    Map.entry(CapacityModel.SECTION_LIST_CLOSE, 12.00000),
+                    Map.entry(CapacityModel.PARAGRAPH_LIST_OVERHEAD, -1.95001),
+                    Map.entry(CapacityModel.INLINE_ROW, 12.00000),
+                    Map.entry(CapacityModel.INLINE_LIST_OVERHEAD, 7.04999)));
+
     private TemplateRegistry() {
     }
 
@@ -317,6 +442,9 @@ public final class TemplateRegistry {
         }
         if (TemplateCustomization.COMPACT.equals(customization)) {
             return java.util.Optional.of(COMPACT_CAPACITY);
+        }
+        if (TemplateCustomization.MODERN.equals(customization)) {
+            return java.util.Optional.of(MODERN_CAPACITY);
         }
         // Still equality and still exhaustive, and it has to stay that way
         // until layer B exists. Two entries do not make this a lookup by
@@ -341,9 +469,11 @@ public final class TemplateRegistry {
      * than no CV at all.
      */
     public static TemplateCustomization defaultsFor(String templateId) {
-        return "compact".equals(templateId)
-                ? TemplateCustomization.COMPACT
-                : TemplateCustomization.CLASSIC;
+        return switch (templateId == null ? "" : templateId) {
+            case "compact" -> TemplateCustomization.COMPACT;
+            case "modern" -> TemplateCustomization.MODERN;
+            default -> TemplateCustomization.CLASSIC;
+        };
     }
 
     public static Set<String> ids() {
@@ -367,6 +497,7 @@ public final class TemplateRegistry {
         return switch (templateId == null ? "" : templateId) {
             case "classic" -> CLASSIC_BASE;
             case "compact" -> COMPACT_BASE;
+            case "modern" -> MODERN_BASE;
             default -> throw new IllegalArgumentException("No such template");
         };
     }
