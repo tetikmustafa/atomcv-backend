@@ -90,6 +90,24 @@ class ArchitectureTest {
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
     /**
+     * And for rendering, which gained one with layer B.
+     *
+     * <p><strong>{@code MeasuredCapacities} is unscoped and is not a hole.</strong>
+     * The two rules above guard user data; a row in {@code template_capacities}
+     * says what a page of a given font size and margin holds, which is the same
+     * answer whoever asks. Nothing about a person can be read out of it and
+     * nothing in it can be reached by guessing an id — the key is a geometry.
+     * What this line keeps is the shape: the Spring Data interface stays behind
+     * the facade, so the day that table grows a column about somebody there is
+     * one door to put a check on.
+     */
+    @ArchTest
+    static final ArchRule renderingDataIsReachedThroughItsFacade = noClasses()
+            .that().resideInAPackage("..rendering..")
+            .and().resideOutsideOfPackage("..rendering.repository..")
+            .should().dependOnClassesThat().areAssignableTo(Repository.class);
+
+    /**
      * The unscoped queue is for workers, and a controller is not one.
      *
      * <p>{@code JobQueue} is not a Spring Data interface, so the two rules

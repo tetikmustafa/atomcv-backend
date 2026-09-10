@@ -99,8 +99,15 @@ class JobSpecificGenerationServiceTest {
         when(rewrites.rewrite(any(), any(), any(), any()))
                 .thenReturn(RewriteOutcome.of(RewrittenContent.none()));
         letters = mock(CoverLetterWriter.class);
+        // Answers out of the registry, which is what the built-in templates
+        // did before Capacities existed: these cases are about the phases, not
+        // about where a capacity is looked up.
+        var capacities = mock(com.mustafatetik.atomcv.rendering.measurement.Capacities.class);
+        when(capacities.find(any())).thenAnswer(call ->
+                com.mustafatetik.atomcv.rendering.template.TemplateRegistry
+                        .capacityOf(call.getArgument(0)));
         service = new JobSpecificGenerationService(assembler, tags, analysis,
-                relevance, renderCosts, rewrites, letters, pipeline);
+                relevance, renderCosts, rewrites, letters, pipeline, capacities);
 
         head = new Profile(USER);
         ref = ProfileRef.persistent(UserContext.of(USER), UUID.randomUUID(), USER);

@@ -11,7 +11,6 @@ import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel.RowShape;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
-import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import java.time.Instant;
 import java.util.HashMap;
@@ -41,13 +40,17 @@ public class RenderCostService {
     private final AtomRepository atoms;
     private final SectionRepository sections;
     private final MeasurementService measurements;
+    private final Capacities capacities;
 
     RenderCostService(AtomVariantRepository variants, AtomRepository atoms,
-            SectionRepository sections, MeasurementService measurements) {
+            SectionRepository sections, MeasurementService measurements,
+            Capacities capacities) {
+
         this.variants = variants;
         this.atoms = atoms;
         this.sections = sections;
         this.measurements = measurements;
+        this.capacities = capacities;
     }
 
     /**
@@ -61,7 +64,7 @@ public class RenderCostService {
      */
     @Transactional
     public int measureMissing(ProfileRef profile, TemplateCustomization customization) {
-        CapacityModel capacity = TemplateRegistry.capacityOf(customization).orElseThrow(
+        CapacityModel capacity = capacities.find(customization).orElseThrow(
                 () -> new IllegalStateException(
                         "This customization has never been calibrated; measure it first"));
 

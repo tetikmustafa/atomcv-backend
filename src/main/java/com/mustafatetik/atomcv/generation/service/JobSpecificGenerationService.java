@@ -26,8 +26,8 @@ import com.mustafatetik.atomcv.profile.repository.TagRepository;
 import com.mustafatetik.atomcv.profile.service.CompletenessCalculator;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
+import com.mustafatetik.atomcv.rendering.measurement.Capacities;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
-import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -66,6 +66,7 @@ public class JobSpecificGenerationService {
     private static final Logger log = LoggerFactory.getLogger(JobSpecificGenerationService.class);
 
     private final ProfileAssembler assembler;
+    private final Capacities capacities;
     private final TagRepository tags;
     private final JobAnalysisPhase analysis;
     private final RelevanceScoringService relevance;
@@ -82,7 +83,9 @@ public class JobSpecificGenerationService {
             RenderCostService renderCosts,
             RewritePhase rewrites,
             CoverLetterWriter letters,
-            GenerationPipeline pipeline) {
+            GenerationPipeline pipeline,
+            Capacities capacities) {
+        this.capacities = capacities;
 
         this.assembler = assembler;
         this.tags = tags;
@@ -151,7 +154,7 @@ public class JobSpecificGenerationService {
                     posting.jdLanguage().strip(), options.language());
         }
 
-        CapacityModel capacity = TemplateRegistry.capacityOf(options.customization())
+        CapacityModel capacity = capacities.find(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This customization has never been calibrated; measure it first"));
 
