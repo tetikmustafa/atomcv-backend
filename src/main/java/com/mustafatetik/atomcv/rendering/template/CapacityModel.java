@@ -44,17 +44,36 @@ public record CapacityModel(
     public static final String HEADER_BLOCK = "headerBlock";
 
     /**
-     * A section heading with its rule and the space around it.
+     * A section heading with its rule and the space around it, where the
+     * header block came before it — which is to say, the first one on the page.
      *
-     * <p>One number, and it took a corrected probe to know that. The reference
-     * opens its section format with a negative space, so a heading is pulled up
-     * against whatever closed above it — which looked like it had to be two
-     * numbers, one for the top of the page and one for further down. Measured
-     * with the paragraph flushed first, they are the same to five decimals: the
-     * negative space is spent against the heading's own spacing rather than
-     * against the block above.
+     * <p>It looked like one number for a long time. The reference opens its
+     * section format with a negative space, so a heading is pulled up against
+     * whatever closed above it; measured with the paragraph flushed first,
+     * classic's two positions came back the same to five decimals, and the
+     * conclusion drawn was that the negative space is spent against the
+     * heading's own spacing rather than against the block above.
+     *
+     * <p><strong>That conclusion was about classic and does not travel.</strong>
+     * Compact sets its lists with {@code nosep}, so there is no space above for
+     * the negative space to be spent against, and a heading after a list costs
+     * exactly 10 pt more than the same heading at the top of the page. That was
+     * the largest single reason compact under-filled its model, and it went
+     * unseen because the calibration document only ever measured the position
+     * the first heading is in. See {@link #SECTION_HEADER_AFTER_LIST}.
      */
     public static final String SECTION_HEADER = "sectionHeader";
+
+    /**
+     * The same heading where a list closed above it, which is every section
+     * but the first.
+     *
+     * <p>Equal to {@link #SECTION_HEADER} in classic and dearer in compact,
+     * for the reason written there. Both are measured; {@link
+     * #sectionHeaderPt()} is what decides which one is charged, and why the
+     * answer does not depend on knowing the order.
+     */
+    public static final String SECTION_HEADER_AFTER_LIST = "sectionHeaderAfterList";
 
 
     /**
@@ -195,6 +214,23 @@ public record CapacityModel(
      */
     public static final String PARAGRAPH_LIST_OVERHEAD = "paragraphListOverhead";
 
+    /**
+     * Every piece of furniture a capacity has to name to be usable.
+     *
+     * <p>Kept as a list because a stored capacity outlives the model that wrote
+     * it (Bolum 33.1): a row measured before this grew is missing whatever was
+     * added, and a missing cost charged as zero over-fills a page in silence.
+     * {@code Capacities} checks a row against this and treats a short one as
+     * never measured.
+     */
+    public static final java.util.Set<String> REQUIRED_COSTS = java.util.Set.of(
+            HEADER_BLOCK, SECTION_HEADER, SECTION_HEADER_AFTER_LIST,
+            ENTRY_HEADER, ENTRY_HEADER_AFTER_LIST,
+            PROJECT_HEADING, PROJECT_HEADING_AFTER_LIST,
+            ITEMIZE_OVERHEAD, ITEM_LINE, SECTION_ITEM_LINE,
+            SECTION_LIST_OVERHEAD, SECTION_LIST_CLOSE,
+            PARAGRAPH_LIST_OVERHEAD, INLINE_ROW, INLINE_LIST_OVERHEAD);
+
     public CapacityModel {
         fixedCosts = Map.copyOf(Objects.requireNonNull(fixedCosts, "fixedCosts"));
         if (pageTextHeightPt <= 0 || textWidthPt <= 0 || baselineSkipPt <= 0
@@ -209,6 +245,26 @@ public record CapacityModel(
             throw new IllegalArgumentException("Nothing measured for " + name);
         }
         return cost;
+    }
+
+    /**
+     * What a section heading is charged: the dearer of its two positions.
+     *
+     * <p>Which position applies is not knowable where the price is asked.
+     * Selection opens sections in score order and the page prints them in
+     * reading order, so at the moment a heading is priced there is no telling
+     * what will end up above it — and pricing it later would mean a charge and
+     * a refund that disagree.
+     *
+     * <p>So the dearer number is charged for every heading, and the one section
+     * that turns out to be first is refunded the difference afterwards, where
+     * reading order is known — {@code SelectionPhase.retuneFirstSectionHeader}.
+     * Charging the dearer everywhere and refunding nothing was tried and
+     * measured first: it costs ten points a section in compact, which is a
+     * bullet a page nobody gets.
+     */
+    public double sectionHeaderPt() {
+        return Math.max(fixedCost(SECTION_HEADER), fixedCost(SECTION_HEADER_AFTER_LIST));
     }
 
     /**

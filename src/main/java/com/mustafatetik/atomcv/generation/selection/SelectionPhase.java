@@ -107,6 +107,12 @@ public final class SelectionPhase {
         private double listClosePt;
 
         /**
+         * What is currently handed back to the one section that turns out to be
+         * first on the page — see {@link #retuneFirstSectionHeader()}.
+         */
+        private double firstSectionRefundPt;
+
+        /**
          * Atoms placed to meet a {@link SectionFloor}, which the swap pass may
          * not trade away.
          *
@@ -521,21 +527,12 @@ public final class SelectionPhase {
         }
 
         /**
-         * What a section heading costs.
-         *
-         * <p>Two numbers, because what a heading costs depends on what closed
-         * above it: the reference pulls every heading up with
-         * {@code \vspace{-10pt}}, so the space already there decides how much
-         * of that is actually spent. Which one applies is not knowable here —
-         * selection opens sections in score order and the page prints them in
-         * reading order, so at the moment a heading is priced there is no
-         * telling what will end up above it.
-         *
-         * <p>They are a tenth of a point apart, so the dearer is charged for
-         * every heading and the question does not have to be answered.
+         * What a section heading costs: the dearer of its two positions, and
+         * {@link CapacityModel#sectionHeaderPt()} says why the choice can be
+         * made here without knowing what will end up above it.
          */
         private double sectionHeaderCost() {
-            return capacity.fixedCost(CapacityModel.SECTION_HEADER);
+            return capacity.sectionHeaderPt();
         }
 
         /** What a section's own list of loose atoms costs to open. */
@@ -580,6 +577,42 @@ public final class SelectionPhase {
             }
             structurePt += wanted - listClosePt;
             listClosePt = wanted;
+        }
+
+        /**
+         * Hands back what the first section on the page does not owe.
+         *
+         * <p>Every heading is charged the dearer of its two positions, because
+         * the price is asked before the order is settled. Exactly one section
+         * ends up in the cheaper position — the first one in reading order,
+         * which has the header block above it and no list — so exactly one
+         * refund is due, and it can be worked out here for the same reason
+         * {@link #retuneListCloses()} can: reading order is known even though
+         * the order sections were opened in is not.
+         *
+         * <p>Retuned rather than charged, for that reason. Which section is
+         * first changes as sections open and empty, and a refund granted when
+         * one opened would have to be revoked when an earlier one did.
+         *
+         * <p>Zero in classic and modern, where the two positions are the same
+         * to five decimals. Ten points in compact, once — and charging it
+         * anyway was measured: it over-filled the model by ten points a
+         * section, which is a bullet a page that nobody gets.
+         */
+        private void retuneFirstSectionHeader() {
+            double refund = capacity.sectionHeaderPt()
+                    - capacity.fixedCost(CapacityModel.SECTION_HEADER);
+            double wanted = 0;
+            if (refund != 0) {
+                for (UUID sectionId : planOfSection.keySet()) {
+                    if (openSections.contains(sectionId)) {
+                        wanted = refund;
+                        break;
+                    }
+                }
+            }
+            structurePt -= wanted - firstSectionRefundPt;
+            firstSectionRefundPt = wanted;
         }
 
         private boolean hasOpenEntry(UUID sectionId) {
@@ -874,6 +907,7 @@ public final class SelectionPhase {
                     atom.renderCostPt(), forcedByLock));
             pool.remove(atom.atomId());
             retuneListCloses();
+            retuneFirstSectionHeader();
         }
 
         /**
@@ -932,6 +966,7 @@ public final class SelectionPhase {
             }
             closeSectionIfEmpty(sectionId);
             retuneListCloses();
+            retuneFirstSectionHeader();
             pool.put(original.atomId(), original);
         }
 
@@ -957,6 +992,7 @@ public final class SelectionPhase {
             openSections.remove(sectionId);
             structurePt -= sectionHeaderPt.remove(sectionId);
             retuneListCloses();
+            retuneFirstSectionHeader();
         }
 
         /**
@@ -1029,6 +1065,7 @@ public final class SelectionPhase {
             openEntries.remove(entryId);
             closeSectionIfEmpty(sectionOfEntry.get(entryId));
             retuneListCloses();
+            retuneFirstSectionHeader();
             return true;
         }
 

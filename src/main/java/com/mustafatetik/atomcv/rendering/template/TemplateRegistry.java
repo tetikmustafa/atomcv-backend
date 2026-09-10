@@ -311,6 +311,9 @@ public final class TemplateRegistry {
                     // The rule, with the negative space the reference writes
                     // above it and below it.
                     Map.entry(CapacityModel.SECTION_HEADER, 20.86289),
+                    // The same to five decimals, which is what made this look like
+                    // one number for so long.
+                    Map.entry(CapacityModel.SECTION_HEADER_AFTER_LIST, 20.86288),
                     // Two lines: the title, and the organization with its
                     // dates. A hand-written probe that lost the line break
                     // measured 10.87 and looked entirely plausible - the
@@ -363,6 +366,10 @@ public final class TemplateRegistry {
                     // \LARGE and six points, against classic's \Huge and ten.
                     Map.entry(CapacityModel.HEADER_BLOCK, 48.99124),
                     Map.entry(CapacityModel.SECTION_HEADER, 19.58898),
+                    // Ten points dearer, exactly. `nosep` leaves no space above for
+                    // the heading's negative space to be spent against, so the
+                    // pull-up that classic gets for free is paid here.
+                    Map.entry(CapacityModel.SECTION_HEADER_AFTER_LIST, 29.58897),
                     Map.entry(CapacityModel.ENTRY_HEADER, 16.79989),
                     Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 20.12094),
                     Map.entry(CapacityModel.PROJECT_HEADING, 8.40395),
@@ -407,6 +414,7 @@ public final class TemplateRegistry {
                     // Seven points more than classic's, which is its halved
                     // negative leading and nothing else.
                     Map.entry(CapacityModel.SECTION_HEADER, 27.86289),
+                    Map.entry(CapacityModel.SECTION_HEADER_AFTER_LIST, 27.86288),
                     Map.entry(CapacityModel.ENTRY_HEADER, 34.19998),
                     Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 35.17004),
                     Map.entry(CapacityModel.PROJECT_HEADING, 22.59749),

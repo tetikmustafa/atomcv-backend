@@ -112,6 +112,12 @@ public class CalibrationService {
         var fixed = new LinkedHashMap<String, Double>();
         fixed.put(CapacityModel.HEADER_BLOCK, delta(probes, "start", "afterHeaderBlock"));
         fixed.put(CapacityModel.SECTION_HEADER, sectionHeader);
+        // The probe for this was already in the document and the derivation
+        // simply never read it: between afterOneEntry and beforeTwoEntries
+        // stands a section heading with an entry list closed above it, which is
+        // the position every heading but the first is actually in.
+        fixed.put(CapacityModel.SECTION_HEADER_AFTER_LIST,
+                delta(probes, "afterOneEntry", "beforeTwoEntries"));
         fixed.put(CapacityModel.ENTRY_HEADER, entryHeader);
         fixed.put(CapacityModel.ENTRY_HEADER_AFTER_LIST,
                 delta(probes, "beforeTwoEntries", "afterTwoEntries") - oneEntry - bulletAndItsList);
@@ -187,6 +193,7 @@ public class CalibrationService {
             {"afterThreeUnderSection", "beforeBareEntry"},
             {"beforeBareEntry", "afterBareEntry"},
             {"beforeOneEntry", "afterOneEntry"},
+            {"afterOneEntry", "beforeTwoEntries"},
             {"beforeEntryThreeItems", "afterEntryThreeItems"},
             {"beforeTwoEntries", "afterTwoEntries"},
             {"beforeOneProject", "afterOneProject"},
