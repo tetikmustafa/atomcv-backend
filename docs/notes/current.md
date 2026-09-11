@@ -12,63 +12,51 @@ sonrasının yuvarlanan özetleri `archive/stage-3-closeout.md`'ye indi
 
 ---
 
-## Aşama 4 · bütçeler ve golden set (2026-09-10/11)
+## Aşama 4 · e-postalar ve açık kaynak (2026-09-11)
 
-**Düzeltme — golden set üç şablona genişletilince sayfa garantisi compact'te
-tutmuyor çıktı** (`B-095`): az tahmin, yani taşma yönü, ve bir profil taştı.
-Beş sebep, **beşi de aynı cümle — sayfanın dizdiği ama ölçümün hiç görmediği
-bir şey** — ve beşi de yalnız gerçek derleyiciye sorunca göründü:
+**Ekleme — § 57.7 yaşam döngüsü e-postalarını tanımladı.** İnşa kılavuzu maddeyi
+adlandırıp bırakıyordu, yani "bu ürün hangi e-postaları gönderir" sorusunun
+uygulanacak bir cevabı yoktu. Liste **kapalı**: hoş geldin ve silme onayı.
 
-1. **Listeden sonraki bölüm başlığı compact'te 10pt pahalı** (`nosep` üstte
-   boşluk bırakmıyor); kalibrasyon yalnız *ilk* başlığın konumunu ölçüyordu,
-   diğerinin probu belgede duruyordu ama okunmuyordu. Pahalı sayı her başlığa
-   yazılıp okuma sırasındaki ilkine iade ediliyor (`retuneFirstSectionHeader`)
-   — "pahalıyı her yere yaz" ilk denemem bölüm başına 10pt israftı, ölçtüm.
-2. **Başlık bloğu artık ölçülen sayı** (V13, `profiles.header_costs`): metin
-   sarmalıyor, compact başlığı 65.2pt iken sabit 48.99'du. Geometri **ve dil**
-   ile anahtarlanıyor, metni değişince siliniyor.
-3. **`\resumeItem`, ifadeyle ardındaki negatif `\vspace` arasına bir kelime
-   arası boşluk koyuyordu** (compact'te yok). Ölçüm kutusu o boşluksuz diziyor,
-   yani genişliği satıra bir boşluk kadar yakın madde kutuda sığıp sayfada
-   sarmalıyordu; stress_long_career'ın altmış maddesi o bantta ve modern'deki
-   ikinci sayfanın tamamı buydu. Maliyetler aynı çıktı — değişen kutu değil sayfa.
-4. **Compact aynı boşluğu iki kez yazıyordu:** `SECTION_LIST_CLOSE` ile
-   `SECTION_HEADER_AFTER_LIST` classic'te iki ayrı şey, compact'te aynı 10 puan.
-   Kalibrasyon artık primi düşerek saklıyor.
-5. **Aynı makro çok satırlı yazılmıştı, ve makro gövdesindeki her satır sonu
-   bir boşluktur** — yani (3) kaldırıldıktan sonra ikinci bir boşluk kalmıştı.
-   Bu ikisi ancak listenin **son** maddesini vuruyor: aynı ifade 1. ve 2.
-   konumda kısa olanla aynı, sonuncuda bir satır fazla, ve arkasına herhangi
-   bir madde koyunca primin tamamı geri geliyor. Tek maddelik bir listenin tek
-   maddesi aynı zamanda sonuncusu olduğu için uzun süre "ilk madde" sandım;
-   `EntryFurnitureIT`'in kural probu ("iki konum eşit genişlikte") baştan beri
-   haklıymış, **soru yanlıştı.**
+**Ve spec uygulanmadan önce iki kez düzeltildi** — bu dilimin asıl kazancı bu.
+(1) Tetikleyici "`users` satırı ilk yazıldığında" diyordu; § 40.4 hesap sayımını
+engellemek için satırı adres yazılır yazılmaz yaratıyor, yani **giriş kutusuna
+adresi yazılan herkese** posta giderdi. Doğrusu ilk başarılı giriş
+(`last_seen_at` null). (2) Tercih `PUT /profile/preferences`'a konacaktı; o uç
+profili yerine koyuyor ve profilin ETag'iyle korunuyor, yani bir CV çakışması
+e-posta ayarını reddederdi ve alanı göndermemek onu kapatmak olurdu.
+`GET`/`PATCH /api/v1/account` oldu.
 
-**Durum: üçü de doğrulandı** — classic, compact ve modern, yedi profilin
-hepsinde %3 içinde (`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil;
-ikinci bir test listede eksik olmadığını iddia ediyor). `B-095` kapandı.
-Sürümler: `classic:v6`, `compact:v2`, `modern:v3`.
+**Ekleme — silme onayı işlemsel, hoş geldin değil.** Adres satır silinmeden
+okunuyor ve posta commit'ten sonra çıkıyor (servis adresi döndürüyor, çağıran
+gönderiyor): geri alınan bir silmenin onayı yalan olurdu. Hoş geldin için aynı
+özen gereksiz — geri alınan bir girişin hoş geldini bir fazla postadır.
 
-**Ders — heredoc'un yediği yarım ters bölü bir kontrol karakteridir.**
-CLAUDE.md heredoc'ların ters bölüyü yarıya indirdiğini söylüyor; söylemediği,
-geriye kalanın BEL/VT/CR olduğu — `\resumeItem` yorumda `^M` + `esumeItem`,
-`\vspace` `^K` + `space` oluyor. Yorum olduğu için derleyici susuyor, diff'te ve
-terminalde görünmüyor. Dört kaynak dosyada ve iki arşiv notunda bulundu. İki
-tarama yakalıyor: kaynakta herhangi bir kontrol karakteri, ve blok yorum içinde
-yıldızla başlamayan satır (CR zaten satır sonuna dönüştüyse ilki kaçırır).
+**Ekleme — kapatma bağlantısı uca değil sayfaya iniyor** (§ 40.3). Ağ geçitleri
+mesajdaki her adresi kimse okumadan çekiyor; çekilince kapatan bir uç, hiç
+tıklamamış kişilerin postasını keserdi. Jeton opak ve satırda (`unsubscribe_token`),
+imzalı değil — doğrulaması sır istemesin diye. Bilinmeyen jeton da 204.
 
-**Ders — ölçüm belgesiyle sayfa arasındaki her fark bir hatadır** (§ 22.4'ün
-üçüncü kuralı üç ayrı ayrıntıda kırılmıştı). Sapma testi yetmiyor: bir maddedeki
-bir satır yedi yüz puanın içinde kaybolur — `WordingCostIT` bir ifadenin,
-`EntryFurnitureIT` bir girdinin marjinal bedelini ölçüyor. Ve `\pagetotal`
-sayfa kırıldıktan sonra okunmaz (730.6 beklenirken 39.8): sayı küçük değil
-**anlamsız**, artık drift probunda da reddediliyor.
+**Düzeltme — `.env.example` hiçbir şeyin okumadığı bir harcama limiti sunuyordu.**
+`DAILY_BUDGET_USD`'yi spec dört yerde anıyordu ve yayın kontrol listesinde
+maddesi vardı; kod `ANOMALY_DAILY_BUDGET_USD` okuyor. Kurtaran tek şey
+varsayılanın daha düşük olması: kill switch geç değil erken ateşliyordu.
+`EnvExampleTest` iki kuralı tutuyor — örnekte okunmayan ad olamaz, varsayılanı
+olmayan ad eksik olamaz.
 
-**Ders — görev girdisi olmayan bir bütçe dosyası kimseyi bağlamaz.** Oranı 1.0'a
-çekince test düşmedi; Gradle dosyayı göremediği için `:test UP-TO-DATE` deyip
-koşturmadı. `inputs.file` ile kapatıldı, § 52.2'nin sorgu tavanı da dosyadan
-okunuyor. Ölçekleme oranı medyan değil **en hızlı** koşuyu alıyor — medyan
-gürültüyü oranın içine iki kez taşıyordu.
+**Ders — görev girdisi olmayan bir dosya kimseyi bağlamaz.** Bugün ikinci kez:
+`performance-budgets.yaml` gibi `.env.example` de `inputs.file` ile bildirildi.
+Aksi hâlde Gradle `:test UP-TO-DATE` deyip onu denetleyen testi hiç koşturmuyor,
+ki `DAILY_BUDGET_USD`'nin kayma yolu tam buydu.
+
+**Ders — ölçüm belgesiyle sayfa arasındaki fark her zaman bir hatadır**, ve
+sapma testi tek başına yetmez: bir maddedeki bir satır yedi yüz puanın içinde
+kaybolur. `WordingCostIT` bir ifadenin, `EntryFurnitureIT` bir girdinin marjinal
+bedelini sayfaya karşı ölçüyor. **`EntryFurnitureIT`'in sabitlediği ~2.9pt'lik
+artık bir kusur değil**, aracın kendisi: test listesi *olan* belgeyi listesi
+*olmayanla* karşılaştırdığı için listenin arkasında duran tek şey prob oluyor.
+Girdi eklemenin marjinal bedeli üç şablonda da modelin yazdığına **tam** eşit
+(43.72 / 25.47 / 51.72), her boyutta ve ardından başlık gelse de gelmese de.
 
 ---
 
@@ -182,5 +170,6 @@ muhafızın düştüğünü görmeden yazıldı sayma.**
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2 (bekliyor) |
+| Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
 
-Frontend aksiyonları: `B-055`-`B-095`.
+Frontend aksiyonları: `B-055`-`B-096`.
