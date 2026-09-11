@@ -47,8 +47,8 @@ yes in the conversation** — *How We Ship* still holds, and `main` is pushed
 before a PR is opened.
 
 **`git commit` runs freely** — but `.githooks/post-commit` copies
-`docs/handoff/**` and `docs/STATUS.md` into `../atomcv-frontend` and commits
-there, so a commit touching those files writes to the other repository.
+`docs/handoff/**` and `docs/STATUS.md` into `../atomcv-frontend`'s working tree
+and stops there: landing them is automatic, committing them is that repo's call.
 
 Run freely, without asking: local build, test, lint, typecheck, and any
 `gradlew` script that only touches this repo's own working tree.
