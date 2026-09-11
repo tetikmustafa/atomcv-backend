@@ -30,8 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * line's edge was set on two lines as the <em>last</em> bullet of a list and on
  * one anywhere else, so every list was charged a line short of what it printed.
  *
- * <p>The cause was a space, again. {@code
-esumeItem} was written across three
+ * <p>The cause was a space, again. {@code \resumeItem} was written across three
  * lines, and every line break inside a macro body is a space -- so the page had
  * to fit the wording plus a space the measurement never boxed. The premium here
  * fell from 17.05 to 5.50 when the body was closed up, and modern joined the
@@ -40,8 +39,7 @@ esumeItem} was written across three
  * <p>What is left is the list's own overhead, which is what this number is for:
  * 0.55 in classic, -5.10 in compact, 2.55 in modern, plus about three points
  * that a long last line leaves behind and a following bullet absorbs. Compact,
- * whose {@code
-esumeItem} has no {@code space} at all, keeps only half a
+ * whose {@code \resumeItem} has no {@code \vspace} at all, keeps only half a
  * point of it -- so that residue is the negative space being discarded at the
  * end of a list rather than spent.
  *

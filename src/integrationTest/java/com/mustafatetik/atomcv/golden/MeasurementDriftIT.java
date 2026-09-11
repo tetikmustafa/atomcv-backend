@@ -56,9 +56,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * calibration only ever measured the other position.</li>
  * <li>The header block was one constant per template; it is text, it wraps, and
  * one profile's measures 65.2 pt against a charge of 48.99.</li>
- * <li>{@code
-esumeItem} left an interword space between the wording and the
- * negative {@code space} after it.</li>
+ * <li>{@code \resumeItem} left an interword space between the wording and the
+ * negative {@code \vspace} after it.</li>
  * <li>The same macro was written across three lines, and every line break
  * inside a macro body is another space.</li>
  * <li>Compact charged one gap twice, as the list's leftover and again as the
