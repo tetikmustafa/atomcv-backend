@@ -60,8 +60,21 @@ class EntryFurnitureIT {
      *
      * <p>Most of it is furniture and is meant to be there: opening the list is
      * charged {@code ITEMIZE_OVERHEAD}, 0.55 in classic, -5.10 in compact and
-     * 2.55 in modern. What is left over -- 2.95, 2.64 and 2.95 -- is a long
-     * last line's leftover, and a bullet after it absorbs the lot.
+     * 2.55 in modern. What is left over -- 2.95, 2.64 and 2.95 --
+     * <strong>is not a cost anybody pays, and chasing it is wasted</strong>.
+     *
+     * <p>That was measured on 2026-09-11 rather than argued. The marginal cost
+     * of one more entry and its list is <em>exactly</em> what the model charges
+     * in all three templates -- 43.72, 25.47 and 51.72, to the hundredth, at
+     * two entries and at three and at four, with a section heading after the
+     * list and without one. There is no per-entry error left to find.
+     *
+     * <p>The leftover appears here because of how this test asks. It compares a
+     * document that has a list with one that has none, so the only thing
+     * standing behind the list is the probe itself, and what the probe reads is
+     * space that a following entry absorbs and that TeX discards at the end of
+     * a page. The number is worth pinning because it moves when the templates
+     * move; it is not worth fixing.
      */
     private static final Map<String, Double> FIRST_BULLET_PREMIUM_PT = Map.of(
             "classic", 3.50,
