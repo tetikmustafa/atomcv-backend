@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.identity.api;
 import com.mustafatetik.atomcv.email.AccountDeletedEmail;
 import com.mustafatetik.atomcv.email.EmailSender;
 import com.mustafatetik.atomcv.identity.service.AccountDeletionService;
+import com.mustafatetik.atomcv.identity.service.LifecyclePreference;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
@@ -16,6 +17,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,15 +41,45 @@ public class AccountController {
     private final CurrentUser currentUser;
     private final AccountDeletionService deletion;
     private final EmailSender email;
+    private final LifecyclePreference preference;
     private final SessionCookies cookies;
 
     AccountController(CurrentUser currentUser, AccountDeletionService deletion,
-            EmailSender email, SessionCookies cookies) {
+            EmailSender email, LifecyclePreference preference, SessionCookies cookies) {
 
         this.currentUser = currentUser;
         this.deletion = deletion;
         this.email = email;
+        this.preference = preference;
         this.cookies = cookies;
+    }
+
+    /** What Bolum 57.7's preference looks like on the wire, both ways. */
+    public record AccountSettings(boolean lifecycleEmails) {
+    }
+
+    @Operation(summary = "The account's own settings")
+    @ApiResponse(responseCode = "200", description = "The current values")
+    @GetMapping
+    public AccountSettings settings() {
+        return new AccountSettings(
+                preference.wantedBy(currentUser.require().userId()));
+    }
+
+    /**
+     * <p>A PATCH on the account rather than a field on
+     * {@code PUT /profile/preferences}, and the difference matters: that one
+     * replaces a profile under the profile's own ETag, so a version conflict
+     * about a CV would refuse a change about email. This one belongs to the
+     * account, which is also the only thing that has an address.
+     */
+    @Operation(summary = "Turn the optional emails on or off (Bolum 57.7)")
+    @ApiResponse(responseCode = "200", description = "The value as it now stands")
+    @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public AccountSettings update(@RequestBody AccountSettings request) {
+        return new AccountSettings(preference.set(
+                currentUser.require().userId(), request.lifecycleEmails()));
     }
 
     @Operation(

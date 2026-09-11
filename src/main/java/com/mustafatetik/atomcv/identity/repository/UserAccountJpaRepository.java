@@ -30,4 +30,7 @@ interface UserAccountJpaRepository extends JpaRepository<UserAccount, UUID> {
     @Query(value = "SELECT * FROM users WHERE email = CAST(:email AS citext)",
             nativeQuery = true)
     Optional<UserAccount> findByEmailIgnoringCase(@Param("email") String email);
+
+    /** Bolum 57.7's way in from an inbox; the column is unique. */
+    Optional<UserAccount> findByUnsubscribeToken(java.util.UUID token);
 }

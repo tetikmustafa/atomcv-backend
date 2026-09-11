@@ -253,17 +253,27 @@ listede olmayan bir e-posta gönderilmez, eklenmesi bu bölümün değişmesi de
 
 | E-posta | Tetikleyici | Tercihe tabi mi? |
 |---|---|---|
-| **Hoş geldin** | `users` satırı **ilk kez** yazıldığında | evet |
+| **Hoş geldin** | hesabın **ilk başarılı girişi** (`last_seen_at` hâlâ null) | evet |
 | **Silme onayı** | hesap silme işlemi commit olduğunda | **hayır** — işlemsel |
 | ~~Hatırlatıcı, özet, duyuru~~ | — | gönderilmiyor |
 
 **Sihirli bağlantı bu listeye dahil değil** (§ 40.2): o bir kimlik doğrulama
 adımıdır, kişinin o an yaptığı bir eyleme cevap verir ve kapatılamaz.
 
-**Hoş geldin, girişte değil hesap açılışında.** Tetikleyici `users` satırının
-yaratılması — sihirli bağlantıyla, OAuth'la ya da anonim çalışmanın hesaba
-bağlanmasıyla (§ 41.3), üçü de aynı satırı yazar. Her girişte gönderilmesi
-sihirli bağlantının hemen ardından ikinci bir posta demek olurdu.
+**Hoş geldin, satırın yazılmasında değil ilk girişte.** İlk taslakta tetikleyici
+"`users` satırı ilk kez yazıldığında" yazıyordu; **uygulanmadan önce yanlış
+olduğu görüldü.** § 40.4 hesap sayımını engellemek için sihirli bağlantı
+istendiğinde satırı *hemen* yaratıyor (`createAwaitingVerification`) — kişi
+hiçbir şey kanıtlamadan, hatta o adres ona ait olmadan. O tetikleyici, giriş
+kutusuna adresi yazılan **herkese** posta göndermek olurdu; § 40.5'in hız
+sınırları bunun tam da kötüye kullanımını frenliyor.
+
+Doğrusu **ilk başarılı giriş**: `last_seen_at` hâlâ null'ken bir oturum
+açılması. Hesap başına tam bir kez doğrudur ve iki yolda da aynı yerden geçer —
+sihirli bağlantının doğrulaması da (`markEmailVerified`, "bağlantıyı açmak
+kanıttır") OAuth de oturumu açmadan hemen önce `seen(...)` çağırır. Anonim
+çalışmanın hesaba bağlanması (§ 41.3) ayrı bir yol değildir; o da bir girişle
+olur.
 
 **Silme onayı işlemsel, ve iki kısıt taşıyor.** Adres **satır silinmeden önce**
 okunur — sonrası yok. Posta **işlem commit olduktan sonra** çıkar: geri alınan
@@ -277,10 +287,22 @@ için bir yol açardı.
 düzeyinde, çünkü e-posta hesaba aittir: anonim profilin adresi yoktur ve
 `profiles.preferences` onu taşıyamaz.
 
-- **`PATCH /profile/preferences` alanı okur ve kullanıcı satırına yazar.** Yeni
-  bir uç açılmadı; ayarlar ekranı zaten burayı çağırıyor.
+- **`GET` ve `PATCH /api/v1/account`.** İlk taslak alanı
+  `PUT /profile/preferences`'a koyuyordu; **uygulanırken yanlış olduğu
+  görüldü.** O uç profili *değiştirir* değil *değiştirir yerine koyar* ve
+  profilin kendi ETag'iyle korunur — yani bir CV'yi ilgilendiren sürüm
+  çakışması, e-postayı ilgilendiren bir değişikliği reddederdi. Üstelik
+  alanı göndermemek, replace anlamında onu kapatmak olurdu. Tercih hesaba
+  ait; adresi olan da hesap.
 - **Her tercihe tabi postada kapatma bağlantısı var**, ve oturum istemez —
-  gelen kutusundan tıklanır. İmzalı, tek kullanıcıya bağlı, süresiz.
+  gelen kutusundan tıklanır. `users.unsubscribe_token`: rastgele ve opak,
+  imzalı değil (doğrulaması sır istemesin diye), tek satıra bağlı, süresiz —
+  bir yıl önceki postaya da tıklanabilir.
+- **Bağlantı bir sayfaya iner, bir eyleme değil** (§ 40.3). Kurumsal ağ
+  geçitleri mesajdaki her adresi kimse okumadan çekiyor; çekilince kapatan bir
+  uç, hiç tıklamamış kişilerin postasını keserdi. Sayfa düğmeyi taşır,
+  `POST /api/v1/email/unsubscribe` işi yapar, ve **bilinmeyen jeton da 204
+  döner** — farklı cevap, jetonun canlı olup olmadığını söyleyen bir kâhin olurdu.
 - **Bastırma listesi (`EmailSuppressions`) tercihin üstünde.** Sert bounce almış
   bir adrese, tercih açık olsa da gönderilmez.
 

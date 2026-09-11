@@ -35,7 +35,8 @@ class OAuthLoginServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new OAuthLoginService(accounts, sessions, Clock.fixed(NOW, ZoneOffset.UTC));
+        service = new OAuthLoginService(accounts, sessions, mock(WelcomeGreeting.class),
+                Clock.fixed(NOW, ZoneOffset.UTC));
         when(sessions.create(any(), any(), any())).thenAnswer(call -> Session.beginning(
                 "a-session-id", call.getArgument(0), call.getArgument(1),
                 call.getArgument(2), NOW));

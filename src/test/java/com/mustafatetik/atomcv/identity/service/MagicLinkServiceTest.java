@@ -51,6 +51,7 @@ class MagicLinkServiceTest {
         service = new MagicLinkService(accounts, tokens, sessions, rateLimit, email,
                 suppressions,
                 new MagicLinkProperties("https://app.test", "/verify"),
+                mock(WelcomeGreeting.class),
                 Clock.fixed(NOW, ZoneOffset.UTC));
         when(email.send(any())).thenReturn(true);
         when(suppressions.isSuppressed(anyString())).thenReturn(false);
