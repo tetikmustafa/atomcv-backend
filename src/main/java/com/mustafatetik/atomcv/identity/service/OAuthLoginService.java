@@ -38,11 +38,14 @@ public class OAuthLoginService {
 
     private final SignInAccounts accounts;
     private final SessionStore sessions;
+    private final WelcomeGreeting welcome;
     private final Clock clock;
 
-    OAuthLoginService(SignInAccounts accounts, SessionStore sessions, Clock clock) {
+    OAuthLoginService(SignInAccounts accounts, SessionStore sessions,
+            WelcomeGreeting welcome, Clock clock) {
         this.accounts = accounts;
         this.sessions = sessions;
+        this.welcome = welcome;
         this.clock = clock;
     }
 
@@ -64,6 +67,8 @@ public class OAuthLoginService {
         if (user.isDeleted()) {
             return new SignInOutcome.Refused(OAuthFailure.ACCOUNT_DISABLED);
         }
+        // Before seen(...), which is what makes "has never signed in" answerable.
+        welcome.greetIfFirstSignIn(user);
         accounts.seen(user, clock.instant());
         return new SignInOutcome.SignedIn(sessions.create(
                 user.getId(), user.getRole(), account.provider().authMethod()));

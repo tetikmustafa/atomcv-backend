@@ -99,6 +99,22 @@ public class SignInAccounts {
         return users.save(UserAccount.awaitingVerification(email));
     }
 
+    /**
+     * The one lookup that takes something out of an email rather than out of a
+     * session (Bolum 57.7).
+     *
+     * <p>Safe for the reason the token is random: it cannot be derived from an
+     * address or an id, so holding it is the only way to name the row, and
+     * what it permits is turning one's own optional email off.
+     */
+    public Optional<UserAccount> byUnsubscribeToken(UUID token) {
+        return users.findByUnsubscribeToken(token);
+    }
+
+    public void save(UserAccount account) {
+        users.save(account);
+    }
+
     public void link(UUID userId, OAuthProvider provider, String providerUid) {
         identities.save(OAuthIdentity.binding(userId, provider, providerUid));
     }

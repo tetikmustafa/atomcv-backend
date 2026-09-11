@@ -265,6 +265,50 @@ bugünkü profilden değil. Yani sonradan bir maddeyi düzenlemek, gönderilmiş
 CV'nin Word hâlini de değiştirmiyor. Ve metin katmanı gerçek metin — bir ATS
 kelimeleri okuyabiliyor, resim değil.
 
+### B-096 · Yaşam döngüsü e-postaları indi — bir sayfa ve bir anahtar istiyor
+
+**Since:** backend `feat/welcome-and-unsubscribe` · Aşama 4 · § 57.7, § 40.3
+
+**Neden:** Ürün bugüne kadar tek bir e-posta gönderiyordu (sihirli bağlantı).
+§ 57.7 listeyi yazdı ve **kapalı tuttu**: hoş geldin, silme onayı, başka yok.
+Silme onayı geçen dilimde indi ve sizden bir şey istemiyordu; bu dilim hoş
+geldin postasını ve onu kapatma yolunu getiriyor.
+
+**İstenen — iki şey:**
+
+1. **`/unsubscribe?t=<uuid>` diye bir sayfa**, ve üstünde bir düğme. Düğme
+   `POST /api/v1/email/unsubscribe` çağırıyor, gövde `{ "token": "<uuid>" }`,
+   cevap **204**. Oturum istemiyor — gelen kutusundan tıklanıyor, çerez
+   olmayabilir. CSRF normal şekilde geçerli (sayfa sizin kökeninizde, çerezi
+   okuyup çift gönderebiliyor).
+
+   **Sayfa tıklanmadan kapatmamalı.** § 40.3'ün ön-getirme tuzağı tam burada:
+   kurumsal ağ geçitleri mesajdaki her adresi kimse okumadan çekiyor, ve
+   çekilince kapatan bir tasarım hiç tıklamamış kişilerin postasını keserdi.
+   Bu yüzden bağlantı bir **sayfaya** iniyor, uca değil.
+
+   **Bilinmeyen jeton da 204 dönüyor.** "Geçersiz bağlantı" diye bir ekran
+   yazmayın — backend hangi jetonun canlı olduğunu söylemiyor, bilerek. Sayfa
+   her durumda "kapatıldı" demeli.
+
+2. **Ayarlarda bir anahtar.** `GET /api/v1/account` → `{ "lifecycleEmails":
+   true }`, `PATCH /api/v1/account` aynı gövdeyle yazıyor ve yeni hâli
+   döndürüyor. **`PUT /profile/preferences`'a koymadık**: o uç profili yerine
+   koyuyor ve profilin ETag'iyle korunuyor, yani bir CV çakışması e-posta
+   tercihini reddederdi — ve alanı göndermemek onu kapatmak olurdu.
+
+**Bilmenizde fayda var:** hoş geldin postası **ilk başarılı girişte** çıkıyor,
+hesap satırı yazıldığında değil. § 40.4 hesap sayımını engellemek için satırı
+adres yazılır yazılmaz yaratıyor; satır tetikleyici olsaydı giriş kutusuna
+adresi yazılan herkese posta giderdi. Yani yeni bir kullanıcı, sihirli
+bağlantının hemen ardından **ikinci** bir posta alıyor — ekranda "hoş geldin
+e-postası gönderdik" gibi bir cümleye ihtiyacınız yok, ama iki postayı
+bekliyor olun.
+
+**Silme onayı kapatılamıyor** (§ 57.4): verisinin silindiğini kişiye söylemek
+zorunludur, ve kapatılabilir bir onay ona söylememenin bir yolu olurdu. Ayarlar
+metniniz "bilgilendirme e-postaları" derken bunu kapsıyormuş gibi durmasın.
+
 ---
 
 ## Dağıtım bekleyen doğrulamalar

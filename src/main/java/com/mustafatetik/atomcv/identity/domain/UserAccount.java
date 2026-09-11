@@ -62,6 +62,21 @@ public class UserAccount {
     private Instant lastSeenAt;
 
     /**
+     * Whether the optional emails of Bolum 57.7 may be sent. True until the
+     * person says otherwise; the deletion confirmation does not read it.
+     */
+    @Column(name = "lifecycle_emails", nullable = false)
+    private boolean lifecycleEmails = true;
+
+    /**
+     * How {@link #lifecycleEmails} is reached from an inbox, where there is no
+     * session to act under. Opaque, random and long-lived: the email it
+     * travels in does not expire either.
+     */
+    @Column(name = "unsubscribe_token", nullable = false, updatable = false)
+    private UUID unsubscribeToken = UUID.randomUUID();
+
+    /**
      * Soft delete. A deleted account may not sign in, and its address stays
      * taken — reissuing it to a new sign-up would hand the next person
      * whatever still references the old row.
@@ -126,6 +141,23 @@ public class UserAccount {
 
     public Instant getLastSeenAt() {
         return lastSeenAt;
+    }
+
+    public boolean wantsLifecycleEmails() {
+        return lifecycleEmails;
+    }
+
+    public void setLifecycleEmails(boolean wanted) {
+        this.lifecycleEmails = wanted;
+    }
+
+    public UUID getUnsubscribeToken() {
+        return unsubscribeToken;
+    }
+
+    /** Whether nobody has ever signed in to this account — Bolum 57.7's trigger. */
+    public boolean hasNeverSignedIn() {
+        return lastSeenAt == null;
     }
 
     public void seenAt(Instant now) {

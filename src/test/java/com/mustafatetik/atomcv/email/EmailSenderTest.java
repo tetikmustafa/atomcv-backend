@@ -38,7 +38,7 @@ class EmailSenderTest {
             "ada@example.com", "Your AtomCV sign-in link", "a link", "<p>a link</p>");
 
     private static final EmailProperties PROPERTIES = new EmailProperties(
-            "no-reply@mail.example.com", "AtomCV", "hello@example.com", "re_a-key");
+            "no-reply@mail.example.com", "AtomCV", "hello@example.com", "re_a-key", null);
 
     // ── Resend ────────────────────────────────────────────────────────────
 
@@ -86,7 +86,7 @@ class EmailSenderTest {
 
     @Test
     void withoutAReplyToTheFieldIsLeftOutRatherThanSentEmpty() throws Exception {
-        var noReplyTo = new EmailProperties("no-reply@mail.example.com", "AtomCV", null, "re_k");
+        var noReplyTo = new EmailProperties("no-reply@mail.example.com", "AtomCV", null, "re_k", null);
 
         new ResendEmailSender(noReplyTo, JSON, endpoint()).send(MESSAGE);
 
@@ -154,8 +154,8 @@ class EmailSenderTest {
 
     @Test
     void theKeyDecidesWhichSenderADeploymentGets() {
-        var withKey = new EmailProperties("a@b.c", "AtomCV", null, "re_a-key");
-        var withoutKey = new EmailProperties("a@b.c", "AtomCV", null, "  ");
+        var withKey = new EmailProperties("a@b.c", "AtomCV", null, "re_a-key", null);
+        var withoutKey = new EmailProperties("a@b.c", "AtomCV", null, "  ", null);
 
         assertThat(withKey.hasResendKey()).isTrue();
         assertThat(withoutKey.hasResendKey()).isFalse();

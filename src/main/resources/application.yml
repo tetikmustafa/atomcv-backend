@@ -135,6 +135,9 @@ atomcv:
     from-name: ${EMAIL_FROM_NAME:AtomCV}
     reply-to: ${EMAIL_REPLY_TO:}
     resend-key: ${RESEND_API_KEY:}
+    # Bolum 57.7's way back to the preference, from an inbox with no session.
+    # A page on the frontend, for the reason Bolum 40.3 gives.
+    unsubscribe-url: ${APP_BASE_URL:http://localhost:3000}/unsubscribe
     # The endpoint secret from Resend's dashboard, `whsec_...`. Empty refuses
     # every delivery, deliberately: see EmailWebhooks.
     webhook:

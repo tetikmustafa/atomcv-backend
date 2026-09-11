@@ -15,13 +15,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                  providers: no key is a configuration fact, not a failure
  */
 @ConfigurationProperties(prefix = "atomcv.email")
-public record EmailProperties(String from, String fromName, String replyTo, String resendKey) {
+public record EmailProperties(
+        String from, String fromName, String replyTo, String resendKey, String unsubscribeUrl) {
 
     public EmailProperties {
         from = from == null || from.isBlank() ? "no-reply@localhost" : from;
         fromName = fromName == null || fromName.isBlank() ? "AtomCV" : fromName;
         replyTo = replyTo == null || replyTo.isBlank() ? null : replyTo;
         resendKey = resendKey == null || resendKey.isBlank() ? null : resendKey;
+        unsubscribeUrl = unsubscribeUrl == null || unsubscribeUrl.isBlank()
+                ? "http://localhost:3000/unsubscribe"
+                : unsubscribeUrl.replaceAll("/+$", "");
+    }
+
+    /**
+     * Where a person lands to turn the optional post off (Bolum 57.7).
+     *
+     * <p>A page on the frontend rather than an endpoint here, and Bolum 40.3
+     * is the reason: a gateway that fetches every link in a message would
+     * unsubscribe somebody who never clicked. The page carries the button.
+     */
+    public String unsubscribeLinkFor(java.util.UUID token) {
+        return unsubscribeUrl + "?t=" + token;
     }
 
     public boolean hasResendKey() {

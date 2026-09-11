@@ -56,13 +56,14 @@ public class MagicLinkService {
     private final SessionStore sessions;
     private final SignInRateLimit rateLimit;
     private final EmailSender email;
+    private final WelcomeGreeting welcome;
     private final EmailSuppressions suppressions;
     private final MagicLinkProperties properties;
     private final Clock clock;
 
     MagicLinkService(SignInAccounts accounts, MagicLinkTokens tokens, SessionStore sessions,
             SignInRateLimit rateLimit, EmailSender email, EmailSuppressions suppressions,
-            MagicLinkProperties properties, Clock clock) {
+            MagicLinkProperties properties, WelcomeGreeting welcome, Clock clock) {
         this.accounts = accounts;
         this.tokens = tokens;
         this.sessions = sessions;
@@ -70,6 +71,7 @@ public class MagicLinkService {
         this.email = email;
         this.suppressions = suppressions;
         this.properties = properties;
+        this.welcome = welcome;
         this.clock = clock;
     }
 
@@ -163,6 +165,8 @@ public class MagicLinkService {
             return Optional.empty();
         }
         UserAccount user = account.get();
+        // Asked before seen(...) fills in the field it reads (Bolum 57.7).
+        welcome.greetIfFirstSignIn(user);
         // Opening the email is the proof, and this is the moment it lands.
         user.markEmailVerified();
         accounts.seen(user, now);
