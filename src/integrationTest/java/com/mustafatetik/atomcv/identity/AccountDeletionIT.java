@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mustafatetik.atomcv.AbstractIntegrationTest;
+import com.mustafatetik.atomcv.email.EmailMessage;
+import com.mustafatetik.atomcv.email.EmailSender;
 import com.mustafatetik.atomcv.identity.domain.AuthMethod;
 import com.mustafatetik.atomcv.identity.service.AccountDeletionService;
 import com.mustafatetik.atomcv.identity.service.SessionStore;
@@ -14,6 +16,7 @@ import com.mustafatetik.atomcv.profile.seed.DevSeeder;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserRole;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -21,6 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,6 +52,28 @@ class AccountDeletionIT extends AbstractIntegrationTest {
      * it would let the product mail somewhere that had already bounced.
      */
     private static final List<String> SURVIVES = List.of("llm_invocations");
+
+    /** The same recording sender MagicLinkApiIT uses, for the same reason. */
+    @TestConfiguration
+    static class RecordingSender {
+
+        @Bean
+        @Primary
+        EmailSender recordingEmailSender(List<EmailMessage> sent) {
+            return message -> {
+                sent.add(message);
+                return true;
+            };
+        }
+
+        @Bean
+        List<EmailMessage> sent() {
+            return new ArrayList<>();
+        }
+    }
+
+    @Autowired
+    private List<EmailMessage> sent;
 
     @Autowired
     private MockMvc mvc;
@@ -110,6 +138,43 @@ class AccountDeletionIT extends AbstractIntegrationTest {
      * <strong>The release checklist's line, as an assertion.</strong> Every
      * table that can hold this person holds nothing of theirs afterwards.
      */
+    /**
+     * Bolum 57.4 requires the person to be told, and Bolum 57.7 makes it the
+     * one lifecycle email nobody can switch off.
+     *
+     * <p><strong>Read before the row goes, sent after the commit.</strong>
+     * The address is the account's own, and by the time this assertion runs
+     * there is no row left to have read it from — which is the whole reason
+     * the service returns it rather than sending it.
+     */
+    @Test
+    void deletingAnAccountTellsTheAddressItIsGone() throws Exception {
+        String address = jdbc.queryForObject(
+                "SELECT email FROM users WHERE id = ?", String.class, LocalDevUser.DEV_USER_ID);
+        sent.clear();
+
+        mvc.perform(delete("/api/v1/account")).andExpect(status().isNoContent());
+
+        assertThat(sent).hasSize(1);
+        assertThat(sent.get(0).to()).isEqualTo(address);
+        assertThat(sent.get(0).subject()).contains("silindi");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE id = ?",
+                Integer.class, LocalDevUser.DEV_USER_ID))
+                .as("and the row it was read from is gone")
+                .isZero();
+    }
+
+    /** A second press has nobody to tell, and telling twice would be worse. */
+    @Test
+    void deletingNothingSendsNothing() throws Exception {
+        mvc.perform(delete("/api/v1/account")).andExpect(status().isNoContent());
+        sent.clear();
+
+        assertThat(deletions.delete(UserContext.of(LocalDevUser.DEV_USER_ID))).isEmpty();
+
+        assertThat(sent).isEmpty();
+    }
+
     @Test
     void deletingAnAccountEmptiesEveryTableThatHeldIt() throws Exception {
         assertThat(rowsOwnedByTheUser()).isNotEmpty();
@@ -226,8 +291,8 @@ class AccountDeletionIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
 
         assertThat(deletions.delete(UserContext.of(LocalDevUser.DEV_USER_ID)))
-                .as("an account that is not there is false, not a failure")
-                .isFalse();
+                .as("an account that is not there has nobody to tell, and is not a failure")
+                .isEmpty();
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────

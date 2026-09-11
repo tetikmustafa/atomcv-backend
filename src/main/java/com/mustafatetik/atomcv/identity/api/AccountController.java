@@ -1,5 +1,7 @@
 package com.mustafatetik.atomcv.identity.api;
 
+import com.mustafatetik.atomcv.email.AccountDeletedEmail;
+import com.mustafatetik.atomcv.email.EmailSender;
 import com.mustafatetik.atomcv.identity.service.AccountDeletionService;
 import com.mustafatetik.atomcv.identity.service.SessionCookies;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
@@ -34,13 +36,15 @@ public class AccountController {
 
     private final CurrentUser currentUser;
     private final AccountDeletionService deletion;
+    private final EmailSender email;
     private final SessionCookies cookies;
 
     AccountController(CurrentUser currentUser, AccountDeletionService deletion,
-            SessionCookies cookies) {
+            EmailSender email, SessionCookies cookies) {
 
         this.currentUser = currentUser;
         this.deletion = deletion;
+        this.email = email;
         this.cookies = cookies;
     }
 
@@ -76,7 +80,12 @@ public class AccountController {
     })
     @DeleteMapping
     public ResponseEntity<Void> delete() {
-        deletion.delete(currentUser.require());
+        // Sent here rather than inside the service, and Bolum 57.7 says why:
+        // the service is the transaction, so a confirmation written after it
+        // returns is a confirmation of something that actually committed.
+        deletion.delete(currentUser.require())
+                .map(gone -> AccountDeletedEmail.to(gone.email(), gone.locale()))
+                .ifPresent(email::send);
 
         // The cookie goes with the row. Leaving it set would point a browser
         // at a session that no longer resolves, and every screen it opened

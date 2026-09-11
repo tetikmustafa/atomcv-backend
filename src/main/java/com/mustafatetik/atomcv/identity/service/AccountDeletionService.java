@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.billing.QuotaSubject;
 import com.mustafatetik.atomcv.billing.UsageCounters;
 import com.mustafatetik.atomcv.identity.repository.SignInAccounts;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,11 +56,19 @@ public class AccountDeletionService {
     }
 
     /**
-     * @return false when there was no such account, which is not an error: a
-     *         second press of the button is the same answer as the first
+     * @return the address to tell, or empty when there was no such account —
+     *         which is not an error: a second press of the button is the same
+     *         answer as the first.
+     *
+     *         <p><strong>The caller sends, and that is the point</strong>
+     *         (Bolum 57.7). This method is the transaction; returning from it
+     *         is what makes the confirmation land after a commit rather than
+     *         before one, and a rolled-back deletion therefore tells nobody
+     *         anything. The address is read here because after the row is gone
+     *         there is nowhere left to read it from.
      */
     @Transactional
-    public boolean delete(UserContext user) {
+    public Optional<Deleted> delete(UserContext user) {
         UUID userId = user.userId();
 
         // Sessions first, and this throws rather than reporting zero when it
@@ -72,9 +81,12 @@ public class AccountDeletionService {
 
         int forgotten = counters.forget(QuotaSubject.of(user));
 
+        Optional<Deleted> told = accounts.byId(userId)
+                .map(account -> new Deleted(account.getEmail(), account.getLocale()));
+
         boolean existed = accounts.deleteById(userId);
         if (!existed) {
-            return false;
+            return Optional.empty();
         }
 
         // Bolum 57.4's record: that it happened and when, never what was in
@@ -82,6 +94,13 @@ public class AccountDeletionService {
         // which is exactly what makes it safe to keep in a log.
         log.info("Deleted account {}: {} sessions revoked, {} usage rows removed",
                 userId, revoked, forgotten);
-        return true;
+        return told;
+    }
+
+    /**
+     * An address and the language to write it in, carried out of a transaction
+     * that has just removed the row both came from.
+     */
+    public record Deleted(String email, String locale) {
     }
 }
