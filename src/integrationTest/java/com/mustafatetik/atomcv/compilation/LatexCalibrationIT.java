@@ -265,7 +265,7 @@ class LatexCalibrationIT {
      *
      * <p><strong>Measured inside an entry, not under a section heading.</strong>
      * The two are not the same list — TeX adds the space above one with
-     * {@code ddvspace} and a section heading has just left some behind —
+     * {@code \addvspace} and a section heading has just left some behind —
      * and while this was derived from the section-level probe a real page came
      * out two pages long. A bullet that is charged a tenth of a point light is
      * six points a page on a CV of sixty.
