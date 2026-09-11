@@ -111,7 +111,7 @@ SENTRY_DSN=
 R2_ACCOUNT_ID=  R2_ACCESS_KEY=  R2_SECRET_KEY=  R2_BUCKET=
 
 # Bütçe
-DAILY_BUDGET_USD=40
+ANOMALY_DAILY_BUDGET_USD=40
 ```
 
 **`SESSION_SECRET` yok, ve olmamalı.** Oturum kimliği `SecureRandom`'dan gelen

@@ -87,7 +87,7 @@ VERİ
 MALİYET
 □ Kill switch test edildi
 □ Kota sayaçları doğru çalışıyor
-□ DAILY_BUDGET_USD ayarlandı
+□ ANOMALY_DAILY_BUDGET_USD ayarlandı
 □ Fiyat tablosu kullanılan modeli kapsıyor
   → LlmPricingAudit açılışta sessiz, llm.unpriced_calls artmıyor
 □ Anomali alarmları e-postaya geliyor
@@ -157,7 +157,7 @@ KOD
 □ README.md, CHANGELOG.md başlıkları
 
 KONFİGÜRASYON
-□ .env / .env.example → APP_NAME, APP_BASE_URL
+□ .env / .env.example → APP_BASE_URL (APP_NAME kaldırıldı: okuyan yoktu)
 □ docker-compose*.yml → servis adları, volume adları, POSTGRES_DB
 □ nginx.conf → server_name, ssl_certificate yolları
 □ GitHub imaj adları → ghcr.io/.../yeni-ad-backend

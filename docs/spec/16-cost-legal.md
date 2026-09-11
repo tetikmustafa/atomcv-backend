@@ -66,7 +66,7 @@ Prompt caching + Batch API ile **%30-50 daha düşük** olabilir.
 
 **Gerçekçi ilk yıl beklentisi: €16-25/ay**
 
-**Kill-switch eşiği: $40/ay** (`DAILY_BUDGET_USD` ile günlük ~$1.33)
+**Kill-switch eşiği: $40/ay** (`ANOMALY_DAILY_BUDGET_USD` ile günlük ~$1.33)
 
 ### 56.5 Geliştirme sırasındaki maliyetler
 

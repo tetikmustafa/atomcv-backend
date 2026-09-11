@@ -213,6 +213,12 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("performance-budgets.yaml"))
         .withPropertyName("performanceBudgets")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // Same reasoning for the same reason: EnvExampleTest is what keeps a knob
+    // in the example wired to something, and a knob edited without the test
+    // running is exactly how DAILY_BUDGET_USD came to point at nothing.
+    inputs.file(rootProject.file(".env.example"))
+        .withPropertyName("envExample")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and
