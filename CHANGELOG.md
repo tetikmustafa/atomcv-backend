@@ -6,7 +6,10 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Stage 0 — skeleton: complete. Stage 1 — walking skeleton: in progress.
+Stages 0-3 are closed and were audited end to end on 2026-08-28. Stage 4
+(maturity) is most of the way through: the edit loop, three templates with
+customization, application tracking, DOCX download, an LLM evaluation lane,
+performance budgets and lifecycle emails have all landed. Not deployed.
 
 ### Added — Stage 1
 

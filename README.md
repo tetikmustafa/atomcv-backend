@@ -10,9 +10,12 @@ structured dataset. A CV is a transient *view* rendered from that data.
 This repository holds the backend only. The frontend lives in
 [`atomcv-frontend`](https://github.com/tetikmustafa/atomcv-frontend) (Next.js).
 
-> **Status: Stage 0 — skeleton.** The project structure, database baseline,
-> local environment and CI pipeline are in place. There is no working
-> generation pipeline yet. See [CHANGELOG.md](CHANGELOG.md).
+> **Status: working, not deployed.** The pipeline runs end to end — upload a
+> CV, generate against a job posting, edit the result, download a PDF or a
+> DOCX. Three templates, and each one's page promise is checked against the
+> real TeX compiler — seven profiles, every one inside three percent. What is
+> missing is a server: there is no deployment, so nobody is running this but
+> you. See [CHANGELOG.md](CHANGELOG.md).
 
 ## How it works
 
@@ -27,6 +30,7 @@ actually suits the problem:
 | D — Rewriting | LLM | Narrow, validated, per atom |
 | E — Rendering | Code | LaTeX, HTML, DOCX |
 | F — Verification | Code | Page count, ATS readability |
+| G — Editing | LLM + code | A sentence, or a toggle, re-run through selection |
 
 Scoring, selection and rendering never involve an LLM. The page limit is a
 mathematical constraint, not a request in a prompt: every unit of content is
@@ -106,10 +110,17 @@ rendering may never reach for an LLM.
 
 ## Architecture documents
 
-The full specification lives in [`docs/`](docs/) and is written in Turkish.
-`teknik-mimari-dokumani.md` covers every technical decision, the schema and
-the algorithms; `urun-konsept-dokumani-v2.md` covers the product concept and
-user journeys. [CLAUDE.md](CLAUDE.md) maps tasks to the sections worth reading.
+The full specification lives in [`docs/spec/`](docs/spec/) — eighteen files,
+around 8,500 lines, **written in Turkish**. Start at
+[`docs/INDEX.md`](docs/INDEX.md), which routes a question to the section that
+answers it; reading a file end to end is rarely the fastest way in.
+[`docs/STATUS.md`](docs/STATUS.md) says where both repositories stand today,
+and [CLAUDE.md](CLAUDE.md) carries the working rules — including the ones this
+machine taught us the hard way.
+
+Nothing in the specification is a summary of the code. Where the two disagree
+the code wins and the section is corrected, which has happened often enough
+that the corrections are part of the record rather than an embarrassment.
 
 ## Security
 
