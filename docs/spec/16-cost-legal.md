@@ -245,6 +245,63 @@ söylüyormuş gibi duran bir etiket üretir.
 **Yeni bir alan bu üç ölçütten geçse bile buraya yazılmadan inmez.** Bu bölüm,
 istisnanın listesidir; listede olmayan alan istisna değildir.
 
+### 57.7 Yaşam döngüsü e-postaları — kapalı liste
+
+Aşama 4 bu maddeyi adıyla anıyordu (§ 55, `[B+F] Ürün`) ama hangi e-postaların
+gönderileceğini hiçbir yer tanımlamıyordu. Tanım burada, ve **liste kapalı**:
+listede olmayan bir e-posta gönderilmez, eklenmesi bu bölümün değişmesi demektir.
+
+| E-posta | Tetikleyici | Tercihe tabi mi? |
+|---|---|---|
+| **Hoş geldin** | `users` satırı **ilk kez** yazıldığında | evet |
+| **Silme onayı** | hesap silme işlemi commit olduğunda | **hayır** — işlemsel |
+| ~~Hatırlatıcı, özet, duyuru~~ | — | gönderilmiyor |
+
+**Sihirli bağlantı bu listeye dahil değil** (§ 40.2): o bir kimlik doğrulama
+adımıdır, kişinin o an yaptığı bir eyleme cevap verir ve kapatılamaz.
+
+**Hoş geldin, girişte değil hesap açılışında.** Tetikleyici `users` satırının
+yaratılması — sihirli bağlantıyla, OAuth'la ya da anonim çalışmanın hesaba
+bağlanmasıyla (§ 41.3), üçü de aynı satırı yazar. Her girişte gönderilmesi
+sihirli bağlantının hemen ardından ikinci bir posta demek olurdu.
+
+**Silme onayı işlemsel, ve iki kısıt taşıyor.** Adres **satır silinmeden önce**
+okunur — sonrası yok. Posta **işlem commit olduktan sonra** çıkar: geri alınan
+bir silmenin onayı, olmamış bir şeyin bildirimidir. § 57.4 verinin gittiğini
+söylemeyi zaten gerektiriyor; kişinin bunu kapatabilmesi, onu bilgilendirmemek
+için bir yol açardı.
+
+#### Tercih
+
+**`users.lifecycle_emails`**, `BOOLEAN NOT NULL DEFAULT true`. Kullanıcı
+düzeyinde, çünkü e-posta hesaba aittir: anonim profilin adresi yoktur ve
+`profiles.preferences` onu taşıyamaz.
+
+- **`PATCH /profile/preferences` alanı okur ve kullanıcı satırına yazar.** Yeni
+  bir uç açılmadı; ayarlar ekranı zaten burayı çağırıyor.
+- **Her tercihe tabi postada kapatma bağlantısı var**, ve oturum istemez —
+  gelen kutusundan tıklanır. İmzalı, tek kullanıcıya bağlı, süresiz.
+- **Bastırma listesi (`EmailSuppressions`) tercihin üstünde.** Sert bounce almış
+  bir adrese, tercih açık olsa da gönderilmez.
+
+**Tercih pratikte hoş geldin postasını durdurmaz** ve bu bilinçli: hiç giriş
+yapmamış biri onu kapatmış olamaz. Tercihin asıl işi listeye sonradan eklenecek
+postalar; hoş geldin postasının taşıdığı kapatma bağlantısı da tercihi ilk kez
+ulaşılabilir kılan şeydir. Bu yüzden **o bağlantı zorunludur**, süsleme değil.
+
+#### Ortak kısıtlar
+
+- **Dil `users.locale`'dan gelir** (§ 32). E-posta, bizim hiçbir istemcimizin
+  olmadığı bir gelen kutusunda okunur; cümle çıkmadan önce yazılmalıdır — hata
+  kataloğunun kod gönderip istemciye çevirtme kalıbı burada geçmez.
+- **Metin ve HTML, her zaman ikisi birden** (§ 40.2'nin kararı).
+- **Gönderim hatası raporlanır, fırlatılmaz.** `EmailSender.send` bool döner;
+  bir postanın gitmemesi silmeyi ya da hesap açılışını geri almaz.
+- **Mutlak kural 4 burada da geçerli:** profil içeriği, atom metni ya da ilan
+  hiçbir yaşam döngüsü postasına girmez.
+
+---
+
 ---
 
 ## 58. Proje Sürdürülebilirliği
