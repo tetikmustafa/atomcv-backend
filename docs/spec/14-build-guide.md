@@ -131,7 +131,6 @@ Linux runner'da çalışmaz.
 **`.env.example`** (gerçek değerler ASLA commit edilmez):
 ```bash
 # ── Uygulama ──
-APP_NAME=AtomCV
 APP_BASE_URL=http://localhost:3000
 
 # ── Veritabanı ──
@@ -161,7 +160,7 @@ OTLP_ENABLED=   OTLP_URL=   OTLP_AUTHORIZATION=   OTLP_DATASET=
 SENTRY_DSN=
 
 # ── Bütçe ──
-DAILY_BUDGET_USD=40
+ANOMALY_DAILY_BUDGET_USD=40
 ```
 
 ### Adım 1.4 — GitHub deposu
