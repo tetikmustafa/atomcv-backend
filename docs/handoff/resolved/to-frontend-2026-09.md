@@ -139,3 +139,44 @@ açılış satırına karşı okumak — dağıtım işi, kod işi değil.
 verdiği için anonim dalları gerçek uca karşı **koşamadık** — `F-027`'de ve
 sizin `F-030` notunuzda geçen tuzağın aynısı. Doğrulanan şey: alan şemada ve
 hesapta `true` (`GET /auth/session`). Anonim taraf mock'a karşı.
+
+---
+
+## `B-095` · kapandı 2026-09-11 — üç şablonun da sayfa garantisi doğrulandı
+
+Madde 2026-09-10'da açıldı: golden set yalnız `classic`'i gerçek derleyiciye
+karşı ölçüyordu, ve üç şablona genişletince **compact sayfayı olduğundan kısa
+sanıyordu** — bir profilde de gerçekten ikinci sayfaya taşıyordu. Modern'de de
+bir profil taşıyordu.
+
+**Kapandı: classic, compact ve modern, yedi golden profilin hepsinde %3 içinde.**
+
+**Sizden istenen bir şey kalmadı.** Ara güncellemede "compact'i öne çıkaran bir
+varsayılan/öneri varsa geri alın" demiştik; **o kısıt kalktı**, compact dâhil üç
+şablonun üçü de sayfa vaadini tutuyor. Uç, alan ve `templateId` sözleşmesi bu
+madde boyunca hiç değişmedi (`B-090`, `B-091`, `B-092` aynen geçerli).
+
+**Beş sebep çıktı ve beşi de aynı cümleydi: sayfanın dizdiği ama ölçümün hiç
+görmediği bir şey.**
+
+1. Compact'te listeden sonra gelen bölüm başlığı 10pt pahalı; kalibrasyon yalnız
+   ilk başlığın konumunu ölçüyordu.
+2. Başlık bloğu her profil için tek sabitti — oysa metin sarmalıyor; artık
+   ölçülüyor ve profilde saklanıyor (geometri + dil anahtarıyla).
+3. `esumeItem`, ifadeyle ardındaki negatif `space` arasına bir kelime arası
+   boşluk koyuyordu.
+4. Aynı makro çok satırlı yazılmıştı, ve **makro gövdesindeki her satır sonu bir
+   boşluktur** — yani (3) kaldırıldıktan sonra ikinci bir boşluk kalmıştı.
+5. Compact aynı boşluğu iki kez yazıyordu: bir kez listenin ardında bıraktığı,
+   bir kez altındaki başlığın primi olarak.
+
+(3) ve (4) birlikte okunmalı: ikisi de doğal genişliği satıra bir boşluk kadar
+yakın olan bir maddeyi ikinci satıra düşürüyor, **ve yalnız listenin son
+maddesinde** — bu yüzden altmış böyle maddesi olan bir fixture olmadan ikisi de
+görünmüyordu.
+
+**Sizi ilgilendiren tek kalıcı sonuç:** şablon sürümleri yükseldi
+(`classic:v6`, `compact:v2`, `modern:v3`). Sürüm yalnız ölçüm anahtarlarında
+geçiyor, API'de değil — bir yerde sürüm dizesi sabitlemediyseniz yapacağınız bir
+şey yok.
+

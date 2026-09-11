@@ -231,8 +231,8 @@ dolu oluyor. Aynı cepheyi istiyor, aynı dilime bırakıldı.
 ## Dilim F — gerçek Klasik şablonu (Bulgu 3) · 2026-09-04
 
 `resumeItem`, `resumeSubheading` ve `resumeProjectHeading` bu repoda **hiç
-yoktu**; "Klasik" üç uydurma komuttu (`tomcvName`/`tomcvContact`/
-`tomcvEntry`), `templates.yaml` spec'te ve CI yol filtresinde adı geçiyordu
+yoktu**; "Klasik" üç uydurma komuttu (`\atomcvName`/`\atomcvContact`/
+`\atomcvEntry`), `templates.yaml` spec'te ve CI yol filtresinde adı geçiyordu
 ama dosya yoktu, iletişim bloğu çıplak değerleri `·` ile birleştiriyordu, ve
 `RenderableSection`'ın **`layout` alanı yoktu** — yani `INLINE_LIST` enum'da,
 şemada ve CHECK kısıtında vardı, sayfaya çıkması imkânsızdı.
@@ -240,11 +240,11 @@ ama dosya yoktu, iletişim bloğu çıplak değerleri `·` ile birleştiriyordu,
 **Üç mühendislik kararı, üçü de bilinçli:**
 - Referans pdfLaTeX ve kendi sayfa kurulumunu varsayıyor; biz XeLaTeX'iz ve
   kenar boşluğu kullanıcı ayarı. **Komutlar ve bölüm biçimi alındı**,
-  `glyphtounicode` ve `ddtolength` geometrisi alınmadı.
+  `glyphtounicode` ve `\addtolength` geometrisi alınmadı.
 - **`TWO_COLUMN` bilerek uygulanmadı.** § 33.5 Klasik'i ATS için tek sütun
   tutuyor; renderer'ın bunu sessizce ezmesi render kararı değil.
-- **Referansın negatif `space`'leri, sahibi olduğu öğenin dışına sızdığı her
-  yerde çıkarıldı.** Listeden sonraki bir `space`, sonraki section başlığını
+- **Referansın negatif `\vspace`'leri, sahibi olduğu öğenin dışına sızdığı her
+  yerde çıkarıldı.** Listeden sonraki bir `\vspace`, sonraki section başlığını
   ilkinden ucuza getiriyor; öğe başına tek sayı taşıyan bir maliyet modeli bunu
   ifade edemez. `	itlespacing` ve enumitem aynı işi konum bağımsız yapıyor.
 
@@ -266,7 +266,7 @@ dağıttığına bağlıydı. Kalibrasyon artık benzeri benzerle ölçüyor ve
 
 **Ekleme — `SECTION_LIST_OVERHEAD`.** Section başlığının **hemen altında**
 açılan liste ile entry başlığının altında açılan liste aynı maliyette değil:
-TeX boşluğu `ddvspace` ile ekliyor, yani istenenle mevcut olanın **büyüğünü**
+TeX boşluğu `\addvspace` ile ekliyor, yani istenenle mevcut olanın **büyüğünü**
 alıyor, toplamını değil. Başlık kendi boşluğunu yeni bırakmış olduğu için
 listenin ekleyeceği neredeyse yok (−3.17, bir düzeltme terimi, fiziksel
 yükseklik değil); entry başlığı ise paragrafı bitirmiş, paragraf boşluğu hâlâ

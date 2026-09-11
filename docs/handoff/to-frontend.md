@@ -265,41 +265,6 @@ bugünkü profilden değil. Yani sonradan bir maddeyi düzenlemek, gönderilmiş
 CV'nin Word hâlini de değiştirmiyor. Ve metin katmanı gerçek metin — bir ATS
 kelimeleri okuyabiliyor, resim değil.
 
-### B-095 · Compact düzeldi, modern'de bir şekil hâlâ dışarıda
-
-**Since:** backend `df5dad9`, `2fd22e8` · Aşama 4 · § 23.1, § 26.4, XI-A.3
-· **güncellendi 2026-09-11**
-
-**Neden (özet):** Golden set yalnız `classic`'i gerçek derleyiciye karşı
-ölçüyordu. Üç şablona genişletince compact'in sayfayı olduğundan kısa sandığı,
-bir profilde de ikinci sayfaya taştığı çıktı. Sebep tek bir şey değildi, üçü
-birden çıktı ve hepsi aynı kusurun yüzleriydi: **kullanıcı metni taşıyan bir
-parçanın, o metni taşımayan bir şeyden fiyatlanması.**
-
-**Şu an durum:**
-
-- **`classic` — doğrulandı.** Yedi golden profilin hepsi %3 içinde.
-- **`compact` — doğrulandı** (2026-09-11). Aynı yedi profil, hepsi %3 içinde.
-- **`modern` — biri hariç.** Altı profil %3 içinde; `stress_long_career`
-  şeklinde %6.9 sapıyor ve **az tahmin ediyor**, yani o şekilde bir sayfa
-  taşabilir. Sebep bilinen ve ölçülü: modern'de iç içe bir listenin **ilk
-  maddesi** iki satıra diziliyor, aynı ifade listenin aşağısında tek satır.
-
-**İstenen — iki şey değişti:**
-
-1. **Compact üzerindeki kısıtı kaldırabilirsiniz.** `B-095`'in ilk hâli
-   "compact'i öne çıkaran bir varsayılan/öneri varsa geri alın" diyordu; o
-   gerekçe kalktı. Compact artık sayfa vaadini gerçek derleyiciye karşı
-   tutuyor.
-2. **Modern için uyarı gerekmiyor, ama bilin.** Uç, alanlar, `templateId`
-   sözleşmesi hiç değişmedi. Modern'de taşan şekil, tek bir bölüm altında çok
-   sayıda uzun maddesi olan CV'ler. Böyle bir hata bildirimi gelirse bilinen
-   arızadır — bize açmayın.
-
-**Kapanış:** Modern de listeye girdiğinde bu madde `resolved/`'a iner. Backend
-tarafında `TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE` hangi şablonların
-doğrulandığını taşıyor ve dışarıda kalanı isimlendiren bir test var.
-
 ---
 
 ## Dağıtım bekleyen doğrulamalar

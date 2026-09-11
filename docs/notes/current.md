@@ -16,9 +16,8 @@ sonrasının yuvarlanan özetleri `archive/stage-3-closeout.md`'ye indi
 
 **Düzeltme — golden set üç şablona genişletilince sayfa garantisi compact'te
 tutmuyor çıktı** (`B-095`): az tahmin, yani taşma yönü, ve bir profil taştı.
-Dört sebep, **dördü de aynı kusurun yüzü — kullanıcı metni taşıyan bir parçayı,
-o metni taşımayan bir şeyden fiyatlamak** — ve dördü de yalnız gerçek
-derleyiciye sorunca göründü:
+Beş sebep, **beşi de aynı cümle — sayfanın dizdiği ama ölçümün hiç görmediği
+bir şey** — ve beşi de yalnız gerçek derleyiciye sorunca göründü:
 
 1. **Listeden sonraki bölüm başlığı compact'te 10pt pahalı** (`nosep` üstte
    boşluk bırakmıyor); kalibrasyon yalnız *ilk* başlığın konumunu ölçüyordu,
@@ -32,19 +31,31 @@ derleyiciye sorunca göründü:
    arası boşluk koyuyordu** (compact'te yok). Ölçüm kutusu o boşluksuz diziyor,
    yani genişliği satıra bir boşluk kadar yakın madde kutuda sığıp sayfada
    sarmalıyordu; stress_long_career'ın altmış maddesi o bantta ve modern'deki
-   ikinci sayfanın tamamı buydu. Sürümler yükseldi (classic 5, modern 2),
-   maliyetler aynı çıktı — değişen kutu değil sayfa.
+   ikinci sayfanın tamamı buydu. Maliyetler aynı çıktı — değişen kutu değil sayfa.
 4. **Compact aynı boşluğu iki kez yazıyordu:** `SECTION_LIST_CLOSE` ile
    `SECTION_HEADER_AFTER_LIST` classic'te iki ayrı şey, compact'te aynı 10 puan.
    Kalibrasyon artık primi düşerek saklıyor.
+5. **Aynı makro çok satırlı yazılmıştı, ve makro gövdesindeki her satır sonu
+   bir boşluktur** — yani (3) kaldırıldıktan sonra ikinci bir boşluk kalmıştı.
+   Bu ikisi ancak listenin **son** maddesini vuruyor: aynı ifade 1. ve 2.
+   konumda kısa olanla aynı, sonuncuda bir satır fazla, ve arkasına herhangi
+   bir madde koyunca primin tamamı geri geliyor. Tek maddelik bir listenin tek
+   maddesi aynı zamanda sonuncusu olduğu için uzun süre "ilk madde" sandım;
+   `EntryFurnitureIT`'in kural probu ("iki konum eşit genişlikte") baştan beri
+   haklıymış, **soru yanlıştı.**
 
-**Durum:** classic ve compact yedi profilde de doğrulandı
-(`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil; ikinci bir test
-dışarıda kalanı isimlendiriyor). Modern'de `stress_long_career` %6.9 sapıyor:
-**iç içe listenin ilk maddesi modern'de iki satır, aynı ifade aşağıda tek.**
-Girdi başlığı, `\vspace`, tabular genişliği, eksik `\par` ve liste seviyesi
-elendi; `EntryFurnitureIT` primi de elenenleri de taşıyor. Yükseklikler "iki
-satır" derken kural probunun genişlikleri eşit ölçmesi çelişkisi, ipin ucu.
+**Durum: üçü de doğrulandı** — classic, compact ve modern, yedi profilin
+hepsinde %3 içinde (`TEMPLATES_WITH_A_CONFIRMED_PAGE_PROMISE`, `ids()` değil;
+ikinci bir test listede eksik olmadığını iddia ediyor). `B-095` kapandı.
+Sürümler: `classic:v6`, `compact:v2`, `modern:v3`.
+
+**Ders — heredoc'un yediği yarım ters bölü bir kontrol karakteridir.**
+CLAUDE.md heredoc'ların ters bölüyü yarıya indirdiğini söylüyor; söylemediği,
+geriye kalanın BEL/VT/CR olduğu — `\resumeItem` yorumda `^M` + `esumeItem`,
+`\vspace` `^K` + `space` oluyor. Yorum olduğu için derleyici susuyor, diff'te ve
+terminalde görünmüyor. Dört kaynak dosyada ve iki arşiv notunda bulundu. İki
+tarama yakalıyor: kaynakta herhangi bir kontrol karakteri, ve blok yorum içinde
+yıldızla başlamayan satır (CR zaten satır sonuna dönüştüyse ilki kaçırır).
 
 **Ders — ölçüm belgesiyle sayfa arasındaki her fark bir hatadır** (§ 22.4'ün
 üçüncü kuralı üç ayrı ayrıntıda kırılmıştı). Sapma testi yetmiyor: bir maddedeki

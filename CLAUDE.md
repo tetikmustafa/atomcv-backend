@@ -203,6 +203,14 @@ True here and nowhere in the architecture documents; each cost a debugging round
   Java regex written with four arrives with two and `"\\s+"` arrives as
   `"\s+"`. **Write any file containing a backslash with the editor tool, not
   `cat > X <<'EOF'`** — a heredoc'd Python script carrying them included.
+  **And when the halving lands on an escape, what arrives is a control
+  character**: `\resumeItem` becomes CR + `esumeItem`, `\vspace` becomes VT +
+  `space`, `\addvspace` becomes BEL + `ddvspace`. In a comment the compiler
+  says nothing, a diff shows nothing, and a terminal re-draws the line — six
+  of these sat in committed javadoc and archived notes before anything noticed.
+  Two greps find them: any control character in a file, and any line inside a
+  block comment that does not start with a star (a CR that already became a
+  line break leaves no control character behind, so the first grep misses it).
 
 ## Testing Requirements
 

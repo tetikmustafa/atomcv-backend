@@ -85,7 +85,7 @@ Sayfa: About (bir paragraf) · Education · Experience (2 rol) · **Projects
 
 ### Düzeltmeler
 
-**R1 — About artık `esumeParagraphListStart` + tek `esumeItem`.** Beşinci
+**R1 — About artık `\resumeParagraphListStart` + tek `\resumeItem`.** Beşinci
 düzen `PARAGRAPH`, `V9` eski satırları taşıyor, `B-073` frontend'e gitti.
 
 **R2 — Tech Stack `	extbf{Kategori}{: öğe, öğe} \` satırları.** `InlineRow`
