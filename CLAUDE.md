@@ -159,13 +159,11 @@ True here and nowhere in the architecture documents; each cost a debugging round
   `application-local.yml` reads both from `LOCAL_*` names now, and **add any new
   production secret there the same way.**
 - **`.env`'s `LLM_CHAIN_*` does *not* make `make dev` spend money** — this file
-  said it did, wrongly twice over. `LLM_CHAIN_CHEAP` binds to `llm.chain.cheap`,
-  the property is `atomcv.llm.chain.cheap`, so the variable only feeds the
-  placeholder in the base document — which `application-local-fake.yml` outranks.
-  Measured, and pinned by `LocalProfileConfigTest`. The 127-second OpenRouter
-  call it cited was a `make record` run: all 141 real calls in the local database
-  wrote a fixture, and writing one is what `local-record` does. **The profile is
-  what spends money**, and `local-record`/`local-real` are supposed to.
+  claimed it did, wrongly twice over. `LLM_CHAIN_CHEAP` binds to
+  `llm.chain.cheap`, the property is `atomcv.llm.chain.cheap`, so it only feeds
+  the base document's placeholder, which `application-local-fake.yml` outranks.
+  Measured, and pinned by `LocalProfileConfigTest`. **The profile is what spends
+  money**, and `local-record`/`local-real` are supposed to.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner**; the source
   encoding is pinned in `build.gradle.kts`, do not remove it. The same console
   makes **`print()` of a non-ASCII string raise `UnicodeEncodeError`** — a
@@ -199,18 +197,12 @@ True here and nowhere in the architecture documents; each cost a debugging round
   `AbstractIntegrationTest` it silently drops the worker, anomaly and retention
   switches; the worker then claims rows another class asserts on, and that
   class is where the failure appears. Re-declare all three by hand.
-- **A shell heredoc here halves backslashes**, quoted delimiter or not, so a
-  Java regex written with four arrives with two and `"\\s+"` arrives as
-  `"\s+"`. **Write any file containing a backslash with the editor tool, not
-  `cat > X <<'EOF'`** — a heredoc'd Python script carrying them included.
-  **And when the halving lands on an escape, what arrives is a control
-  character**: `\resumeItem` becomes CR + `esumeItem`, `\vspace` becomes VT +
-  `space`, `\addvspace` becomes BEL + `ddvspace`. In a comment the compiler
-  says nothing, a diff shows nothing, and a terminal re-draws the line — six
-  of these sat in committed javadoc and archived notes before anything noticed.
-  Two greps find them: any control character in a file, and any line inside a
-  block comment that does not start with a star (a CR that already became a
-  line break leaves no control character behind, so the first grep misses it).
+- **A shell heredoc here halves backslashes**, quoted delimiter or not: `"\\s+"`
+  arrives as `"\s+"`, and on an escape the half is a control character —
+  `\resumeItem` becomes CR + `esumeItem` — which a compiler ignores in a comment
+  and both a diff and a terminal hide. **Write any file containing a backslash
+  with the editor tool, not `cat > X <<'EOF'`**; grep control characters and
+  star-less block-comment lines for the ones already committed.
 
 ## Testing Requirements
 

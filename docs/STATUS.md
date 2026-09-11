@@ -3,28 +3,24 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-09** · **kanal iki yönde de boş** — açık `B-nnn` ve `F-nnn` yok
+**2026-09-11** · **sıra frontend'de** — `B-088`…`B-094` ACK bekliyor
 
 ## Backend — `atomcv-backend`
 
 | Aşama / Adım | Durum |
 |---|---|
-| Aşama 0-2 · 3 — hesap ve MVP (3.7 profil editörü frontend'de) | ✅ |
-| Kapanış sonrası — uçtan uca ölçüm · dilim A-M | ✅ |
+| Aşama 0-3 — hesap, MVP, anonim akış (kapanış denetimi 08-28) | ✅ |
+| Aşama 4 — Faz G, üç şablon + Katman B, takip, DOCX, eval, bütçeler | ✅ |
 
-**Aşama 3 · dilim 9-14:** on bir `F-nnn`. Kapanış sonrası ölçüm: dört bulgu, on kusur; **dilim I-J-H** sayfaya bir şekil verdi (`notes/archive/`).
+**Aşama 4'te inenler.** **Faz G** düzenleme döngüsü: elle aç/kapa (`B-088`, kotasız) ve doğal dil (`B-089`, kotalı) — düzenleme render'a değil selection state'e uygulanıyor, sayfa sınırı yirmi düzenleme sonra da duruyor. **Üç şablon** (`B-090`, `B-092`), **Katman B** slider'ları (`B-091`, V12 `template_capacities`), **başvuru takibi** (`B-093`), **DOCX indirme** (`B-094`). Test tarafında: gerçek modele karşı **LLM eval** lane'i (`llmEval`, § 53.5), **performans bütçeleri** (`performance-budgets.yaml`, § 52.6) ve golden set'in üç şablona genişletilmesi.
 
-**Dilim K-M** (`notes/archive/`): sayfa referansa karşı ölçüldü (84 atom; 4/4 About · 7/7 Tech Stack · 14/14 proje · 56/56 madde, 0 yanlış pozitif); şablon referansın kendisi (`classic:v4`, `B-074`), iki ölçüm hatası kapandı; Tech Stack ilana göre süzülüyor (§ 33.4, LLM'siz); **maliyet `usage.cost`**, her istekte `data_collection: deny`.
+**Sayfa garantisi: üçünün de tuttuğu gerçek derleyiciye karşı doğrulandı** — yedi golden profil, hepsi %3 içinde. Genişletme **beş kusur** çıkardı ve beşi de aynı cümleydi: *sayfanın dizdiği ama ölçümün hiç görmediği bir şey.* Listeden sonraki bölüm başlığı; sabit sanılan başlık bloğu (V13 `profiles.header_costs`, artık ölçülüyor); `\resumeItem`'ın iki ayrı kaçak boşluğu; compact'in aynı boşluğu iki kez yazması. **İkisi kullanıcıya ulaşmıştı** — compact'te ve modern'de birer profil ikinci sayfaya taşıyordu. `B-095` açıldı, düzeltildi, kapandı. **Şablon sürümleri yükseldi** (`classic:v6`, `compact:v2`, `modern:v3`); sürüm yalnız ölçüm anahtarlarında geçiyor, API'de değil.
 
-**Anonim akış indi — beş dilim, § 35.7.2-5 ve § 51.6.1.** Hesapsız kişi profil çıkarıyor, **düzenliyor**, ilana göre CV üretiyor, okuyup indiriyor, ve hesap açınca **profilini ve ürettiklerini** götürüyor; kod yolu hesabınkiyle aynı. **Sapma:** anonim profil Redis belgesi değil, sahibi olmayan + `expires_at` taşıyan satır — beş dakikada süpürülüyor ama yedeğe yakalanırsa şifreli arşivde **altı aya kadar** kalabilir (`B-080` gizlilik metni). § 35.7'nin üç limiti *zorlanıyor*; içe aktarım ve üretim **challenge** istiyor; ön yazı hesabın.
+**Ölçümler:** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (`PhaseDReachTest`, sebep aritmetik); `cover_letter` **v1** (v2 turu 169 kelime, bant 255-290); üç BOM override'ı hâlâ gerekli, `SecurityPatchFloorTest` tutuyor.
 
-**Ölçümler:** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (`PhaseDReachTest`, sebep aritmetik); `cover_letter` **v1** (v2 turu 169 kelime, bant 255-290); yazıyla sayı muhafızda; üç BOM override'ı hâlâ gerekli, `SecurityPatchFloorTest` tutuyor.
+**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4); OAuth, Turnstile ve `B-083`'ün challenge'ı gerçek uca karşı denenmedi; GitHub entegrasyonu (§ 31.8) gerçek bir OAuth uygulaması istiyor.
 
-**`F-028`-`F-030` cevaplandı (PR #164), ve ikisi gerçek kusurdu.** Yetenek bloğunda **`canWriteCoverLetter`** var artık — ön yazı `canSaveHistory` vekilinden okunuyordu. `FEATURE_REQUIRES_ACCOUNT`'ın `feature`'ı **kapalı sözlük** (`AccountFeature`, § D.6.1) ve her değerinin blokta bir boolean karşılığı var. İki uç (`feedback`, `cover-letter/regenerate`) anonime **401 yerine 403** dönüyor — 401 "oturumunuz bitti" dedirtiyordu, oysa oturum yerindeydi. **`POST /profile/import`'un `challengeToken`'ı şemada query parametresiydi**, artık form alanı (springdoc çok parçalı uçta `@RequestParam`'ı query diye yayımlıyor — sonraki çok parçalı uç için de geçerli).
-
-**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4), OAuth ve Turnstile'ın gerçek uca karşı denenmesi.
-
-**Test:** 1287 birim · 476 entegrasyon · latex 64/64 — 0 hata
+**Test:** 1698 birim · 523 entegrasyon · latex 141 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -50,7 +46,7 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra kimsede değil — iki kanal da boş.** `F-001`-`F-030` ve `B-001`-`B-087`
-kapandı ve `handoff/resolved/`'a indi (2026-09-09). Bir sonraki madde
-dağıtımdan gelir: OAuth sıçraması, sihirli bağlantının Turnstile'ı ve
-`B-083`'ün challenge'ı hâlâ gerçek uca karşı denenmedi.
+**Sıra frontend'de.** `B-088`…`B-094` yedi madde açık: Faz G'nin iki ucu, üç
+şablon, Katman B, takip ve DOCX. `B-095` sayfa garantisi için açılmıştı,
+düzeltilip `resolved/`'a indi — frontend'den bir şey istemiyor, tek kalıcı
+sonucu yükselen şablon sürümleri. Geri kalan her şey dağıtımı bekliyor.
