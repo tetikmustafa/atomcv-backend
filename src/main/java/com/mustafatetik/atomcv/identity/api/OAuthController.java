@@ -78,6 +78,7 @@ public class OAuthController {
     }
 
     @Operation(
+            operationId = "listAuthProviders",
             summary = "Which providers this deployment can sign people in with",
             description = """
                     A provider with no credentials configured is absent rather \
@@ -93,7 +94,7 @@ public class OAuthController {
                         .toList());
     }
 
-    @Operation(summary = "Begin signing in — redirects to the provider")
+    @Operation(operationId = "startOauth", summary = "Begin signing in — redirects to the provider")
     @GetMapping("/oauth/{provider}/start")
     public ResponseEntity<Void> start(
             @PathVariable String provider,
@@ -108,7 +109,7 @@ public class OAuthController {
         return redirectTo(clients.get(target).authorizationUri(state));
     }
 
-    @Operation(summary = "Where the provider sends the browser back")
+    @Operation(operationId = "oauthCallback", summary = "Where the provider sends the browser back")
     @GetMapping("/oauth/{provider}/callback")
     public ResponseEntity<Void> callback(
             @PathVariable String provider,

@@ -58,7 +58,7 @@ public class AccountController {
     public record AccountSettings(boolean lifecycleEmails) {
     }
 
-    @Operation(summary = "The account's own settings")
+    @Operation(operationId = "accountSettings", summary = "The account's own settings")
     @ApiResponse(responseCode = "200", description = "The current values")
     @GetMapping
     public AccountSettings settings() {
@@ -73,7 +73,7 @@ public class AccountController {
      * about a CV would refuse a change about email. This one belongs to the
      * account, which is also the only thing that has an address.
      */
-    @Operation(summary = "Turn the optional emails on or off (Bolum 57.7)")
+    @Operation(operationId = "updateAccountSettings", summary = "Turn the optional emails on or off (Bolum 57.7)")
     @ApiResponse(responseCode = "200", description = "The value as it now stands")
     @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -83,6 +83,7 @@ public class AccountController {
     }
 
     @Operation(
+            operationId = "deleteAccount",
             summary = "Delete this account and everything in it",
             description = """
                     Immediate and irreversible. The profile, its atoms and \

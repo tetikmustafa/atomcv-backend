@@ -45,7 +45,7 @@ public class UnsubscribeController {
     public record UnsubscribeRequest(@NotNull UUID token) {
     }
 
-    @Operation(summary = "Stop the optional emails for the account this token belongs to")
+    @Operation(operationId = "unsubscribe", summary = "Stop the optional emails for the account this token belongs to")
     @ApiResponses(@ApiResponse(responseCode = "204",
             description = "Done, or there was no such token — the answer is the same"))
     @PostMapping("/unsubscribe")

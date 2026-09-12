@@ -172,6 +172,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "generate",
             summary = "Generate a CV against a job posting",
             description = """
                     Answers 202 with a job to follow. A generation reads the                     posting with an LLM, scores the whole profile against it,                     then renders and compiles — half a minute is ordinary, and                     a request held open for that long is a request that times                     out somewhere in between.
@@ -222,6 +223,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "listGenerations",
             summary = "The generations this account has made, newest first",
             description = """
                     `capabilities.canSaveHistory` says these are kept; this is                     where they are read (F-020).
@@ -281,6 +283,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "readGeneration",
             summary = "One generation and how well it fits the posting",
             description = """
                     Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.
@@ -388,6 +391,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "downloadGeneration",
             summary = "Download a generation, as a PDF or a Word document",
             description = """
                     Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.
@@ -468,6 +472,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "editSelection",
             summary = "Keep or drop atoms by hand, and re-make the CV",
             description = """
                     Bolum 24.4. An edit applies to the **selection state**, \
@@ -556,6 +561,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "editBySentence",
             summary = "Say what should change, in your own words",
             description = """
                     Bolum 24.2, and the other half of the toggle next door. \
@@ -630,6 +636,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "regenerateCoverLetter",
             summary = "Write a covering letter for a generation, or another one",
             description = """
                     Bolum 34. The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.
@@ -711,6 +718,7 @@ public class GenerationController {
     }
 
     @Operation(
+            operationId = "recordFeedback",
             summary = "Say what you thought of a generation",
             description = """
                     A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.
