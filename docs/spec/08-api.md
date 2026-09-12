@@ -82,6 +82,7 @@ POST   /api/v1/generations                  → 202 + job
 GET    /api/v1/generations
 GET    /api/v1/generations/{id}
 GET    /api/v1/generations/{id}/download?format=pdf|docx|source
+GET    /api/v1/generations/{id}/selection   tartılan satırlar, metniyle
 POST   /api/v1/generations/{id}/edits       Faz G: doğal dil
 POST   /api/v1/generations/{id}/selection   manuel toggle
 POST   /api/v1/generations/{id}/archive
@@ -247,6 +248,35 @@ bir tane var.
 > taşımaz. **Karşılaştırmayı istemci yapar**, çünkü ekranda okunan cümle iki
 > dilin de adını anar; tek bir bayrak yine ikisini sormayı gerektirirdi.
 > Genel modda `postingLanguage` hiç gelmez.
+
+> **`GET /generations/{id}/selection` indi (`F-031`).** § 24.4'ün elle
+> toggle'ı, çizilecek listesi olmadan inmişti: düzenleme ucu **bu üretimin
+> tartmadığı** bir atomu reddediyor, yani bugünkü profilden çizilen düğmeler
+> `400` cevaplardı. Gövde `{ generationId, lines: [{ atomId, text, onPage }] }`
+> — sayfaya girenler önce, girmeyenler yarıştıkları sıraya göre arkasında.
+> **Buradaki her id'yi düzenleme ucu kabul eder**; maddenin tamamı budur.
+>
+> `text` **o CV'nin bastığı** metindir, bugünkü profilin değil (§ 24.2'nin
+> gerekçesi). Skor yayımlanmaz — § 23.3'ün yüzdeye itirazı bir madde yanındaki
+> sayı için de geçerli, ve sıra zaten sıralamayı söylüyor. Üst sınır yok:
+> modele gösterilen 30 satır prompt'un bedeliyle ilgilidir, kendi geçmişini
+> gezen kişi satır başına ödemiyor. Profilden silinmiş atom listelenmez, geri
+> konamaz çünkü.
+
+> **`supersededByGenerationId` (`F-031`).** Emekli bir üretim halefini
+> adlandırır; yalnız `status` `superseded` iken gelir. Kenar veritabanında ters
+> yöndedir — düzenleme, emekliye ayırdığını adlandıran yeni bir satır yazar —
+> ve § 41.2'nin listesi emekli satırları dışarıda bıraktığı için ekran "bunun
+> daha yenisi var" diyebiliyor ama bağlantı veremiyordu.
+
+> **İşin `result`'ına konan her anahtar `JobStatusResponse`'ta bir alandır**
+> (`F-032`). Terminal SSE olayı ham `result` map'idir, yani bir worker'ın
+> yazdığı alan **akışta o gün görünür ve hiçbir tipte görünmez**; akış kopup
+> § 35.3'ün poll geri düşüşü devreye girince kaybolur, ve üretilmiş bir
+> istemci onu okuyan kodu derleyemez bile. Üç kez oldu: `pageCount` (`F-008`),
+> içe aktarım bloğu (`F-018`), `supersededGenerationId` ile `matchLevel`
+> (`F-032`). `MatchLevel` bu yüzden `shared.wire`'da: Faz F üretiyor,
+> generation ve jobs ayrı ayrı yayımlıyor.
 
 ### 35.4 Hata formatı — RFC 7807 + resolutions
 
@@ -640,5 +670,28 @@ springdoc-openapi                       npm run gen:api
 **Üretilen `src/types/api.d.ts` frontend reposuna commit edilir** — böylece backend çalışmadan da frontend build edilebilir. Elle tip yazmak yasaktır (senkronizasyon hatası kaynağı).
 
 **Sözleşme uyumsuzluğu tespiti:** Frontend CI'da `gen:api:ci` çalıştırılıp `git diff --exit-code` kontrol edilir; fark varsa "backend API değişmiş, tipleri güncelle" uyarısı verilir.
+
+#### 35.8.1 Her ucun açık bir `operationId`'si vardır
+
+springdoc, adı çakışan controller metotlarını numaralandırır — ve **numara
+konumsaldır**: `DELETE /account` bir controller inene kadar `delete_1`'di,
+sonra `delete_2` oldu ve `delete_1` başvuru silmeye geçti. İkisi de 204
+döndüğü için istemci sessizce yanlış operasyona bağlandı ve **hiçbir şey
+derlemede patlamadı** (`F-033`).
+
+Kural: **`@Operation(operationId = …)` her uçta zorunlu.** Muhafız isimler
+değil, şemayı okuyan test: `_<sayı>` ile biten bir `operationId` görülürse CI
+düşer, yani yeni bir controller'ın eklediği `read()` iki ilgisiz operasyonu
+sessizce yeniden adlandıramaz.
+
+#### 35.8.2 `isX()` bir alandır
+
+Bir record üzerindeki getter şeklindeki metot hem Jackson'a hem springdoc'a
+alandır. Üç kez ısırdı: `RichContent`, `GenerationRequest.isGeneralMode()`
+(`F-009`), ve `Appearance`/`SelectionEditRequest`'in `isEmpty()`'si (`F-033`)
+— sonuncusu okuma şemasına yazma şemasının tanımlamadığı bir `empty` koydu.
+**Türetilmiş her metot `@JsonIgnore` + `@Schema(hidden = true)` ister**; JSONB
+kolonuna yazılan bir tipse ayrıca `ignoreUnknown`, çünkü alanı yazmış eski
+satırlar okunabilir kalmalı.
 
 ---

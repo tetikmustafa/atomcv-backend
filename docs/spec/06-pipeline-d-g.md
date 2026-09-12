@@ -643,17 +643,52 @@ flowchart LR
 
 ### 24.2 Değişiklik seti
 
+Modele **numaralanmış satırlar** gösterilir, modelden **numara** gelir. Satırlar
+düzenlenen üretimin kendi selection state'inden okunur — bugünkü profilden
+değil: kişi o maddeyi sonradan düzenlemiş olabilir ve CV'sinde olmayan bir
+cümle gösterilen liste yanlış satırı numaralandırır. Önce sayfaya girenler,
+sonra bütçenin geri tuttukları (yarıştıkları skora göre, ilk 30).
+
+Modelin cevabı:
+
 ```json
-{
-  "aboutDirective": { "emphasis": "microservices" },
-  "atomChanges": [
-    { "atomId": "atm_proj_android", "action": "exclude" },
-    { "atomId": "atm_proj_payment", "action": "include" },
-    { "atomId": "atm_exp_2_b4", "action": "override", "text": "..." }
-  ],
-  "globalDirectives": { "tone": "more_concise" }
-}
+{ "keep": [14, 17], "drop": [3], "understood": true }
 ```
+
+- `drop` — sayfadan çıkarılacak satırların numaraları
+- `keep` — geri tutulmuşlardan sayfaya konacakların numaraları
+- `understood` — cümle **hiçbir** satır adlandırmıyorsa `false`
+
+Numaralar `GenerationDirectives.excludeAtoms/includeAtoms`'a çözülür ve Faz
+C'de kısıt olarak uygulanır: § 24.4'ün elle toggle'ıyla tam olarak aynı yol,
+tek farkı numaraların nereden geldiği.
+
+**Değişiklik seti bundan ibarettir.** Bir satırı *yeniden yazmak*, tonu
+değiştirmek, sayfayı uzatıp kısaltmak bu ucun işi değildir; öyle bir cümle
+`EDIT_NOT_UNDERSTOOD` (422) alır ve kota iade edilir.
+
+#### 24.2.1 Neden id değil numara
+
+**Modele hiçbir zaman bir atom id'si gösterilmez ve ondan hiçbir zaman biri
+istenmez.** Uydurulmuş bir UUID, aranana kadar gerçeğinden ayırt edilemez;
+aralık dışı bir indeks ise bariz — on bir satırlık listeye karşı `47` kendini
+ele verir. Böylece bir modelin yapabileceği en kötü şey **var olan ama yanlış**
+bir satırı adlandırmaktır, ki sonucunu kullanıcı görür. "Olmayan bir maddeyi
+sildi" diye bir hata sınıfı yoktur.
+
+**Yarım anlaşılmış cümle hiç uygulanmaz.** `[3, 47]` cevabı cümlenin yarısının
+anlaşıldığını söyler; anlaşılan yarıyı uygulamak hiçbir şey yapmamaktan
+kötüdür, çünkü kişi bir şey ister, başka bir şey gösterilir ve **fark
+etmeyebilir**. Aynı satır hem `keep` hem `drop`'taysa cevap yine reddedilir.
+
+**`understood: false` arıza değildir** ve sık dönecektir: "daha kısa yap"
+hiçbir satır adlandırmaz. Prompt tahmin yerine bunu ister. Ekranın metni bu
+ucun ne yapabildiğini söylemeli, yoksa kullanıcı için çıkmaz sokak olur.
+
+Numaralanmış listenin kendisi bir uç olarak da yayımlanır
+(`GET /generations/{id}/selection`, § 35.3): elle toggle çizen ekranın hangi
+atomların tartıldığını bilmesi gerekir, ve tartılmamış bir atom § 24.4'te
+reddedilir.
 
 ### 24.3 Neden bu kritik
 
