@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-12** · **sıra frontend'de** — `B-097`…`B-099` ACK bekliyor; backend'de açık `F-nnn` yok
+**2026-09-12** · **iki tarafta da açık madde yok** — `B-097`…`B-099` geldikleri gün karşılandı
 
 ## Backend — `atomcv-backend`
 
@@ -55,6 +55,6 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Sıra frontend'de.** Üç madde açık: `B-097` (seçim listesi + halef id'si — `B-088`'in arayüzü artık çizilebilir), `B-098` (`JobStatusResponse`'un iki yeni alanı), `B-099` (**`gen:api` yeniden koşulmalı**: 33 operasyon adlandırıldı, `empty` kalktı).
+**Üçü de kapandı (2026-09-12).** `gen:api` yeniden koşuldu ve 26 operasyon adı yeni adlarına bağlandı (`B-099`; yol üzerinden bağlayan iki yardımcı silindi, gerekçeleri kalmadı). `JobStatus` iki yeni alanı tipli taşıyor ve mock'ta terminal yük tek yerde üretiliyor (`B-098`). **Faz G'nin elle aç/kapa arayüzü indi** (`B-097`): `GET /selection`'dan çizilen liste, yalnız yeri değişen satırları gönderen bir kaydet, ve emekliden halefe bağlantı. Sonuç rotası 219.3 → **224.4 KB** (tavan 280).
 
 **Frontend'de kalanlar karar, kod değil:** analitik (ölçümü alacak bir dağıtım istiyor), bölüm düzeni ve dil ekseni kontrolleri, diğer diller, `docs/spec/`'in İngilizceye çevrilmesi.
