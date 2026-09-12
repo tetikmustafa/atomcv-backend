@@ -66,4 +66,40 @@ interface GenerationJpaRepository extends JpaRepository<Generation, UUID> {
      * printed under it -- "23 generations" over eleven rows and no next page.
      */
     long countByUserIdAndStatusNot(UUID userId, GenerationStatus status);
+
+    /**
+     * The generation that replaced this one, for an account (F-031).
+     *
+     * <p>The link is stored the other way round: an edit writes a new row
+     * carrying the id of the one it retired, because that is the direction the
+     * worker knows it in. A screen holding the retired id is in the other
+     * position and has nowhere to go, so the edge is walked backwards here.
+     *
+     * <p><strong>First, not single.</strong> Two edits of one generation are
+     * refused by {@code GENERATION_SUPERSEDED} once the first has landed, but
+     * two in flight at once are both accepted -- the refusal reads a status the
+     * worker has not written yet. That leaves a parent with two children, and
+     * the newest is the one the person is looking at.
+     */
+    @Query("""
+            SELECT g FROM Generation g
+            WHERE g.userId = :userId AND g.parentGenerationId = :parentId
+            ORDER BY g.createdAt DESC, g.id DESC
+            """)
+    List<Generation> findSuccessorOf(
+            @Param("userId") UUID userId, @Param("parentId") UUID parentId, Limit limit);
+
+    /**
+     * The same edge for an anonymous session, under the two filters
+     * {@code AnonymousGenerations} applies everywhere else: the row is this
+     * session's profile's and still has no owner.
+     */
+    @Query("""
+            SELECT g FROM Generation g
+            WHERE g.profileId = :profileId AND g.userId IS NULL
+              AND g.parentGenerationId = :parentId
+            ORDER BY g.createdAt DESC, g.id DESC
+            """)
+    List<Generation> findAnonymousSuccessorOf(
+            @Param("profileId") UUID profileId, @Param("parentId") UUID parentId, Limit limit);
 }

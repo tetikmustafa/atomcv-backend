@@ -6,20 +6,11 @@ import com.mustafatetik.atomcv.generation.phases.edit.EditPhase;
 import com.mustafatetik.atomcv.generation.phases.edit.EditPlan;
 import com.mustafatetik.atomcv.generation.phases.edit.NumberedLines;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
-import com.mustafatetik.atomcv.generation.selection.AlternativeWording;
-import com.mustafatetik.atomcv.generation.selection.SelectionState;
-import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
-import com.mustafatetik.atomcv.profile.domain.ProfileTree.AtomNode;
 import com.mustafatetik.atomcv.profile.domain.Tone;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.shared.error.Result;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +39,11 @@ public class NaturalLanguageEditService {
      *
      * <p>Ranked by the score they competed on, so what is shown is what came
      * closest to the page.
+     *
+     * <p><strong>The cap is this endpoint's, not the selection's.</strong>
+     * {@code GET /generations/{id}/selection} publishes every line for the same
+     * generation, because a toggle a person can see is a toggle they meant and
+     * a list is not a prompt (F-031).
      */
     private static final int HELD_BACK_SHOWN = 30;
 
@@ -85,88 +81,27 @@ public class NaturalLanguageEditService {
      * The page, then what did not fit — in that order, because that is the
      * order the person is looking at.
      *
-     * <p>The text is what <em>this</em> generation printed as closely as the
-     * data allows: Faz D's wording where there was one, and otherwise the
-     * variant the snapshot named. Today's profile is the wrong source — the
-     * person may have edited a bullet since, and a list that showed them a
-     * sentence their CV does not contain would have them numbering the wrong
-     * line (EK D.6.3).
+     * <p>{@link WeighedLines} resolves the text, and it is the same resolution
+     * the selection endpoint draws its toggles from: one answer to "what does
+     * this line say", however it is being asked (F-031).
      */
     private static NumberedLines number(
             ProfileTree tree, StoredSelection snapshot,
             RewrittenContent rewritten, Tone tone) {
 
-        Map<UUID, AtomNode> byId = atomsById(tree);
-        RewrittenContent wording = rewritten == null ? RewrittenContent.none() : rewritten;
+        List<WeighedLines.Line> weighed = WeighedLines.of(tree, snapshot, rewritten, tone);
 
-        var page = new ArrayList<NumberedLines.Line>();
-        for (SelectionState.SelectedAtom atom : snapshot.selected()) {
-            textOf(byId.get(atom.atomId()), atom.variantId(), snapshot.language(), tone)
-                    .map(text -> new NumberedLines.Line(atom.atomId(),
-                            wording.covers(atom.atomId())
-                                    ? wording.byAtom().get(atom.atomId()).plainText()
-                                    : text))
-                    .ifPresent(page::add);
-        }
+        List<NumberedLines.Line> page = weighed.stream()
+                .filter(WeighedLines.Line::onPage)
+                .map(line -> new NumberedLines.Line(line.atomId(), line.text()))
+                .toList();
 
-        var heldBack = new ArrayList<NumberedLines.Line>();
-        snapshot.rejected().stream()
-                // Ranked, then capped. Ties broken by id so that two reads of
-                // one generation number the same lines the same way -- an
-                // unstable list would make one recorded answer mean two
-                // different things (Bolum 19.6, 53.3).
-                .sorted(Comparator.comparingDouble(SelectionState.RejectedAtom::score).reversed()
-                        .thenComparing(atom -> atom.atomId().toString()))
+        List<NumberedLines.Line> heldBack = weighed.stream()
+                .filter(line -> !line.onPage())
                 .limit(HELD_BACK_SHOWN)
-                .forEach(atom -> textOf(byId.get(atom.atomId()), null, snapshot.language(), tone)
-                        .map(text -> new NumberedLines.Line(atom.atomId(), text))
-                        .ifPresent(heldBack::add));
+                .map(line -> new NumberedLines.Line(line.atomId(), line.text()))
+                .toList();
 
         return NumberedLines.of(page, heldBack);
-    }
-
-    /**
-     * The wording this line was costed and printed with, or nothing when the
-     * atom is gone from the profile.
-     *
-     * <p>An atom deleted since the generation simply does not appear in the
-     * list. It cannot be put back and asking to drop it is already true, so
-     * numbering it would only give the model a line the person cannot act on.
-     */
-    private static Optional<String> textOf(
-            AtomNode node, UUID variantId, String language, Tone tone) {
-
-        if (node == null) {
-            return Optional.empty();
-        }
-        if (variantId != null) {
-            Optional<String> named = node.variants().stream()
-                    .filter(variant -> variant.getId().equals(variantId))
-                    .findFirst()
-                    .map(variant -> variant.getContent().plainText());
-            if (named.isPresent()) {
-                return named;
-            }
-        }
-        return AlternativeWording.pick(node, language, tone)
-                .map(AtomVariant::getContent)
-                .map(content -> content.plainText());
-    }
-
-    private static Map<UUID, AtomNode> atomsById(ProfileTree tree) {
-        var byId = new HashMap<UUID, AtomNode>();
-        for (ProfileTree.SectionNode section : tree.sections()) {
-            index(section.atoms(), byId);
-            for (ProfileTree.EntryNode entry : section.entries()) {
-                index(entry.atoms(), byId);
-            }
-        }
-        return byId;
-    }
-
-    private static void index(List<AtomNode> atoms, Map<UUID, AtomNode> byId) {
-        for (AtomNode node : atoms) {
-            byId.put(node.atom().getId(), node);
-        }
     }
 }

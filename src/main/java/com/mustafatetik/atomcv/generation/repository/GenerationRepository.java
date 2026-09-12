@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserScopedRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -87,6 +88,26 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
      */
     public long countFor(UserContext user) {
         return jpa.countByUserIdAndStatusNot(user.userId(), GenerationStatus.SUPERSEDED);
+    }
+
+    /**
+     * The generation that replaced a retired one, or empty (F-031).
+     *
+     * <p>A retired generation is still readable by id -- the CV somebody sent
+     * an employer does not stop existing because they edited it -- and the
+     * screen that reads one can say "there is a newer version of this". Saying
+     * so without being able to link to it is the half of the sentence that was
+     * missing: the history list leaves superseded rows out, so re-reading it
+     * does not answer the question either.
+     *
+     * <p>Scoped, like everything else here. The caller has already proved it
+     * owns the retired row, but proving it twice costs one predicate and means
+     * the answer can never be somebody else's id (absolute rule 3).
+     */
+    public Optional<Generation> successorOf(UserContext user, UUID generationId) {
+        return jpa.findSuccessorOf(user.userId(), generationId, Limit.of(1))
+                .stream()
+                .findFirst();
     }
 
     /**

@@ -10,6 +10,7 @@ import com.mustafatetik.atomcv.generation.api.dto.GenerationRequest;
 import com.mustafatetik.atomcv.generation.api.dto.GenerationResponse;
 import com.mustafatetik.atomcv.generation.api.dto.NaturalLanguageEditRequest;
 import com.mustafatetik.atomcv.generation.api.dto.SelectionEditRequest;
+import com.mustafatetik.atomcv.generation.api.dto.SelectionViewResponse;
 import com.mustafatetik.atomcv.generation.pipeline.ErrorPresenter;
 import com.mustafatetik.atomcv.generation.repository.GenerationCursor;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
@@ -22,6 +23,7 @@ import com.mustafatetik.atomcv.generation.service.FeedbackService;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.generation.service.SelectionEditService;
+import com.mustafatetik.atomcv.generation.service.SelectionViewService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
@@ -100,6 +102,7 @@ public class GenerationController {
     private final CoverLetterRegenerationService coverLetters;
     private final RateLimiter rateLimiter;
     private final SelectionEditService edits;
+    private final SelectionViewService selectionView;
     private final FeedbackService feedback;
     private final Clock clock;
     private final ErrorPresenter errors;
@@ -148,7 +151,7 @@ public class GenerationController {
             AnonymousGenerations anonymousRecords,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
-            SelectionEditService edits,
+            SelectionEditService edits, SelectionViewService selectionView,
             RateLimiter rateLimiter, FeedbackService feedback, Clock clock,
             ErrorPresenter errors) {
 
@@ -161,6 +164,7 @@ public class GenerationController {
         this.generations = generations;
         this.coverLetters = coverLetters;
         this.edits = edits;
+        this.selectionView = selectionView;
         this.rateLimiter = rateLimiter;
         this.feedback = feedback;
         this.clock = clock;
@@ -319,9 +323,68 @@ public class GenerationController {
                         recorded.grant(), clock.instant()))
                 .orElse(null);
 
+        // F-031: a retired generation can say where its replacement is. The
+        // edge is stored the other way round -- the new row names the one it
+        // replaced -- and the history list leaves retired rows out, so a screen
+        // holding this id had no way to find the newer one. Looked up only when
+        // there is something to find, which is a small minority of reads.
+        UUID supersededBy = edits.isStale(generation)
+                ? successorOf(generationId).map(Generation::getId).orElse(null)
+                : null;
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
-                .body(GenerationResponse.of(generation, verdict));
+                .body(GenerationResponse.of(generation, verdict, supersededBy));
+    }
+
+    @Operation(
+            summary = "What this generation weighed, and what reached the page",
+            operationId = "readSelection",
+            description = """
+                    Bolum 24.4's toggle, as a list a screen can draw (F-031).
+
+                    Every atom this generation ranked is here, the ones that
+                    reached the page first and the ones that did not after
+                    them, each with the text it competed as and an `onPage`
+                    flag. **The ids are exactly the ids the edit endpoint
+                    accepts** -- which is the reason this exists: an edit
+                    refuses an atom this generation never weighed, so controls
+                    drawn from today's profile would include buttons that
+                    answer 400.
+
+                    The text is what *this* CV said, not what the profile says
+                    today: the wording Faz D wrote where there was one, and the
+                    variant the selection named otherwise. Editing a bullet
+                    afterwards does not rewrite the list of a CV already made.
+                    A held-back line carries the profile's wording, because
+                    this generation never printed one for it -- putting it back
+                    runs Faz D over it and may word it differently.
+
+                    Not capped. The sentence endpoint shows a model thirty
+                    held-back lines because a prompt costs money; a person
+                    scrolling their own history is not paying by the line.
+
+                    An atom deleted from the profile since is absent rather
+                    than listed: it cannot be put back, and asking to drop it
+                    is already true.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The lines, page first"),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @GetMapping(path = "/{generationId}/selection", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SelectionViewResponse> readSelection(@PathVariable UUID generationId) {
+        // Scoped, and it is the whole IDOR defence here: the lines are the
+        // person's own writing, so somebody else's id answers 404 (rule 3).
+        Generation generation = forCaller(generationId)
+                .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(SelectionViewResponse.of(
+                        generationId, selectionView.linesOf(generation)));
     }
 
     @Operation(
@@ -775,7 +838,19 @@ public class GenerationController {
      * a browser twice, in the job's terminal event and in the download link, so
      * this is the third place it can be spent and the whole defence on both
      * endpoints.
+     *
+     * <p>{@code successorOf} below takes the same two doors for the same
+     * reason (F-031): the edge out of a retired generation is followed under
+     * the caller's own scope, so the id it answers with can only ever be one
+     * the caller could have read anyway.
      */
+    private Optional<Generation> successorOf(UUID generationId) {
+        Optional<UserContext> account = currentUser.find();
+        return account.isPresent()
+                ? generations.successorOf(account.get(), generationId)
+                : anonymousRecords.successorOf(callers.ref(), generationId);
+    }
+
     private Optional<Generation> forCaller(UUID generationId) {
         Optional<UserContext> account = currentUser.find();
         return account.isPresent()

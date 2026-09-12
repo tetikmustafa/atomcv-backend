@@ -32,6 +32,11 @@ import java.util.UUID;
  * CV is written in the profile's own language rather than in two at once —
  * and a screen that says so is the only place a user would learn it.
  *
+ * <p><strong>The edge to the newer version is walked here and nowhere
+ * else</strong> (F-031). A superseded generation is not in the history list, so
+ * a screen holding a retired id could say "there is a newer one" and had
+ * nowhere to send the reader; {@code supersededByGenerationId} is that link.
+ *
  * @param fitReport       absent in general mode, where there was no posting to
  *                        be relevant to
  * @param contentLanguage the BCP 47 tag the document was written in
@@ -71,7 +76,16 @@ public record GenerationResponse(
         @Schema(description = "What this person already said about it, and the "
                 + "48-hour diagnostic permission if they opened one. Absent "
                 + "when they have not judged it.")
-        FeedbackResponse feedback) {
+        FeedbackResponse feedback,
+
+        @Schema(description = """
+                The generation that replaced this one, present only when
+                `status` is `SUPERSEDED`. An edit writes a new CV and retires
+                the one it edited (Bolum 24.4); the retired one is still
+                readable and still downloadable -- the CV that was sent to an
+                employer does not stop existing -- and this is where the screen
+                showing it finds the newer one to link to.""")
+        UUID supersededByGenerationId) {
 
     /**
      * <strong>The same type the feedback endpoint answers with</strong>, not a
@@ -84,10 +98,21 @@ public record GenerationResponse(
      * uuid, and the price of removing it is a second schema.
      */
     public static GenerationResponse of(Generation generation) {
-        return of(generation, null);
+        return of(generation, null, null);
     }
 
     public static GenerationResponse of(Generation generation, FeedbackResponse feedback) {
+        return of(generation, feedback, null);
+    }
+
+    /**
+     * @param supersededBy the generation that replaced this one, or null --
+     *                     null for every generation that has not been edited,
+     *                     which is nearly all of them (F-031)
+     */
+    public static GenerationResponse of(
+            Generation generation, FeedbackResponse feedback, UUID supersededBy) {
+
         return new GenerationResponse(
                 generation.getId(),
                 generation.getStatus(),
@@ -99,7 +124,8 @@ public record GenerationResponse(
                 blankToNull(generation.getJdAnalysis() == null
                         ? null : generation.getJdAnalysis().jdLanguage()),
                 blankToNull(generation.getCoverLetter()),
-                feedback);
+                feedback,
+                supersededBy);
     }
 
     /**
