@@ -429,6 +429,29 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void theSelectionAgenerationWeighedIsPublishedWithItsText() throws Exception {
+        // F-031. The edit endpoint refuses an atom this generation never
+        // weighed, so the screen could not draw its toggles from anything the
+        // API published -- drawn from today's profile they would have included
+        // buttons that answer 400, and the manual half of Faz G went unbuilt.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath(
+                        "$.paths['/api/v1/generations/{generationId}/selection'].get")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.SelectionLine.properties.atomId")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.SelectionLine.properties.text")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.SelectionLine.properties.onPage")
+                        .exists())
+                // And the other half of F-031: the retired generation can say
+                // where its replacement is. Nothing else can -- the history
+                // list leaves retired rows out.
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.supersededByGenerationId").exists());
+    }
+
+    @Test
     void usageSeparatesWhatWasSpentFromWhatWasAttempted() throws Exception {
         // F-012. The counter counts attempts, so a single `used` ran past
         // `limit` and the screen read "26 of 20". Two fields, because there

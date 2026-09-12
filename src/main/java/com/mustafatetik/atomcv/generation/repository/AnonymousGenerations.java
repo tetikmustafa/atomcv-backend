@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,22 @@ public class AnonymousGenerations {
         return jpa.findById(id)
                 .filter(row -> row.getOwnerId() == null)
                 .filter(row -> row.getProfileId().equals(profile.id()));
+    }
+
+    /**
+     * The generation that replaced a retired one of this session's, or empty
+     * (F-031).
+     *
+     * <p>The same two filters {@link #findById} applies, and for the same
+     * reason: an account's row cannot be reached here even by guessing its id,
+     * and neither can another session's.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Generation> successorOf(ProfileRef profile, UUID generationId) {
+        requireEphemeral(profile);
+        return jpa.findAnonymousSuccessorOf(profile.id(), generationId, Limit.of(1))
+                .stream()
+                .findFirst();
     }
 
     /**

@@ -299,6 +299,41 @@ class GenerationListApiIT extends AbstractIntegrationTest {
     }
 
     /**
+     * And it can say where its replacement is (F-031).
+     *
+     * <p>The screen holding a retired id could already tell that there was a
+     * newer version -- the status says so -- and had nowhere to send the
+     * reader: the edge is stored on the newer row, and the history list leaves
+     * retired rows out, so re-reading it answers nothing either.
+     */
+    @Test
+    void aretiredGenerationNamesTheOneThatReplacedIt() throws Exception {
+        Generation replaced = save();
+        Generation newer = saveReplacing(replaced.getId());
+        replaced.markSuperseded();
+        generations.save(user(), replaced);
+
+        mvc.perform(get("/api/v1/generations/" + replaced.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("superseded"))
+                .andExpect(jsonPath("$.supersededByGenerationId")
+                        .value(newer.getId().toString()));
+    }
+
+    /**
+     * And a generation nothing has replaced carries no such field, rather than
+     * a null a client has to tell from an id (F-010's rule, applied again).
+     */
+    @Test
+    void agenerationNothingHasReplacedNamesNoSuccessor() throws Exception {
+        Generation only = save();
+
+        mvc.perform(get("/api/v1/generations/" + only.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.supersededByGenerationId").doesNotExist());
+    }
+
+    /**
      * A cursor is opaque and a client only ever echoes one back, so a broken
      * one is the client's mistake and is answered as one. Left alone it would
      * reach the catch-all and say the server was at fault.
@@ -318,6 +353,15 @@ class GenerationListApiIT extends AbstractIntegrationTest {
         var record = new Generation(
                 LocalDevUser.DEV_USER_ID, profileId(), options(), selection(), engine());
         record.setPageCount(1);
+        return generations.save(user(), record);
+    }
+
+    /** What an edit writes: a new row naming the one it retired (Bolum 24.4). */
+    private Generation saveReplacing(UUID retired) {
+        var record = new Generation(
+                LocalDevUser.DEV_USER_ID, profileId(), options(), selection(), engine());
+        record.setPageCount(1);
+        record.supersede(retired);
         return generations.save(user(), record);
     }
 
