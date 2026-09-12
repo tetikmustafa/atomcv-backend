@@ -60,6 +60,30 @@ Girdi eklemenin marjinal bedeli üç şablonda da modelin yazdığına **tam** e
 
 ---
 
+## Aşama 4 · `F-031`-`F-033` (2026-09-12)
+
+**Ekleme — `GET /generations/{id}/selection`.** Elle aç/kapa ucu çizilecek
+listesi olmadan inmişti; tartılmamış atom `400` döndüğü için profilden çizmek
+basılamayacak düğme demekti. Metin çözümü `WeighedLines`'ta **tek yerde**:
+kişinin gördüğü satır ile modele numaralanan satır aynı cevap; 30'luk sınır
+yalnız prompt'un. Silinmiş atom listede yok ama **edit onu hâlâ kabul ediyor**.
+
+**Sapma — `matchLevel` istenmemişti, `supersededGenerationId` ile eklendi.**
+İkisi de worker'ın `result`'ına yazılıp SSE'de görünen, tipte görünmeyen
+alanlardı. **Kural: `result`'a konan her anahtar `JobStatusResponse`'ta bir
+alandır**, yoksa poll'a düşen istemci kaybeder (üçüncü kez: `F-008`, `F-018`,
+`F-032`). `MatchLevel` bu yüzden `shared.wire`'a taşındı — `jobs`'un onu
+adlandırması `generation` ile çevrim yapardı; şema adı değişmedi.
+
+**Ekleme — numaralı `operationId` konumsaldır.** `DELETE /account` `delete_1`
+iken başvuru controller'ı inince `delete_2` oldu ve `delete_1` başvuru silmeye
+geçti; ikisi de 204 döndüğü için istemci sessizce yanlış operasyona bağlandı.
+33 ucun hepsi adlandırıldı, ama **muhafız isimler değil test**: şemada `_<sayı>`
+ile biten `operationId` olamaz. `isX()` de bir alandır — `Appearance` kolona
+`"empty"` yazmış satırlar bıraktığı için `ignoreUnknown` de gerekti.
+
+---
+
 ## Aşama 1-3'ten taşınanlar — hâlâ canlı
 
 **Faz G'den taşınanlar** (tam gerekçe `archive/stage-4-faz-g.md`): değişiklik
@@ -84,7 +108,8 @@ anlamsız — doğrulayıcı reddeder, orijinal basılır.
 - **`ImportWarning.code` `String`, şeması enum** — değer JSONB'den geri okunuyor,
   enum yapmak adı değişmiş satırı düşürür. **`OpenApiSchemaIT`'in okuduğu altı
   değer elle yazılı**: `values()`'tan türetilirse yedinciye de "evet" der.
-- **`shared.wire` bir sonraki kapalı sözlüğün yeri**; `shared.error` retlerin.
+- **`shared.wire` iki sözlük taşıyor** (`ExtractionWarningCode`, `MatchLevel`) —
+  bir modülün ürettiğini başkası yayımlıyorsa yeri orası; `shared.error` retlerin.
 - **Hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor** —
   `ErrorCatalogueSpecTest` birebir ayrıştırıyor, bir hücreye eklenen açıklama
   testi düşürür.
@@ -172,4 +197,4 @@ muhafızın düştüğünü görmeden yazıldı sayma.**
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2 (bekliyor) |
 | Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
 
-Frontend aksiyonları: `B-055`-`B-096`.
+Frontend aksiyonları: `B-055`-`B-099`.
