@@ -13,7 +13,7 @@ import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
-import com.mustafatetik.atomcv.generation.validation.MatchLevel;
+import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;

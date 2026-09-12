@@ -421,11 +421,27 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // F-008: polling is the documented fallback for a stream that closed
         // without a terminal event, and it was reaching the generation but not
         // the page count beside it.
+        //
+        // F-032 added the two below, and they are the same finding a third and
+        // fourth time: the terminal SSE event is the raw result map, so a key
+        // the worker writes appears on the stream and in no type at all. A
+        // client that fell back to polling lost which generation an edit
+        // replaced and the heading over the fit counts, and a generated client
+        // could not compile a read of either.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
                         + ".properties.pageCount").exists())
                 .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
-                        + ".properties.generationId").exists());
+                        + ".properties.generationId").exists())
+                .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
+                        + ".properties.supersededGenerationId").exists())
+                // The four spelled out for the reason the import's seven are:
+                // a fifth is a wire change the other repository has to hear
+                // about before it ships a message for it.
+                .andExpect(jsonPath("$.components.schemas.JobStatusResponse"
+                        + ".properties.matchLevel.enum")
+                        .value(Matchers.containsInAnyOrder(
+                                "WEAK", "MODERATE", "GOOD", "STRONG")));
     }
 
     @Test

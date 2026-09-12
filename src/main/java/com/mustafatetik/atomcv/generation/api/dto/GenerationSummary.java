@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
-import com.mustafatetik.atomcv.generation.validation.MatchLevel;
+import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;

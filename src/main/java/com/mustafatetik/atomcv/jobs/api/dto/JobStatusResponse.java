@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.shared.wire.ExtractionWarningCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.jobs.queue.JobStatus;
+import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,14 @@ import java.util.UUID;
  * to a stream that closed without a terminal event — could reach the
  * generation but not the number printed beside it.
  *
+ * <p><strong>And {@code supersededGenerationId} and {@code matchLevel} are
+ * here for the third time that happened</strong> (F-032). The terminal event
+ * is the raw result map, so a field a worker writes appears on the stream the
+ * day it is written and in no type at all; this record is the only typed
+ * carrier, and a generated client cannot even compile a read of something it
+ * does not publish. The rule the three of them make: <strong>a key the worker
+ * puts in the result is a field here, or the poll fallback loses it.</strong>
+ *
  * <p>Polling this is the documented fallback for a progress stream that closed
  * without a terminal event. Without it the failure mode is the one Bolum 4's
  * fourth principle forbids: a spinner turning forever over work that finished
@@ -52,6 +61,17 @@ public record JobStatusResponse(
         String detail,
         UUID generationId,
         Integer pageCount,
+
+        @Schema(description = """
+                The generation this one replaced, when the job was a Faz G
+                edit (Bolum 24.4). Absent on every other kind of job,
+                including an ordinary generation, which replaces nothing.""")
+        UUID supersededGenerationId,
+
+        @Schema(implementation = MatchLevel.class,
+                description = "How well the page answers the posting. Absent in "
+                        + "general mode, where there was no posting to be relevant to.")
+        String matchLevel,
 
         @Schema(description = "An import's profile, when one completed")
         UUID profileId,
@@ -124,6 +144,8 @@ public record JobStatusResponse(
                 blankToNull(progress.detail()),
                 generationIdOf(job),
                 pageCountOf(job),
+                uuidResult(job, "supersededGenerationId"),
+                stringResult(job, "matchLevel"),
                 uuidResult(job, "profileId"),
                 intResult(job, "sectionCount"),
                 intResult(job, "atomCount"),
