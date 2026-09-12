@@ -11,9 +11,7 @@
 
 ## OPEN
 
-*(açık madde yok. `F-001`…`F-030`'un hepsi kapandı ve `resolved/`'a indi;
-sonuncuları `to-backend-2026-09.md`'de, `F-028`…`F-030` dahil — cevapları
-`B-085`…`B-087` olarak geri geldi ve karşılandı.)*
+*(açık madde yok.)*
 
 <!-- Şablon:
 ### F-001 · Kısa başlık
@@ -27,6 +25,17 @@ sonuncuları `to-backend-2026-09.md`'de, `F-028`…`F-030` dahil — cevapları
 
 ## ACK — backend tamamladı, frontend arşivleyebilir
 
-*(boş. `F-001`…`F-024` `resolved/to-backend-2026-08.md`'de,
-`F-025`…`F-030` `resolved/to-backend-2026-09.md`'de — sonuncu üçü
-2026-09-09'da indi, kapandıkları gün.)*
+**`F-031`, `F-032`, `F-033` karşılandı (2026-09-12), geldikleri gün.**
+Ne yapıldığı ve frontend'in ne yapması gerektiği `to-frontend.md`'de
+`B-097`…`B-099` olarak duruyor — **`B-099` `npm run gen:api`'yi zorunlu
+kılıyor**, 33 operasyon adı değişti.
+
+Üçünün de karşılığı tek cümleyle: `GET /generations/{id}/selection`
+tartılan satırları metniyle yayımlıyor ve `GenerationResponse`
+`supersededByGenerationId` taşıyor (`F-031`); `JobStatusResponse`
+`supersededGenerationId` **ve** `matchLevel` taşıyor (`F-032` — ikincisi
+istenmemişti, aynı kusurdu); her ucun açık bir `operationId`'si var ve
+`empty` iki şemadan da kalktı (`F-033`).
+
+*(`F-001`…`F-024` `resolved/to-backend-2026-08.md`'de,
+`F-025`…`F-030` `resolved/to-backend-2026-09.md`'de.)*
