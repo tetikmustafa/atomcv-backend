@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.validation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScorer;
+import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.Collections;

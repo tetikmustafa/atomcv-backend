@@ -12,7 +12,7 @@ import java.util.UUID;
  * One generation, as the result screen reads it (Bolum 35, F-008).
  *
  * <p>The counts of Faz F live here rather than on the stream. A
- * {@link com.mustafatetik.atomcv.generation.validation.MatchLevel} is four
+ * {@link com.mustafatetik.atomcv.shared.wire.MatchLevel} is four
  * characters and rides the terminal event so the heading appears without a
  * round trip; the report underneath is a document, and a client that missed
  * the stream or reloaded the page would never see it again if this endpoint

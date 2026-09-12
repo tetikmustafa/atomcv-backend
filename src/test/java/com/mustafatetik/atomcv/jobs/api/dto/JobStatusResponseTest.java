@@ -79,6 +79,41 @@ class JobStatusResponseTest {
     }
 
     /**
+     * F-032, and it is the third time the same gap has been found. The
+     * terminal SSE event is the raw result map, so a key the worker writes is
+     * on the stream and in no type at all; a client that fell back to polling
+     * lost both of these, and a generated one could not even compile a read of
+     * them.
+     */
+    @Test
+    void aneditJobSaysWhichGenerationItReplacedAndHowWellItFits() {
+        var result = new LinkedHashMap<String, Object>();
+        UUID replaced = UUID.randomUUID();
+        result.put("generationId", UUID.randomUUID().toString());
+        result.put("pageCount", 1);
+        result.put("matchLevel", "STRONG");
+        result.put("supersededGenerationId", replaced.toString());
+
+        var response = JobStatusResponse.of(completed(JobType.GENERATION, result));
+
+        assertThat(response.supersededGenerationId()).isEqualTo(replaced);
+        assertThat(response.matchLevel()).isEqualTo("STRONG");
+    }
+
+    /** A generation replaces nothing, and says so by carrying no id. */
+    @Test
+    void anordinaryGenerationReplacesNothing() {
+        var result = new LinkedHashMap<String, Object>();
+        result.put("generationId", UUID.randomUUID().toString());
+        result.put("pageCount", 2);
+
+        var response = JobStatusResponse.of(completed(JobType.GENERATION, result));
+
+        assertThat(response.supersededGenerationId()).isNull();
+        assertThat(response.matchLevel()).isNull();
+    }
+
+    /**
      * Read defensively, because this comes back through a JSONB column: a row
      * written before the field existed has no {@code warnings} key at all, and
      * that is a job to report rather than a row to fail on.

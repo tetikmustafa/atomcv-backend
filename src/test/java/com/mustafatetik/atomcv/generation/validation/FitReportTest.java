@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.validation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
+import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
