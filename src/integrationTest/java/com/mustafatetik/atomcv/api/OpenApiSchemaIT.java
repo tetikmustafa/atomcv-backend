@@ -263,7 +263,40 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/v1/profile/entries'].post.operationId")
                         .value("createEntry"))
                 .andExpect(jsonPath("$.paths['/api/v1/profile/sections/{id}'].patch.operationId")
-                        .value("patchSection"));
+                        .value("patchSection"))
+                // F-033, and this one did damage before it was found. A
+                // numbered id is *positional*: `DELETE /account` was
+                // `delete_1` until the applications controller landed, which
+                // made it `delete_2` and gave `delete_1` to deleting an
+                // application. Both answer 204, so the client bound account
+                // deletion to the wrong operation and nothing failed to
+                // compile.
+                .andExpect(jsonPath("$.paths['/api/v1/account'].delete.operationId")
+                        .value("deleteAccount"))
+                .andExpect(jsonPath("$.paths['/api/v1/account'].get.operationId")
+                        .value("accountSettings"))
+                .andExpect(jsonPath("$.paths['/api/v1/applications'].get.operationId")
+                        .value("listApplications"))
+                .andExpect(jsonPath("$.paths['/api/v1/applications/{applicationId}']"
+                        + ".delete.operationId").value("deleteApplication"));
+    }
+
+    /**
+     * The guard, rather than four more assertions above it (§ 51.7).
+     *
+     * <p>Naming the ids that collide today fixes today. What made F-033 cost a
+     * fortnight of a wrong binding is that the numbering is decided by how
+     * many methods happen to share a name, so the day a new controller adds a
+     * {@code read} two unrelated operations are renamed and nothing says so.
+     * This fails on the first numbered id, whichever it is.
+     */
+    @Test
+    void nooperationIdIsPositional() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$..operationId").value(
+                        Matchers.everyItem(Matchers.not(Matchers.matchesRegex(".*_[0-9]+")))))
+                .andExpect(jsonPath("$..operationId").value(
+                        Matchers.not(Matchers.emptyIterable())));
     }
 
     @Test
@@ -465,6 +498,22 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 // list leaves retired rows out.
                 .andExpect(jsonPath("$.components.schemas.GenerationResponse"
                         + ".properties.supersededByGenerationId").exists());
+    }
+
+    @Test
+    void noderivedGetterIsPublishedAsAfield() throws Exception {
+        // F-033, and the third time this shape has been found: an isX() on a
+        // record is a getter to Jackson and to springdoc. `Appearance` grew an
+        // `empty` boolean, so reading the sliders and writing them straight
+        // back meant sending a field `AppearanceUpdate` does not define; the
+        // request body next door grew one that meant nothing at all.
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(jsonPath("$.components.schemas.Appearance.properties.empty")
+                        .doesNotExist())
+                .andExpect(jsonPath("$.components.schemas.SelectionEditRequest.properties.empty")
+                        .doesNotExist())
+                .andExpect(jsonPath("$.components.schemas.Appearance.properties.fontSizePt")
+                        .exists());
     }
 
     @Test

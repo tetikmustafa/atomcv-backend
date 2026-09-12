@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +32,14 @@ public record SelectionEditRequest(List<UUID> include, List<UUID> exclude) {
         exclude = exclude == null ? List.of() : List.copyOf(exclude);
     }
 
+    /**
+     * Hidden from the schema (F-033): a getter-shaped method on a record is a
+     * field to springdoc, and this one published an {@code empty: boolean} on
+     * a <em>request</em> body -- a third thing a client could send, meaning
+     * nothing, next to the two lists that decide it.
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
     public boolean isEmpty() {
         return include.isEmpty() && exclude.isEmpty();
     }

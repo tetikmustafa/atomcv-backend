@@ -53,6 +53,7 @@ public class JobController {
     }
 
     @Operation(
+            operationId = "readJob",
             summary = "Where a job has got to",
             description = """
                     `generationId` is present only when the status is \
@@ -83,6 +84,7 @@ public class JobController {
     }
 
     @Operation(
+            operationId = "streamJob",
             summary = "Watch a job as it runs",
             description = """
                     A server-sent event stream. Three event names: `phase`                     while it runs, then exactly one of `completed` or                     `failed`, after which the stream closes.

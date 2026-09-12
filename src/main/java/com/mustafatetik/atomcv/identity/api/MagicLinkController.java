@@ -56,6 +56,7 @@ public class MagicLinkController {
     }
 
     @Operation(
+            operationId = "requestMagicLink",
             summary = "Ask for a sign-in link",
             description = """
                     Always 202, and always with no body. Whether the address \
@@ -84,6 +85,7 @@ public class MagicLinkController {
     }
 
     @Operation(
+            operationId = "verifyMagicLink",
             summary = "Redeem a sign-in link",
             description = """
                     A POST, because the link in the email is not. Every \

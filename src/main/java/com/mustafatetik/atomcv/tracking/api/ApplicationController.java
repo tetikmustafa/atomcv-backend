@@ -63,6 +63,7 @@ public class ApplicationController {
     }
 
     @Operation(
+            operationId = "listApplications",
             summary = "Every application, newest first",
             description = """
                     Not paginated: this is a table somebody scans, not a feed \
@@ -82,6 +83,7 @@ public class ApplicationController {
     }
 
     @Operation(
+            operationId = "createApplication",
             summary = "Record an application",
             description = """
                     `status` omitted means `applied` and `appliedAt` omitted \
@@ -117,6 +119,7 @@ public class ApplicationController {
     }
 
     @Operation(
+            operationId = "updateApplication",
             summary = "Change an application",
             description = """
                     A partial edit: omitting a field leaves it alone, so a \
@@ -163,6 +166,7 @@ public class ApplicationController {
     }
 
     @Operation(
+            operationId = "deleteApplication",
             summary = "Forget an application",
             description = """
                     Guarded by `If-Match` like an edit, and for the same \

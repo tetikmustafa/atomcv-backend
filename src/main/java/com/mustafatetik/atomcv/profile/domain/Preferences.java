@@ -1,6 +1,9 @@
 package com.mustafatetik.atomcv.profile.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * How the user wants their CVs written and rendered, stored in
@@ -97,6 +100,9 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
      * distinction is actually enforced.
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    // Rows written before the getter was hidden carry `"empty"` in the column,
+    // and one of them must not become a profile nobody can load.
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record Appearance(
             Double fontSizePt,
             Double marginInches,
@@ -104,6 +110,20 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
             String fontFamily,
             String accentColor) {
 
+        /**
+         * Hidden from both, and for two different reasons (F-033).
+         *
+         * <p>To Jackson an {@code isX()} on a record is a getter, so this was
+         * written into the column as {@code "empty": false} -- the defect
+         * {@code Contact} carries a paragraph about. To springdoc it was a
+         * field, so {@code Appearance} published an {@code empty: boolean} the
+         * write schema has no matching member for: reading the sliders and
+         * writing them straight back meant sending a field
+         * {@code AppearanceUpdate} does not define, and the frontend had to
+         * strip it.
+         */
+        @JsonIgnore
+        @Schema(hidden = true)
         public boolean isEmpty() {
             return fontSizePt == null && marginInches == null && lineSpacing == null
                     && fontFamily == null && accentColor == null;

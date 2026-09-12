@@ -66,6 +66,7 @@ public class ProfileImportController {
     }
 
     @Operation(
+            operationId = "importCv",
             summary = "Build a profile from an uploaded CV",
             description = """
                     Accepts PDF, DOCX, TEX, TXT and MD, up to ten megabytes. \

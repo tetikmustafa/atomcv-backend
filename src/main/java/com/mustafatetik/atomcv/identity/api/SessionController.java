@@ -47,6 +47,7 @@ public class SessionController {
     }
 
     @Operation(
+            operationId = "readSession",
             summary = "Whether anyone is signed in, and what they may do",
             description = """
                     Answers for every caller, signed in or not — the client \
@@ -89,6 +90,7 @@ public class SessionController {
     }
 
     @Operation(
+            operationId = "logout",
             summary = "Sign out",
             description = """
                     Revokes the session server-side and clears the cookie. \

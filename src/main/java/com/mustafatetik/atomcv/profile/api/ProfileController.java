@@ -59,6 +59,7 @@ public class ProfileController {
     }
 
     @Operation(
+            operationId = "readProfile",
             summary = "Read the profile head",
             description = """
                     Never answers 404. A user has exactly one profile, so an account \
@@ -84,7 +85,7 @@ public class ProfileController {
         return respond(service.readOwn(currentUser.require()));
     }
 
-    @Operation(summary = "Export the whole profile",
+    @Operation(operationId = "exportProfile", summary = "Export the whole profile",
             description = """
                     `?format=json` gives a nested copy in the shapes this API already \
                     publishes; `?format=markdown` gives the same content to read. \
@@ -134,7 +135,7 @@ public class ProfileController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
     }
 
-    @Operation(summary = "Delete the profile and everything under it",
+    @Operation(operationId = "deleteProfile", summary = "Delete the profile and everything under it",
             description = """
                     Sections, entries, atoms and wordings go with it. The account \
                     stays: the next read gives an empty profile back. Requires \
@@ -149,6 +150,7 @@ public class ProfileController {
     }
 
     @Operation(
+            operationId = "replaceProfile",
             summary = "Replace the profile head",
             description = """
                     Requires `If-Match`. A field left out is cleared — this replaces \
@@ -185,7 +187,7 @@ public class ProfileController {
                 request.enabledLanguages())));
     }
 
-    @Operation(summary = "Replace the generation preferences", description = """
+    @Operation(operationId = "replacePreferences", summary = "Replace the generation preferences", description = """
             Requires `If-Match`. Separate from the head so that editing a headline \
             cannot reset someone's writing style by omission.""")
     @ApiResponses({

@@ -38,6 +38,7 @@ public class AccountUsageController {
     }
 
     @Operation(
+            operationId = "accountUsage",
             summary = "Today's usage against today's limits",
             description = """
                     `resetsAt` is an absolute instant, not an hour: the day \
