@@ -9,89 +9,19 @@
 Aşama 1-2: `archive/stage-1.md`, `archive/stage-2.md`. **Aşama 3 ve kapanış
 sonrasının yuvarlanan özetleri `archive/stage-3-closeout.md`'ye indi
 (2026-09-10)** — aşağıdaki "hâlâ canlı" bölümü onlardan çıkarılanlar.
-
----
-
-## Aşama 4 · e-postalar ve açık kaynak (2026-09-11)
-
-**Ekleme — § 57.7 yaşam döngüsü e-postalarını tanımladı.** İnşa kılavuzu maddeyi
-adlandırıp bırakıyordu, yani "bu ürün hangi e-postaları gönderir" sorusunun
-uygulanacak bir cevabı yoktu. Liste **kapalı**: hoş geldin ve silme onayı.
-
-**Ve spec uygulanmadan önce iki kez düzeltildi** — bu dilimin asıl kazancı bu.
-(1) Tetikleyici "`users` satırı ilk yazıldığında" diyordu; § 40.4 hesap sayımını
-engellemek için satırı adres yazılır yazılmaz yaratıyor, yani **giriş kutusuna
-adresi yazılan herkese** posta giderdi. Doğrusu ilk başarılı giriş
-(`last_seen_at` null). (2) Tercih `PUT /profile/preferences`'a konacaktı; o uç
-profili yerine koyuyor ve profilin ETag'iyle korunuyor, yani bir CV çakışması
-e-posta ayarını reddederdi ve alanı göndermemek onu kapatmak olurdu.
-`GET`/`PATCH /api/v1/account` oldu.
-
-**Ekleme — silme onayı işlemsel, hoş geldin değil.** Adres satır silinmeden
-okunuyor ve posta commit'ten sonra çıkıyor (servis adresi döndürüyor, çağıran
-gönderiyor): geri alınan bir silmenin onayı yalan olurdu. Hoş geldin için aynı
-özen gereksiz — geri alınan bir girişin hoş geldini bir fazla postadır.
-
-**Ekleme — kapatma bağlantısı uca değil sayfaya iniyor** (§ 40.3). Ağ geçitleri
-mesajdaki her adresi kimse okumadan çekiyor; çekilince kapatan bir uç, hiç
-tıklamamış kişilerin postasını keserdi. Jeton opak ve satırda (`unsubscribe_token`),
-imzalı değil — doğrulaması sır istemesin diye. Bilinmeyen jeton da 204.
-
-**Düzeltme — `.env.example` hiçbir şeyin okumadığı bir harcama limiti sunuyordu.**
-`DAILY_BUDGET_USD`'yi spec dört yerde anıyordu ve yayın kontrol listesinde
-maddesi vardı; kod `ANOMALY_DAILY_BUDGET_USD` okuyor. Kurtaran tek şey
-varsayılanın daha düşük olması: kill switch geç değil erken ateşliyordu.
-`EnvExampleTest` iki kuralı tutuyor — örnekte okunmayan ad olamaz, varsayılanı
-olmayan ad eksik olamaz.
-
-**Ders — görev girdisi olmayan bir dosya kimseyi bağlamaz.** Bugün ikinci kez:
-`performance-budgets.yaml` gibi `.env.example` de `inputs.file` ile bildirildi.
-Aksi hâlde Gradle `:test UP-TO-DATE` deyip onu denetleyen testi hiç koşturmuyor,
-ki `DAILY_BUDGET_USD`'nin kayma yolu tam buydu.
-
-**Ders — ölçüm belgesiyle sayfa arasındaki fark her zaman bir hatadır**, ve
-sapma testi tek başına yetmez: bir maddedeki bir satır yedi yüz puanın içinde
-kaybolur. `WordingCostIT` bir ifadenin, `EntryFurnitureIT` bir girdinin marjinal
-bedelini sayfaya karşı ölçüyor. **`EntryFurnitureIT`'in sabitlediği ~2.9pt'lik
-artık bir kusur değil**, aracın kendisi: test listesi *olan* belgeyi listesi
-*olmayanla* karşılaştırdığı için listenin arkasında duran tek şey prob oluyor.
-Girdi eklemenin marjinal bedeli üç şablonda da modelin yazdığına **tam** eşit
-(43.72 / 25.47 / 51.72), her boyutta ve ardından başlık gelse de gelmese de.
-
----
-
-## Aşama 4 · `F-031`-`F-033` (2026-09-12)
-
-**Ekleme — `GET /generations/{id}/selection`.** Elle aç/kapa ucu çizilecek
-listesi olmadan inmişti; tartılmamış atom `400` döndüğü için profilden çizmek
-basılamayacak düğme demekti. Metin çözümü `WeighedLines`'ta **tek yerde**:
-kişinin gördüğü satır ile modele numaralanan satır aynı cevap; 30'luk sınır
-yalnız prompt'un. Silinmiş atom listede yok ama **edit onu hâlâ kabul ediyor**.
-
-**Sapma — `matchLevel` istenmemişti, `supersededGenerationId` ile eklendi.**
-İkisi de worker'ın `result`'ına yazılıp SSE'de görünen, tipte görünmeyen
-alanlardı. **Kural: `result`'a konan her anahtar `JobStatusResponse`'ta bir
-alandır**, yoksa poll'a düşen istemci kaybeder (üçüncü kez: `F-008`, `F-018`,
-`F-032`). `MatchLevel` bu yüzden `shared.wire`'a taşındı — `jobs`'un onu
-adlandırması `generation` ile çevrim yapardı; şema adı değişmedi.
-
-**Ekleme — numaralı `operationId` konumsaldır.** `DELETE /account` `delete_1`
-iken başvuru controller'ı inince `delete_2` oldu ve `delete_1` başvuru silmeye
-geçti; ikisi de 204 döndüğü için istemci sessizce yanlış operasyona bağlandı.
-33 ucun hepsi adlandırıldı, ama **muhafız isimler değil test**: şemada `_<sayı>`
-ile biten `operationId` olamaz. `isX()` de bir alandır — `Appearance` kolona
-`"empty"` yazmış satırlar bıraktığı için `ignoreUnknown` de gerekti.
+**Aşama 4'ün kapanmış iki dilimi 2026-09-12'de indi** (`archive/stage-4-emails.md`,
+`archive/stage-4-handoff-answers.md`); ikincisinin kalıcı kararları `spec/`'e
+işlendi ve buradan silindi.
 
 ---
 
 ## Aşama 1-3'ten taşınanlar — hâlâ canlı
 
 **Faz G'den taşınanlar** (tam gerekçe `archive/stage-4-faz-g.md`): değişiklik
-seti modele **atom id'si değil satır numarası** gösteriyor — uydurulmuş bir UUID
-aranana kadar gerçeğinden ayrılmaz, aralık dışı bir indeks bariz (**kalıcı,
-§ 24.2'ye işlenmeli**). Yarım anlaşılmış cümle **hiç** uygulanmıyor;
-`understood: false` arıza değil ve sık dönecek. Geçmişin `total`'ı satır değil
-**CV** sayıyor ve onu hesap silme ekranı okuyor (`F-020`). Yeniden koşu Faz
+setinin kendisi artık **§ 24.2 ve § 24.2.1'de** — numara, id değil; yarım
+anlaşılmış cümle hiç uygulanmıyor; `understood: false` arıza değil. Buradan
+silindi, çünkü kalıcı. Hâlâ burada olanlar: geçmişin `total`'ı satır değil
+**CV** sayıyor ve onu hesap silme ekranı okuyor (`F-020`); yeniden koşu Faz
 C'den başlıyor, skorlar snapshot'tan — üretimden sonra profile eklenen atom
 skorsuzdur ama adıyla istenebilir.
 
@@ -194,7 +124,9 @@ muhafızın düştüğünü görmeden yazıldı sayma.**
 | dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
-| Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2 (bekliyor) |
+| Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2, § 24.2.1 |
 | Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
+| Aşama 4 · e-postalar, açık kaynak | `stage-4-emails.md` | § 57.7 |
+| Aşama 4 · `F-031`-`F-033` | `stage-4-handoff-answers.md` | § 24.2, § 24.2.1, § 35.3, § 35.8.1-2 |
 
 Frontend aksiyonları: `B-055`-`B-099`.
