@@ -287,7 +287,7 @@ class GoldenMasterCvTest {
     // ── the pipeline, run ─────────────────────────────────────────────────
 
     private static SelectionState select() {
-        var scorable = ScorableAtomFactory.from(PROFILE.tree(), Map.of(), TODAY);
+        var scorable = ScorableAtomFactory.from(PROFILE.tree(), PROFILE.tagsByAtom(), TODAY);
         var scores = new RelevanceScores(
                 RelevanceScorer.rank(scorable, POSTING, ScoringWeights.WITHOUT_EMBEDDING),
                 ScoringWeights.WITHOUT_EMBEDDING);
@@ -532,7 +532,7 @@ class GoldenMasterCvTest {
     }
 
     private static Map<UUID, Double> scores() {
-        var scorable = ScorableAtomFactory.from(PROFILE.tree(), Map.of(), TODAY);
+        var scorable = ScorableAtomFactory.from(PROFILE.tree(), PROFILE.tagsByAtom(), TODAY);
         return new RelevanceScores(
                 RelevanceScorer.rank(scorable, POSTING, ScoringWeights.WITHOUT_EMBEDDING),
                 ScoringWeights.WITHOUT_EMBEDDING).byAtom();

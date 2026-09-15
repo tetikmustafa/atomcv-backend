@@ -29,6 +29,7 @@
               "alwaysInclude": true,
               "verified": true,
               "skills": ["linux"],
+              "tags": ["devops"],
               "metrics": ["forty"]
             },
             {

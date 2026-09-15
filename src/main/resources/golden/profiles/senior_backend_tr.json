@@ -32,6 +32,7 @@
               "importance": 0.9,
               "verified": true,
               "skills": ["mikroservis", "go"],
+              "tags": ["backend", "microservices"],
               "metrics": ["elli dakikadan dört dakikaya"],
               "alternatives": [
                 {
@@ -45,6 +46,7 @@
               "importance": 0.85,
               "verified": true,
               "skills": ["redis", "go"],
+              "tags": ["backend", "databases"],
               "metrics": ["saniyede 40 bin istek"]
             },
             {
@@ -62,6 +64,7 @@
               "text": "Kubernetes üzerinde mavi-yeşil dağıtım akışını kurdum ve geri alma süresini iki dakikaya indirdim",
               "importance": 0.7,
               "skills": ["kubernetes"],
+              "tags": ["devops", "kubernetes"],
               "metrics": ["iki dakika"]
             }
           ]
@@ -86,6 +89,7 @@
               "text": "Günde 2 milyon olayı işleyen Kafka tüketici hattını kurdum",
               "importance": 0.75,
               "skills": ["kafka"],
+              "tags": ["microservices"],
               "metrics": ["günde 2 milyon olay"]
             },
             {
@@ -107,7 +111,8 @@
             {
               "text": "Kurumsal müşteriler için SOAP tabanlı entegrasyonları REST'e taşıdım",
               "importance": 0.5,
-              "skills": ["java", "spring"]
+              "skills": ["java", "spring"],
+              "tags": ["backend", "java"]
             },
             {
               "text": "Gece çalışan toplu iş akışlarını izlemek için bir gösterge paneli yazdım",

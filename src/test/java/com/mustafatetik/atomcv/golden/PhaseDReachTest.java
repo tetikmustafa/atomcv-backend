@@ -9,6 +9,7 @@ import com.mustafatetik.atomcv.generation.rewrite.RewritePlanner;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScorer;
 import com.mustafatetik.atomcv.generation.scoring.RelevanceScores;
 import com.mustafatetik.atomcv.generation.scoring.ScorableAtomFactory;
+import com.mustafatetik.atomcv.generation.scoring.ScoredAtom;
 import com.mustafatetik.atomcv.generation.scoring.ScoringWeights;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
 import com.mustafatetik.atomcv.generation.selection.SelectionRequestBuilder;
@@ -24,7 +25,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -45,15 +45,27 @@ import org.junit.jupiter.api.Test;
  * really tailored for. Its strongest bullet names three of the posting's
  * <em>seventeen</em> required skills, so Bolum 19.2's skill term reads 0.176:
  * the denominator is everything the posting asked for, and no single sentence
- * covers seventeen requirements. The tag term is 0.0 because the profile
- * carries no tags, which is true of any profile whose owner has not tagged it.
- * Keyword coverage is 3 of 22. Under {@link ScoringWeights#WITHOUT_EMBEDDING}
- * that totals <strong>0.064</strong>, against a floor of 0.40.
+ * covers seventeen requirements. Keyword coverage is 3 of 22. Under
+ * {@link ScoringWeights#WITHOUT_EMBEDDING} the best atom reaches
+ * <strong>0.126</strong>, against a floor of 0.40.
  *
- * <p>With {@link ScoringWeights#DEFAULT} and no vectors it totals 0.258 — and
+ * <p><strong>The tag term is measured now, and it is small for a structural
+ * reason.</strong> It was 0.0 until the golden profiles carried tags at all,
+ * which made a quarter of Bolum 19.1's raw score unreachable in every
+ * measurement taken from this fixture set. With tags it is a Jaccard against
+ * the posting's own vocabulary — the domain phrase, the keywords and the
+ * title's words, twenty-six strings here — so an atom tagged
+ * {@code [backend, java, microservices, spring boot]} that hits two of them
+ * scores 2/28 = <strong>0.071</strong>. <em>Jaccard divides by the union</em>,
+ * and the union is dominated by the posting: a perfectly on-topic atom cannot
+ * reach 0.2 on this term unless it carries most of the posting's vocabulary as
+ * tags, which no honest tag list does. The term moved the best score from
+ * 0.096 to 0.126 and changed no conclusion.
+ *
+ * <p>With {@link ScoringWeights#DEFAULT} and no vectors it totals 0.276 — and
  * 0.200 of that is the same constant every atom gets, because a missing vector
  * scores the neutral 0.5 (Bolum 28.2) and 0.40 x 0.5 is a pedestal, not a
- * signal. The whole distribution sits between 0.20 and 0.26.
+ * signal. The whole distribution sits between 0.20 and 0.28.
  *
  * <p><strong>What this test is for.</strong> Not to bless the behaviour: to
  * make the next change to either half visible. Move a threshold, change
@@ -88,7 +100,7 @@ class PhaseDReachTest {
                 .as("the strongest selected atom, master CV against the posting it was "
                         + "written for, with no vectors")
                 .isLessThan(FLOOR_SCORE)
-                .isCloseTo(0.0959, org.assertj.core.data.Offset.offset(0.0005));
+                .isCloseTo(0.1259, org.assertj.core.data.Offset.offset(0.0005));
 
         RewritePlan plan = RewritePlanner.plan(PROFILE.tree(), selection);
         assertThat(plan.candidates())
@@ -105,7 +117,7 @@ class PhaseDReachTest {
     @Test
     void withTheDefaultWeightsAndNoVectorsEveryScoreSitsOnTheNeutralPedestal() {
         List<Double> scores = RelevanceScorer.rank(
-                        ScorableAtomFactory.from(PROFILE.tree(), Map.of(), TODAY),
+                        ScorableAtomFactory.from(PROFILE.tree(), PROFILE.tagsByAtom(), TODAY),
                         POSTING, ScoringWeights.DEFAULT).stream()
                 .map(atom -> atom.score())
                 .toList();
@@ -116,7 +128,57 @@ class PhaseDReachTest {
                 assertThat(score).isGreaterThanOrEqualTo(pedestal).isLessThan(FLOOR_SCORE));
 
         assertThat(scores.stream().mapToDouble(Double::doubleValue).max().orElseThrow())
-                .isCloseTo(0.2578, org.assertj.core.data.Offset.offset(0.0005));
+                .isCloseTo(0.2756, org.assertj.core.data.Offset.offset(0.0005));
+    }
+
+    /**
+     * <strong>The tag term is switched on, and this is what switches it
+     * on.</strong> Bolum 51.7's rule again: a component the whole suite
+     * disables has unverified wiring, and a quarter of Bolum 19.1's raw score
+     * was exactly that until the golden profiles carried tags — every number
+     * this class pinned was taken against a term that could only be zero.
+     *
+     * <p>So the assertion is not about a value. It is that <em>some</em> atom
+     * in the best-matched pair scores above zero on the term: a fixture set
+     * tagged only with themes nobody's posting spells would pass every other
+     * test here and leave the component as dead as it was.
+     */
+    @Test
+    void thetagTermIsReachedByTheFixtureSet() {
+        List<ScoredAtom> ranked = RelevanceScorer.rank(
+                ScorableAtomFactory.from(PROFILE.tree(), PROFILE.tagsByAtom(), TODAY),
+                POSTING, ScoringWeights.WITHOUT_EMBEDDING);
+
+        assertThat(PROFILE.tagsByAtom())
+                .as("the fixture carries tags at all")
+                .isNotEmpty();
+        assertThat(ranked)
+                .as("at least one atom's tags touch the posting's vocabulary")
+                .anySatisfy(atom -> assertThat(atom.components().tag()).isGreaterThan(0.0));
+    }
+
+    /**
+     * And the ceiling on that term, which is the reason it moved the score by
+     * three hundredths rather than by a quarter.
+     *
+     * <p>Jaccard divides by the <em>union</em>, and the union is the posting's
+     * whole vocabulary: twenty-six strings for this one. An atom carrying four
+     * tags, every one of them a hit, would score 4/26. Nothing a person would
+     * actually write reaches that — which is a property of Bolum 19.1's choice
+     * of measure, not of this fixture, and it is worth having written down
+     * beside the numbers it explains.
+     */
+    @Test
+    void thetagTermIsBoundedByThePostingsOwnVocabulary() {
+        double best = RelevanceScorer.rank(
+                        ScorableAtomFactory.from(PROFILE.tree(), PROFILE.tagsByAtom(), TODAY),
+                        POSTING, ScoringWeights.WITHOUT_EMBEDDING).stream()
+                .mapToDouble(atom -> atom.components().tag())
+                .max().orElseThrow();
+
+        assertThat(best)
+                .as("the best tag overlap in the best-matched pair")
+                .isCloseTo(0.0714, org.assertj.core.data.Offset.offset(0.0005));
     }
 
     /**
@@ -143,7 +205,8 @@ class PhaseDReachTest {
         ProfileTree tree = PROFILE.tree();
         var scores = new RelevanceScores(
                 RelevanceScorer.rank(
-                        ScorableAtomFactory.from(tree, Map.of(), TODAY), POSTING, weights),
+                        ScorableAtomFactory.from(tree, PROFILE.tagsByAtom(), TODAY),
+                        POSTING, weights),
                 weights);
         var built = SelectionRequestBuilder.build(
                 tree, TemplateCustomization.CLASSIC, CAPACITY, 1, "en", Tone.FORMAL, scores);
