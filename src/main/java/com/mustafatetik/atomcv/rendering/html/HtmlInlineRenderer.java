@@ -7,17 +7,17 @@ import com.mustafatetik.atomcv.profile.domain.content.Run;
 /**
  * One {@link RichContent} as inline HTML.
  *
- * <p><strong>The same marks, a different alphabet.</strong> Bolum 12.3 is the
- * reason this class is three lines of decision and no interpretation: a mark
- * is semantic, so each renderer decides what it looks like and none of them
- * decides what it means. What is bold here is what is bold in LaTeX, for the
- * same reason and by the same list.
+ * <p><strong>The same marks, a different alphabet.</strong> Semantic marks are
+ * the reason this class is three lines of decision and no interpretation: a
+ * mark is semantic, so each renderer decides what it looks like and none of
+ * them decides what it means. What is bold here is what is bold in LaTeX, for
+ * the same reason and by the same list.
  *
- * <p><strong>Escaping is central and is the whole defence.</strong> Bolum 42.3
- * says it in one line: "LaTeX'te güvenliydi" varsayımı digerlerine tasinmaz.
- * A CV is user content and this output is HTML, so every character that means
- * something to a parser is encoded here and nowhere else — the same shape as
- * {@code LatexEscaper}, against a different grammar.
+ * <p><strong>Escaping is central and is the whole defence.</strong> What was
+ * safe in LaTeX does not carry over. A CV is user content and this output is
+ * HTML, so every character that means something to a parser is encoded here
+ * and nowhere else — the same shape as {@code LatexEscaper}, against a
+ * different grammar.
  *
  * <p>An unknown mark renders as plain text. A newer version's markings must
  * not make an older renderer fail.

@@ -7,8 +7,8 @@ import java.util.UUID;
  * One structured call, provider-independent.
  *
  * <p>Everything an adapter needs and nothing about how a particular vendor
- * asks for it: the five mechanisms in Bolum 27.2 are the adapters' business,
- * not the caller's.
+ * asks for it: the five structured-output mechanisms are the adapters'
+ * business, not the caller's.
  *
  * <p>{@code promptId} and {@code promptVersion} travel with the request rather
  * than being looked up at the edge, because telemetry records the version that

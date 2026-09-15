@@ -4,18 +4,17 @@ package com.mustafatetik.atomcv.ingestion.github;
  * Jaro-Winkler, for matching a repository name to a project somebody already
  * wrote about.
  *
- * <p><strong>Why this and not an embedding.</strong> Bolum 31.8 names both,
- * and the pairs this has to catch are spelling rather than meaning:
- * {@code order-management-system} against "Order Management System",
- * {@code atomcv-backend} against "AtomCV". An embedding round trip per
- * repository buys nothing for those and costs a call each on a screen that is
- * meant to open quickly; a string distance answers exactly the question being
- * asked.
+ * <p><strong>Why this and not an embedding.</strong> Both were named, and the
+ * pairs this has to catch are spelling rather than meaning: {@code
+ * order-management-system} against "Order Management System", {@code
+ * atomcv-backend} against "AtomCV". An embedding round trip per repository
+ * buys nothing for those and costs a call each on a screen that is meant to
+ * open quickly; a string distance answers exactly the question being asked.
  *
- * <p>Its own implementation rather than a dependency, for the reason Bolum 5.4
- * gives about SDKs and Bolum 53.3 gives about Guava: it is thirty lines of
- * arithmetic with a published specification, and a library for it is a
- * transitive tree and a version to watch.
+ * <p>Its own implementation rather than a dependency, for the reason SDKs are
+ * avoided and Guava was not taken for a hash: it is thirty lines of arithmetic
+ * with a published specification, and a library for it is a transitive tree
+ * and a version to watch.
  *
  * <p>Pure, so the suggestion list is the same list twice (the habit).
  */

@@ -60,12 +60,12 @@ public class ProviderChain {
     /**
      * The provider fallback rate.
      *
-     * <p>One counter with a position tag rather than two counters: a rate needs
-     * a denominator, and the denominator here is every answer the chain
+     * <p>One counter with a position tag rather than two counters: a rate
+     * needs a denominator, and the denominator here is every answer the chain
      * produced -- which is what the two tag values add up to. Counted at the
      * answer rather than at the attempt, because an attempt that failed on a
-     * key nobody configured is not a fallback (Bolum 27.3 skips those without
-     * counting them), and a rate built on attempts would climb every time a
+     * key nobody configured is not a fallback (those are skipped without being
+     * counted), and a rate built on attempts would climb every time a
      * deployment ran with fewer providers than the chain names.
      */
     static final String CHAIN_ANSWERS = "llm.chain.answers";
@@ -79,9 +79,8 @@ public class ProviderChain {
         for (String providerId : properties.chainFor(request.preferredTier())) {
             var provider = providers.get(providerId);
             if (provider == null) {
-                // A chain naming an adapter that does not exist yet is the
-                // normal state while Adim 2.2 is being built out. Loud enough
-                // to catch a typo, not fatal.
+                // A chain naming an adapter that does not exist yet is an
+                // ordinary state. Loud enough to catch a typo, not fatal.
                 log.warn("Chain for {} names unknown provider '{}'",
                         request.preferredTier(), providerId);
                 continue;

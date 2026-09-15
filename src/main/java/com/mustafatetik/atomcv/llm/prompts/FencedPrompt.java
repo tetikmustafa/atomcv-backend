@@ -4,10 +4,10 @@ package com.mustafatetik.atomcv.llm.prompts;
  * A prompt split where the instructions end and the data begins.
  *
  * <p>Two reasons for the split rather than sending one interpolated document.
- * Bolum 27.4 discounts a cached prefix, and a prefix is only constant if the
- * user's text is not in it. And the second layer is that the model is told the
- * fenced region is data — a distinction that reads better when the fence is
- * literally the boundary between the two messages.
+ * A cached prefix is discounted, and a prefix is only constant if the user's
+ * text is not in it. And the second layer is that the model is told the fenced
+ * region is data — a distinction that reads better when the fence is literally
+ * the boundary between the two messages.
  *
  * <p>The boundary is the opening tag <strong>on its own line</strong>. The tag
  * name also appears inside the instructions above it, telling the model what

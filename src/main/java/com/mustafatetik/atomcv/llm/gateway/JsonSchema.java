@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 /**
  * The shape a provider must answer in.
  *
- * <p>Bolum 27.1 names the type without defining it. It is a value object over
- * the {@code schema.json} that sits beside each prompt, carrying the parsed
- * document and the name providers need: OpenAI and OpenRouter put a schema
- * name in {@code response_format}, and Anthropic uses it as the forced tool's
- * name.
+ * <p>The type is named without being defined anywhere. It is a value object
+ * over the {@code schema.json} that sits beside each prompt, carrying the
+ * parsed document and the name providers need: OpenAI and OpenRouter put a
+ * schema name in {@code response_format}, and Anthropic uses it as the forced
+ * tool's name.
  *
  * <p>Parsed rather than raw text, because every adapter embeds it in a request
  * body and a re-parse per call would be work repeated for nothing.

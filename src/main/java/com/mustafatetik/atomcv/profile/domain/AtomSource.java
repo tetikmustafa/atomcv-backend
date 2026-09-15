@@ -12,7 +12,7 @@ public enum AtomSource {
     CV_UPLOAD,
     GITHUB;
 
-    /** Lowercase on the wire as well as in the column (EK D.9 · 6). */
+    /** Lowercase on the wire as well as in the column. */
     @JsonValue
     public String wireValue() {
         return name().toLowerCase(Locale.ROOT);

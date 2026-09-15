@@ -205,9 +205,9 @@ public class AtomService {
      *
      * <p><strong>No {@code If-Match}.</strong> A tag is a row of its own and
      * the atom is untouched, so there is no version of the atom for a
-     * precondition to be about — the same reasoning EK D.6.2 gives for
-     * reorder. Two people tagging one atom do not conflict: they end up with
-     * both tags, which is what each of them asked for.
+     * precondition to be about — the same reasoning reorder gets. Two people
+     * tagging one atom do not conflict: they end up with both tags, which is
+     * what each of them asked for.
      *
      * <p>Faz B's tag component is a quarter of the raw score, so this is a
      * scoring control, not a label — which is why it is here and not a field
@@ -297,7 +297,7 @@ public class AtomService {
             variant.setContent(patch.content());
             // Only a write that carries words makes a wording the user's own.
             // Setting this on a promote would tell Stage 2's translation job
-            // that a human wrote a sentence nobody touched (P8).
+            // that a human wrote a sentence nobody touched.
             variant.setUserEdited(true);
         }
         variant.setLanguage(language);
@@ -316,8 +316,8 @@ public class AtomService {
         AtomVariant saved = variants.save(profile, variant);
         // The translation work is queued per user, and an anonymous session
         // has neither a user to claim the job nor a second language to
-        // translate into: § 35.7 gives it `["en"]` alone. So the wording is
-        // saved and nothing is queued -- not a degraded path, a shorter one.
+        // translate into: it gets `["en"]` alone. So the wording is saved and
+        // nothing is queued -- not a degraded path, a shorter one.
         if (Boolean.FALSE.equals(patch.userEdited()) && saved.isStale()) {
             user.ifPresent(owner -> synchronization.regenerate(profile, owner, saved));
         }

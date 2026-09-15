@@ -62,9 +62,10 @@ public class ProcessorAudit {
     /**
      * The providers a call can actually reach, with the model each would run.
      *
-     * <p>A chain entry with no model configured is a provider Bolum 27.3 skips,
+     * <p>A chain entry with no model configured is a provider the walk skips,
      * so it cannot receive anything and does not belong in a list of who does.
-     * Ordered as the chain is, because that is the order content is offered in.
+     * Ordered as the chain is, because that is the order content is offered
+     * in.
      *
      * <p>Package-private: this is the assertion an operator's checklist rests
      * on, and it is worth being able to make it without a context.

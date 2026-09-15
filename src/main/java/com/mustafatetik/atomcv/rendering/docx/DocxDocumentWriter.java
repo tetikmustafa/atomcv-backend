@@ -29,11 +29,11 @@ import org.springframework.stereotype.Component;
  * POI <em>is</em> the document, and nothing measures it.
  *
  * <p><strong>Which is why the page guarantee is approximate here and exact in
- * the PDF.</strong> Bolum 22.6 says so and this does not pretend otherwise. A
- * DOCX is a second rendering of a generation that was already selected against
- * a LaTeX page: the atoms are the ones that fit there, and Word may set them
- * in a little more or a little less room. It is the same content, not a second
- * promise — {@code B-094} is where the frontend is told to say so.
+ * the PDF.</strong> This does not pretend otherwise. A DOCX is a second
+ * rendering of a generation that was already selected against a LaTeX page:
+ * the atoms are the ones that fit there, and Word may set them in a little
+ * more or a little less room. It is the same content, not a second promise —
+ * {@code B-094} is where the frontend is told to say so.
  *
  * <p>Read straight off {@code content_snapshot}, like the PDF download. Not
  * from today's profile: the person may have edited a bullet since, and a

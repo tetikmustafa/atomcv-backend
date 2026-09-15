@@ -11,9 +11,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * and nothing can write into a packaged resource. Reading and writing have to
  * name the same place or a recorded fixture would never be replayed.
  *
- * <p>The default points into the test source tree, which is where Bolum 54.2
- * puts them so that the golden set can read the same files. Only the
- * {@code local-*} profiles activate this, so nothing here ships.
+ * <p>The default points into the test source tree, which is where they live so
+ * that the golden set can read the same files. Only the {@code local-*}
+ * profiles activate this, so nothing here ships.
  *
  * @param fixtureDir  the directory, relative to the working directory
  * @param synthesize  whether a miss falls back to a schema-shaped answer. Off

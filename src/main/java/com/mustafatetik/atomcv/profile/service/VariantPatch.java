@@ -28,8 +28,8 @@ public record VariantPatch(
     /**
      * <strong>{@code userEdited} may only be cleared, and only on purpose.</strong>
      *
-     * <p>Bolum 32.2 protects a wording the person wrote from being replaced by
-     * a machine translation. Once the flag is set, something has to be able to
+     * <p>A wording the person wrote is protected from being replaced by a
+     * machine translation. Once the flag is set, something has to be able to
      * take it back — that is the "regenerate the English" button — but nothing
      * may do it as a side effect. Sending it {@code false} is the person
      * saying they are done owning this sentence; sending it {@code true} is

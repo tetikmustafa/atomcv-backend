@@ -151,8 +151,8 @@ public class VariantTranslationService {
     }
 
     /**
-     * What to translate from, which is Bolum 32.5 and is only ever one of two
-     * things: the wording the caller named, or the English one.
+     * What to translate from — the pivot, and only ever one of two things: the
+     * wording the caller named, or the English one.
      *
      * <p>The pivot is skipped when either end is already English, because then
      * there is only one leg to walk. It is also skipped — without a call —

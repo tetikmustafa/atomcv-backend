@@ -118,11 +118,11 @@ public class ProfileWriter {
      * same CV read the same way, so it is now the same code, and the only thing
      * that differs is which row the head is and when it stops existing.
      *
-     * <p><strong>A second import always replaces.</strong> Bolum 31.6.3 gives a
-     * session one document, so there is no {@code replace} flag to answer: the
-     * question {@code PROFILE_ALREADY_EXISTS} asks an account is a question
-     * about work worth keeping, and an anonymous session's previous upload is
-     * the same person changing their mind two minutes ago.
+     * <p><strong>A second import always replaces.</strong> A session gets one
+     * document, so there is no {@code replace} flag to answer: the question
+     * {@code PROFILE_ALREADY_EXISTS} asks an account is a question about work
+     * worth keeping, and an anonymous session's previous upload is the same
+     * person changing their mind two minutes ago.
      *
      * @param expiresAt when the session ends, pushed out on every write
      */
@@ -270,8 +270,8 @@ public class ProfileWriter {
      *
      * <p>Experience, projects and education stay bullets and entries, which is
      * what the default already says. {@code TWO_COLUMN} stays unused here —
-     * Bolum 33.5 keeps Classic single-column for ATS extraction, and choosing
-     * it at import would decide that question in the wrong place.
+     * Classic is single-column for ATS extraction, and choosing it at import
+     * would decide that question in the wrong place.
      */
     static SectionLayout layoutFor(SectionKind kind) {
         return switch (kind) {
@@ -282,7 +282,7 @@ public class ProfileWriter {
     }
 
     /**
-     * The floor an imported entry can actually reach (Bolum 20.2, constraint 4).
+     * The floor an imported entry can actually reach.
      *
      * <p>{@code min_atoms} says how much of an entry is worth printing, and its
      * column default is two. An import that leaves the default in place writes
@@ -367,9 +367,9 @@ public class ProfileWriter {
         // the review screen shows them.
         writeVariant(target, atom, normalized.source(), target.language(), true);
         if (!normalized.english().isEmpty()) {
-            // Only when there is a second one. Bolum 21 reads an absent
-            // English variant as "the source is the English", so a duplicate
-            // row would be a second copy to keep in step for no gain.
+            // Only when there is a second one. An absent English variant reads
+            // as "the source is the English", so a duplicate row would be a
+            // second copy to keep in step for no gain.
             writeVariant(target, atom, normalized.english(), "en", false);
         }
     }
@@ -384,9 +384,9 @@ public class ProfileWriter {
      * this product has ever held — so Faz B's tag component, a quarter of the
      * raw score, was zero for every atom against every posting. Nothing
      * failed; the scores were simply compressed towards the bottom of their
-     * range together, which is what Bolum 28.4 measured.
+     * range together, which is what the fallback measurement showed.
      *
-     * <p>{@code AUTO}, because a model guessed them. Bolum 13 keeps the
+     * <p>{@code AUTO}, because a model guessed them. The column keeps the
      * distinction so the editor can show which tags somebody actually decided
      * on, and so a later rule can weigh them differently.
      */
@@ -425,7 +425,7 @@ public class ProfileWriter {
      *
      * <p>{@code entries.start_date} is a {@code DATE} and a CV gives months.
      * The day is a storage artefact rather than a claim — nothing renders it,
-     * and Bolum 31.5 refuses to invent a month for the same reason it would
+     * and normalisation refuses to invent a month for the same reason it would
      * refuse to invent a day.
      */
     static LocalDate firstOfMonth(YearMonth month) {

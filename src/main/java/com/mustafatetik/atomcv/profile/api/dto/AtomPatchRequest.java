@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
- * The controls on an atom (Bolum 35.2 calls this endpoint exactly that).
+ * The controls on an atom, which is what this endpoint is called.
  *
  * <p>No content here. Text belongs to a wording, and a wording is a resource
  * with its own version — editing a sentence through the atom would make two

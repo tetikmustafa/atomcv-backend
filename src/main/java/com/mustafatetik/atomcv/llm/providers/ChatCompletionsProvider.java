@@ -63,11 +63,11 @@ abstract class ChatCompletionsProvider implements LlmProvider {
      * Whether this vendor enforces a JSON <em>schema</em> or only promises
      * valid JSON.
      *
-     * <p>Bolum 27.2 answers it per vendor and it is not detected: which
-     * mechanism a model supports is a fact about the model, the response does
-     * not state it reliably, and guessing from an error message would drop
-     * every failure silently into the weaker mode — where the 99% conformance
-     * target for Faz A stops holding.
+     * <p>It is answered per vendor and never detected: which mechanism a model
+     * supports is a fact about the model, the response does not state it
+     * reliably, and guessing from an error message would drop every failure
+     * silently into the weaker mode — where the 99% conformance target for Faz
+     * A stops holding.
      */
     abstract boolean supportsJsonSchema();
 
@@ -144,8 +144,8 @@ abstract class ChatCompletionsProvider implements LlmProvider {
         format.put("type", "json_schema");
         format.putObject("json_schema")
                 .put("name", request.outputSchema().name())
-                // Bolum 53.5 wants 99%+ schema conformance on Faz A. Without
-                // strict the vendor reads the schema as a suggestion.
+                // Faz A is held to 99%+ schema conformance. Without strict the
+                // vendor reads the schema as a suggestion.
                 .put("strict", true)
                 .set("schema", request.outputSchema().node());
         return format;

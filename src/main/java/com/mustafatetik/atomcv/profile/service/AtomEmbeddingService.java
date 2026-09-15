@@ -21,11 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p><strong>From the English wording and nothing else.</strong> A similarity
  * between a Turkish sentence and an English one measures the languages rather
- * than the match, so Bolum 28 fixes one language for the whole comparison and
- * Bolum 31.4 makes the model produce it in the same call that reads the CV.
- * An atom with no English wording is skipped rather than embedded from its
- * source: a vector in the wrong space is worse than no vector, because scoring
- * would use it.
+ * than the match, so one language is fixed for the whole comparison and the
+ * model produces it in the same call that reads the CV. An atom with no
+ * English wording is skipped rather than embedded from its source: a vector in
+ * the wrong space is worse than no vector, because scoring would use it.
  *
  * <p><strong>Compared by content hash, never by timestamp.</strong> An edit
  * that put a sentence back the way it was leaves the hash unchanged, and

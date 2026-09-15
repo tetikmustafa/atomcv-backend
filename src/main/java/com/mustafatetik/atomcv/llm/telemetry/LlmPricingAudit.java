@@ -60,7 +60,7 @@ public class LlmPricingAudit {
         for (Map.Entry<String, String> configured : properties.models().entrySet()) {
             String model = configured.getValue();
             // An empty model is a provider that is switched off, not a gap in
-            // the table: Bolum 27.3 makes it unavailable and it is never called.
+            // the table: it is unavailable and never called.
             if (model != null && !model.isBlank() && !pricing.knows(model)) {
                 unpriced.add(configured.getKey() + "=" + model);
             }

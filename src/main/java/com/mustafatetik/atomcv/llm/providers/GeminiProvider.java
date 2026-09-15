@@ -133,8 +133,8 @@ public class GeminiProvider implements LlmProvider {
 
         var config = body.putObject("generationConfig");
         config.put("responseMimeType", "application/json");
-        // Enforced by the provider, not asked for in words -- Bolum 53.5 wants
-        // 99%+ conformance on Faz A. Narrowed first: see GeminiSchema.
+        // Enforced by the provider, not asked for in words -- Faz A is held to
+        // 99%+ conformance. Narrowed first: see GeminiSchema.
         config.set("responseSchema", GeminiSchema.forResponse(request.outputSchema().node()));
         return body.toString();
     }

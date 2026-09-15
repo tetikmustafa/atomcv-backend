@@ -14,8 +14,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * {@code template_capacities}: what a page of one geometry holds (V12,
- * Bolum 33.1).
+ * {@code template_capacities}: what a page of one geometry holds (V12).
  *
  * <p><strong>Not user data.</strong> Two people at the same font size and
  * margin are asking one question with one answer, so this row is keyed by the

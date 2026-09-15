@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
- * Atom content on the wire, in the shape of Bolum 14.1.
+ * Atom content on the wire, in the run shape.
  *
  * <p>One record for both directions so that the frontend has one type to hold:
  * responses carry {@code v}, requests may leave it out. What a request may not

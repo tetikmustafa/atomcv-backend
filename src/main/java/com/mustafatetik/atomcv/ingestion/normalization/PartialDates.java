@@ -11,12 +11,11 @@ import java.util.regex.Pattern;
 /**
  * The dates a CV actually contains, read into a year and a month.
  *
- * <p><strong>An unreadable date is left out, never guessed at.</strong> Bolum
- * 31.5 says so and the reason is that a plausible wrong date is the one kind
- * of error nobody proofreads out — a person scanning their own CV sees a date
- * where a date belongs and reads past it. The caller raises an
- * {@code ambiguous_date} warning instead, and the review screen of Bolum 31.6
- * opens on it.
+ * <p><strong>An unreadable date is left out, never guessed at.</strong> The
+ * reason is that a plausible wrong date is the one kind of error nobody
+ * proofreads out — a person scanning their own CV sees a date where a date
+ * belongs and reads past it. The caller raises an {@code ambiguous_date}
+ * warning instead, and the review screen opens on it.
  *
  * <p><strong>A year with no month is unreadable here.</strong> "2019" could
  * mean any of twelve months, and widening it to January is inventing eleven

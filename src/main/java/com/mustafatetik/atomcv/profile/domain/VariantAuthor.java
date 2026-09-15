@@ -17,7 +17,7 @@ public enum VariantAuthor {
     LLM_TRANSLATE,
     LLM_REWRITE;
 
-    /** Lowercase on the wire as well as in the column (EK D.9 · 6). */
+    /** Lowercase on the wire as well as in the column. */
     @JsonValue
     public String wireValue() {
         return name().toLowerCase(Locale.ROOT);

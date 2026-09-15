@@ -8,13 +8,13 @@ import java.time.YearMonth;
 import java.util.List;
 
 /**
- * An extracted CV with the code-side work of Bolum 31.5 done to it.
+ * An extracted CV with the code-side normalisation done to it.
  *
  * <p>Still in memory and still not a profile. Nothing here has an id, and
- * nothing has been written: what this is for is that the review screen of
- * Bolum 31.6 is <em>mandatory</em>, so the shape a person corrects has to
- * exist before any row does. The fourth slice turns it into {@code Profile},
- * {@code Section}, {@code Entry} and {@code Atom}.
+ * nothing has been written: what this is for is that the review screen is
+ * <em>mandatory</em>, so the shape a person corrects has to exist before any
+ * row does. The fourth slice turns it into {@code Profile}, {@code Section},
+ * {@code Entry} and {@code Atom}.
  *
  * <p>The types are the domain's from here on — {@link Contact},
  * {@link SectionKind}, {@link RichContent}, {@link YearMonth}. That is the
@@ -96,7 +96,10 @@ public record NormalizedProfile(
             atoms = List.copyOf(atoms);
         }
 
-        /** Bolum 31.6 opens a section for an entry that still needs a date. */
+        /**
+         * The review screen opens a section for an entry that still needs a
+         * date.
+         */
         public boolean isOngoing() {
             return end == null;
         }

@@ -21,14 +21,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * <p><strong>In-process, and that is a decision with a date on it.</strong>
  * One instance runs the workers and serves the streams, so a publish reaches
  * every watcher. The moment there are two instances a watcher connected to A
- * will hear nothing about a job running on B; Bolum 30.6 names Postgres
- * {@code LISTEN/NOTIFY} as the way out, and the status endpoint is the
- * fallback that already works either way.
+ * will hear nothing about a job running on B; Postgres {@code LISTEN/NOTIFY}
+ * is the way out, and the status endpoint is the fallback that already works
+ * either way.
  *
  * <p>Every event carries an id, which orders the events of one stream and
  * nothing more. Replaying from a {@code Last-Event-ID} would need a buffer per
- * job, and EK D.6.4 accepts the cheaper honest alternative: on subscribe the
- * current state is sent immediately, so a reconnecting client is caught up
+ * job, and the cheaper honest alternative is accepted instead: on subscribe
+ * the current state is sent immediately, so a reconnecting client is caught up
  * whether or not it remembered where it was.
  */
 @Component
@@ -36,7 +36,7 @@ public class SseRegistry implements JobEvents {
 
     private static final Logger log = LoggerFactory.getLogger(SseRegistry.class);
 
-    /** Bolum 30.6. A generation that outruns this is one the client re-polls. */
+    /** A generation that outruns this is one the client re-polls. */
     static final long TIMEOUT_MS = java.time.Duration.ofMinutes(5).toMillis();
 
     private final Map<UUID, List<SseEmitter>> watchers = new ConcurrentHashMap<>();
@@ -51,8 +51,8 @@ public class SseRegistry implements JobEvents {
      * otherwise never send anything, and the page would spin forever over work
      * that was already done.
      *
-     * <p>The emitter is built here rather than handed in, so the timeout of
-     * Bolum 30.6 is decided in one place instead of at every call site.
+     * <p>The emitter is built here rather than handed in, so the timeout is
+     * decided in one place instead of at every call site.
      */
     public SseEmitter subscribe(Job job) {
         SseEmitter emitter = new SseEmitter(TIMEOUT_MS);

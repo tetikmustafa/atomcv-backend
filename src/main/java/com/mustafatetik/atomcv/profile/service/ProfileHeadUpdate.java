@@ -7,8 +7,8 @@ import java.util.List;
  * What a caller wants the profile head to become.
  *
  * <p>Domain types, not the API request record: the service layer does not
- * depend on the shape of an HTTP body, so a second caller — the CV import in
- * Stage 2, a seeder in Adim 1.9 — does not have to build one.
+ * depend on the shape of an HTTP body, so a second caller — the CV import, the
+ * dev seeder — does not have to build one.
  */
 public record ProfileHeadUpdate(
         String headline,

@@ -28,7 +28,7 @@ public class ProfileRepository extends UserScopedRepository<Profile> {
 
     /**
      * The query is already narrowed by owner, so it needs no filtering after
-     * the fact — which is what Bolum 41.2 asks a subclass to do.
+     * the fact — which is what a scoped subclass otherwise has to do.
      */
     public Optional<Profile> findOwn(UserContext user) {
         return jpa.findByUserId(user.userId());

@@ -26,11 +26,11 @@ import org.springframework.stereotype.Component;
  * The same event, on the other instance.
  *
  * <p><strong>What this closes.</strong> {@link SseRegistry} is in-process, and
- * Bolum 30.6 says so with a date on it: one instance runs the workers and
- * serves the streams, so the moment there are two, a watcher connected to A
- * hears nothing about a job running on B. The section names the way out in one
- * line — {@code NOTIFY job_progress} — and the readiness table already claims
- * it. This is that line, with the parts the line does not say.
+ * that has a date on it: one instance runs the workers and serves the streams,
+ * so the moment there are two, a watcher connected to A hears nothing about a
+ * job running on B. The way out is one line — {@code NOTIFY job_progress} —
+ * and the readiness table already claims it. This is that line, with the parts
+ * the line does not say.
  *
  * <p><strong>The payload carries an identifier, not an event.</strong> The own
  * rule is "the row first, then the announcement", and a notification that
@@ -59,7 +59,7 @@ import org.springframework.stereotype.Component;
 @Primary
 public class JobNotifications implements JobEvents, SmartLifecycle {
 
-    /** Bolum 30.6 names it. An identifier, so it cannot need quoting. */
+    /** The channel name. An identifier, so it cannot need quoting. */
     static final String CHANNEL = "job_progress";
 
     /**

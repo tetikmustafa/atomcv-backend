@@ -15,10 +15,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * vendors change prices faster than a release cycle, and a deployment should
  * be able to correct a wrong figure without one.
  *
- * <p><strong>Cached input is priced apart.</strong> Bolum 27.4 says a cached
- * token costs a fraction of a fresh one, and a cost computed without that
- * overstates every call that hit a cache — which is most of them, and would
- * make the budget brake fire on a bill nobody is paying.
+ * <p><strong>Cached input is priced apart.</strong> A cached token costs a
+ * fraction of a fresh one, and a cost computed without that overstates every
+ * call that hit a cache — which is most of them, and would make the budget
+ * brake fire on a bill nobody is paying.
  *
  * <p>An unpriced model costs <strong>zero</strong>, not a guess. A made-up
  * figure would put invented money into a number an operator is meant to act

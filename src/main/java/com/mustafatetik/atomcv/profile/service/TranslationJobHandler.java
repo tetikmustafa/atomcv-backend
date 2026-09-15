@@ -28,15 +28,15 @@ import org.springframework.stereotype.Component;
  *
  * <p><strong>Three ways to have nothing to do, and none of them is a
  * failure.</strong> The wording may have been deleted since the job was
- * queued; the person may have edited it in the meantime, which Bolum 32.2
- * protects absolutely; or its source may have been emptied. A queue is not the
- * only thing that touches a profile, and a job that reports a failure because
- * the world moved on would put a red mark on a screen for something that is
- * simply finished.
+ * queued; the person may have edited it in the meantime, which is protected
+ * absolutely; or its source may have been emptied. A queue is not the only
+ * thing that touches a profile, and a job that reports a failure because the
+ * world moved on would put a red mark on a screen for something that is simply
+ * finished.
  *
  * <p>What the person sees either way is the staleness flag. A wording that
  * could not be regenerated stays marked, which is the true statement about it,
- * and the screen keeps offering the choice Bolum 32.2 describes.
+ * and the screen keeps offering the choice.
  */
 @Component
 public class TranslationJobHandler implements JobHandler {

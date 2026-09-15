@@ -69,9 +69,9 @@ final class InlineRow {
     /**
      * The row, set the way the layout says and no other way.
      *
-     * <p>Bolum 22.3 puts "what a mark looks like" in the renderer, and in a row
-     * like this one the answer is the same for every mark: nothing. The bold on
-     * the label is the whole of the row's styling.
+     * <p>"What a mark looks like" belongs to the renderer, and in a row like
+     * this one the answer is the same for every mark: nothing. The bold on the
+     * label is the whole of the row's styling.
      *
      * <p>Extraction marks what it finds notable, and in a list whose every
      * entry is a technology that comes back as most of the row: a real Tech

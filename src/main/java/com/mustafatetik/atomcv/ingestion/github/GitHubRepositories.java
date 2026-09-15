@@ -3,13 +3,13 @@ package com.mustafatetik.atomcv.ingestion.github;
 import java.util.List;
 
 /**
- * Where a public GitHub account's repositories come from (the Ports and
- * Adapters, Bolum 31.8).
+ * Where a public GitHub account's repositories come from — the port, with one
+ * adapter.
  *
- * <p>One method, and the interface exists for the reason Bolum 6 gives about
- * every external service: what this module is worth testing for is the
- * matching and the writing, and a test that reached GitHub would be measuring
- * GitHub's uptime. {@link GitHubClient} is the adapter.
+ * <p>One method, and the interface exists for the reason every external
+ * service gets one: what this module is worth testing for is the matching and
+ * the writing, and a test that reached GitHub would be measuring GitHub's
+ * uptime. {@link GitHubClient} is the adapter.
  */
 public interface GitHubRepositories {
 

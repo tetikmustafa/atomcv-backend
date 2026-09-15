@@ -10,9 +10,9 @@ import java.util.Optional;
 /**
  * A capacity for a geometry nobody has compiled yet.
  *
- * <p>Bolum 33.3 does not make a person wait for a compilation: a slider moves,
- * a measurement is queued, and a generation asked for before it lands runs on
- * an estimate with a margin. This is that estimate.
+ * <p>Nobody is made to wait for a compilation: a slider moves, a measurement
+ * is queued, and a generation asked for before it lands runs on an estimate
+ * with a margin. This is that estimate.
  *
  * <p><strong>It is scaled from the template's own measured default, and the
  * direction of the error is the whole design.</strong> A capacity that is too

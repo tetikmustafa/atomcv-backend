@@ -3,8 +3,8 @@ package com.mustafatetik.atomcv.llm.gateway;
 /**
  * One vendor, behind one shape.
  *
- * <p>Raw REST underneath, no vendor SDK: Bolum 5.4 keeps the abstraction here
- * rather than taking five dependencies that break on their own schedules.
+ * <p>Raw REST underneath, no vendor SDK: the abstraction stays here rather
+ * than taking five dependencies that break on their own schedules.
  *
  * <p>The return type is {@link LlmOutcome} rather than the {@code Result}. The
  * difference is the failure type and it is deliberate — see {@link
@@ -18,9 +18,9 @@ public interface LlmProvider {
     /**
      * Whether this provider is configured at all.
      *
-     * <p>Bolum 27.3 skips an unavailable provider <em>silently</em> and does
-     * not count it as tried: a chain listing five vendors on a deployment that
-     * has one key is the normal case, not a degraded one.
+     * <p>An unavailable provider is skipped <em>silently</em> and is not
+     * counted as tried: a chain listing five vendors on a deployment that has
+     * one key is the normal case, not a degraded one.
      */
     boolean isAvailable();
 

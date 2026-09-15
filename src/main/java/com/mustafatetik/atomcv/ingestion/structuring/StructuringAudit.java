@@ -55,7 +55,10 @@ final class StructuringAudit {
      */
     private static final int MAX_ABOUT_TEXT = 1500;
 
-    /** Bolum 43.1 uses sixty for a skill name against a posting; a CV is no different. */
+    /**
+     * Sixty is the ceiling for a skill name against a posting; a CV is no
+     * different.
+     */
     private static final int MAX_SKILL = 60;
 
     /** A job title, an employer, a degree. Long ones exist; this long ones do not. */

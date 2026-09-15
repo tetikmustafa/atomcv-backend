@@ -13,8 +13,8 @@ import java.util.Objects;
  * conflict is measured against, and it would know them for every future job
  * type as well.
  *
- * <p>Retryability comes back with the failure for the same reason. Bolum 30.5
- * decides it from the error, and only the handler holds the error in the form
+ * <p>Retryability comes back with the failure for the same reason. It is
+ * decided from the error, and only the handler holds the error in the form
  * that decision is made from ({@link JobRetryPolicy} is what it asks).
  */
 public sealed interface JobOutcome {

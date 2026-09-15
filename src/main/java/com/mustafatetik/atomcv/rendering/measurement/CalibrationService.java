@@ -30,9 +30,9 @@ import org.springframework.stereotype.Service;
  * scale — {@code TemplateRegistry}'s own constants were measured this way and
  * {@code CalibrationServiceIT} checks that this reproduces them exactly.
  *
- * <p>One compilation, and it is the expensive part: this is why Bolum 33.3
- * puts the measurement behind a debounce and lets a generation run on an
- * estimate until it lands.
+ * <p>One compilation, and it is the expensive part: this is why the
+ * measurement sits behind a debounce and lets a generation run on an estimate
+ * until it lands.
  */
 @Service
 public class CalibrationService {

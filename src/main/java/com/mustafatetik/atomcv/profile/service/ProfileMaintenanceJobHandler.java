@@ -24,11 +24,11 @@ import org.springframework.stereotype.Component;
  * Doing it inside the extraction would have added five seconds to the one
  * moment the product asks somebody to wait.
  *
- * <p><strong>A failure here is not a failed import.</strong> Bolum 28.4 already
- * has scoring fall back to running without the embedding component — quality
- * drops, the product keeps working — so an embedding service that is down
- * costs a slightly worse first generation and nothing else. It is retryable
- * for the same reason it is not fatal: the world outside changes.
+ * <p><strong>A failure here is not a failed import.</strong> Scoring already
+ * falls back to running without the embedding component — quality drops, the
+ * product keeps working — so an embedding service that is down costs a
+ * slightly worse first generation and nothing else. It is retryable for the
+ * same reason it is not fatal: the world outside changes.
  */
 @Component
 public class ProfileMaintenanceJobHandler implements JobHandler {

@@ -163,8 +163,8 @@ public class JobWorker {
         try {
             Job job = queue.find(jobId).orElseThrow(() -> new IllegalStateException(
                     "The job just claimed is gone: " + jobId));
-            // Bolum 48.3. Started here rather than at the claim so that the
-            // wait it records is the wait of a job that actually ran.
+            // Started here rather than at the claim so that the wait it
+            // records is the wait of a job that actually ran.
             JobTelemetry.Run measured = telemetry.started(job);
             settle(job, outcomeOf(job, measured));
             measured.finished(job.getStatus());
@@ -256,8 +256,8 @@ public class JobWorker {
     }
 
     /**
-     * The error as {@code jobs.error} holds it, which is the shape EK D.6.4
-     * publishes.
+     * The error as {@code jobs.error} holds it, which is the shape the status
+     * endpoint publishes.
      *
      * <p>A {@code LinkedHashMap} rather than {@code Map.of}: the JDK's
      * immutable maps iterate in an order salted per JVM run, so the same
@@ -274,7 +274,7 @@ public class JobWorker {
 
     // ── staying alive ────────────────────────────────────────────────────
 
-    /** Bolum 30.4: "still working", for everything this instance holds. */
+    /** "Still working", for everything this instance holds. */
     @Scheduled(
             fixedDelayString = "${atomcv.jobs.worker.heartbeat-every:PT20S}",
             initialDelayString = "${atomcv.jobs.worker.heartbeat-every:PT20S}")

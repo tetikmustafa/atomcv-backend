@@ -73,8 +73,8 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      *
      * <p>What {@link #labelsByAtom} is to Faz B, this is to the editor: one
      * query for the whole profile rather than one per atom, because the list
-     * endpoint draws every atom at once and Bolum 52.2 names the other shape
-     * as the most likely performance mistake in this codebase.
+     * endpoint draws every atom at once, and the other shape is the most
+     * likely performance mistake in this codebase.
      *
      * @return atoms that carry at least one tag; an untagged atom is absent
      *         rather than present with an empty list
@@ -106,7 +106,7 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      * its row, and an atom that already wears it keeps the link it has. The
      * source is not overwritten on a second attach — a person confirming a tag
      * the extraction guessed does not make it less of a guess, and the pair is
-     * what Bolum 13 records.
+     * what the column records.
      *
      * <p>The caller has already resolved the atom through a scoped repository;
      * what this scopes is the tag, which is the row that carries the profile.
@@ -128,8 +128,8 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      * <p><strong>The tag row goes with the last atom wearing it.</strong> The
      * vocabulary is the profile's, and a label no atom carries is a suggestion
      * nobody made — it would sit in the tag list forever and grow with every
-     * typo. The link rows are what Bolum 13 keys the meaning on; the tag row is
-     * the spelling.
+     * typo. The link rows are what the meaning is keyed on; the tag row is the
+     * spelling.
      *
      * @return false when this profile has no such tag, or the atom was not
      *         wearing it. The endpoint turns that into a 404 rather than
