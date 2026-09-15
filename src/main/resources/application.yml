@@ -335,6 +335,13 @@ atomcv:
     models:
       openrouter: ${OPENROUTER_MODEL:}
       gemini: ${GEMINI_MODEL:}
+      # The three direct links of Bolum 27.2's table. Blank by default and
+      # therefore inert: an adapter with no model and no key answers
+      # isAvailable() false, and Bolum 27.3 skips it without counting it as
+      # tried. Setting a key and a model is all that joins one to a chain.
+      openai: ${OPENAI_MODEL:}
+      anthropic: ${ANTHROPIC_MODEL:}
+      deepseek: ${DEEPSEEK_MODEL:}
     call-timeout: 30s
     # Bolum 27.3 retries a schema mismatch on the same provider. One catches a
     # model that wandered; more pays repeatedly for a prompt that is wrong.
@@ -342,6 +349,30 @@ atomcv:
     gemini:
       api-key: ${GEMINI_API_KEY:}
       base-url: ${GEMINI_BASE_URL:}
+
+    # Bolum 27.2's remaining three, each a direct billing relationship rather
+    # than a broker. Written so the table is true; unconfigured so the
+    # deployment is unchanged. A vendor reached only through OpenRouter shares
+    # the broker's outage, which is the one thing the chain exists to avoid —
+    # these are the links that do not.
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:}
+
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      base-url: ${ANTHROPIC_BASE_URL:}
+      # Required on every request by this API, and it pins the response shape
+      # the adapter parses. Moving it is a decision, not a default.
+      version: ${ANTHROPIC_VERSION:}
+      # Required here and defaulted everywhere else. A ceiling that clips an
+      # answer yields JSON that stops mid-object, which reads as a schema
+      # mismatch and retries into the same ceiling.
+      max-tokens: ${ANTHROPIC_MAX_TOKENS:0}
+
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:}
 
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}
