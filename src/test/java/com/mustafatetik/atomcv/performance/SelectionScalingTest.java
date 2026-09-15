@@ -48,10 +48,8 @@ class SelectionScalingTest {
 
     @Test
     void doublingTheProfileDoesNotQuadrupleTheWork() {
-        Duration small = fastestOf(profileOf(ATOMS));
-        Duration large = fastestOf(profileOf(ATOMS * 2));
-
-        double growth = (double) large.toNanos() / Math.max(1, small.toNanos());
+        Growth measured = growthOfDoubling(profileOf(ATOMS), profileOf(ATOMS * 2));
+        double growth = measured.ratio();
 
         assertThat(growth)
                 .as("linear is about 2, quadratic is about 4; the budget sits between")
@@ -84,19 +82,60 @@ class SelectionScalingTest {
                 .isNotEmpty();
     }
 
+    /** What one doubling cost, and each side of it. */
+    private record Growth(long smallNanos, long largeNanos) {
+
+        double ratio() {
+            return (double) largeNanos / Math.max(1, smallNanos);
+        }
+    }
+
     /**
-     * The fastest of the samples, not the median.
+     * The two sizes, measured <strong>interleaved</strong>.
      *
-     * <p>Both measure the same work; the fastest measures less of everything
-     * else. A median carries whatever the machine was doing during half the
-     * runs, and this test divides one timing by another, so that noise lands in
-     * the ratio twice. It was seen to: the ratio reached 3.31 against a ceiling
-     * of 3.0 once in a full suite run and sat near 2 when the test ran alone.
+     * <p><strong>This is the fix for a failure that was real and was not the
+     * code.</strong> Measuring one size to completion and then the other
+     * attributes everything that changed about the machine in between to the
+     * input size — and something does change: run alone this test passed every
+     * time, run after seventeen hundred others it failed every time, at a ratio
+     * of 3.63 against a ceiling of 3.0. Same code, same machine, different
+     * heap. A sequential measurement cannot tell a slower second half from a
+     * bigger second input.
      *
-     * <p>Widening the ceiling was the other option and it is the wrong one --
-     * the ceiling is what separates linear work from quadratic, and there is no
-     * room to give away between 2 and 4.
+     * <p>Alternating the two inside one loop cancels it: whatever the JVM is
+     * doing during sample seven, both sizes are doing it. The fastest of each
+     * is then a comparison of the work rather than of the weather.
+     *
+     * <p>The fastest and not the median, for the same reason twice over: both
+     * measure the same work and the fastest measures less of everything else,
+     * and this divides one timing by another, so noise would land in the ratio
+     * twice.
+     *
+     * <p><strong>Widening the ceiling was the other option and it is the wrong
+     * one</strong> — the ceiling is what separates linear work from quadratic,
+     * and there is no room to give away between 2 and 4.
      */
+    private static Growth growthOfDoubling(SelectionRequest small, SelectionRequest large) {
+        for (int i = 0; i < WARMUP; i++) {
+            SelectionPhase.select(small);
+            SelectionPhase.select(large);
+        }
+
+        long fastestSmall = Long.MAX_VALUE;
+        long fastestLarge = Long.MAX_VALUE;
+        for (int i = 0; i < SAMPLES; i++) {
+            long started = System.nanoTime();
+            SelectionPhase.select(small);
+            fastestSmall = Math.min(fastestSmall, System.nanoTime() - started);
+
+            started = System.nanoTime();
+            SelectionPhase.select(large);
+            fastestLarge = Math.min(fastestLarge, System.nanoTime() - started);
+        }
+        return new Growth(fastestSmall, fastestLarge);
+    }
+
+    /** The one-size figure Bolum 52.6's budget is about. */
     private static Duration fastestOf(SelectionRequest request) {
         for (int i = 0; i < WARMUP; i++) {
             SelectionPhase.select(request);
