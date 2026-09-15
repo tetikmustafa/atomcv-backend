@@ -7,9 +7,11 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.data.repository.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
 import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
+import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
 import static com.tngtech.archunit.core.domain.properties.HasName.Predicates.nameMatching;
 import static com.tngtech.archunit.core.domain.properties.HasParameterTypes.Predicates.rawParameterTypes;
@@ -242,4 +244,38 @@ class ArchitectureTest {
             .because("a bean that stands in for a user, a session, a model or a "
                     + "database row is a hole in any deployment that is not a "
                     + "developer's machine (EK C.1)");
+
+    /**
+     * <strong>A model call must not hold a database connection.</strong>
+     *
+     * <p>The pool is ten connections and a provider call takes up to thirty
+     * seconds. One call inside a transaction is survivable while the caller is
+     * a queue working one job at a time; it stops being survivable the moment
+     * something fans out, and Bolum 21.8's second step asks for sixty wordings
+     * at once. Fifty of those would have waited on a connection for a call
+     * that had not started, failed on the wait, and — because a document is
+     * written in one language or not at all — sent every multilingual
+     * generation back to the profile's own language.
+     *
+     * <p>The rule is on the class rather than on the method, which is stricter
+     * than the fault requires and is deliberate: {@code @Transactional} on a
+     * class covers every method, a reader checking one method has to check the
+     * class too, and the separation that fixes this is a separate bean anyway
+     * (see {@code TranslationWriter}). A class that both calls a model and
+     * writes rows should be two classes.
+     *
+     * <p>Verified against a planted violation by annotating
+     * {@code VariantTranslationService} with {@code @Transactional}: the rule
+     * failed, naming the class.
+     */
+    @ArchTest
+    static final ArchRule noModelCallInsideATransaction = noClasses()
+            .that().areAnnotatedWith(Transactional.class)
+            .or().containAnyMethodsThat(describe("transactional",
+                    method -> method.isAnnotatedWith(Transactional.class)))
+            .should().callMethodWhere(target(owner(assignableTo(
+                    "com.mustafatetik.atomcv.llm.gateway.ProviderChain"))))
+            .because("a provider call takes up to thirty seconds and the pool "
+                    + "is ten connections; a fan-out of these would starve it "
+                    + "(Bolum 21.8, Bolum 27.3)");
 }
