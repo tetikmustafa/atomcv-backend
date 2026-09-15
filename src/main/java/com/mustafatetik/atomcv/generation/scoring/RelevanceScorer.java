@@ -90,7 +90,51 @@ public final class RelevanceScorer {
         // is clamped rather than assumed to be a fraction.
         double finalScore = clamp(raw * (0.5 + atom.importance()));
         return new ScoredAtom(atom.atomId(), finalScore, atom.secondaryScore(),
-                new ScoredAtom.Components(embedding, tag, skill, keyword));
+                new ScoredAtom.Components(embedding, tag, skill, keyword),
+                matchedTerms(atom, target));
+    }
+
+    /**
+     * Which of the posting's own terms this atom actually carries (P7).
+     *
+     * <p>The two comparisons above already decide this and throw the answer
+     * away — they count matches and keep the count. P7 asks for the terms, and
+     * a number is the one thing it explicitly does not ask for: "matched 3 of
+     * 12" is a grade, "go, kubernetes" is a reason.
+     *
+     * <p><strong>Sorted, and that is not a presentation choice.</strong> The
+     * sets it walks are {@code Set.copyOf} results, and those iterate in an
+     * order salted per JVM run: taking them as they come would write a
+     * different order on every run of the same generation. The list lands in a
+     * JSONB column and in Bolum 51.2's determinism comparison, so it would
+     * pass here, fail on the runner, and read as a flake. Sorting is the
+     * cheapest order that is the same everywhere.
+     *
+     * <p>Costs one more pass over sets already in hand. It runs for every atom
+     * of every job-specific generation, which is why it does not re-tokenise
+     * or re-canonicalise anything.
+     */
+    private static List<String> matchedTerms(ScorableAtom atom, PostingTarget target) {
+        var matched = new java.util.TreeSet<String>();
+        for (String skill : target.requiredSkills()) {
+            if (atom.skills().contains(skill)) {
+                matched.add(skill);
+            }
+        }
+        for (String skill : target.preferredSkills()) {
+            if (atom.skills().contains(skill)) {
+                matched.add(skill);
+            }
+        }
+        if (!atom.contentTokens().isEmpty()) {
+            Set<String> words = Set.copyOf(atom.contentTokens());
+            for (String keyword : target.keywords()) {
+                if (saysEveryWordOf(keyword, words)) {
+                    matched.add(keyword);
+                }
+            }
+        }
+        return List.copyOf(matched);
     }
 
     /**

@@ -150,6 +150,74 @@ class RelevanceScorerTest {
                 .isCloseTo(0.4, EPSILON);
     }
 
+    // ── P7: the reason, not only the rank ────────────────────────────────
+
+    /**
+     * <strong>The evidence behind a score.</strong> P7 asks that the grounds
+     * of every choice be shown and names matched keywords among them; the two
+     * comparisons above already decide this and used to keep only the count.
+     * "Matched 2 of 8" is a grade — "go, postgres" is a reason, and the person
+     * can act on the second.
+     */
+    @Test
+    void anatomReportsWhichOfThePostingsTermsItCarries() {
+        var carrying = new ScorableAtom(UUID.randomUUID(), null, Set.of(),
+                Set.of("go", "postgres", "rust"),
+                RelevanceScorer.tokensOf("Ran distributed systems on call"), 0.5, 0.5);
+
+        var scored = RelevanceScorer.score(carrying,
+                new RelevanceScorer.PostingTarget(backendPosting()), null,
+                ScoringWeights.DEFAULT);
+
+        assertThat(scored.matchedTerms())
+                .as("the posting's terms it carries, and nothing it does not")
+                .containsExactly("distributed systems", "go", "postgres");
+        assertThat(scored.matchedTerms())
+                .as("rust is the atom's, not the posting's")
+                .doesNotContain("rust");
+    }
+
+    /**
+     * An atom answering nothing reports nothing — not a trimmed list of the
+     * posting's terms. The distinction is what makes an empty list readable as
+     * "this is here for another reason" rather than as a missing field.
+     */
+    @Test
+    void anatomThatMatchesNothingReportsNothing() {
+        var scored = RelevanceScorer.score(
+                atom(Set.of("baking"), Set.of("sourdough"), 0.5),
+                new RelevanceScorer.PostingTarget(backendPosting()), null,
+                ScoringWeights.DEFAULT);
+
+        assertThat(scored.matchedTerms()).isEmpty();
+    }
+
+    /**
+     * <strong>Sorted, and the test is here because the failure is invisible
+     * locally.</strong> The sets this is read out of are {@code Set.copyOf}
+     * results, which iterate in an order salted per JVM run (CLAUDE.md). An
+     * unsorted list would land in a JSONB column and in Bolum 51.2's
+     * determinism comparison with a different order on every run — passing on
+     * this machine, failing on the runner, and reading as a flake.
+     */
+    @Test
+    void thematchedTermsComeBackInOneOrderAcrossRuns() {
+        var atom = new ScorableAtom(UUID.randomUUID(), null, Set.of(),
+                Set.of("go", "postgres", "terraform"),
+                RelevanceScorer.tokensOf("high availability and distributed systems"),
+                0.5, 0.5);
+        var target = new RelevanceScorer.PostingTarget(backendPosting());
+
+        List<String> first =
+                RelevanceScorer.score(atom, target, null, ScoringWeights.DEFAULT).matchedTerms();
+
+        assertThat(first).isSorted();
+        for (int run = 0; run < 20; run++) {
+            assertThat(RelevanceScorer.score(atom, target, null, ScoringWeights.DEFAULT)
+                    .matchedTerms()).isEqualTo(first);
+        }
+    }
+
     // ── Bolum 19.4: what decides between two close atoms ─────────────────
 
     /**

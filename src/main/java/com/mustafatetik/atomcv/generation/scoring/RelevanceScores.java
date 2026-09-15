@@ -27,16 +27,36 @@ import java.util.UUID;
  *               the one callers use.
  */
 public record RelevanceScores(
-        List<ScoredAtom> ranked, ScoringWeights weights, Map<UUID, Double> byAtom)
+        List<ScoredAtom> ranked, ScoringWeights weights, Map<UUID, Double> byAtom,
+        Map<UUID, List<String>> matchedByAtom)
         implements AtomScoreSource {
 
     public RelevanceScores {
         ranked = List.copyOf(ranked);
         byAtom = Map.copyOf(byAtom);
+        matchedByAtom = Map.copyOf(matchedByAtom);
+    }
+
+    public RelevanceScores(
+            List<ScoredAtom> ranked, ScoringWeights weights, Map<UUID, Double> byAtom) {
+        this(ranked, weights, byAtom, matches(ranked));
     }
 
     public RelevanceScores(List<ScoredAtom> ranked, ScoringWeights weights) {
-        this(ranked, weights, index(ranked));
+        this(ranked, weights, index(ranked), matches(ranked));
+    }
+
+    /**
+     * P7's other half: not how well this atom scored, but what it matched.
+     *
+     * <p>Faz C copies it onto every selected line so that the answer survives
+     * into {@code selection_state} -- a generation read back next week has no
+     * posting analysis in scope and cannot recompute it (Bolum 24.1 is the
+     * same argument for the score).
+     */
+    @Override
+    public List<String> matchedTermsOf(Atom atom) {
+        return matchedByAtom.getOrDefault(atom.getId(), List.of());
     }
 
     /**
@@ -52,6 +72,24 @@ public record RelevanceScores(
     @Override
     public double scoreOf(Atom atom, Entry entry) {
         return byAtom.getOrDefault(atom.getId(), 0.0);
+    }
+
+    private static Map<UUID, List<String>> matches(List<ScoredAtom> ranked) {
+        // Only atoms that matched something are indexed: against a posting of
+        // any size most of a profile matches nothing, and an entry per atom
+        // would be a map of empty lists.
+        //
+        // The map is read by key and never iterated, so the copy the compact
+        // constructor makes is free to reorder it. The *lists* are the part
+        // that has to be stable, and RelevanceScorer sorts them for exactly
+        // that reason.
+        Map<UUID, List<String>> matched = new LinkedHashMap<>();
+        for (ScoredAtom atom : ranked) {
+            if (!atom.matchedTerms().isEmpty()) {
+                matched.put(atom.atomId(), atom.matchedTerms());
+            }
+        }
+        return matched;
     }
 
     private static Map<UUID, Double> index(List<ScoredAtom> ranked) {
