@@ -304,3 +304,26 @@ tasks.register<Test>("latexTest") {
             System.getProperty(name)?.let { systemProperty(name, it) }
         }
 }
+
+// Bolum 48.5's replay. A JavaExec and not a Test, because it is a tool whose
+// output is the document: a task that passed or failed would be answering a
+// different question than "is this the file that shipped?".
+//
+// It runs main's classpath alone -- no Spring context, no database, no
+// compiler -- which is the section's own claim about Faz E and the only way to
+// check it. `scripts/replay.sh` is the front door; this exists so that the
+// front door is a Gradle task rather than a hand-assembled java command.
+tasks.register<JavaExec>("replay") {
+    group = "application"
+    description = "Re-runs Faz E from an export the support reader wrote. "
+        .plus("-Preplay.file=<export.json> [-Preplay.out=<out.tex>]")
+    mainClass.set("com.mustafatetik.atomcv.generation.support.ReplayRun")
+    classpath = sourceSets["main"].runtimeClasspath
+    // Properties rather than --args, so the two paths cannot be swapped by a
+    // quoting accident on the way through Gradle.
+    argumentProviders.add(CommandLineArgumentProvider {
+        listOfNotNull(
+            project.findProperty("replay.file")?.toString(),
+            project.findProperty("replay.out")?.toString())
+    })
+}

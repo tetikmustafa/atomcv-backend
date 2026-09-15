@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -44,8 +45,11 @@ class SupportReadTest {
 
     private final SupportGrantLookup grants = mock(SupportGrantLookup.class);
     private final GenerationRepository generations = mock(GenerationRepository.class);
+    private final com.fasterxml.jackson.databind.ObjectMapper json =
+            new com.fasterxml.jackson.databind.ObjectMapper()
+                    .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
     private final SupportRead reader = new SupportRead(grants, generations,
-            Clock.fixed(NOW, ZoneOffset.UTC));
+            Clock.fixed(NOW, ZoneOffset.UTC), json);
 
     @Test
     void anopenGrantIsReadAsItsOwnerAndStamped() {
@@ -146,6 +150,66 @@ class SupportReadTest {
      * it, and a mock would assert that they were called rather than that the
      * report can be built from a generation.
      */
+    // -- Bolum 48.5's export ------------------------------------------------
+
+    /**
+     * <strong>Writing the file is a read, and is refused on the same terms.</strong>
+     * A closed grant has to stop the export exactly as it stops the printout --
+     * an export that fell through a branch the printout does not have would be
+     * the permission working for one output and not the other, which is the
+     * shape a consent bug takes.
+     */
+    @Test
+    void aclosedGrantWritesNoExport(@TempDir java.nio.file.Path directory) {
+        var grant = openGrant();
+        grant.revoke(NOW.minus(Duration.ofMinutes(1)));
+        when(grants.newestFor(GENERATION)).thenReturn(Optional.of(grant));
+        java.nio.file.Path export = directory.resolve("export.json");
+
+        reader.read(GENERATION, export);
+
+        assertThat(export).doesNotExist();
+        verify(generations, never()).findById(any(), any());
+    }
+
+    /** And an open one writes it, and is stamped for it like any other read. */
+    @Test
+    void anopenGrantWritesTheFileAreplayCanRead(@TempDir java.nio.file.Path directory)
+            throws Exception {
+        var grant = openGrant();
+        when(grants.newestFor(GENERATION)).thenReturn(Optional.of(grant));
+        when(generations.findById(any(), eq(GENERATION))).thenReturn(Optional.of(generation()));
+        java.nio.file.Path export = directory.resolve("nested").resolve("export.json");
+
+        reader.read(GENERATION, export);
+
+        assertThat(export).exists();
+        assertThat(grant.getAccessedAt()).isEqualTo(NOW);
+
+        GenerationExport read = json.readValue(export.toFile(), GenerationExport.class);
+        assertThat(read.exportedAt()).isEqualTo(NOW);
+        assertThat(read.selectionState().language()).isEqualTo("en");
+        assertThat(read.selectionState().customization().costKey())
+                .isEqualTo(TemplateCustomization.CLASSIC.costKey());
+    }
+
+    /**
+     * A generation that never reached Faz E has nothing to replay, and the
+     * export says so rather than producing a file that renders an empty page.
+     */
+    @Test
+    void anexportWithNoSnapshotIsNotReplayable(@TempDir java.nio.file.Path directory)
+            throws Exception {
+        when(grants.newestFor(GENERATION)).thenReturn(Optional.of(openGrant()));
+        when(generations.findById(any(), eq(GENERATION))).thenReturn(Optional.of(generation()));
+        java.nio.file.Path export = directory.resolve("export.json");
+
+        reader.read(GENERATION, export);
+
+        assertThat(json.readValue(export.toFile(), GenerationExport.class).isReplayable())
+                .isFalse();
+    }
+
     private static Generation generation() {
         return new Generation(OWNER, UUID.randomUUID(), Map.of(),
                 new StoredSelection("en", TemplateCustomization.CLASSIC,

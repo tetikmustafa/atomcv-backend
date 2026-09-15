@@ -513,21 +513,38 @@ enum tamamen düşüyor. Üçü birden gerekiyor, ve bunu `OpenApiSchemaIT` tutu
 
 Faz B, C, E saf fonksiyon → `selection_state` ile kendi makinende yeniden çalıştırma. Üretim verisine erişmeden hata ayıklama.
 
-> **Sapma (denetim, 2026-09-15) — böyle bir görev yok, ve okuyacağı dosya da
-> yok.** Bu aracın öncülü "üretim verisine erişmeden": elde bir
-> `selection_state` olması gerekiyor, ve onu dışarı verecek bir şey yok.
-> `GET /generations/{id}` seçim durumunu yayımlamıyor (mutlak kural 4'ün
-> yanındaki karar) ve `GET /generations/{id}/selection` tartılan satırları
-> metniyle veriyor — aynı şey değil. Dışa aktarma biçimi diye bir şey hiç
-> tanımlanmadı.
+> **Düzeltme (2026-09-15) — görev var, ve komut satırı bir dosya alıyor.**
+> Bu aracın öncülü "üretim verisine erişmeden", yani elde bir dosya olması
+> gerekiyordu ve onu verecek hiçbir şey yoktu: `GET /generations/{id}` seçim
+> durumunu yayımlamıyor (mutlak kural 4'ün yanındaki karar) ve
+> `GET /generations/{id}/selection` tartılan satırları metniyle veriyor — aynı
+> şey değil. Biçim artık `GenerationExport`, ve onu yazan şey § 48.4'ün
+> **çevrimdışı okuyucusu**: aynı izin, aynı damga, aynı içerik.
 >
-> Yani görev bugün, var olmayan bir formatı ayrıştıran bir okuyucu olurdu.
-> Üretim gerçekten koşup bir hatanın peşine düşmek gerektiğinde hangi alanların
-> taşınması gerektiği de belli olur.
+> ```bash
+> ./scripts/support-read.sh <generation-id> --export=export.json
+> ./scripts/replay.sh export.json out.tex     # ./gradlew replay -Preplay.file=…
+> ```
 >
-> **Bugün aynı işi gören şey golden set:** Faz B, C ve E saf fonksiyonlar ve
-> `GoldenSelectionTest` onları yedi profil × üç şablon × iki dil × iki sayfa
-> sınırıyla koşuyor — veritabanı yok, derleyici yok, tek komut.
+> **Replay eden faz E'dir, ve sebebi veridir.** `content_snapshot` zaten
+> § 22.2'nin `RenderRequest`'i — yani Faz E'nin girdisinin ta kendisi: aynı
+> anlık görüntü aynı baytları üretiyor ve gönderilenle karşılaştırması bir
+> diff. **Faz B ve Faz C replay edilemiyor**, ikisi de saf olduğu hâlde:
+> Faz B puanlanmış bir ağaç, Faz C ise her atomun ölçülmüş yüksekliğini taşıyan
+> `SelectionRequest` istiyor ve ikisi de hiçbir yerde saklanmıyor. Bugünün
+> profilinden yeniden kurmak, geçen haftaya ait bir soruya bu haftanın metniyle
+> cevap vermek olurdu — `content_snapshot`'ın var olma sebebi tam olarak bu
+> (EK D.6.3). Saklanmaları bir hata ayıklama kolaylığı değil, birinin profilinin
+> tamamının kopyası hakkında bir saklama kararıdır; `GenerationExport`'un
+> javadoc'u hangi alanların gerekeceğini adıyla yazıyor.
+>
+> **Dosya, çıktısı terminalde ölen bir okumadan daha tehlikelidir.** Bir işverene
+> gönderilmiş belgenin kendisi; her iki script de bunu söylüyor ve export
+> alındığı anı kaydediyor — bir grant kırk sekiz saat sürüyor, bir dosya sürmüyor.
+>
+> **Faz B ve C için bugün aynı işi gören şey golden set:** `GoldenSelectionTest`
+> onları yedi profil × üç şablon × iki dil × iki sayfa sınırıyla koşuyor —
+> veritabanı yok, derleyici yok, tek komut.
 
 ---
 
