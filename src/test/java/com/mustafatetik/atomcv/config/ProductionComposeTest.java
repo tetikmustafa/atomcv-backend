@@ -52,6 +52,36 @@ class ProductionComposeTest {
     }
 
     /**
+     * <strong>Bolum 49.3's recovery window is three settings, not one.</strong>
+     * {@code wal_level=replica} on its own archives nothing; it was here alone
+     * for a stage, and the number Bolum 49.5 publishes — five minutes of data
+     * loss — was a day, because the only copy was the 03:00 dump.
+     *
+     * <p>The assertion names all three deliberately. Losing any one of them
+     * leaves a configuration that still starts, still backs up nightly and
+     * still reads as if it had point-in-time recovery.
+     */
+    @Test
+    void thewriteAheadLogIsArchivedAndNotOnlyWritten() {
+        String command = service("postgres").get("command").toString();
+        assertThat(command).contains("wal_level=replica");
+        assertThat(command).contains("archive_mode=on");
+        assertThat(command).contains("archive_command=");
+        assertThat(command)
+                .as("an idle database still closes a segment, or the window is "
+                        + "open until the next write rather than five minutes")
+                .contains("archive_timeout=");
+        assertThat(service("postgres").get("volumes").toString())
+                .as("and the archive is reachable from the host that ships it")
+                .contains("walarchive:/wal-archive");
+        assertThat(volumes()).containsKey("walarchive");
+        assertThat(Path.of("scripts/archive-wal.sh"))
+                .as("archive_mode with nothing draining the archive fills the "
+                        + "volume and stops writes")
+                .exists();
+    }
+
+    /**
      * <strong>Analytics is opt-in, and the default deployment must not need
      * it.</strong> Umami is half a gigabyte and reports nothing until the
      * frontend has a website id; started by default it would be an empty

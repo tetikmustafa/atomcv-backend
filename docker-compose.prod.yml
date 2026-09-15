@@ -71,14 +71,34 @@ services:
       # Runs on first initialisation only, which is the one chance there is to
       # create Umami's database beside the application's.
       - ./docker/postgres/init-umami.sql:/docker-entrypoint-initdb.d/10-umami.sql:ro
+      # Bolum 49.3's archive lands here and `scripts/archive-wal.sh` ships it.
+      # Postgres writes it, the host reads it -- which is why it is a named
+      # volume and not a path inside pgdata: a recovery that restores the data
+      # directory must not restore the segments that describe it.
+      - walarchive:/wal-archive
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    # Bolum 49.3. The archive_command Bolum 49.3 prints calls rclone, and this
+    # image does not carry it -- installing it would mean maintaining a
+    # derivative of the pgvector image for one binary. Copying to a volume the
+    # host already mounts gets the same segments to the same bucket, and keeps
+    # the encryption on the host side where the age key already lives
+    # (Bolum 49.2: a segment holds the same CVs the dump does).
+    #
+    # `test ! -f` first, because Postgres may retry a segment it already
+    # archived and an archive_command that overwrites can truncate a good file
+    # with a partial one. Exit non-zero and Postgres keeps the segment and
+    # tries again -- which is the behaviour wanted when the volume is full,
+    # and the reason this is not `cp -f`.
     command: >
       postgres -c shared_buffers=256MB
                -c max_connections=50
                -c wal_level=replica
+               -c archive_mode=on
+               -c archive_command='test ! -f /wal-archive/%f && cp %p /wal-archive/%f'
+               -c archive_timeout=300
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -162,6 +182,7 @@ services:
 volumes:
   backendcache:
   pgdata:
+  walarchive:
   redisdata:
   modelcache:
   certbot-certs:

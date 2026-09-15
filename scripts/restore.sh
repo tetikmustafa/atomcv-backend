@@ -16,6 +16,14 @@
 # The age private key is not on the server (Adim V.8). Run this from the
 # machine that has it, or copy the key in for the length of the test and
 # remove it afterwards.
+#
+# **This restores a dump, which means it restores to 03:00.** The rest of
+# Bolum 49.5's window is a different procedure and different files: the weekly
+# tar in $REMOTE/base/ unpacked over an empty data directory, a
+# `restore_command` pulling $REMOTE/wal/ segments, and a recovery.signal
+# telling Postgres to replay to a chosen instant. That path is for the day
+# production is lost; this one is for every Tuesday, and answers the question
+# that actually goes unanswered -- do the backups restore at all.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -71,6 +79,20 @@ psql_root() {
 psql_root -c "DROP DATABASE IF EXISTS \"$TARGET\";"
 psql_root -c "CREATE DATABASE \"$TARGET\";"
 $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$TARGET" < "$WORK/dump.sql" > /dev/null
+
+# Bolum 49.4's warning, and it is not optional in either mode. An anonymous
+# profile is a `profiles` row with no owner and an expiry (Bolum 51.6.1); a
+# restore brings it back to life as a CV that was promised two hours and has
+# now had six months. The retention sweep would take it on its next pass, but
+# the window between must never open -- and in the scratch database the same
+# delete is what keeps a restore test from being a second copy of everyone's
+# anonymous work sitting in a database nobody is watching.
+#
+# It cannot be done in the backup: pg_dump does not filter rows.
+REMOVED=$($COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$TARGET" -t -A -c "
+    WITH gone AS (DELETE FROM profiles WHERE expires_at IS NOT NULL RETURNING 1)
+    SELECT count(*) FROM gone;")
+echo "Anonymous profiles removed (Bolum 49.4): ${REMOVED:-0}"
 
 # The assertion, and the reason this script prints anything at all. "It ran
 # without an error" is not a restore test; a schema with no rows in it would
