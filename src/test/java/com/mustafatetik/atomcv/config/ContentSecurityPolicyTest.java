@@ -71,6 +71,19 @@ class ContentSecurityPolicyTest {
         assertThat(policy).containsKey("img-src");
     }
 
+    /**
+     * EK D.6.7's other half: the warm-up has a URL under {@code /api/v1} and
+     * the {@code /api/} block proxies everything under it. Without an exact
+     * match ahead of that block, an operational lever meant for the host is
+     * a way for anyone to make the server do work for nothing.
+     */
+    @Test
+    void thewarmUpIsNotReachableThroughNginx() {
+        assertThat(read(NGINX))
+                .as("EK D.6.7 keeps /api/v1/warmup off the public route")
+                .contains("location = /api/v1/warmup");
+    }
+
     /** Directive name to the rest of its line, from the one header nginx sets. */
     private static Map<String, String> frontendPolicy() {
         Matcher header = HEADER.matcher(read(NGINX));
