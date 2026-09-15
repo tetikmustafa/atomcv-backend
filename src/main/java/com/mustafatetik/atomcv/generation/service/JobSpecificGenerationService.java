@@ -77,6 +77,7 @@ public class JobSpecificGenerationService {
     private final RenderCostService renderCosts;
     private final RewritePhase rewrites;
     private final CustomizationService customizations;
+    private final GenerationTranslation translation;
     private final CoverLetterWriter letters;
     private final GenerationPipeline pipeline;
 
@@ -87,6 +88,7 @@ public class JobSpecificGenerationService {
             RelevanceScoringService relevance,
             RenderCostService renderCosts,
             RewritePhase rewrites, CustomizationService customizations,
+            GenerationTranslation translation,
             CoverLetterWriter letters,
             GenerationPipeline pipeline,
             Capacities capacities, TemplateMeasurements measurements) {
@@ -100,6 +102,7 @@ public class JobSpecificGenerationService {
         this.renderCosts = renderCosts;
         this.rewrites = rewrites;
         this.customizations = customizations;
+        this.translation = translation;
         this.letters = letters;
         this.pipeline = pipeline;
     }
@@ -150,22 +153,13 @@ public class JobSpecificGenerationService {
         }
         JobAnalysis posting = analysed.orElseThrow();
 
-        GenerationOptions options = GenerationOptions.forPosting(head, tree, posting.jdLanguage())
+        GenerationOptions options = GenerationOptions.forPosting(head, posting.jdLanguage())
                 .withMaxPages(maxPages)
                 .withLanguage(language)
                 // Bolum 14.4: a saved set, when the request named one. Nothing
                 // named leaves the profile's own working settings (Bolum 33.2).
                 .withCustomization(
                         customizations.settingsOf(profile, customizationId).orElse(null));
-
-        if (posting.jdLanguage() != null && !posting.jdLanguage().isBlank()
-                && !posting.jdLanguage().strip().equals(options.language())) {
-            // F-013. Not an error and not a refusal: the CV is written, in one
-            // language, and the response says which one so the screen can too.
-            log.info("Posting is in {} but the CV is written in {}; "
-                    + "the profile has no wording for every atom in the posting's language",
-                    posting.jdLanguage().strip(), options.language());
-        }
 
         // Measured if anybody has compiled this geometry, estimated if not
         // (Bolum 33.3). Empty now means only that the template itself has no
@@ -204,10 +198,60 @@ public class JobSpecificGenerationService {
         RelevanceScores scores = relevance.scoreAgainst(
                 tree, tags.labelsByAtom(profile), posting, directives.emphasize());
 
-        var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
-                options.maxPages(), options.language(),
+        // Bolum 21.8's second step, between Faz B and Faz C because Bolum 32.3
+        // is explicit about the order: choose the language, then optimise
+        // against *that* language's costs. Faz B can run first because scoring
+        // is language-independent -- the vector comes from the English wording
+        // and skills are canonical.
+        //
+        // All or nothing (F-013): a document is written in one language, so a
+        // profile that cannot be fully carried into the posting's is written in
+        // its own rather than in both.
+        if (!tree.canBeWrittenIn(options.language())) {
+            boolean carried = translation.ensureWordingsIn(profile, tree, options.language(),
+                    scores.ranked(), bucketKey, subject.userId());
+            if (!carried) {
+                options = options.withLanguage(head.getSourceLanguage());
+            }
+
+            // The measurement above is behind the language either way, and
+            // this is the reason the step sits here rather than after Faz C:
+            // a carried profile has wordings nobody has costed, and a
+            // fallback moved the header into a language nobody has measured.
+            // Selection is allowed to estimate (Bolum 33.3) but should not
+            // have to, and this is one query when there is nothing to do.
+            try {
+                int measured = renderCosts.measureMissing(profile, options.customization(),
+                        head, java.util.Locale.forLanguageTag(options.language()));
+                if (measured > 0 || carried) {
+                    // The wordings are rows now; the tree in hand predates them.
+                    tree = assembler.load(profile);
+                }
+            } catch (CompilationException failed) {
+                return Result.err(
+                        new PipelineError.CompilationFailed(failed.kind(), failed.log()));
+            }
+        }
+        // Effectively final from here: the lambdas below close over it, and it
+        // is settled -- the language a document is written in is decided once.
+        final GenerationOptions settled = options;
+
+        if (posting.jdLanguage() != null && !posting.jdLanguage().isBlank()
+                && !posting.jdLanguage().strip().equals(settled.language())) {
+            // F-013. Not an error and not a refusal: the CV is written, in one
+            // language, and the response says which one so the screen can too.
+            // Reaching this line now means a translation was needed and could
+            // not be made -- before Bolum 21.8's second step it only meant the
+            // profile had not been translated by hand.
+            log.info("Posting is in {} but the CV is written in {}; "
+                    + "the profile could not be carried into the posting's language",
+                    posting.jdLanguage().strip(), settled.language());
+        }
+
+        var built = SelectionRequestBuilder.build(tree, settled.customization(), capacity,
+                settled.maxPages(), settled.language(),
                 head.getPreferences().writingStyle().tone(), scores,
-                measuredHeaderOf(head, options));
+                measuredHeaderOf(head, settled));
 
         if (built.request().sections().isEmpty()) {
             // Everything was inactive, or nothing had a wording. Either way
@@ -229,7 +273,7 @@ public class JobSpecificGenerationService {
         // exists. It reports itself when it runs: general mode never gets
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
-                options.language(), head.getPreferences().writingStyle().tone(), bucketKey,
+                settled.language(), head.getPreferences().writingStyle().tone(), bucketKey,
                 // Bolum 18.7's fourth field. It reaches Faz D and nothing else:
                 // Faz B ranks against the posting, and a sentence is not a term.
                 directives.freeformNote(), subject.userId(), jobId);
@@ -258,9 +302,9 @@ public class JobSpecificGenerationService {
 
         return pipeline.run(head, tree,
                         built.request().withBudgetFactor(resolved.budgetFactor()), rewriter,
-                        options.customization(), options.locale())
+                        settled.customization(), settled.locale())
                 .map(document -> new GeneratedGeneration(
-                        profile.id(), posting, options, scores.weights(),
+                        profile.id(), posting, settled, scores.weights(),
                         promptVersions(bucketKey, tally.get()),
                         tally.get(),
                         document,

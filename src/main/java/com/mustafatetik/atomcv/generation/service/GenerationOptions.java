@@ -57,35 +57,32 @@ public record GenerationOptions(
      * general mode the same preference falls back to the profile's own source
      * language, because there is nothing else to read it from.
      *
-     * <p><strong>And only when the profile can be written in it</strong>
-     * (F-013). Bolum 21.8 fills a missing wording by translating it and saving
-     * the result; that phase does not exist yet, so selection silently falls
-     * back to the primary wording while the dates and "Present" keep following
-     * the language that was asked for — a CV of Turkish bullets under English
-     * dates. One document is written in one language, and which one is decided
-     * here, from what the profile actually holds. When the translating phase
-     * lands, {@link ProfileTree#canBeWrittenIn} is true for every language and
-     * this narrows back to "follow the posting".
+     * <p><strong>It follows the posting even when the profile holds no wording
+     * in that language</strong>, which is the narrowing F-013 itself asked for
+     * once Bolum 21.8's second step existed. This gated on
+     * {@link ProfileTree#canBeWrittenIn} while that step did not: selection
+     * would fall back to the primary wording for every untranslated atom while
+     * the dates and "Present" kept following the language that was asked for,
+     * a CV of Turkish bullets under English dates.
      *
-     * @param tree            the profile as it will be selected from, which is
-     *                        the only thing that knows whether a language is
-     *                        deliverable
+     * <p><strong>The decision moved rather than went away.</strong>
+     * {@code GenerationTranslation} fills the missing wordings between Faz B
+     * and Faz C and reports when it could not, and that is the one place a
+     * document's language falls back now. One document is still written in one
+     * language — a static read of the tree is simply no longer what settles
+     * which, because a tree that cannot be written in a language at nine in
+     * the morning can be at five past.
+     *
      * @param postingLanguage {@code jdLanguage} from Faz A, which may be blank
      *                        when the extraction did not name one
      */
-    public static GenerationOptions forPosting(
-            Profile profile, ProfileTree tree, String postingLanguage) {
-
+    public static GenerationOptions forPosting(Profile profile, String postingLanguage) {
         var defaults = profile.getPreferences().defaults();
         if (!"auto".equals(defaults.cvLanguage())
                 || postingLanguage == null || postingLanguage.isBlank()) {
             return defaultsOf(profile);
         }
-        String posting = postingLanguage.strip();
-        if (tree == null || !tree.canBeWrittenIn(posting)) {
-            return defaultsOf(profile);
-        }
-        return new GenerationOptions(defaults.maxPages(), posting,
+        return new GenerationOptions(defaults.maxPages(), postingLanguage.strip(),
                 customizationFor(defaults));
     }
 
