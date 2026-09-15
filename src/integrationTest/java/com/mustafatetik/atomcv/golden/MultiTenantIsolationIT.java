@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * The fourth of Bolum 51.2's tests: one user cannot reach another's rows.
+ * The fourth of the four critical tests: one user cannot reach another's rows.
  *
  * <p>Every endpoint that takes an id is tried with an id belonging to somebody
  * else, and has to answer as though the row does not exist. This is the test

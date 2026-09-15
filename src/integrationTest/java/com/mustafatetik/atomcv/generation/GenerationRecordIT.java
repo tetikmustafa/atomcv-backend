@@ -32,9 +32,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *
  * <p>Nine JSONB columns and an enum converted to text, none of which schema
  * validation checks the shape of. What is being proved is that the snapshot
- * survives a round trip intact — because EK D.6.3 rests on it: in Stage 2 the
- * snapshot is not a fallback for an expired PDF, it is the only way to get the
- * PDF back at all.
+ * survives a round trip intact — because the re-render promise rests on it: in
+ * Stage 2 the snapshot is not a fallback for an expired PDF, it is the only
+ * way to get the PDF back at all.
  */
 class GenerationRecordIT extends AbstractIntegrationTest {
 
@@ -159,7 +159,7 @@ class GenerationRecordIT extends AbstractIntegrationTest {
 
     /**
      * The fit report is a seventh JSONB column and it round-trips as a typed
-     * record rather than a map (Bolum 23.3, F-008).
+     * record rather than a map (F-008).
      *
      * <p>Worth its own test because the column is what the result screen reads
      * and nothing else validates its shape: a field that failed to deserialise
@@ -222,13 +222,13 @@ class GenerationRecordIT extends AbstractIntegrationTest {
      * V11, and the column exists because the one next to it cannot answer this
      * question.
      *
-     * <p>{@code content_snapshot} holds the same sentence and no atom id —
-     * Bolum 22.2 built the render to carry none — so an edit that re-runs
-     * selection could not tell which surviving atom already had a Faz D
-     * wording. Round-tripping it by id is the whole point, and nothing else
-     * checks that a {@code Map<UUID, RichContent>} survives JSONB: a key that
-     * failed to deserialise would come back as an empty map, which looks
-     * exactly like a generation whose rewrites were all refused.
+     * <p>{@code content_snapshot} holds the same sentence and no atom id — the
+     * render request carries none — so an edit that re-runs selection could
+     * not tell which surviving atom already had a Faz D wording.
+     * Round-tripping it by id is the whole point, and nothing else checks that
+     * a {@code Map<UUID, RichContent>} survives JSONB: a key that failed to
+     * deserialise would come back as an empty map, which looks exactly like a
+     * generation whose rewrites were all refused.
      */
     @Test
     void thefazDwordingSurvivesTheRoundTripByAtom() {

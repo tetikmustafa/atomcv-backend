@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * The daily allowance, taken and given back (Bolum 44.1, 44.2).
+ * The daily allowance, taken and given back.
  *
  * <p><strong>Counted when the work is queued, not when it succeeds.</strong>
- * Bolum 44.2 says so and the alternative is the hole: a user whose generations
- * all fail would pay nothing and could queue forever, and every one of those
- * costs an LLM call before it fails.
+ * The alternative is the hole: a user whose generations all fail would pay
+ * nothing and could queue forever, and every one of those costs an LLM call
+ * before it fails.
  *
  * <p>The count and the check are one statement. Reading the counter and then
  * writing it would let two requests arriving together both see nineteen and
@@ -62,8 +62,8 @@ public class QuotaService {
      */
     public Result<Void> consume(QuotaSubject subject, QuotaMetric metric) {
         // Before the counter moves, because a request this refuses must not
-        // spend the day's allowance -- the same ordering Bolum 44.3 gives the
-        // brake against the quota.
+        // spend the day's allowance -- the same ordering the brake has against
+        // the quota.
         Result<Void> narrowed = whileTightened(subject, metric);
         if (narrowed.isErr()) {
             return narrowed;
@@ -83,7 +83,7 @@ public class QuotaService {
     }
 
     /**
-     * Bolum 44.3's tightening, read on the hot path.
+     * The tightening, read on the hot path.
      *
      * <p>A daily ceiling says how much, never how fast. A subject can spend a
      * whole day's generations in four minutes, and the anomaly detector runs

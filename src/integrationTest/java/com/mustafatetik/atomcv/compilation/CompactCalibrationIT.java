@@ -24,7 +24,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Compact's stored capacity, re-derived from the compiler (Bolum 26.4, 33.5).
+ * Compact's stored capacity, re-derived from the compiler.
  *
  * <p>What {@code LatexCalibrationIT} is for classic. Separate rather than
  * shared, and the reason is not laziness: that class reads every number
@@ -107,7 +107,7 @@ class CompactCalibrationIT {
 
     @Test
     void thepageIsDenserThanClassic() {
-        // Bolum 33.5 asks for it in lines: about sixty-four against
+        // The catalogue asks for it in lines: about sixty-four against
         // fifty-four. Read as bullet lines before furniture, that is seventy
         // against sixty.
         double compactLines = capacity().pageTextHeightPt() / capacity().itemBaselineSkipPt();

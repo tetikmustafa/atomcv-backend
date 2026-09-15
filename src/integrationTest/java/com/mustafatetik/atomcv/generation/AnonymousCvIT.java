@@ -58,12 +58,12 @@ import org.springframework.transaction.support.TransactionTemplate;
  * the process is <em>identical</em> to an account's, and the way to check an
  * identical process is to run it and look at the PDF.
  *
- * <p><strong>And the page guarantee, which nothing else verifies.</strong>
- * Bolum 9's flow was allowed to keep it because {@code measureMissing} runs
- * inside the pipeline and is profile-scoped, so an anonymous profile's wordings
- * are measured like anybody else's rather than estimated. That was an argument
- * from reading the code; here it is a row in {@code atom_variants} carrying a
- * cost it did not have before the generation ran.
+ * <p><strong>And the page guarantee, which nothing else verifies.</strong> The
+ * layered flow was allowed to keep it because {@code measureMissing} runs
+ * inside the pipeline and is profile-scoped, so an anonymous profile's
+ * wordings are measured like anybody else's rather than estimated. That was an
+ * argument from reading the code; here it is a row in {@code atom_variants}
+ * carrying a cost it did not have before the generation ran.
  */
 @Tag("latex")
 @AutoConfigureMockMvc
@@ -212,9 +212,9 @@ class AnonymousCvIT extends AbstractLatexTest {
 
     /**
      * No challenge token, and that is worth a sentence rather than a silence:
-     * § 44.4's check is real and this lane has no secret, so
-     * {@code ChallengeConfig} hands out a challenge that passes everything.
-     * {@code CallerChallengeTest} is where the refusal is exercised.
+     * the challenge check is real and this lane has no secret, so {@code
+     * ChallengeConfig} hands out a challenge that passes everything. {@code
+     * CallerChallengeTest} is where the refusal is exercised.
      */
     private String enqueue() throws Exception {
         String accepted = mvc.perform(post("/api/v1/generations")

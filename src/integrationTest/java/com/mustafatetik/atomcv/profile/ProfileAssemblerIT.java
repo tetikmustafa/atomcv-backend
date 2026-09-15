@@ -28,9 +28,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Bolum 52.2: a profile load must stay inside its query budget no matter how
- * large the profile is. The failure this guards against is not slow — it is
- * invisible until production, because the code that causes it looks ordinary.
+ * A profile load must stay inside its query budget no matter how large the
+ * profile is. The failure this guards against is not slow — it is invisible
+ * until production, because the code that causes it looks ordinary.
  *
  * <p>The ceiling comes from {@code performance-budgets.yaml} rather than from
  * a number here. It is the sharpest figure in that file and the only one that

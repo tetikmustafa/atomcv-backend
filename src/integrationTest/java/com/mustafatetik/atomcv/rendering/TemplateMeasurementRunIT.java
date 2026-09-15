@@ -19,17 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * What {@code scripts/measure-template.sh} runs.
  *
  * <p><strong>A tool with a test's shape, and it is not pretending.</strong>
- * EK C.2's checklist for adding a template has two boxes that say "measured" —
- * the page capacity and the fixed costs — and until this existed the only way
- * to tick them was to read a number out of a failing assertion somewhere else.
- * The repository layout of XI-B.2 names {@code scripts/measure-template.sh};
- * this is the half of it that can reach a compiler.
+ * The checklist for adding a template has two boxes that say "measured" — the
+ * page capacity and the fixed costs — and until this existed the only way to
+ * tick them was to read a number out of a failing assertion somewhere else.
+ * The repository layout names {@code scripts/measure-template.sh}; this is the
+ * half of it that can reach a compiler.
  *
  * <p>It asserts what a measurement must be true of — a page has positive
  * height, a line has a height, no piece of furniture is a page tall in either
- * direction — and <strong>prints the rest</strong>, because the numbers are the output
- * and a person is the reader. Bolum 51.7's third rule is about not calling a
- * suite green; this is the other direction, a run whose value is its report.
+ * direction — and <strong>prints the rest</strong>, because the numbers are
+ * the output and a person is the reader. The third rule about testing is not
+ * to call a suite green; this is the other direction, a run whose value is its
+ * report.
  *
  * <p>Nothing is written. A measured capacity reaches the database through
  * {@code MeasurementJobHandler} when somebody actually renders at that

@@ -36,8 +36,8 @@ import org.springframework.test.web.servlet.RequestBuilder;
  * <p>The endpoint was in the resource map from the start and the column was in
  * {@code V1}; neither had ever met the other, so {@code generations.archived}
  * was a column with a setter nobody called. What the mark buys arrives with
- * object storage — Bolum 13 pairs it with {@code pdf_expires_at} and EK D.6.3
- * defers the whole expiry path — so what is tested here is the mark itself:
+ * object storage — the schema pairs it with {@code pdf_expires_at} and the
+ * whole expiry path is deferred — so what is tested here is the mark itself:
  * that it is set, cleared, published on both shapes a client reads, and
  * reachable only by the person whose generation it is.
  */
@@ -90,8 +90,8 @@ class ArchiveApiIT extends AbstractIntegrationTest {
 
     /**
      * <strong>A mark that cannot be taken off is a trap.</strong> The resource
-     * map names no undo and the support grant of Bolum 48.4.1 answered the
-     * same question the same way: one endpoint, a boolean in the body.
+     * map names no undo and the support grant answered the same question the
+     * same way: one endpoint, a boolean in the body.
      */
     @Test
     void themarkComesOffThroughTheSameEndpoint() throws Exception {

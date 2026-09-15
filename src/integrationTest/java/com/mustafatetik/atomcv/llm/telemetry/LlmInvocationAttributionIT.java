@@ -17,7 +17,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 27.5's {@code llm_invocations.user_id}, from the event to the column.
+ * {@code llm_invocations.user_id}, from the event to the column.
  *
  * <p>The column existed from V1 and nothing had ever written it: the daily
  * total the budget brake reads does not need it, so nothing failed, and "what
@@ -51,8 +51,8 @@ class LlmInvocationAttributionIT extends AbstractIntegrationTest {
 
     /**
      * And an anonymous one leaves it NULL rather than inventing an owner.
-     * Bolum 31.6.3's uploads have no account behind them, and a session id in
-     * a column that means "which account spent this" would be worse than a
+     * Anonymous uploads have no account behind them, and a session id in a
+     * column that means "which account spent this" would be worse than a
      * blank.
      */
     @Test

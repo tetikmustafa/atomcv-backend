@@ -102,8 +102,8 @@ class TemplateMeasurementJobIT extends AbstractIntegrationTest {
 
     /**
      * And the colour does not travel, because it is not what is being
-     * measured: Bolum 33.1 puts it in layer A, and the key the answer is filed
-     * under does not carry it either.
+     * measured: colour is layer A, and the key the answer is filed under does
+     * not carry it either.
      */
     @Test
     void thecolourIsNotPartOfWhatIsMeasured() {

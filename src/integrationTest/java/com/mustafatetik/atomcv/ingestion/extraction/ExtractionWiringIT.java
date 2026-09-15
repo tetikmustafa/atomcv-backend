@@ -31,7 +31,10 @@ class ExtractionWiringIT extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder(DocumentFormat.values());
     }
 
-    /** And the shipped numbers are Bolum 42.1's and Bolum 31.2's, not the defaults of a record. */
+    /**
+     * And the shipped numbers are the upload limit's and the ladder's, not the
+     * defaults of a record.
+     */
     @Test
     void theShippedLimitsAreTheOnesTheSectionsName() {
         assertThat(limits.maxBytes()).isEqualTo(10 * 1024 * 1024);

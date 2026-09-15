@@ -102,8 +102,8 @@ class AnonymousGenerationIT extends AbstractIntegrationTest {
     /**
      * Queued as the session's own work, and paid for by the address.
      *
-     * <p>Bolum 44.1 counts an anonymous caller by address and not by session:
-     * a session is a cookie, and counting by one would give an unlimited
+     * <p>An anonymous caller is counted by address and not by session: a
+     * session is a cookie, and counting by one would give an unlimited
      * allowance to whoever clears theirs. The subject travels in the payload
      * because the worker has no request to read an address from — a refund has
      * to reach whoever paid.
@@ -124,9 +124,9 @@ class AnonymousGenerationIT extends AbstractIntegrationTest {
     }
 
     /**
-     * § 35.7 gives an account the letter and a session the CV. Refused ahead of
-     * the quota, for the reason the pause is: a request that will be refused
-     * must not spend anybody's day.
+     * Capabilities give an account the letter and a session the CV. Refused
+     * ahead of the quota, for the reason the pause is: a request that will be
+     * refused must not spend anybody's day.
      */
     @Test
     void thecoverLetterIsRefusedWithTheFeatureNamed() throws Exception {
@@ -212,9 +212,9 @@ class AnonymousGenerationIT extends AbstractIntegrationTest {
     /**
      * The other half, and without it the change above would just be a renamed
      * 401. A caller whose session resolves to <em>nothing</em> still gets
-     * {@code AUTHENTICATION_REQUIRED}: that is the plain case EK D.6 keeps the
-     * code for, and telling them they need an *account* would be the same
-     * wrong sentence pointing the other way.
+     * {@code AUTHENTICATION_REQUIRED}: that is the plain case the code is kept
+     * for, and telling them they need an *account* would be the same wrong
+     * sentence pointing the other way.
      *
      * <p><strong>A stale cookie and not a missing one, and the lane is why.</strong>
      * A request with no cookie at all does not reach this branch here:

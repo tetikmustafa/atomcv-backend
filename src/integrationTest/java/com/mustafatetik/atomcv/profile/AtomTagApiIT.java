@@ -97,9 +97,9 @@ class AtomTagApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>One vocabulary per profile</strong> (Bolum 13's
-     * {@code UNIQUE (profile_id, label)}). A second row for the same word would
-     * be a tag that never matches the first one.
+     * <strong>One vocabulary per profile</strong>, which is what {@code UNIQUE
+     * (profile_id, label)} buys. A second row for the same word would be a tag
+     * that never matches the first one.
      */
     @Test
     void thesameLabelOnTwoAtomsIsOneTag() throws Exception {

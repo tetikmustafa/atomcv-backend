@@ -10,7 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * EK C.1: "Guvenlik header'lari (HSTS, CSP, X-Frame-Options) dogrulandi."
+ * The release checklist: security headers (HSTS, CSP, X-Frame-Options),
+ * verified.
  *
  * <p>Two of these are Spring Security's defaults rather than ours, and they are
  * asserted for exactly that reason: a default is a decision somebody else can

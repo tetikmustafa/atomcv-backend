@@ -18,13 +18,13 @@ import org.springframework.stereotype.Component;
  *
  * <p>Two signals, and a third that is deliberately absent.
  *
- * <p>Three signals now. <strong>The budget brake is the only one that acts</strong>
- * — it disables {@link FeatureFlags#NEW_GENERATIONS} — and that asymmetry is
- * deliberate: a day's bill above the ceiling is about the deployment and
- * stopping everybody is the correct response, while one busy user is about one
- * person and stopping everybody is not. Bolum 44.3 asks for tightening a rate
- * limit on that user instead; there is no rate limiter yet, so those two
- * signals report and an operator decides.
+ * <p>Three signals now. <strong>The budget brake is the only one that
+ * acts</strong> — it disables {@link FeatureFlags#NEW_GENERATIONS} — and that
+ * asymmetry is deliberate: a day's bill above the ceiling is about the
+ * deployment and stopping everybody is the correct response, while one busy
+ * user is about one person and stopping everybody is not. What is asked for
+ * instead is tightening a rate limit on that user; there is no rate limiter
+ * yet, so those two signals report and an operator decides.
  *
  * <p>The brake is one-way. Nothing here turns generation back on, because
  * nothing here knows whether the cause was dealt with — the budget resets at
@@ -66,7 +66,7 @@ public class AnomalyDetector {
         this.clock = clock;
     }
 
-    /** Bolum 44.3: every fifteen minutes. */
+    /** Every fifteen minutes. */
     @Scheduled(cron = "${atomcv.anomaly.cron:0 */15 * * * *}")
     public void detectAnomalies() {
         BigDecimal spentToday = costToday();
@@ -97,7 +97,7 @@ public class AnomalyDetector {
     }
 
     /**
-     * Bolum 44.3's emergency brake.
+     * The emergency brake.
      *
      * <p>Pulled here and never released here. Whether the cause was dealt with
      * is not something a scheduled job can know, and a brake that lifted
@@ -157,7 +157,7 @@ public class AnomalyDetector {
      * that is a decision for whoever reads this.
      */
     /**
-     * Bolum 44.3's heavy-user branch, both halves of it.
+     * The heavy-user branch, both halves of it.
      *
      * <p>It reported and did nothing until now, and the section said so. The
      * snippet's second line is {@code rateLimiter.tighten(userId, 6h)} — a

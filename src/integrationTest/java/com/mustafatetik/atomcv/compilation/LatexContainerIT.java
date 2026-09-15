@@ -99,8 +99,8 @@ class LatexContainerIT {
 
     @Test
     void returnsTheLogForMeasurement() throws Exception {
-        // Bolum 22.4's shape, with one correction: \mbox is already a LaTeX
-        // command, so the box needs another name.
+        // The measurement document's shape, with one correction: \mbox is
+        // already a LaTeX command, so the box needs another name.
         String log = text(post("/measure", """
                 \\documentclass{article}
                 \\begin{document}
@@ -176,7 +176,7 @@ class LatexContainerIT {
 
         String log = text(post("/measure", document.value()));
 
-        // Bolum 26: measured in points, and a real number of them.
+        // Measured in points, and a real number of them.
         assertThat(log).containsPattern("ATOMCOST\\|var-1\\|[0-9]+\\.[0-9]+pt\\|[0-9]+\\.[0-9]+pt");
         // And the document has to be valid, not merely produce a line before
         // failing: an earlier version of this test passed while TeX was

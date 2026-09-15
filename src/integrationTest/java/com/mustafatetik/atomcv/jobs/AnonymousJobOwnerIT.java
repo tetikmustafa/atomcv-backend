@@ -76,9 +76,9 @@ class AnonymousJobOwnerIT extends AbstractIntegrationTest {
      * <strong>V3, and the reason it had to exist.</strong> V1's unique index
      * was {@code (user_id, idempotency_key)} and an anonymous row has a null
      * owner — which Postgres counts as distinct from every other null, so the
-     * double click Bolum 30.7 absorbs went through twice. The index now
-     * coalesces the two owner columns, and the database refuses the second
-     * row rather than the application hoping nobody clicks twice.
+     * double click idempotency absorbs went through twice. The index now
+     * coalesces the two owner columns, and the database refuses the second row
+     * rather than the application hoping nobody clicks twice.
      */
     @Test
     void thesameKeyFromTheSameAnonymousCallerIsTheSameJob() {

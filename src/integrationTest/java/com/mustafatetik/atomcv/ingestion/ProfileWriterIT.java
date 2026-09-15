@@ -47,7 +47,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 08b's {@code replace}, and the behaviour it replaced.
+     * The {@code replace} mode, and the behaviour it replaced.
      *
      * <p>Writing twice used to leave two of everything, because the writer only
      * ever added. The person's answer to {@code PROFILE_ALREADY_EXISTS} is what
@@ -61,7 +61,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      * raw score, was zero for every atom against every posting. Nothing
      * failed: every score was simply lower than it should have been, together.
      *
-     * <p>{@code AUTO}, because a model guessed them. Bolum 13 keeps the
+     * <p>{@code AUTO}, because a model guessed them. The column keeps the
      * distinction and the editor draws the two differently.
      */
     @Test
@@ -175,8 +175,8 @@ class ProfileWriterIT extends AbstractIntegrationTest {
 
     /**
      * The plain text and the hash are stored beside the runs, and both are
-     * computed over the text — Bolum 16.2, so that re-marking a sentence does
-     * not invalidate the embedding keyed on it.
+     * computed over the text, so that re-marking a sentence does not
+     * invalidate the embedding keyed on it.
      */
     @Test
     void thePlainTextAndTheHashAreWrittenAlongsideTheRuns() {
@@ -191,7 +191,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
         assertThat((String) row.get("content_hash")).hasSize(64);
     }
 
-    /** Bolum 13: the section a bullet sits under says what kind of atom it is. */
+    /** The section a bullet sits under says what kind of atom it is. */
     @Test
     void anAtomTakesItsKindFromTheSectionAboveIt() {
         var profile = writer.write(user, cv(), false);
@@ -205,8 +205,8 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 14.1: where an atom came from decides what may be done to it, and
-     * an imported bullet is the person's own sentence.
+     * Where an atom came from decides what may be done to it, and an imported
+     * bullet is the person's own sentence.
      */
     @Test
     void everyImportedAtomSaysItCameFromAnUpload() {
@@ -218,9 +218,8 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 21 reads an absent English variant as "the source is the English",
-     * so an English-only atom gets one row rather than two copies to keep in
-     * step.
+     * An absent English variant reads as "the source is the English", so an
+     * English-only atom gets one row rather than two copies to keep in step.
      */
     @Test
     void anAtomWithNoSecondWordingGetsOneVariant() {
@@ -252,11 +251,11 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     // -- fixtures ----------------------------------------------------------
 
     /**
-     * Bolum 20.2, constraint 4. The column defaults {@code min_atoms} to two,
-     * and an import that leaves it there writes a floor that a one-bullet entry
-     * can never reach — a language, a degree, a Tech Stack category. Faz C then
-     * drops the entry whole, and a real profile lost three whole sections to a
-     * number nobody chose.
+     * Selection's fourth constraint. The column defaults {@code min_atoms} to
+     * two, and an import that leaves it there writes a floor that a one-bullet
+     * entry can never reach — a language, a degree, a Tech Stack category. Faz
+     * C then drops the entry whole, and a real profile lost three whole
+     * sections to a number nobody chose.
      *
      * <p>The unreachable minimum stays reachable through the API on purpose: a
      * user asking for two bullets an entry does not have is asking for it to be
@@ -309,9 +308,9 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 33.4: a language is a label and a level, which is the row a skills
-     * matrix is made of. Set as entries it printed the label twice — a heading
-     * reading {@code English} above a bullet reading {@code English: B2}.
+     * A language is a label and a level, which is the row a skills matrix is
+     * made of. Set as entries it printed the label twice — a heading reading
+     * {@code English} above a bullet reading {@code English: B2}.
      */
     @Test
     void skillsAndLanguagesAreSetAsInlineLists() {
@@ -323,7 +322,7 @@ class ProfileWriterIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 33.4: a summary is prose, and prose takes no bullet.
+     * A summary is prose, and prose takes no bullet.
      *
      * <p>Under the column's default the renderer set it as a bulleted item — a
      * marker in front of a paragraph, which reads as the first of a list that

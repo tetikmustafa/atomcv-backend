@@ -139,8 +139,8 @@ class AccountDeletionIT extends AbstractIntegrationTest {
      * table that can hold this person holds nothing of theirs afterwards.
      */
     /**
-     * Bolum 57.4 requires the person to be told, and Bolum 57.7 makes it the
-     * one lifecycle email nobody can switch off.
+     * The person has to be told, which makes it the one lifecycle email nobody
+     * can switch off.
      *
      * <p><strong>Read before the row goes, sent after the commit.</strong>
      * The address is the account's own, and by the time this assertion runs
@@ -189,9 +189,9 @@ class AccountDeletionIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 57.4, and the schema says so in its own comment: a month's spend
-     * is not personal data once it points at nobody, so the row stays and the
-     * link is cut.
+     * The right to be forgotten, and the schema says so in its own comment: a
+     * month's spend is not personal data once it points at nobody, so the row
+     * stays and the link is cut.
      */
     @Test
     void costHistorySurvivesWithTheLinkCut() throws Exception {
@@ -258,9 +258,9 @@ class AccountDeletionIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 35.6, which the same path was suspected of breaking: an account
-     * that has never opened the editor reads as an empty profile and not as a
-     * 404. It is the account being absent that refuses, not the profile.
+     * The read the same path was suspected of breaking: an account that has
+     * never opened the editor reads as an empty profile and not as a 404. It
+     * is the account being absent that refuses, not the profile.
      */
     @Test
     void anAccountWithoutAProfileStillReadsAsAnEmptyOne() throws Exception {
@@ -279,8 +279,8 @@ class AccountDeletionIT extends AbstractIntegrationTest {
      * arrived authenticated. In a browser it cannot — the first response
      * cleared the {@code sid} — and since F-027 a session pointing at a
      * deleted account is refused rather than served. So the honest assertion
-     * is the pair: the endpoint answers 401, and the idempotency Bolum 57.4
-     * asks for is still underneath it, where it was always the service's.
+     * is the pair: the endpoint answers 401, and the idempotency deletion asks
+     * for is still underneath it, where it was always the service's.
      */
     @Test
     void pressingDeleteTwiceIsRefusedAtTheDoorAndIsStillNotAnError() throws Exception {

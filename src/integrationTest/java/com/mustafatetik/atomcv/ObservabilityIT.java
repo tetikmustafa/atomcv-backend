@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * feature none of them use.
  *
  * <p>What cannot be asserted here is the other half: that the metrics arrive
- * in Axiom. The dataset is created in Adim 3.1, so the Stage 2 checklist's
- * "logs visible in Axiom" is not tickable yet and the build guide now says so.
- * Wiring it now means Stage 3 creates a dataset rather than also writing code.
+ * in Axiom. The dataset is created when the deployment is, so "logs visible in
+ * Axiom" is not tickable yet and that is written down. Wiring it now means
+ * Stage 3 creates a dataset rather than also writing code.
  */
 class ObservabilityIT extends AbstractIntegrationTest {
 

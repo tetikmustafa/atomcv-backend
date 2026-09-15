@@ -17,12 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 30.6's last line, against a real Postgres.
+ * The way out of an in-process registry, against a real Postgres.
  *
- * <p>The section says the in-process registry has an expiry date — two
- * instances, and a watcher connected to A hears nothing about a job running on
- * B — and names {@code LISTEN/NOTIFY} as the way out. Bolum 50.3's readiness
- * table already claims it.
+ * <p>The in-process registry has an expiry date — two instances, and a watcher
+ * connected to A hears nothing about a job running on B — and names {@code
+ * LISTEN/NOTIFY} as the way out. The readiness table already claims it.
  *
  * <p><strong>The second instance is the {@code pg_notify} call itself.</strong>
  * Standing up a second application context to send it would be testing

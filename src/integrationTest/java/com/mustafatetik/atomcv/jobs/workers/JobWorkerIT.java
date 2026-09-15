@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * A worker taking a job to a terminal state (Bolum 30.4, 30.5).
+ * A worker taking a job to a terminal state.
  *
  * <p>The worker is built here rather than autowired: the scheduler is off for
  * the whole suite, and a queue tested through a timer is a queue tested by
@@ -85,7 +85,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 30.6: what a reconnecting client is caught up from.
+     * What a reconnecting client is caught up from.
      *
      * <p>The row and not only an event, because an event sent to nobody is
      * gone — and a client that reconnects to find no progress at all is a
@@ -139,7 +139,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
         };
     }
 
-    /** Bolum 30.5: the world outside may have changed by the next attempt. */
+    /** The world outside may have changed by the next attempt. */
     @Test
     void aretryableFailureGoesBackToTheQueueBehindItsBackoff() {
         Job queued = enqueue();
@@ -244,7 +244,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
         assertThat(workerRunning(job -> JobOutcome.completed(Map.of())).runOne()).isFalse();
     }
 
-    /** Bolum 30.4: "still working", and only about this worker's own jobs. */
+    /** "Still working", and only about this worker's own jobs. */
     @Test
     void theheartbeatRefreshesWhatTheWorkerHolds() throws Exception {
         enqueue();
@@ -272,9 +272,9 @@ class JobWorkerIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 30.4: a shutdown that gave up without handing the job back would
-     * leave it locked until the collector noticed — {@code staleAfter} of dead
-     * time on a screen, on every single deploy.
+     * A shutdown that gave up without handing the job back would leave it
+     * locked until the collector noticed — {@code staleAfter} of dead time on
+     * a screen, on every single deploy.
      */
     @Test
     void ashutdownThatCannotDrainHandsTheJobBack() throws Exception {

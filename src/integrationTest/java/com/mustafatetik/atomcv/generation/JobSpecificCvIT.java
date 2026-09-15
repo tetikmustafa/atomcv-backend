@@ -142,11 +142,12 @@ class JobSpecificCvIT extends AbstractLatexTest {
         assertThat(new String(pdf, 0, 5, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
         assertThat(pdf.length).as("a real document, not an error page").isGreaterThan(2000);
 
-        // Bolum 23.2, and this lane is the only place it can be asked: a real
-        // XeLaTeX run with the real fonts. Everything else in this repository
-        // measures the CV before it is a PDF, so a template that lays out
-        // beautifully and carries no text layer would pass every other test in
-        // the suite and reach an applicant tracking system as an empty page.
+        // The ATS check, and this lane is the only place it can be asked: a
+        // real XeLaTeX run with the real fonts. Everything else in this
+        // repository measures the CV before it is a PDF, so a template that
+        // lays out beautifully and carries no text layer would pass every
+        // other test in the suite and reach an applicant tracking system as an
+        // empty page.
         //
         // Asserted through the counter the pipeline itself increments rather
         // than by rebuilding the render request here: a reconstruction would
@@ -195,7 +196,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * <strong>Layer B, as a document (Bolum 33.1, 33.3).</strong>
+     * <strong>Layer B, as a document.</strong>
      *
      * <p>Nobody has ever compiled this geometry, so there is no measured
      * capacity for it: the run is made against an estimate that spends a
@@ -336,10 +337,9 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * Bolum 35.2 has listed {@code source} since the first resource map and
-     * Bolum 55 calls it "ham kaynak indirme". Reading the LaTeX back is not
-     * Bolum 33.1's Layer C -- that rule refuses to let anyone <em>write</em>
-     * it, and nothing here is read back in.
+     * The resource map has listed {@code source} from the start. Reading the
+     * LaTeX back is not Layer C -- that rule refuses to let anyone
+     * <em>write</em> it, and nothing here is read back in.
      */
     @Test
     void thesameGenerationDownloadsAsTheSourceItWasCompiledFrom() throws Exception {
@@ -407,7 +407,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
 
     /**
      * Faz F's report, through the whole pipeline and back out of the endpoint
-     * that publishes it (Bolum 23.3, F-008).
+     * that publishes it (F-008).
      *
      * <p>The counts themselves are a unit test's job. What only this lane can
      * show is that the report survives every hop it has to make — computed
@@ -440,8 +440,8 @@ class JobSpecificCvIT extends AbstractLatexTest {
         assertThat((String) JsonPath.read(body, "$.fitReport.level"))
                 .isIn("WEAK", "MODERATE", "GOOD", "STRONG");
 
-        // Bolum 23.3 forbids a percentage by name, and the schema is where
-        // one would quietly appear.
+        // A percentage is forbidden by name, and the schema is where one would
+        // quietly appear.
         assertThat(body).doesNotContain("percent").doesNotContain("score");
 
         // The heading rides the terminal event so the result screen can print
@@ -455,7 +455,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 .isEqualTo(JsonPath.read(body, "$.fitReport.level"));
     }
 
-    /** Bolum 44.2: the unit is spent when the work is queued, and kept on success. */
+    /** The unit is spent when the work is queued, and kept on success. */
     @Test
     void asuccessfulGenerationKeepsItsQuotaUnit() throws Exception {
         seedCareer();
@@ -508,13 +508,13 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * Bolum 14.4's {@code options.customizationId}, all the way to the page.
+     * {@code options.customizationId}, all the way to the page.
      *
-     * <p>Without this the five endpoints of Bolum 35.2 would be a knob wired to
-     * nothing: a person could keep a set and never render with it. The check is
-     * the stored snapshot, because Bolum 14.5 writes the settings themselves
-     * rather than an id -- which is also why deleting the set afterwards leaves
-     * the document re-renderable exactly as it was sent.
+     * <p>Without this the five customization endpoints would be a knob wired
+     * to nothing: a person could keep a set and never render with it. The
+     * check is the stored snapshot, because it holds the settings themselves
+     * rather than an id -- which is also why deleting the set afterwards
+     * leaves the document re-renderable exactly as it was sent.
      */
     @Test
     void agenerationRendersWithTheSetItNamed() throws Exception {

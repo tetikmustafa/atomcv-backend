@@ -20,7 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * The store against a real Redis: what it keeps, what it throws away, and the
- * sliding TTL of EK D.6.6.
+ * sliding TTL.
  *
  * <p>In {@code identity.service} so that the store can be built by hand, which
  * this needs: the clock is the thing under test and the refresh threshold is
@@ -61,10 +61,10 @@ class SessionStoreIT extends AbstractIntegrationTest {
     }
 
     /**
-     * EK D.6.6: the TTL slides with activity. Bolum 9's "two hours later" was
-     * corrected to "two hours after the last activity" for this reason — an
-     * absolute expiry cuts off a user who is still working, which is exactly
-     * the lost effort design principle 8 exists to prevent.
+     * The TTL slides with activity: "two hours later" was corrected to "two
+     * hours after the last activity" for this reason — an absolute expiry cuts
+     * off a user who is still working, which is exactly the lost effort design
+     * principle 8 exists to prevent.
      */
     @Test
     void activityAfterTheThresholdRefreshesTheExpiryAndTheLastSeenTime() {
@@ -112,11 +112,12 @@ class SessionStoreIT extends AbstractIntegrationTest {
     }
 
     /**
-     * What Bolum 40.1 promises over a JWT, and the reason the store keeps a
-     * second key per user. Without that index this operation could not exist
-     * and "iptal: aninda" would be a claim with nothing behind it — which is
-     * also why the index is written from the first session rather than added
-     * later, when every session already minted would be unreachable.
+     * What a server-side session promises over a JWT, and the reason the store
+     * keeps a second key per user. Without that index this operation could not
+     * exist and "iptal: aninda" would be a claim with nothing behind it —
+     * which is also why the index is written from the first session rather
+     * than added later, when every session already minted would be
+     * unreachable.
      */
     @Test
     void everyBrowserAUserIsSignedInOnCanBeRevokedAtOnce() {
@@ -153,7 +154,7 @@ class SessionStoreIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 9's two hours, and the reason the TTL is read from the session
+     * The anonymous two hours, and the reason the TTL is read from the session
      * rather than passed in: a sliding window that slid to the account's
      * length would quietly turn two hours into a month, and nothing about the
      * session would look wrong.

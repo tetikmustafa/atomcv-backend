@@ -15,7 +15,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * Bolum 40.5's window against a real Redis, at a clock that can be moved.
+ * The sign-in window against a real Redis, at a clock that can be moved.
  *
  * <p>In {@code identity.ratelimit} so the limiter can be built by hand: the
  * clock <em>is</em> the thing under test, and the narrowest layer is fifteen

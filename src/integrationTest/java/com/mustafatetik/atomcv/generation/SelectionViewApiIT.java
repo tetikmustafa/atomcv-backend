@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * {@code GET /generations/{id}/selection} — the list the toggle is drawn from
- * (F-031, Bolum 24.4).
+ * (F-031).
  *
  * <p>The edit endpoint landed without it and the screen could not be built:
  * an edit refuses an atom this generation never weighed, so controls drawn

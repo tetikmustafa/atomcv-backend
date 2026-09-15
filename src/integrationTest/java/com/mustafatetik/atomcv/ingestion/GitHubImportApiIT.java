@@ -25,7 +25,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Bolum 31.8, both halves: what GitHub offers and what a person chose.
+ * Both halves: what GitHub offers and what a person chose.
  *
  * <p><strong>GitHub itself is stubbed and the rest is real.</strong> What is
  * under test is the matching and the writing — whether a repository lands on
@@ -97,7 +97,7 @@ class GitHubImportApiIT extends AbstractIntegrationTest {
 
     /**
      * A repository whose name is the project's title, spelled the way a
-     * repository is spelled. Bolum 7's Jaro-Winkler is what closes that gap.
+     * repository is spelled. Jaro-Winkler is what closes that gap.
      */
     @Test
     void arepositoryThatMatchesAprojectIsOfferedAsAmerge() throws Exception {
@@ -122,7 +122,7 @@ class GitHubImportApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$[0].confidence").doesNotExist());
     }
 
-    /** Bolum 31.8's filter, through the endpoint: a tutorial is not an offer. */
+    /** The filter, through the endpoint: a tutorial is not an offer. */
     @Test
     void alessonIsNotOffered() throws Exception {
         repositories.add(repository("react-tutorial", "following along", 0));
@@ -134,9 +134,8 @@ class GitHubImportApiIT extends AbstractIntegrationTest {
 
     /**
      * <strong>The sentence is the person's and stays the person's.</strong>
-     * Bolum 31.8: the narrative comes from the CV. What a merge adds is the
-     * skills GitHub can vouch for and the link -- and the bullet reads exactly
-     * as it did.
+     * The narrative comes from the CV. What a merge adds is the skills GitHub
+     * can vouch for and the link -- and the bullet reads exactly as it did.
      */
     @Test
     void amergeAddsSkillsAndAlinkAndTouchesNoSentence() throws Exception {
@@ -203,7 +202,7 @@ class GitHubImportApiIT extends AbstractIntegrationTest {
                 .contains("Rain maps from open data");
     }
 
-    /** Nothing is written until a request names it (Bolum 31.8's last line). */
+    /** Nothing is written until a request names it. */
     @Test
     void lookingWritesNothing() throws Exception {
         repositories.add(repository("weather-radar", "Rain maps from open data", 3));
@@ -245,7 +244,7 @@ class GitHubImportApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.params.fields[0]").value("username"));
     }
 
-    /** A login that is not one never reaches a URL (Bolum 42.2). */
+    /** A login that is not one never reaches a URL. */
     @Test
     void ausernameThatCouldLeaveThePathIsRefused() throws Exception {
         mvc.perform(post("/api/v1/profile/github/suggestions")

@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * A measured capacity against the real schema (V12, Bolum 33.1).
+ * A measured capacity against the real schema (V12).
  *
  * <p>Seventeen numbers and a JSONB map, none of which schema validation checks
  * the shape of. What is being proved is that a capacity survives the round
@@ -102,7 +102,7 @@ class TemplateCapacityIT extends AbstractIntegrationTest {
 
     /**
      * A person who has just moved a slider is waiting and the measurement is a
-     * compilation away. Bolum 33.3 prints them a CV rather than a spinner.
+     * compilation away. They get a CV rather than a spinner.
      */
     @Test
     void anunmeasuredGeometryIsEstimatedRatherThanRefused() {

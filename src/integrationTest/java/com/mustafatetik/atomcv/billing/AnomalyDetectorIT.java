@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 44.3's two signals, against real rows.
+ * The two anomaly signals, against real rows.
  *
  * <p>Called directly rather than left to the cron, which is off for the suite:
  * a detector firing on a timer would report on rows other tests are still
@@ -63,12 +63,11 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
     /**
      * <strong>The brake is global, and this class pulls it.</strong>
      *
-     * <p>Bolum 44.3's brake is one row in {@code feature_flags} and an unset
-     * flag reads as on, so leaving it pulled turns every generation in the
-     * shared context into a 503 — for whichever class Gradle happens to run
-     * next. It cost a run to find, and it read as sixteen unrelated failures
-     * rather than as this: the cases here passed, and four other classes did
-     * not.
+     * <p>The brake is one row in {@code feature_flags} and an unset flag reads
+     * as on, so leaving it pulled turns every generation in the shared context
+     * into a 503 — for whichever class Gradle happens to run next. It cost a
+     * run to find, and it read as sixteen unrelated failures rather than as
+     * this: the cases here passed, and four other classes did not.
      *
      * <p>Cleaning up in {@code @BeforeEach} was not enough for the same
      * reason. What matters is the state this class leaves behind, not the one
@@ -162,7 +161,7 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
         assertThat(detector.signupsInLastHour()).isEqualTo(before + 1);
     }
 
-    // ── Bolum 44.3: the brake ────────────────────────────────────────────
+    // ── The brake ───────────────────────────────────────────────────────
 
     /** A quiet day changes nothing. The brake that fires on nothing is useless. */
     @Test

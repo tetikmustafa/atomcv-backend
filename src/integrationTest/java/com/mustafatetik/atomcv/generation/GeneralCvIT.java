@@ -44,11 +44,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  * capacity, rendered, compiled, and the page count that comes back is the
  * compiler's own.
  *
- * <p>Since Adim 2.6 the whole flow is exercised, not only the pipeline: the
- * request is queued, a worker takes it, a generation row is written, and the
- * PDF comes back from {@code /download} — which re-renders the stored content
- * snapshot rather than the profile. General CV mode is used because it needs
- * no LLM; the job-specific path through a fake provider is still to come.
+ * <p>The whole flow is exercised, not only the pipeline: the request is
+ * queued, a worker takes it, a generation row is written, and the PDF comes
+ * back from {@code /download} — which re-renders the stored content snapshot
+ * rather than the profile. General CV mode is used because it needs no LLM;
+ * the job-specific path through a fake provider is still to come.
  */
 @Tag("latex")
 @AutoConfigureMockMvc

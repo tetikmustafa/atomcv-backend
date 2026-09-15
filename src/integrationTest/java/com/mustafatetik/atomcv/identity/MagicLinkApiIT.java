@@ -38,8 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Bolum 40.2's link, end to end — and Bolum 40.4's silence, asserted rather
- * than assumed.
+ * The link, end to end — and the silence around it, asserted rather than
+ * assumed.
  *
  * <p>The sender is replaced with one that records, because the assertions that
  * matter are about what was in the email: that the verifier travelled and the
@@ -92,10 +92,10 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
     /**
      * The counters go too, and not as tidiness.
      *
-     * <p>Bolum 40.5 admits three requests per address in fifteen minutes, and
-     * most of these cases ask for a link as their first line. Left standing,
-     * the windows would carry from one case into the next and the fourth test
-     * in the file would fail on a 429 that has nothing to do with what it is
+     * <p>Three requests per address in fifteen minutes are admitted, and most
+     * of these cases ask for a link as their first line. Left standing, the
+     * windows would carry from one case into the next and the fourth test in
+     * the file would fail on a 429 that has nothing to do with what it is
      * asserting — a failure that reads as a flake and is not one. The limiter
      * itself is exercised where it can be seen: {@code RateLimiterIT}, and
      * {@link #afterThreeTriesAnAddressIsToldToWait} below.
@@ -113,7 +113,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         }
     }
 
-    // ── Bolum 40.4 ────────────────────────────────────────────────────────
+    // ── Account enumeration ───────────────────────────────────────────────
 
     /**
      * The whole of the enumeration defence: byte for byte, an address that has
@@ -151,7 +151,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
                 Boolean.class)).isFalse();
     }
 
-    // ── Bolum 40.2 ────────────────────────────────────────────────────────
+    // ── Selector and verifier ─────────────────────────────────────────────
 
     @Test
     void openingTheLinkSignsInAndVerifiesTheAddress() throws Exception {
@@ -160,8 +160,8 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
 
         MvcResult verified = verify(halves[0], halves[1])
                 .andExpect(status().isOk())
-                // Adim 3.6: nothing was carried in, and the client is told so
-                // rather than left to guess from a body that is not there.
+                // Nothing was carried in, and the client is told so rather
+                // than left to guess from a body that is not there.
                 .andExpect(jsonPath("$.profileUpgrade").value("none"))
                 .andReturn();
 
@@ -256,7 +256,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
         verify(first[0], first[1]).andExpect(status().isBadRequest());
     }
 
-    // ── Bolum 40.5 ────────────────────────────────────────────────────────
+    // ── Rate limiting ─────────────────────────────────────────────────────
 
     /**
      * The fourth request for one address is refused, and the refusal carries
@@ -267,9 +267,9 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
      * still right when the client's clock is wrong — which is exactly the
      * client that would otherwise retry at once and be refused again.
      *
-     * <p>It answers nothing Bolum 40.4 protects either: this caller spent that
-     * window themselves, so what comes back describes what they did, not
-     * whether the address has an account.
+     * <p>It answers nothing enumeration protection covers either: this caller
+     * spent that window themselves, so what comes back describes what they
+     * did, not whether the address has an account.
      */
     @Test
     void afterThreeTriesAnAddressIsToldToWait() throws Exception {
@@ -315,7 +315,7 @@ class MagicLinkApiIT extends AbstractIntegrationTest {
 
     // ── fixtures ──────────────────────────────────────────────────────────
 
-    // ── Adim 3.6 ──────────────────────────────────────────────────────────
+    // ── Handover on sign-in ───────────────────────────────────────────────
 
     /**
      * <strong>The work follows the person in.</strong> Signing in issues a new

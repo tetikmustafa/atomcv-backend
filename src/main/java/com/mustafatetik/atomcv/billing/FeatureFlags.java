@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
  * brake is something an operator applies, and a deployment with an empty table
  * must serve rather than refuse everything.
  *
- * <p><strong>The brake stops generation, not access.</strong> Bolum 44.3 calls
- * that critical and it is: a user whose generations are paused can still open
+ * <p><strong>The brake stops generation, not access.</strong> That is
+ * critical, and it is: a user whose generations are paused can still open
  * their profile, edit it and export it. Losing a day's work to a cost spike
  * would be a worse outcome than the spike.
  *
@@ -32,7 +32,7 @@ public class FeatureFlags {
 
     private static final Logger log = LoggerFactory.getLogger(FeatureFlags.class);
 
-    /** Bolum 44.3's brake: no new generations are accepted. */
+    /** The brake: no new generations are accepted. */
     public static final String NEW_GENERATIONS = "generation.new_requests";
 
     private final JdbcTemplate jdbc;

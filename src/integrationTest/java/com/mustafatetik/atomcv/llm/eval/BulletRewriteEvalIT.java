@@ -18,13 +18,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * What Faz D's prompt actually does, scored (Bolum 53.4, 53.5).
+ * What Faz D's prompt actually does, scored.
  *
  * <p><strong>This costs money and nothing runs it for you.</strong> Its own
  * Gradle lane — {@code gradlew llmEval} — excluded from {@code check}, from
- * {@code integrationTest} and from CI, and deliberately not nightly: Bolum
- * 53.7 says production telemetry gives the same information for nothing. Run
- * it when a prompt changes, which is about thirty cents.
+ * {@code integrationTest} and from CI, and deliberately not nightly:
+ * production telemetry gives the same information for nothing. Run it when a
+ * prompt changes, which is about thirty cents.
  *
  * <p><strong>No text is compared.</strong> A model picks different words every
  * time, so an answer measured against a stored one measures the weather. What
@@ -33,8 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * is a fact about a prompt.
  *
  * <p><strong>The properties are the production validator's, not a second
- * implementation.</strong> Bolum 53.8: {@link RewriteValidator} is what Faz D
- * runs against every answer in production, and it is what runs here. Separate
+ * implementation.</strong> {@link RewriteValidator} is what Faz D runs against
+ * every answer in production, and it is what runs here. Separate
  * implementations breed "passes in the eval, broken on the page".
  *
  * <p>One threshold is not a threshold. {@code no_new_technologies} is zero
@@ -47,7 +47,9 @@ class BulletRewriteEvalIT extends AbstractIntegrationTest {
 
     private static final EvalReport REPORT = new EvalReport();
 
-    /** Bolum 53.4's "thirty to fifty well-chosen cases", as the shapes that break things. */
+    /**
+     * "Thirty to fifty well-chosen cases", as the shapes that break things.
+     */
     private static final List<Case> CASES = cases();
 
     @Autowired
@@ -62,8 +64,8 @@ class BulletRewriteEvalIT extends AbstractIntegrationTest {
             var result = rewrites.rewrite(candidate, context());
             unreachable += result.tally().unreachable();
             // Different from the original is the only proof a model answered.
-            // Not a metric and not compared to a stored answer -- Bolum 53.4
-            // forbids that because a model picks different words every time,
+            // Not a metric and not compared to a stored answer -- that is
+            // forbidden because a model picks different words every time,
             // which is exactly why "it changed at all" is the signal here.
             if (!result.content().plainText().equals(scenario.text())) {
                 answered++;

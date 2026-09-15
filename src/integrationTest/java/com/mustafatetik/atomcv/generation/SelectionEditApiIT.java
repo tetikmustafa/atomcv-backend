@@ -95,9 +95,9 @@ class SelectionEditApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44: a toggle re-runs selection, the renderer and the compiler and
-     * asks no model anything, so there is nothing here for a day's allowance to
-     * be spent on.
+     * A toggle re-runs selection, the renderer and the compiler and asks no
+     * model anything, so there is nothing here for a day's allowance to be
+     * spent on.
      */
     @Test
     void aneditSpendsNothing() throws Exception {
@@ -178,8 +178,8 @@ class SelectionEditApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44.2, and it is the difference between the two endpoints: reading
-     * a sentence is a model call, so it comes off the day's generations. The
+     * The quota, and it is the difference between the two endpoints: reading a
+     * sentence is a model call, so it comes off the day's generations. The
      * toggle next door takes nothing.
      */
     @Test
