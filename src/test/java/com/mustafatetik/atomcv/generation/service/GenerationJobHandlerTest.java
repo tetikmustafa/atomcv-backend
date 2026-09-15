@@ -346,7 +346,7 @@ class GenerationJobHandlerTest {
     }
 
     private static Map<String, Object> payload() {
-        return new GenerationPayload(POSTING, false, 1, "en", false, java.util.List.of(), null,
+        return new GenerationPayload(POSTING, false, 1, "en", false, java.util.List.of(), null, null,
                 com.mustafatetik.atomcv.billing.QuotaSubject.of(
                         com.mustafatetik.atomcv.shared.security.UserContext.of(USER)))
                 .toMap();

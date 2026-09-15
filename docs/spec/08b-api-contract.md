@@ -145,7 +145,6 @@ yalnızca yerine koyar.
 | `PROFILE_QUOTA_EXCEEDED` | 429 | `limit: integer`, `resetsAt: timestamp` |
 | `ANONYMOUS_SESSION_EXPIRED` | 401 | — |
 | `ATOM_LIMIT_EXCEEDED` | 422 | `limit: integer`, `current: integer` |
-| `NO_ANONYMOUS_PROFILE` | 404 | — |
 | `PROFILE_ALREADY_EXISTS` | 409 | — |
 | `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
 | `GENERATION_SUPERSEDED` | 409 | — |
@@ -482,7 +481,7 @@ Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
 | Süre dolduğunda | `401` + `ANONYMOUS_SESSION_EXPIRED` + `sign_up` resolution'ı. |
 | TTL davranışı (Bölüm 9 "2 saat sonra silinir" diyor) | **TTL kayar: etkinlikte tazelenir.** Mutlak iki saat, inceleme ekranında çalışmakta olan kullanıcıyı keserdi — P8'in önlemek için var olduğu emek kaybı. Kullanıcıya gösterilen metin "son etkinliğinden iki saat sonra" demeli. |
 | CSRF (Bölüm 40.1 adını koyup tanımlamıyor) | Spring Security'nin double-submit varsayılanı: sunucu okunabilir (HttpOnly olmayan) `XSRF-TOKEN` çerezi verir, istemci güvensiz metotlarda (POST/PUT/PATCH/DELETE) `X-XSRF-TOKEN` başlığında yankılar, uyuşmazlıkta `403` + `CSRF_TOKEN_INVALID`. Oturum çerezi zaten `SameSite=Strict` olduğu için asıl vektör kapalı; bu derinlemesine savunmadır, o yüzden kimlikle birlikte gelir, öne çekilmez. |
-| Profil devralma | `POST /api/v1/profile/claim` → `200`, `404 NO_ANONYMOUS_PROFILE`, `409 PROFILE_ALREADY_EXISTS`. 409 yalnız **değiştir veya koru** sunar, **birleştir sunmaz**: birleştirme atom düzeyinde tekilleştirme demek (Bölüm 7, Jaro-Winkler + embedding) ve o Aşama 4 işi. Erken sunmak ya endpoint'i alakasız bir işe bağlar ya da içeriği sessizce çoğaltan bir birleştirme gönderir — P8 ikincisini yasaklar. API, yerine getiremeyeceği bir resolution'ı adlandırmamalı. |
+| Profil devralma | **Böyle bir uç yok, ve olamaz — § 41.3.3 bunu zaten yazıyor** (düzeltme, denetim 2026-09-15). Devralma girişin *içinde* koşuyor: giriş yeni bir oturum ve yeni bir çerez yazıyor, anonim oturum id'si yalnız o tek istek boyunca okunabiliyor, ve anonim profilin id'si ondan tek yönlü türüyor. Sonradan çağrılan bir uç, tarayıcının çoktan attığı bir tanımlayıcıyı isterdi. Sonuç `POST /auth/verify`'ın `profileUpgrade` alanında dönüyor — dört değerli: `upgraded`, `none`, `kept_existing`, `unavailable`. **`NO_ANONYMOUS_PROFILE` bu yüzden katalogdan kaldırıldı**: hiçbir şeyin üretemediği bir kod, frontend'in hiç görünmeyecek bir cümle yazmasıdır. `PROFILE_ALREADY_EXISTS` kalıyor — onu içe aktarım üretiyor. Birleştirme hâlâ sunulmuyor, ve gerekçesi aynı: atom düzeyinde tekilleştirme (Bölüm 7) ayrı bir iş, ve içeriği sessizce çoğaltan bir birleştirme P8'i çiğner. |
 
 **`AUTHENTICATION_REQUIRED` neden ayrı bir kod (Adım 3.3).** Katalog uzun süre
 oturumu **hiç olmayan** bir isteğe cevapsızdı: `ANONYMOUS_SESSION_EXPIRED`

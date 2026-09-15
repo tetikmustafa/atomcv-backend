@@ -143,10 +143,25 @@ public class BulletRewriteService {
      * the line at where the data starts, not at which field looks structured.
      */
     private static String fencedData(RewriteCandidate candidate, RewriteContext context) {
-        return "line: " + candidate.originalText()
+        String fenced = "line: " + candidate.originalText()
                 + "\nallowedSkills: " + String.join(", ", candidate.skills())
                 + "\nmustKeep: " + String.join(", ", mustKeep(candidate))
                 + "\npostingWants: " + String.join(", ", context.postingSkills());
+
+        // Bolum 18.7's freeform note, appended rather than always present, and
+        // that costs nothing and buys everything: a request with no note
+        // produces a byte-identical fenced body, so Bolum 53.1's recorded
+        // answers still key to it -- FixtureStore hashes this half, not the
+        // instructions.
+        //
+        // Inside the fence because it is the person's own sentence (Bolum 43.1
+        // draws the line at where the data starts, not at which field looks
+        // structured). The prompt tells the model the note may steer wording
+        // and may not licence a claim; Bolum 21.6's validators do not care
+        // what it said either way, which is what makes that safe to promise.
+        return context.note() == null || context.note().isBlank()
+                ? fenced
+                : fenced + "\nnote: " + context.note();
     }
 
     private static List<String> mustKeep(RewriteCandidate candidate) {

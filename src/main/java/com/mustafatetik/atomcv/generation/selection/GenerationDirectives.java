@@ -29,14 +29,24 @@ import java.util.UUID;
  * it is not (CLAUDE.md).
  */
 public record GenerationDirectives(
-        List<UUID> includeAtoms, List<UUID> excludeAtoms, List<String> emphasize) {
+        List<UUID> includeAtoms, List<UUID> excludeAtoms, List<String> emphasize,
+        String freeformNote) {
 
     private static final GenerationDirectives NONE =
-            new GenerationDirectives(List.of(), List.of(), List.of());
+            new GenerationDirectives(List.of(), List.of(), List.of(), null);
 
     private static final String INCLUDE = "includeAtoms";
     private static final String EXCLUDE = "excludeAtoms";
     private static final String EMPHASIZE = "emphasize";
+    private static final String NOTE = "freeformNote";
+
+    /**
+     * Long enough for a sentence or three, short enough that it is not a
+     * second CV. Bolum 43.1's fence is what makes the content safe; this is
+     * what keeps it from being an unbounded prompt (EK D.6.2's reasoning about
+     * unbounded fields).
+     */
+    private static final int MAX_NOTE_LENGTH = 500;
 
     /** A term is a word or a short phrase; past that it is a sentence. */
     private static final int MAX_TERM_LENGTH = 60;
@@ -52,6 +62,7 @@ public record GenerationDirectives(
         includeAtoms = distinct(includeAtoms);
         excludeAtoms = distinct(excludeAtoms);
         emphasize = terms(emphasize);
+        freeformNote = note(freeformNote);
 
         // An atom cannot be both asked for and refused. The parse in Faz G and
         // the toggle endpoint both have to answer this before it gets here --
@@ -72,16 +83,17 @@ public record GenerationDirectives(
 
     /** The two-id form, for the callers that only move atoms (Faz G, the toggle). */
     public GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAtoms) {
-        this(includeAtoms, excludeAtoms, List.of());
+        this(includeAtoms, excludeAtoms, List.of(), null);
     }
 
-    /** What a person asked to be brought forward (Bolum 18.7). */
-    public static GenerationDirectives emphasising(List<String> terms) {
-        return new GenerationDirectives(List.of(), List.of(), terms);
+    /** What a person asked for about this one generation (Bolum 18.7). */
+    public static GenerationDirectives steering(List<String> terms, String note) {
+        return new GenerationDirectives(List.of(), List.of(), terms, note);
     }
 
     public boolean isEmpty() {
-        return includeAtoms.isEmpty() && excludeAtoms.isEmpty() && emphasize.isEmpty();
+        return includeAtoms.isEmpty() && excludeAtoms.isEmpty() && emphasize.isEmpty()
+                && freeformNote == null;
     }
 
     /**
@@ -117,6 +129,7 @@ public record GenerationDirectives(
         stored.put(INCLUDE, includeAtoms.stream().map(UUID::toString).toList());
         stored.put(EXCLUDE, excludeAtoms.stream().map(UUID::toString).toList());
         stored.put(EMPHASIZE, emphasize);
+        stored.put(NOTE, freeformNote);
         return stored;
     }
 
@@ -126,7 +139,8 @@ public record GenerationDirectives(
             return NONE;
         }
         return new GenerationDirectives(
-                idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE), termsIn(stored));
+                idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE), termsIn(stored),
+                stored.get(NOTE) == null ? null : String.valueOf(stored.get(NOTE)));
     }
 
     /** This, plus one more edit. An edit is the sum of the edits before it. */
@@ -150,8 +164,13 @@ public record GenerationDirectives(
         // person said "bring microservices forward" once, about this CV.
         var emphasised = new LinkedHashSet<>(emphasize);
         emphasised.addAll(later.emphasize);
+
+        // The later note wins when there is one, and silence keeps the
+        // standing one: an edit that says nothing about wording has not
+        // withdrawn what the person asked for when they made this CV.
         return new GenerationDirectives(
-                List.copyOf(included), List.copyOf(excluded), List.copyOf(emphasised));
+                List.copyOf(included), List.copyOf(excluded), List.copyOf(emphasised),
+                later.freeformNote == null ? freeformNote : later.freeformNote);
     }
 
     /**
@@ -180,6 +199,20 @@ public record GenerationDirectives(
             }
         }
         return List.copyOf(kept);
+    }
+
+    /** Trimmed, capped, and empty read as absent -- a blank note is no note. */
+    private static String note(String written) {
+        if (written == null) {
+            return null;
+        }
+        String trimmed = written.strip();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        return trimmed.length() <= MAX_NOTE_LENGTH
+                ? trimmed
+                : trimmed.substring(0, MAX_NOTE_LENGTH);
     }
 
     private static List<String> termsIn(Map<String, Object> stored) {

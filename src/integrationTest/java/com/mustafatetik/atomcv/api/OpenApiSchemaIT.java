@@ -359,7 +359,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(8)))
+                        .value(Matchers.aMapWithSize(9)))
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -368,8 +368,8 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.language").exists())
-                // Bolum 44.4's token, sent by a caller with no account. Eight
-                // now: Bolum 18.7's emphasis and Bolum 14.4's customizationId --
+                // Bolum 44.4's token, sent by a caller with no account. Nine
+                // now: Bolum 18.7's two directives and Bolum 14.4's set --
                 // the count above is what makes this a guard, so it moves when a
                 // property is meant and fails when one is not.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -387,7 +387,10 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.emphasizeOrEmpty").doesNotExist())
                 // Bolum 14.4: a saved set to render this one with.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
-                        + ".properties.customizationId").exists());
+                        + ".properties.customizationId").exists())
+                // Bolum 18.7's fourth field, which reaches Faz D and nothing else.
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.note").exists());
     }
 
     @Test

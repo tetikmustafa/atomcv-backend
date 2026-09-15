@@ -86,7 +86,25 @@ public record GenerationRequest(
                 which is what nearly every request means.
 
                 A set belonging to somebody else is not found.""")
-        java.util.UUID customizationId) {
+        java.util.UUID customizationId,
+
+        @Schema(description = """
+                A sentence or two about how this CV should read, in the
+                person's own words (Bolum 18.7's `freeformNote`).
+
+                It reaches Faz D and nothing else: Faz B ranks against the
+                posting and a sentence is not a term. The prompt tells the
+                model the note may steer wording and emphasis and may **not**
+                licence a claim, lengthen a line past its maximum, or change
+                what a sentence says happened — and Bolum 21.6's validators do
+                not care what the note said either way, which is what makes
+                that a promise rather than a hope.
+
+                It travels inside the fence, because it is the person's own
+                content (Bolum 43.1). At most 500 characters.""",
+                example = "Lead with the platform work rather than the ML.")
+        @Size(max = 500)
+        String note) {
 
     /** Never null downstream: absent and empty mean the same thing here. */
     @JsonIgnore

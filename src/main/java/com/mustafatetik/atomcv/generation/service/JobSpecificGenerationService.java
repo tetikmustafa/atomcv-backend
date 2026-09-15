@@ -230,7 +230,9 @@ public class JobSpecificGenerationService {
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
                 options.language(), head.getPreferences().writingStyle().tone(), bucketKey,
-                subject.userId(), jobId);
+                // Bolum 18.7's fourth field. It reaches Faz D and nothing else:
+                // Faz B ranks against the posting, and a sentence is not a term.
+                directives.freeformNote(), subject.userId(), jobId);
         var rewritten = new AtomicReference<>(RewrittenContent.none());
         // Accumulated across the compile loop rather than overwritten. A
         // document that came out too long has already paid for the pass before
