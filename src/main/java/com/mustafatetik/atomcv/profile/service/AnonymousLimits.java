@@ -8,14 +8,14 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 
 /**
- * § 35.7's anonymous set, enforced.
+ * The anonymous set, enforced.
  *
  * <p><strong>"Sunucu yine de doğrular — istemci kontrolü sadece UX."</strong>
- * That sentence is § 35.7's own, and until an anonymous person could edit
- * anything it had nothing to be true of: the block advertised
- * {@code canEditAtomControls: false}, {@code canAddAlternatives: false} and
- * {@code maxAtoms: 60} to somebody who could not reach the endpoints at all.
- * {@code ATOM_LIMIT_EXCEEDED} has been in {@code ErrorCode} the whole time with
+ * That sentence is the own, and until an anonymous person could edit anything
+ * it had nothing to be true of: the block advertised {@code
+ * canEditAtomControls: false}, {@code canAddAlternatives: false} and {@code
+ * maxAtoms: 60} to somebody who could not reach the endpoints at all. {@code
+ * ATOM_LIMIT_EXCEEDED} has been in {@code ErrorCode} the whole time with
  * nothing throwing it.
  *
  * <p><strong>The scope is the check.</strong> Every write below a profile takes
@@ -33,7 +33,7 @@ import com.mustafatetik.atomcv.shared.security.ProfileRef;
  */
 final class AnonymousLimits {
 
-    /** § 35.7's {@code maxAtoms}, and the account body has no such field. */
+    /** The {@code maxAtoms}, and the account body has no such field. */
     static final int MAX_ATOMS = 60;
 
     private AnonymousLimits() {

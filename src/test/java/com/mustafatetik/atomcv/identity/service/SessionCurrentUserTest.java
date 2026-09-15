@@ -35,7 +35,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /** Who a request is, and what happens when it is nobody. */
 class SessionCurrentUserTest {
 
-    /** Defaults: the record fills in the 2h anonymous TTL of Bolum 9 itself. */
+    /** Defaults: the record fills in the two-hour anonymous TTL itself. */
     private static final SessionProperties SESSION_PROPERTIES =
             new SessionProperties(null, null, null, null, null, null);
 
@@ -167,8 +167,8 @@ class SessionCurrentUserTest {
                     assertThat(thrown.error().code()).isEqualTo(ErrorCode.AUTHENTICATION_REQUIRED);
                     assertThat(thrown.error().httpStatus()).isEqualTo(401);
                 });
-        // Bolum 40.1: a stored session pointing at a deleted account is the
-        // state the section says must not exist, so seeing one ends it.
+        // A stored session pointing at a deleted account is the state the
+        // section says must not exist, so seeing one ends it.
         verify(store).revoke("a-session-id");
     }
 

@@ -27,7 +27,7 @@ import java.util.UUID;
 @Table(name = "support_grants")
 public class SupportGrant implements UserOwned {
 
-    /** Bolum 13's forty-eight hours. */
+    /** The forty-eight hours. */
     public static final Duration LIFETIME = Duration.ofHours(48);
 
     @Id

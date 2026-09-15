@@ -58,7 +58,7 @@ public class ProviderChain {
     }
 
     /**
-     * Bolum 48.3's "Saglayici fallback orani".
+     * The provider fallback rate.
      *
      * <p>One counter with a position tag rather than two counters: a rate needs
      * a denominator, and the denominator here is every answer the chain
@@ -86,28 +86,28 @@ public class ProviderChain {
                         request.preferredTier(), providerId);
                 continue;
             }
-            // Bolum 27.3: no key means silently skipped, and *not* counted as
-            // tried. A deployment with one key out of five is the normal case,
-            // and reporting four outages for it would be a lie.
+            // No key means silently skipped, and *not* counted as tried. A
+            // deployment with one key out of five is the normal case, and
+            // reporting four outages for it would be a lie.
             if (!provider.isAvailable()) {
                 continue;
             }
 
             tried.add(providerId);
 
-            // Bolum 5.1's circuit breaker. Counted as tried and then skipped:
-            // this vendor is configured and known to be failing, which is part
-            // of why the walk will run out, and leaving it out would hand a
-            // user AllProvidersUnavailable([]) in the middle of an outage.
+            // The circuit breaker. Counted as tried and then skipped: this
+            // vendor is configured and known to be failing, which is part of
+            // why the walk will run out, and leaving it out would hand a user
+            // AllProvidersUnavailable([]) in the middle of an outage.
             if (!breakers.isWorthAsking(providerId)) {
                 continue;
             }
 
             var outcome = attempt(provider, request);
             if (outcome instanceof LlmOutcome.Answered<T> answered) {
-                // Bolum 54.2's recording run, and the only place the answer
-                // and the request that earned it are both in scope. Absent in
-                // every profile but local-record.
+                // The recording run, and the only place the answer and the
+                // request that earned it are both in scope. Absent in every
+                // profile but local-record.
                 recorder.ifPresent(r -> r.record(request, answered.response().data()));
                 meters.counter(CHAIN_ANSWERS,
                         "tier", request.preferredTier().name().toLowerCase(java.util.Locale.ROOT),
@@ -132,10 +132,10 @@ public class ProviderChain {
     }
 
     /**
-     * One provider, with Bolum 27.3's same-provider retry for a schema
-     * mismatch. A model that wandered once often lands the second time; a
-     * prompt whose schema is wrong fails every time, which is why the count is
-     * small and configured.
+     * One provider, with the same-provider retry for a schema mismatch. A
+     * model that wandered once often lands the second time; a prompt whose
+     * schema is wrong fails every time, which is why the count is small and
+     * configured.
      */
     private <T> LlmOutcome<T> attempt(LlmProvider provider, StructuredRequest<T> request) {
         long startedAt = System.nanoTime();
@@ -160,7 +160,7 @@ public class ProviderChain {
                 && failed.failure().kind() == LlmFailure.Kind.SCHEMA_MISMATCH;
     }
 
-    /** Bolum 27.5: every call is counted, the failures included. */
+    /** Every call is counted, the failures included. */
     private <T> LlmOutcome<T> timed(LlmProvider provider, StructuredRequest<T> request) {
         long startedAt = System.nanoTime();
         LlmOutcome<T> outcome = provider.callStructured(request);

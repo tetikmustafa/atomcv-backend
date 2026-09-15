@@ -28,7 +28,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     /**
      * The measurement box. Not {@code \mbox}: that is already a LaTeX command
      * and {@code \newsavebox{\mbox}} stops the run with "already defined" —
-     * which is what Bolum 22.4's snippet does.
+     * which is what the snippet does.
      */
     private static final String BOX = "\\measurebox";
 
@@ -163,14 +163,14 @@ public class LatexDocumentRenderer implements DocumentRenderer {
      *
      * <p>Same preamble as everything else, for the same reason.
      *
-     * <p><strong>And the same nesting, which is the harder half of Bolum 22.4's
-     * third rule.</strong> Every probe below is shaped the way
-     * {@code renderFinal} emits that construct: an entry section opens one
-     * {@code \resumeSubHeadingListStart} and keeps every entry and every bullet
-     * list inside it. Measuring a second entry in a list of its own instead
-     * charges each one a list it never opens — which cost this template
-     * eighty-seven points on a real page, and nothing failed, because
-     * everything measured the same wrong document.
+     * <p><strong>And the same nesting, which is the harder half of the third
+     * rule.</strong> Every probe below is shaped the way {@code renderFinal}
+     * emits that construct: an entry section opens one {@code
+     * \resumeSubHeadingListStart} and keeps every entry and every bullet list
+     * inside it. Measuring a second entry in a list of its own instead charges
+     * each one a list it never opens — which cost this template eighty-seven
+     * points on a real page, and nothing failed, because everything measured
+     * the same wrong document.
      */
     public RenderedSource renderCalibration(TemplateCustomization customization) {
         return new RenderedSource(PreambleBuilder.build(customization) + """
@@ -310,10 +310,10 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     }
 
     /**
-     * Bolum 33.4's layouts. Until this existed there was one: every section was
-     * set as a bullet list whatever its column said, so a Tech Stack carrying
-     * {@code INLINE_LIST} printed as bullets — or, once selection had dropped
-     * it, not at all.
+     * The layouts. Until this existed there was one: every section was set as
+     * a bullet list whatever its column said, so a Tech Stack carrying {@code
+     * INLINE_LIST} printed as bullets — or, once selection had dropped it, not
+     * at all.
      *
      * <p>{@code TWO_COLUMN} is deliberately absent and falls through to the
      * entry list. Bolum 33.5 makes Classic single-column on purpose: "an ATS
@@ -397,7 +397,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         out.append("\\resumeParagraphListEnd\n");
     }
 
-    /** One inline block, the way a skills matrix is written (Bolum 33.4). */
+    /** One inline block, the way a skills matrix is written. */
     private static void inlineList(StringBuilder out, RenderRequest.RenderableSection section) {
         List<RichContent> all = new ArrayList<>(section.atoms());
         for (RenderRequest.RenderableEntry entry : section.entries()) {

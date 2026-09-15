@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 57.7's trigger, which the first draft of that section got wrong.
+ * The trigger, which the first draft of that section got wrong.
  *
  * <p>The dangerous reading is "when the account is created". Bolum 40.4 writes
  * a {@code users} row the moment anybody types an address into the sign-in
@@ -95,7 +95,7 @@ class WelcomeGreetingTest {
         assertThat(sent).isEmpty();
     }
 
-    /** Bolum 57.7: a hard bounce outranks the preference, not the other way round. */
+    /** A hard bounce outranks the preference, not the other way round. */
     @Test
     void asuppressedAddressIsNotWrittenToEvenWhenTheyWantIt() {
         when(suppressions.isSuppressed("ada@example.com")).thenReturn(true);

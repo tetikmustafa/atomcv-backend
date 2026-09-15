@@ -6,9 +6,9 @@ import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 27.2's DeepSeek row, and the one entry in that table with no schema
- * mode at all: {@code response_format: json_object}, the shape asked for in
- * the prompt.
+ * The DeepSeek row, and the one entry in that table with no schema mode at
+ * all: {@code response_format: json_object}, the shape asked for in the
+ * prompt.
  *
  * <p><strong>That is a real difference, not a configuration one.</strong> A
  * vendor that only promises valid JSON will sometimes return valid JSON of the

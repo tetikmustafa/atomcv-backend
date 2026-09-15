@@ -17,12 +17,12 @@ package com.mustafatetik.atomcv.generation.scoring;
  */
 public record ScoringWeights(double embedding, double tag, double skill, double keyword) {
 
-    /** Bolum 19.1, verbatim. */
+    /** Verbatim. */
     public static final ScoringWeights DEFAULT = new ScoringWeights(0.40, 0.25, 0.25, 0.10);
 
     /**
-     * Bolum 28.4: the embedding service is down, so its share is redistributed
-     * and the rest of scoring carries on.
+     * The embedding service is down, so its share is redistributed and the
+     * rest of scoring carries on.
      *
      * <p>Quality drops and the user is not told — it is an internal detail —
      * but it is recorded, because a deployment that silently scored without

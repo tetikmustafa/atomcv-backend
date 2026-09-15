@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.6's five checks, one at a time.
+ * The five checks, one at a time.
  *
  * <p>The third is the one this product exists for. The other four catch a
  * model being careless; that one catches it writing something the person will

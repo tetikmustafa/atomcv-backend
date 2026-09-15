@@ -6,8 +6,8 @@ import java.util.List;
  * Text as a vector.
  *
  * <p>Ports and adapters: BGE-M3 is self-hosted today because the content is
- * the user's own CV and Bolum 28.1 keeps it inside, but the day that changes
- * it should be one adapter and nothing else.
+ * the user's own CV and it stays inside, but the day that changes it should be
+ * one adapter and nothing else.
  *
  * <p>Every vector is computed from the <strong>English</strong> variant. A
  * multilingual model still places a Turkish sentence and its English
@@ -22,10 +22,10 @@ public interface EmbeddingProvider {
     /**
      * Whether the service is answering.
      *
-     * <p>Bolum 28.4 reads this to decide whether scoring runs with its
-     * embedding component or without it: quality drops, the product keeps
-     * working. It is a health signal, not a promise — a provider that was
-     * healthy a moment ago can still fail the next call.
+     * <p>Scoring reads this to decide whether it runs with its embedding
+     * component or without it: quality drops, the product keeps working. It is
+     * a health signal, not a promise — a provider that was healthy a moment
+     * ago can still fail the next call.
      */
     boolean isHealthy();
 

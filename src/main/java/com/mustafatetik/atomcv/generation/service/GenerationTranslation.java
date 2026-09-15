@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Bolum 21.8's second step, at the moment a generation needs it.
+ * The second step, at the moment a generation needs it.
  *
  * <p><strong>What this closes.</strong> Bolum 21.8 lists four steps and only
  * the first was written: use the wording that exists. Without the second —
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
  * English posting got a Turkish CV. {@link ProfileTree#canBeWrittenIn} was the
  * guard, and the guard existed because the phase did not.
  *
- * <p><strong>It runs between Faz B and Faz C, and the order is Bolum 32.3's
+ * <p><strong>It runs between Faz B and Faz C, and the order is the
  * rule.</strong> That section is explicit: choose the language, then optimise
  * against <em>that</em> language's costs. Translating after selection would be
  * the mistake it names — a page packed with English heights and printed in
@@ -81,8 +81,8 @@ public class GenerationTranslation {
 
         Map<UUID, ProfileTree.AtomNode> missing = missingWordings(tree, language, ranked);
         if (missing.isEmpty()) {
-            // Bolum 21.8's first step answered everything: cost zero, which is
-            // what the profile editor's investment buys.
+            // The first step answered everything: cost zero, which is what the
+            // profile editor's investment buys.
             return true;
         }
 

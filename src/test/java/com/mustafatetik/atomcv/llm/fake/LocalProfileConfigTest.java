@@ -76,9 +76,9 @@ class LocalProfileConfigTest {
     }
 
     /**
-     * Bolum 54.2: a miss must become a real call. Synthesis left on here would
-     * record placeholders as though a model had produced them, and nothing
-     * afterwards could tell the two apart.
+     * A miss must become a real call. Synthesis left on here would record
+     * placeholders as though a model had produced them, and nothing afterwards
+     * could tell the two apart.
      */
     @Test
     void localRecordNeverSynthesizes() {

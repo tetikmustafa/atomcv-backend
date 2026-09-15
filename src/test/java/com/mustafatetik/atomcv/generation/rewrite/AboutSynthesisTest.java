@@ -136,8 +136,8 @@ class AboutSynthesisTest {
 
     /**
      * <strong>Bolum 21.3 still binds.</strong> The page was costed on the
-     * paragraph that is there now, so Bolum 21.7's sixty-five words is a
-     * ceiling and not an allowance — whichever of the two is smaller wins.
+     * paragraph that is there now, so the sixty-five words is a ceiling and
+     * not an allowance — whichever of the two is smaller wins.
      */
     @Test
     void theceilingIsTheSmallerOfTheMeasuredOneAndSixtyFiveWords() {

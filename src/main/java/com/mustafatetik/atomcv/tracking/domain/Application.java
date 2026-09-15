@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
- * One job somebody applied to (Bolum 13, Bolum 55's tracking).
+ * One job somebody applied to (Bolum 13, the tracking).
  *
  * <p>The table is in {@code V1}; this is the mapping, and there is no
  * migration (absolute rule 2). It was written before anything used it, which
@@ -33,8 +33,8 @@ import org.hibernate.annotations.CreationTimestamp;
  * the document they sent, and that is reachable through the link above.
  *
  * <p>{@code @Version}, because this is the one resource a person edits in
- * place. Bolum 35.6's {@code If-Match} is enforced at the endpoint and this is
- * the number it compares against.
+ * place. The {@code If-Match} is enforced at the endpoint and this is the
+ * number it compares against.
  */
 @Entity
 @Table(name = "applications")

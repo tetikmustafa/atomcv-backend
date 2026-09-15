@@ -22,14 +22,14 @@ import org.springframework.stereotype.Service;
 
 /**
  * One stale wording, brought back into step with the one it came from — and
- * one wording that never existed at all (Bolum 21.8's second step), by way of
- * English when that is the better route.
+ * one wording that never existed at all (the second step), by way of English
+ * when that is the better route.
  *
  * <p><strong>It never touches a wording the user wrote.</strong> That is the
- * whole of Bolum 32.2's protection: an edit to the Turkish marks the English
- * stale either way, so the person is told the two have diverged — but if they
- * wrote that English themselves, nothing regenerates it behind their back.
- * The choice is theirs to make on the screen.
+ * whole of the protection: an edit to the Turkish marks the English stale
+ * either way, so the person is told the two have diverged — but if they wrote
+ * that English themselves, nothing regenerates it behind their back. The
+ * choice is theirs to make on the screen.
  *
  * <p>The tier is {@link ModelTier#CHEAP}: one sentence in, one sentence out,
  * and it is the call this product will make most often once a profile has two
@@ -44,26 +44,25 @@ public class VariantTranslationService {
     public static final String PROMPT_ID = "translation";
 
     /**
-     * Bolum 32.5's pivot. A model's alignment is strongest in English, so a
-     * Turkish profile applying to a German posting is translated
-     * {@code TR -> EN -> DE} rather than straight across. The extra leg is
-     * paid once: the English wording is saved like any other (Bolum 21.8's
-     * third step), and it is the language a profile is most likely to want
-     * next anyway.
+     * The pivot. A model's alignment is strongest in English, so a Turkish
+     * profile applying to a German posting is translated {@code TR -> EN ->
+     * DE} rather than straight across. The extra leg is paid once: the English
+     * wording is saved like any other (the third step), and it is the language
+     * a profile is most likely to want next anyway.
      */
     public static final String PIVOT_LANGUAGE = "en";
 
-    /** Bolum 43.1's fence: everything inside it is data, not instructions. */
+    /** The fence: everything inside it is data, not instructions. */
     private static final String FENCE_TAG = "atom_text";
 
     /**
      * The target language is an instruction, so it lives in the instructions.
      *
-     * <p>Substituted into the system half rather than sent inside the fence:
-     * a CV that wrote "Target language: en" in one of its bullets would
+     * <p>Substituted into the system half rather than sent inside the fence: a
+     * CV that wrote "Target language: en" in one of its bullets would
      * otherwise be giving the order. The prefix then varies by language, and
-     * that costs nothing real — Bolum 27.4's caching keys on the prefix, and
-     * there is one prefix per language rather than one per call.
+     * that costs nothing real — the caching keys on the prefix, and there is
+     * one prefix per language rather than one per call.
      */
     private static final String TARGET_LANGUAGE = "{{target_language}}";
 
@@ -115,8 +114,8 @@ public class VariantTranslationService {
     }
 
     /**
-     * Bolum 21.8's second step: a wording in a language this atom has none in,
-     * made from the one it has.
+     * The second step: a wording in a language this atom has none in, made
+     * from the one it has.
      *
      * <p><strong>The difference from {@link #retranslate} is that there is
      * nothing to overwrite.</strong> That one refreshes a wording that went
@@ -126,12 +125,11 @@ public class VariantTranslationService {
      * wording in its language, and a Turkish profile applying to an English
      * posting got a Turkish CV.
      *
-     * <p>Saved rather than used and thrown away (Bolum 21.8's third step), and
-     * the payoff is in the section's own sentence: the second generation in
-     * that language costs nothing. {@code created_by = llm_translate} is what
-     * lets Bolum 32.2's staleness know a person did not write it, and what the
-     * screen reads to say a wording was generated and is worth reviewing
-     * (Bolum 32.5's warning).
+     * <p>Saved rather than used and thrown away (the third step), and the
+     * payoff is in the section's own sentence: the second generation in that
+     * language costs nothing. {@code created_by = llm_translate} is what lets
+     * the staleness know a person did not write it, and what the screen reads
+     * to say a wording was generated and is worth reviewing (the warning).
      *
      * <p>The same audit as {@link #retranslate}. A translation that dropped a
      * number is refused here too, which is what keeps the fallback honest: a
@@ -193,8 +191,8 @@ public class VariantTranslationService {
      *
      * <p>That last part is the whole reason {@link TranslationWriter} is a
      * separate bean: a provider call inside a transaction holds a connection
-     * from the pool for as long as the model takes to answer, and Bolum 21.8's
-     * second step makes sixty of these at once.
+     * from the pool for as long as the model takes to answer, and the second
+     * step makes sixty of these at once.
      */
     private Result<AtomTranslation> ask(AtomVariant source, String language,
             String bucketKey, UUID userId) {

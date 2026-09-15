@@ -52,8 +52,8 @@ public class SupportRead implements ApplicationRunner {
     static final String ARGUMENT = "support.generation";
 
     /**
-     * {@code --support.export=<path>}, which writes the file Bolum 48.5's
-     * replay reads instead of printing.
+     * {@code --support.export=<path>}, which writes the file the replay reads
+     * instead of printing.
      *
      * <p>Under the same grant and the same stamp, because it is the same
      * content. <strong>A file is the more dangerous of the two</strong> — a
@@ -141,7 +141,7 @@ public class SupportRead implements ApplicationRunner {
     }
 
     /**
-     * Bolum 48.5's file.
+     * The file.
      *
      * <p>Pretty-printed, because the first thing anybody does with it is read
      * it, and a diff of two of them is how a replay's answer is compared to

@@ -15,10 +15,10 @@ import org.springframework.stereotype.Component;
 /**
  * Turns an estimate into a measurement.
  *
- * <p>The third step of Bolum 33.3's flow. A slider moves, this is queued, and
- * until it lands a generation runs against {@link CapacityEstimator}'s scaled
- * guess with a margin. Afterwards the same geometry is exact and spends the
- * whole page.
+ * <p>The third step of the flow. A slider moves, this is queued, and until it
+ * lands a generation runs against {@link CapacityEstimator}'s scaled guess
+ * with a margin. Afterwards the same geometry is exact and spends the whole
+ * page.
  *
  * <p>It runs under {@code MEASUREMENT}, the lowest priority in the queue, and
  * that is right: nobody is watching it. A person who asked for a CV in the

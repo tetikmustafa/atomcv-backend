@@ -8,19 +8,20 @@ import org.springframework.stereotype.Component;
 /**
  * The challenge, asked of the callers who have not answered one yet.
  *
- * <p><strong>Why the anonymous flow needs this and an account does not.</strong>
- * Signing in already passed a challenge — that is what {@code POST /auth/magic-link}
- * asks one for — so asking an account again is friction with nothing behind it.
- * An anonymous caller has answered nothing, and since Bolum 9's flow landed there
- * are two endpoints they can reach that spend real money on a model: importing a
- * CV, which is the most expensive single call this product makes, and generating,
- * which is several.
+ * <p><strong>Why the anonymous flow needs this and an account does
+ * not.</strong> Signing in already passed a challenge — that is what {@code
+ * POST /auth/magic-link} asks one for — so asking an account again is friction
+ * with nothing behind it. An anonymous caller has answered nothing, and since
+ * the flow landed there are two endpoints they can reach that spend real money
+ * on a model: importing a CV, which is the most expensive single call this
+ * product makes, and generating, which is several.
  *
- * <p><strong>A quota is not a substitute, and that is the whole argument.</strong>
- * Bolum 44.1's counters say <em>how much</em> and never <em>who</em>: five
- * generations per address is five per address somebody can rotate, and § 44.3's
- * tightening is a detector that runs after the spending. The challenge is the only
- * thing in front of it that asks whether there is a person there at all.
+ * <p><strong>A quota is not a substitute, and that is the whole
+ * argument.</strong> The counters say <em>how much</em> and never
+ * <em>who</em>: five generations per address is five per address somebody can
+ * rotate, and the tightening is a detector that runs after the spending. The
+ * challenge is the only thing in front of it that asks whether there is a
+ * person there at all.
  *
  * <p><strong>Absent locally and in the test suite</strong>, where {@link
  * ChallengeConfig} warns and waves the request through — so nothing here

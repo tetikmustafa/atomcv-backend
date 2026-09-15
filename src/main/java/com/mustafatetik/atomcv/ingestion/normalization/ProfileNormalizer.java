@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 31.5's seven steps, all of which the code does and none of which the
- * model is asked to.
+ * The seven steps, all of which the code does and none of which the model is
+ * asked to.
  *
  * <p>The split is the point. A model is good at reading a document and bad at
  * being consistent about a dictionary, a date format or an ordering — asked

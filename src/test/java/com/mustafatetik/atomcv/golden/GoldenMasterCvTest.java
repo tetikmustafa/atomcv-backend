@@ -264,9 +264,9 @@ class GoldenMasterCvTest {
      * a redundant line about graduated engineering departments, and Faz A reads
      * it anyway.
      *
-     * <p>Bolum 18.4's gate refused exactly this text until v2 of the prompt:
-     * most real postings are a heading-less list of qualifications, and a rule
-     * that called that "not a posting" refused the ordinary case. The recorded
+     * <p>The gate refused exactly this text until v2 of the prompt: most real
+     * postings are a heading-less list of qualifications, and a rule that
+     * called that "not a posting" refused the ordinary case. The recorded
      * answer is kept here so the claim can be checked without paying for it.
      */
     @Test

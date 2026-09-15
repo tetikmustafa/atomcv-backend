@@ -35,7 +35,7 @@ class CarryingRewriterTest {
     }
 
     /**
-     * Bolum 21.6's own rule, and the reason a free edit is honest rather than
+     * The own rule, and the reason a free edit is honest rather than
      * half-finished: absent means original, and Faz E cannot get that wrong.
      */
     @Test

@@ -58,11 +58,11 @@ public record GenerationOptions(
      *
      * <p><strong>It follows the posting even when the profile holds no wording
      * in that language</strong>, which is the narrowing F-013 itself asked for
-     * once Bolum 21.8's second step existed. This gated on
-     * {@link ProfileTree#canBeWrittenIn} while that step did not: selection
-     * would fall back to the primary wording for every untranslated atom while
-     * the dates and "Present" kept following the language that was asked for,
-     * a CV of Turkish bullets under English dates.
+     * once the second step existed. This gated on {@link
+     * ProfileTree#canBeWrittenIn} while that step did not: selection would
+     * fall back to the primary wording for every untranslated atom while the
+     * dates and "Present" kept following the language that was asked for, a CV
+     * of Turkish bullets under English dates.
      *
      * <p><strong>The decision moved rather than went away.</strong>
      * {@code GenerationTranslation} fills the missing wordings between Faz B
@@ -100,8 +100,8 @@ public record GenerationOptions(
     }
 
     /**
-     * The same options, rendered with a set somebody saved (Bolum 14.4's
-     * {@code options.customizationId}).
+     * The same options, rendered with a set somebody saved (the {@code
+     * options.customizationId}).
      *
      * <p>Null leaves the profile's working settings alone, which is what a
      * request that names nothing means — and that is nearly every request.

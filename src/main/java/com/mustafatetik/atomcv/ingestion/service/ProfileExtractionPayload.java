@@ -11,17 +11,17 @@ import java.util.Map;
  * What a queued extraction carries: the text, and the two facts about how it
  * was read.
  *
- * <p><strong>The text and not the file.</strong> Adim 3.4's first slice
- * decided the bytes are never stored, and this is where that decision has its
- * cost: the extracted text lives in {@code jobs.payload} until the job reaches
- * a terminal state. It is the user's own CV in the user's own row, but nothing
+ * <p><strong>The text and not the file.</strong> The first slice decided the
+ * bytes are never stored, and this is where that decision has its cost: the
+ * extracted text lives in {@code jobs.payload} until the job reaches a
+ * terminal state. It is the user's own CV in the user's own row, but nothing
  * prunes completed jobs yet — recorded as an open item rather than solved
  * here, because retention is every job type's question and not this one's.
  *
- * <p>{@code looksScrambled} travels because Bolum 31.3's note is about the
- * <em>file</em>, and by the time the handler runs the file is gone. Recomputing
- * the heuristic from the text would give the same answer today and would be a
- * second place for it to be defined.
+ * <p>{@code looksScrambled} travels because the note is about the
+ * <em>file</em>, and by the time the handler runs the file is gone.
+ * Recomputing the heuristic from the text would give the same answer today and
+ * would be a second place for it to be defined.
  */
 record ProfileExtractionPayload(
         String text, DocumentFormat format, boolean looksScrambled, QuotaSubject allowance,

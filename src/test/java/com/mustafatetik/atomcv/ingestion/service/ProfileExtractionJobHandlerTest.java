@@ -105,10 +105,9 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * Bolum 30.6's terminal event: counts and ids, never content. The warning
-     * count is on it because Bolum 31.6's screen opens on the sections that
-     * have one, and the client has to know whether to before it fetches
-     * anything.
+     * The terminal event: counts and ids, never content. The warning count is
+     * on it because the screen opens on the sections that have one, and the
+     * client has to know whether to before it fetches anything.
      */
     @Test
     void theTerminalEventCarriesCountsAndNoneOfTheCv() {
@@ -141,9 +140,9 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * Bolum 31.6's background box. The screen opens the moment the profile
-     * exists and these arrive underneath it — done inline they would add
-     * twenty seconds to the one moment the product asks anybody to wait.
+     * The background box. The screen opens the moment the profile exists and
+     * these arrive underneath it — done inline they would add twenty seconds
+     * to the one moment the product asks anybody to wait.
      */
     @Test
     void theVectorsAndTheHeightsAreQueuedRatherThanWaitedFor() {
@@ -184,8 +183,8 @@ class ProfileExtractionJobHandlerTest {
     // -- when a stage refuses ----------------------------------------------
 
     /**
-     * Bolum 44.2: the unit was taken when the upload was accepted, and a
-     * person who got no profile out of it has not had one.
+     * The unit was taken when the upload was accepted, and a person who got no
+     * profile out of it has not had one.
      */
     @Test
     void aRefusedExtractionGivesTheAllowanceBack() {
@@ -287,10 +286,9 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * The terminal event is the same event, and it has to be: Bolum 30.6's
-     * client renders one screen from it, and an anonymous profile that
-     * answered without a {@code profileId} would have nowhere to send the
-     * person next.
+     * The terminal event is the same event, and it has to be: the client
+     * renders one screen from it, and an anonymous profile that answered
+     * without a {@code profileId} would have nowhere to send the person next.
      */
     @Test
     void ananonymousUploadAnswersWithTheProfileTheSessionOwns() {
@@ -321,11 +319,11 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * <strong>Bolum 44.2, and the reason the payload carries the subject at
-     * all.</strong> An anonymous upload is paid for by an address, which the
-     * worker cannot see — it runs outside the request. Refunding the wrong
-     * subject is worse than not refunding: it credits somebody who never
-     * spent, and leaves the person who did still paying for a failure.
+     * <strong>And the reason the payload carries the subject at all.</strong>
+     * An anonymous upload is paid for by an address, which the worker cannot
+     * see — it runs outside the request. Refunding the wrong subject is worse
+     * than not refunding: it credits somebody who never spent, and leaves the
+     * person who did still paying for a failure.
      */
     @Test
     void arefusedAnonymousExtractionGivesTheAddressItsAllowanceBack() {

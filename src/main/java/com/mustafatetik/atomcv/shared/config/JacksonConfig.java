@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class JacksonConfig {
 
     /**
-     * Bolum 42.4's ceiling on how deep a document may nest.
+     * The ceiling on how deep a document may nest.
      *
      * <p>Fifty is far past anything this API accepts: the deepest body it reads
      * is a profile import, and that bottoms out around six. The number is a
@@ -27,7 +27,7 @@ public class JacksonConfig {
     static final int MAX_NESTING_DEPTH = 50;
 
     /**
-     * Bolum 42.4's ceiling on a single string value, in characters.
+     * The ceiling on a single string value, in characters.
      *
      * <p>A megabyte against a job description capped at 20,000 characters and
      * an upload capped by {@code max-file-size} before a parser ever sees it.

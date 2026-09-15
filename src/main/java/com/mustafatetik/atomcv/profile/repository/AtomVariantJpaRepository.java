@@ -59,8 +59,7 @@ interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
             UUID profileId, UUID derivedFromVariantId);
 
     /**
-     * One atom's wordings in one language (Bolum 32.5's pivot asks for these
-     * by name).
+     * One atom's wordings in one language (the pivot asks for these by name).
      *
      * <p><strong>A list, not one row.</strong> The unique index is on
      * {@code (atom_id, language, tone)}, so an atom that has both a neutral

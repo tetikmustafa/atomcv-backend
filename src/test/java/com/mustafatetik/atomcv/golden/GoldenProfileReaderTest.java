@@ -86,9 +86,9 @@ class GoldenProfileReaderTest {
         assertThat(edge.atoms()).anySatisfy(atom -> assertThat(atom.isActive()).isFalse());
         assertThat(edge.sections()).anySatisfy(section ->
                 assertThat(section.isActive()).isFalse());
-        // Bolum 20.2: an entry with no atoms at all reaches the page by the one
-        // route that does not go through an atom. Without a fixture carrying
-        // one, that route is never exercised by anything.
+        // An entry with no atoms at all reaches the page by the one route that
+        // does not go through an atom. Without a fixture carrying one, that
+        // route is never exercised by anything.
         assertThat(junior.tree().sections().stream()
                 .flatMap(section -> section.entries().stream()))
                 .as("a fixture with a line nobody can write a bullet for")
@@ -99,15 +99,15 @@ class GoldenProfileReaderTest {
                 assertThat(atom.isAlwaysInclude()).isTrue());
     }
 
-    // -- tags (Bolum 19.1's fourth of the raw score) ------------------------
+    // -- tags (the fourth of the raw score) ------------------------
 
     /**
-     * <strong>A quarter of Bolum 19.1's raw score was unreachable from this
-     * fixture set.</strong> No golden profile carried a tag, nothing wrote one,
-     * and every measurement taken here — including the ones
-     * {@code PhaseDReachTest} pins — was taken against a term that could only
-     * be zero. The rows exist in production the moment somebody tags an atom;
-     * a fixture set that never did was a fixture set of a different system.
+     * <strong>A quarter of the raw score was unreachable from this fixture
+     * set.</strong> No golden profile carried a tag, nothing wrote one, and
+     * every measurement taken here — including the ones {@code
+     * PhaseDReachTest} pins — was taken against a term that could only be
+     * zero. The rows exist in production the moment somebody tags an atom; a
+     * fixture set that never did was a fixture set of a different system.
      */
     @Test
     void thefixturesCarryTags() {

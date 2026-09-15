@@ -30,8 +30,8 @@ public class MagicLinkTokens {
     }
 
     /**
-     * The indexed half of Bolum 40.2's split. Finding the row must not depend
-     * on the secret, or how long it takes becomes a measurement of it.
+     * The indexed half of the split. Finding the row must not depend on the
+     * secret, or how long it takes becomes a measurement of it.
      */
     public Optional<MagicLinkToken> bySelector(String selector) {
         return selector == null || selector.isBlank()

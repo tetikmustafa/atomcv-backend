@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository;
  * Addresses this deployment must stop writing to.
  *
  * <p>A hard bounce or a complaint is a standing instruction, and continuing to
- * send after one is how a sending domain loses its reputation — which for
- * Bolum 40.2's magic link means the product stops working for everyone, not
- * just for the address that bounced. Adim 3.2 spends weeks earning that
- * reputation; this is what keeps it.
+ * send after one is how a sending domain loses its reputation — which for the
+ * magic link means the product stops working for everyone, not just for the
+ * address that bounced. A sending domain spends weeks earning that reputation;
+ * this is what keeps it.
  *
  * <p><strong>Nothing writes this table yet.</strong> The rows arrive from
  * Resend's webhooks, which are not in this slice. The guard goes in first on

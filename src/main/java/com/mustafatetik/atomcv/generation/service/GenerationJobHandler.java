@@ -113,9 +113,9 @@ public class GenerationJobHandler implements JobHandler {
         }
         GenerationSubject subject = resolved.orElseThrow();
 
-        // Bolum 19.4: no posting means no Faz A and no Faz B. Everything from
-        // selection onwards is the same code, which is what separating scoring
-        // from selection bought.
+        // No posting means no Faz A and no Faz B. Everything from selection
+        // onwards is the same code, which is what separating scoring from
+        // selection bought.
         //
         // General mode is still account-only. Nothing refuses it here because
         // nothing offers it: § 35.7 gives an anonymous session one language and
@@ -128,8 +128,8 @@ public class GenerationJobHandler implements JobHandler {
                         subject, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
                         payload.customizationId(),
-                        // Bolum 18.7: the directive belongs to this run, never
-                        // to the cached analysis the posting hash keys.
+                        // The directive belongs to this run, never to the
+                        // cached analysis the posting hash keys.
                         GenerationDirectives.steering(
                                 payload.emphasize(), payload.freeformNote()),
                         progress, job.getId());
@@ -137,11 +137,10 @@ public class GenerationJobHandler implements JobHandler {
         return switch (result) {
             case Result.Ok<GeneratedGeneration> ok -> completed(subject, payload, ok.value());
             case Result.Err<GeneratedGeneration> failed -> {
-                // Bolum 44.2: the unit was taken when this was queued and no
-                // document came out of it. User error or system error, the
-                // section refunds both -- to the subject that paid, which the
-                // payload carries because the worker has no request to read an
-                // address from.
+                // The unit was taken when this was queued and no document came
+                // out of it. User error or system error, the section refunds
+                // both -- to the subject that paid, which the payload carries
+                // because the worker has no request to read an address from.
                 quotas.refund(payload.allowance(), QuotaMetric.GENERATION);
                 yield failed(failed.error());
             }
@@ -341,11 +340,11 @@ public class GenerationJobHandler implements JobHandler {
         result.put("generationId", record.getId().toString());
         result.put("pageCount", document.pageCount());
         if (generated.fitReport() != null) {
-            // Bolum 30.6's example carries it and F-008 asked for it: the
-            // heading is on the terminal event so the result screen can print
-            // it without a second round trip. The counts underneath are on
-            // GET /generations/{id} — a level is four characters, a report is
-            // not something to push down a stream.
+            // The example carries it and F-008 asked for it: the heading is on
+            // the terminal event so the result screen can print it without a
+            // second round trip. The counts underneath are on GET
+            // /generations/{id} — a level is four characters, a report is not
+            // something to push down a stream.
             result.put("matchLevel", generated.fitReport().level().name());
         }
         return JobOutcome.completed(result);
@@ -397,7 +396,7 @@ public class GenerationJobHandler implements JobHandler {
                 : records.save(UserContext.of(subject.userId()), record);
     }
 
-    /** Bolum 14.4, minus the fields whose features have not arrived. */
+    /** Minus the fields whose features have not arrived. */
     private static Map<String, Object> storedOptions(GenerationOptions options) {
         Map<String, Object> stored = new LinkedHashMap<>();
         stored.put("templateId", options.customization().baseTemplateId());
@@ -412,16 +411,16 @@ public class GenerationJobHandler implements JobHandler {
     private static EngineVersion engineVersion(GenerationOptions options, GeneratedGeneration generated) {
         return new EngineVersion(
                 EngineVersion.PIPELINE,
-                // Bolum 28.4: which of the two weight sets ran. A week of
-                // generations scored without vectors otherwise looks exactly
-                // like a prompt regression.
+                // Which of the two weight sets ran. A week of generations
+                // scored without vectors otherwise looks exactly like a prompt
+                // regression.
                 weightsOf(generated),
                 options.customization().costKey(),
                 generated.promptVersions());
     }
 
     /**
-     * Bolum 14.6, with the phases that are instrumented.
+     * With the phases that are instrumented.
      *
      * <p>A and E are absent rather than guessed at: nothing times them today,
      * and a trace carrying a zero would read as "instant" instead of as
@@ -456,14 +455,14 @@ public class GenerationJobHandler implements JobHandler {
         RewriteTally rewrites = generated.rewriteTally();
         Map<String, Object> phaseD = new LinkedHashMap<>();
         phaseD.put("rewritten", generated.document().rewrittenAtoms());
-        // Bolum 14.6's rejectReasons, and the two counts it takes to read them.
-        // `rewritten: 0` on its own has four causes with four different fixes —
-        // nothing was a candidate, nothing came back, everything came back and
-        // was refused, or the phase never ran at all — and the page looks the
-        // same in all four. `calls` separates the first two from the last two
-        // and `rejectReasons` separates those; `unreachable` is the provider
-        // chain's share, which is not a prompt problem and must not be counted
-        // as one.
+        // The rejectReasons, and the two counts it takes to read them.
+        // `rewritten: 0` on its own has four causes with four different fixes
+        // — nothing was a candidate, nothing came back, everything came back
+        // and was refused, or the phase never ran at all — and the page looks
+        // the same in all four. `calls` separates the first two from the last
+        // two and `rejectReasons` separates those; `unreachable` is the
+        // provider chain's share, which is not a prompt problem and must not
+        // be counted as one.
         phaseD.put("calls", rewrites.callsByPrompt());
         phaseD.put("rejectReasons", rejectReasons(rewrites));
         phaseD.put("unreachable", rewrites.unreachable());
@@ -503,7 +502,7 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     /**
-     * How many refusals each of Bolum 21.6's issues accounts for.
+     * How many refusals each of the issues accounts for.
      *
      * <p>{@link RewriteTally} already holds these in an {@code EnumMap}, so the
      * order is the enum's and not the answers' — the same determinism Faz C's

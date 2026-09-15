@@ -121,7 +121,7 @@ public enum DocumentFormat {
      * <p>Not a decode attempt: {@code new String(bytes, UTF_8)} replaces bad
      * sequences rather than failing, so it would answer yes for a JPEG. A
      * strict decode of ten megabytes to learn one fact is also the wrong price
-     * for the cheapest rung of Bolum 31.2's ladder.
+     * for the cheapest rung of the ladder.
      */
     private static boolean looksLikeText(byte[] bytes) {
         int examined = Math.min(bytes.length, 1024);

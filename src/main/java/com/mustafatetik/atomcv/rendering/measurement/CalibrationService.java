@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * What a page of this shape can hold, measured (Bolum 26.4, 33.1).
+ * What a page of this shape can hold, measured.
  *
  * <p>The arithmetic here was written twice in the test lane and nowhere in the
  * product, which was correct while there were two templates at two fixed

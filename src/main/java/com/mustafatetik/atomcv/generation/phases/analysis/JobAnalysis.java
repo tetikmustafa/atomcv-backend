@@ -102,7 +102,7 @@ public record JobAnalysis(
     // failing the parse. With `strict: true` the provider enforces the enum,
     // so an unknown one only reaches here in the weaker json_object mode — and
     // turning a model that answered "staff" into a total failure would buy a
-    // whole retry for a field Bolum 18.4's gate does not read.
+    // whole retry for a field the gate does not read.
 
     public enum Seniority {
         JUNIOR, MID, SENIOR, LEAD, PRINCIPAL;
@@ -191,8 +191,8 @@ public record JobAnalysis(
      * that are already the extraction's answer to "what is this job".
      *
      * <p>Only {@code requiredSkills} take part. A preferred skill is a
-     * tie-breaker in Bolum 19's scoring, and letting it pull the vector would
-     * make it a requirement.
+     * tie-breaker in the scoring, and letting it pull the vector would make it
+     * a requirement.
      *
      * <p>Built from the English fields, because an atom's embedding comes from
      * its English variant and a cross-language similarity measures the

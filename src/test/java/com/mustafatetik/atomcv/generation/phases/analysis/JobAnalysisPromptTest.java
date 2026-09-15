@@ -9,12 +9,11 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * The shipped {@code job_analysis} prompt and the schema beside it
- * (Bolum 18.2, 18.3).
+ * The shipped {@code job_analysis} prompt and the schema beside it.
  *
  * <p>These hold two things that are otherwise only true by inspection: that
  * the schema and the record it is parsed into describe the same document, and
- * that the prompt still carries Bolum 18.3's injection defence.
+ * that the prompt still carries the injection defence.
  */
 class JobAnalysisPromptTest {
 
@@ -32,11 +31,11 @@ class JobAnalysisPromptTest {
     }
 
     /**
-     * Bolum 18.3, and Bolum 43's whole approach: the posting is fenced and the
-     * model is told the fence contains data. It is not a proof against
-     * injection — the structural defence is that the answer must fit a schema
-     * and pass Bolum 18.4's gate — but removing the instruction would remove
-     * the cheapest layer without anyone noticing.
+     * And the whole approach: the posting is fenced and the model is told the
+     * fence contains data. It is not a proof against injection — the
+     * structural defence is that the answer must fit a schema and pass the
+     * gate — but removing the instruction would remove the cheapest layer
+     * without anyone noticing.
      */
     @Test
     void thePromptFencesThePostingAndSaysItIsDataNotInstructions() {
@@ -49,9 +48,9 @@ class JobAnalysisPromptTest {
     }
 
     /**
-     * Bolum 18.2's rule that makes Faz B possible at all: an atom's embedding
-     * comes from its English variant, so a similarity against a Turkish
-     * sentence would measure the languages rather than the match.
+     * The rule that makes Faz B possible at all: an atom's embedding comes
+     * from its English variant, so a similarity against a Turkish sentence
+     * would measure the languages rather than the match.
      */
     @Test
     void thePromptDemandsEnglishForTheFieldsThatAreCompared() {
@@ -104,7 +103,7 @@ class JobAnalysisPromptTest {
             assertThat(skill.canonical()).isEqualTo("go");
             assertThat(skill.importance()).isEqualTo(JobAnalysis.Importance.CRITICAL);
         });
-        // Bolum 18.2: a floor with no ceiling is normal, not missing data.
+        // A floor with no ceiling is normal, not missing data.
         assertThat(analysis.experienceYears().max()).isNull();
         assertThat(analysis.confidence()).isEqualTo(0.94);
     }
@@ -112,7 +111,7 @@ class JobAnalysisPromptTest {
     /**
      * With {@code strict: true} the provider enforces the vocabulary, so this
      * only happens in the weaker json_object mode. Failing the whole parse
-     * there would buy a full retry for a field Bolum 18.4's gate never reads.
+     * there would buy a full retry for a field the gate never reads.
      */
     @Test
     void aValueOutsideAClosedVocabularyReadsAsAbsentRatherThanFailing() throws Exception {

@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Bolum 54.2's round trip: what a recording run writes is what a
- * {@code local-fake} run reads back.
+ * The round trip: what a recording run writes is what a {@code local-fake} run
+ * reads back.
  *
  * <p>Writing and reading are asserted together on purpose. Until this class
  * existed the only caller of {@code FixtureStore.save} was a test helper in
@@ -79,9 +79,9 @@ class FixtureRecordingAnswersTest {
     }
 
     /**
-     * The withdrawal Bolum 18.4's gate makes when it refuses what was just
-     * recorded. What must be true afterwards is that a replay misses — with
-     * {@code synthesize=false} that is a failure, which is how a recording run
+     * The withdrawal the gate makes when it refuses what was just recorded.
+     * What must be true afterwards is that a replay misses — with {@code
+     * synthesize=false} that is a failure, which is how a recording run
      * notices the prompt still needs one.
      */
     @Test

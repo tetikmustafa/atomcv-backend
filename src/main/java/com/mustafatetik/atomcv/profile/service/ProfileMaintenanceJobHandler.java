@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The embedding half of Bolum 31.6's background box.
+ * The embedding half of the background box.
  *
  * <p>Queued when an import finishes and never waited on. The review screen
  * opens as soon as the profile exists; this runs underneath it, and by the
@@ -61,8 +61,8 @@ public class ProfileMaintenanceJobHandler implements JobHandler {
                     profiles.resolve(UserContext.of(userId)));
             return JobOutcome.completed(Map.of("embedded", embedded));
         } catch (EmbeddingException unavailable) {
-            // Bolum 28.4: worth another attempt, and worth nobody's attention
-            // in the meantime.
+            // Worth another attempt, and worth nobody's attention in the
+            // meantime.
             log.warn("Embedding is not answering; the profile stays unembedded: {}",
                     unavailable.getClass().getSimpleName());
             return JobOutcome.failed(UserFacingError.of(ErrorCode.EMBEDDING_UNAVAILABLE), true);

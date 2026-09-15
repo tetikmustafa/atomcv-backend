@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * The two numbers Bolum 31.2's ladder is built from.
+ * The two numbers the ladder is built from.
  *
  * @param maxBytes         Bolum 42.1's ten megabytes. Also set on Spring's
  *                         multipart limit and, in production, on Nginx —

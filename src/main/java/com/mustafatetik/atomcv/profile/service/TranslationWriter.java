@@ -20,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
  * <p><strong>A provider call must not happen inside a transaction.</strong>
  * {@code VariantTranslationService} held one across the call until this
  * existed, which was survivable while translations were a queue of one job at
- * a time and stopped being survivable the moment Bolum 21.8's second step
- * started asking for sixty wordings at once: the pool is ten connections, a
+ * a time and stopped being survivable the moment the second step started
+ * asking for sixty wordings at once: the pool is ten connections, a
  * translation takes up to thirty seconds, and fifty virtual threads would have
  * been waiting on a connection for a call that had not started. Every one of
  * them would then have failed, and the all-or-nothing rule would have sent
@@ -46,10 +46,10 @@ public class TranslationWriter {
     /**
      * Stores a translated wording, or refuses it.
      *
-     * <p>Bolum 21.8's fourth step is the refusal: a translation that dropped a
-     * number or a proper noun is not saved, and the caller is told. A missing
-     * wording is better than a wrong one — the whole point of a CV built from
-     * a structured profile is that the numbers in it are the user's own.
+     * <p>The fourth step is the refusal: a translation that dropped a number
+     * or a proper noun is not saved, and the caller is told. A missing wording
+     * is better than a wrong one — the whole point of a CV built from a
+     * structured profile is that the numbers in it are the user's own.
      *
      * @param target what to write into: the stale wording for a retranslation,
      *               a wording that does not exist yet for a new language

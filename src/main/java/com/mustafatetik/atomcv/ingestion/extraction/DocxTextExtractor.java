@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * answer: {@code XWPFWordExtractor} reads document parts and has no path to
  * running one. What it does have a path to is a zip bomb, since a DOCX is a
  * zip — {@link ZipSecureFile}'s inflate ratio is POI's own guard for that, and
- * it is the "expanded size check" Bolum 42.1 asks for beside the byte limit.
+ * it is the expanded-size check that belongs beside the byte limit.
  */
 @Component
 class DocxTextExtractor implements TextExtractor {

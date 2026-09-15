@@ -58,7 +58,7 @@ public record RewriteContext(
                 null, null, null);
     }
 
-    /** The same context with Bolum 18.7's note, for a caller that has one. */
+    /** The same context with the note, for a caller that has one. */
     public RewriteContext withNote(String written) {
         return new RewriteContext(postingSkills, postingSkillNames, postingFocus, ownWords,
                 language, tone, bucketKey, written, userId, jobId);
@@ -110,10 +110,10 @@ public record RewriteContext(
         posting.preferredSkills().forEach(skill -> written.add(asWritten(skill)));
         written.remove("");
 
-        // Bolum 18's responsibilities and not its keywords: the keywords are
-        // the posting's vocabulary, which is exactly what a stuffed summary
-        // would draw from. The validator refuses that either way, but a prompt
-        // is better for not having been shown the temptation.
+        // The responsibilities and not its keywords: the keywords are the
+        // posting's vocabulary, which is exactly what a stuffed summary would
+        // draw from. The validator refuses that either way, but a prompt is
+        // better for not having been shown the temptation.
         var focus = new LinkedHashSet<>(posting.responsibilities());
         focus.remove(null);
         focus.remove("");

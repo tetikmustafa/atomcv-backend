@@ -155,7 +155,7 @@ public class UserAccount {
         return unsubscribeToken;
     }
 
-    /** Whether nobody has ever signed in to this account — Bolum 57.7's trigger. */
+    /** Whether nobody has ever signed in to this account — the trigger. */
     public boolean hasNeverSignedIn() {
         return lastSeenAt == null;
     }

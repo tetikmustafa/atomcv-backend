@@ -3,13 +3,13 @@ package com.mustafatetik.atomcv.llm.gateway;
 /**
  * Why one provider did not answer, and what the chain should do next.
  *
- * <p>This is deliberately <em>not</em> a {@code PipelineError}. Bolum 27.3's
- * snippet returns a failed provider call straight to the caller, which would
- * make it a user-facing error — but the catalogue in EK D.6 publishes only two
- * LLM codes, {@code ALL_PROVIDERS_UNAVAILABLE} and {@code EMBEDDING_UNAVAILABLE},
+ * <p>This is deliberately <em>not</em> a {@code PipelineError}. The snippet
+ * returns a failed provider call straight to the caller, which would make it a
+ * user-facing error — but the catalogue in EK D.6 publishes only two LLM
+ * codes, {@code ALL_PROVIDERS_UNAVAILABLE} and {@code EMBEDDING_UNAVAILABLE},
  * and neither describes one provider's 429. A single provider's failure is a
- * fact about the chain's walk, not a message to a user, so it stays inside this
- * module and only {@code AllProvidersUnavailable} escapes.
+ * fact about the chain's walk, not a message to a user, so it stays inside
+ * this module and only {@code AllProvidersUnavailable} escapes.
  *
  * <p>No provider text is carried: {@code detail} is for a developer's log and
  * is written by the adapter, never taken from the model's output (absolute
@@ -48,10 +48,9 @@ public record LlmFailure(Kind kind, String provider, String detail) {
         /**
          * The answer did not match the schema, or did not parse.
          *
-         * <p>Bolum 27.3: this one does <em>not</em> advance the chain. A schema
-         * the model could not satisfy is a property of the prompt, and the next
-         * provider will fail the same way; the retry belongs on the same
-         * provider.
+         * <p>This one does <em>not</em> advance the chain. A schema the model
+         * could not satisfy is a property of the prompt, and the next provider
+         * will fail the same way; the retry belongs on the same provider.
          */
         SCHEMA_MISMATCH(false),
 

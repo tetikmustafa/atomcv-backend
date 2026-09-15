@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Bolum 34.6's three buttons, and the first press of any of them.
+ * The three buttons, and the first press of any of them.
  *
  * <p><strong>Written against the generation, not against today's
  * profile.</strong> The selection snapshot on the row is what was actually on

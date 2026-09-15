@@ -8,8 +8,8 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 18.4, and the half of Bolum 18.3's injection defence that is
- * structural rather than a sentence in a prompt.
+ * And the half of the injection defence that is structural rather than a
+ * sentence in a prompt.
  */
 class PlausibilityGateTest {
 

@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 27.2's Anthropic row, and the reason that table has a column for the
- * mechanism at all.
+ * The Anthropic row, and the reason that table has a column for the mechanism
+ * at all.
  *
  * <p><strong>There is no bare JSON mode.</strong> Every other vendor here is
  * asked for JSON and answers with a string that parses; this one is given a
@@ -132,9 +132,9 @@ public class AnthropicProvider implements LlmProvider {
                 .put("role", "user")
                 .put("content", request.userPrompt());
 
-        // One tool, and the schema is its input. Bolum 27.2: this is how a
-        // schema is enforced here, and the name has to match the tool_choice
-        // below or the API refuses the request.
+        // One tool, and the schema is its input. This is how a schema is
+        // enforced here, and the name has to match the tool_choice below or
+        // the API refuses the request.
         String toolName = request.outputSchema().name();
         ObjectNode tool = body.putArray("tools").addObject();
         tool.put("name", toolName);

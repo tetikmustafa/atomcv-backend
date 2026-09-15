@@ -32,7 +32,7 @@ public final class RelevanceScorer {
 
     private static final Pattern TOKENS = Pattern.compile("[^\\p{L}\\p{N}]+");
 
-    /** Bolum 19.2: a preferred skill counts, but not as much as a required one. */
+    /** A preferred skill counts, but not as much as a required one. */
     private static final double PREFERRED_SKILL_WEIGHT = 0.4;
 
     private RelevanceScorer() {
@@ -161,7 +161,7 @@ public final class RelevanceScorer {
         return clamp((Vectors.cosine(left, right) + 1.0) / 2.0);
     }
 
-    /** Bolum 19.2: the profile's vocabulary against the posting's. */
+    /** The profile's vocabulary against the posting's. */
     static double jaccard(Set<String> left, Set<String> right) {
         if (left.isEmpty() || right.isEmpty()) {
             return 0.0;
@@ -331,7 +331,7 @@ public final class RelevanceScorer {
             return Set.copyOf(both);
         }
 
-        /** Bolum 19.2: the domain, the keywords, and the title's own words. */
+        /** The domain, the keywords, and the title's own words. */
         private static Set<String> tagsOf(JobAnalysis posting) {
             var tags = new HashSet<String>();
             tags.addAll(canonical(List.of(posting.role().domain())));

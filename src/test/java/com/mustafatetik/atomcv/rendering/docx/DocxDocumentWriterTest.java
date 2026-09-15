@@ -58,7 +58,7 @@ class DocxDocumentWriterTest {
                 .contains("fifty minutes");
     }
 
-    /** Bolum 22.6's own example: a technology or a metric is set bold. */
+    /** The own example: a technology or a metric is set bold. */
     @Test
     void amarkedRunIsBoldAndAplainOneIsNot() throws Exception {
         byte[] bytes = writer.write(aCv());
@@ -73,9 +73,9 @@ class DocxDocumentWriterTest {
     }
 
     /**
-     * An unknown mark falls through to plain rather than failing — Bolum
-     * 16.2's rule, and the reason {@link Mark} is not an enum. Stored content
-     * may carry a mark a newer build wrote.
+     * An unknown mark falls through to plain rather than failing — the rule,
+     * and the reason {@link Mark} is not an enum. Stored content may carry a
+     * mark a newer build wrote.
      */
     @Test
     void anunknownMarkIsPrintedPlainRatherThanRefused() throws Exception {

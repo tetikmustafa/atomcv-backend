@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
  * <p>The section's argument is revocation: a signed token cannot be taken
  * back, and a row that can be deleted can. That only holds if deleting is
  * actually reachable, so this keeps a second key per user — a set of their
- * live session ids — and {@link #revokeAllFor} is the operation Bolum 40.1's
- * "aninda" claim rests on. Building the index later would leave every session
- * written before it unrevokable.
+ * live session ids — and {@link #revokeAllFor} is the operation the
+ * instant-revocation claim rests on. Building the index later would leave
+ * every session written before it unrevokable.
  *
  * <p><strong>A Redis failure is a request without a session, never a request
  * that is let through.</strong> {@link com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisCache}

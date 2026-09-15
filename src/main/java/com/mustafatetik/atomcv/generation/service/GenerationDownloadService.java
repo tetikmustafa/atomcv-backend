@@ -104,15 +104,14 @@ public class GenerationDownloadService {
     }
 
     /**
-     * What the compiler was given (Bolum 35.2's {@code format=source},
-     * Bolum 55's "ham kaynak indirme").
+     * What the compiler was given ({@code format=source}).
      *
-     * <p><strong>Reading it is not Bolum 33.1's Layer C.</strong> That rule
-     * refuses to let a person <em>write</em> LaTeX, because user-authored
-     * markup reaching a compiler is a remote execution surface. Handing back
-     * what this product generated is the opposite direction and carries none
-     * of it: nothing is read back in, and a person who wants to typeset their
-     * own CV by hand should not have to retype it.
+     * <p><strong>Reading it is not the Layer C.</strong> That rule refuses to
+     * let a person <em>write</em> LaTeX, because user-authored markup reaching
+     * a compiler is a remote execution surface. Handing back what this product
+     * generated is the opposite direction and carries none of it: nothing is
+     * read back in, and a person who wants to typeset their own CV by hand
+     * should not have to retype it.
      *
      * <p>The same source the PDF is made from, so a person compiling it
      * themselves gets the document they downloaded.

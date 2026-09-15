@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * What Resend tells us about mail we sent (Bolum 40.2, § 55's suppression list).
+ * What Resend tells us about mail we sent, and the suppression list it feeds.
  *
  * <p>{@code EmailSuppressions} could read the table and nothing wrote it. This
  * is the writer. A hard bounce or a complaint is a standing instruction, and
@@ -48,9 +48,9 @@ public class ResendWebhookController {
     private static final Logger log = LoggerFactory.getLogger(ResendWebhookController.class);
 
     /**
-     * Bolum 48.3's "Teslimat orani" and "Bounce orani", and the only place
-     * either is knowable: the send call says a provider accepted the message,
-     * not that it arrived. {@code email.sent} is the other half.
+     * The delivery and bounce rates, and the only place either is knowable:
+     * the send call says a provider accepted the message, not that it arrived.
+     * {@code email.sent} is the other half.
      */
     static final String EVENTS = "email.events";
 
@@ -102,13 +102,13 @@ public class ResendWebhookController {
 
     private void handle(JsonNode event) {
         String type = event.path("type").asText("");
-        // Bolum 48.3's delivery and bounce rates, and this is the only place
-        // either is knowable: the send call says the provider accepted the
-        // message, not that anybody got it. Counted before the recipient is
-        // read, so an event with no recipient is still counted rather than
-        // quietly leaving a gap in the denominator. The type and nothing else
-        // -- an address is user content (absolute rule 4) and would be a time
-        // series per person besides.
+        // The delivery and bounce rates, and this is the only place either is
+        // knowable: the send call says the provider accepted the message, not
+        // that anybody got it. Counted before the recipient is read, so an
+        // event with no recipient is still counted rather than quietly leaving
+        // a gap in the denominator. The type and nothing else -- an address is
+        // user content (absolute rule 4) and would be a time series per person
+        // besides.
         meters.counter(EVENTS, "type", type.isBlank() ? "unknown" : type).increment();
 
         String email = firstRecipient(event);

@@ -8,9 +8,9 @@ import java.util.UUID;
  * The About paragraph, and everything it is allowed to say.
  *
  * <p><strong>The lists are the whole of what the paragraph may claim.</strong>
- * Bolum 21.7's rule is that every technology in the About appears in the union
- * of the selected atoms' skills — which is a stronger statement than it looks:
- * a summary is not a place where new claims are made, it is where claims made
+ * The rule is that every technology in the About appears in the union of the
+ * selected atoms' skills — which is a stronger statement than it looks: a
+ * summary is not a place where new claims are made, it is where claims made
  * elsewhere on the page are gathered. The same goes for the numbers, and for
  * the same reason a rewritten bullet may not invent one.
  *

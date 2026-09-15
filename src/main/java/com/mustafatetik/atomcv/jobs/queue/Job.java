@@ -27,10 +27,10 @@ import org.hibernate.type.SqlTypes;
  * statement rather than by letting both read and one lose. A version here
  * would be a second, weaker answer to a question already settled.
  *
- * <p>{@code userId} is nullable because Bolum 9's anonymous flow enqueues
- * without an account. Nothing produces one yet — the anonymous flow is
- * Stage 3 — but {@link #getOwnerId} can return null and everything that scopes
- * by owner has to survive that.
+ * <p>{@code userId} is nullable because the anonymous flow enqueues without an
+ * account. Nothing produces one yet — the anonymous flow is Stage 3 — but
+ * {@link #getOwnerId} can return null and everything that scopes by owner has
+ * to survive that.
  */
 @Entity
 @Table(name = "jobs")
@@ -48,7 +48,7 @@ public class Job implements UserOwned {
 
     private String anonSessionId;
 
-    /** Bolum 30.7: a double click produces one job, not two. */
+    /** A double click produces one job, not two. */
     private String idempotencyKey;
 
     /** What the handler needs to do the work. Shape depends on the type. */
@@ -60,7 +60,7 @@ public class Job implements UserOwned {
     @Column(nullable = false)
     private JobStatus status = JobStatus.QUEUED;
 
-    /** Bolum 30.3, copied from the type at creation. Lower is taken first. */
+    /** Copied from the type at creation. Lower is taken first. */
     @Column(nullable = false)
     private short priority;
 
@@ -88,7 +88,7 @@ public class Job implements UserOwned {
 
     private Instant heartbeatAt;
 
-    /** Not before this instant. Bolum 30.5's backoff moves it forward. */
+    /** Not before this instant. The backoff moves it forward. */
     @Column(nullable = false)
     private Instant runAfter = Instant.EPOCH;
 
@@ -224,7 +224,7 @@ public class Job implements UserOwned {
         return attempts < maxAttempts;
     }
 
-    /** Done, with whatever the handler produced (Bolum 30.6's terminal event). */
+    /** Done, with whatever the handler produced (the terminal event). */
     public void succeed(Map<String, Object> result, Instant now) {
         this.status = JobStatus.COMPLETED;
         // Otherwise the row keeps the last phase it reported and a client

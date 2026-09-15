@@ -62,7 +62,7 @@ class SelectionRequestBuilderTest {
 
     @Test
     void anInactiveAtomStaysACandidateSoItCanBeExplained() {
-        // Bolum 19.5: it is not scored away, it is rejected with a reason.
+        // It is not scored away, it is rejected with a reason.
         var profile = new Fixture();
         var section = profile.section(SectionKind.SKILLS, 0);
         var atom = profile.looseAtom(section, "Go");
@@ -199,7 +199,7 @@ class SelectionRequestBuilderTest {
     }
 
     /**
-     * <strong>Bolum 21.1's choice, and it is made here.</strong>
+     * <strong>the choice, and it is made here.</strong>
      *
      * <p>The spec puts the tone in Faz D, after selection has run. It cannot
      * live there: this is where a wording is charged to the budget, and a Faz D
@@ -229,7 +229,7 @@ class SelectionRequestBuilderTest {
     }
 
     /**
-     * <strong>Bolum 32.3, and the half the test above does not cover.</strong>
+     * <strong>And the half the test above does not cover.</strong>
      *
      * <p>Picking the right wording and then charging the other one's height is
      * the failure the section is about: the page is optimised against English
@@ -246,7 +246,7 @@ class SelectionRequestBuilderTest {
 
         var turkish = new AtomVariant(PROFILE, atom.getId(), "tr",
                 RichContent.plain("ETL hatlari kurdum"));
-        // Bolum 32.3: the same claim, ten to twenty per cent taller.
+        // The same claim, ten to twenty per cent taller.
         turkish.recordRenderCost(costKey, 47.0, java.time.Instant.now());
         profile.variants.add(turkish);
 
@@ -376,7 +376,7 @@ class SelectionRequestBuilderTest {
                 .satisfies(row -> assertThat(row.alwaysInclude()).isTrue());
     }
 
-    /** An inactive row is still a candidate, so it can be explained (Bolum 19.5). */
+    /** An inactive row is still a candidate, so it can be explained. */
     @Test
     void aninactiveInlineListRowIsStillExplainable() {
         var profile = new Fixture();
@@ -435,8 +435,8 @@ class SelectionRequestBuilderTest {
     // ── an entry with nothing under it ────────────────────────────────────
 
     /**
-     * Bolum 20.2: a diploma line has no bullets, and asking the person to
-     * invent one is asking them to pad.
+     * A diploma line has no bullets, and asking the person to invent one is
+     * asking them to pad.
      */
     @Test
     void anEntryWithNoAtomsIsOfferedAsItsOwnHeading() {

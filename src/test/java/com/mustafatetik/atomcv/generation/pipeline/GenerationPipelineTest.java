@@ -73,7 +73,7 @@ class GenerationPipelineTest {
         verify(compiler, times(1)).compile(anyString());
     }
 
-    /** Bolum 23.1: a long document costs content, never a call to an LLM. */
+    /** A long document costs content, never a call to an LLM. */
     @Test
     void aDocumentThatRanLongIsSelectedAgainWithLessRoom() {
         var fixture = profileOf(40);
@@ -92,8 +92,8 @@ class GenerationPipelineTest {
     }
 
     /**
-     * Bolum 26.6's calibration signal, in the resolution production can
-     * measure: pages predicted against pages returned.
+     * The calibration signal, in the resolution production can measure: pages
+     * predicted against pages returned.
      *
      * <p>The tag is the whole diagnostic. A rate that moves is only readable as
      * "the measurement layer is wrong" if it says <em>which</em> template's

@@ -5,12 +5,13 @@ import java.util.List;
 /**
  * One format's reader.
  *
- * <p>Returns text and throws {@link com.mustafatetik.atomcv.shared.error.ApiException}
- * for the failures that are the user's to act on — an encrypted PDF, a
- * document that is not the kind it claimed. Everything else is left to the
- * ladder in {@link DocumentExtraction}, which is where "nothing came out" is
- * decided: an extractor cannot tell an empty CV from a scanned one, and the
- * length threshold that can is Bolum 31.2's last rung.
+ * <p>Returns text and throws {@link
+ * com.mustafatetik.atomcv.shared.error.ApiException} for the failures that are
+ * the user's to act on — an encrypted PDF, a document that is not the kind it
+ * claimed. Everything else is left to the ladder in {@link
+ * DocumentExtraction}, which is where "nothing came out" is decided: an
+ * extractor cannot tell an empty CV from a scanned one, and the length
+ * threshold that can is the last rung.
  */
 interface TextExtractor {
 

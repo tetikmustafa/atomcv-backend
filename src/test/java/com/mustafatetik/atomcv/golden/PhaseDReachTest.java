@@ -29,13 +29,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Whether Bolum 21.2's thresholds can be reached at all, measured rather than
- * assumed.
+ * Whether the thresholds can be reached at all, measured rather than assumed.
  *
  * <p><strong>They cannot, and this pins the numbers that say so.</strong>
  * {@code RewritePlanner} compares a per-atom relevance score against 0.65 and
  * 0.40, and every test that exercises those tiers hands it a score written by
- * hand — {@code 0.80}, {@code 0.50}, {@code 0.39}. Bolum 51.7's rule is that a
+ * hand — {@code 0.80}, {@code 0.50}, {@code 0.39}. The rule is that a
  * component the suite switches off has unverified wiring, and this is the
  * measurement that switches it back on: real profile, real posting, real
  * scorer, and the answer is that Faz D plans nothing.
@@ -43,24 +42,24 @@ import org.junit.jupiter.api.Test;
  * <p><strong>Why, in arithmetic.</strong> The pair below is the best-matched
  * one in the golden set — the master CV against the Java/Spring posting it was
  * really tailored for. Its strongest bullet names three of the posting's
- * <em>seventeen</em> required skills, so Bolum 19.2's skill term reads 0.176:
- * the denominator is everything the posting asked for, and no single sentence
- * covers seventeen requirements. Keyword coverage is 3 of 22. Under
- * {@link ScoringWeights#WITHOUT_EMBEDDING} the best atom reaches
+ * <em>seventeen</em> required skills, so the skill term reads 0.176: the
+ * denominator is everything the posting asked for, and no single sentence
+ * covers seventeen requirements. Keyword coverage is 3 of 22. Under {@link
+ * ScoringWeights#WITHOUT_EMBEDDING} the best atom reaches
  * <strong>0.126</strong>, against a floor of 0.40.
  *
  * <p><strong>The tag term is measured now, and it is small for a structural
  * reason.</strong> It was 0.0 until the golden profiles carried tags at all,
- * which made a quarter of Bolum 19.1's raw score unreachable in every
- * measurement taken from this fixture set. With tags it is a Jaccard against
- * the posting's own vocabulary — the domain phrase, the keywords and the
- * title's words, twenty-six strings here — so an atom tagged
- * {@code [backend, java, microservices, spring boot]} that hits two of them
- * scores 2/28 = <strong>0.071</strong>. <em>Jaccard divides by the union</em>,
- * and the union is dominated by the posting: a perfectly on-topic atom cannot
- * reach 0.2 on this term unless it carries most of the posting's vocabulary as
- * tags, which no honest tag list does. The term moved the best score from
- * 0.096 to 0.126 and changed no conclusion.
+ * which made a quarter of the raw score unreachable in every measurement taken
+ * from this fixture set. With tags it is a Jaccard against the posting's own
+ * vocabulary — the domain phrase, the keywords and the title's words,
+ * twenty-six strings here — so an atom tagged {@code [backend, java,
+ * microservices, spring boot]} that hits two of them scores 2/28 =
+ * <strong>0.071</strong>. <em>Jaccard divides by the union</em>, and the union
+ * is dominated by the posting: a perfectly on-topic atom cannot reach 0.2 on
+ * this term unless it carries most of the posting's vocabulary as tags, which
+ * no honest tag list does. The term moved the best score from 0.096 to 0.126
+ * and changed no conclusion.
  *
  * <p>With {@link ScoringWeights#DEFAULT} and no vectors it totals 0.276 — and
  * 0.200 of that is the same constant every atom gets, because a missing vector
@@ -68,10 +67,10 @@ import org.junit.jupiter.api.Test;
  * distribution sits between 0.20 and 0.28.
  *
  * <p><strong>What this test is for.</strong> Not to bless the behaviour: to
- * make the next change to either half visible. Move a threshold, change
- * Bolum 19.2's normalisation, or start sending real vectors, and this fails
- * with the new numbers in the message — which is the point at which somebody
- * has to look at whether Faz D now fires on the right sentences.
+ * make the next change to either half visible. Move a threshold, change the
+ * normalisation, or start sending real vectors, and this fails with the new
+ * numbers in the message — which is the point at which somebody has to look at
+ * whether Faz D now fires on the right sentences.
  */
 class PhaseDReachTest {
 
@@ -133,10 +132,10 @@ class PhaseDReachTest {
 
     /**
      * <strong>The tag term is switched on, and this is what switches it
-     * on.</strong> Bolum 51.7's rule again: a component the whole suite
-     * disables has unverified wiring, and a quarter of Bolum 19.1's raw score
-     * was exactly that until the golden profiles carried tags — every number
-     * this class pinned was taken against a term that could only be zero.
+     * on.</strong> The rule again: a component the whole suite disables has
+     * unverified wiring, and a quarter of the raw score was exactly that until
+     * the golden profiles carried tags — every number this class pinned was
+     * taken against a term that could only be zero.
      *
      * <p>So the assertion is not about a value. It is that <em>some</em> atom
      * in the best-matched pair scores above zero on the term: a fixture set
@@ -164,9 +163,9 @@ class PhaseDReachTest {
      * <p>Jaccard divides by the <em>union</em>, and the union is the posting's
      * whole vocabulary: twenty-six strings for this one. An atom carrying four
      * tags, every one of them a hit, would score 4/26. Nothing a person would
-     * actually write reaches that — which is a property of Bolum 19.1's choice
-     * of measure, not of this fixture, and it is worth having written down
-     * beside the numbers it explains.
+     * actually write reaches that — which is a property of the choice of
+     * measure, not of this fixture, and it is worth having written down beside
+     * the numbers it explains.
      */
     @Test
     void thetagTermIsBoundedByThePostingsOwnVocabulary() {
@@ -183,8 +182,8 @@ class PhaseDReachTest {
 
     /**
      * The cause, stated as a number rather than as prose: the denominator of
-     * Bolum 19.2's skill term is the posting's requirement list, and this
-     * posting has seventeen of them.
+     * the skill term is the posting's requirement list, and this posting has
+     * seventeen of them.
      */
     @Test
     void thepostingAsksForMoreThanOneSentenceCanCarry() {

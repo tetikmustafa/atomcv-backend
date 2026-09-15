@@ -30,10 +30,10 @@ class TexTextExtractor implements TextExtractor {
      * A `.tex` upload is a document an attacker writes in full, and these
      * patterns run over the whole of it. `\s*(\[…\])?\s*` backtracks
      * polynomially on a run of whitespace that never reaches the bracket, so a
-     * few hundred kilobytes of tabs — well inside Bolum 42.1's ten megabytes —
-     * pins a request thread for as long as it likes. CodeQL found it the
-     * moment Adim 3.4's endpoint made this reachable from outside, which is
-     * exactly when it became true.
+     * few hundred kilobytes of tabs — well inside the ten megabytes — pins a
+     * request thread for as long as it likes. CodeQL found it the moment the
+     * endpoint made this reachable from outside, which is exactly when it
+     * became true.
      *
      * Possessive is safe here and only here: in each case the quantified class
      * is disjoint from the token after it (whitespace against `[` or `{`,

@@ -38,9 +38,9 @@ class ScorableAtomFactoryTest {
     }
 
     /**
-     * Bolum 19.5: an inactive atom is not scored. Selection rejects it as
-     * INACTIVE before the number would matter, and scoring it would spend a
-     * cosine per atom the user switched off.
+     * An inactive atom is not scored. Selection rejects it as INACTIVE before
+     * the number would matter, and scoring it would spend a cosine per atom
+     * the user switched off.
      */
     @Test
     void aninactiveAtomIsNotScored() {
@@ -111,8 +111,8 @@ class ScorableAtomFactoryTest {
     }
 
     /**
-     * Bolum 18.2: keywords are always English, and so is the vector. The
-     * English wording is read when there is one, whatever the primary is.
+     * Keywords are always English, and so is the vector. The English wording
+     * is read when there is one, whatever the primary is.
      */
     @Test
     void theenglishWordingIsPreferredOverThePrimary() {

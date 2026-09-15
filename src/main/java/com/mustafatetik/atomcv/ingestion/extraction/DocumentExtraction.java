@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Bolum 31.2's ladder, cheapest rung first, and the text at the top of it.
+ * The ladder, cheapest rung first, and the text at the top of it.
  *
  * <p>The order is the whole design. Deciding the format from a filename costs
  * nothing; comparing four bytes costs nothing; opening a ten-megabyte PDF

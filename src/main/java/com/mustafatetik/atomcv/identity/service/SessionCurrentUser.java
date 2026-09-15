@@ -141,11 +141,11 @@ public class SessionCurrentUser implements CurrentUser {
 
     /**
      * <strong>A session can outlive the account it points at, and one that has
-     * is not a session.</strong> Bolum 57.4's deletion revokes every session
-     * of the account first and for this reason, but "first" only orders the
-     * two steps — it does not make the second one impossible to observe. A
-     * request already in flight when the row went, or a revocation Redis could
-     * not carry out, leaves a cookie behind that resolves to a user who is not
+     * is not a session.</strong> The deletion revokes every session of the
+     * account first and for this reason, but "first" only orders the two steps
+     * — it does not make the second one impossible to observe. A request
+     * already in flight when the row went, or a revocation Redis could not
+     * carry out, leaves a cookie behind that resolves to a user who is not
      * there.
      *
      * <p>What that cookie used to get was a 500, and from one endpoint rather
@@ -165,10 +165,10 @@ public class SessionCurrentUser implements CurrentUser {
         if (session.isAnonymous() || accounts.byId(session.userId()).isPresent()) {
             return true;
         }
-        // Bolum 40.1: a stored session pointing at a deleted account is the
-        // state the section says must not exist, so seeing one is also the
-        // moment to end it. The id is safe to log — it references a row that
-        // is gone — and it is not user content.
+        // A stored session pointing at a deleted account is the state the
+        // section says must not exist, so seeing one is also the moment to end
+        // it. The id is safe to log — it references a row that is gone — and
+        // it is not user content.
         log.info("Session outlived the account it points at ({}); revoking it and answering "
                 + "as unauthenticated", session.userId());
         sessions.revoke(session.id());

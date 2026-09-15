@@ -256,7 +256,7 @@ class RenderPhaseTest {
 
         assertThat(request.header().name()).isEqualTo("Ada Lovelace");
         assertThat(request.header().headline()).isEqualTo("Backend engineer");
-        // Labelled and linked, and in Bolum 22's fixed order.
+        // Labelled and linked, and in the fixed order.
         assertThat(request.header().contactLines())
                 .extracting(RenderRequest.ContactLine::label,
                         RenderRequest.ContactLine::value,
@@ -285,8 +285,8 @@ class RenderPhaseTest {
 
     @Test
     void theRenderRequestCarriesNoIdentifiers() {
-        // Bolum 22.2: the renderer cannot re-decide what selection decided,
-        // because it is never told which atom a line came from.
+        // The renderer cannot re-decide what selection decided, because it is
+        // never told which atom a line came from.
         var fixture = twoBulletsInOneJob();
 
         var request = build(fixture, selection(fixture.first));

@@ -18,7 +18,7 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 23.2's reader, against PDFs built here rather than compiled.
+ * The reader, against PDFs built here rather than compiled.
  *
  * <p>A real XeLaTeX round trip is the case that matters and it lives in the
  * latex lane, which takes minutes. What is under test here is the comparison:

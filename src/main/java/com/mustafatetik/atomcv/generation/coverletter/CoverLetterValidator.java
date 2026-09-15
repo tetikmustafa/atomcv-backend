@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Bolum 34.4 — six checks, and the letter is thrown away if any of them fires.
+ * Six checks, and the letter is thrown away if any of them fires.
  *
  * <p>Stricter than Faz D's, and it has to be. A rewritten bullet that fails is
  * replaced by the sentence the person wrote; a letter that fails has no
@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public final class CoverLetterValidator {
 
     /**
-     * Bolum 34.4's ceiling, verbatim — and a floor it no longer names.
+     * The ceiling, verbatim — and a floor that is no longer the written one.
      *
      * <p><strong>Düzeltme (F-026).</strong> The section said 250, and 250 was
      * never measured. Five drafts recorded against the real end on 2026-08-30
@@ -173,7 +173,7 @@ public final class CoverLetterValidator {
             "(\\d+)\\s*\\+?\\s*(?:years?|yıl|yil|sene)", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Bolum 34.4's banned list, and its Turkish equivalents.
+     * The banned list, and its Turkish equivalents.
      *
      * <p>These are not banned for being clumsy. Each one is a sentence that
      * would be true of every applicant, which makes it a line the reader has
@@ -210,7 +210,7 @@ public final class CoverLetterValidator {
         String letter = draft.plainText();
         String folded = letter.toLowerCase(Locale.ROOT);
 
-        // 1. Bolum 34.4: every technology is one the page carries.
+        // 1. Every technology is one the page carries.
         if (namesSomethingThePageDoesNot(input, folded)) {
             issues.add(CoverLetterIssue.UNSUPPORTED_CLAIM);
         }
@@ -233,7 +233,7 @@ public final class CoverLetterValidator {
             issues.add(CoverLetterIssue.WRONG_COMPANY);
         }
 
-        // 5. Bolum 34.4's band.
+        // 5. The length band.
         int words = wordCount(letter);
         if (words < MIN_WORDS || words > MAX_WORDS) {
             issues.add(CoverLetterIssue.LENGTH_OUT_OF_RANGE);
@@ -282,15 +282,15 @@ public final class CoverLetterValidator {
      * about the employer. The years claims are checked separately and removed
      * here, so a supported "eight years" is not also reported as an invention.
      *
-     * <p><strong>Düzeltme against Bolum 34.4.1 (F-026).</strong> That decision
-     * says the check "reads digit runs", and reading them was measured wrong.
-     * The page carries {@code "saniyede 40 bin istek"} and the model wrote
-     * {@code "40,000 requests per second"} — the same number, said the way a
-     * letter says it. Split on {@code \d+} that is {@code 40} against
-     * {@code 40} and {@code 000}, so the separator itself was reported as an
-     * invented number, and the letter was thrown away for quoting the page
-     * correctly. Two of the four drafts the frontend measured failed on
-     * exactly this and on nothing else about numbers.
+     * <p><strong>A correction (F-026).</strong> The earlier decision said the
+     * check "reads digit runs", and reading them was measured wrong. The page
+     * carries {@code "saniyede 40 bin istek"} and the model wrote {@code
+     * "40,000 requests per second"} — the same number, said the way a letter
+     * says it. Split on {@code \d+} that is {@code 40} against {@code 40} and
+     * {@code 000}, so the separator itself was reported as an invented number,
+     * and the letter was thrown away for quoting the page correctly. Two of
+     * the four drafts the frontend measured failed on exactly this and on
+     * nothing else about numbers.
      *
      * <p>So the comparison is between quantities rather than character runs:
      * a grouped number is read as one, and a scale word after it is read as

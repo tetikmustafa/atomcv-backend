@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Bolum 48.5's replay, and the one property that makes it worth having.
+ * The replay, and the one property that makes it worth having.
  *
  * <p><strong>A replay that produces something slightly different answers
  * nothing.</strong> The whole use of the task is "here is what shipped, here is

@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Bolum 21.7's failure behaviour, which is Bolum 21.6's: two attempts, then
- * the paragraph the person already had.
+ * The failure behaviour, which is Bolum 21.6's: two attempts, then the
+ * paragraph the person already had.
  *
  * <p>The summary is the line an employer reads first and quotes back in an
  * interview, so the phase's rule matters more here than anywhere else in Faz

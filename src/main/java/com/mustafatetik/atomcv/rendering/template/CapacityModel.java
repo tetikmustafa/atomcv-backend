@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * What a page of this template holds, in points (Bolum 26.3, 26.4).
+ * What a page of this template holds, in points.
  *
  * <p>Points, never lines. Rounding each atom up to a whole line accumulates
  * error — sixteen atoms can drift by sixteen lines — so everything is summed

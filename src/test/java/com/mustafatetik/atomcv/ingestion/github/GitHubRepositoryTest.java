@@ -8,7 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.8's filter: which repositories are worth putting on a CV.
+ * The filter: which repositories are worth putting on a CV.
  *
  * <p>The question it answers is not "is this good code". It is "has anybody
  * done anything with this" — a star, a description, a subject label — because
@@ -38,7 +38,7 @@ class GitHubRepositoryTest {
                 .isFalse();
     }
 
-    /** Bolum 31.8's size floor: below it a repository is a file. */
+    /** The size floor: below it a repository is a file. */
     @Test
     void asingleFileIsNot() {
         assertThat(repository("gist").described("a snippet").sized(4).isSignificant()).isFalse();
@@ -72,8 +72,8 @@ class GitHubRepositoryTest {
     }
 
     /**
-     * Nothing has been done with it: no star, no description, no topic. That is
-     * the one Bolum 31.8's commit count and README were there to catch, and the
+     * Nothing has been done with it: no star, no description, no topic. That
+     * is the one the commit count and README were there to catch, and the
      * listing answers the same question for free.
      */
     @Test

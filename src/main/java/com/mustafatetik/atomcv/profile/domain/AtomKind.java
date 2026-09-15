@@ -6,7 +6,7 @@ import com.mustafatetik.atomcv.shared.util.LowercaseEnumConverter;
 import jakarta.persistence.Converter;
 import java.util.Locale;
 
-/** What a single atom represents. Stored in {@code atoms.kind} (Bolum 13). */
+/** What a single atom represents. Stored in {@code atoms.kind}. */
 public enum AtomKind {
     BULLET,
     SKILL,

@@ -25,8 +25,8 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 public final class RenderCostEstimator {
 
     /**
-     * Bolum 26.5: an unmeasured atom carries a safety margin. Kept here rather
-     * than at the call site so that "the estimate" always means the padded one.
+     * An unmeasured atom carries a safety margin. Kept here rather than at the
+     * call site so that "the estimate" always means the padded one.
      */
     static final double SAFETY_MARGIN = 1.08;
 
@@ -38,7 +38,7 @@ public final class RenderCostEstimator {
      */
     static final double AVERAGE_ADVANCE_EM = 0.46;
 
-    /** Bolum 26.2: TeX fills about 92% of a line before breaking it. */
+    /** TeX fills about 92% of a line before breaking it. */
     static final double LINE_FILL = 0.92;
 
     private RenderCostEstimator() {

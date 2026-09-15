@@ -22,7 +22,7 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.2's ladder and Bolum 31.3's readers, against files this test makes.
+ * The ladder and the readers, against files this test makes.
  *
  * <p><strong>Real documents, built here rather than checked in.</strong> A
  * fixture directory of binaries is a set of files nobody can read in a diff
@@ -322,12 +322,12 @@ class DocumentExtractionTest {
     /**
      * <strong>The document an attacker writes in full.</strong>
      *
-     * <p>A {@code .tex} upload is the one input to this system whose every
-     * byte is chosen by whoever sends it, and these patterns run over the
-     * whole of it. Written with greedy quantifiers, {@code \s*(\[…\])?\s*}
-     * backtracks polynomially on a run of whitespace that never reaches the
-     * bracket — a few hundred kilobytes of tabs, well inside Bolum 42.1's ten
-     * megabytes, holds a request thread for as long as the sender likes.
+     * <p>A {@code.tex} upload is the one input to this system whose every byte
+     * is chosen by whoever sends it, and these patterns run over the whole of
+     * it. Written with greedy quantifiers, {@code \s*(\[…\])?\s*} backtracks
+     * polynomially on a run of whitespace that never reaches the bracket — a
+     * few hundred kilobytes of tabs, well inside the ten megabytes, holds a
+     * request thread for as long as the sender likes.
      *
      * <p>The timeout is the assertion. A second is thousands of times what
      * this should take and small enough that the quadratic version cannot

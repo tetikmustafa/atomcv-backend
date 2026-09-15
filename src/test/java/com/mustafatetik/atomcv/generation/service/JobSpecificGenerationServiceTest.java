@@ -213,12 +213,12 @@ class JobSpecificGenerationServiceTest {
     }
 
     /**
-     * Bolum 27.5's {@code llm_invocations.job_id}. The column existed and
-     * nothing wrote it, so tying a billed call to the work that caused it meant
-     * matching timestamps to the millisecond — which is how a four-page CV was
-     * found to have been paid for twice with one job row to show for it. Faz A
-     * is the first call a generation makes and the cheapest place to prove the
-     * id travels at all.
+     * The {@code llm_invocations.job_id}. The column existed and nothing wrote
+     * it, so tying a billed call to the work that caused it meant matching
+     * timestamps to the millisecond — which is how a four-page CV was found to
+     * have been paid for twice with one job row to show for it. Faz A is the
+     * first call a generation makes and the cheapest place to prove the id
+     * travels at all.
      */
     @Test
     void thejobIsCarriedIntoTheCallsItPaysFor() {
@@ -250,9 +250,9 @@ class JobSpecificGenerationServiceTest {
     /**
      * <strong>Faz D is wired, and it is wired to this posting.</strong> The
      * pipeline is handed a rewriter rather than a phase, so the thing worth
-     * asserting is what that rewriter does when the pipeline calls it: Bolum
-     * 21.6's guard vocabulary is the posting's skills, and getting the wrong
-     * posting in here would be a validator checking against somebody else's.
+     * asserting is what that rewriter does when the pipeline calls it: the
+     * guard vocabulary is the posting's skills, and getting the wrong posting
+     * in here would be a validator checking against somebody else's.
      */
     @Test
     void thepipelineIsHandedAFazDThatKnowsThisPosting() {
@@ -373,7 +373,7 @@ class JobSpecificGenerationServiceTest {
     }
 
     /** Everything up to the pipeline's door, so the letter is the only variable. */
-    // -- Bolum 21.8's second step, and what F-013 asked for ------------------
+    // -- the second step, and what F-013 asked for ------------------
 
     /**
      * <strong>The behaviour F-013 was opened about.</strong> A Turkish profile
@@ -412,9 +412,9 @@ class JobSpecificGenerationServiceTest {
     }
 
     /**
-     * Bolum 21.8's first step, which is the one that was already written and
-     * is the reason the profile editor's translations are worth having: a
-     * wording that exists costs nothing, and nothing here is a call.
+     * The first step, which is the one that was already written and is the
+     * reason the profile editor's translations are worth having: a wording
+     * that exists costs nothing, and nothing here is a call.
      */
     @Test
     void aprofileThatAlreadyHasTheWordingPaysForNoTranslation() {
@@ -429,10 +429,10 @@ class JobSpecificGenerationServiceTest {
 
     /**
      * The costs are measured against the language the document is written in,
-     * which is Bolum 32.3's rule and the reason the step sits where it does:
-     * a wording that has just been translated has no measured height, and
-     * selection packing a page with the heights of the sentences it replaced
-     * is the mistake that section names.
+     * which is the rule and the reason the step sits where it does: a wording
+     * that has just been translated has no measured height, and selection
+     * packing a page with the heights of the sentences it replaced is the
+     * mistake that section names.
      */
     @Test
     void thecostsAreMeasuredAgainAfterTheLanguageSettles() {

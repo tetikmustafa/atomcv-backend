@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What this one generation was told to do differently (Bolum 18.7, 24.4).
+ * What this one generation was told to do differently.
  *
  * <p>Its own object rather than a field of {@code JobAnalysis}, and for a
  * reason that costs money to get wrong: an analysis is cached by the hash of
@@ -42,9 +42,8 @@ public record GenerationDirectives(
 
     /**
      * Long enough for a sentence or three, short enough that it is not a
-     * second CV. Bolum 43.1's fence is what makes the content safe; this is
-     * what keeps it from being an unbounded prompt (EK D.6.2's reasoning about
-     * unbounded fields).
+     * second CV. The fence is what makes the content safe; this is what keeps
+     * it from being an unbounded prompt.
      */
     private static final int MAX_NOTE_LENGTH = 500;
 
@@ -86,7 +85,7 @@ public record GenerationDirectives(
         this(includeAtoms, excludeAtoms, List.of(), null);
     }
 
-    /** What a person asked for about this one generation (Bolum 18.7). */
+    /** What a person asked for about this one generation. */
     public static GenerationDirectives steering(List<String> terms, String note) {
         return new GenerationDirectives(List.of(), List.of(), terms, note);
     }

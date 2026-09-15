@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 32.2's background translation.
+ * The background translation.
  *
  * <p><strong>Three ways to have nothing to do, and none of them is a
  * failure.</strong> The wording may have been deleted since the job was
@@ -83,9 +83,9 @@ public class TranslationJobHandler implements JobHandler {
             return nothingToDo("the wording was deleted");
         }
         if (target.get().isUserEdited()) {
-            // Bolum 32.2, and the only one of the three that is a decision
-            // rather than an accident: an edit landed after this was queued,
-            // and the person's own words win.
+            // And the only one of the three that is a decision rather than an
+            // accident: an edit landed after this was queued, and the person's
+            // own words win.
             return nothingToDo("the person wrote it themselves");
         }
 

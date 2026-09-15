@@ -11,7 +11,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
  * pointed at Mailpit.
  *
  * <p>Mailpit rather than a sender that logs "an email would have gone here":
- * Bolum 40.2's link is the first thing anyone who does not use a provider ever
+ * the magic link is the first thing anyone who does not use a provider ever
  * sees of this product, and a subject line, a rendered button and a link that
  * actually resolves are things you have to look at to get right. The Stage 0
  * checklist already keeps that interface open at {@code :8025}.

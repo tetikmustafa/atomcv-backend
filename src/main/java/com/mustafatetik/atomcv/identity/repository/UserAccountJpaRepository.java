@@ -31,6 +31,6 @@ interface UserAccountJpaRepository extends JpaRepository<UserAccount, UUID> {
             nativeQuery = true)
     Optional<UserAccount> findByEmailIgnoringCase(@Param("email") String email);
 
-    /** Bolum 57.7's way in from an inbox; the column is unique. */
+    /** The way in from an inbox; the column is unique. */
     Optional<UserAccount> findByUnsubscribeToken(java.util.UUID token);
 }

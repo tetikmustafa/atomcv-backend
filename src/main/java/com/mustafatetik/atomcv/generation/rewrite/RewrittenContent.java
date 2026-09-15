@@ -14,8 +14,8 @@ import java.util.UUID;
  * printed the way the person wrote it, and there is no entry for it — an atom
  * that was never a candidate, one the model refused twice, and one the
  * provider could not be reached for are all the same thing to Faz E: absent,
- * and therefore original. That is what makes Bolum 21.6's "then use the
- * original" a rule the renderer cannot get wrong.
+ * and therefore original. That is what makes "then use the original" a rule
+ * the renderer cannot get wrong.
  *
  * <p>It is also what the compile loop carries between attempts. A document
  * that came out too long sends a smaller budget back to selection, and the

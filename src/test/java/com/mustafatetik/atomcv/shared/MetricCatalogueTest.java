@@ -97,8 +97,8 @@ class MetricCatalogueTest {
             Map.entry("email.events",
                     "what actually happened to it, which only the webhook knows"),
 
-            // Bolum 44.3's brake. Not one of 48.3's rows, and watched for its
-            // own reasons.
+            // The brake. Not one of 48.3's rows, and watched for its own
+            // reasons.
             Map.entry("anomaly.budget_exceeded", "Bolum 44.3: the daily budget went over"),
             Map.entry("anomaly.heavy_user", "Bolum 44.3: one account ran away with it"),
             Map.entry("anomaly.signup_burst", "Bolum 44.3: sign-ups arriving too fast")));

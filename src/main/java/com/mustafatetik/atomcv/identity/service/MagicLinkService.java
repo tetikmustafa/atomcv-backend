@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Bolum 40.2's selector/verifier link, issued and redeemed.
+ * The selector/verifier link, issued and redeemed.
  *
  * <p><strong>Requesting one always looks the same.</strong> Bolum 40.4 is the
  * whole reason: an address that already has an account and one that does not
@@ -82,7 +82,7 @@ public class MagicLinkService {
      * without also being able to report it, and reporting it is exactly what
      * Bolum 40.4 forbids.
      *
-     * <p><strong>Bolum 40.5's address layer is checked here and not at the
+     * <p><strong>the address layer is checked here and not at the
      * controller</strong>, one line after the address is normalised. Keyed on
      * anything else, {@code A@x.com} and {@code a@x.com} would be two buckets
      * against one account and the limit would count double — and the only way
@@ -126,10 +126,9 @@ public class MagicLinkService {
     /**
      * Redeems a link, or refuses without saying why.
      *
-     * <p>Every refusal is the same refusal (Bolum 40.2's {@code failGeneric}).
-     * Expired, already used, wrong verifier and never existed are one answer,
-     * because telling them apart tells an attacker which half of a guess was
-     * right.
+     * <p>Every refusal is the same refusal (the {@code failGeneric}). Expired,
+     * already used, wrong verifier and never existed are one answer, because
+     * telling them apart tells an attacker which half of a guess was right.
      */
     @Transactional
     public Optional<Session> verify(String selector, String verifier) {
@@ -180,8 +179,8 @@ public class MagicLinkService {
 
     /**
      * {@code {app}/verify?s=..&v=..} — a GET the person lands on, which is a
-     * page and not a redemption. Bolum 40.3: corporate scanners click links,
-     * and a one-shot token spent by a scanner is a login the user never got.
+     * page and not a redemption. Corporate scanners click links, and a
+     * one-shot token spent by a scanner is a login the user never got.
      */
     private String linkFor(String selector, String verifier) {
         return properties.verifyBaseUrl() + properties.verifyPath()

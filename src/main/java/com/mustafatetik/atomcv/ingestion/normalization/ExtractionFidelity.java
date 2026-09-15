@@ -31,8 +31,8 @@ import java.util.Set;
  * nobody has heard of is caught on the same terms as a famous one.
  *
  * <p><strong>A warning, not a refusal.</strong> The atom is otherwise the
- * person's own content, Bolum 31.6's review screen exists to correct precisely
- * this, and throwing away an import over one invented word is a failure this
+ * person's own content, the review screen exists to correct precisely this,
+ * and throwing away an import over one invented word is a failure this
  * codebase has already had.
  */
 final class ExtractionFidelity {

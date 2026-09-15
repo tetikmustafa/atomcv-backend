@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import org.junit.jupiter.api.Test;
 
 /**
- * The counting a prompt eval rests on (Bolum 53.4, 53.5).
+ * The counting a prompt eval rests on.
  *
  * <p>The machinery rather than the model: what is checked is that a rate means
  * what it says, that a threshold is the specification's, and that the one

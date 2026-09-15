@@ -25,7 +25,7 @@ class PromptRegistryTest {
         assertThat(prompt.schema().node().get("required")).isNotNull();
     }
 
-    /** Bolum 53.2: rolling back a prompt is a config change, not a release. */
+    /** Rolling back a prompt is a config change, not a release. */
     @Test
     void theActiveVersionComesFromConfiguration() {
         assertThat(registry(Map.of(PROMPT, "v2"), Map.of()).load(PROMPT).text())

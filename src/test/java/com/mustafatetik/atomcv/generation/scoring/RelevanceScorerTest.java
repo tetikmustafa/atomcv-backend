@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 19: the ranking, the multiplier, and the two rules that are absolute. */
+/** The ranking, the multiplier, and the two rules that are absolute. */
 class RelevanceScorerTest {
 
     private static final Offset<Double> EPSILON = Offset.offset(1e-9);
@@ -196,9 +196,9 @@ class RelevanceScorerTest {
      * <strong>Sorted, and the test is here because the failure is invisible
      * locally.</strong> The sets this is read out of are {@code Set.copyOf}
      * results, which iterate in an order salted per JVM run (CLAUDE.md). An
-     * unsorted list would land in a JSONB column and in Bolum 51.2's
-     * determinism comparison with a different order on every run — passing on
-     * this machine, failing on the runner, and reading as a flake.
+     * unsorted list would land in a JSONB column and in the determinism
+     * comparison with a different order on every run — passing on this
+     * machine, failing on the runner, and reading as a flake.
      */
     @Test
     void thematchedTermsComeBackInOneOrderAcrossRuns() {

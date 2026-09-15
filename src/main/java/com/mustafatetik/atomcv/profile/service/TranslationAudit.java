@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
- * Bolum 21.8's fourth step: what a translation was not allowed to change.
+ * The fourth step: what a translation was not allowed to change.
  *
  * <p>A CV is a set of claims about a person, and a language change must not
  * change any of them. A translation that turns 300,000 into "hundreds of

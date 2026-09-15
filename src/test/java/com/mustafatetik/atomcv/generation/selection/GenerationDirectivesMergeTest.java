@@ -86,7 +86,7 @@ class GenerationDirectivesMergeTest {
     }
 
     /**
-     * Bolum 18.7's third field, canonicalised once and here (absolute rule 7).
+     * The third field, canonicalised once and here (absolute rule 7).
      *
      * <p>Faz B compares against a canonical set, so a term that keeps its
      * capitals matches nothing -- and on a Turkish default locale a bare

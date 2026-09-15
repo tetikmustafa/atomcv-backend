@@ -22,17 +22,17 @@ import java.util.UUID;
  * it will and will not do to somebody's sentences, and each one is a line that
  * can be asserted against on its own.
  *
- * <p>Bolum 21.1's step is not here: the wording was chosen before the budget
- * was spent on it ({@code AlternativeWording}), and this reads the variant id
- * selection recorded. Choosing again would be a second opinion about which
- * sentence is on the page, and only one of the two would have been costed.
+ * <p>The step is not here: the wording was chosen before the budget was spent
+ * on it ({@code AlternativeWording}), and this reads the variant id selection
+ * recorded. Choosing again would be a second opinion about which sentence is
+ * on the page, and only one of the two would have been costed.
  */
 public final class RewritePlanner {
 
-    /** Bolum 21.2, verbatim. At or above this, drawing the connection out is honest. */
+    /** Verbatim. At or above this, drawing the connection out is honest. */
     static final double FULL_ADAPTATION_SCORE = 0.65;
 
-    /** Bolum 21.2, verbatim. Below this there is no connection to draw. */
+    /** Verbatim. Below this there is no connection to draw. */
     static final double FLOOR_SCORE = 0.40;
 
     /**
@@ -47,7 +47,7 @@ public final class RewritePlanner {
      */
     static final int MAX_CANDIDATES = 8;
 
-    /** Bolum 21.3: the rewrite may be five per cent longer than the original. */
+    /** The rewrite may be five per cent longer than the original. */
     static final double LENGTH_TOLERANCE = 1.05;
 
     /**
@@ -108,7 +108,7 @@ public final class RewritePlanner {
     }
 
     /**
-     * Bolum 21.2's three tiers, plus the two exclusions that come before them.
+     * The three tiers, plus the two exclusions that come before them.
      *
      * <p>{@code verbatim} is never sent — the person marked that sentence as
      * one that must be printed exactly, and a rewrite would be the product
@@ -137,31 +137,30 @@ public final class RewritePlanner {
     }
 
     /**
-     * Whether this atom is the kind of thing Bolum 21.4's prompt is written
-     * about: one sentence, saying what somebody did.
+     * Whether this atom is the kind of thing the prompt is written about: one
+     * sentence, saying what somebody did.
      *
-     * <p><strong>Ekleme — three kinds are not, and each was reachable.</strong>
-     * The loop above offers every selected atom, and Bolum 21.2's tiers are
-     * about scores alone, so a Tech Stack row scoring well against a Java
-     * posting was a rewrite candidate like any bullet.
+     * <p><strong>Ekleme — three kinds are not, and each was
+     * reachable.</strong> The loop above offers every selected atom, and the
+     * tiers are about scores alone, so a Tech Stack row scoring well against a
+     * Java posting was a rewrite candidate like any bullet.
      *
      * <ul>
-     *   <li>{@code SKILL} — a Tech Stack row is a category and the items in it,
-     *       and Bolum 33's rule for it is <em>filtering</em>: items may be
-     *       dropped from a category and a category dropped when it empties,
-     *       and nothing may be added. A prompt that asks a model to bring a
-     *       line closer to a posting is an invitation to do the opposite —
-     *       rename the category, or write in the item the posting asked for.
-     *       Bolum 21.6 would catch a technology the posting named; it cannot
-     *       catch a category heading nobody wrote, because a heading is not a
-     *       claim about a technology.</li>
-     *   <li>{@code LANGUAGE} — "Turkish: Native" is a fact with no phrasing to
-     *       improve, and the posting's vocabulary has nothing to offer it.</li>
-     *   <li>{@code ABOUT_PARAGRAPH} — Bolum 21.7 has its own prompt, its own
-     *       ceiling and its own validator for the summary, and
-     *       {@code RewritePhase} plans it in the same fan-out. Leaving it here
-     *       too meant one paragraph asked for twice, two invoices, and the
-     *       second answer overwriting the first by arriving later.</li>
+     * <li>{@code SKILL} — a Tech Stack row is a category and the items in it,
+     * and the rule for it is <em>filtering</em>: items may be dropped from a
+     * category and a category dropped when it empties, and nothing may be
+     * added. A prompt that asks a model to bring a line closer to a posting is
+     * an invitation to do the opposite — rename the category, or write in the
+     * item the posting asked for. Bolum 21.6 would catch a technology the
+     * posting named; it cannot catch a category heading nobody wrote, because
+     * a heading is not a claim about a technology.</li> <li>{@code LANGUAGE} —
+     * "Turkish: Native" is a fact with no phrasing to improve, and the
+     * posting's vocabulary has nothing to offer it.</li> <li>{@code
+     * ABOUT_PARAGRAPH} — Bolum 21.7 has its own prompt, its own ceiling and
+     * its own validator for the summary, and {@code RewritePhase} plans it in
+     * the same fan-out. Leaving it here too meant one paragraph asked for
+     * twice, two invoices, and the second answer overwriting the first by
+     * arriving later.</li>
      * </ul>
      */
     private static boolean isABullet(Atom atom) {

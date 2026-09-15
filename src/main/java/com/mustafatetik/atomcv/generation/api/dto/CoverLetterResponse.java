@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * The letter that was written.
  *
- * <p>Plain text and no document. Bolum 34.7 renders nothing: a covering letter
- * is pasted into an application form or the body of an email, so a PDF of it
+ * <p>Plain text and no document. Nothing is rendered: a covering letter is
+ * pasted into an application form or the body of an email, so a PDF of it
  * would be a file nobody opens. The paragraphs are separated by blank lines
  * and the client decides what to do with them.
  *

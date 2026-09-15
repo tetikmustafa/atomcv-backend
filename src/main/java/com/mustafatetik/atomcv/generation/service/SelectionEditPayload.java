@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What a queued edit carries in {@code jobs.payload} (Bolum 24.4, 24.2).
+ * What a queued edit carries in {@code jobs.payload}.
  *
  * <p>Its own record next to {@link GenerationPayload}, and its own shape in
  * the column, because an edit and a generation share almost none of their
@@ -60,7 +60,7 @@ public record SelectionEditPayload(
         this(parentGenerationId, directives, null, null);
     }
 
-    /** Whether this edit has to be read before it can be applied (Bolum 24.2). */
+    /** Whether this edit has to be read before it can be applied. */
     public boolean isNaturalLanguage() {
         return instruction != null && !instruction.isBlank();
     }

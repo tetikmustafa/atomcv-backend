@@ -34,8 +34,8 @@ class ProfileRefTest {
     void anAdminIsNoExceptionToTheRule() {
         var admin = new UserContext(UUID.randomUUID(), UserRole.ADMIN);
 
-        // Bolum 41.4: the role decides what an endpoint does, never whose rows
-        // it may touch. Support access goes through a granted support_grant.
+        // The role decides what an endpoint does, never whose rows it may
+        // touch. Support access goes through a granted support_grant.
         assertThatThrownBy(() -> ProfileRef.persistent(admin, PROFILE, OWNER))
                 .isInstanceOf(CrossTenantAccessException.class);
     }

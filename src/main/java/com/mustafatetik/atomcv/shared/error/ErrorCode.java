@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /**
  * Every error the API can name, with the HTTP status it carries and the exact
- * parameters it publishes (Bolum 25.2, 35.5, EK D.6).
+ * parameters it publishes.
  *
  * <p>The server sends this code and these parameters — never a sentence. The
  * frontend resolves {@code errors.{CODE}} in its own language, so a code that
@@ -69,9 +69,9 @@ public enum ErrorCode {
     EMBEDDING_UNAVAILABLE(503),
 
     /**
-     * Bolum 44.3's emergency brake is on. No parameters: there is nothing
-     * about the request to change, and the user's profile is untouched — the
-     * brake stops generation and not access.
+     * The emergency brake is on. No parameters: there is nothing about the
+     * request to change, and the user's profile is untouched — the brake stops
+     * generation and not access.
      */
     GENERATION_PAUSED(503),
 
@@ -80,13 +80,13 @@ public enum ErrorCode {
     /**
      * The file is not one of the five Bolum 31.3 can read (Adim 3.4, Ekleme).
      *
-     * <p>EK D.6 codes Bolum 31.10's table, which starts after a file has been
-     * accepted; the two rungs before it had no codes. This is the first —
-     * raised for an extension we do not read, for a declared media type that
-     * contradicts the extension, and for bytes that contradict both. One code
-     * for all three: what the user does about it is the same in every case,
-     * and a renamed file and an unsupported one are not worth telling apart in
-     * a sentence that has to end "upload a PDF, DOCX, TEX, TXT or MD".
+     * <p>EK D.6 codes the table, which starts after a file has been accepted;
+     * the two rungs before it had no codes. This is the first — raised for an
+     * extension we do not read, for a declared media type that contradicts the
+     * extension, and for bytes that contradict both. One code for all three:
+     * what the user does about it is the same in every case, and a renamed
+     * file and an unsupported one are not worth telling apart in a sentence
+     * that has to end "upload a PDF, DOCX, TEX, TXT or MD".
      *
      * <p>{@code accepted} is published rather than hardcoded in the client so
      * the list has one owner. A format added here reaches the file picker's
@@ -95,7 +95,7 @@ public enum ErrorCode {
     UNSUPPORTED_DOCUMENT(415, param("accepted", STRING_ARRAY)),
 
     /**
-     * Over Bolum 42.1's ten megabytes (Adim 3.4, Ekleme).
+     * Over the ten megabytes (Adim 3.4, Ekleme).
      *
      * <p>Publishes the limit and not the size that was sent. The client knows
      * what it uploaded and the server's own reading of it is unreliable at the
@@ -212,10 +212,9 @@ public enum ErrorCode {
      * it, which is the only one of the two that is right when the client's
      * clock is wrong.
      *
-     * <p>It does not answer Bolum 40.4's question either. The address layer can
-     * only refuse a caller who already spent that window themselves, so what
-     * comes back describes what they did, never whether the address has an
-     * account.
+     * <p>It does not answer the question either. The address layer can only
+     * refuse a caller who already spent that window themselves, so what comes
+     * back describes what they did, never whether the address has an account.
      */
     RATE_LIMITED(429, param("resetsAt", TIMESTAMP)),
 

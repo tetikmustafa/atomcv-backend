@@ -7,7 +7,7 @@ import jakarta.persistence.Converter;
 import java.util.Locale;
 
 /**
- * Where an application got to (Bolum 13's `applications.status`).
+ * Where an application got to (the `applications.status`).
  *
  * <p><strong>A closed set, and the column has enforced it since V1.</strong>
  * The same reasoning as every other closed vocabulary here: the client writes

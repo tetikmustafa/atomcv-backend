@@ -6,13 +6,13 @@ import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 27.2's OpenAI row: {@code response_format: json_schema, strict: true}.
+ * The OpenAI row: {@code response_format: json_schema, strict: true}.
  *
- * <p>The MID tier by default (Bolum 5.4's table): the two jobs that ask for
- * one are the About synthesis and profile extraction, and both are judged on
- * how well they write rather than on how cheaply. Which model actually answers
- * is still {@code OPENAI_MODEL} -- the tier says what this link is for, not
- * what it costs.
+ * <p>The MID tier by default (the table): the two jobs that ask for one are
+ * the About synthesis and profile extraction, and both are judged on how well
+ * they write rather than on how cheaply. Which model actually answers is still
+ * {@code OPENAI_MODEL} -- the tier says what this link is for, not what it
+ * costs.
  */
 @Component
 public class OpenAiProvider extends ChatCompletionsProvider {

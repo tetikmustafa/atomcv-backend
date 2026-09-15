@@ -9,7 +9,7 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 40.5's three layers, applied to asking for a sign-in link.
+ * The three layers, applied to asking for a sign-in link.
  *
  * <p><strong>They are not applied together, and the split is the point.</strong>
  * The caller's layers run before the challenge; the address layer runs after

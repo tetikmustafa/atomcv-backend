@@ -99,7 +99,7 @@ public final class RunMarking {
     }
 
     /**
-     * Which of Bolum 12's marks the span carries.
+     * Which of the marks the span carries.
      *
      * <p>Semantic and never presentational: a renderer decides that a
      * technology is bold, and a different template may decide otherwise.

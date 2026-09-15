@@ -32,9 +32,9 @@ public class ProfileResolver {
      *
      * <p>"Is there a row" is not the question, and answering it was a bug in
      * two places: {@link #own} creates the row lazily, so everybody who has
-     * ever signed in and opened the application has one. Adim 3.6's upgrade
-     * used to lose an anonymous CV to it, and Adim 3.4's second import would
-     * refuse against it.
+     * ever signed in and opened the application has one. The upgrade used to
+     * lose an anonymous CV to it, and the second import would refuse against
+     * it.
      *
      * <p>Sections are the test because nothing below one can exist without it:
      * an entry names a section and an atom names an entry. The contact block

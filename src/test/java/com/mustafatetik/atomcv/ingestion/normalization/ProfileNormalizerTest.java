@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.5's seven steps on a whole document.
+ * The seven steps on a whole document.
  *
  * <p>What is being asserted throughout is that the model was <em>not</em>
  * trusted with any of them. A model asked for a canonical skill name, a date

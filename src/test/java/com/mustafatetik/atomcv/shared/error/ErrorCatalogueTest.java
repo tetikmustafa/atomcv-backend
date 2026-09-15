@@ -32,7 +32,7 @@ class ErrorCatalogueTest {
 
     @Test
     void theDocumentedStatusMappingHolds() {
-        // Bolum 35.5, verbatim.
+        // Verbatim.
         assertThat(ErrorCode.INSUFFICIENT_PROFILE.httpStatus()).isEqualTo(422);
         assertThat(ErrorCode.UNPARSEABLE_JOB_DESCRIPTION.httpStatus()).isEqualTo(422);
         assertThat(ErrorCode.CONFLICTING_PREFERENCES.httpStatus()).isEqualTo(409);
@@ -85,7 +85,7 @@ class ErrorCatalogueTest {
 
     @Test
     void theDocumentedConflictExampleIsAccepted() {
-        // Bolum 35.4's example body, built through the catalogue.
+        // The example body, built through the catalogue.
         var error = UserFacingError.with(ErrorCode.CONFLICTING_PREFERENCES)
                 .param("pinnedPages", 2.3)
                 .param("maxPages", 1)
@@ -170,17 +170,17 @@ class ErrorCatalogueTest {
 
     @Test
     void theActionVocabularyIsTheAgreedTwelve() {
-        // EK D.6.1's closed set. It is closed against the frontend, which
-        // writes one ICU message per action: a value added here without a
-        // handoff item renders as a raw key to a user.
+        // The closed set. It is closed against the frontend, which writes one
+        // ICU message per action: a value added here without a handoff item
+        // renders as a raw key to a user.
         assertThat(Arrays.stream(ResolutionAction.values()).map(ResolutionAction::wireValue))
                 .containsExactlyInAnyOrder(
                         "increase_page_limit", "review_pins", "keep_top_pinned", "sign_up",
                         "paste_full_posting", "continue_as_general_cv", "switch_to_manual_form",
                         "complete_profile",
-                        // Adim 2.3: Bolum 18.1 offers three ways past a
-                        // preflight refusal and only two of them had a name
-                        // (handoff B-037).
+                        // Bolum 18.1 offers three ways past a preflight
+                        // refusal and only two of them had a name (handoff
+                        // B-037).
                         "continue_anyway",
                         "retry",
                         // Bolum 08b: a second CV is refused and the answer is

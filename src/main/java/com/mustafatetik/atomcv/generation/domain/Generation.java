@@ -133,7 +133,7 @@ public class Generation implements UserOwned {
     @Column(nullable = false)
     private EngineVersion engineVersion;
 
-    /** Per-phase telemetry, no PII (Bolum 14.6). */
+    /** Per-phase telemetry, no PII. */
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> trace;
 
@@ -320,7 +320,7 @@ public class Generation implements UserOwned {
         return parentGenerationId;
     }
 
-    /** Faz G: this generation replaced an earlier one (Bolum 24). */
+    /** Faz G: this generation replaced an earlier one. */
     public void supersede(UUID parentGenerationId) {
         this.parentGenerationId = Objects.requireNonNull(parentGenerationId, "parent");
     }

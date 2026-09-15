@@ -80,9 +80,9 @@ public class RenderCostService {
             Profile head, Locale language) {
         // Resolved rather than found: a person who has just moved a slider has
         // no measured capacity yet, and this is where their atoms get costed.
-        // Refusing here would have made Bolum 33.3's estimate unreachable --
-        // the generation would fail before selection ever saw it, which is
-        // exactly what the first end-to-end run of a moved slider did.
+        // Refusing here would have made the estimate unreachable -- the
+        // generation would fail before selection ever saw it, which is exactly
+        // what the first end-to-end run of a moved slider did.
         CapacityModel capacity = capacities.resolve(customization)
                 .map(Capacities.Resolved::capacity)
                 .orElseThrow(() -> new IllegalStateException(

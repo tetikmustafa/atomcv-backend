@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 /**
  * What the LaTeX image must and must not contain.
  *
- * <p><strong>The one it must not is a line the specification still shows.</strong>
- * Bolum 29.2's Dockerfile snippet ends with a preamble format dump —
+ * <p><strong>The one it must not is a line the specification still
+ * shows.</strong> The Dockerfile snippet ends with a preamble format dump —
  *
  * <pre>xelatex -ini -jobname="cvfmt" "&amp;xelatex preamble.tex\dump"</pre>
  *
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
  * <p>The promised saving was measured too, and it is not there to be had: a
  * minimal document compiles end to end in 620-925 ms in this image, which is
  * less than the 1-2 seconds the dump was supposed to remove from it. The cold
- * cost is paid by Bolum 29.6's container warm-up instead.
+ * cost is paid by the container warm-up instead.
  */
 class LatexImageTest {
 

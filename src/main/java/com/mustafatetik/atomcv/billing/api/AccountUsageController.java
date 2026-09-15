@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Published so the limit is visible <em>before</em> it is hit. A quota that
  * only ever appears as a 429 is a quota the user meets by being stopped
- * mid-task, which is the kind of surprise Bolum 4's principles exist to
+ * mid-task, which is the kind of surprise the design principles exist to
  * prevent.
  *
  * <p>Both metrics, always, even the untouched one — a client rendering

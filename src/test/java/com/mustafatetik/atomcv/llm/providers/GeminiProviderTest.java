@@ -184,7 +184,7 @@ class GeminiProviderTest {
         assertThat(failure.provider()).isEqualTo("gemini");
     }
 
-    // ── Bolum 27.3's routing ──────────────────────────────────────────────
+    // ── the routing ──────────────────────────────────────────────
 
     @Test
     void aRateLimitIsAReasonToAskSomebodyElse() {

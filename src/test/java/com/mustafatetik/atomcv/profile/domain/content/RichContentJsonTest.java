@@ -49,8 +49,8 @@ class RichContentJsonTest {
     }
 
     /**
-     * Bolum 12: stored content may carry a mark written by a newer build.
-     * Parsing must not fail and the round trip must not drop it.
+     * Stored content may carry a mark written by a newer build. Parsing must
+     * not fail and the round trip must not drop it.
      */
     @Test
     void amarkThisBuildDoesNotKnowSurvivesAnyway() throws Exception {

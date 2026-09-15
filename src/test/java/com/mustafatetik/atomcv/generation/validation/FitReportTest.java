@@ -9,7 +9,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 23.3's ladder, and the counts under it.
+ * The ladder, and the counts under it.
  *
  * <p>The report is the one place the product says how well a CV fits, so its
  * failure mode is not a crash: it is a number that flatters. Every test here

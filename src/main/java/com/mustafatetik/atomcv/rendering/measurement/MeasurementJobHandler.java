@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The measurement half of Bolum 31.6's background box.
+ * The measurement half of the background box.
  *
  * <p>What it buys is the guarantee in Bolum 20: a page limit that holds
  * because every wording's height was measured rather than estimated. Doing it

@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.ingestion.github;
 import java.util.List;
 
 /**
- * Where a public GitHub account's repositories come from (Bolum 6's Ports and
+ * Where a public GitHub account's repositories come from (the Ports and
  * Adapters, Bolum 31.8).
  *
  * <p>One method, and the interface exists for the reason Bolum 6 gives about

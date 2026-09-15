@@ -109,7 +109,7 @@ class GenerationEnqueueServiceTest {
         verify(queue, never()).enqueue(any());
     }
 
-    /** EK D.6.1: the heuristics are cheap on purpose and a person may know better. */
+    /** The heuristics are cheap on purpose and a person may know better. */
     @Test
     void anacknowledgedPostingSkipsTheTextCheckButNotTheProfileOne() {
         when(assembler.load(profile)).thenReturn(new ProfileTree(profile.id(), List.of()));
@@ -158,8 +158,8 @@ class GenerationEnqueueServiceTest {
     }
 
     /**
-     * Bolum 44.3's brake goes ahead of the quota: a paused deployment must not
-     * spend anyone's allowance on a request it is going to refuse.
+     * The brake goes ahead of the quota: a paused deployment must not spend
+     * anyone's allowance on a request it is going to refuse.
      */
     @Test
     void thebrakeStopsGenerationWithoutSpendingAnything() {
@@ -175,8 +175,8 @@ class GenerationEnqueueServiceTest {
     }
 
     /**
-     * Bolum 44: the only gate that writes, and the first that runs. A user over
-     * their limit should not have their profile loaded to find that out.
+     * The only gate that writes, and the first that runs. A user over their
+     * limit should not have their profile loaded to find that out.
      */
     @Test
     void anexhaustedQuotaIsRefusedBeforeAnythingElseHappens() {
@@ -192,8 +192,8 @@ class GenerationEnqueueServiceTest {
     }
 
     /**
-     * Bolum 44.2: nothing was generated, so nothing was spent. Without the
-     * refund a user could burn a day's allowance on typos.
+     * Nothing was generated, so nothing was spent. Without the refund a user
+     * could burn a day's allowance on typos.
      */
     @Test
     void arefusedRequestGivesTheUnitBack() {

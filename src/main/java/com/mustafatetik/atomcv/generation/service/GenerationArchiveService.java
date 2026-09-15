@@ -10,16 +10,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The keep-mark on a generation (Bolum 35.2, Bolum 13's {@code archived}).
+ * The keep-mark on a generation ({@code generations.archived}).
  *
  * <p><strong>What the mark is for, and what it is not yet.</strong> Bolum 13
  * pairs the column with {@code pdf_expires_at}: an artifact is kept fourteen
- * days, and an archived one is kept for good. No artifact is stored today —
- * EK D.6.3 settled that a download re-renders from {@code content_snapshot}
- * and that the {@code 410} path arrives with R2 — so nothing expires in either
+ * days, and an archived one is kept for good. No artifact is stored today — EK
+ * D.6.3 settled that a download re-renders from {@code content_snapshot} and
+ * that the {@code 410} path arrives with R2 — so nothing expires in either
  * direction and the mark changes no retention. It is the owner's mark on their
- * own history until storage lands, and the row the retention rule will read
- * on the day it does (Bolum 57.4's open paragraph is the reminder).
+ * own history until storage lands, and the row the retention rule will read on
+ * the day it does (the open paragraph is the reminder).
  *
  * <p><strong>Idempotent, and that is not an accident of the write.</strong>
  * Pressing archive on something already archived is not a conflict: the caller

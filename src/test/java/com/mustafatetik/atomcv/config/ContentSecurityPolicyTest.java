@@ -16,11 +16,11 @@ import org.junit.jupiter.api.Test;
  * The deployed Content-Security-Policy against what the product loads.
  *
  * <p><strong>Written because it was wrong, and would have stayed wrong until
- * launch.</strong> Bolum 11.2's policy is {@code default-src 'self'} with no
- * host named, and Turnstile (Bolum 40.5, 44.4) is a script this origin loads
- * from {@code challenges.cloudflare.com} and an iframe this origin embeds from
- * the same host. CSP blocks both without an error anyone sees: the widget
- * never renders, no token is ever produced, and sign-in, anonymous import and
+ * launch.</strong> The policy is {@code default-src 'self'} with no host
+ * named, and Turnstile is a script this origin loads from {@code
+ * challenges.cloudflare.com} and an iframe this origin embeds from the same
+ * host. CSP blocks both without an error anyone sees: the widget never
+ * renders, no token is ever produced, and sign-in, anonymous import and
  * anonymous generation all answer {@code CHALLENGE_FAILED}. Nothing in either
  * repository's test suite touches nginx, and the local profile hands every
  * token a {@code true}, so the first run of the guard would have been the
@@ -72,10 +72,10 @@ class ContentSecurityPolicyTest {
     }
 
     /**
-     * EK D.6.7's other half: the warm-up has a URL under {@code /api/v1} and
-     * the {@code /api/} block proxies everything under it. Without an exact
-     * match ahead of that block, an operational lever meant for the host is
-     * a way for anyone to make the server do work for nothing.
+     * The other half: the warm-up has a URL under {@code /api/v1} and the
+     * {@code /api/} block proxies everything under it. Without an exact match
+     * ahead of that block, an operational lever meant for the host is a way
+     * for anyone to make the server do work for nothing.
      */
     @Test
     void thewarmUpIsNotReachableThroughNginx() {

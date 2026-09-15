@@ -99,8 +99,8 @@ public class CoverLetterWriter {
 
     /**
      * <strong>Ekleme — {@code auto} follows the posting here, and not the
-     * CV.</strong> Bolum 5's note says {@code jdLanguage} is kept for exactly
-     * this. F-013 made the CV's language conditional on the profile carrying a
+     * CV.</strong> The note says {@code jdLanguage} is kept for exactly this.
+     * F-013 made the CV's language conditional on the profile carrying a
      * wording for every atom, because a document is assembled from wordings
      * that may not exist; a letter is written from scratch, so that constraint
      * does not apply to it. Somebody whose Turkish profile is applying to an

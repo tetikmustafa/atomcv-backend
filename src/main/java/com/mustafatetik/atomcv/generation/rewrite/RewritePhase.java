@@ -25,14 +25,14 @@ import org.springframework.stereotype.Service;
  * added to a generation the user is watching a progress bar for; on virtual
  * threads it is one.
  *
- * <p><strong>Sapma — Bolum 21.5's {@code StructuredTaskScope} is not used, and
- * not only because it is a preview API in Java 21.</strong> The scope in the
- * spec is a {@code ShutdownOnFailure}, which cancels the siblings when one
- * task fails. That is the wrong rule for this phase: Bolum 21.6 already says
- * what a failed rewrite means — the original sentence stands — so one bullet
- * going wrong is not a reason to abandon the seven that went right. A
- * virtual-thread-per-task executor gives the same fan-out and the same join,
- * and the failure of one task stays the failure of one task.
+ * <p><strong>Sapma — the {@code StructuredTaskScope} is not used, and not only
+ * because it is a preview API in Java 21.</strong> The scope in the spec is a
+ * {@code ShutdownOnFailure}, which cancels the siblings when one task fails.
+ * That is the wrong rule for this phase: Bolum 21.6 already says what a failed
+ * rewrite means — the original sentence stands — so one bullet going wrong is
+ * not a reason to abandon the seven that went right. A virtual-thread-per-task
+ * executor gives the same fan-out and the same join, and the failure of one
+ * task stays the failure of one task.
  *
  * <p><strong>This never fails.</strong> Everything it can answer with is a
  * CV: the rewrites that passed, and the person's own words everywhere else.
@@ -43,9 +43,9 @@ public class RewritePhase {
     private static final Logger log = LoggerFactory.getLogger(RewritePhase.class);
 
     /**
-     * Bolum 48.3's "Yeniden yazim red orani": the denominator. One counter per
-     * prompt, because the two prompts fail for different reasons and a single
-     * rate over both would hide whichever one is smaller.
+     * The rewrite rejection rate: the denominator. One counter per prompt,
+     * because the two prompts fail for different reasons and a single rate
+     * over both would hide whichever one is smaller.
      */
     static final String ATTEMPTS = "rewrite.attempts";
 
@@ -75,12 +75,12 @@ public class RewritePhase {
         this.meters = meters;
     }
 
-    /** Which version of the rewrite prompt this bucket is on (Bolum 53.3). */
+    /** Which version of the rewrite prompt this bucket is on. */
     public String promptVersionFor(String bucketKey) {
         return rewriter.promptVersionFor(bucketKey);
     }
 
-    /** Which version of the About prompt this bucket is on (Bolum 53.3). */
+    /** Which version of the About prompt this bucket is on. */
     public String aboutPromptVersionFor(String bucketKey) {
         return about.promptVersionFor(bucketKey);
     }
@@ -101,17 +101,17 @@ public class RewritePhase {
 
         if (context.postingSkills().isEmpty()) {
             // Nothing to reach for, and — the half that matters — nothing for
-            // Bolum 21.6's unsupported-claim check to be measured against. A
-            // rewrite made against an empty vocabulary could name any
-            // technology at all and pass. Faz D does not run.
+            // the unsupported-claim check to be measured against. A rewrite
+            // made against an empty vocabulary could name any technology at
+            // all and pass. Faz D does not run.
             log.info("Faz D skipped: the posting named no skills");
             return RewriteOutcome.of(carried);
         }
 
-        // Bolum 33.4, and it costs nothing: the Tech Stack is cut to the
-        // posting by reading it, not by asking. Done before the fan-out so
-        // that a row already trimmed on the previous attempt is carried
-        // rather than trimmed again, on the same terms as a rewrite.
+        // And it costs nothing: the Tech Stack is cut to the posting by
+        // reading it, not by asking. Done before the fan-out so that a row
+        // already trimmed on the previous attempt is carried rather than
+        // trimmed again, on the same terms as a rewrite.
         Map<UUID, RichContent> stack = TechStackEditor.edit(tree, selection, context);
         RewrittenContent sofar = carried.and(stack);
         if (!stack.isEmpty()) {
@@ -126,9 +126,9 @@ public class RewritePhase {
                         () -> rewriter.rewrite(candidate, context)));
             }
         }
-        // Bolum 21.7's paragraph, in the same fan-out. It is the slowest task
-        // here — it is given the whole page — so running it after the bullets
-        // would add its latency to theirs for no reason.
+        // The paragraph, in the same fan-out. It is the slowest task here — it
+        // is given the whole page — so running it after the bullets would add
+        // its latency to theirs for no reason.
         AboutSynthesis.plan(tree, selection, context)
                 .filter(candidate -> !carried.covers(candidate.atomId()))
                 .ifPresent(candidate -> todo.add(new Task(
@@ -206,9 +206,9 @@ public class RewritePhase {
                 }
             }
         } catch (RuntimeException wentWrong) {
-            // Bolum 21.5's catch. A CV made of the person's own sentences is
-            // a worse CV than the one Faz D would have produced, and a far
-            // better answer than no CV at all.
+            // The catch. A CV made of the person's own sentences is a worse CV
+            // than the one Faz D would have produced, and a far better answer
+            // than no CV at all.
             log.warn("Faz D failed as a whole; every bullet keeps its original wording: {}",
                     wentWrong.getClass().getSimpleName());
             // The tally goes with it. Whatever partial counts had been merged

@@ -34,7 +34,7 @@ public class AboutSynthesisService {
 
     public static final String PROMPT_ID = "about_synthesis";
 
-    /** Bolum 43.1's fence. The lists and the person's own words are all data. */
+    /** The fence. The lists and the person's own words are all data. */
     private static final String FENCE_TAG = "about";
 
     /** Ours, not the CV's, so they are substituted into the instructions. */
@@ -44,7 +44,7 @@ public class AboutSynthesisService {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    /** Bolum 21.6's rule, and it governs here too: one retry, then the original. */
+    /** The rule, and it governs here too: one retry, then the original. */
     static final int ATTEMPTS = 2;
 
     private static final Logger log = LoggerFactory.getLogger(AboutSynthesisService.class);
@@ -57,7 +57,7 @@ public class AboutSynthesisService {
         this.providers = providers;
     }
 
-    /** Which version of the prompt this bucket is on (Bolum 53.3). */
+    /** Which version of the prompt this bucket is on. */
     public String promptVersionFor(String bucketKey) {
         return prompts.selectVersion(PROMPT_ID, bucketKey);
     }

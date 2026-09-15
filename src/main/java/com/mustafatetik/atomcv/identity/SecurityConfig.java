@@ -65,7 +65,7 @@ public class SecurityConfig {
     }
 
     /**
-     * EK C.1's header row, and what each one is doing on a JSON API.
+     * The header row, and what each one is doing on a JSON API.
      *
      * <p>{@code X-Content-Type-Options: nosniff} and {@code X-Frame-Options:
      * DENY} are Spring Security's own defaults and are not repeated here — a
@@ -87,11 +87,11 @@ public class SecurityConfig {
      * on {@code frame-ancestors} because {@code X-Frame-Options} has no
      * standard behaviour for a nested frame.
      *
-     * <p><strong>Referrer-Policy</strong> matters more here than it looks:
-     * Bolum 40.3's sign-in link carries the verifier in a query string, and a
-     * full referrer would hand it to every host an image on that page came
-     * from. The frontend owns that page, but a redirect through this API must
-     * not be the leak either.
+     * <p><strong>Referrer-Policy</strong> matters more here than it looks: the
+     * sign-in link carries the verifier in a query string, and a full referrer
+     * would hand it to every host an image on that page came from. The
+     * frontend owns that page, but a redirect through this API must not be the
+     * leak either.
      */
     private static void responseHeaders(HeadersConfigurer<HttpSecurity> headers) {
         headers.httpStrictTransportSecurity(hsts -> hsts

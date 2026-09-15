@@ -6,7 +6,7 @@ import com.mustafatetik.atomcv.shared.util.LowercaseEnumConverter;
 import jakarta.persistence.Converter;
 import java.util.Locale;
 
-/** Where an atom came from. Stored in {@code atoms.source} (Bolum 13). */
+/** Where an atom came from. Stored in {@code atoms.source}. */
 public enum AtomSource {
     MANUAL,
     CV_UPLOAD,

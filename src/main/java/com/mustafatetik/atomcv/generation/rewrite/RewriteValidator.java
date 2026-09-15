@@ -20,16 +20,18 @@ import java.util.regex.Pattern;
  * an interview.
  *
  * <p>Pure and static: text, the atom's constraints and two vectors go in, a
- * list of issues comes out. Nothing here decides what to do about them —
- * Bolum 21.6's answer to any issue at all is to try once more and then print
- * the original, and that belongs with the caller that can do it.
+ * list of issues comes out. Nothing here decides what to do about them — the
+ * answer to any issue at all is to try once more and then print the original,
+ * and that belongs with the caller that can do it.
  */
 public final class RewriteValidator {
 
-    /** Bolum 21.6, verbatim: below this it no longer says what it said. */
+    /** Verbatim: below this it no longer says what it said. */
     static final double MIN_SIMILARITY = 0.80;
 
-    /** A run of digits, whatever surrounds it. Bolum 21.8's rule, for the same reason. */
+    /**
+     * A run of digits, whatever surrounds it. The rule, for the same reason.
+     */
     private static final Pattern DIGITS = Pattern.compile("\\d+");
 
     private RewriteValidator() {
@@ -75,9 +77,9 @@ public final class RewriteValidator {
         String answer = rewritten == null ? "" : rewritten;
         String folded = answer.toLowerCase(Locale.ROOT);
 
-        // 1 and 2. Bolum 21.8's rules, applied to a rewrite for the same
-        // reason: a sentence that still reads perfectly and has lost a number
-        // is the alteration nobody proofreads out.
+        // 1 and 2. The rules, applied to a rewrite for the same reason: a
+        // sentence that still reads perfectly and has lost a number is the
+        // alteration nobody proofreads out.
         List<String> digitsPresent = digitsOf(answer);
         for (String metric : candidate.metrics()) {
             if (!digitsOf(metric).stream().allMatch(digitsPresent::contains)) {
@@ -99,7 +101,7 @@ public final class RewriteValidator {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
         }
 
-        // 4. Bolum 21.3's ceiling, checked and not merely requested.
+        // 4. The ceiling, checked and not merely requested.
         if (answer.length() > candidate.maxChars()) {
             issues.add(RewriteIssue.TOO_LONG);
         }
@@ -113,9 +115,9 @@ public final class RewriteValidator {
     }
 
     /**
-     * Bolum 21.6's third check, against the vocabulary a stuffed answer would
-     * draw from: what the posting asked for, plus the names the alias
-     * dictionary knows.
+     * The third check, against the vocabulary a stuffed answer would draw
+     * from: what the posting asked for, plus the names the alias dictionary
+     * knows.
      *
      * <p><strong>Ekleme — a technology already in the original does not count
      * against the rewrite.</strong> Bolum 21.6 compares what the answer

@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * The two halves of Bolum 40.2's link, as the verification page read them out
- * of its own query string.
+ * The two halves of the link, as the verification page read them out of its
+ * own query string.
  *
  * @param selector the public handle, {@code ?s=}
  * @param verifier the secret, {@code ?v=}. It is never stored anywhere — only

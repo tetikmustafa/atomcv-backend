@@ -37,11 +37,11 @@ class SessionStoreTest {
             Clock.fixed(Instant.parse("2026-09-02T09:00:00Z"), ZoneOffset.UTC));
 
     /**
-     * <strong>Bolum 40.1's "aninda" rests on this one operation.</strong> It
-     * used to warn and answer zero, which reads to the caller exactly like a
-     * user who was signed in nowhere — and {@link AccountDeletionService}
-     * deletes the account on that answer. A cookie that outlives its account
-     * is the state the section says cannot happen.
+     * <strong>The promise of instant revocation rests on this one
+     * operation.</strong> It used to warn and answer zero, which reads to the
+     * caller exactly like a user who was signed in nowhere — and {@link
+     * AccountDeletionService} deletes the account on that answer. A cookie
+     * that outlives its account is the state the section says cannot happen.
      */
     @Test
     void aRevocationRedisCouldNotCarryOutIsRaisedAndNotCountedAsNone() {

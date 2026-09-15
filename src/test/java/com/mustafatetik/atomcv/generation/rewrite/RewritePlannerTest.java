@@ -64,10 +64,9 @@ class RewritePlannerTest {
      * <strong>And length is not a way past the floor.</strong> The obvious
      * shape of this code is "adapt if it scores, otherwise compress if it is
      * long", which reads correctly and quietly compresses bullets that have
-     * nothing to do with the posting. Bolum 21.2's third tier is
-     * <em>do not touch</em>, and it is a floor rather than a preference: an
-     * unrelated sentence is not improved by being made shorter, it is just
-     * altered without a reason.
+     * nothing to do with the posting. The third tier is <em>do not touch</em>,
+     * and it is a floor rather than a preference: an unrelated sentence is not
+     * improved by being made shorter, it is just altered without a reason.
      */
     @Test
     void alongAtomBelowTheFloorIsStillLeftAlone() {
@@ -121,16 +120,16 @@ class RewritePlannerTest {
     }
 
     /**
-     * <strong>A Tech Stack row is not a bullet, and Bolum 21.4's prompt is
-     * written about a bullet.</strong>
+     * <strong>A Tech Stack row is not a bullet, and the prompt is written
+     * about a bullet.</strong>
      *
-     * <p>It is a category and the items in it, and Bolum 33's rule for it is
+     * <p>It is a category and the items in it, and the rule for it is
      * filtering: an item may be dropped, a category dropped when it empties,
      * and nothing added. A prompt asking a model to bring a line closer to a
      * posting is an invitation to do the opposite -- rename the category, or
      * write in the item the posting asked for. Bolum 21.6 catches a technology
-     * the posting named; a category heading nobody wrote is not a claim about a
-     * technology, so nothing downstream would catch that at all.
+     * the posting named; a category heading nobody wrote is not a claim about
+     * a technology, so nothing downstream would catch that at all.
      *
      * <p>The score is deliberately well over the ceiling: a Tech Stack row is
      * exactly the atom that scores best against a posting, because it is a list
@@ -178,7 +177,7 @@ class RewritePlannerTest {
         assertThat(plan.candidates()).isEmpty();
     }
 
-    // -- Bolum 21.2's cap --------------------------------------------------
+    // -- the cap --------------------------------------------------
 
     /**
      * Ten strong matches, eight rewrites. The cap is a cost ceiling and a
@@ -239,7 +238,7 @@ class RewritePlannerTest {
                 .extracting(RewriteCandidate::maxChars).isEqualTo(42);
     }
 
-    // -- Bolum 21.4's honesty constraint -----------------------------------
+    // -- the honesty constraint -----------------------------------
 
     /**
      * The atom's own skills travel with it, because they are the boundary of
@@ -263,12 +262,12 @@ class RewritePlannerTest {
     // -- Bolum 21.1, from the other side ----------------------------------
 
     /**
-     * <strong>The sentence rewritten is the sentence selection costed.</strong>
-     * Bolum 21.1's choice is made in front of the budget now
-     * ({@code AlternativeWording}), so this reads the variant id off the
-     * selection instead of choosing again. Picking here would be a second
-     * opinion about which wording is on the page — and Faz C charged for one
-     * of the two, measured it, and promised a page limit on the strength of it.
+     * <strong>The sentence rewritten is the sentence selection
+     * costed.</strong> The choice is made in front of the budget now ({@code
+     * AlternativeWording}), so this reads the variant id off the selection
+     * instead of choosing again. Picking here would be a second opinion about
+     * which wording is on the page — and Faz C charged for one of the two,
+     * measured it, and promised a page limit on the strength of it.
      */
     @Test
     void thewordingSelectionCostedIsTheOneRewritten() {

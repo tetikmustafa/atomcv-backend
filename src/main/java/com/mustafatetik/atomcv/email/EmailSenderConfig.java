@@ -11,17 +11,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 /**
  * Which sender this deployment got, decided by whether it has a Resend key.
  *
- * <p>The same rule as Bolum 27.3's providers: a missing key is a configuration
- * fact rather than a failure, and no deployment has to declare what it is not
+ * <p>The same rule as the LLM providers: a missing key is a configuration fact
+ * rather than a failure, and no deployment has to declare what it is not
  * using. One bean method rather than two conditional ones, so the choice is a
  * branch that can be read and tested instead of an ordering between
  * annotations.
  *
- * <p><strong>Whichever it is, it is counted</strong> (Bolum 48.3's e-posta
- * row). The counter goes around the chosen sender rather than inside the two
- * implementations, so a third one is counted the day it is written and the
- * deployment with no sender at all -- which is the case worth noticing -- is
- * counted too.
+ * <p><strong>Whichever it is, it is counted.</strong> The counter goes around
+ * the chosen sender rather than inside the two implementations, so a third one
+ * is counted the day it is written and the deployment with no sender at all --
+ * which is the case worth noticing -- is counted too.
  */
 @Configuration
 public class EmailSenderConfig {
@@ -29,10 +28,10 @@ public class EmailSenderConfig {
     private static final Logger log = LoggerFactory.getLogger(EmailSenderConfig.class);
 
     /**
-     * Bolum 48.3's "Teslimat orani", as far as this side of the wire can see
-     * it: whether the provider took the message. Whether it arrived is the
-     * webhook's half, and {@code ResendWebhookController} counts that under
-     * {@code email.events}.
+     * The delivery rate, as far as this side of the wire can see it: whether
+     * the provider took the message. Whether it arrived is the webhook's half,
+     * and {@code ResendWebhookController} counts that under {@code
+     * email.events}.
      */
     static final String SENT = "email.sent";
 

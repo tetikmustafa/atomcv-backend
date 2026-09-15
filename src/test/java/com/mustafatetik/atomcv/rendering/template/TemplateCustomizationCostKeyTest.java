@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * What a measured render cost is filed under (Bolum 16.3, 33.1).
+ * What a measured render cost is filed under.
  *
  * <p>The key decides which stored numbers a document is allowed to reuse, so
  * every case here is a question about money or about the page guarantee: too

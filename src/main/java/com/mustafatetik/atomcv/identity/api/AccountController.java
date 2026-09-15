@@ -54,7 +54,7 @@ public class AccountController {
         this.cookies = cookies;
     }
 
-    /** What Bolum 57.7's preference looks like on the wire, both ways. */
+    /** What the preference looks like on the wire, both ways. */
     public record AccountSettings(boolean lifecycleEmails) {
     }
 

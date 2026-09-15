@@ -8,7 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 /**
- * The {@code sid} cookie, written the one way Bolum 40.1 specifies.
+ * The {@code sid} cookie, written the one way it may be written.
  *
  * <p>In one place so that the attributes cannot drift apart: a sign-in that
  * sets {@code SameSite=Strict} and a sign-out that clears without it leaves

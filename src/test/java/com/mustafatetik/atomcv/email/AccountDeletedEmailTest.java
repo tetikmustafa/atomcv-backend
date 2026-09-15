@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * The last thing this product says to somebody (Bolum 57.4, 57.7).
+ * The last thing this product says to somebody.
  *
  * <p>Two of these assert an absence, which is the whole reason the class is
  * separate from {@link MagicLinkEmail}: this message has nowhere to send
@@ -24,7 +24,7 @@ class AccountDeletedEmailTest {
         assertThat(english.text()).contains("your profile").contains("cannot be undone");
     }
 
-    /** Bolum 40.2's rule, and this message is no exception to it. */
+    /** The rule, and this message is no exception to it. */
     @Test
     void bothPartsTravel() {
         var message = AccountDeletedEmail.to("ada@example.com", "en");

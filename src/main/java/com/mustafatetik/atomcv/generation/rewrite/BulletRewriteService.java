@@ -23,10 +23,10 @@ import org.springframework.stereotype.Service;
  *
  * <p><strong>This never fails.</strong> It answers with the rewrite when the
  * rewrite is good, and with what the person originally wrote when it is not,
- * and the caller cannot tell the difference from the return type. That is
- * Bolum 21.6's rule: try once more, then use the original. A generation must
- * not fall over because a model produced a sentence that did not pass a check
- * — the person asked for a CV, and the CV they already had is right there.
+ * and the caller cannot tell the difference from the return type. That is the
+ * rule: try once more, then use the original. A generation must not fall over
+ * because a model produced a sentence that did not pass a check — the person
+ * asked for a CV, and the CV they already had is right there.
  *
  * <p>Two attempts and no more. The second is worth making because these
  * failures are largely a model being sloppy once; a third would be paying
@@ -37,7 +37,7 @@ public class BulletRewriteService {
 
     public static final String PROMPT_ID = "bullet_rewrite";
 
-    /** Bolum 43.1's fence. Everything inside it is data, the lists included. */
+    /** The fence. Everything inside it is data, the lists included. */
     private static final String FENCE_TAG = "bullet";
 
     /** Ours, not the CV's, so they are substituted into the instructions. */
@@ -48,7 +48,7 @@ public class BulletRewriteService {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    /** Bolum 21.6: one retry, then the original. */
+    /** One retry, then the original. */
     static final int ATTEMPTS = 2;
 
     private static final Logger log = LoggerFactory.getLogger(BulletRewriteService.class);
@@ -64,7 +64,7 @@ public class BulletRewriteService {
         this.embeddings = embeddings;
     }
 
-    /** Which version of the prompt this bucket is on (Bolum 53.3). */
+    /** Which version of the prompt this bucket is on. */
     public String promptVersionFor(String bucketKey) {
         return prompts.selectVersion(PROMPT_ID, bucketKey);
     }
@@ -148,17 +148,16 @@ public class BulletRewriteService {
                 + "\nmustKeep: " + String.join(", ", mustKeep(candidate))
                 + "\npostingWants: " + String.join(", ", context.postingSkills());
 
-        // Bolum 18.7's freeform note, appended rather than always present, and
-        // that costs nothing and buys everything: a request with no note
-        // produces a byte-identical fenced body, so Bolum 53.1's recorded
-        // answers still key to it -- FixtureStore hashes this half, not the
-        // instructions.
+        // The freeform note, appended rather than always present, and that
+        // costs nothing and buys everything: a request with no note produces a
+        // byte-identical fenced body, so the recorded answers still key to it
+        // -- FixtureStore hashes this half, not the instructions.
         //
         // Inside the fence because it is the person's own sentence (Bolum 43.1
         // draws the line at where the data starts, not at which field looks
         // structured). The prompt tells the model the note may steer wording
-        // and may not licence a claim; Bolum 21.6's validators do not care
-        // what it said either way, which is what makes that safe to promise.
+        // and may not licence a claim; the validators do not care what it said
+        // either way, which is what makes that safe to promise.
         return context.note() == null || context.note().isBlank()
                 ? fenced
                 : fenced + "\nnote: " + context.note();

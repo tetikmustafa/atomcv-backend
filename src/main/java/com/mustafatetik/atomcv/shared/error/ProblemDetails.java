@@ -14,9 +14,9 @@ import org.springframework.http.ProblemDetail;
 public final class ProblemDetails {
 
     /**
-     * Relative on purpose. Bolum 35.4's example uses the production domain,
-     * but the product document requires that neither the name nor the domain
-     * is baked into code — and RFC 7807 allows a relative reference.
+     * Relative on purpose. The example uses the production domain, but the
+     * product document requires that neither the name nor the domain is baked
+     * into code — and RFC 7807 allows a relative reference.
      */
     private static final String TYPE_PREFIX = "/errors/";
 

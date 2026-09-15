@@ -31,7 +31,7 @@ public record EmailProperties(
     /**
      * Where a person lands to turn the optional post off.
      *
-     * <p>A page on the frontend rather than an endpoint here, and Bolum 40.3
+     * <p>A page on the frontend rather than an endpoint here, and prefetching
      * is the reason: a gateway that fetches every link in a message would
      * unsubscribe somebody who never clicked. The page carries the button.
      */

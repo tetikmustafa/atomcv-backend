@@ -9,8 +9,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * The shipped {@code cover_letter} prompt, against the check that judges it
- * (Bolum 34.4, 53.2).
+ * The shipped {@code cover_letter} prompt, against the check that judges it.
  *
  * <p><strong>v1 is active, and v2 is on disk unmeasured.</strong> v2 dropped the
  * "between 250 and 400 words" ask on the argument that the model ignored it —
@@ -61,9 +60,9 @@ class CoverLetterPromptTest {
     }
 
     /**
-     * Bolum 43's cheapest layer, in both versions — a new version of a prompt is
-     * where an injection defence is most easily lost, because the file is copied
-     * and edited for a different reason.
+     * The cheapest layer, in both versions — a new version of a prompt is
+     * where an injection defence is most easily lost, because the file is
+     * copied and edited for a different reason.
      */
     @Test
     void theinjectionFenceIsInEveryVersionOnDisk() {

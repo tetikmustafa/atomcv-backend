@@ -11,17 +11,17 @@ import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 /**
- * What a run of the queue costs, in the shape Bolum 48.3's table asks for.
+ * What a run of the queue costs, in the shape the table asks for.
  *
- * <p>Three of that table's rows have no other source. <strong>Per-phase p50/p95
- * latency</strong> is the first thing anyone asks when a generation feels slow,
- * and until this existed the only answer was a stopwatch on a log line.
- * <strong>Success rate</strong> was countable only by querying the jobs table,
- * which is a different question — it counts rows, not runs, and a retried job
- * is one row and two runs. <strong>Queue wait</strong> is Bolum 50.4's first
- * diagnostic: a pipeline that got slower because work is waiting to start is
- * the one case where a bigger machine actually helps, and the one this
- * distinguishes.
+ * <p>Three of that table's rows have no other source. <strong>Per-phase
+ * p50/p95 latency</strong> is the first thing anyone asks when a generation
+ * feels slow, and until this existed the only answer was a stopwatch on a log
+ * line. <strong>Success rate</strong> was countable only by querying the jobs
+ * table, which is a different question — it counts rows, not runs, and a
+ * retried job is one row and two runs. <strong>Queue wait</strong> is the
+ * first diagnostic: a pipeline that got slower because work is waiting to
+ * start is the one case where a bigger machine actually helps, and the one
+ * this distinguishes.
  *
  * <p><strong>The phase boundary is the progress report.</strong> A phase ends
  * when the next one is announced — the same event the user's progress bar
@@ -43,7 +43,7 @@ public class JobTelemetry {
     /** The same row's "basari orani": the outcome tag is the rate. */
     static final String RUN = "job.run";
 
-    /** Bolum 48.3's system row, and Bolum 50.4's first question. */
+    /** The system row, and the first question. */
     static final String QUEUE_WAIT = "job.queue.wait";
 
     private final MeterRegistry meters;

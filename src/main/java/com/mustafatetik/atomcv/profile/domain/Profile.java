@@ -18,7 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 /**
- * The head of the Master Profile: one row per user (Bolum 14.2, 14.3).
+ * The head of the Master Profile: one row per user.
  *
  * <p>The first {@link UserOwned} entity, and the reason the two scoped bases
  * exist: everything below a profile is reached with a {@code ProfileRef}, and a
@@ -194,7 +194,7 @@ public class Profile implements UserOwned {
         return expiresAt;
     }
 
-    /** Whether this profile belongs to nobody and will be swept (Bolum 9). */
+    /** Whether this profile belongs to nobody and will be swept. */
     public boolean isAnonymous() {
         return userId == null;
     }

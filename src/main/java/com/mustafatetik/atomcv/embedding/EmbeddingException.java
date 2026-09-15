@@ -11,8 +11,8 @@ package com.mustafatetik.atomcv.embedding;
  * loop.
  *
  * <p>{@code EMBEDDING_UNAVAILABLE} is the catalogue code it becomes if it ever
- * reaches a user, which Bolum 28.4 says it should not: scoring drops the
- * embedding component and carries on.
+ * reaches a user, which it should not: scoring drops the embedding component
+ * and carries on.
  */
 public class EmbeddingException extends RuntimeException {
 

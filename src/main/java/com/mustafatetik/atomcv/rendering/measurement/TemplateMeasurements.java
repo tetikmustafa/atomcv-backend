@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
 /**
  * Asks for a geometry to be measured, once.
  *
- * <p>The second step of Bolum 33.3's flow, and it is triggered by a
- * generation rather than by the slider itself. Saving a preference nobody ever
- * renders would buy a compilation for a page that is never printed; asking
- * when a run actually falls back to {@link CapacityEstimator} measures exactly
- * what somebody is using. The person is not made to wait either way — that
- * run already produced a CV against the estimate, and the next one is exact.
+ * <p>The second step of the flow, and it is triggered by a generation rather
+ * than by the slider itself. Saving a preference nobody ever renders would buy
+ * a compilation for a page that is never printed; asking when a run actually
+ * falls back to {@link CapacityEstimator} measures exactly what somebody is
+ * using. The person is not made to wait either way — that run already produced
+ * a CV against the estimate, and the next one is exact.
  *
  * <p>The shape was decided by the architecture test rather than by taste: a
  * hook on the preference update made {@code profile} depend on

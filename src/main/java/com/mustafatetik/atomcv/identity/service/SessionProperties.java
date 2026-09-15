@@ -36,9 +36,9 @@ public record SessionProperties(
 
     public SessionProperties {
         ttl = ttl == null || ttl.isZero() || ttl.isNegative() ? Duration.ofDays(30) : ttl;
-        // Bolum 9's two hours, and EK D.6.6's note that they slide. A person
-        // who has not signed in has nothing stored to come back to, so a long
-        // window would only be a longer-lived credential.
+        // The two hours, and the note that they slide. A person who has not
+        // signed in has nothing stored to come back to, so a long window would
+        // only be a longer-lived credential.
         anonymousTtl = anonymousTtl == null || anonymousTtl.isZero() || anonymousTtl.isNegative()
                 ? Duration.ofHours(2)
                 : anonymousTtl;

@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * One circuit breaker per vendor, in front of Bolum 27.3's chain walk.
+ * One circuit breaker per vendor, in front of the chain walk.
  *
  * <p><strong>What it buys.</strong> The chain already moves on when a provider
  * is rate limited or down, so an outage was never a failed generation — it was
@@ -43,7 +43,7 @@ public class ProviderBreakers {
     private static final Logger log = LoggerFactory.getLogger(ProviderBreakers.class);
 
     /**
-     * Bolum 48.3's LLM row, the part fallback rate cannot answer.
+     * The LLM row, the part fallback rate cannot answer.
      *
      * <p>The fallback counter says a call went to a second vendor; it cannot
      * say the first one has been dark for an hour, because a deployment with

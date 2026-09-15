@@ -224,11 +224,11 @@ public final class TemplateRegistry {
      * it once. That is the whole visual difference — everything else here is
      * room.
      *
-     * <p>Roomier by design, which is the other half of Bolum 33.5's
-     * description: about fifty lines to classic's fifty-four. The negative
-     * spacing classic uses to pull its blocks together is halved rather than
-     * removed, and {@link TemplateCustomization#MODERN} adds a wider margin
-     * and looser leading on top.
+     * <p>Roomier by design, which is the other half of the description: about
+     * fifty lines to classic's fifty-four. The negative spacing classic uses
+     * to pull its blocks together is halved rather than removed, and {@link
+     * TemplateCustomization#MODERN} adds a wider margin and looser leading on
+     * top.
      */
     private static final String MODERN_BASE = """
             \\usepackage{titlesec}
@@ -355,7 +355,7 @@ public final class TemplateRegistry {
      * template.
      *
      * <p>The page holds about seventy bullet lines against classic's sixty,
-     * which is Bolum 33.5's "~64 lines" once the furniture is taken out of it.
+     * which is about sixty-four lines once the furniture is taken out of it.
      */
     private static final CapacityModel COMPACT_CAPACITY = new CapacityModel(
             // 0.4in all round rather than 0.5, which is 14.45pt more in each
@@ -396,10 +396,10 @@ public final class TemplateRegistry {
      * were — never estimated, never scaled from classic's.
      *
      * <p>About fifty-one bullet lines to a page against classic's sixty, which
-     * is where Bolum 33.5's "~50" lands once the furniture is taken out. The
-     * room is the preamble's rather than the knobs': a bullet costs a baseline
-     * and two points where classic's costs a baseline exactly, and a section
-     * heading costs seven points more.
+     * is where about fifty lands once the furniture is taken out. The room is
+     * the preamble's rather than the knobs': a bullet costs a baseline and two
+     * points where classic's costs a baseline exactly, and a section heading
+     * costs seven points more.
      *
      * <p><strong>These are the second set of numbers this template had.</strong>
      * The first was measured at a 0.6in margin and 1.05 leading and could not

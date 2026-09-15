@@ -92,7 +92,7 @@ class ChatCompletionsProviderTest {
         assertThat(openAi("sk-test", "some-model").isAvailable()).isTrue();
     }
 
-    // ── Where the two differ, which is the point of Bolum 27.2's column ───
+    // ── Where the two differ, which is the point of the column ───
 
     @Test
     void openAiSendsTheSchemaForTheVendorToEnforce() {
@@ -113,8 +113,7 @@ class ChatCompletionsProviderTest {
     /**
      * DeepSeek has no schema mode at all, so the shape has to be asked for in
      * words — and asked for in the <em>system</em> half. A schema is ours, and
-     * Bolum 43.1's boundary is where the data starts, not which field looks
-     * structured.
+     * the boundary is where the data starts, not which field looks structured.
      */
     @Test
     void deepSeekAsksForTheShapeInWordsAndOutsideTheFence() {

@@ -63,7 +63,7 @@ public record FitReport(
         List<String> missingPreferred,
         MatchLevel level) {
 
-    /** Bolum 23.3: above this share of the nice-to-haves, a clean match is STRONG. */
+    /** Above this share of the nice-to-haves, a clean match is STRONG. */
     private static final double STRONG_PREFERRED_RATIO = 0.6;
 
     public FitReport {
@@ -107,7 +107,7 @@ public record FitReport(
     }
 
     /**
-     * Bolum 23.3's ladder, and the order of the rungs is the point: a missing
+     * The ladder, and the order of the rungs is the point: a missing
      * requirement is never offset by nice-to-haves, however many of them the
      * page covers.
      *

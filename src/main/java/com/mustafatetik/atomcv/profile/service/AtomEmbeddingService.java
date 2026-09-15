@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  * that put a sentence back the way it was leaves the hash unchanged, and
  * re-embedding that is work bought for nothing.
  *
- * <p>One round trip for the batch. Bolum 28's own note says why: a profile is
+ * <p>One round trip for the batch. The own note says why: a profile is
  * embedded atom by atom after an import, and one HTTP call per atom is the
  * difference between a second and a minute.
  */
@@ -40,7 +40,7 @@ public class AtomEmbeddingService {
 
     private static final Logger log = LoggerFactory.getLogger(AtomEmbeddingService.class);
 
-    /** Bolum 28's fixed comparison language. */
+    /** The fixed comparison language. */
     private static final String ENGLISH = "en";
 
     private final AtomRepository atoms;

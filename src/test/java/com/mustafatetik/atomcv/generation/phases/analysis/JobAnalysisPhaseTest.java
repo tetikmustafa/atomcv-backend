@@ -55,9 +55,9 @@ class JobAnalysisPhaseTest {
     }
 
     /**
-     * EK D.6.1's {@code continue_anyway}: the heuristics are cheap on purpose
-     * and the user may know better. Acknowledging skips the preflight — and
-     * only the preflight.
+     * The {@code continue_anyway}: the heuristics are cheap on purpose and the
+     * user may know better. Acknowledging skips the preflight — and only the
+     * preflight.
      */
     @Test
     void anAcknowledgedPostingIsSentEvenThoughThePreflightWouldRefuseIt() {
@@ -92,8 +92,8 @@ class JobAnalysisPhaseTest {
 
     /**
      * Bolum 27.4 discounts a cached prefix, and a prefix is only constant if
-     * the posting is not in it. Bolum 18.3's fence is in the user half, where
-     * it can wrap the data it is describing.
+     * the posting is not in it. The fence is in the user half, where it can
+     * wrap the data it is describing.
      */
     @Test
     void theInstructionsAndThePostingTravelAsSeparateMessages() {
@@ -124,9 +124,9 @@ class JobAnalysisPhaseTest {
      * A posting can contain the closing tag, and nothing escapes it. Saying so
      * here rather than leaving it implied: the defence against that is not a
      * quoting scheme the model may or may not respect, it is that the answer
-     * has to fit a schema and pass Bolum 18.4's length audit. What this asserts
-     * is only that the request is still built and still sent — the pipeline
-     * does not fall over on the input.
+     * has to fit a schema and pass the length audit. What this asserts is only
+     * that the request is still built and still sent — the pipeline does not
+     * fall over on the input.
      */
     @Test
     void aPostingThatClosesTheFenceEarlyIsStillSentAndStillJudged() {
@@ -152,7 +152,7 @@ class JobAnalysisPhaseTest {
         assertThat(analysis.requiredSkills()).hasSize(2);
     }
 
-    /** Bolum 18.4: refused here means Faz B is never entered, so no more is spent. */
+    /** Refused here means Faz B is never entered, so no more is spent. */
     @Test
     void anImplausibleAnalysisIsRefusedWithWhatTheModelActuallyReported() {
         var result = phase(new StubProvider(analysisJson(0.30, 2), sent))
@@ -299,8 +299,8 @@ class JobAnalysisPhaseTest {
     }
 
     /**
-     * A preferred skill is a tie-breaker in Bolum 19's scoring. Letting it
-     * pull the vector would quietly promote it to a requirement.
+     * A preferred skill is a tie-breaker in the scoring. Letting it pull the
+     * vector would quietly promote it to a requirement.
      */
     @Test
     void aPreferredSkillDoesNotPullTheVector() {

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Bolum 42.4's parser limits, seen refusing.
+ * The parser limits, seen refusing.
  *
  * <p>Jackson's own defaults are twenty times looser, so a test that only fed
  * the mapper a reasonable document would pass with this configuration deleted.
@@ -55,8 +55,8 @@ class JacksonConfigTest {
 
     @Test
     void anunconfiguredMapperAcceptsBothOfThem() throws Exception {
-        // Bolum 51.7's first rule, kept in the suite rather than done once by
-        // hand: Jackson's defaults are 1,000 and 20,000,000, so deleting the
+        // The first rule, kept in the suite rather than done once by hand:
+        // Jackson's defaults are 1,000 and 20,000,000, so deleting the
         // customizer would leave every other case in this class passing. This
         // one says what the configuration is actually buying.
         ObjectMapper plain = new ObjectMapper();

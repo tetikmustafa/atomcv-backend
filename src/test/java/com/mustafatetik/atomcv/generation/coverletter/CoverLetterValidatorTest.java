@@ -35,8 +35,8 @@ class CoverLetterValidatorTest {
     }
 
     /**
-     * <strong>Bolum 34.4's "most common fabrication".</strong> The dates on the
-     * profile say six years; the letter says twelve.
+     * <strong>The "most common fabrication".</strong> The dates on the profile
+     * say six years; the letter says twelve.
      */
     @Test
     void aletterMayNotClaimMoreYearsThanTheProfileCarries() {
@@ -207,7 +207,7 @@ class CoverLetterValidatorTest {
         assertThat(issues).isEmpty();
     }
 
-    /** The ceiling is Bolum 34.4's and did not move: over 400 nobody reads it. */
+    /** The ceiling did not move: over 400 nobody reads it. */
     @Test
     void aletterPastTheCeilingIsStillRefused() {
         var issues = CoverLetterValidator.validate(input(),
@@ -217,8 +217,8 @@ class CoverLetterValidatorTest {
     }
 
     /**
-     * Bolum 34.4's banned openings. Not for being clumsy — each is a sentence
-     * that would be true of everybody applying, and the letter has 400 words.
+     * The banned openings. Not for being clumsy — each is a sentence that
+     * would be true of everybody applying, and the letter has 400 words.
      */
     @Test
     void abannedOpeningIsRefused() {
@@ -340,7 +340,7 @@ class CoverLetterValidatorTest {
                 "Happy to talk.", "Ada Lovelace");
     }
 
-    /** The same body, padded into Bolum 34.4's band so length is not the issue. */
+    /** The same body, padded into the band so length is not the issue. */
     private static String padded(String body) {
         return body + " " + "filler ".repeat(260);
     }

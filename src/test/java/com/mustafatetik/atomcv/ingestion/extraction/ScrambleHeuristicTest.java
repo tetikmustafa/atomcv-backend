@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.3's heuristic, on the two shapes it has to tell apart.
+ * The heuristic, on the two shapes it has to tell apart.
  *
  * <p>The cases that matter are the ones near the line: a real CV must not be
  * flagged, because the flag becomes a sentence in the prompt telling a model
@@ -108,7 +108,7 @@ class ScrambleHeuristicTest {
     }
 
     /**
-     * Emptiness is Bolum 31.2's last rung to answer, not this one's.
+     * Emptiness is the last rung to answer, not this one's.
      *
      * <p>Answering true here would put "the text may be out of order" in front
      * of a model that is about to be handed nothing at all.

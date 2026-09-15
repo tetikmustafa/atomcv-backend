@@ -8,9 +8,9 @@ import java.util.List;
  * <p><strong>The CV's protection was selection; this has none.</strong> A CV
  * is assembled from atoms a person wrote, so there is nothing in it to
  * fabricate. A covering letter is free text, written in the first person, and
- * the claims in it are the ones an interviewer opens with. So the answer of
- * Bolum 34.2 is to feed it the same atoms: the letter becomes the narrative
- * version of the page, and consistency comes for free.
+ * the claims in it are the ones an interviewer opens with. So the answer is to
+ * feed it the same atoms: the letter becomes the narrative version of the
+ * page, and consistency comes for free.
  *
  * @param applicantName  who is writing, from the profile's contact block
  * @param roleTitle      the job, from Faz A

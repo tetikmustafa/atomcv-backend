@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The names a keyword-stuffed answer would reach for (Bolum 21.6, 21.7, 34.4).
+ * The names a keyword-stuffed answer would reach for.
  *
  * <p>A guard can only refuse a claim it can recognise, and this is the list of
  * things it recognises. One copy, because the bullet rewrite, the summary and

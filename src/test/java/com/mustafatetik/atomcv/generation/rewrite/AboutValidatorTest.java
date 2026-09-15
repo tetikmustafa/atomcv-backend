@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.7's check — the summary says nothing the page does not.
+ * The check — the summary says nothing the page does not.
  *
  * <p>This is the phase's most dangerous output and the cheapest to get wrong.
  * A bullet is one job at one employer and a reader takes it as such; the
@@ -101,7 +101,7 @@ class AboutValidatorTest {
         assertThat(issues).containsExactly(RewriteIssue.NUMBER_INVENTED);
     }
 
-    /** Bolum 21.3's ceiling: the page was costed on the paragraph that was there. */
+    /** The ceiling: the page was costed on the paragraph that was there. */
     @Test
     void asummaryLongerThanTheParagraphItReplacesIsRefused() {
         var candidate = new AboutCandidate(UUID.randomUUID(),

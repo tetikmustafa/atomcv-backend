@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The Master Profile head (Bolum 35.2). */
+/** The Master Profile head. */
 @RestController
 @RequestMapping("/api/v1/profile")
 @Tag(name = "Profile", description = "The user's structured professional data")

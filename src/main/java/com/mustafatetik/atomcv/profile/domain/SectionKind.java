@@ -6,7 +6,7 @@ import com.mustafatetik.atomcv.shared.util.LowercaseEnumConverter;
 import jakarta.persistence.Converter;
 import java.util.Locale;
 
-/** What a section holds. Stored in {@code sections.kind} (Bolum 13). */
+/** What a section holds. Stored in {@code sections.kind}. */
 public enum SectionKind {
     ABOUT,
     EDUCATION,

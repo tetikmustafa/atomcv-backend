@@ -24,8 +24,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 33.4's rule for a Tech Stack, which is a rule about what may be
- * removed and a much stricter one about what may be added.
+ * The rule for a Tech Stack, which is a rule about what may be removed and a
+ * much stricter one about what may be added.
  *
  * <p>Nothing here needs an LLM, and that is the point: a category invented or
  * an item moved between two would be a claim the profile does not carry, and
@@ -89,8 +89,8 @@ class TechStackEditorTest {
     }
 
     /**
-     * Bolum 33.4's one deletion: a category with nothing left in it goes. The
-     * empty content is how it says so — the renderer prints no row for it.
+     * The one deletion: a category with nothing left in it goes. The empty
+     * content is how it says so — the renderer prints no row for it.
      */
     @Test
     void acategoryThatKeepsNothingIsDropped() {

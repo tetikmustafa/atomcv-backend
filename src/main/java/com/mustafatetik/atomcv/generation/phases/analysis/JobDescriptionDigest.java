@@ -30,7 +30,7 @@ public final class JobDescriptionDigest {
     private JobDescriptionDigest() {
     }
 
-    /** Bolum 18.6: collapse whitespace, join line endings, trim. */
+    /** Collapse whitespace, join line endings, trim. */
     public static String normalize(String jobDescription) {
         return WHITESPACE.matcher(jobDescription).replaceAll(" ").trim();
     }

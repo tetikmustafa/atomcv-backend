@@ -33,8 +33,8 @@ public class NaturalLanguageEditService {
      * asking to put something back means something they remember writing, not
      * the four hundredth-best bullet. Sending all of them buys tokens and
      * noise: the more lines in the list, the more ways there are to pick the
-     * wrong one, and Bolum 24.2's parse is supposed to be the cheapest call
-     * the product makes.
+     * wrong one, and the parse is supposed to be the cheapest call the product
+     * makes.
      *
      * <p>Ranked by the score they competed on, so what is shown is what came
      * closest to the page.

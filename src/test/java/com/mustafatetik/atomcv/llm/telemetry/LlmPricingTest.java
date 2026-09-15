@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** What a call costs (Bolum 27.4), and what an unpriced one costs. */
+/** What a call costs, and what an unpriced one costs. */
 class LlmPricingTest {
 
     /** $0.10 in, $0.40 out, $0.025 cached — per million. */
@@ -23,9 +23,9 @@ class LlmPricingTest {
     }
 
     /**
-     * Bolum 27.4: a cached token costs a fraction of a fresh one. Counting it
-     * at full price overstates every call that hit a cache — most of them —
-     * and would fire the budget brake on a bill nobody is paying.
+     * A cached token costs a fraction of a fresh one. Counting it at full
+     * price overstates every call that hit a cache — most of them — and would
+     * fire the budget brake on a bill nobody is paying.
      */
     @Test
     void cachedInputIsPricedApartAndNotOnTop() {

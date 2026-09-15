@@ -16,8 +16,8 @@ import java.util.UUID;
  * the column holds, and it carries two things the pipeline's version does not
  * need in memory and cannot do without on disk: the language and the
  * customization. Without them the snapshot describes <em>which</em> atoms were
- * chosen but not how to draw them, and EK D.6.3's promise — that the PDF can
- * always be made again — would not hold.
+ * chosen but not how to draw them, and the promise — that the PDF can always
+ * be made again — would not hold.
  *
  * <p><strong>Sapma from Bolum 14.5:</strong> the field is the customization
  * itself and not a {@code customizationId}. There is no

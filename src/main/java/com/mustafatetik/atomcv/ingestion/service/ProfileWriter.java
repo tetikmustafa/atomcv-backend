@@ -44,8 +44,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p><strong>One transaction.</strong> A CV is one document: a profile holding
  * three of its five sections is not a partial success, it is a profile the
- * person has to notice is wrong. Bolum 31.6's review screen assumes it is
- * looking at the whole thing.
+ * person has to notice is wrong. The review screen assumes it is looking at
+ * the whole thing.
  */
 @Service
 public class ProfileWriter {
@@ -297,14 +297,14 @@ public class ProfileWriter {
      * dropped, and {@code SelectionPhase} still obeys that. This only stops the
      * importer from making that choice on the user's behalf.
      *
-     * <p><strong>An About entry is one paragraph, whatever the default says.</strong>
-     * The column default of two is a bullet-list number, and a summary is not a
-     * bullet list. A profile keeping four summaries — one written towards
-     * backend work, one towards data, one towards AI, which is what a person
-     * maintaining a master CV does — had its About entry claim a minimum of
-     * two, so Bolum 20.3's "prints its minimum or none of itself" put two
-     * opening paragraphs on one page. Both were the person's own words and the
-     * document still read as a mistake.
+     * <p><strong>An About entry is one paragraph, whatever the default
+     * says.</strong> The column default of two is a bullet-list number, and a
+     * summary is not a bullet list. A profile keeping four summaries — one
+     * written towards backend work, one towards data, one towards AI, which is
+     * what a person maintaining a master CV does — had its About entry claim a
+     * minimum of two, so the rule "prints its minimum or none of itself" put
+     * two opening paragraphs on one page. Both were the person's own words and
+     * the document still read as a mistake.
      */
     static short reachableMinimumFor(SectionKind kind, int atomCount) {
         int wanted = kind == SectionKind.ABOUT ? 1 : Entry.DEFAULT_MIN_ATOMS;
@@ -342,13 +342,13 @@ public class ProfileWriter {
         atom.setSkills(normalized.skills());
         atom.setMetrics(normalized.metrics());
         atom.setProperNouns(normalized.properNouns());
-        // Bolum 14.1: where an atom came from decides what may be done to it,
-        // and these are the person's own sentences rather than a model's.
+        // Where an atom came from decides what may be done to it, and these
+        // are the person's own sentences rather than a model's.
         atom.setSource(AtomSource.CV_UPLOAD);
         return atom;
     }
 
-    /** Likewise: the person wrote it, and Bolum 21.4's staleness reads that. */
+    /** Likewise: the person wrote it, and the staleness reads that. */
     static AtomVariant variantOf(UUID profileId, Atom atom, RichContent content,
             String language, boolean primary) {
         AtomVariant variant = new AtomVariant(profileId, atom.getId(), language, content);
@@ -375,7 +375,7 @@ public class ProfileWriter {
     }
 
     /**
-     * The labels the extraction guessed, kept (Bolum 31.5's seventh step).
+     * The labels the extraction guessed, kept (the seventh step).
      *
      * <p><strong>They used to be dropped here</strong>, and that was expensive
      * in a way nothing pointed at: the model reported them, {@code

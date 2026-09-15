@@ -33,7 +33,7 @@ class LatexDocumentRendererTest {
     }
 
     /**
-     * Adim 1.4's critical test. A measurement taken under a different preamble
+     * The critical test. A measurement taken under a different preamble
      * measures a document nobody will print, and the page guarantee is built
      * on the two being identical.
      */
@@ -141,8 +141,8 @@ class LatexDocumentRendererTest {
 
     @Test
     void theRendererKnowsNothingAboutSelection() {
-        // Bolum 22.2: no atom id, no score, no lock reaches this far. If one
-        // ever did, a renderer could start making selection decisions.
+        // No atom id, no score, no lock reaches this far. If one ever did, a
+        // renderer could start making selection decisions.
         assertThat(RenderRequest.class.getRecordComponents())
                 .extracting(java.lang.reflect.RecordComponent::getName)
                 .containsExactly("header", "sections", "customization", "contentLanguage");

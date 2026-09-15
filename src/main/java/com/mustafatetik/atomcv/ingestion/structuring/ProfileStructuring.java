@@ -41,7 +41,7 @@ public class ProfileStructuring {
     /** Public so a profile can record which prompt produced it. */
     public static final String PROMPT_ID = "profile_extraction";
 
-    /** Bolum 43.1's fence: everything inside it is data, not instructions. */
+    /** The fence: everything inside it is data, not instructions. */
     private static final String FENCE_TAG = "cv_text";
 
     /**
@@ -72,7 +72,7 @@ public class ProfileStructuring {
         this.providers = providers;
     }
 
-    /** Which prompt version this bucket runs on (Bolum 53.3). */
+    /** Which prompt version this bucket runs on. */
     public String promptVersionFor(String bucketKey) {
         return prompts.selectVersion(PROMPT_ID, bucketKey);
     }
@@ -115,12 +115,12 @@ public class ProfileStructuring {
     }
 
     /**
-     * Bolum 31.3's note, and it goes <em>inside</em> the fence.
+     * The note, and it goes <em>inside</em> the fence.
      *
      * <p>Outside it, in the system half, the sentence would be a standing
      * instruction on every call — and it would break the constant prefix that
-     * Bolum 27.4's prompt caching discounts. Inside, it is what it actually
-     * is: a remark about this one document.
+     * the prompt caching discounts. Inside, it is what it actually is: a
+     * remark about this one document.
      */
     private static String withScrambleNote(ExtractedText document) {
         if (!document.looksScrambled()) {
@@ -133,8 +133,8 @@ public class ProfileStructuring {
     private Result<ExtractedProfile> gate(ExtractedProfile profile) {
         var abnormal = StructuringAudit.abnormalField(profile);
         if (abnormal.isPresent()) {
-            // Bolum 43.1's third layer. The field's name, never its value:
-            // the suspect string is the thing whoever wrote it wants echoed.
+            // The third layer. The field's name, never its value: the suspect
+            // string is the thing whoever wrote it wants echoed.
             log.warn("Extraction refused by the field-length audit: {}", abnormal.get());
             return Result.err(new PipelineError.NothingExtracted());
         }
