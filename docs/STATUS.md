@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-12** · **iki tarafta da açık madde yok** — `B-097`…`B-099` geldikleri gün karşılandı
+**2026-09-15** · **frontend'e sekiz madde açık** — `B-100`…`B-107`, hepsi tek denetimden, hiçbiri henüz ACK'lenmedi
 
 ## Backend — `atomcv-backend`
 
@@ -12,19 +12,19 @@
 | Aşama 0-3 — hesap, MVP, anonim akış (kapanış denetimi 08-28) | ✅ |
 | Aşama 4 — buradan yapılabilecek maddelerin hepsi | ✅ |
 
-**Aşama 4'te inenler.** **Faz G** düzenleme döngüsü: elle aç/kapa (`B-088`, kotasız) ve doğal dil (`B-089`, kotalı) — düzenleme render'a değil selection state'e uygulanıyor, sayfa sınırı yirmi düzenleme sonra da duruyor. **Üç şablon** (`B-090`, `B-092`), **Katman B** slider'ları (`B-091`, V12), **başvuru takibi** (`B-093`), **DOCX indirme** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`, V14). Test tarafında: **LLM eval** lane'i (`llmEval`, § 53.5), **performans bütçeleri** (§ 52.6) ve golden set'in üç şablona genişletilmesi. **Açık kaynak hazırlığı**: lisans zaten MIT'ti, iş `CONTRIBUTING.md`'de ve bayat ön kapıdaydı.
+**Aşama 4 + denetim.** **Faz G** düzenleme döngüsü (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** slider'ları (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`, § 57.7). Sonra **spec baştan sona koda karşı okundu** ve "dokümanda var, kodda yok" olan her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi.
 
-**Ekleme — § 57.7 yaşam döngüsü e-postalarını tanımladı**, çünkü inşa kılavuzu maddeyi adlandırıp bırakıyordu. Liste **kapalı**: hoş geldin (ilk başarılı girişte, tercihe tabi) ve silme onayı (işlemsel, kapatılamaz — § 57.4 söylemeyi zorunlu kılıyor). Tercih `users.lifecycle_emails`, kapatma bağlantısı satırdaki opak bir jetonla ve **bir sayfaya** iniyor: § 40.3'ün ön-getirmesi, uca inen bir bağlantıyı hiç tıklamamış kişilerin postasını kesen bir şeye çevirirdi. Spec **uygulanmadan önce iki kez düzeltildi**: satır tetikleyicisi giriş kutusuna adresi yazılan herkese posta gönderirdi (§ 40.4 satırı hemen yaratıyor), ve tercihi `PUT /profile/preferences`'a koymak bir CV çakışmasının e-posta ayarını reddetmesi olurdu.
+**Denetimde inenler.** Arşivleme ucu, atom etiketleri, `/api/v1/warmup`, commit'li `openapi.json` + iki CI işi, `emphasize` + `note`, HTML renderer, `format=source`, GitHub içe aktarımı, `/customizations` + `GET /templates`, CDS, Umami — sonra **§ 21.8'in çeviri adımı** (`F-013` kapandı: `auto` artık ilanı gerçekten takip ediyor, eksik sözcüklemeler Faz B ile C arasında çevrilip **kaydediliyor**), **§ 32.5'in pivotu** (TR→EN→DE), **§ 30.6'nın `LISTEN/NOTIFY`'ı** (§ 50.3'ün hazırlık tablosu artık doğru), **§ 48.3'ün beş metrik satırı** ve **§ 48.5'in replay'i**.
 
-**Frontend'in üç maddesi geldikleri gün kapandı (2026-09-12).** `GET /generations/{id}/selection` bu üretimin tarttığı satırları **metniyle** yayımlıyor ve `GenerationResponse` `supersededByGenerationId` taşıyor (`F-031` — `B-088`'in arayüzünü bekleten tek şeydi). `JobStatusResponse` `supersededGenerationId` **ve** `matchLevel` kazandı (`F-032`; ikincisi istenmemişti ve birebir aynı kusurdu — worker'ın `result`'ına yazılan anahtar akışta var, tipte yoktu). 33 ucun hepsi açık bir `operationId` aldı, `empty` iki şemadan kalktı (`F-033`) — ve muhafız isimler değil, `_<sayı>` ile biten bir `operationId` görünce düşen test. Frontend'e `B-097`-`B-099`.
+**Üç bulgu, üçü de sessizdi.** **(1)** nginx'in CSP'si Turnstile'ı blokluyordu — üretimde giriş ve anonim akışın üç ucu `CHALLENGE_FAILED` olurdu, iki reponun testi yeşilken (`B-100`). **(2)** `tags`/`atom_tags`'e hiçbir şey yazmıyordu: Faz B'nin etiket bileşeni ham skorun dörtte biri (§ 19.1) ve yapısal olarak sıfırdı — hiçbir test düşmez, bütün skorlar birlikte düşer (`B-103`). **(3)** çeviri adımının kendi fan-out'u model çağrısını `@Transactional` içinde tutuyordu: on bağlantılı havuz, altmış iplik. Yazma ayrı bean'e taşındı, bir ArchUnit kuralı tutuyor.
 
-**Sayfa garantisi: üçünün de tuttuğu gerçek derleyiciye karşı doğrulandı** — yedi golden profil, hepsi %3 içinde. Genişletme **beş kusur** çıkardı ve beşi de aynı cümleydi: *sayfanın dizdiği ama ölçümün hiç görmediği bir şey.* Listeden sonraki bölüm başlığı; sabit sanılan başlık bloğu (V13 `profiles.header_costs`, artık ölçülüyor); `\resumeItem`'ın iki ayrı kaçak boşluğu; compact'in aynı boşluğu iki kez yazması. **İkisi kullanıcıya ulaşmıştı** — compact'te ve modern'de birer profil ikinci sayfaya taşıyordu. `B-095` açıldı, düzeltildi, kapandı. **Şablon sürümleri yükseldi** (`classic:v6`, `compact:v2`, `modern:v3`); sürüm yalnız ölçüm anahtarlarında geçiyor, API'de değil.
+**İki şartname parçası düzeltildi, ikisi de ölçümle.** **§ 29.2'nin LaTeX format dökümü XeTeX'te çalışmıyor** — motor "Can't \dump a format with native fonts" diyor, ve yine de bozuk bir `.fmt` yazıyor; vaat edilen "1-2 saniye" de asgari bir belgenin **tamamından** (620-925 ms) uzun. **§ 48.5'in replay'i** artık var ama yalnız **Faz E**: Faz B ve C'nin girdileri hiçbir yerde saklanmıyor ve saklamak bir saklama kararı olurdu.
 
-**Ölçümler:** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (`PhaseDReachTest`, sebep aritmetik); `cover_letter` **v1** (v2 turu 169 kelime, bant 255-290); üç BOM override'ı hâlâ gerekli, `SecurityPatchFloorTest` tutuyor.
+**Ölçümler.** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor — etiketler indikten **sonra yeniden ölçüldü**: 0.0959 → **0.1259** (taban 0.40), sonuç değişmedi. `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde.
 
-**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4); OAuth, Turnstile ve `B-083`'ün challenge'ı gerçek uca karşı denenmedi; GitHub entegrasyonu (§ 31.8) gerçek bir OAuth uygulaması istiyor.
+**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4); OAuth, Turnstile ve `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu bilerek yok** (§ 41.4) ve **R2 bilerek yok** (§ 57.4) — ikincisini hatırlatan artık bir paragraf değil bir tuzak tel.
 
-**Test:** 1722 birim · 539 entegrasyon · latex 141 — 0 hata
+**Test:** 1836 birim · 580 entegrasyon · latex 145 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Üçü de kapandı (2026-09-12).** `gen:api` yeniden koşuldu ve 26 operasyon adı yeni adlarına bağlandı (`B-099`; yol üzerinden bağlayan iki yardımcı silindi, gerekçeleri kalmadı). `JobStatus` iki yeni alanı tipli taşıyor ve mock'ta terminal yük tek yerde üretiliyor (`B-098`). **Faz G'nin elle aç/kapa arayüzü indi** (`B-097`): `GET /selection`'dan çizilen liste, yalnız yeri değişen satırları gönderen bir kaydet, ve emekliden halefe bağlantı. Sonuç rotası 219.3 → **224.4 KB** (tavan 280).
+**Sırada `B-100`…`B-107` var (2026-09-15).** Sekizi de tek denetimden ve hiçbiri ACK'lenmedi, yani `to-frontend.md` 100 satırı geçti — bu bir arşivleme değil koordinasyon meselesi. **Önce `npm run gen:api`**: altı uç ve üç şema değişti. Başlıcanlar: `B-100` (CSP — kod işi yok ama dağıtımda görülmeli), `B-101` (`contract-check`'in URL'i), `B-103` (etiketler), `B-107` (`auto` artık ilanı takip ediyor: üretim yavaşlayabilir, ve profil editöründe `createdBy: llm_translate` sözcüklemeler belirecek).
 
 **Frontend'de kalanlar karar, kod değil:** analitik (ölçümü alacak bir dağıtım istiyor), bölüm düzeni ve dil ekseni kontrolleri, diğer diller, `docs/spec/`'in İngilizceye çevrilmesi.

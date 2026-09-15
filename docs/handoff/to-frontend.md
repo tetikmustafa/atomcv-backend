@@ -16,6 +16,11 @@
 "dokümanda var, kodda yok" olan her şey ya yazıldı ya sapma olarak kaydedildi.
 **Önce `npm run gen:api` koş** — altı uç ve üç şema değişti.
 
+> **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
+> (kanal kuralı): `B-100`-`B-107`'nin hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. Sekizi de tek denetimden; okunup ACK'lendiklerinde hepsi birden
+> `resolved/`'a iner.
+
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
 **Since:** `df742fa` · `docker/nginx/nginx.conf` · § 11.2
 **Neden:** politika `default-src 'self'` idi, hiçbir host adlandırmıyordu.
@@ -86,6 +91,25 @@ aynısı. `username` opsiyonel; boşsa profilin iletişim bloğundaki hesap
 okunuyor. Bir öneri `matchedEntryId` taşıyorsa birleştirme (beceri + bağlantı,
 **cümleye dokunulmuyor**), taşımıyorsa yeni proje. Saatte beş çağrı
 (`RATE_LIMITED`), hiçbir izin istemiyor, hiçbir token saklamıyor.
+
+### B-107 · `F-013` kapandı: `auto` artık ilanı gerçekten takip ediyor
+**Since:** `f518644`, `928c34d` · § 21.8, § 32.5
+**Neden:** Türkçe bir profil İngilizce bir ilana Türkçe CV üretiyordu, çünkü
+belgeyi tek dilde tutmanın tek yolu ilanı takip etmeyi reddetmekti. § 21.8'in
+ikinci adımı indi: eksik sözcüklemeler Faz B ile Faz C arasında çevriliyor ve
+kaydediliyor. **Üçüncü diller İngilizce üzerinden** (§ 32.5).
+**Aksiyon — üç şey:**
+1. **Bu üretim yavaş olabilir.** Profilin hedef dilde sözcüklemesi yoksa en
+   çok altmış çeviri çağrısı yapılıyor; **ikinci kez ücretsiz**, çünkü
+   sonuçlar profile yazılıyor. İlerleme çubuğu `SCORING` fazında beklerse
+   sebebi bu.
+2. **Hep ya hiç.** Çeviri tamamlanamazsa belge profilin kendi dilinde
+   çıkıyor — yarısı bir dilde değil. `GenerationResponse` hangi dil olduğunu
+   zaten söylüyor; ekran onu okumalı.
+3. **Profil editöründe yeni sözcüklemeler belirecek.** `createdBy:
+   llm_translate`, `userEdited: false`. Kullanıcının yazmadığı bu satırların
+   gözden geçirilmesi öneriliyor (§ 32.5) — rozet için gereken alan zaten
+   `Variant` şemasında.
 
 ---
 
