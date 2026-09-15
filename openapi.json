@@ -25,6 +25,9 @@
     "name" : "Account",
     "description" : "What the acting user has used today"
   }, {
+    "name" : "GitHub",
+    "description" : "What a public GitHub account says about somebody's projects"
+  }, {
     "name" : "Account",
     "description" : "The account itself"
   }, {
@@ -533,6 +536,108 @@
           },
           "409" : {
             "description" : "The account already has a profile with content in it. Resolutions: replace_profile, keep_existing_profile",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/github/suggestions" : {
+      "post" : {
+        "tags" : [ "GitHub" ],
+        "summary" : "What a public GitHub account has that this profile does not",
+        "description" : "Reads the public repositories of one account and offers the                     significant ones (Bolum 31.8). Nothing is written.\n\n**No permission is asked for and no token is kept.** Only                     public data is read, which is why this needs neither --                     Bolum 40.6.1 deliberately stores no provider token.\n\n`username` is optional: without it the account named in the                     profile's own contact block is read, which is the one the                     CV shows an employer.\n\nA suggestion carrying `matchedEntryId` is a merge onto a                     project already written about. Applying it adds the                     repository's languages to what those bullets claim and                     puts the link on the entry -- **the sentences are never                     touched**, because the person wrote them about what the                     work was for and GitHub knows what it was written in.\n\nOne carrying no match would be written as a new project,                     with GitHub's own description as its first line.\n\nAn account that does not exist, a GitHub that will not                     answer and one with nothing significant in it are the same                     empty list: none of them is something a person can act on.",
+        "operationId" : "suggestFromGitHub",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GitHubImportRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "What is on offer",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/GitHubSuggestion"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — `params.fields` is `username`: the request named no account and the profile names none either",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "RATE_LIMITED — five an hour, because GitHub's own budget is shared by the whole deployment",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/github/apply" : {
+      "post" : {
+        "tags" : [ "GitHub" ],
+        "summary" : "Add the repositories a person picked",
+        "description" : "Bolum 31.8 ends on \"offered, never added automatically\", and                     this is the second half of that sentence: nothing is                     written until a request names it.\n\nA repository this account no longer has is skipped rather                     than refused -- the list is a moment old and a repository                     can be renamed.\n\nOne transaction. Half an import is not a smaller import, it                     is a profile somebody has to work out the state of.",
+        "operationId" : "applyGitHubSuggestions",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GitHubApplyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "How many were written or merged",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GitHubImportResult"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — no account to read",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "RATE_LIMITED",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -3445,6 +3550,92 @@
             "type" : "string",
             "description" : "Server-sent events for this job",
             "example" : "/api/v1/jobs/9b1c4e7a-.../stream"
+          }
+        }
+      },
+      "GitHubImportRequest" : {
+        "type" : "object",
+        "description" : "Which public GitHub account to read",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "A GitHub login; absent reads the one on the profile",
+            "example" : "torvalds",
+            "maxLength" : 39,
+            "minLength" : 0
+          }
+        }
+      },
+      "GitHubSuggestion" : {
+        "type" : "object",
+        "description" : "A public repository worth putting on a CV",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "stars" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "skills" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "matchedEntryId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "confidence" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "merge" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "GitHubApplyRequest" : {
+        "type" : "object",
+        "description" : "Which suggestions to write",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "A GitHub login; absent reads the one on the profile",
+            "example" : "torvalds",
+            "maxLength" : 39,
+            "minLength" : 0
+          },
+          "repositories" : {
+            "type" : "array",
+            "description" : "Repository names, as the suggestion list gave them",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 100,
+              "minLength" : 0
+            },
+            "maxItems" : 10,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "repositories" ]
+      },
+      "GitHubImportResult" : {
+        "type" : "object",
+        "description" : "What the import did",
+        "properties" : {
+          "applied" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Projects written or merged",
+            "example" : 3
           }
         }
       },
