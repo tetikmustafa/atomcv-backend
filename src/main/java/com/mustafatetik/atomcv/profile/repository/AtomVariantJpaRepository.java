@@ -58,4 +58,22 @@ interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
      */
     List<AtomVariant> findByProfileIdAndDerivedFromVariantId(
             UUID profileId, UUID derivedFromVariantId);
+
+    /**
+     * One atom's wordings in one language (Bolum 32.5's pivot asks for these
+     * by name).
+     *
+     * <p><strong>A list, not one row.</strong> The unique index is on
+     * {@code (atom_id, language, tone)}, so an atom that has both a neutral
+     * English wording and a formal one is two rows and a single-result query
+     * would throw on exactly the profile that had done the most work. The
+     * caller picks.
+     *
+     * <p>By atom rather than through the profile-wide load, because the caller
+     * is one translation among sixty running at once: the flat query is the
+     * right shape for assembling a tree and the wrong shape for asking about
+     * a single atom sixty times.
+     */
+    List<AtomVariant> findByProfileIdAndAtomIdAndLanguageOrderByIdAsc(
+            UUID profileId, UUID atomId, String language);
 }
