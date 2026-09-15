@@ -14,7 +14,7 @@ rg -n "ETag|If-Match" docs/spec/08-api.md      # önce ara
 # sonra: sadece bulunan aralığı oku
 ```
 
-Tüm spec ~8.500 satır. Doğru dosyayı okumak 200-600 satır. **Fark 15-40 kat.**
+Tüm spec ~9.400 satır. Doğru dosyayı okumak 200-900 satır. **Fark 15-40 kat.**
 
 ---
 
@@ -136,6 +136,8 @@ Toplam ~600 satır sabit maliyet. Gerisi göreve göre.
 | **Telde ilandan ne dönebilir — mutlak kural 4'ün sınırı** | `spec/16-cost-legal.md` § 57.6 |
 | Terimler sözlüğü | `spec/17-appendix-abc.md` § EK A |
 | Yayın kontrol listeleri | `spec/17-appendix-abc.md` § EK C |
+| **Sapma / Ekleme / Düzeltme kayıtları — spec'in gövdesi buraya 75 kez atıf yapıyor** | `spec/18-appendix-d.md` |
+| Frontend'i ilgilendiren inşa kararları | `spec/18-appendix-d.md` § D.9, § D.10 |
 
 ---
 

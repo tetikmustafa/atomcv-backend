@@ -117,23 +117,29 @@ gerekçeleri.
 | `/ingestion/github/connect` \| `/apply` | `/profile/github/suggestions` \| `/apply` | Aynı karar. **`connect` diye bir adım yok**: § 31.8 yalnız public veri okuyor, yani bağlanacak bir şey ve saklanacak bir token yok (§ 40.6.1) |
 | `PATCH /account/email-preferences` | `PATCH /account` | § 57.7'nin kararı: tercih hesabın bir ayarı, ve hesabın tek bir ayar nesnesi var |
 | `POST /webhooks/resend` | `POST /api/v1/webhooks/resend` | Tek bir önek. Sürümsüz bir yol, sürümlenmiş bir API'nin yanında ikinci bir sözleşme olurdu |
-| `GET /templates`, `/customizations` × 4 | **yok** | Aşağıda |
+| `GET /templates`, `/customizations` × 4 | **beşi de var** | Aşağıda |
 
-**`template_customizations` tablosuna hiçbir şey yazmıyor, ve beş uç bunun
-için vardı.** Katman B'nin ayarları (§ 33.2) `profiles.preferences.appearance`
-içinde yaşıyor: tercih bir ayar formu, kişi başına bir tane, ve onu ayrı bir
-kaynak yapmak — kendi id'si, kendi ETag'i, kendi listesi — kimsenin istemediği
-bir şeyin CRUD'u olurdu. § 14.5 bu sapmanın yarısını zaten kaydetmişti
-(*"işaret edilecek bir `template_customizations` satırı yok"*); bu, öteki
-yarısı.
+**Tablo satır kazandı, ve beş uç da indi.** Bu blok bir aşama boyunca
+tersini söyledi — `template_customizations`'a hiçbir şey yazmadığını, Katman
+B'nin ayarlarının `profiles.preferences.appearance` içinde yaşadığını, ve
+"tablo satır kazandığı gün beş uç da gerekir; o gün geldiğinde bu blok
+silinir" diye bitiyordu. O gün geldi; blok silinmedi.
 
-**`GET /templates`'in işini `capabilities.allowedTemplates` yapıyor** (§ 35.7)
-ve orada yapması daha doğru: liste kayıtta gerçekten var olanları taşıyor, ve
-istemci onu zaten her açılışta okuduğu cevapta alıyor.
+Bugünkü hâli: `SavedCustomization` `template_customizations`'a yazıyor,
+`CustomizationController` `GET`/`POST /customizations` ve
+`PATCH`/`DELETE /customizations/{id}` yayımlıyor, ve `GET /templates` katalogu
+veriyor. Beşi de `openapi.json`'da.
 
-**Tablo satır kazandığı gün beş uç da gerekir.** O gün geldiğinde bu blok
-silinir; bugün var olmayan bir kaynağın CRUD'unu yayımlamak, çağıranı
-hiçbir şeye bağlamayan bir id'ye bağlamak olurdu.
+**`capabilities.allowedTemplates` kalktığı yerde durmuyor** (§ 35.7). İkisi
+farklı soruya cevap veriyor: yetenek listesi *bu oturumun neyi
+kullanabileceğini* söylüyor (anonim çağıran daha azını görüyor),
+`GET /templates` ise kayıttaki şablonların kendisini — adı, sürümü, yaklaşık
+kapasitesi. Bir seçim ekranı ikisini birden istiyor.
+
+> **Ders, ve tek satır:** *bir bloğun kendi çıkış koşulunu yazması onu
+> silmiyor.* Bu paragraf "o gün geldiğinde silinir" diyordu ve o günü kimse
+> fark etmedi, çünkü koşulu kontrol eden hiçbir şey yoktu. Denetim
+> (2026-09-16) onu koda karşı okuyarak buldu.
 
 > **Entry tarih aralığı sıralı olmak zorunda (F-002).** `startDate` ve `endDate`
 > ikisi de doluysa `endDate >= startDate`; ihlal **400 `VALIDATION_FAILED`** +
@@ -285,11 +291,45 @@ bir tane var.
 > **Buradaki her id'yi düzenleme ucu kabul eder**; maddenin tamamı budur.
 >
 > `text` **o CV'nin bastığı** metindir, bugünkü profilin değil (§ 24.2'nin
-> gerekçesi). Skor yayımlanmaz — § 23.3'ün yüzdeye itirazı bir madde yanındaki
-> sayı için de geçerli, ve sıra zaten sıralamayı söylüyor. Üst sınır yok:
-> modele gösterilen 30 satır prompt'un bedeliyle ilgilidir, kendi geçmişini
-> gezen kişi satır başına ödemiyor. Profilden silinmiş atom listelenmez, geri
-> konamaz çünkü.
+> gerekçesi). Üst sınır yok: modele gösterilen 30 satır prompt'un bedeliyle
+> ilgilidir, kendi geçmişini gezen kişi satır başına ödemiyor. Profilden
+> silinmiş atom listelenmez, geri konamaz çünkü.
+
+#### 35.3.1 P7'nin üçünden ikisi indi (denetim, 2026-09-16)
+
+**İlke 7 her seçimin gerekçesinin gösterilmesini istiyor ve üç şey
+adlandırıyor: skor, eşleşen keyword'ler, red nedeni.** Üçü de
+hesaplanıyordu. Hiçbiri yayımlanmıyordu — `SelectionLine` `atomId`, `text` ve
+`onPage` taşıyordu, yani **gerekçesi bildirilmemiş bir sıralama**, ki İlke 7
+tam olarak o şekli dışlamak için var. § 1.2'nin beşinci iddiası da bunun
+üstünde duruyor.
+
+**`matchedKeywords` ve `heldBackReason` indi. Skor inmedi, ve bu bir karar.**
+§ 23.3'ün yüzdeye itirazı bir madde yanındaki sayı için de geçerli — okuyanı
+onu kendi emeği hakkında bir hüküm saymaya davet ediyor — ve sıra zaten
+sıralamanın söylediğini söylüyor. Öteki ikisi hüküm değil, **kanıt**.
+
+**`matchedKeywords` yayımlanabilmek için önce hesaplanmak zorundaydı.**
+§ 14.5 ve § 20.5 alanı ikisi de listeliyor ve ne `SelectedAtom` ne
+`ScoredAtom` taşıyordu: Faz B'nin iki karşılaştırması bunu zaten belirleyip
+yalnız **sayısını** tutuyordu. "8'in 2'si eşleşti" bir not, "go, postgres" bir
+gerekçe. Sıralı, ve bu bir sunum tercihi değil: okunduğu kümeler `Set.copyOf`
+sonucu ve JVM koşusu başına salt'lanmış sırada geziliyor (CLAUDE.md), yani
+sırasız bir liste JSONB kolona ve § 51.2'nin determinizm karşılaştırmasına her
+koşuda başka türlü düşerdi — yerelde geçen, runner'da düşen, flake gibi okunan.
+
+**`heldBackReason`'ın hesaplanacak bir şeyi yoktu.** Dört değeri okuyanı dört
+ayrı yere gönderiyor: `BUDGET` sayfa sınırına, `INACTIVE` profil editörüne,
+`EXCLUDED_BY_DIRECTIVE` bu CV üzerinde yaptığı düzenlemeye,
+`ENTRY_BELOW_MINIMUM` bütün olarak düşen entry'ye. Şemada **kapalı enum**:
+istemci ICU `select`'ini ancak sözlüğü bilerek yazabilir.
+
+**Sayfaya girmeyen satır eşleşen terim taşımıyor.** Anlık görüntüye yalnız
+seçilenler yazılıyor, ve burada uydurmak Faz B'yi yeniden koşturmak olurdu —
+§ 24.1'in yapmayın dediği tek şey.
+
+**Eski anlık görüntüler boş okunuyor**, düşmüyor: geçen hafta yapılmış bir
+üretim yine açılıyor.
 
 > **`supersededByGenerationId` (`F-031`).** Emekli bir üretim halefini
 > adlandırır; yalnız `status` `superseded` iken gelir. Kenar veritabanında ters
