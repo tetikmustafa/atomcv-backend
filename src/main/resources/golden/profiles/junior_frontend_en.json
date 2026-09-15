@@ -27,12 +27,14 @@
               "text": "Built a timetable planner in React that resolves clashes between 40 modules",
               "importance": 0.6,
               "skills": ["react", "typescript"],
+              "tags": ["frontend", "react", "typescript"],
               "metrics": ["40 modules"]
             },
             {
               "text": "Wrote the accessibility tests that took the app to a full keyboard-only flow",
               "importance": 0.5,
-              "skills": ["accessibility"]
+              "skills": ["accessibility"],
+              "tags": ["frontend"]
             }
           ]
         },
@@ -47,7 +49,8 @@
             {
               "text": "A small dashboard over a public forecast API, deployed on a free tier",
               "importance": 0.35,
-              "skills": ["javascript"]
+              "skills": ["javascript"],
+              "tags": ["frontend", "javascript"]
             }
           ]
         }

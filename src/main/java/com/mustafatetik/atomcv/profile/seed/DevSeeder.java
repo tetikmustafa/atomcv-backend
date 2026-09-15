@@ -1,5 +1,8 @@
 package com.mustafatetik.atomcv.profile.seed;
 
+import com.mustafatetik.atomcv.profile.domain.AtomTag;
+import com.mustafatetik.atomcv.profile.domain.Tag;
+import com.mustafatetik.atomcv.profile.domain.TagSource;
 import com.mustafatetik.atomcv.shared.security.LocalDevUser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -59,11 +62,44 @@ public class DevSeeder implements ApplicationRunner {
         golden.entries().forEach(em::persist);
         golden.atoms().forEach(em::persist);
         golden.variants().forEach(em::persist);
+        int tags = seedTags(golden);
 
         // Counts, never content (absolute rule 4) — even for a fixture, since
         // the same line would print a real profile if the guard above changed.
-        log.info("Seeded the {} fixture: {} sections, {} entries, {} atoms",
+        log.info("Seeded the {} fixture: {} sections, {} entries, {} atoms, {} tags",
                 fixture, golden.sections().size(), golden.entries().size(),
-                golden.atoms().size());
+                golden.atoms().size(), tags);
+    }
+
+    /**
+     * The tags, as the two rows production stores them in.
+     *
+     * <p><strong>Not a detail of the fixture.</strong> Bolum 19.1 gives the tag
+     * term a quarter of the raw score, and a seeded profile with no tag rows
+     * makes that quarter structurally zero for every generation run locally —
+     * which is a scorer behaving differently on a developer's machine than in
+     * production, and the hardest kind of difference to notice.
+     *
+     * <p>One {@code tags} row per distinct label and one {@code atom_tags} row
+     * per wearer, which is the shape the unique index on
+     * {@code (profile_id, label)} requires.
+     *
+     * @return how many atom-to-tag links were written
+     */
+    private int seedTags(GoldenProfile golden) {
+        var byLabel = new java.util.LinkedHashMap<String, Tag>();
+        int links = 0;
+        for (var tagged : golden.tagsByAtom().entrySet()) {
+            for (String label : tagged.getValue()) {
+                Tag tag = byLabel.computeIfAbsent(label, fresh -> {
+                    var created = new Tag(golden.profile().getId(), fresh);
+                    em.persist(created);
+                    return created;
+                });
+                em.persist(new AtomTag(tagged.getKey(), tag.getId(), TagSource.AUTO));
+                links++;
+            }
+        }
+        return links;
     }
 }

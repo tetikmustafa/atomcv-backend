@@ -99,6 +99,54 @@ class GoldenProfileReaderTest {
                 assertThat(atom.isAlwaysInclude()).isTrue());
     }
 
+    // -- tags (Bolum 19.1's fourth of the raw score) ------------------------
+
+    /**
+     * <strong>A quarter of Bolum 19.1's raw score was unreachable from this
+     * fixture set.</strong> No golden profile carried a tag, nothing wrote one,
+     * and every measurement taken here — including the ones
+     * {@code PhaseDReachTest} pins — was taken against a term that could only
+     * be zero. The rows exist in production the moment somebody tags an atom;
+     * a fixture set that never did was a fixture set of a different system.
+     */
+    @Test
+    void thefixturesCarryTags() {
+        var master = GoldenProfileReader.read("master_cv_en", OWNER);
+
+        assertThat(master.tagsByAtom()).isNotEmpty();
+        assertThat(master.tagsByAtom().keySet())
+                .as("every tagged id is an atom of this profile")
+                .isSubsetOf(master.atoms().stream()
+                        .map(com.mustafatetik.atomcv.profile.domain.Atom::getId).toList());
+    }
+
+    /**
+     * Canonical, because that is what the scorer compares against: a tag that
+     * kept its capital would never match a posting's keyword, and absolute
+     * rule 7's locale is the reason it is {@code Locale.ROOT} rather than the
+     * default — "SQL" lowercases to "sqI" in Turkish.
+     */
+    @Test
+    void thetagsAreCanonical() {
+        assertThat(GoldenProfileReader.read("master_cv_en", OWNER).tagsByAtom().values())
+                .allSatisfy(tags -> assertThat(tags).allSatisfy(tag -> assertThat(tag)
+                        .isEqualTo(tag.strip().toLowerCase(java.util.Locale.ROOT))));
+    }
+
+    /**
+     * And an untagged profile still reads. {@code academic_long} carries no
+     * skills on any atom and therefore no tags, which is what most profiles
+     * look like before anyone has tagged them — and the one shape that must
+     * not become a special case.
+     */
+    @Test
+    void aprofileWithNoTagsIsStillAprofile() {
+        var academic = GoldenProfileReader.read("academic_long", OWNER);
+
+        assertThat(academic.tagsByAtom()).isEmpty();
+        assertThat(academic.atoms()).isNotEmpty();
+    }
+
     @Test
     void anEntryCanAskForMoreBulletsThanItHas() {
         // minimal_edge sets minAtoms above the number of atoms on purpose:

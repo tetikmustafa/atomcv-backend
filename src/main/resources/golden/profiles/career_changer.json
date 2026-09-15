@@ -30,12 +30,14 @@
               "importance": 0.9,
               "verified": true,
               "skills": ["sql", "dbt"],
+              "tags": ["data engineering", "sql"],
               "metrics": ["three hours to twenty minutes"]
             },
             {
               "text": "Modelled waste across 60 stores and found the two categories behind 40% of it",
               "importance": 0.85,
               "skills": ["python", "pandas"],
+              "tags": ["data engineering", "python"],
               "metrics": ["60 stores", "40%"]
             },
             {

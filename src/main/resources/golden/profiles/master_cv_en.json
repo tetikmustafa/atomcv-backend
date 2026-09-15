@@ -31,6 +31,12 @@
       "etl",
       "natural-language-processing"
      ],
+     "tags": [
+       "backend",
+       "data engineering",
+       "java",
+       "spring boot"
+     ],
      "metrics": [
       "300K+",
       "97.27%"
@@ -49,6 +55,12 @@
       "test-driven-development",
       "rest",
       "react"
+     ],
+     "tags": [
+       "backend",
+       "devops",
+       "java",
+       "spring boot"
      ],
      "metrics": [
       "21",
@@ -71,6 +83,12 @@
       "sap-bw",
       "sql",
       "python"
+     ],
+     "tags": [
+       "data engineering",
+       "optimization",
+       "etl",
+       "sql"
      ],
      "metrics": [
       "300,000",
@@ -96,6 +114,11 @@
       "qwen",
       "diffusion-models",
       "yolov8"
+     ],
+     "tags": [
+       "computer vision",
+       "machine learning",
+       "natural language processing"
      ],
      "metrics": [
       "97.27%",
@@ -147,6 +170,11 @@
         "etl",
         "data-lakehouse"
        ],
+       "tags": [
+         "data engineering",
+         "python",
+         "etl"
+       ],
        "metrics": [
         "300,000"
        ],
@@ -161,6 +189,10 @@
         "power-query",
         "api-integration"
        ],
+       "tags": [
+         "backend",
+         "data engineering"
+       ],
        "properNouns": [
         "Power Query"
        ]
@@ -171,6 +203,9 @@
        "skills": [
         "powerbi",
         "dax"
+       ],
+       "tags": [
+         "data engineering"
        ],
        "metrics": [
         "5+"
@@ -187,6 +222,9 @@
         "gurobi",
         "vehicle-routing"
        ],
+       "tags": [
+         "optimization"
+       ],
        "properNouns": [
         "Gurobi"
        ]
@@ -199,6 +237,10 @@
         "sap-bw",
         "data-modeling"
        ],
+       "tags": [
+         "data engineering",
+         "databases"
+       ],
        "properNouns": [
         "SQL Server",
         "SAP Business Warehouse"
@@ -209,6 +251,9 @@
        "kind": "bullet",
        "skills": [
         "agile"
+       ],
+       "tags": [
+         "agile"
        ]
       }
      ]
@@ -229,6 +274,10 @@
         "jira",
         "bugzilla"
        ],
+       "tags": [
+         "agile",
+         "devops"
+       ],
        "properNouns": [
         "Jira",
         "Bugzilla"
@@ -244,6 +293,11 @@
         "postman",
         "soapui"
        ],
+       "tags": [
+         "testing",
+         "backend",
+         "rest services"
+       ],
        "properNouns": [
         "Postman",
         "SoapUI"
@@ -255,6 +309,10 @@
        "skills": [
         "technical-documentation",
         "api-testing"
+       ],
+       "tags": [
+         "documentation",
+         "testing"
        ],
        "metrics": [
         "35+"
@@ -277,6 +335,12 @@
         "java",
         "spring-boot",
         "distributed-systems"
+       ],
+       "tags": [
+         "backend",
+         "microservices",
+         "java",
+         "spring boot"
        ]
       },
       {
@@ -286,6 +350,12 @@
         "react",
         "javascript",
         "rest"
+       ],
+       "tags": [
+         "frontend",
+         "backend",
+         "react",
+         "javascript"
        ]
       },
       {
@@ -296,6 +366,10 @@
         "spring-data-jpa",
         "data-transfer-object"
        ],
+       "tags": [
+         "backend",
+         "databases"
+       ],
        "properNouns": [
         "MySQL"
        ]
@@ -305,6 +379,10 @@
        "kind": "bullet",
        "skills": [
         "test-driven-development"
+       ],
+       "tags": [
+         "testing",
+         "test-driven development"
        ]
       },
       {
@@ -314,6 +392,11 @@
         "git",
         "openapi",
         "swagger"
+       ],
+       "tags": [
+         "documentation",
+         "devops",
+         "source control"
        ],
        "properNouns": [
         "Git",
@@ -326,6 +409,11 @@
        "skills": [
         "docker",
         "software-development-lifecycle"
+       ],
+       "tags": [
+         "devops",
+         "docker",
+         "software development lifecycle"
        ],
        "properNouns": [
         "Docker"
@@ -353,6 +441,11 @@
         "cloudflare-workers",
         "opennext"
        ],
+       "tags": [
+         "devops",
+         "frontend",
+         "typescript"
+       ],
        "metrics": [
         "15"
        ],
@@ -367,6 +460,10 @@
        "skills": [
         "large-language-models",
         "high-availability"
+       ],
+       "tags": [
+         "machine learning",
+         "microservices"
        ],
        "metrics": [
         "5",
@@ -387,6 +484,9 @@
         "pdf-processing",
         "applicant-tracking-systems"
        ],
+       "tags": [
+         "computer vision"
+       ],
        "metrics": [
         "54-line",
         "one-page"
@@ -401,6 +501,9 @@
         "docx",
         "unpdf",
         "mammoth"
+       ],
+       "tags": [
+         "computer vision"
        ],
        "metrics": [
         "zero"
@@ -417,6 +520,11 @@
         "redis",
         "rate-limiting",
         "serverless-computing"
+       ],
+       "tags": [
+         "security",
+         "databases",
+         "devops"
        ],
        "properNouns": [
         "Cloudflare Turnstile",
@@ -438,6 +546,10 @@
         "controlnet",
         "qwen"
        ],
+       "tags": [
+         "computer vision",
+         "machine learning"
+       ],
        "metrics": [
         "2.5"
        ],
@@ -457,6 +569,9 @@
         "clip",
         "variational-autoencoder",
         "lora"
+       ],
+       "tags": [
+         "machine learning"
        ],
        "metrics": [
         "4-component",
@@ -478,6 +593,9 @@
         "auraflow",
         "diffusion-models"
        ],
+       "tags": [
+         "computer vision"
+       ],
        "metrics": [
         "20+",
         "4",
@@ -494,6 +612,9 @@
        "skills": [
         "prompt-engineering"
        ],
+       "tags": [
+         "computer vision"
+       ],
        "metrics": [
         "3"
        ]
@@ -504,6 +625,10 @@
        "skills": [
         "react",
         "websocket"
+       ],
+       "tags": [
+         "frontend",
+         "react"
        ],
        "metrics": [
         "12-step"
@@ -524,6 +649,11 @@
         "flask",
         "api-development",
         "serverless-computing"
+       ],
+       "tags": [
+         "backend",
+         "computer vision",
+         "devops"
        ]
       },
       {
@@ -533,6 +663,10 @@
         "yolov8",
         "resnet",
         "computer-vision"
+       ],
+       "tags": [
+         "computer vision",
+         "machine learning"
        ],
        "metrics": [
         "99.4%",
@@ -553,6 +687,9 @@
         "memoization",
         "algorithms"
        ],
+       "tags": [
+         "optimization"
+       ],
        "metrics": [
         "101-point",
         "under 10 milliseconds"
@@ -565,6 +702,11 @@
         "opencv",
         "python",
         "data-annotation"
+       ],
+       "tags": [
+         "computer vision",
+         "data engineering",
+         "python"
        ],
        "metrics": [
         "4,432",
@@ -582,6 +724,11 @@
        "skills": [
         "react",
         "real-time-systems"
+       ],
+       "tags": [
+         "frontend",
+         "game development",
+         "react"
        ],
        "metrics": [
         "150-250ms"
@@ -603,6 +750,12 @@
         "microservices",
         "rest"
        ],
+       "tags": [
+         "backend",
+         "microservices",
+         "java",
+         "spring boot"
+       ],
        "metrics": [
         "21",
         "3.3",
@@ -617,6 +770,10 @@
         "model-view-controller",
         "crud",
         "json"
+       ],
+       "tags": [
+         "backend",
+         "rest services"
        ]
       },
       {
@@ -627,6 +784,11 @@
         "cors",
         "load-balancing",
         "openapi"
+       ],
+       "tags": [
+         "backend",
+         "documentation",
+         "microservices"
        ]
       },
       {
@@ -636,6 +798,10 @@
         "netflix-eureka",
         "service-discovery",
         "openfeign"
+       ],
+       "tags": [
+         "backend",
+         "microservices"
        ],
        "properNouns": [
         "Netflix Eureka"
@@ -652,6 +818,11 @@
         "lombok",
         "data-transfer-object"
        ],
+       "tags": [
+         "backend",
+         "databases",
+         "microservices"
+       ],
        "metrics": [
         "8"
        ],
@@ -667,6 +838,10 @@
         "docker-compose",
         "containerization",
         "health-checks"
+       ],
+       "tags": [
+         "devops",
+         "docker"
        ],
        "metrics": [
         "5-container"
@@ -689,6 +864,12 @@
         "natural-language-processing",
         "transformers",
         "deep-learning"
+       ],
+       "tags": [
+         "machine learning",
+         "research",
+         "natural language processing",
+         "deep learning"
        ]
       },
       {
@@ -698,6 +879,10 @@
         "dataset-engineering",
         "nltk",
         "text-normalization"
+       ],
+       "tags": [
+         "data engineering",
+         "natural language processing"
        ],
        "metrics": [
         "two",
@@ -716,6 +901,10 @@
         "albert",
         "transformers",
         "model-fine-tuning"
+       ],
+       "tags": [
+         "machine learning",
+         "research"
        ],
        "metrics": [
         "60M",
@@ -739,6 +928,9 @@
         "long-short-term-memory",
         "bigru"
        ],
+       "tags": [
+         "machine learning"
+       ],
        "metrics": [
         "97.27%",
         "97.00%"
@@ -755,6 +947,9 @@
         "albert",
         "t5",
         "model-optimization"
+       ],
+       "tags": [
+         "machine learning"
        ],
        "metrics": [
         "80%"
@@ -779,6 +974,9 @@
         "windows",
         "remnux"
        ],
+       "tags": [
+         "security"
+       ],
        "metrics": [
         "10",
         "v7"
@@ -802,6 +1000,10 @@
         "tcpdump",
         "network-analysis"
        ],
+       "tags": [
+         "security",
+         "devops"
+       ],
        "properNouns": [
         "INetSim",
         "Wireshark"
@@ -817,6 +1019,9 @@
         "sha-256",
         "aes",
         "rsa"
+       ],
+       "tags": [
+         "security"
        ],
        "metrics": [
         "67/71"
@@ -836,6 +1041,9 @@
         "regshot",
         "digital-forensics"
        ],
+       "tags": [
+         "security"
+       ],
        "properNouns": [
         "Procmon",
         "Process Explorer",
@@ -848,6 +1056,9 @@
        "skills": [
         "malware-analysis",
         "registry-analysis"
+       ],
+       "tags": [
+         "security"
        ],
        "properNouns": [
         ".WNCRY"
@@ -868,6 +1079,11 @@
         "typescript",
         "static-site-generation"
        ],
+       "tags": [
+         "frontend",
+         "react",
+         "typescript"
+       ],
        "metrics": [
         "15",
         "19",
@@ -880,6 +1096,9 @@
        "skills": [
         "client-side-rendering",
         "web-development"
+       ],
+       "tags": [
+         "frontend"
        ]
       },
       {
@@ -890,6 +1109,9 @@
         "shadcn/ui",
         "css",
         "user-interface-design"
+       ],
+       "tags": [
+         "frontend"
        ],
        "metrics": [
         "60fps"
@@ -905,6 +1127,10 @@
         "data-modeling",
         "responsive-web-design"
        ],
+       "tags": [
+         "data engineering",
+         "frontend"
+       ],
        "metrics": [
         "10+"
        ]
@@ -918,6 +1144,12 @@
         "git",
         "github",
         "continuous-deployment"
+       ],
+       "tags": [
+         "devops",
+         "frontend",
+         "source control",
+         "continuous delivery"
        ],
        "properNouns": [
         "OpenGraph",
@@ -938,6 +1170,9 @@
         "mixed-integer-linear-programming",
         "optimization",
         "vehicle-routing"
+       ],
+       "tags": [
+         "optimization"
        ]
       },
       {
@@ -948,6 +1183,11 @@
         "pyomo",
         "gurobi",
         "data-processing"
+       ],
+       "tags": [
+         "optimization",
+         "data engineering",
+         "python"
        ],
        "metrics": [
         "3000+"
@@ -964,6 +1204,9 @@
         "optimization",
         "route-planning",
         "algorithms"
+       ],
+       "tags": [
+         "optimization"
        ]
       }
      ]
@@ -980,6 +1223,9 @@
         "csharp",
         "event-driven-programming"
        ],
+       "tags": [
+         "game development"
+       ],
        "metrics": [
         "5-player"
        ],
@@ -994,6 +1240,10 @@
         "photon-unity-networking",
         "remote-procedure-call",
         "client-server-architecture"
+       ],
+       "tags": [
+         "game development",
+         "microservices"
        ],
        "properNouns": [
         "Photon Unity Networking"
@@ -1012,6 +1262,9 @@
         "x86-assembly",
         "emu8086"
        ],
+       "tags": [
+         "game development"
+       ],
        "metrics": [
         "8086"
        ],
@@ -1026,6 +1279,9 @@
         "bios",
         "memory-management",
         "vga"
+       ],
+       "tags": [
+         "game development"
        ]
       }
      ]
@@ -1042,6 +1298,10 @@
         "webgl",
         "three.js"
        ],
+       "tags": [
+         "frontend",
+         "javascript"
+       ],
        "metrics": [
         "3D"
        ],
@@ -1054,6 +1314,9 @@
        "kind": "bullet",
        "skills": [
         "orbital-mechanics"
+       ],
+       "tags": [
+         "optimization"
        ]
       }
      ]
@@ -1071,6 +1334,10 @@
         "network-routing",
         "system-administration"
        ],
+       "tags": [
+         "devops",
+         "security"
+       ],
        "properNouns": [
         "Linux"
        ]
@@ -1081,6 +1348,9 @@
        "skills": [
         "dns",
         "system-administration"
+       ],
+       "tags": [
+         "devops"
        ]
       },
       {
@@ -1091,6 +1361,10 @@
         "spf",
         "dkim",
         "dmarc"
+       ],
+       "tags": [
+         "security",
+         "devops"
        ]
       }
      ]
@@ -1108,6 +1382,12 @@
         "object-oriented-programming",
         "model-view-controller"
        ],
+       "tags": [
+         "backend",
+         "frontend",
+         "java",
+         "object-oriented programming"
+       ],
        "properNouns": [
         "JavaFX"
        ]
@@ -1117,6 +1397,9 @@
        "kind": "bullet",
        "skills": [
         "algorithms"
+       ],
+       "tags": [
+         "optimization"
        ]
       },
       {
@@ -1126,6 +1409,10 @@
         "graphical-user-interface",
         "data-binding",
         "data-persistence"
+       ],
+       "tags": [
+         "databases",
+         "frontend"
        ]
       }
      ]
@@ -1141,6 +1428,10 @@
         "natural-language-processing",
         "api-integration",
         "sentiment-analysis"
+       ],
+       "tags": [
+         "natural language processing",
+         "backend"
        ],
        "metrics": [
         "12,600+"
@@ -1159,6 +1450,10 @@
         "undersampling",
         "data-preprocessing",
         "machine-learning"
+       ],
+       "tags": [
+         "machine learning",
+         "data engineering"
        ]
       },
       {
@@ -1173,6 +1468,9 @@
         "textgcn",
         "roberta",
         "distilbert"
+       ],
+       "tags": [
+         "machine learning"
        ],
        "metrics": [
         "1D"
@@ -1190,6 +1488,10 @@
        "skills": [
         "machine-learning-evaluation"
        ],
+       "tags": [
+         "machine learning",
+         "research"
+       ],
        "metrics": [
         "70/30",
         "80/20"
@@ -1203,6 +1505,9 @@
         "convolutional-neural-networks",
         "recurrent-neural-networks",
         "model-evaluation"
+       ],
+       "tags": [
+         "machine learning"
        ],
        "metrics": [
         "76%",
@@ -1240,6 +1545,12 @@
         "c",
         "x86-assembly"
        ],
+       "tags": [
+         "data engineering",
+         "frontend",
+         "java",
+         "python"
+       ],
        "metrics": [
         "8086"
        ]
@@ -1267,6 +1578,12 @@
         "json-web-token",
         "data-transfer-object",
         "model-view-controller"
+       ],
+       "tags": [
+         "backend",
+         "databases",
+         "spring boot",
+         "rest services"
        ]
       }
      ]
@@ -1287,6 +1604,10 @@
         "shadcn/ui",
         "three.js",
         "webgl"
+       ],
+       "tags": [
+         "frontend",
+         "react"
        ],
        "properNouns": [
         "Shadcn UI"
@@ -1310,6 +1631,12 @@
         "gurobi",
         "pyomo",
         "mixed-integer-linear-programming"
+       ],
+       "tags": [
+         "data engineering",
+         "optimization",
+         "databases",
+         "etl"
        ],
        "properNouns": [
         "Microsoft Fabric",
@@ -1346,6 +1673,11 @@
         "natural-language-processing",
         "nltk",
         "opencv"
+       ],
+       "tags": [
+         "machine learning",
+         "computer vision",
+         "natural language processing"
        ],
        "properNouns": [
         "PyTorch",
@@ -1384,6 +1716,10 @@
         "dkim",
         "dmarc"
        ],
+       "tags": [
+         "security",
+         "devops"
+       ],
        "properNouns": [
         "REMnux",
         "Wireshark",
@@ -1419,6 +1755,12 @@
         "bugzilla",
         "unity",
         "roboflow"
+       ],
+       "tags": [
+         "devops",
+         "agile",
+         "docker",
+         "source control"
        ],
        "properNouns": [
         "Docker",

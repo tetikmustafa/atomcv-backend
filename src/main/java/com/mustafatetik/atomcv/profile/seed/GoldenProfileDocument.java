@@ -71,6 +71,14 @@ public record GoldenProfileDocument(
      * @param alternatives further wordings of the same fact. {@code text} is
      *                     the primary one; these are not, and each must claim a
      *                     different language-and-tone pair, as the API requires
+     * @param tags         what this atom is <em>about</em>, which is not the
+     *                     same list as {@code skills}: a skill is a technology
+     *                     the sentence names and a tag is a theme somebody
+     *                     would search their own profile by. Bolum 19.1 gives
+     *                     the tag term a quarter of the raw score, and a
+     *                     fixture set with none makes that quarter
+     *                     structurally zero -- which is what every golden
+     *                     measurement was taken against until these existed
      */
     public record Atom(
             String text,
@@ -84,6 +92,7 @@ public record GoldenProfileDocument(
             List<String> skills,
             List<String> metrics,
             List<String> properNouns,
+            List<String> tags,
             List<Wording> alternatives) {
     }
 

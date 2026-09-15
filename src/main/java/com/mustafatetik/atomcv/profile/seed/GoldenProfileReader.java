@@ -172,6 +172,9 @@ public final class GoldenProfileReader {
         var entries = new ArrayList<Entry>();
         var atoms = new ArrayList<Atom>();
         var variants = new ArrayList<AtomVariant>();
+        // Insertion order, because a score built from a salted iteration order
+        // would move between runs (CLAUDE.md).
+        var tagsByAtom = new java.util.LinkedHashMap<UUID, java.util.Set<String>>();
 
         short sectionOrder = 0;
         for (GoldenProfileDocument.Section source : orEmpty(document.sections())) {
@@ -187,7 +190,7 @@ public final class GoldenProfileReader {
             short atomOrder = 0;
             for (GoldenProfileDocument.Atom loose : orEmpty(source.atoms())) {
                 atomOrder = addAtom(loose, profileId, section, null, atomOrder,
-                        language, atoms, variants);
+                        language, atoms, variants, tagsByAtom);
             }
 
             short entryOrder = 0;
@@ -213,13 +216,13 @@ public final class GoldenProfileReader {
                 short bulletOrder = 0;
                 for (GoldenProfileDocument.Atom bullet : orEmpty(sourceEntry.atoms())) {
                     bulletOrder = addAtom(bullet, profileId, section, entry, bulletOrder,
-                            language, atoms, variants);
+                            language, atoms, variants, tagsByAtom);
                 }
             }
         }
 
         return new GoldenProfile(document.name(), document.description(), profile,
-                sections, entries, atoms, variants,
+                sections, entries, atoms, variants, tagsByAtom,
                 com.mustafatetik.atomcv.profile.service.ProfileAssembler.assemble(
                         profileId, sections, entries, atoms, variants));
     }
@@ -232,7 +235,8 @@ public final class GoldenProfileReader {
             short displayOrder,
             String profileLanguage,
             List<Atom> atoms,
-            List<AtomVariant> variants) {
+            List<AtomVariant> variants,
+            Map<UUID, java.util.Set<String>> tagsByAtom) {
 
         AtomKind kind = source.kind() != null
                 ? source.kind()
@@ -251,6 +255,20 @@ public final class GoldenProfileReader {
         atom.setMetrics(orEmpty(source.metrics()));
         atom.setProperNouns(orEmpty(source.properNouns()));
         atoms.add(atom);
+        // Canonical, because that is what the scorer compares against: Faz B
+        // lowercases the posting's keywords and a tag that kept its capital
+        // would never match one (absolute rule 7's locale, for the same
+        // reason -- "SQL" is not "sqI").
+        var tags = new java.util.LinkedHashSet<String>();
+        for (String tag : orEmpty(source.tags())) {
+            String canonical = tag.strip().toLowerCase(java.util.Locale.ROOT);
+            if (!canonical.isBlank()) {
+                tags.add(canonical);
+            }
+        }
+        if (!tags.isEmpty()) {
+            tagsByAtom.put(atom.getId(), java.util.Collections.unmodifiableSet(tags));
+        }
 
         String primaryLanguage = source.language() == null ? profileLanguage : source.language();
         var variant = new AtomVariant(profileId, atom.getId(), primaryLanguage,
