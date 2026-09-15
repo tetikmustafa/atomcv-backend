@@ -289,4 +289,12 @@ tasks.register<Test>("latexTest") {
     // Lets `-Dgolden.record=true` reach the test JVM, which is how the golden
     // set's measured costs are re-recorded after a fixture changes.
     systemProperty("golden.record", System.getProperty("golden.record", "false"))
+    // And the geometry `scripts/measure-template.sh` asks about (EK C.2).
+    // Forwarded rather than read from the environment for the same reason:
+    // `-D` is the one channel that reaches a test JVM unchanged.
+    listOf("measure.template", "measure.font", "measure.size",
+            "measure.margin", "measure.spacing", "measure.accent")
+        .forEach { name ->
+            System.getProperty(name)?.let { systemProperty(name, it) }
+        }
 }

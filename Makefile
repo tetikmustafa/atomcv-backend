@@ -20,7 +20,7 @@ endif
 # fails. Naming sh keeps one spelling that works on Windows and on Linux.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int golden-costs openapi
+.PHONY: dev dev-full db-reset record test test-int golden-costs openapi measure-template
 
 ## core services (postgres, redis, mailpit) + backend with the fake LLM
 dev:
@@ -63,3 +63,10 @@ golden-costs:
 ## fails when it has drifted from what the endpoints publish.
 openapi:
 	$(GRADLE) integrationTest --tests '*OpenApiDocumentIT' -Dopenapi.record=true
+
+## measure one template's page capacity and fixed costs against the real
+## compiler (needs Docker; builds the LaTeX image). EK C.2's two "measured"
+## boxes. Pass a template and optionally a geometry:
+##   make measure-template TEMPLATE=compact ARGS="--size 9.5 --margin 0.45"
+measure-template:
+	./scripts/measure-template.sh $(TEMPLATE) $(ARGS)
