@@ -272,6 +272,17 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("docker/latex/server/CompileServer.java"))
         .withPropertyName("latexCompileServer")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // Lets `-Dcatalogue.record=true` reach the test JVM, which is how
+    // error-catalogue.md is rewritten after an ErrorCode changes.
+    systemProperty("catalogue.record", System.getProperty("catalogue.record", "false"))
+    // And the committed catalogue is an input, for the fourth time for the
+    // same reason: hand-editing a generated file without rerunning the check
+    // would leave the task UP-TO-DATE over a drift nothing then reports.
+    // `files`, not `file`: a collection tolerates a path that is not there
+    // yet, which is the state before the first recording run.
+    inputs.files(rootProject.file("error-catalogue.md"))
+        .withPropertyName("errorCatalogue")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and

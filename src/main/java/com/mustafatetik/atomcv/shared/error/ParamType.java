@@ -14,18 +14,34 @@ import java.util.UUID;
  */
 public enum ParamType {
 
-    STRING(String.class),
-    INTEGER(Integer.class, Long.class, Short.class),
-    NUMBER(Integer.class, Long.class, Short.class, Double.class, Float.class),
-    BOOLEAN(Boolean.class),
-    TIMESTAMP(Instant.class),
-    UUID_VALUE(UUID.class),
-    STRING_ARRAY(List.class);
+    STRING("string", String.class),
+    INTEGER("integer", Integer.class, Long.class, Short.class),
+    NUMBER("number", Integer.class, Long.class, Short.class, Double.class, Float.class),
+    BOOLEAN("boolean", Boolean.class),
+    TIMESTAMP("timestamp", Instant.class),
+    UUID_VALUE("uuid", UUID.class),
+    STRING_ARRAY("string[]", List.class);
 
+    private final String wireName;
     private final List<Class<?>> accepted;
 
-    ParamType(Class<?>... accepted) {
+    ParamType(String wireName, Class<?>... accepted) {
+        this.wireName = wireName;
         this.accepted = List.of(accepted);
+    }
+
+    /**
+     * How the published catalogue spells this type.
+     *
+     * <p>Not {@link #name()}: the catalogue is read by somebody writing an ICU
+     * message, so it says {@code string[]} and {@code uuid} rather than
+     * {@code STRING_ARRAY} and {@code UUID_VALUE}. The spelling lived only in
+     * the test that checked the table until the table began to be generated
+     * from this enum — at which point a second copy would have been a second
+     * answer to what a type is called.
+     */
+    public String wireName() {
+        return wireName;
     }
 
     /**
