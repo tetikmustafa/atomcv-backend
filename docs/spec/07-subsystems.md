@@ -470,6 +470,37 @@ COPY --chown=texuser server.jar /opt/server.jar
 ENTRYPOINT ["java", "-jar", "/opt/server.jar"]
 ```
 
+> **Düzeltme (ölçüldü, 2026-09-15) — yukarıdaki `\dump` satırı XeTeX'te
+> çalışmıyor, ve çalıştırılamaz.** Motorun kendi cevabı:
+>
+> ```
+> ! Can't \dump a format with native fonts or font-mappings.
+> ```
+>
+> **Bir seçim değil, motor sınırı.** XeTeX yerel (OpenType/sistem) font
+> yüklenmiş bir oturumdan format döküm edemiyor — ve `xelatex` formatı
+> `TU` kodlamasıyla zaten yüklemiş durumda, yani `fontspec` hiç olmasa bile
+> reddediyor: `\documentclass` ve `\endofdump`'tan ibaret bir dosya bile on üç
+> kez aynı hatayı veriyor. `mylatexformat.ltx` ile de aynı. Döküm yine de bir
+> `.fmt` yazıyor, ama o dosya bozuk:
+>
+> ```
+> xelatex: fatal: Could not undump 512303 8-byte item(s) from cvfmt10.fmt.
+> ```
+>
+> Yani satır sessizce başarısız olan bir build adımı ve hiçbir şey kazandırmayan
+> bir imaj katmanı üretirdi. Bu, pdfLaTeX pratiğinden alınmış bir parçacık;
+> pdfLaTeX'te çalışır, bu projenin motorunda çalışmaz.
+>
+> **Vaat edilen kazanç da ölçüldü.** Asgari bir belgenin tam derlemesi bu
+> imajda 620-925 ms; § 52.4'ün "1-2 saniye" rakamı bu belgenin tamamından
+> uzun. Soğuk başlangıç maliyeti § 29.6'nın container ısıtmasıyla zaten
+> ödeniyor.
+>
+> **Dockerfile'da yok ve olmayacak**; `LatexImageTest` satırı geri eklemeyi
+> düşüren testtir, çünkü şartnamedeki parçacık hâlâ okunabilir durumda ve
+> kopyalanması en kolay şey.
+
 ### 29.3 Çalışma zamanı izolasyonu
 
 ```yaml

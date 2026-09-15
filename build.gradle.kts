@@ -240,6 +240,17 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("docker-compose.prod.yml"))
         .withPropertyName("productionCompose")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And the LaTeX image, for the third time for the same reason.
+    // LatexImageTest is what keeps Bolum 29.2's format-dump line out -- the
+    // one the engine cannot run and the specification still shows -- and an
+    // UP-TO-DATE run would report a green suite over a Dockerfile it never
+    // read.
+    inputs.file(rootProject.file("docker/latex/Dockerfile"))
+        .withPropertyName("latexDockerfile")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file(rootProject.file("docker/latex/server/CompileServer.java"))
+        .withPropertyName("latexCompileServer")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and

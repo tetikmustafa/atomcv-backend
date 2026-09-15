@@ -358,6 +358,18 @@ RUN xelatex -ini -jobname="cvfmt" "&xelatex preamble.tex\dump"   # 1-2sn kazanç
 
 + Container warm-up (Bölüm 29.6)
 
+> **Düzeltme (ölçüldü, 2026-09-15) — ikinci satır XeTeX'te çalışmıyor.**
+> Motor yerel font yüklenmiş bir oturumdan format döküm etmeyi reddediyor
+> (`Can't \dump a format with native fonts or font-mappings.`) ve yazdığı
+> `.fmt` geri okunamıyor. Tam gerekçe ve ölçüm § 29.2'de; oradaki Dockerfile
+> parçacığında da aynı satır duruyor.
+>
+> **"1-2sn kazanç" rakamı da tutmuyor:** asgari bir belgenin *tamamı* bu
+> imajda 620-925 ms sürüyor. Fontconfig cache'i (ilk satır) yerinde ve
+> gerçek; kazanç oradan geliyor.
+>
+> Kalan soğuk başlangıç maliyeti § 29.6'nın ısıtmasıyla ödeniyor.
+
 ### 52.5 Soğuk başlangıç
 
 ```bash
