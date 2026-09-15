@@ -69,6 +69,10 @@ class MetricCatalogueTest {
             Map.entry("llm.chain.answers",
                     "the fallback rate: the position tag is the ratio (Bolum 27.3)"),
             Map.entry("llm.chain.exhausted", "walks that ran out of providers"),
+            Map.entry("llm.provider.breaker.open",
+                    "which vendors the circuit breaker is currently refusing -- the"
+                            + " fallback rate cannot say this, because a deployment with"
+                            + " one key answers \"primary\" whether or not the others are dark"),
             Map.entry("llm.calls", "the schema error rate: the outcome tag is the ratio"),
             Map.entry("llm.unpriced_calls",
                     "calls whose model the price table does not know, which is what makes "

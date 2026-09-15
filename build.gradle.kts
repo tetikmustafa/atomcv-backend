@@ -160,6 +160,27 @@ dependencies {
     // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
     // request body, no headers, no address reaches the vendor.
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.55.0")
+    // Bolum 5.1's resilience library, and taken for ONE of the three things
+    // that table names. Retry and timeout are already answered and differently:
+    // Bolum 27.3's retry is a chain walk whose rule is which *kind* of failure
+    // deserves the next vendor, which is not a retry policy, and the timeout is
+    // on the RestClient where the socket is. What was missing is the circuit
+    // breaker -- without it a vendor that is down is asked again by every
+    // generation, and each one pays the full timeout before moving on.
+    //
+    // The core library rather than the Spring starter: the starter brings AOP
+    // and annotation-driven configuration for a single call site that is
+    // clearer written out, and Bolum 27.3's walk has to consult the breaker
+    // rather than be wrapped by it. Version pinned -- Spring Boot's BOM does
+    // not manage this one.
+    //
+    // resilience4j-micrometer is deliberately NOT taken. It would bind the
+    // breaker's own meters straight onto the registry, under names that appear
+    // in no source file -- and MetricCatalogueTest scans source, so a whole
+    // family of series would arrive undocumented and leave the same way. The
+    // one number worth watching is published by hand instead, where the
+    // catalogue can hold it.
+    implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.3.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     // Compiled against as well as shipped, for one class: LISTEN/NOTIFY is

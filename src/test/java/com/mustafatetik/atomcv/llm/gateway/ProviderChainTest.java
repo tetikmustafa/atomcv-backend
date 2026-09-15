@@ -271,7 +271,7 @@ class ProviderChainTest {
                 Duration.ofSeconds(30), retries);
         return new ProviderChain(providers, properties,
                 event -> published.add((LlmInvocationEvent) event), CLOCK,
-                Optional.ofNullable(recorder), meters);
+                Optional.ofNullable(recorder), meters, new ProviderBreakers(meters));
     }
 
     private static LlmResponse<String> ok(Result<LlmResponse<String>> result) {
@@ -287,6 +287,77 @@ class ProviderChainTest {
         return new StructuredRequest<>("job_analysis", "v1", "system", "a posting",
                 new JsonSchema("job_analysis", JSON.createObjectNode().put("type", "string")),
                 String.class, ModelTier.CHEAP, Duration.ofSeconds(30));
+    }
+
+    // ── Bolum 5.1's circuit breaker ───────────────────────────────────────
+
+    /**
+     * <strong>The failure this buys.</strong> Without a breaker the chain still
+     * produced an answer during an outage — it just asked the dead vendor
+     * first, every single time, and paid the call timeout before moving on.
+     * This asserts the vendor stops being asked, which is the only observable
+     * difference and the one a deleted breaker would give back.
+     */
+    @Test
+    void adeadProviderStopsBeingAskedOnceTheWindowSaysSo() {
+        var dead = new CountingProvider(failing("gemini", LlmFailure.Kind.UNREACHABLE));
+        var alive = answering("openrouter");
+        var chain = chain(List.of(dead, alive), List.of("gemini", "openrouter"), 0);
+
+        // minimumNumberOfCalls is five, slidingWindowSize ten: five failures is
+        // the earliest the breaker is allowed to decide anything.
+        for (int i = 0; i < 5; i++) {
+            assertThat(ok(chain.call(request())).provider()).isEqualTo("openrouter");
+        }
+        int askedWhileClosed = dead.calls();
+        assertThat(askedWhileClosed).as("every call paid the dead vendor first").isEqualTo(5);
+
+        for (int i = 0; i < 5; i++) {
+            assertThat(ok(chain.call(request())).provider())
+                    .as("the product keeps working -- that was never the problem")
+                    .isEqualTo("openrouter");
+        }
+        assertThat(dead.calls())
+                .as("and stops paying for the vendor it already knows is dark")
+                .isEqualTo(askedWhileClosed);
+    }
+
+    /**
+     * <strong>A schema mismatch must not open anything.</strong> It is a fact
+     * about the prompt (Bolum 27.3), and a breaker that counted it would pull a
+     * healthy vendor out of every chain over one bad prompt version.
+     */
+    @Test
+    void aschemaMismatchNeverOpensTheCircuit() {
+        var picky = new CountingProvider(failing("gemini", LlmFailure.Kind.SCHEMA_MISMATCH));
+        var chain = chain(List.of(picky, answering("openrouter")),
+                List.of("gemini", "openrouter"), 0);
+
+        for (int i = 0; i < 10; i++) {
+            chain.call(request());
+        }
+
+        assertThat(picky.calls())
+                .as("asked every time, because it answered every time")
+                .isEqualTo(10);
+    }
+
+    /**
+     * A vendor whose breaker is open is still named in the error. It was
+     * configured and it is failing, which is part of why the walk ran out;
+     * omitting it hands a user an empty {@code tried} during the outage the
+     * field exists to describe.
+     */
+    @Test
+    void anopenProviderIsStillReportedAsTried() {
+        var chain = chain(List.of(failing("gemini", LlmFailure.Kind.UNREACHABLE)),
+                List.of("gemini"), 0);
+
+        for (int i = 0; i < 5; i++) {
+            chain.call(request());
+        }
+
+        assertThat(err(chain.call(request())).tried()).containsExactly("gemini");
     }
 
     // ── stub providers ────────────────────────────────────────────────────

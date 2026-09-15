@@ -40,11 +40,13 @@ public class ProviderChain {
     private final Clock clock;
     private final Optional<AnswerRecorder> recorder;
     private final io.micrometer.core.instrument.MeterRegistry meters;
+    private final ProviderBreakers breakers;
 
     public ProviderChain(List<LlmProvider> providers, LlmProperties properties,
                          ApplicationEventPublisher events, Clock clock,
                          Optional<AnswerRecorder> recorder,
-                         io.micrometer.core.instrument.MeterRegistry meters) {
+                         io.micrometer.core.instrument.MeterRegistry meters,
+                         ProviderBreakers breakers) {
         this.providers = providers.stream().collect(LinkedHashMap::new,
                 (map, provider) -> map.put(provider.id(), provider), Map::putAll);
         this.properties = properties;
@@ -52,6 +54,7 @@ public class ProviderChain {
         this.clock = clock;
         this.recorder = recorder;
         this.meters = meters;
+        this.breakers = breakers;
     }
 
     /**
@@ -91,6 +94,15 @@ public class ProviderChain {
             }
 
             tried.add(providerId);
+
+            // Bolum 5.1's circuit breaker. Counted as tried and then skipped:
+            // this vendor is configured and known to be failing, which is part
+            // of why the walk will run out, and leaving it out would hand a
+            // user AllProvidersUnavailable([]) in the middle of an outage.
+            if (!breakers.isWorthAsking(providerId)) {
+                continue;
+            }
+
             var outcome = attempt(provider, request);
             if (outcome instanceof LlmOutcome.Answered<T> answered) {
                 // Bolum 54.2's recording run, and the only place the answer
@@ -126,11 +138,20 @@ public class ProviderChain {
      * small and configured.
      */
     private <T> LlmOutcome<T> attempt(LlmProvider provider, StructuredRequest<T> request) {
+        long startedAt = System.nanoTime();
         LlmOutcome<T> outcome = timed(provider, request);
         for (int retry = 0; retry < properties.schemaRetries()
                 && isSchemaMismatch(outcome); retry++) {
             outcome = timed(provider, request);
         }
+        // One permission was taken and one result is fed back, whatever the
+        // retry loop did in between: a schema retry is the same visit to the
+        // same vendor, and counting it twice would halve the window a decision
+        // is made on. Recorded here rather than at the call site because this
+        // is the method that owns the loop.
+        breakers.record(provider.id(),
+                outcome instanceof LlmOutcome.Failed<T> failed ? failed.failure().kind() : null,
+                System.nanoTime() - startedAt);
         return outcome;
     }
 
