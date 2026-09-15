@@ -4,11 +4,14 @@ import com.mustafatetik.atomcv.profile.api.dto.AtomCreateRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomReorderRequest;
 import com.mustafatetik.atomcv.profile.api.dto.AtomResponse;
+import com.mustafatetik.atomcv.profile.api.dto.AtomTagResponse;
+import com.mustafatetik.atomcv.profile.api.dto.TagRequest;
 import com.mustafatetik.atomcv.profile.api.dto.VariantPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.VariantRequest;
 import com.mustafatetik.atomcv.profile.api.dto.VariantResponse;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
+import com.mustafatetik.atomcv.profile.repository.AtomTagRow;
 import com.mustafatetik.atomcv.profile.service.AtomDraft;
 import com.mustafatetik.atomcv.profile.service.AtomPatch;
 import com.mustafatetik.atomcv.profile.service.AtomService;
@@ -89,8 +92,10 @@ public class AtomController {
 
         ProfileRef profile = profile();
         Map<UUID, List<AtomVariant>> byAtom = atoms.variantsByAtom(profile);
+        Map<UUID, List<AtomTagRow>> tagsByAtom = atoms.tagsByAtom(profile);
         return atoms.list(profile, sectionId, entryId).stream()
-                .map(atom -> AtomResponse.of(atom, wordings(byAtom, atom.getId())))
+                .map(atom -> AtomResponse.of(atom,
+                        wordings(byAtom, atom.getId()), labels(tagsByAtom, atom.getId())))
                 .toList();
     }
 
@@ -121,7 +126,8 @@ public class AtomController {
 
         return ResponseEntity.status(201)
                 .eTag(EntityTags.of(created.getVersion()))
-                .body(AtomResponse.of(created, variantsOf(profile, created.getId())));
+                .body(AtomResponse.of(created, variantsOf(profile, created.getId()),
+                        tagsOf(profile, created.getId())));
     }
 
     @Operation(operationId = "patchAtom", summary = "Change an atom's controls",
@@ -153,7 +159,8 @@ public class AtomController {
 
         return ResponseEntity.ok()
                 .eTag(EntityTags.of(patched.getVersion()))
-                .body(AtomResponse.of(patched, variantsOf(profile, patched.getId())));
+                .body(AtomResponse.of(patched, variantsOf(profile, patched.getId()),
+                        tagsOf(profile, patched.getId())));
     }
 
     @Operation(operationId = "deleteAtom", summary = "Delete an atom",
@@ -178,9 +185,52 @@ public class AtomController {
     public List<AtomResponse> reorder(@Valid @RequestBody AtomReorderRequest request) {
         ProfileRef profile = profile();
         Map<UUID, List<AtomVariant>> byAtom = atoms.variantsByAtom(profile);
+        Map<UUID, List<AtomTagRow>> tagsByAtom = atoms.tagsByAtom(profile);
         return atoms.reorder(profile, request.sectionId(), request.entryId(), request.ids()).stream()
-                .map(atom -> AtomResponse.of(atom, wordings(byAtom, atom.getId())))
+                .map(atom -> AtomResponse.of(atom,
+                        wordings(byAtom, atom.getId()), labels(tagsByAtom, atom.getId())))
                 .toList();
+    }
+
+    // ── tags ──────────────────────────────────────────────────────────────
+
+    @Operation(operationId = "tagAtom", summary = "Put a label on an atom",
+            description = """
+                    A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for (Bolum 19.1), so                     this is a scoring control rather than a label.
+
+                    The label is stored canonical — trimmed and lowercased —                     because that is the form the scorer compares, and the                     response carries the stored form back. A label the profile                     already knows reuses its row rather than making a second                     one that would never match the first.
+
+                    No `If-Match`. A tag is a row of its own and the atom is                     untouched, so there is no version of the atom for a                     precondition to be about; two people tagging one atom end                     up with both tags, which is what each of them asked for.
+
+                    Idempotent: tagging an atom that already wears the label                     returns the tag it already has, and does not rewrite who                     put it there.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "The tag on this atom",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = AtomTagResponse.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "VALIDATION_FAILED — `params.fields` is `label`",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{id}/tags", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AtomTagResponse> tag(
+            @PathVariable UUID id, @Valid @RequestBody TagRequest request) {
+
+        return ResponseEntity.status(201)
+                .body(AtomTagResponse.of(atoms.tag(profile(), id, request.label())));
+    }
+
+    @Operation(operationId = "untagAtom", summary = "Take a label off an atom",
+            description = """
+                    The tag row goes with the last atom wearing it: the                     vocabulary belongs to the profile, and a label no atom                     carries is a suggestion nobody made.
+
+                    404 when this atom is not wearing that tag — a removal                     that did not happen is not reported as one.""")
+    @ApiResponse(responseCode = "204", description = "Removed")
+    @DeleteMapping("/{id}/tags/{tagId}")
+    public ResponseEntity<Void> untag(@PathVariable UUID id, @PathVariable UUID tagId) {
+        atoms.untag(profile(), id, tagId);
+        return ResponseEntity.noContent().build();
     }
 
     // ── wordings ──────────────────────────────────────────────────────────
@@ -261,6 +311,16 @@ public class AtomController {
 
     private List<VariantResponse> variantsOf(ProfileRef profile, UUID atomId) {
         return atoms.variantsOf(profile, atomId).stream().map(VariantResponse::of).toList();
+    }
+
+    private List<AtomTagResponse> tagsOf(ProfileRef profile, UUID atomId) {
+        return labels(atoms.tagsByAtom(profile), atomId);
+    }
+
+    private static List<AtomTagResponse> labels(
+            Map<UUID, List<AtomTagRow>> byAtom, UUID atomId) {
+        return byAtom.getOrDefault(atomId, List.of()).stream()
+                .map(AtomTagResponse::of).toList();
     }
 
     private static List<VariantResponse> wordings(

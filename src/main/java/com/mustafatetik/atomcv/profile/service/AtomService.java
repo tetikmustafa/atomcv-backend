@@ -1,6 +1,9 @@
 package com.mustafatetik.atomcv.profile.service;
 
 import com.mustafatetik.atomcv.profile.domain.Atom;
+import com.mustafatetik.atomcv.profile.domain.TagSource;
+import com.mustafatetik.atomcv.profile.repository.AtomTagRow;
+import com.mustafatetik.atomcv.profile.repository.TagRepository;
 import com.mustafatetik.atomcv.shared.text.SkillNames;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Tone;
@@ -49,15 +52,17 @@ public class AtomService {
     private final SectionRepository sections;
     private final EntryRepository entries;
     private final VariantSynchronization synchronization;
+    private final TagRepository tags;
 
     AtomService(AtomRepository atoms, AtomVariantRepository variants,
             SectionRepository sections, EntryRepository entries,
-            VariantSynchronization synchronization) {
+            VariantSynchronization synchronization, TagRepository tags) {
         this.atoms = atoms;
         this.variants = variants;
         this.sections = sections;
         this.entries = entries;
         this.synchronization = synchronization;
+        this.tags = tags;
     }
 
     @Transactional(readOnly = true)
@@ -185,6 +190,49 @@ public class AtomService {
             atoms.save(profile, atom);
         }
         return list(profile, sectionId, entryId);
+    }
+
+    // ── tags ──────────────────────────────────────────────────────────────
+
+    /** Every tag in the profile, grouped by atom — one query, not one per atom. */
+    @Transactional(readOnly = true)
+    public Map<UUID, List<AtomTagRow>> tagsByAtom(ProfileRef profile) {
+        return tags.rowsByAtom(profile);
+    }
+
+    /**
+     * Puts a label on an atom (Bolum 35.2, Bolum 13's {@code source = 'user'}).
+     *
+     * <p><strong>No {@code If-Match}.</strong> A tag is a row of its own and
+     * the atom is untouched, so there is no version of the atom for a
+     * precondition to be about — the same reasoning EK D.6.2 gives for
+     * reorder. Two people tagging one atom do not conflict: they end up with
+     * both tags, which is what each of them asked for.
+     *
+     * <p>Faz B's tag component is a quarter of the raw score (Bolum 19.1), so
+     * this is a scoring control, not a label — which is why it is here and not
+     * a field on the atom patch.
+     */
+    @Transactional
+    public AtomTagRow tag(ProfileRef profile, UUID atomId, String label) {
+        requireAtom(profile, atomId);
+        try {
+            return tags.attach(profile, atomId, label, TagSource.USER);
+        } catch (IllegalArgumentException blank) {
+            // Tag.canonical refuses a label that is nothing but whitespace, and
+            // a request body is the client's mistake rather than the server's
+            // (EK D.6.8's rule about content rules).
+            throw invalid("label");
+        }
+    }
+
+    /** Takes a label off an atom; the tag row goes with the last atom wearing it. */
+    @Transactional
+    public void untag(ProfileRef profile, UUID atomId, UUID tagId) {
+        requireAtom(profile, atomId);
+        if (!tags.detach(profile, atomId, tagId)) {
+            throw ApiException.of(ErrorCode.RESOURCE_NOT_FOUND);
+        }
     }
 
     // ── wordings ──────────────────────────────────────────────────────────
