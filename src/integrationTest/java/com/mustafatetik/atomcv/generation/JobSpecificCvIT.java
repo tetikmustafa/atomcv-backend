@@ -303,9 +303,71 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * Bolum 35.3's map offers `source` too and nothing serves it. Named rather
-     * than ignored: a client asking for one and silently getting a PDF would
-     * ship a .tex button that downloads a PDF.
+     * The third format (Bolum 22.6), and the claim is the architecture's: one
+     * {@code RichContent} reaches a third output without knowing about any of
+     * them.
+     *
+     * <p>No page count is asserted and none could be. HTML has no page, so the
+     * guarantee does not become approximate here the way it does for Word --
+     * it does not apply.
+     */
+    @Test
+    void thesameGenerationDownloadsAsOneSelfContainedHtmlFile() throws Exception {
+        seedCareer();
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).isTrue();
+        String generationId = completedGenerationId(jobId);
+
+        String html = mvc.perform(get("/api/v1/generations/" + generationId + "/download")
+                        .param("format", "html"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "text/html;charset=UTF-8"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString(".html")))
+                .andReturn().getResponse().getContentAsString(
+                        java.nio.charset.StandardCharsets.UTF_8);
+
+        assertThat(html)
+                .contains("Ran distributed Go services on PostgreSQL")
+                .contains("<h2>")
+                .as("nothing is fetched: the file is opened from a downloads folder")
+                .doesNotContain("<link ")
+                .doesNotContain("<script");
+    }
+
+    /**
+     * Bolum 35.2 has listed {@code source} since the first resource map and
+     * Bolum 55 calls it "ham kaynak indirme". Reading the LaTeX back is not
+     * Bolum 33.1's Layer C -- that rule refuses to let anyone <em>write</em>
+     * it, and nothing here is read back in.
+     */
+    @Test
+    void thesameGenerationDownloadsAsTheSourceItWasCompiledFrom() throws Exception {
+        seedCareer();
+
+        String jobId = enqueue();
+        assertThat(worker().runOne()).isTrue();
+        String generationId = completedGenerationId(jobId);
+
+        String source = mvc.perform(get("/api/v1/generations/" + generationId + "/download")
+                        .param("format", "source"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "application/x-tex;charset=UTF-8"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString(".tex")))
+                .andReturn().getResponse().getContentAsString(
+                        java.nio.charset.StandardCharsets.UTF_8);
+
+        assertThat(source)
+                .contains("\\documentclass")
+                .contains("\\begin{document}")
+                .contains("Ran distributed Go services on PostgreSQL");
+    }
+
+    /**
+     * A format nobody serves is named rather than ignored: a client asking for
+     * one and silently getting a PDF would ship a button that lies.
      */
     @Test
     void aformatNobodyServesIsRefusedRatherThanSubstituted() throws Exception {
@@ -315,7 +377,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
         String generationId = completedGenerationId(jobId);
 
         mvc.perform(get("/api/v1/generations/" + generationId + "/download")
-                        .param("format", "source"))
+                        .param("format", "rtf"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }

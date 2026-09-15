@@ -4,6 +4,7 @@ import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.rendering.docx.DocxDocumentWriter;
+import com.mustafatetik.atomcv.rendering.html.HtmlDocumentWriter;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.generation.domain.RenderedContent;
 import com.mustafatetik.atomcv.generation.domain.StoredSelection;
@@ -39,12 +40,14 @@ public class GenerationDownloadService {
 
     private final GenerationRepository generations;
     private final DocxDocumentWriter docx;
+    private final HtmlDocumentWriter html;
     private final DocumentRenderer renderer;
     private final LatexCompilerClient compiler;
 
     GenerationDownloadService(GenerationRepository generations, DocumentRenderer renderer,
-            LatexCompilerClient compiler, DocxDocumentWriter docx) {
+            LatexCompilerClient compiler, DocxDocumentWriter docx, HtmlDocumentWriter html) {
         this.docx = docx;
+        this.html = html;
 
         this.generations = generations;
         this.renderer = renderer;
@@ -86,6 +89,36 @@ public class GenerationDownloadService {
      */
     public byte[] renderDocx(Generation generation) {
         return docx.write(requestFor(generation));
+    }
+
+    /**
+     * The same CV as one self-contained HTML file (Bolum 22.6).
+     *
+     * <p>No compiler here either, and no page: HTML has none, so the guarantee
+     * does not merely become approximate the way it does for Word -- it does
+     * not apply. The atoms are the ones that fitted a typeset page and this is
+     * a different kind of document made of them.
+     */
+    public String renderHtml(Generation generation) {
+        return html.write(requestFor(generation));
+    }
+
+    /**
+     * What the compiler was given (Bolum 35.2's {@code format=source},
+     * Bolum 55's "ham kaynak indirme").
+     *
+     * <p><strong>Reading it is not Bolum 33.1's Layer C.</strong> That rule
+     * refuses to let a person <em>write</em> LaTeX, because user-authored
+     * markup reaching a compiler is a remote execution surface. Handing back
+     * what this product generated is the opposite direction and carries none
+     * of it: nothing is read back in, and a person who wants to typeset their
+     * own CV by hand should not have to retype it.
+     *
+     * <p>The same source the PDF is made from, so a person compiling it
+     * themselves gets the document they downloaded.
+     */
+    public String renderSource(Generation generation) {
+        return renderer.renderFinal(requestFor(generation)).value();
     }
 
     /**

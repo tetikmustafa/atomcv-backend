@@ -54,6 +54,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -397,19 +398,23 @@ public class GenerationController {
 
     @Operation(
             operationId = "downloadGeneration",
-            summary = "Download a generation, as a PDF or a Word document",
+            summary = "Download a generation as a PDF, Word, HTML or LaTeX source",
             description = """
                     Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.
 
                     No LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.
 
-                    `format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.""")
+                    `format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.
+
+                    `format=html` writes one self-contained file: no                     stylesheet, no font, no script, nothing fetched. **The                     page limit does not apply at all there** -- HTML has no                     page. It is for pasting into a form that wants formatted                     text, and for anything that reads structure rather than                     layout.
+
+                    `format=source` is the LaTeX the PDF was compiled from.                     Bolum 33.1 refuses to let anyone *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The document",
                     content = @Content(mediaType = MediaType.APPLICATION_PDF_VALUE)),
             @ApiResponse(responseCode = "400",
                     description = "VALIDATION_FAILED — a format that is not "
-                            + "`pdf` or `docx`",
+                            + "`pdf`, `docx`, `html` or `source`",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "404",
@@ -443,8 +448,24 @@ public class GenerationController {
             // page, and Word may set them in a little more or less room.
             return attachment(downloads.renderDocx(generation), DOCX_MEDIA_TYPE, "docx");
         }
+        if ("html".equalsIgnoreCase(format)) {
+            // No compiler and no page: HTML does not have one, so the
+            // guarantee does not become approximate here the way it does for
+            // Word -- it does not apply (Bolum 22.6).
+            return attachment(downloads.renderHtml(generation).getBytes(StandardCharsets.UTF_8),
+                    MediaType.valueOf("text/html;charset=UTF-8"), "html");
+        }
+        if ("source".equalsIgnoreCase(format)) {
+            // Bolum 35.2 has listed this since the first resource map and
+            // nothing served it; Bolum 55 calls it "ham kaynak indirme". The
+            // charset matters as much as it does on the Markdown export: a
+            // response without one is read as ISO-8859-1 and a Turkish name
+            // arrives broken (EK D.6.3).
+            return attachment(
+                    downloads.renderSource(generation).getBytes(StandardCharsets.UTF_8),
+                    MediaType.valueOf("application/x-tex;charset=UTF-8"), "tex");
+        }
         if (!"pdf".equalsIgnoreCase(format)) {
-            // Bolum 35.3's map offers `source` too, and nothing serves it yet.
             // Named rather than ignored: a client asking for one and silently
             // getting a PDF would ship a .tex button that downloads a PDF.
             throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
