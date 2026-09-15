@@ -34,14 +34,14 @@ services:
       timeout: 3s
       retries: 10
 
-  # Bolum 29. Under `full` because the image is large and most work does not
+  # The LaTeX compiler. Under `full` because the image is large and most work does not
   # need it: `make dev` stays a 700 MB affair.
   latex:
     build: ./docker/latex
     profiles: [full]
     ports: ["8090:8090"]
     # ⚠️ Development only. In production this container sits on an internal
-    # network with no route out and no published port (Bolum 29.3,
+    # network with no route out and no published port (
     # docker-compose.prod.yml) — the backend reaches it from inside that
     # network.
     #
@@ -58,7 +58,7 @@ services:
       resources:
         limits: { cpus: '1.5', memory: 1G }
 
-  # Bolum 28. Also under `full`: the first run downloads ~2.5 GB of model
+  # Embeddings. Also under `full`: the first run downloads ~2.5 GB of model
   # weights, which is not something `make dev` should ever do on its own.
   embeddings:
     # 1.7 and not 1.5, and this is not a routine bump. On 1.5 the container
@@ -73,7 +73,7 @@ services:
     profiles: [full]
     # --max-batch-tokens, and it is what makes this container start at all.
     # TEI defaults to 16384 and allocates a batch that size while warming up,
-    # which OOM-killed it at both 4G and 8G. Bolum 28 embeds atoms and a job
+    # which OOM-killed it at both 4G and 8G. Atoms are embedded and a job
     # posting -- a bullet is tens of tokens, not thousands -- so the default is
     # sized for a workload this system does not have.
     #

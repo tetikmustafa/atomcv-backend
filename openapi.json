@@ -468,7 +468,7 @@
                   },
                   "challengeToken" : {
                     "type" : "string",
-                    "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account (Bolum 44.4): this is the most expensive single call the product makes. Absent or blank is refused with `403 CHALLENGE_FAILED`."
+                    "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account: this is the most expensive single call the product makes. Absent or blank is refused with `403 CHALLENGE_FAILED`."
                   }
                 }
               }
@@ -554,7 +554,7 @@
       "post" : {
         "tags" : [ "GitHub" ],
         "summary" : "What a public GitHub account has that this profile does not",
-        "description" : "Reads the public repositories of one account and offers the                     significant ones (Bolum 31.8). Nothing is written.\n\n**No permission is asked for and no token is kept.** Only                     public data is read, which is why this needs neither --                     Bolum 40.6.1 deliberately stores no provider token.\n\n`username` is optional: without it the account named in the                     profile's own contact block is read, which is the one the                     CV shows an employer.\n\nA suggestion carrying `matchedEntryId` is a merge onto a                     project already written about. Applying it adds the                     repository's languages to what those bullets claim and                     puts the link on the entry -- **the sentences are never                     touched**, because the person wrote them about what the                     work was for and GitHub knows what it was written in.\n\nOne carrying no match would be written as a new project,                     with GitHub's own description as its first line.\n\nAn account that does not exist, a GitHub that will not                     answer and one with nothing significant in it are the same                     empty list: none of them is something a person can act on.",
+        "description" : "Reads the public repositories of one account and offers the                     significant ones. Nothing is written.\n\n**No permission is asked for and no token is kept.** Only                     public data is read, which is why this needs neither --                     no provider token is stored anywhere.\n\n`username` is optional: without it the account named in the                     profile's own contact block is read, which is the one the                     CV shows an employer.\n\nA suggestion carrying `matchedEntryId` is a merge onto a                     project already written about. Applying it adds the                     repository's languages to what those bullets claim and                     puts the link on the entry -- **the sentences are never                     touched**, because the person wrote them about what the                     work was for and GitHub knows what it was written in.\n\nOne carrying no match would be written as a new project,                     with GitHub's own description as its first line.\n\nAn account that does not exist, a GitHub that will not                     answer and one with nothing significant in it are the same                     empty list: none of them is something a person can act on.",
         "operationId" : "suggestFromGitHub",
         "requestBody" : {
           "content" : {
@@ -606,7 +606,7 @@
       "post" : {
         "tags" : [ "GitHub" ],
         "summary" : "Add the repositories a person picked",
-        "description" : "Bolum 31.8 ends on \"offered, never added automatically\", and                     this is the second half of that sentence: nothing is                     written until a request names it.\n\nA repository this account no longer has is skipped rather                     than refused -- the list is a moment old and a repository                     can be renamed.\n\nOne transaction. Half an import is not a smaller import, it                     is a profile somebody has to work out the state of.",
+        "description" : "The rule is \"offered, never added automatically\", and                     this is the second half of that sentence: nothing is                     written until a request names it.\n\nA repository this account no longer has is skipped rather                     than refused -- the list is a moment old and a repository                     can be renamed.\n\nOne transaction. Half an import is not a smaller import, it                     is a profile somebody has to work out the state of.",
         "operationId" : "applyGitHubSuggestions",
         "requestBody" : {
           "content" : {
@@ -846,7 +846,7 @@
       "get" : {
         "tags" : [ "Atoms" ],
         "summary" : "List atoms with their wordings",
-        "description" : "Unpaginated: a profile holds tens to a few hundred atoms and the editor loads all of them (EK D.6.2).",
+        "description" : "Unpaginated: a profile holds tens to a few hundred atoms and the editor loads all of them.",
         "operationId" : "listAtoms",
         "parameters" : [ {
           "name" : "sectionId",
@@ -1061,7 +1061,7 @@
       "post" : {
         "tags" : [ "Atoms" ],
         "summary" : "Put a label on an atom",
-        "description" : "A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for (Bolum 19.1), so                     this is a scoring control rather than a label.\n\nThe label is stored canonical — trimmed and lowercased —                     because that is the form the scorer compares, and the                     response carries the stored form back. A label the profile                     already knows reuses its row rather than making a second                     one that would never match the first.\n\nNo `If-Match`. A tag is a row of its own and the atom is                     untouched, so there is no version of the atom for a                     precondition to be about; two people tagging one atom end                     up with both tags, which is what each of them asked for.\n\nIdempotent: tagging an atom that already wears the label                     returns the tag it already has, and does not rewrite who                     put it there.",
+        "description" : "A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for, so                     this is a scoring control rather than a label.\n\nThe label is stored canonical — trimmed and lowercased —                     because that is the form the scorer compares, and the                     response carries the stored form back. A label the profile                     already knows reuses its row rather than making a second                     one that would never match the first.\n\nNo `If-Match`. A tag is a row of its own and the atom is                     untouched, so there is no version of the atom for a                     precondition to be about; two people tagging one atom end                     up with both tags, which is what each of them asked for.\n\nIdempotent: tagging an atom that already wears the label                     returns the tag it already has, and does not rewrite who                     put it there.",
         "operationId" : "tagAtom",
         "parameters" : [ {
           "name" : "id",
@@ -1315,7 +1315,7 @@
       "get" : {
         "tags" : [ "Generation" ],
         "summary" : "What this generation weighed, and what reached the page",
-        "description" : "Bolum 24.4's toggle, as a list a screen can draw (F-031).\n\nEvery atom this generation ranked is here, the ones that\nreached the page first and the ones that did not after\nthem, each with the text it competed as and an `onPage`\nflag. **The ids are exactly the ids the edit endpoint\naccepts** -- which is the reason this exists: an edit\nrefuses an atom this generation never weighed, so controls\ndrawn from today's profile would include buttons that\nanswer 400.\n\nThe text is what *this* CV said, not what the profile says\ntoday: the wording Faz D wrote where there was one, and the\nvariant the selection named otherwise. Editing a bullet\nafterwards does not rewrite the list of a CV already made.\nA held-back line carries the profile's wording, because\nthis generation never printed one for it -- putting it back\nruns Faz D over it and may word it differently.\n\nNot capped. The sentence endpoint shows a model thirty\nheld-back lines because a prompt costs money; a person\nscrolling their own history is not paying by the line.\n\nAn atom deleted from the profile since is absent rather\nthan listed: it cannot be put back, and asking to drop it\nis already true.",
+        "description" : "The manual toggle, as a list a screen can draw (F-031).\n\nEvery atom this generation ranked is here, the ones that\nreached the page first and the ones that did not after\nthem, each with the text it competed as and an `onPage`\nflag. **The ids are exactly the ids the edit endpoint\naccepts** -- which is the reason this exists: an edit\nrefuses an atom this generation never weighed, so controls\ndrawn from today's profile would include buttons that\nanswer 400.\n\nThe text is what *this* CV said, not what the profile says\ntoday: the wording Faz D wrote where there was one, and the\nvariant the selection named otherwise. Editing a bullet\nafterwards does not rewrite the list of a CV already made.\nA held-back line carries the profile's wording, because\nthis generation never printed one for it -- putting it back\nruns Faz D over it and may word it differently.\n\nNot capped. The sentence endpoint shows a model thirty\nheld-back lines because a prompt costs money; a person\nscrolling their own history is not paying by the line.\n\nAn atom deleted from the profile since is absent rather\nthan listed: it cannot be put back, and asking to drop it\nis already true.",
         "operationId" : "readSelection",
         "parameters" : [ {
           "name" : "generationId",
@@ -1352,7 +1352,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Keep or drop atoms by hand, and re-make the CV",
-        "description" : "Bolum 24.4. An edit applies to the **selection state**, never to the rendered document — which is what keeps the page limit true after twenty of them: every edit goes back through the selection that made the promise.\n\nAnswers 202 with a job, like a generation, because it re-runs the renderer and a real compiler. It does not re-run Faz A or Faz B — the posting was read once and the profile ranked against it once, and a toggle changes neither answer — and Faz D carries the wording it already wrote. **No model call, and nothing off the day's allowance.**\n\nThe job's terminal event names a **new** generation. The edited one stays, marked superseded, and its id comes back as `supersededGenerationId`.\n\nAn atom this generation never weighed is refused rather than ignored, because ignoring it would answer 202 and hand back the same document.",
+        "description" : "An edit applies to the **selection state**, never to the rendered document — which is what keeps the page limit true after twenty of them: every edit goes back through the selection that made the promise.\n\nAnswers 202 with a job, like a generation, because it re-runs the renderer and a real compiler. It does not re-run Faz A or Faz B — the posting was read once and the profile ranked against it once, and a toggle changes neither answer — and Faz D carries the wording it already wrote. **No model call, and nothing off the day's allowance.**\n\nThe job's terminal event names a **new** generation. The edited one stays, marked superseded, and its id comes back as `supersededGenerationId`.\n\nAn atom this generation never weighed is refused rather than ignored, because ignoring it would answer 202 and hand back the same document.",
         "operationId" : "editSelection",
         "parameters" : [ {
           "name" : "generationId",
@@ -1421,7 +1421,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Say what you thought of a generation",
-        "description" : "A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.\n\n`contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     how long it has left, and whether anybody has read it —                     `accessedAt` is null until the offline support reader                     stamps it, which is the only thing that can (B-078).                     Sending `contentGranted: false` later                     withdraws a grant that is still open.\n\nThe comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.",
+        "description" : "A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.\n\n`contentGranted` is the support consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     how long it has left, and whether anybody has read it —                     `accessedAt` is null until the offline support reader                     stamps it, which is the only thing that can (B-078).                     Sending `contentGranted: false` later                     withdraws a grant that is still open.\n\nThe comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.",
         "operationId" : "recordFeedback",
         "parameters" : [ {
           "name" : "generationId",
@@ -1490,7 +1490,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Say what should change, in your own words",
-        "description" : "Bolum 24.2, and the other half of the toggle next door. One sentence is read into a change of **which atoms are on the page**, and the CV is re-made from its own selection state — so the page limit is re-checked and still holds, however many sentences it takes.\n\n202 with a job, and the model is asked exactly once: it sees the lines **numbered**, never their ids, and answers with numbers. It cannot name a bullet that does not exist.\n\n**This one costs a generation** off the day's allowance, unlike the hand toggle. Refunded when the sentence named no line.\n\nWhat it does *not* do: reword a line, change the tone, or resize the page. A sentence asking for any of those is answered `EDIT_NOT_UNDERSTOOD` rather than guessed at — removing the wrong bullet is worse than saying nothing, because the person may not notice.",
+        "description" : "The natural-language half, and the other half of the toggle next door. One sentence is read into a change of **which atoms are on the page**, and the CV is re-made from its own selection state — so the page limit is re-checked and still holds, however many sentences it takes.\n\n202 with a job, and the model is asked exactly once: it sees the lines **numbered**, never their ids, and answers with numbers. It cannot name a bullet that does not exist.\n\n**This one costs a generation** off the day's allowance, unlike the hand toggle. Refunded when the sentence named no line.\n\nWhat it does *not* do: reword a line, change the tone, or resize the page. A sentence asking for any of those is answered `EDIT_NOT_UNDERSTOOD` rather than guessed at — removing the wrong bullet is worse than saying nothing, because the person may not notice.",
         "operationId" : "editBySentence",
         "parameters" : [ {
           "name" : "generationId",
@@ -1578,7 +1578,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Write a covering letter for a generation, or another one",
-        "description" : "Bolum 34. The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.\n\nOff the main generation path on purpose: it is a second                     LLM call and most people want a CV. Ask for it here, or                     set `coverLetter: true` when generating.\n\nThree variants (`default`, `shorter`, `more_formal`),                     and each press replaces the stored letter — trying                     another draft leaves one letter, not three.\n\n**It can refuse.** A letter has no original to fall back                     on, so a draft that claims a skill the page does not carry,                     overstates the experience, or greets the wrong company is                     thrown away twice and then reported as                     `COVER_LETTER_REJECTED`. Another press is a different                     draft.",
+        "description" : "The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.\n\nOff the main generation path on purpose: it is a second                     LLM call and most people want a CV. Ask for it here, or                     set `coverLetter: true` when generating.\n\nThree variants (`default`, `shorter`, `more_formal`),                     and each press replaces the stored letter — trying                     another draft leaves one letter, not three.\n\n**It can refuse.** A letter has no original to fall back                     on, so a draft that claims a skill the page does not carry,                     overstates the experience, or greets the wrong company is                     thrown away twice and then reported as                     `COVER_LETTER_REJECTED`. Another press is a different                     draft.",
         "operationId" : "regenerateCoverLetter",
         "parameters" : [ {
           "name" : "generationId",
@@ -1665,7 +1665,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Mark a generation as one to keep",
-        "description" : "Bolum 13 pairs this mark with how long a generation's\nartifact is kept: fourteen days ordinarily, for good when\nit is archived. **No artifact is stored yet** — a download\nre-renders from the stored snapshot (EK D.6.3) and nothing\nexpires in either direction — so today the mark changes no\nretention and is the owner's own mark on their history. It\nis the row the retention rule reads on the day object\nstorage lands.\n\nThe same endpoint takes it off: send `archived: false`.\nA mark that cannot be removed is a trap, and the support\ngrant of Bolum 48.4 answered the same question the same\nway. An omitted body archives, because that is what the\npath says.\n\nIdempotent. Archiving something already archived is not a\nconflict: the caller asked for a state and the row is in\nit.",
+        "description" : "The schema pairs this mark with how long a generation's\nartifact is kept: fourteen days ordinarily, for good when\nit is archived. **No artifact is stored yet** — a download\nre-renders from the stored snapshot and nothing\nexpires in either direction — so today the mark changes no\nretention and is the owner's own mark on their history. It\nis the row the retention rule reads on the day object\nstorage lands.\n\nThe same endpoint takes it off: send `archived: false`.\nA mark that cannot be removed is a trap, and the support\nsupport grant answered the same question the same\nway. An omitted body archives, because that is what the\npath says.\n\nIdempotent. Archiving something already archived is not a\nconflict: the caller asked for a state and the row is in\nit.",
         "operationId" : "archiveGeneration",
         "parameters" : [ {
           "name" : "generationId",
@@ -1776,7 +1776,7 @@
       "post" : {
         "tags" : [ "Templates" ],
         "summary" : "Keep a set of appearance settings under a name",
-        "description" : "Bolum 33.2's Layer B, saved. The profile's own\n`preferences.appearance` is still the working set and is\nwhat a generation uses when it names nothing; this is for\nthe person who keeps a dense set for a long CV and a\nroomier one for a short one.\n\nEvery value is bounded by Bolum 33.2's ranges, and the\nranges are why a bad page is not reachable from here.\n\nAt most twenty per profile, and names are unique within\none.",
+        "description" : "Layer B, saved. The profile's own\n`preferences.appearance` is still the working set and is\nwhat a generation uses when it names nothing; this is for\nthe person who keeps a dense set for a long CV and a\nroomier one for a short one.\n\nEvery value is bounded by the published ranges, and the\nranges are why a bad page is not reachable from here.\n\nAt most twenty per profile, and names are unique within\none.",
         "operationId" : "createCustomization",
         "requestBody" : {
           "content" : {
@@ -1856,7 +1856,7 @@
       "post" : {
         "tags" : [ "Auth" ],
         "summary" : "Ask for a sign-in link",
-        "description" : "Always 202, and always with no body. Whether the address has an account is exactly what this must not reveal (Bolum 40.4), so the sentence the person reads is the client's to write and is the same either way.\n\nThe two other answers it can give reveal nothing either:\n`429 RATE_LIMITED`, where every layer of Bolum 40.5\ncounts what this caller has already done, and\n`403 CHALLENGE_FAILED`, which is about the token in the\nrequest and not about the address in it.",
+        "description" : "Always 202, and always with no body. Whether the address has an account is exactly what this must not reveal , so the sentence the person reads is the client's to write and is the same either way.\n\nThe two other answers it can give reveal nothing either:\n`429 RATE_LIMITED`, where every rate-limit layer\ncounts what this caller has already done, and\n`403 CHALLENGE_FAILED`, which is about the token in the\nrequest and not about the address in it.",
         "operationId" : "requestMagicLink",
         "requestBody" : {
           "content" : {
@@ -2546,7 +2546,7 @@
       "delete" : {
         "tags" : [ "Templates" ],
         "summary" : "Forget one",
-        "description" : "A generation already made with it is unaffected: Bolum 14.5 writes the settings themselves into the selection snapshot rather than an id, so a document can always be re-rendered exactly as it was sent.",
+        "description" : "A generation already made with it is unaffected: the snapshot holds the settings themselves into the selection snapshot rather than an id, so a document can always be re-rendered exactly as it was sent.",
         "operationId" : "deleteCustomization",
         "parameters" : [ {
           "name" : "id",
@@ -2576,7 +2576,7 @@
       "patch" : {
         "tags" : [ "Templates" ],
         "summary" : "Rename or re-set one",
-        "description" : "The settings are replaced whole. Bolum 33.2's parameters are read together by the renderer, and a half-applied geometry is a page nobody asked for. Sending only a name renames it and leaves the settings.",
+        "description" : "The settings are replaced whole. Every parameter is read together by the renderer, and a half-applied geometry is a page nobody asked for. Sending only a name renames it and leaves the settings.",
         "operationId" : "patchCustomization",
         "parameters" : [ {
           "name" : "id",
@@ -2672,7 +2672,7 @@
       "patch" : {
         "tags" : [ "Applications" ],
         "summary" : "Change an application",
-        "description" : "A partial edit: omitting a field leaves it alone, so a screen moving one row from applied to interview does not have to send the notes back and risk overwriting an edit made in another tab.\n\nEmptying the notes needs `clearNotes: true` — null cannot mean both \"leave them\" and \"empty them\".\n\n`If-Match` is required (Bolum 35.6).",
+        "description" : "A partial edit: omitting a field leaves it alone, so a screen moving one row from applied to interview does not have to send the notes back and risk overwriting an edit made in another tab.\n\nEmptying the notes needs `clearNotes: true` — null cannot mean both \"leave them\" and \"empty them\".\n\n`If-Match` is required.",
         "operationId" : "updateApplication",
         "parameters" : [ {
           "name" : "applicationId",
@@ -2794,7 +2794,7 @@
       },
       "patch" : {
         "tags" : [ "Account" ],
-        "summary" : "Turn the optional emails on or off (Bolum 57.7)",
+        "summary" : "Turn the optional emails on or off",
         "operationId" : "updateAccountSettings",
         "requestBody" : {
           "content" : {
@@ -2824,7 +2824,7 @@
       "get" : {
         "tags" : [ "Templates" ],
         "summary" : "The templates a CV can be rendered with",
-        "description" : "The registry's own list, with the measured capacity of                     each: Bolum 33.5 describes the three by how much they hold,                     and a chooser showing three names and no density asks                     somebody to pick blind.\n\nNo display name and no description — those are sentences,                     and Bolum 35.4's rule is that the server sends a key and                     the client writes the sentence. The id is the key.\n\nThe same list `capabilities.allowedTemplates` publishes,                     which is what a client reads to know which of these it may                     offer. This one says what each of them is.",
+        "description" : "The registry's own list, with the measured capacity of                     each: the three are described by how much they hold,                     and a chooser showing three names and no density asks                     somebody to pick blind.\n\nNo display name and no description — those are sentences,                     and the rule is that the server sends a key and                     the client writes the sentence. The id is the key.\n\nThe same list `capabilities.allowedTemplates` publishes,                     which is what a client reads to know which of these it may                     offer. This one says what each of them is.",
         "operationId" : "listTemplates",
         "responses" : {
           "404" : {
@@ -2977,7 +2977,7 @@
       "get" : {
         "tags" : [ "Generation" ],
         "summary" : "One generation and how well it fits the posting",
-        "description" : "Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.\n\n**Counts, never a percentage.** Bolum 23.3 forbids one by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.\n\nThe report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.\n\nCarries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so Bolum 48.4's 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.",
+        "description" : "Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.\n\n**Counts, never a percentage.** One is forbidden by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.\n\nThe report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.\n\nCarries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so the 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.",
         "operationId" : "readGeneration",
         "parameters" : [ {
           "name" : "generationId",
@@ -3016,7 +3016,7 @@
       "get" : {
         "tags" : [ "Generation" ],
         "summary" : "Download a generation as a PDF, Word, HTML or LaTeX source",
-        "description" : "Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.\n\nNo LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.\n\n`format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.\n\n`format=html` writes one self-contained file: no                     stylesheet, no font, no script, nothing fetched. **The                     page limit does not apply at all there** -- HTML has no                     page. It is for pasting into a form that wants formatted                     text, and for anything that reads structure rather than                     layout.\n\n`format=source` is the LaTeX the PDF was compiled from.                     Bolum 33.1 refuses to let anyone *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.",
+        "description" : "Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.\n\nNo LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.\n\n`format=docx` writes the same content as a Word                     document. **The page limit is approximate there**: the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.\n\n`format=html` writes one self-contained file: no                     stylesheet, no font, no script, nothing fetched. **The                     page limit does not apply at all there** -- HTML has no                     page. It is for pasting into a form that wants formatted                     text, and for anything that reads structure rather than                     layout.\n\n`format=source` is the LaTeX the PDF was compiled from.                     Nobody is allowed to *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.",
         "operationId" : "downloadGeneration",
         "parameters" : [ {
           "name" : "generationId",
@@ -3950,7 +3950,7 @@
           "minAtoms" : {
             "type" : "integer",
             "format" : "int32",
-            "description" : "Below this many atoms the entry is dropped whole (Bolum 20)"
+            "description" : "Below this many atoms the entry is dropped whole"
           },
           "version" : {
             "type" : "integer",
@@ -4169,7 +4169,7 @@
           },
           "tags" : {
             "type" : "array",
-            "description" : "The labels this atom wears. A quarter of Faz B's raw score is the overlap between these and the posting (Bolum 19.1), so they are a scoring control rather than decoration.",
+            "description" : "The labels this atom wears. A quarter of Faz B's raw score is the overlap between these and the posting, so they are a scoring control rather than decoration.",
             "items" : {
               "$ref" : "#/components/schemas/AtomTagResponse"
             }
@@ -4241,7 +4241,7 @@
           },
           "userEdited" : {
             "type" : "boolean",
-            "description" : "The person wrote this wording themselves. With `stale`, it is the pair Bolum 32.2's warning is built from: the two have diverged and nothing will regenerate this one behind their back."
+            "description" : "The person wrote this wording themselves. With `stale`, it is the pair the staleness warning is built from: the two have diverged and nothing will regenerate this one behind their back."
           },
           "version" : {
             "type" : "integer",
@@ -4330,7 +4330,7 @@
           },
           "challengeToken" : {
             "type" : "string",
-            "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account (Bolum 44.4): signing in already answered a challenge, and generating spends real money on a model."
+            "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account : signing in already answered a challenge, and generating spends real money on a model."
           },
           "maxPages" : {
             "type" : "integer",
@@ -4349,11 +4349,11 @@
           "coverLetter" : {
             "type" : "boolean",
             "default" : false,
-            "description" : "Write a covering letter alongside the CV (Bolum 34). Off by default: it is a second LLM call, and most generations do not want one. It can be asked for afterwards instead, at POST /generations/{id}/cover-letter/regenerate."
+            "description" : "Write a covering letter alongside the CV. Off by default: it is a second LLM call, and most generations do not want one. It can be asked for afterwards instead, at POST /generations/{id}/cover-letter/regenerate."
           },
           "emphasize" : {
             "type" : "array",
-            "description" : "Terms to bring forward, as Bolum 18.7's directive. They join\nthe posting's own keywords and tags for this one generation --\nthe formula of Bolum 19.1 is untouched, it reads one larger\nset. Use it when the posting does not say a word you know the\nwork is about.\n\nIts own field and not part of the posting, because the\nanalysis of a posting is cached by its hash and shared between\neveryone who pastes it; a directive belongs to one person and\none run.\n\nStored trimmed and lowercased. At most ten, each at most 60\ncharacters -- past that the ranking would be the reader's list\nrather than the posting's.",
+            "description" : "Terms to bring forward, as a directive. They join\nthe posting's own keywords and tags for this one generation --\nthe scoring formula is untouched, it reads one larger\nset. Use it when the posting does not say a word you know the\nwork is about.\n\nIts own field and not part of the posting, because the\nanalysis of a posting is cached by its hash and shared between\neveryone who pastes it; a directive belongs to one person and\none run.\n\nStored trimmed and lowercased. At most ten, each at most 60\ncharacters -- past that the ranking would be the reader's list\nrather than the posting's.",
             "example" : [ "microservices", "observability" ],
             "items" : {
               "type" : "string",
@@ -4366,11 +4366,11 @@
           "customizationId" : {
             "type" : "string",
             "format" : "uuid",
-            "description" : "A set of appearance settings saved under\n`/api/v1/customizations`, to render this one with\n(Bolum 14.4). Absent uses the profile's own working settings,\nwhich is what nearly every request means.\n\nA set belonging to somebody else is not found."
+            "description" : "A set of appearance settings saved under\n`/api/v1/customizations`, to render this one with\nAbsent uses the profile's own working settings,\nwhich is what nearly every request means.\n\nA set belonging to somebody else is not found."
           },
           "note" : {
             "type" : "string",
-            "description" : "A sentence or two about how this CV should read, in the\nperson's own words (Bolum 18.7's `freeformNote`).\n\nIt reaches Faz D and nothing else: Faz B ranks against the\nposting and a sentence is not a term. The prompt tells the\nmodel the note may steer wording and emphasis and may **not**\nlicence a claim, lengthen a line past its maximum, or change\nwhat a sentence says happened — and Bolum 21.6's validators do\nnot care what the note said either way, which is what makes\nthat a promise rather than a hope.\n\nIt travels inside the fence, because it is the person's own\ncontent (Bolum 43.1). At most 500 characters.",
+            "description" : "A sentence or two about how this CV should read, in the\nperson's own words.\n\nIt reaches Faz D and nothing else: Faz B ranks against the\nposting and a sentence is not a term. The prompt tells the\nmodel the note may steer wording and emphasis and may **not**\nlicence a claim, lengthen a line past its maximum, or change\nwhat a sentence says happened — and the validators do\nnot care what the note said either way, which is what makes\nthat a promise rather than a hope.\n\nIt travels inside the fence, because it is the person's own\ncontent. At most 500 characters.",
             "example" : "Lead with the platform work rather than the ML.",
             "maxLength" : 500,
             "minLength" : 0
@@ -4530,7 +4530,7 @@
       },
       "FitReport" : {
         "type" : "object",
-        "description" : "How much of the posting's vocabulary the CV actually says. Counts, never a percentage — Bolum 23.3.",
+        "description" : "How much of the posting's vocabulary the CV actually says. Counts, never a percentage.",
         "properties" : {
           "requiredCovered" : {
             "type" : "integer",
@@ -4618,11 +4618,11 @@
           "supersededByGenerationId" : {
             "type" : "string",
             "format" : "uuid",
-            "description" : "The generation that replaced this one, present only when\n`status` is `SUPERSEDED`. An edit writes a new CV and retires\nthe one it edited (Bolum 24.4); the retired one is still\nreadable and still downloadable -- the CV that was sent to an\nemployer does not stop existing -- and this is where the screen\nshowing it finds the newer one to link to."
+            "description" : "The generation that replaced this one, present only when\n`status` is `SUPERSEDED`. An edit writes a new CV and retires\nthe one it edited; the retired one is still\nreadable and still downloadable -- the CV that was sent to an\nemployer does not stop existing -- and this is where the screen\nshowing it finds the newer one to link to."
           },
           "archived" : {
             "type" : "boolean",
-            "description" : "Whether this one is marked to keep (Bolum 35.2). A generation\nis not archived when it is made; `POST /generations/{id}/archive`\nsets the mark and the same endpoint clears it. What the mark\nbuys is Bolum 13's retention rule -- an archived generation's\nartifact never expires -- and until object storage lands there\nis nothing that expires either way, so today it is a mark the\nowner sets and reads."
+            "description" : "Whether this one is marked to keep. A generation\nis not archived when it is made; `POST /generations/{id}/archive`\nsets the mark and the same endpoint clears it. What the mark\nbuys is the retention rule -- an archived generation's\nartifact never expires -- and until object storage lands there\nis nothing that expires either way, so today it is a mark the\nowner sets and reads."
           }
         }
       },
@@ -4657,7 +4657,7 @@
           "fontSizePt" : {
             "type" : "number",
             "format" : "double",
-            "description" : "9 to 12 (Bolum 33.2)",
+            "description" : "9 to 12",
             "example" : 10.5,
             "maximum" : 12.0,
             "minimum" : 9.0
@@ -4680,7 +4680,7 @@
           },
           "fontFamily" : {
             "type" : "string",
-            "description" : "One of the whitelisted families (Bolum 5.5)",
+            "description" : "One of the whitelisted families",
             "example" : "sans"
           },
           "accentColor" : {
@@ -5005,7 +5005,7 @@
           },
           "userEdited" : {
             "type" : "boolean",
-            "description" : "Send `false` to hand a wording back: it stops being yours, and a stale one is queued for regeneration (Bolum 32.2's \"regenerate\" button). `true` is refused — a wording becomes yours by writing words, never by claiming it."
+            "description" : "Send `false` to hand a wording back: it stops being yours, and a stale one is queued for regeneration (the \"regenerate\" button). `true` is refused — a wording becomes yours by writing words, never by claiming it."
           }
         }
       },
@@ -5126,7 +5126,7 @@
           "approximateLinesPerPage" : {
             "type" : "integer",
             "format" : "int32",
-            "description" : "Roughly how many lines of body text fit a page, which is how Bolum 33.5 describes the three",
+            "description" : "Roughly how many lines of body text fit a page, which is how the three are described",
             "example" : 54
           }
         }
@@ -5240,7 +5240,7 @@
           "supersededGenerationId" : {
             "type" : "string",
             "format" : "uuid",
-            "description" : "The generation this one replaced, when the job was a Faz G\nedit (Bolum 24.4). Absent on every other kind of job,\nincluding an ordinary generation, which replaces nothing."
+            "description" : "The generation this one replaced, when the job was a Faz G\nedit. Absent on every other kind of job,\nincluding an ordinary generation, which replaces nothing."
           },
           "matchLevel" : {
             "type" : "string",
@@ -5351,7 +5351,7 @@
           },
           "archived" : {
             "type" : "boolean",
-            "description" : "Whether this one is marked to keep (Bolum 35.2). The list is where the mark is read: it is the screen a person opens to find the generation they kept."
+            "description" : "Whether this one is marked to keep. The list is where the mark is read: it is the screen a person opens to find the generation they kept."
           }
         }
       },

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reads one generation's content under the permission its owner gave (Bolum 48.4).
+# Reads one generation's content under the permission its owner gave.
 #
 #   ./scripts/support-read.sh <generation-id>
 #
@@ -17,7 +17,7 @@
 #
 #   ./scripts/support-read.sh <generation-id> --export=export.json
 #
-# writes Bolum 48.5's replay file instead of printing, under the same grant and
+# writes the replay file instead of printing, under the same grant and
 # the same stamp -- it is the same content. A file is the more dangerous of the
 # two, because a printout dies with the terminal and a file does not: delete it
 # with the question you opened it for.

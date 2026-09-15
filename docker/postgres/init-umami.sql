@@ -1,4 +1,4 @@
--- Umami's database, beside the application's (Bolum 5.7, Bolum 11.1).
+-- Umami's database, beside the application's.
 --
 -- The official Postgres entrypoint runs everything in
 -- /docker-entrypoint-initdb.d on first initialisation and never again, which

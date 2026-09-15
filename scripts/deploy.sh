@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Adim V.7. Runs on the server, called over SSH by the deploy workflow.
+# Runs on the server, called over SSH by the deploy workflow.
 #
 #   ./scripts/deploy.sh backend  <sha>
 #   ./scripts/deploy.sh frontend <sha>
 #
 # The component is the first argument because the two repositories deploy
 # independently: there is no single commit that describes what is running
-# (Bolum 47.3), so each carries its own tag and a deploy of one must leave the
+#, so each carries its own tag and a deploy of one must leave the
 # other exactly where it was.
 set -euo pipefail
 
@@ -55,15 +55,15 @@ write_tag "$NEW_SHA"
 $COMPOSE pull "$COMPONENT"
 
 # Migrations run at start-up, inside the application, and this is the decision
-# that makes that safe: one instance at a time. Bolum 47's snippet reached for
+# that makes that safe: one instance at a time. The snippet reached for
 # `--spring.flyway.migrate-only=true`, which is not a Spring Boot property at
-# all -- see the Duzeltme in spec/11-operations.md § 47. Flyway takes its own
+# all -- it was decided against § 47. Flyway takes its own
 # lock, so the risk is not two migrators but two application versions against
 # one schema, and a single replica is what rules that out.
 $COMPOSE up -d --no-deps "$COMPONENT"
 
 if healthy; then
-    # Bolum 52.5, and only for the backend -- the frontend has no such path.
+    # The warm-up, and only for the backend -- the frontend has no such path.
     # `|| true` is the whole of its error handling on purpose: a cold pool is
     # slower, not broken, and health has already said the release is good.
     # Failing here would roll a working version back over a slow one.

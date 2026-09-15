@@ -1,5 +1,5 @@
 #!/bin/sh
-# Per-compilation ceilings (Bolum 29.4).
+# Per-compilation ceilings.
 #
 # These belong to each xelatex, not to the service: setting them in the
 # entrypoint applied them to the JVM as well, which then could not reserve its

@@ -4,7 +4,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
-    // Bolum 47.1 runs `spotlessCheck` and nothing configured a formatter, so
+    // CI runs `spotlessCheck` and nothing configured a formatter, so
     // there was no format gate at all. Deliberately narrow -- see the
     // `spotless` block below.
     id("com.diffplug.spotless") version "8.10.2"
@@ -81,13 +81,13 @@ extra["tomcat.version"] = "10.1.59"       // CVE-2026-65182, -65905, -68525
 
 // Integration tests live in their own source set so that `gradlew test` stays
 // fast and free of Docker. CI runs `test` and `integrationTest` as separate
-// steps (Bolum 47.1).
+// steps.
 sourceSets {
     create("integrationTest") {
         compileClasspath += sourceSets.main.get().output
         runtimeClasspath += sourceSets.main.get().output
         // And the unit lane's output, for the one thing both lanes share:
-        // Bolum 52.6's budget reader. The alternative was a second copy of it,
+        // The budget reader. The alternative was a second copy of it,
         // and two readers of one file drift apart exactly when the file
         // changes -- which is the moment the budget is supposed to be read.
         compileClasspath += sourceSets.test.get().output
@@ -107,27 +107,27 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    // Bolum 40.1 and EK D.6.6. Sessions are ours — Redis, our own store — and
+    // Sessions are ours — Redis, our own store — and
     // this is here for the filter chain and for the double-submit CSRF filter
-    // EK D.6.6 names. Spring Session is deliberately not used: the sliding TTL
-    // and the anonymous-to-account handover of Adim 3.6 both need the store.
+    // the design names. Spring Session is deliberately not used: the sliding TTL
+    // and the anonymous-to-account handover both need the store.
     implementation("org.springframework.boot:spring-boot-starter-security")
-    // Bolum 40.2's magic link has to leave the building. Resend is the
+    // The magic link has to leave the building. Resend is the
     // production sender and speaks HTTP, but local development sends to
     // Mailpit over SMTP -- which is the point of having Mailpit in compose:
     // the email is read as a person would read it, not as a log line.
     implementation("org.springframework.boot:spring-boot-starter-mail")
-    // Bolum 44.3 wants the counters somewhere an operator can see them, and
-    // Bolum 2's table picked Axiom — observability data should not live on the
+    // The counters belong somewhere an operator can see them, and
+    // The stack table picked Axiom — observability data should not live on the
     // machine being observed. OTLP is the wire format Axiom ingests, so this
     // is the whole integration: the exporter is inert until a URL is set, and
-    // the dataset it points at is created in Adim 3.1.
+    // the dataset it points at is created with the deployment.
     implementation("io.micrometer:micrometer-registry-otlp")
-    // Bolum 18.6 caches the job analysis. Lettuce underneath, which the
+    // The job analysis is cached. Lettuce underneath, which the
     // starter brings: the cache is consulted on the hot path and a blocking
     // client there would hold a request thread through a network round trip.
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    // Bolum 28: atoms.embedding is vector(1024) and Hibernate has no type for
+    // atoms.embedding is vector(1024) and Hibernate has no type for
     // it on its own. This module adds SqlTypes.VECTOR with a pgvector dialect
     // contribution, so the column is mapped rather than read through a
     // hand-written converter that ddl-auto=validate could not check.
@@ -145,24 +145,24 @@ dependencies {
     // The published schema is the API contract: the frontend generates its
     // types from it, so enums and headers have to reach it, not only payloads.
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.0")
-    // Bolum 31.3. PDFBox reads the text out of a PDF and, unlike the
-    // alternatives, executes nothing while doing it (Bolum 42.1) -- no
+    // PDFBox reads the text out of a PDF and, unlike the
+    // alternatives, executes nothing while doing it -- no
     // JavaScript, no embedded action. Versions pinned because Spring Boot's
     // BOM manages neither: an unpinned coordinate does not resolve.
     implementation("org.apache.pdfbox:pdfbox:3.0.8")
     // Likewise for DOCX, and for the same reason: POI's text API reads
     // document parts and never runs a macro.
     implementation("org.apache.poi:poi-ooxml:5.5.1")
-    // EK C.1 asks that errors reach somewhere a person looks. Axiom takes the
+    // Errors have to reach somewhere a person looks. Axiom takes the
     // logs and the metrics; a stack trace with the request that produced it is
     // a different question and this answers it. Inert with no DSN, which is
     // every profile but prod -- so nothing is shipped from a developer's
     // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
     // request body, no headers, no address reaches the vendor.
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.55.0")
-    // Bolum 5.1's resilience library, and taken for ONE of the three things
+    // The resilience library, and taken for ONE of the three things
     // that table names. Retry and timeout are already answered and differently:
-    // Bolum 27.3's retry is a chain walk whose rule is which *kind* of failure
+    // The retry is a chain walk whose rule is which *kind* of failure
     // deserves the next vendor, which is not a retry policy, and the timeout is
     // on the RestClient where the socket is. What was missing is the circuit
     // breaker -- without it a vendor that is down is asked again by every
@@ -170,7 +170,7 @@ dependencies {
     //
     // The core library rather than the Spring starter: the starter brings AOP
     // and annotation-driven configuration for a single call site that is
-    // clearer written out, and Bolum 27.3's walk has to consult the breaker
+    // clearer written out, and the walk has to consult the breaker
     // rather than be wrapped by it. Version pinned -- Spring Boot's BOM does
     // not manage this one.
     //
@@ -184,7 +184,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     // Compiled against as well as shipped, for one class: LISTEN/NOTIFY is
-    // what Bolum 30.6 names as the way out of an in-process SSE registry, and
+    // the way out of an in-process SSE registry, and
     // PGConnection#getNotifications has no vendor-neutral spelling. compileOnly
     // beside runtimeOnly rather than implementation, so the runtime classpath
     // is exactly what it was; an ArchUnit rule keeps the import to one package.
@@ -233,7 +233,7 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    // Bolum 52.6's budget file is read by tests and is not on any classpath,
+    // The budget file is read by tests and is not on any classpath,
     // so Gradle cannot see it. Without this a loosened budget leaves the task
     // UP-TO-DATE and the guard it governs never runs -- which is how "changing
     // a budget is a deliberate decision" quietly stops being one.
@@ -262,7 +262,7 @@ tasks.withType<Test> {
         .withPropertyName("productionCompose")
         .withPathSensitivity(PathSensitivity.RELATIVE)
     // And the LaTeX image, for the third time for the same reason.
-    // LatexImageTest is what keeps Bolum 29.2's format-dump line out -- the
+    // LatexImageTest is what keeps the format-dump line out -- the
     // one the engine cannot run and the specification still shows -- and an
     // UP-TO-DATE run would report a green suite over a Dockerfile it never
     // read.
@@ -287,7 +287,7 @@ tasks.register<Test>("integrationTest") {
     // several, and the thing it guards changes rarely.
     useJUnitPlatform { excludeTags("latex", "llm-eval") }
     // Lets `-Dopenapi.record=true` reach the test JVM, which is how
-    // openapi.json is rewritten after an endpoint changes (Bolum 35.8).
+    // openapi.json is rewritten after an endpoint changes.
     systemProperty("openapi.record", System.getProperty("openapi.record", "false"))
     // The committed schema is an input: editing it by hand without rerunning
     // the check would leave the task UP-TO-DATE and the drift unnoticed.
@@ -299,13 +299,13 @@ tasks.register<Test>("integrationTest") {
         .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
-// Bolum 53.4. Real calls to a real model, so it is not wired into anything --
-// not `check`, not `integrationTest`, and deliberately not nightly: Bolum 53.7
+// Real calls to a real model, so it is not wired into anything --
+// not `check`, not `integrationTest`, and deliberately not nightly:
 // says production telemetry (`llm_invocations`) gives the same information for
 // nothing. Run it when a prompt changes, which is about $0.30.
 tasks.register<Test>("llmEval") {
     group = "verification"
-    description = "Scores a prompt against Bolum 53.5's thresholds. COSTS MONEY; "
+    description = "Scores a prompt against the thresholds. COSTS MONEY; "
         .plus("needs a provider key and the local-record or local-real profile.")
     testClassesDirs = sourceSets["integrationTest"].output.classesDirs
     classpath = sourceSets["integrationTest"].runtimeClasspath
@@ -327,7 +327,7 @@ tasks.register<Test>("latexTest") {
     // Lets `-Dgolden.record=true` reach the test JVM, which is how the golden
     // set's measured costs are re-recorded after a fixture changes.
     systemProperty("golden.record", System.getProperty("golden.record", "false"))
-    // And the geometry `scripts/measure-template.sh` asks about (EK C.2).
+    // And the geometry `scripts/measure-template.sh` asks about.
     // Forwarded rather than read from the environment for the same reason:
     // `-D` is the one channel that reaches a test JVM unchanged.
     listOf("measure.template", "measure.font", "measure.size",
@@ -337,7 +337,7 @@ tasks.register<Test>("latexTest") {
         }
 }
 
-// Bolum 48.5's replay. A JavaExec and not a Test, because it is a tool whose
+// The replay. A JavaExec and not a Test, because it is a tool whose
 // output is the document: a task that passed or failed would be answering a
 // different question than "is this the file that shipped?".
 //

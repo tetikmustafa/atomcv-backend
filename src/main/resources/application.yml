@@ -15,7 +15,7 @@ spring:
 
   servlet:
     multipart:
-      # Bolum 42.1's ten megabytes, refused by the container before the bytes
+      # The ten megabytes, refused by the container before the bytes
       # reach a handler. `atomcv.ingestion.max-bytes` restates it one layer in;
       # both are needed, because only the inner one can name the error the
       # client renders and only the outer one refuses before buffering.
@@ -29,12 +29,12 @@ server:
   error:
     include-stacktrace: never
     include-message: never
-  # Adim 3.3, dilim 4. Who the caller is decides which rate limit bucket they
+  # Who the caller is decides which rate limit bucket they
   # land in, and behind a proxy `getRemoteAddr()` is the proxy. `framework`
   # lets Spring's ForwardedHeaderFilter rewrite the request from the headers
   # the proxy sets; `none` keeps them ignored, which is the only safe reading
   # when anything can reach this port directly. Production sets it, and the
-  # trap it avoids is written down in spec/11-operations.md Bolum 46.
+  # trap it avoids is written down beside the environment variables.
   forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
 
 management:
@@ -45,7 +45,7 @@ management:
   endpoint:
     health:
       show-details: never
-  # Bolum 44.3's counters, and everything else Micrometer already collects,
+  # The counters, and everything else Micrometer already collects,
   # pushed over OTLP. Off unless a URL is given: an exporter with nowhere to
   # send retries on a timer and fills the log with its own failure, which is
   # observability making the system worse.
@@ -60,7 +60,7 @@ management:
           X-Axiom-Dataset: ${OTLP_DATASET:}
   metrics:
     distribution:
-      # Bolum 48.3 asks for p50 and p95 by phase, and a Timer publishes neither
+      # p50 and p95 are wanted by phase, and a Timer publishes neither
       # unless it is told to: without this the export carries count, sum and
       # max, and "max" is one bad afternoon rather than a latency.
       #
@@ -76,7 +76,7 @@ management:
       application: atomcv-backend
       environment: ${DEPLOY_ENV:local}
 
-# ── Errors (EK C.1) ───────────────────────────────────────────────────────
+# ── Errors ───────────────────────────────────────────────────────
 # Absent unless a DSN is given, which is every profile but prod: the SDK is a
 # no-op with an empty DSN, so a developer's stack traces stay on the developer's
 # machine and no test ever posts to a vendor.
@@ -96,13 +96,13 @@ sentry:
     minimum-event-level: error
     minimum-breadcrumb-level: info
 
-# ── LLM (Bolum 27.3) ──────────────────────────────────────────────────────
+# ── LLM ──────────────────────────────────────────────────────
 # Model ids are environment variables, never literals: vendors rename models
-# faster than a release cycle (Bolum 5.4). A provider with no key is skipped
+# faster than a release cycle. A provider with no key is skipped
 # silently, so one chain definition serves a deployment with one vendor
 # configured and a deployment with five.
 atomcv:
-  # Bolum 53.2: the live version of each prompt, so rolling one back is a
+  # The live version of each prompt, so rolling one back is a
   # value change rather than a release.
   prompts:
     active:
@@ -113,16 +113,16 @@ atomcv:
       about_synthesis: v1
       cover_letter: v1
       selection_edit: v1
-  # Bolum 28. Self-hosted BGE-M3 behind text-embeddings-inference; the CV
+  # Self-hosted BGE-M3 behind text-embeddings-inference; the CV
   # content never leaves the deployment.
   embedding:
     base-url: ${EMBEDDINGS_URL:http://localhost:8081}
 
-  # Bolum 40.1 and EK D.6.6. Redis holds the session; the cookie only points
+  # Redis holds the session; the cookie only points
   # at it, so revoking is a DEL rather than the impossibility it is with a JWT.
   session:
     ttl: ${SESSION_TTL:30d}
-    # Bolum 9's two hours for somebody who has not signed in, and EK D.6.6's
+    # The two hours for somebody who has not signed in, and the
     # note that they slide: an absolute two hours would cut off a person
     # working through the review screen, which is the lost effort P8 exists
     # to prevent.
@@ -131,38 +131,38 @@ atomcv:
     # orders below the shortest TTL: an active browser stays alive, and a read
     # does not carry a write.
     touch-interval: ${SESSION_TOUCH_INTERVAL:5m}
-    # Adim 3.3: no leading dot. `.mustafatetik.com` would send the session to
+    # No leading dot. `.mustafatetik.com` would send the session to
     # the portfolio site on the same apex. Empty everywhere but production,
     # where the host is the only host.
     domain: ${SESSION_COOKIE_DOMAIN:}
     secure: ${SESSION_COOKIE_SECURE:true}
 
-  # Bolum 40.2. Resend where there is a key, SMTP where there is not --
+  # Resend where there is a key, SMTP where there is not --
   # locally that means Mailpit, so the email is read the way a person reads it.
   email:
-    # Has to live under the verified subdomain of Adim 3.2: SPF and DKIM are
+    # Has to live under the verified sending subdomain: SPF and DKIM are
     # published there and nowhere else, so a From on the apex fails both.
     from: ${EMAIL_FROM:no-reply@localhost}
     from-name: ${EMAIL_FROM_NAME:AtomCV}
     reply-to: ${EMAIL_REPLY_TO:}
     resend-key: ${RESEND_API_KEY:}
-    # Bolum 57.7's way back to the preference, from an inbox with no session.
-    # A page on the frontend, for the reason Bolum 40.3 gives.
+    # The way back to the preference, from an inbox with no session.
+    # A page on the frontend, because gateways prefetch links.
     unsubscribe-url: ${APP_BASE_URL:http://localhost:3000}/unsubscribe
     # The endpoint secret from Resend's dashboard, `whsec_...`. Empty refuses
     # every delivery, deliberately: see EmailWebhooks.
     webhook:
       secret: ${RESEND_WEBHOOK_SECRET:}
 
-  # Bolum 40.3. The link points at a page on the frontend, not at this API:
+  # The link points at a page on the frontend, not at this API:
   # mail scanners follow links, and a one-shot token spent by a scanner is a
   # sign-in the person never got. Redemption is the POST that page makes.
   magic-link:
     verify-base-url: ${APP_BASE_URL:http://localhost:3000}
     verify-path: ${MAGIC_LINK_VERIFY_PATH:/verify}
 
-  # Bolum 40.6. A provider with no credentials is absent, not broken — the
-  # same shape Bolum 27.3 uses for LLM vendors, so one file serves a deployment
+  # A provider with no credentials is absent, not broken — the
+  # same shape the LLM vendors use, so one file serves a deployment
   # that registered one provider and one that registered both.
   oauth:
     # Where the provider sends the browser back. It has to be an origin the
@@ -183,28 +183,28 @@ atomcv:
         client-id: ${OAUTH_GITHUB_CLIENT_ID:}
         client-secret: ${OAUTH_GITHUB_CLIENT_SECRET:}
 
-  # § 35.7 wrote down the anonymous capability set and never the account one.
+  # The anonymous capability set was written down and never the account one.
   # This is that half, published to the frontend as B-044.
   capabilities:
     account-languages: ${CAPABILITY_ACCOUNT_LANGUAGES:en,tr}
 
-  # Bolum 44.1. Two counters on purpose: with one limit somebody could spend
+  # Two counters on purpose: with one limit somebody could spend
   # all of it on profile extraction, which is the most expensive call we make.
   quota:
     generations-per-user: ${QUOTA_GENERATIONS_PER_USER:20}
     profile-extracts-per-user: ${QUOTA_PROFILE_EXTRACTS_PER_USER:5}
-    # Bolum 44.1's anonymous pair, and lower on purpose: an address is a
+    # The anonymous pair, and lower on purpose: an address is a
     # weaker claim about who is asking than an account, and it is what
     # somebody spending our money rotates.
     generations-per-ip: ${QUOTA_GENERATIONS_PER_IP:5}
     profile-extracts-per-ip: ${QUOTA_PROFILE_EXTRACTS_PER_IP:3}
-    # Bolum 44.3's tightening. A daily ceiling says how much and never how
+    # The tightening. A daily ceiling says how much and never how
     # fast: a subject can spend the whole day in four minutes, and the detector
     # runs every fifteen. These two are what its alarm now does about that.
     tightened-per-hour: ${QUOTA_TIGHTENED_PER_HOUR:2}
     tighten-for: ${QUOTA_TIGHTEN_FOR:6h}
 
-  # Bolum 44.4. The other half of what bounds the sign-in endpoint. Absent
+  # The other half of what bounds the sign-in endpoint. Absent
   # locally and in the test suite, where ChallengeConfig warns and waves the
   # request through; absent under the `prod` profile, where it refuses to
   # start -- a deployment with no challenge works perfectly and is open, so
@@ -214,7 +214,7 @@ atomcv:
     # Overridable so a test can point it at a socket it owns.
     verify-url: ${TURNSTILE_VERIFY_URL:}
 
-  # Bolum 31.2's ladder. The size is Bolum 42.1's; the character floor is the
+  # The ladder. The size is the upload limit; the character floor is the
   # last rung, under which a PDF is taken to be a scan of a page rather than a
   # page -- there is no way to tell those apart from the text, and no real CV
   # is a hundred characters long.
@@ -222,7 +222,7 @@ atomcv:
     max-bytes: ${UPLOAD_MAX_BYTES:10485760}
     min-extracted-chars: ${EXTRACTION_MIN_CHARS:100}
 
-  # Bolum 40.5. Three layers in front of asking for a sign-in link, because
+  # Three layers in front of asking for a sign-in link, because
   # the endpoint sends mail to an address the caller merely typed. The numbers
   # are configuration: the global one is a guess at the sending provider's
   # tolerance, and a guess that needs a release to correct is a guess nobody
@@ -239,7 +239,7 @@ atomcv:
         limit: ${RATE_LIMIT_SIGN_IN_GLOBAL:200}
         window: ${RATE_LIMIT_SIGN_IN_GLOBAL_WINDOW:1h}
 
-  # Bolum 44.3. The brake still stops everybody and still waits for a person;
+  # The brake still stops everybody and still waits for a person;
   # the heavy-user branch now narrows the one subject it was about, which is
   # what the section's snippet asked for and what was missing.
   anomaly:
@@ -250,20 +250,20 @@ atomcv:
     # threshold that fired beats a bill nobody saw coming.
     daily-budget-usd: ${ANOMALY_DAILY_BUDGET_USD:10}
 
-  # Bolum 57's retention promise, made true. Clears free text and keeps the
+  # The retention promise, made true. Clears free text and keeps the
   # rows: a job's history is what retries and the anomaly detector count, and a
   # generation is what a download re-renders from. Runs after the nightly
   # backup so the last copy of a cleared row is at most a day old.
   retention:
     enabled: ${RETENTION_ENABLED:true}
     cron: ${RETENTION_CRON:0 30 3 * * *}
-    # Bolum 9's promise, and it needs its own pass: an anonymous session lasts
+    # The promise, and it needs its own pass: an anonymous session lasts
     # two hours, so a nightly sweep would keep its CV until the small hours.
     anonymous-cron: ${RETENTION_ANONYMOUS_CRON:0 */5 * * * *}
     job-payload: ${RETENTION_JOB_PAYLOAD:7d}
     job-description: ${RETENTION_JOB_DESCRIPTION:30d}
 
-  # Bolum 30.4. Every instance works the queue and every instance reclaims
+  # Every instance works the queue and every instance reclaims
   # stale jobs, including its own — the condition is the heartbeat, not the
   # owner.
   jobs:
@@ -271,18 +271,18 @@ atomcv:
       enabled: ${JOBS_WORKER_ENABLED:true}
       concurrency: ${JOBS_WORKER_CONCURRENCY:2}
 
-  # Bolum 31.8 reads only public data, so every request works without this.
+  # Only public data is read, so every request works without this.
   # It is about the rate limit and nothing else: unauthenticated GitHub allows
   # sixty an hour *per address*, which one deployment shares among everybody,
   # and a token raises that to five thousand. No scope is requested and none is
   # used -- a fine-grained token with read-only public access is the right
   # thing here, and it belongs to the deployment rather than to a person
-  # (Bolum 40.6.1 keeps the provider token of a sign-in unstored on purpose).
+  # (a sign-in's provider token is deliberately never stored).
   github:
     token: ${GITHUB_API_TOKEN:}
 
   llm:
-    # Bolum 27.4, USD per million tokens. Configuration because vendors change
+    # USD per million tokens. Configuration because vendors change
     # prices faster than a release; an unpriced model costs zero and is
     # counted, never guessed at.
     #
@@ -323,11 +323,11 @@ atomcv:
           cached: 0
     chain:
       # Comma-separated, so the order is deployable without a release
-      # (Bolum 5.4, "env-driven fallback"). Naming an adapter that does not
+      # (an env-driven fallback). Naming an adapter that does not
       # exist only logs a warning, but an order listing nothing runnable fails
       # every generation.
       #
-      # Two vendors and not two models at one: Bolum 27.3's point is that the
+      # Two vendors and not two models at one: the point is that the
       # links do not fail together, and OpenRouter is itself a broker -- a
       # second model behind it shares the broker's outage.
       cheap: ${LLM_CHAIN_CHEAP:openrouter,gemini}
@@ -335,22 +335,22 @@ atomcv:
     models:
       openrouter: ${OPENROUTER_MODEL:}
       gemini: ${GEMINI_MODEL:}
-      # The three direct links of Bolum 27.2's table. Blank by default and
+      # The three direct links of the table. Blank by default and
       # therefore inert: an adapter with no model and no key answers
-      # isAvailable() false, and Bolum 27.3 skips it without counting it as
+      # isAvailable() false, and the walk skips it without counting it as
       # tried. Setting a key and a model is all that joins one to a chain.
       openai: ${OPENAI_MODEL:}
       anthropic: ${ANTHROPIC_MODEL:}
       deepseek: ${DEEPSEEK_MODEL:}
     call-timeout: 30s
-    # Bolum 27.3 retries a schema mismatch on the same provider. One catches a
+    # A schema mismatch is retried on the same provider. One catches a
     # model that wandered; more pays repeatedly for a prompt that is wrong.
     schema-retries: 1
     gemini:
       api-key: ${GEMINI_API_KEY:}
       base-url: ${GEMINI_BASE_URL:}
 
-    # Bolum 27.2's remaining three, each a direct billing relationship rather
+    # The remaining three, each a direct billing relationship rather
     # than a broker. Written so the table is true; unconfigured so the
     # deployment is unchanged. A vendor reached only through OpenRouter shares
     # the broker's outage, which is the one thing the chain exists to avoid —
@@ -376,7 +376,7 @@ atomcv:
 
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}
-      # Who may serve a call, which EK C.1's provider list has to be able to
+      # Who may serve a call, which the provider list has to be able to
       # answer. `deny` keeps the prompt away from any provider that would keep
       # it for training — the prompt is somebody's CV, and this is the only
       # place that question is asked. Overridable because a deployment that
@@ -387,7 +387,7 @@ atomcv:
       # `openai`, `azure`, `azure/eu`, `amazon-bedrock/us-east-1` all serve this
       # model, at 2 to 5.50 per million input. Naming one bounds the list and
       # makes the price table exact, at the cost of the broker's own fallback —
-      # the chain's second vendor is what covers that (Bolum 27.3).
+      # the chain's second vendor is what covers that.
       only: ${OPENROUTER_ONLY:}
       # Zero-retention endpoints only. Off, and not because it is unwanted:
       # which endpoints qualify is not in the model's metadata, so this is

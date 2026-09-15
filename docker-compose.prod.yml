@@ -1,4 +1,4 @@
-# Bolum 11.1's topology, as the server actually runs it.
+# The topology, as the server actually runs it.
 #
 # Read with two env files, and the split is the point (XI-B.9.3):
 #   .env         the deployment's secrets, written by hand, chmod 600
@@ -7,7 +7,7 @@
 #   docker compose --env-file .env.deploy -f docker-compose.prod.yml up -d
 #
 # Two SHAs and not one: the repositories deploy independently, so there is no
-# single commit that describes what is running (Bolum 47.3).
+# single commit that describes what is running.
 name: atomcv
 
 services:
@@ -47,7 +47,7 @@ services:
     # Publishing it to 0.0.0.0 would put an unauthenticated API beside the one
     # nginx rate limits.
     ports: ["127.0.0.1:8080:8080"]
-    # Bolum 52.5's class-data archive. A volume and not the container's own
+    # The class-data archive. A volume and not the container's own
     # layer: a deploy recreates the container, so an archive written inside it
     # would be written on every start and read on none. The JVM regenerates it
     # by itself when the jar changes, so one from the previous image is
@@ -71,7 +71,7 @@ services:
       # Runs on first initialisation only, which is the one chance there is to
       # create Umami's database beside the application's.
       - ./docker/postgres/init-umami.sql:/docker-entrypoint-initdb.d/10-umami.sql:ro
-      # Bolum 49.3's archive lands here and `scripts/archive-wal.sh` ships it.
+      # The archive lands here and `scripts/archive-wal.sh` ships it.
       # Postgres writes it, the host reads it -- which is why it is a named
       # volume and not a path inside pgdata: a recovery that restores the data
       # directory must not restore the segments that describe it.
@@ -80,12 +80,12 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    # Bolum 49.3. The archive_command Bolum 49.3 prints calls rclone, and this
+    # The archive_command as it was first written calls rclone, and this
     # image does not carry it -- installing it would mean maintaining a
     # derivative of the pgvector image for one binary. Copying to a volume the
     # host already mounts gets the same segments to the same bucket, and keeps
     # the encryption on the host side where the age key already lives
-    # (Bolum 49.2: a segment holds the same CVs the dump does).
+    # (a segment holds the same CVs the dump does).
     #
     # `test ! -f` first, because Postgres may retry a segment it already
     # archived and an archive_command that overwrites can truncate a good file
@@ -112,7 +112,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # Sessions live here (Bolum 40.1), so eviction is not free: allkeys-lru
+    # Sessions live here, so eviction is not free: allkeys-lru
     # signs people out under pressure rather than failing the write that would
     # have told us. 128M is far past what sessions and the analysis cache use.
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --appendonly yes
@@ -147,8 +147,8 @@ services:
       resources:
         limits: { cpus: '1.0', memory: 2.5G }
 
-  # Bolum 5.7's analytics: cookieless and self-hosted, which is what makes
-  # Bolum 57.3's "no consent banner" true rather than merely claimed.
+  # The analytics: cookieless and self-hosted, which is what makes
+  # The "no consent banner" true rather than merely claimed.
   #
   # Its own database on the same server and not the application's. Umami runs
   # its own migrations, and a tool that migrates a schema it shares with the
@@ -169,7 +169,7 @@ services:
       - DATABASE_TYPE=postgresql
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/umami
       - APP_SECRET=${UMAMI_APP_SECRET}
-      # Served under a path on the one domain (Bolum 11.2). That is what keeps
+      # Served under a path on the one domain. That is what keeps
       # the tracker script same-origin, so the Content-Security-Policy needs no
       # host of its own for it -- the opposite of Turnstile.
       - BASE_PATH=/analytics

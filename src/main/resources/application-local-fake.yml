@@ -1,4 +1,4 @@
-# Daily work: no provider is called and nothing is spent (Bolum 54.2).
+# Daily work: no provider is called and nothing is spent.
 #
 # Until this file existed Spring accepted `--spring.profiles.active=local,local-fake`
 # and ignored the second half silently, so `make dev` looked like it was
