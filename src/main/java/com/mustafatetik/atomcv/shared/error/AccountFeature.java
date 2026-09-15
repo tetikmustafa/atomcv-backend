@@ -46,7 +46,16 @@ public enum AccountFeature {
      * (Bolum 34.6). Paired with {@code canSaveHistory}: feedback is a row keyed
      * to a user, so it needs the same thing history does.
      */
-    FEEDBACK;
+    FEEDBACK,
+
+    /**
+     * Marking a generation as one to keep (Bolum 35.2, Bolum 13's
+     * {@code archived}). Paired with {@code canSaveHistory}, and for the same
+     * reason feedback is: the mark is a column on a history row, and an
+     * anonymous session's generations go when its profile expires -- there is
+     * nothing for a keep-mark to preserve.
+     */
+    ARCHIVE;
 
     /** Lowercase on the wire, as the catalogue publishes it. */
     @JsonValue

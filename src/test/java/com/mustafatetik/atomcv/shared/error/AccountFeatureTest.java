@@ -27,12 +27,13 @@ class AccountFeatureTest {
     void everyValueIsLowercaseAndUnderscored() {
         assertThat(AccountFeature.values())
                 .extracting(AccountFeature::wireValue)
-                .containsExactly("atom_controls", "alternatives", "cover_letter", "feedback");
+                .containsExactly("atom_controls", "alternatives", "cover_letter",
+                        "feedback", "archive");
     }
 
     /**
      * <strong>And this one does not fail today, which is worth saying.</strong>
-     * None of the four values carries an {@code I}, so a bare
+     * None of the five values carries an {@code I}, so a bare
      * {@code toLowerCase()} would pass every assertion here on a Turkish
      * machine as well — § 51.7 asks for a guard that has been seen to fail, and
      * this is not one yet.
@@ -51,6 +52,7 @@ class AccountFeatureTest {
         assertThat(AccountFeature.values())
                 .extracting(AccountFeature::wireValue)
                 .allSatisfy(value -> assertThat(value).isEqualTo(value.toLowerCase(Locale.ROOT)))
-                .containsExactly("atom_controls", "alternatives", "cover_letter", "feedback");
+                .containsExactly("atom_controls", "alternatives", "cover_letter",
+                        "feedback", "archive");
     }
 }

@@ -85,7 +85,17 @@ public record GenerationResponse(
                 readable and still downloadable -- the CV that was sent to an
                 employer does not stop existing -- and this is where the screen
                 showing it finds the newer one to link to.""")
-        UUID supersededByGenerationId) {
+        UUID supersededByGenerationId,
+
+        @Schema(description = """
+                Whether this one is marked to keep (Bolum 35.2). A generation
+                is not archived when it is made; `POST /generations/{id}/archive`
+                sets the mark and the same endpoint clears it. What the mark
+                buys is Bolum 13's retention rule -- an archived generation's
+                artifact never expires -- and until object storage lands there
+                is nothing that expires either way, so today it is a mark the
+                owner sets and reads.""")
+        boolean archived) {
 
     /**
      * <strong>The same type the feedback endpoint answers with</strong>, not a
@@ -125,7 +135,8 @@ public record GenerationResponse(
                         ? null : generation.getJdAnalysis().jdLanguage()),
                 blankToNull(generation.getCoverLetter()),
                 feedback,
-                supersededBy);
+                supersededBy,
+                generation.isArchived());
     }
 
     /**

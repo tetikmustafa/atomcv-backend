@@ -71,7 +71,12 @@ public record GenerationSummary(
         String contentLanguage,
 
         @Schema(description = "Whether a covering letter was written for it")
-        boolean hasCoverLetter) {
+        boolean hasCoverLetter,
+
+        @Schema(description = "Whether this one is marked to keep (Bolum 35.2). "
+                + "The list is where the mark is read: it is the screen a "
+                + "person opens to find the generation they kept.")
+        boolean archived) {
 
     public static GenerationSummary of(Generation generation) {
         // Null in general mode; its two members are never null when it is not,
@@ -88,7 +93,8 @@ public record GenerationSummary(
                 generation.getFitReport() == null ? null : generation.getFitReport().level(),
                 blankToNull(generation.getSelectionState() == null
                         ? null : generation.getSelectionState().language()),
-                generation.getCoverLetter() != null && !generation.getCoverLetter().isBlank());
+                generation.getCoverLetter() != null && !generation.getCoverLetter().isBlank(),
+                generation.isArchived());
     }
 
     /**

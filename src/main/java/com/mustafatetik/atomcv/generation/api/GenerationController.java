@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.api;
 
 import com.mustafatetik.atomcv.generation.api.dto.AcceptedJobResponse;
+import com.mustafatetik.atomcv.generation.api.dto.ArchiveRequest;
 import com.mustafatetik.atomcv.generation.api.dto.CoverLetterRequest;
 import com.mustafatetik.atomcv.generation.api.dto.CoverLetterResponse;
 import com.mustafatetik.atomcv.generation.api.dto.FeedbackRequest;
@@ -20,6 +21,7 @@ import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterDraft;
 import com.mustafatetik.atomcv.generation.service.CoverLetterRegenerationService;
 import com.mustafatetik.atomcv.generation.service.FeedbackService;
+import com.mustafatetik.atomcv.generation.service.GenerationArchiveService;
 import com.mustafatetik.atomcv.generation.service.GenerationDownloadService;
 import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.generation.service.SelectionEditService;
@@ -104,6 +106,7 @@ public class GenerationController {
     private final SelectionEditService edits;
     private final SelectionViewService selectionView;
     private final FeedbackService feedback;
+    private final GenerationArchiveService archive;
     private final Clock clock;
     private final ErrorPresenter errors;
 
@@ -152,7 +155,8 @@ public class GenerationController {
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
             SelectionEditService edits, SelectionViewService selectionView,
-            RateLimiter rateLimiter, FeedbackService feedback, Clock clock,
+            RateLimiter rateLimiter, FeedbackService feedback,
+            GenerationArchiveService archive, Clock clock,
             ErrorPresenter errors) {
 
         this.currentUser = currentUser;
@@ -167,6 +171,7 @@ public class GenerationController {
         this.selectionView = selectionView;
         this.rateLimiter = rateLimiter;
         this.feedback = feedback;
+        this.archive = archive;
         this.clock = clock;
         this.errors = errors;
     }
@@ -715,6 +720,60 @@ public class GenerationController {
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(new CoverLetterResponse(
                         generationId, draft.plainText(), asked.styleOrDefault()));
+    }
+
+    @Operation(
+            operationId = "archiveGeneration",
+            summary = "Mark a generation as one to keep",
+            description = """
+                    Bolum 13 pairs this mark with how long a generation's
+                    artifact is kept: fourteen days ordinarily, for good when
+                    it is archived. **No artifact is stored yet** — a download
+                    re-renders from the stored snapshot (EK D.6.3) and nothing
+                    expires in either direction — so today the mark changes no
+                    retention and is the owner's own mark on their history. It
+                    is the row the retention rule reads on the day object
+                    storage lands.
+
+                    The same endpoint takes it off: send `archived: false`.
+                    A mark that cannot be removed is a trap, and the support
+                    grant of Bolum 48.4 answered the same question the same
+                    way. An omitted body archives, because that is what the
+                    path says.
+
+                    Idempotent. Archiving something already archived is not a
+                    conflict: the caller asked for a state and the row is in
+                    it.""")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "The generation as it now stands"),
+            @ApiResponse(responseCode = "403",
+                    description = "FEATURE_REQUIRES_ACCOUNT — `params.feature` is "
+                            + "`archive`, and the resolution is `sign_up`. An "
+                            + "anonymous session's generations go with its "
+                            + "profile, so there is nothing for a keep-mark to keep",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404",
+                    description = "No such generation, or it belongs to someone else",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    @PostMapping(path = "/{generationId}/archive", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GenerationResponse> archive(
+            @PathVariable UUID generationId,
+            @RequestBody(required = false) ArchiveRequest request) {
+
+        // Ahead of the lookup, for the reason F-030 gives: an anonymous session
+        // holding this generation should read "this needs an account", not
+        // "there is no such generation".
+        UserContext user = accountFor(AccountFeature.ARCHIVE);
+
+        boolean wanted = request == null || request.wanted();
+        Generation generation = archive.setArchived(user, generationId, wanted);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(GenerationResponse.of(generation));
     }
 
     @Operation(
