@@ -241,6 +241,17 @@ tasks.register<Test>("integrationTest") {
     // Paying that on every run would push the suite from half a minute to
     // several, and the thing it guards changes rarely.
     useJUnitPlatform { excludeTags("latex", "llm-eval") }
+    // Lets `-Dopenapi.record=true` reach the test JVM, which is how
+    // openapi.json is rewritten after an endpoint changes (Bolum 35.8).
+    systemProperty("openapi.record", System.getProperty("openapi.record", "false"))
+    // The committed schema is an input: editing it by hand without rerunning
+    // the check would leave the task UP-TO-DATE and the drift unnoticed.
+    // `files`, not `file`: a collection tolerates a path that is not there
+    // yet, and `file` fails configuration before the first recording run can
+    // create it.
+    inputs.files(rootProject.file("openapi.json"))
+        .withPropertyName("openApiDocument")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Bolum 53.4. Real calls to a real model, so it is not wired into anything --

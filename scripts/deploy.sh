@@ -14,6 +14,7 @@ cd "$(dirname "$0")/.."
 
 COMPOSE="docker compose --env-file .env.deploy -f docker-compose.prod.yml"
 HEALTH_URL="http://localhost:8080/actuator/health"
+WARMUP_URL="http://localhost:8080/api/v1/warmup"
 HEALTH_ATTEMPTS=45          # 90 seconds; a cold JVM with Flyway takes ~40
 
 COMPONENT=${1:-}
@@ -62,6 +63,13 @@ $COMPOSE pull "$COMPONENT"
 $COMPOSE up -d --no-deps "$COMPONENT"
 
 if healthy; then
+    # Bolum 52.5, and only for the backend -- the frontend has no such path.
+    # `|| true` is the whole of its error handling on purpose: a cold pool is
+    # slower, not broken, and health has already said the release is good.
+    # Failing here would roll a working version back over a slow one.
+    if [ "$COMPONENT" = backend ]; then
+        curl -sf --max-time 10 "$WARMUP_URL" > /dev/null || true
+    fi
     echo "Healthy. Deployed $COMPONENT $NEW_SHA"
     docker image prune -f > /dev/null
     exit 0

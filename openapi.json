@@ -1,0 +1,4911 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "AtomCV API",
+    "description" : "Errors carry a translatable `code`, the `params` its message needs, and the `resolutions` the user can act on. The server never sends display text — see the error catalogue in the architecture document.",
+    "license" : {
+      "name" : "MIT"
+    },
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "tags" : [ {
+    "name" : "Auth",
+    "description" : "Signing in through a provider"
+  }, {
+    "name" : "Atoms",
+    "description" : "The smallest independently selectable unit of a profile"
+  }, {
+    "name" : "Sections",
+    "description" : "The headings a profile is organised under"
+  }, {
+    "name" : "Account",
+    "description" : "What the acting user has used today"
+  }, {
+    "name" : "Account",
+    "description" : "The account itself"
+  }, {
+    "name" : "Auth",
+    "description" : "Signing in with an email link"
+  }, {
+    "name" : "Profile",
+    "description" : "The user's structured professional data"
+  }, {
+    "name" : "Applications",
+    "description" : "Keeping track of where a CV went"
+  }, {
+    "name" : "Entries",
+    "description" : "Positions, degrees and projects"
+  }, {
+    "name" : "Profile",
+    "description" : "Building a profile from a CV"
+  }, {
+    "name" : "Auth",
+    "description" : "Who is signed in, and signing out"
+  }, {
+    "name" : "Generation",
+    "description" : "Turning a profile into a document"
+  }, {
+    "name" : "Jobs",
+    "description" : "Following work that runs on a queue"
+  } ],
+  "paths" : {
+    "/api/v1/profile" : {
+      "get" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Read the profile head",
+        "description" : "Never answers 404. A user has exactly one profile, so an account that has none yet gets an empty one created on the spot — the client has no \"not created yet\" state to carry.",
+        "operationId" : "readProfile",
+        "responses" : {
+          "200" : {
+            "description" : "The profile head",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected failure",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Replace the profile head",
+        "description" : "Requires `If-Match`. A field left out is cleared — this replaces the head rather than patching it. Preferences are not part of it and have their own endpoint.",
+        "operationId" : "replaceProfile",
+        "parameters" : [ {
+          "name" : "If-Match",
+          "in" : "header",
+          "description" : "The version last read, quoted",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "7"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProfileUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The head as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "The new version",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT — someone saved first",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED — no If-Match",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Delete the profile and everything under it",
+        "description" : "Sections, entries, atoms and wordings go with it. The account stays: the next read gives an empty profile back. Requires If-Match — this is the one call that cannot be undone.",
+        "operationId" : "deleteProfile",
+        "parameters" : [ {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      }
+    },
+    "/api/v1/profile/preferences" : {
+      "put" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Replace the generation preferences",
+        "description" : "Requires `If-Match`. Separate from the head so that editing a headline cannot reset someone's writing style by omission.",
+        "operationId" : "replacePreferences",
+        "parameters" : [ {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PreferencesUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The head as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "The new version",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/sections" : {
+      "get" : {
+        "tags" : [ "Sections" ],
+        "summary" : "List the sections in display order",
+        "description" : "Every item carries its own version, so editing one needs no extra read.",
+        "operationId" : "listSections",
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every section, primary order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Section"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Sections" ],
+        "summary" : "Add a section at the end",
+        "operationId" : "createSection",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SectionCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Created",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Section"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/sections/reorder" : {
+      "post" : {
+        "tags" : [ "Sections" ],
+        "summary" : "Put the sections in this order",
+        "description" : "The list must name every section. A partial one would leave the rest to be guessed; sending all of them also makes the call idempotent.",
+        "operationId" : "reorderSections",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Reorder"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every section, in the new order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Section"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/import" : {
+      "post" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Build a profile from an uploaded CV",
+        "description" : "Accepts PDF, DOCX, TEX, TXT and MD, up to ten megabytes. The published list is `accepted` on a `415` — read it from there rather than hardcoding one, so a format added later reaches the file picker without a release.\n\nAnswers 202 with a job to follow. Everything that can be decided about the file itself is decided before that: an unreadable format, an oversized file, an encrypted PDF, a scan with no text in it, and a document that yielded nothing are all refused synchronously, because each of them is something the person acts on at once.\n\nSend `Idempotency-Key`. An upload is the request a flaky connection repeats most easily, and profile extraction has the smallest daily allowance in the product.",
+        "operationId" : "importCv",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "mode",
+          "in" : "query",
+          "description" : "Only `replace`, and only as the answer to a 409 PROFILE_ALREADY_EXISTS: the profile that is there is discarded and this CV becomes the new one. Absent means an account that already has a profile is refused.",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "The CV. PDF, DOCX, TEX, TXT or MD, up to ten megabytes."
+                  },
+                  "challengeToken" : {
+                    "type" : "string",
+                    "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account (Bolum 44.4): this is the most expensive single call the product makes. Absent or blank is refused with `403 CHALLENGE_FAILED`."
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Queued; follow the Location",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcceptedJobResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED - the body carried no `file` part",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413" : {
+            "description" : "Over ten megabytes",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415" : {
+            "description" : "Not a format we read",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Encrypted, scanned, or holding nothing",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "The daily allowance is spent",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "The account already has a profile with content in it. Resolutions: replace_profile, keep_existing_profile",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/entries" : {
+      "get" : {
+        "tags" : [ "Entries" ],
+        "summary" : "List entries, optionally within one section",
+        "operationId" : "listEntries",
+        "parameters" : [ {
+          "name" : "sectionId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every matching entry, in display order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Entry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Entries" ],
+        "summary" : "Add an entry at the end of its section",
+        "operationId" : "createEntry",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EntryCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Created",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Entry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/entries/reorder" : {
+      "post" : {
+        "tags" : [ "Entries" ],
+        "summary" : "Put one section's entries in this order",
+        "description" : "The list must name every entry of that section.",
+        "operationId" : "reorderEntries",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EntryReorder"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "That section's entries, in the new order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Entry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms" : {
+      "get" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "List atoms with their wordings",
+        "description" : "Unpaginated: a profile holds tens to a few hundred atoms and the editor loads all of them (EK D.6.2).",
+        "operationId" : "listAtoms",
+        "parameters" : [ {
+          "name" : "sectionId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "entryId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every matching atom, in display order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Atom"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Add an atom and its first wording",
+        "description" : "Content is required: an atom with no wording is a fact nobody can read, and nothing downstream can render or measure it.",
+        "operationId" : "createAtom",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AtomCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Created",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Atom"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/{id}/variants" : {
+      "post" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Add a wording",
+        "description" : "One wording per language and tone; a second one for the same pair is refused rather than left to a database constraint.",
+        "operationId" : "addVariant",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VariantWrite"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "201" : {
+            "description" : "Created",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Variant"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/{id}/tags" : {
+      "post" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Put a label on an atom",
+        "description" : "A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for (Bolum 19.1), so                     this is a scoring control rather than a label.\n\nThe label is stored canonical — trimmed and lowercased —                     because that is the form the scorer compares, and the                     response carries the stored form back. A label the profile                     already knows reuses its row rather than making a second                     one that would never match the first.\n\nNo `If-Match`. A tag is a row of its own and the atom is                     untouched, so there is no version of the atom for a                     precondition to be about; two people tagging one atom end                     up with both tags, which is what each of them asked for.\n\nIdempotent: tagging an atom that already wears the label                     returns the tag it already has, and does not rewrite who                     put it there.",
+        "operationId" : "tagAtom",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TagRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "The tag on this atom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AtomTagResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — `params.fields` is `label`",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/reorder" : {
+      "post" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Put one group of atoms in this order",
+        "description" : "The atoms of an entry, or the ones hanging straight off a section.",
+        "operationId" : "reorderAtoms",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AtomReorder"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "That group's atoms, in the new order",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Atom"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations" : {
+      "get" : {
+        "tags" : [ "Generation" ],
+        "summary" : "The generations this account has made, newest first",
+        "description" : "`capabilities.canSaveHistory` says these are kept; this is                     where they are read (F-020).\n\nCursor pagination, not offset: the list grows from the top,                     and a page two taken after a new generation lands would                     repeat one row and hide another. Pass the `nextCursor` of                     a page back as `cursor` to get the one after it; its                     absence is the end of the history.\n\n`total` counts the whole history rather than the page.                     The one screen that needs it cannot page — deleting an                     account has to say what goes, and a number that meant \"at                     least this many\" would be worse there than none.\n\nGenerations a hand edit replaced are **not listed** and not                     counted. Faz G writes a new generation per edit and retires                     the one before it, so twenty edits of one CV would otherwise                     be twenty-one rows and one of them the CV. Nothing is                     deleted: a retired row is still there and still downloadable                     by id, and deleting the account still takes it.\n\nA row carries no posting and no letter, only whether                     there is a letter to open. The posting stays on the row                     (absolute rule 4).",
+        "operationId" : "listGenerations",
+        "parameters" : [ {
+          "name" : "cursor",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "A page of history",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GenerationPage"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — the cursor was not one of ours",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Generate a CV against a job posting",
+        "description" : "Answers 202 with a job to follow. A generation reads the                     posting with an LLM, scores the whole profile against it,                     then renders and compiles — half a minute is ordinary, and                     a request held open for that long is a request that times                     out somewhere in between.\n\nThe preflights are synchronous. A posting that does not                     read as one and a profile with nothing in it are both                     refused here, on the spot, rather than accepted and failed                     thirty seconds later.\n\n`Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.",
+        "operationId" : "generate",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GenerationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Queued; follow the Location",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcceptedJobResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "UNPARSEABLE_JOB_DESCRIPTION or INSUFFICIENT_PROFILE",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "QUOTA_EXCEEDED — the day's generations are spent",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Seconds to wait, rounded up and never zero. The same moment as `params.resetsAt`, as a duration: it is the one of the two that is still right when the client's own clock is wrong.",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer"
+                }
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/selection" : {
+      "get" : {
+        "tags" : [ "Generation" ],
+        "summary" : "What this generation weighed, and what reached the page",
+        "description" : "Bolum 24.4's toggle, as a list a screen can draw (F-031).\n\nEvery atom this generation ranked is here, the ones that\nreached the page first and the ones that did not after\nthem, each with the text it competed as and an `onPage`\nflag. **The ids are exactly the ids the edit endpoint\naccepts** -- which is the reason this exists: an edit\nrefuses an atom this generation never weighed, so controls\ndrawn from today's profile would include buttons that\nanswer 400.\n\nThe text is what *this* CV said, not what the profile says\ntoday: the wording Faz D wrote where there was one, and the\nvariant the selection named otherwise. Editing a bullet\nafterwards does not rewrite the list of a CV already made.\nA held-back line carries the profile's wording, because\nthis generation never printed one for it -- putting it back\nruns Faz D over it and may word it differently.\n\nNot capped. The sentence endpoint shows a model thirty\nheld-back lines because a prompt costs money; a person\nscrolling their own history is not paying by the line.\n\nAn atom deleted from the profile since is absent rather\nthan listed: it cannot be put back, and asking to drop it\nis already true.",
+        "operationId" : "readSelection",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The lines, page first",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SelectionViewResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Keep or drop atoms by hand, and re-make the CV",
+        "description" : "Bolum 24.4. An edit applies to the **selection state**, never to the rendered document — which is what keeps the page limit true after twenty of them: every edit goes back through the selection that made the promise.\n\nAnswers 202 with a job, like a generation, because it re-runs the renderer and a real compiler. It does not re-run Faz A or Faz B — the posting was read once and the profile ranked against it once, and a toggle changes neither answer — and Faz D carries the wording it already wrote. **No model call, and nothing off the day's allowance.**\n\nThe job's terminal event names a **new** generation. The edited one stays, marked superseded, and its id comes back as `supersededGenerationId`.\n\nAn atom this generation never weighed is refused rather than ignored, because ignoring it would answer 202 and hand back the same document.",
+        "operationId" : "editSelection",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SelectionEditRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Queued; follow the Location",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcceptedJobResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — an empty edit, an atom named in both lists, or one this generation never weighed",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "GENERATION_SUPERSEDED — a newer generation has replaced this one; edit that",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/feedback" : {
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Say what you thought of a generation",
+        "description" : "A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.\n\n`contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     how long it has left, and whether anybody has read it —                     `accessedAt` is null until the offline support reader                     stamps it, which is the only thing that can (B-078).                     Sending `contentGranted: false` later                     withdraws a grant that is still open.\n\nThe comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.",
+        "operationId" : "recordFeedback",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FeedbackRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Recorded",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — rating is 1 or -1",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "FEATURE_REQUIRES_ACCOUNT — `params.feature` is `feedback`, and the resolution is `sign_up`. An anonymous session may hold this generation and still not have this control",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/edits" : {
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Say what should change, in your own words",
+        "description" : "Bolum 24.2, and the other half of the toggle next door. One sentence is read into a change of **which atoms are on the page**, and the CV is re-made from its own selection state — so the page limit is re-checked and still holds, however many sentences it takes.\n\n202 with a job, and the model is asked exactly once: it sees the lines **numbered**, never their ids, and answers with numbers. It cannot name a bullet that does not exist.\n\n**This one costs a generation** off the day's allowance, unlike the hand toggle. Refunded when the sentence named no line.\n\nWhat it does *not* do: reword a line, change the tone, or resize the page. A sentence asking for any of those is answered `EDIT_NOT_UNDERSTOOD` rather than guessed at — removing the wrong bullet is worse than saying nothing, because the person may not notice.",
+        "operationId" : "editBySentence",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NaturalLanguageEditRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "202" : {
+            "description" : "Queued; follow the Location",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcceptedJobResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — an empty or over-long sentence",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "GENERATION_SUPERSEDED — a newer generation has replaced this one; edit that",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "QUOTA_EXCEEDED — the day's generations are spent",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Seconds to wait, rounded up and never zero. The same moment as `params.resetsAt`, as a duration: it is the one of the two that is still right when the client's own clock is wrong.",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer"
+                }
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/cover-letter/regenerate" : {
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Write a covering letter for a generation, or another one",
+        "description" : "Bolum 34. The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.\n\nOff the main generation path on purpose: it is a second                     LLM call and most people want a CV. Ask for it here, or                     set `coverLetter: true` when generating.\n\nThree variants (`default`, `shorter`, `more_formal`),                     and each press replaces the stored letter — trying                     another draft leaves one letter, not three.\n\n**It can refuse.** A letter has no original to fall back                     on, so a draft that claims a skill the page does not carry,                     overstates the experience, or greets the wrong company is                     thrown away twice and then reported as                     `COVER_LETTER_REJECTED`. Another press is a different                     draft.",
+        "operationId" : "regenerateCoverLetter",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CoverLetterRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The letter",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CoverLetterResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "FEATURE_REQUIRES_ACCOUNT — `params.feature` is `cover_letter`, and the resolution is `sign_up`. An anonymous session may hold this generation and still not have this control",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "COVER_LETTER_REJECTED — nothing honest could be written",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "RATE_LIMITED — ten letters an hour",
+            "headers" : {
+              "Retry-After" : {
+                "description" : "Seconds to wait, rounded up and never zero. The same moment as `params.resetsAt`, as a duration: it is the one of the two that is still right when the client's own clock is wrong.",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "integer"
+                }
+              }
+            },
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/archive" : {
+      "post" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Mark a generation as one to keep",
+        "description" : "Bolum 13 pairs this mark with how long a generation's\nartifact is kept: fourteen days ordinarily, for good when\nit is archived. **No artifact is stored yet** — a download\nre-renders from the stored snapshot (EK D.6.3) and nothing\nexpires in either direction — so today the mark changes no\nretention and is the owner's own mark on their history. It\nis the row the retention rule reads on the day object\nstorage lands.\n\nThe same endpoint takes it off: send `archived: false`.\nA mark that cannot be removed is a trap, and the support\ngrant of Bolum 48.4 answered the same question the same\nway. An omitted body archives, because that is what the\npath says.\n\nIdempotent. Archiving something already archived is not a\nconflict: the caller asked for a state and the row is in\nit.",
+        "operationId" : "archiveGeneration",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ArchiveRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The generation as it now stands",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GenerationResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "FEATURE_REQUIRES_ACCOUNT — `params.feature` is `archive`, and the resolution is `sign_up`. An anonymous session's generations go with its profile, so there is nothing for a keep-mark to keep",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email/unsubscribe" : {
+      "post" : {
+        "tags" : [ "unsubscribe-controller" ],
+        "summary" : "Stop the optional emails for the account this token belongs to",
+        "operationId" : "unsubscribe",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UnsubscribeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Done, or there was no such token — the answer is the same"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Redeem a sign-in link",
+        "description" : "A POST, because the link in the email is not. Every refusal is the same refusal: expired, already used, wrong verifier and never existed are one answer, since telling them apart tells an attacker which half of a guess was right.",
+        "operationId" : "verifyMagicLink",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VerifyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SignInResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/magic-link" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Ask for a sign-in link",
+        "description" : "Always 202, and always with no body. Whether the address has an account is exactly what this must not reveal (Bolum 40.4), so the sentence the person reads is the client's to write and is the same either way.\n\nThe two other answers it can give reveal nothing either:\n`429 RATE_LIMITED`, where every layer of Bolum 40.5\ncounts what this caller has already done, and\n`403 CHALLENGE_FAILED`, which is about the token in the\nrequest and not about the address in it.",
+        "operationId" : "requestMagicLink",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MagicLinkRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Sign out",
+        "description" : "Revokes the session server-side and clears the cookie. Idempotent: calling it without a session is a 204 as well, because a client whose cookie has already expired is exactly the client that calls this.",
+        "operationId" : "logout",
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/applications" : {
+      "get" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Every application, newest first",
+        "description" : "Not paginated: this is a table somebody scans, not a feed they scroll.\n\nA row whose `generationId` is null is one whose CV has been deleted — the record of applying survives the document. Do not offer a download for those.",
+        "operationId" : "listApplications",
+        "responses" : {
+          "200" : {
+            "description" : "The whole list",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Application"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Record an application",
+        "description" : "`status` omitted means `applied` and `appliedAt` omitted means today, which is what somebody who has just pressed the button means.\n\n`generationId` must be one of your own generations. Somebody else's is a 400 rather than a 404: the field is wrong rather than the row missing.",
+        "operationId" : "createApplication",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApplicationCreate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Recorded",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Application"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — a missing field, or a `generationId` that is not yours",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/sections/{id}" : {
+      "delete" : {
+        "tags" : [ "Sections" ],
+        "summary" : "Delete a section",
+        "description" : "Takes its entries, atoms and variants with it. Requires If-Match, so a section someone else has changed since you read it is not removed on stale information.",
+        "operationId" : "deleteSection",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Sections" ],
+        "summary" : "Change part of a section",
+        "description" : "A field left out is left alone. Requires If-Match.",
+        "operationId" : "patchSection",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SectionPatch"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "The section as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Section"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/entries/{id}" : {
+      "delete" : {
+        "tags" : [ "Entries" ],
+        "summary" : "Delete an entry",
+        "description" : "Takes its atoms and their variants with it. Requires If-Match.",
+        "operationId" : "deleteEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Entries" ],
+        "summary" : "Change part of an entry",
+        "description" : "A field left out is left alone; a nullable field sent as null is cleared. Requires If-Match.",
+        "operationId" : "patchEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EntryPatch"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "The entry as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Entry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/{id}" : {
+      "delete" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Delete an atom",
+        "description" : "Takes its wordings with it.",
+        "operationId" : "deleteAtom",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Change an atom's controls",
+        "description" : "Importance, locks, verification and the scoring inputs. Text lives on a wording. Requires If-Match.",
+        "operationId" : "patchAtom",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AtomPatch"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "The atom as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Atom"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/{id}/variants/{variantId}" : {
+      "delete" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Delete a wording",
+        "description" : "Not the last one, and not the primary one while others remain: an atom has to keep a wording, and a default among them.",
+        "operationId" : "deleteVariant",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "variantId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Change a wording",
+        "description" : "Content is optional: making a wording the default is not a text edit and does not need the sentence back. When content is sent it is the whole of it, not a run at a time, and changing the words clears the measured render costs — the same sentence is what made them true. Requires If-Match.",
+        "operationId" : "patchVariant",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "variantId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VariantPatch"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "The wording as it now stands",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Variant"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}" : {
+      "delete" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Forget an application",
+        "description" : "Guarded by `If-Match` like an edit, and for the same reason: a row deleted from a stale screen is a row another tab had just changed.\n\nThe CV is untouched. This forgets the record of applying, not the document.",
+        "operationId" : "deleteApplication",
+        "parameters" : [ {
+          "name" : "applicationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Gone"
+          },
+          "404" : {
+            "description" : "No such application, or not yours",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT — somebody changed it first",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Change an application",
+        "description" : "A partial edit: omitting a field leaves it alone, so a screen moving one row from applied to interview does not have to send the notes back and risk overwriting an edit made in another tab.\n\nEmptying the notes needs `clearNotes: true` — null cannot mean both \"leave them\" and \"empty them\".\n\n`If-Match` is required (Bolum 35.6).",
+        "operationId" : "updateApplication",
+        "parameters" : [ {
+          "name" : "applicationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "If-Match",
+          "in" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApplicationUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Changed",
+            "headers" : {
+              "ETag" : {
+                "description" : "Current version as a quoted number, for If-Match on writes. Sent as: \"7\"",
+                "style" : "simple",
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Application"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such application, or not yours",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT — somebody changed it first",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED — no `If-Match` was sent",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account" : {
+      "get" : {
+        "tags" : [ "Account" ],
+        "summary" : "The account's own settings",
+        "operationId" : "accountSettings",
+        "responses" : {
+          "200" : {
+            "description" : "The current values",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccountSettings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Account" ],
+        "summary" : "Delete this account and everything in it",
+        "description" : "Immediate and irreversible. The profile, its atoms and their embeddings, every generation and its stored document, the queued jobs, the counters and the email preferences all go with the account, and every session signed into it stops working at once.\n\nTwo things deliberately survive, and neither identifies anybody afterwards. Cost history keeps its rows with the user link cut, because a month's spend is not personal data once it points at nobody. And an address that hard bounced or complained stays on the suppression list, because that record is what stops the product mailing it again — it belongs to the address, not to the account.\n\nLLM providers may hold their own short-term logs on their side; that is on the privacy policy, and it is not something this call can reach.\n\nAnswers 204 whether or not the account was still there: a second press is the same answer as the first.",
+        "operationId" : "deleteAccount",
+        "responses" : {
+          "204" : {
+            "description" : "Gone"
+          },
+          "401" : {
+            "description" : "AUTHENTICATION_REQUIRED — no account to delete",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Account" ],
+        "summary" : "Turn the optional emails on or off (Bolum 57.7)",
+        "operationId" : "updateAccountSettings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AccountSettings"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "The value as it now stands",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccountSettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/export" : {
+      "get" : {
+        "tags" : [ "Profile" ],
+        "summary" : "Export the whole profile",
+        "description" : "`?format=json` gives a nested copy in the shapes this API already publishes; `?format=markdown` gives the same content to read. Both are served as a download.",
+        "operationId" : "exportProfile",
+        "parameters" : [ {
+          "name" : "format",
+          "in" : "query",
+          "description" : "json or markdown",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "json"
+          },
+          "example" : "json"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The profile as a file",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProfileExport"
+                }
+              },
+              "text/markdown" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — unknown format",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{jobId}" : {
+      "get" : {
+        "tags" : [ "Jobs" ],
+        "summary" : "Where a job has got to",
+        "description" : "`generationId` is present only when the status is `completed`, `error` only when it is `failed`. Both are terminal, and a client may stop polling on either.\n\nPolling this is the supported fallback for a progress stream that closed without a terminal event — a spinner over work that already finished is the one outcome the product refuses to produce.",
+        "operationId" : "readJob",
+        "parameters" : [ {
+          "name" : "jobId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The job",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobStatusResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such job, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{jobId}/stream" : {
+      "get" : {
+        "tags" : [ "Jobs" ],
+        "summary" : "Watch a job as it runs",
+        "description" : "A server-sent event stream. Three event names: `phase`                     while it runs, then exactly one of `completed` or                     `failed`, after which the stream closes.\n\nThe current state is sent immediately on connect, so a                     client that reconnects is caught up without replay — and a                     job that finished between the 202 and the subscribe sends                     its outcome rather than nothing at all.\n\n`Last-Event-ID` is accepted and not replayed from: ids                     order the events of one stream, and the snapshot on                     connect does the catching up. If the stream ever closes                     without a terminal event, `GET /jobs/{jobId}` is the                     supported way to find out what happened.",
+        "operationId" : "streamJob",
+        "parameters" : [ {
+          "name" : "jobId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The stream",
+            "content" : {
+              "text/event-stream" : { }
+            }
+          },
+          "404" : {
+            "description" : "No such job, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}" : {
+      "get" : {
+        "tags" : [ "Generation" ],
+        "summary" : "One generation and how well it fits the posting",
+        "description" : "Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.\n\n**Counts, never a percentage.** Bolum 23.3 forbids one by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.\n\nThe report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.\n\nCarries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so Bolum 48.4's 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.",
+        "operationId" : "readGeneration",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The generation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GenerationResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/generations/{generationId}/download" : {
+      "get" : {
+        "tags" : [ "Generation" ],
+        "summary" : "Download a generation, as a PDF or a Word document",
+        "description" : "Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.\n\nNo LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.\n\n`format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.",
+        "operationId" : "downloadGeneration",
+        "parameters" : [ {
+          "name" : "generationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "format",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "pdf"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The document",
+            "content" : {
+              "application/pdf" : { }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — a format that is not `pdf` or `docx`",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "No such generation, or it belongs to someone else",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "410" : {
+            "description" : "GENERATION_ARTIFACT_EXPIRED — nothing left to re-render",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/session" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Whether anyone is signed in, and what they may do",
+        "description" : "Answers for every caller, signed in or not — the client calls this first and decides what to render from `capabilities`. Never cached: it is the one response whose staleness shows the user a screen they are not entitled to.",
+        "operationId" : "readSession",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/providers" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Which providers this deployment can sign people in with",
+        "description" : "A provider with no credentials configured is absent rather than broken, so the client renders the buttons this list names and no others.",
+        "operationId" : "listAuthProviders",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/oauth/{provider}/start" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Begin signing in — redirects to the provider",
+        "operationId" : "startOauth",
+        "parameters" : [ {
+          "name" : "provider",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "next",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/oauth/{provider}/callback" : {
+      "get" : {
+        "tags" : [ "Auth" ],
+        "summary" : "Where the provider sends the browser back",
+        "operationId" : "oauthCallback",
+        "parameters" : [ {
+          "name" : "provider",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "code",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "error",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/account/usage" : {
+      "get" : {
+        "tags" : [ "Account" ],
+        "summary" : "Today's usage against today's limits",
+        "description" : "`resetsAt` is an absolute instant, not an hour: the day boundary is UTC and the client writes the sentence in the user's own locale. Counters roll over at UTC midnight, which is 03:00 in Turkey.",
+        "operationId" : "accountUsage",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Usage"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/atoms/{id}/tags/{tagId}" : {
+      "delete" : {
+        "tags" : [ "Atoms" ],
+        "summary" : "Take a label off an atom",
+        "description" : "The tag row goes with the last atom wearing it: the                     vocabulary belongs to the profile, and a label no atom                     carries is a suggestion nobody made.\n\n404 when this atom is not wearing that tag — a removal                     that did not happen is not reported as one.",
+        "operationId" : "untagAtom",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "tagId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "VERSION_CONFLICT",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "428" : {
+            "description" : "PRECONDITION_REQUIRED",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Removed"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ContactUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "phone" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "linkedin" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "github" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "website" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "location" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          }
+        }
+      },
+      "ProfileUpdate" : {
+        "type" : "object",
+        "description" : "Replacement values for the profile head",
+        "properties" : {
+          "headline" : {
+            "type" : "string",
+            "example" : "Backend Engineer",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "contact" : {
+            "$ref" : "#/components/schemas/ContactUpdate"
+          },
+          "selfDescription" : {
+            "type" : "string",
+            "maxLength" : 4000,
+            "minLength" : 0
+          },
+          "sourceLanguage" : {
+            "type" : "string",
+            "description" : "The language the profile is authored in",
+            "example" : "en",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "enabledLanguages" : {
+            "type" : "array",
+            "description" : "At least one; the first is the working language",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 16,
+              "minLength" : 2
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "enabledLanguages", "sourceLanguage" ]
+      },
+      "Appearance" : {
+        "type" : "object",
+        "properties" : {
+          "fontSizePt" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "marginInches" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lineSpacing" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "fontFamily" : {
+            "type" : "string"
+          },
+          "accentColor" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Contact" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "linkedin" : {
+            "type" : "string"
+          },
+          "github" : {
+            "type" : "string"
+          },
+          "website" : {
+            "type" : "string"
+          },
+          "location" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Defaults" : {
+        "type" : "object",
+        "properties" : {
+          "maxPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "templateId" : {
+            "type" : "string"
+          },
+          "cvLanguage" : {
+            "type" : "string"
+          },
+          "coverLetterLanguage" : {
+            "type" : "string"
+          },
+          "appearance" : {
+            "$ref" : "#/components/schemas/Appearance"
+          }
+        }
+      },
+      "Preferences" : {
+        "type" : "object",
+        "properties" : {
+          "writingStyle" : {
+            "$ref" : "#/components/schemas/WritingStyle"
+          },
+          "defaults" : {
+            "$ref" : "#/components/schemas/Defaults"
+          }
+        }
+      },
+      "Profile" : {
+        "type" : "object",
+        "description" : "The head of the Master Profile",
+        "properties" : {
+          "headline" : {
+            "type" : "string",
+            "description" : "One line under the name",
+            "example" : "Backend Engineer"
+          },
+          "contact" : {
+            "$ref" : "#/components/schemas/Contact"
+          },
+          "selfDescription" : {
+            "type" : "string",
+            "description" : "Free text the user writes about themselves"
+          },
+          "preferences" : {
+            "$ref" : "#/components/schemas/Preferences"
+          },
+          "sourceLanguage" : {
+            "type" : "string",
+            "description" : "The language the profile is authored in",
+            "example" : "en"
+          },
+          "enabledLanguages" : {
+            "type" : "array",
+            "description" : "Languages this profile can be rendered in",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "completeness" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How complete the profile is, 0-100",
+            "example" : 0
+          }
+        }
+      },
+      "WritingStyle" : {
+        "type" : "object",
+        "properties" : {
+          "emphasizeMetrics" : {
+            "type" : "boolean"
+          },
+          "tone" : {
+            "type" : "string",
+            "enum" : [ "formal", "casual", "technical" ]
+          },
+          "conciseSentences" : {
+            "type" : "boolean"
+          },
+          "customInstructions" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApiError" : {
+        "type" : "object",
+        "description" : "RFC 7807 problem detail with a translatable code",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "description" : "Relative reference identifying the problem type",
+            "example" : "/errors/conflicting-preferences"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "Developer-facing English, stable across occurrences. Never displayed.",
+            "example" : "Conflicting preferences"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "HTTP status",
+            "example" : 409
+          },
+          "instance" : {
+            "type" : "string",
+            "description" : "The path that produced it",
+            "example" : "/api/v1/generations"
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Translation key: the client resolves errors.{CODE}",
+            "enum" : [ "INSUFFICIENT_PROFILE", "UNPARSEABLE_JOB_DESCRIPTION", "CONFLICTING_PREFERENCES", "FEATURE_REQUIRES_ACCOUNT", "QUOTA_EXCEEDED", "ALL_PROVIDERS_UNAVAILABLE", "COMPILATION_FAILED", "PAGE_LIMIT_EXCEEDED", "REWRITE_VALIDATION_FAILED", "COVER_LETTER_REJECTED", "EMBEDDING_UNAVAILABLE", "GENERATION_PAUSED", "UNSUPPORTED_DOCUMENT", "DOCUMENT_TOO_LARGE", "PDF_NOT_TEXT_BASED", "PDF_ENCRYPTED", "EXTRACTION_EMPTY", "EXTRACTION_TIMEOUT", "LANGUAGE_UNDETECTED", "TRANSLATION_FAILED", "PROFILE_QUOTA_EXCEEDED", "ANONYMOUS_SESSION_EXPIRED", "ATOM_LIMIT_EXCEEDED", "NO_ANONYMOUS_PROFILE", "PROFILE_ALREADY_EXISTS", "GENERATION_ARTIFACT_EXPIRED", "GENERATION_SUPERSEDED", "EDIT_NOT_UNDERSTOOD", "CSRF_TOKEN_INVALID", "AUTHENTICATION_REQUIRED", "OAUTH_FAILED", "MAGIC_LINK_INVALID", "RATE_LIMITED", "CHALLENGE_FAILED", "RESOURCE_NOT_FOUND", "VERSION_CONFLICT", "PRECONDITION_REQUIRED", "VALIDATION_FAILED", "INTERNAL_ERROR", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "UNSUPPORTED_MEDIA_TYPE" ]
+          },
+          "params" : {
+            "type" : "object",
+            "additionalProperties" : { },
+            "description" : "Values the translated message interpolates. Keys and types are fixed per code; the server refuses to publish anything undeclared.",
+            "example" : {
+              "pinnedPages" : 2.3,
+              "maxPages" : 1
+            }
+          },
+          "resolutions" : {
+            "type" : "array",
+            "description" : "What the user can do about it. The server owns this list.",
+            "items" : {
+              "$ref" : "#/components/schemas/Resolution"
+            }
+          }
+        },
+        "required" : [ "code", "status" ]
+      },
+      "Resolution" : {
+        "type" : "object",
+        "properties" : {
+          "action" : {
+            "type" : "string",
+            "enum" : [ "increase_page_limit", "replace_profile", "keep_existing_profile", "review_pins", "keep_top_pinned", "sign_up", "paste_full_posting", "continue_as_general_cv", "continue_anyway", "switch_to_manual_form", "complete_profile", "retry" ]
+          },
+          "params" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "AppearanceUpdate" : {
+        "type" : "object",
+        "description" : "How the CV looks. Every field is optional and omitting one leaves             the template's own setting.\n\nThe four geometric ones cost a measurement — a CV asked for             before it lands is produced against an estimate that spends a             little less of the page, so the page limit still holds. The             colour costs nothing.",
+        "properties" : {
+          "fontSizePt" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 12.0,
+            "minimum" : 9.0
+          },
+          "marginInches" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1.0,
+            "minimum" : 0.4
+          },
+          "lineSpacing" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1.3,
+            "minimum" : 0.9
+          },
+          "fontFamily" : {
+            "type" : "string",
+            "pattern" : "MODERN|SERIF|SANS"
+          },
+          "accentColor" : {
+            "type" : "string",
+            "pattern" : "^[0-9A-Fa-f]{6}$"
+          }
+        }
+      },
+      "DefaultsUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "maxPages" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 10,
+            "minimum" : 1
+          },
+          "templateId" : {
+            "type" : "string",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "cvLanguage" : {
+            "type" : "string",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "coverLetterLanguage" : {
+            "type" : "string",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "appearance" : {
+            "$ref" : "#/components/schemas/AppearanceUpdate"
+          }
+        }
+      },
+      "PreferencesUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "writingStyle" : {
+            "$ref" : "#/components/schemas/WritingStyleUpdate"
+          },
+          "defaults" : {
+            "$ref" : "#/components/schemas/DefaultsUpdate"
+          }
+        }
+      },
+      "WritingStyleUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "emphasizeMetrics" : {
+            "type" : "boolean"
+          },
+          "tone" : {
+            "type" : "string",
+            "enum" : [ "formal", "casual", "technical" ]
+          },
+          "conciseSentences" : {
+            "type" : "boolean"
+          },
+          "customInstructions" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }
+      },
+      "SectionCreate" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "about", "education", "experience", "projects", "skills", "soft_skills", "languages", "custom" ]
+          },
+          "title" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "layout" : {
+            "type" : "string",
+            "description" : "Defaults to bullet_list",
+            "enum" : [ "bullet_list", "entry_list", "inline_list", "two_column", "paragraph" ]
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "kind", "title" ]
+      },
+      "Section" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "about", "education", "experience", "projects", "skills", "soft_skills", "languages", "custom" ]
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "The heading as rendered",
+            "example" : "Experience"
+          },
+          "layout" : {
+            "type" : "string",
+            "enum" : [ "bullet_list", "entry_list", "inline_list", "two_column", "paragraph" ]
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Position among the sections, from 0"
+          },
+          "alwaysInclude" : {
+            "type" : "boolean",
+            "description" : "Selection may not drop it, whatever the budget says"
+          },
+          "verbatim" : {
+            "type" : "boolean",
+            "description" : "Rendered as written; no rewriting touches it"
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Inactive sections enter no CV at all"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send it back as If-Match on the next write",
+            "example" : 0
+          }
+        }
+      },
+      "Reorder" : {
+        "type" : "object",
+        "properties" : {
+          "ids" : {
+            "type" : "array",
+            "description" : "Every id of the collection, in the order they should appear",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "ids" ]
+      },
+      "AcceptedJobResponse" : {
+        "type" : "object",
+        "description" : "A generation that was accepted and queued",
+        "properties" : {
+          "jobId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Follow it at /api/v1/jobs/{jobId}"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "queued", "running", "completed", "failed", "cancelled" ]
+          },
+          "streamUrl" : {
+            "type" : "string",
+            "description" : "Server-sent events for this job",
+            "example" : "/api/v1/jobs/9b1c4e7a-.../stream"
+          }
+        }
+      },
+      "EntryCreate" : {
+        "type" : "object",
+        "properties" : {
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "title" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "organization" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "location" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Leave out while ongoing"
+          },
+          "url" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "maximum" : 1.0,
+            "minimum" : 0.0
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          },
+          "minAtoms" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Defaults to 2"
+          }
+        },
+        "required" : [ "sectionId", "title" ]
+      },
+      "Entry" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "title" : {
+            "type" : "string",
+            "example" : "Backend Engineer"
+          },
+          "organization" : {
+            "type" : "string",
+            "example" : "Acme"
+          },
+          "location" : {
+            "type" : "string"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Absent while ongoing"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Position within its section, from 0"
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Weight in scoring, 0 to 1",
+            "example" : 0.5
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "alwaysInclude" : {
+            "type" : "boolean",
+            "description" : "Selection may not drop it"
+          },
+          "verbatim" : {
+            "type" : "boolean",
+            "description" : "Never sent for rewriting"
+          },
+          "minAtoms" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Below this many atoms the entry is dropped whole (Bolum 20)"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send back as If-Match",
+            "example" : 0
+          }
+        }
+      },
+      "EntryReorder" : {
+        "type" : "object",
+        "properties" : {
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "ids" : {
+            "type" : "array",
+            "description" : "Every entry of that section, in the order they should appear",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "ids", "sectionId" ]
+      },
+      "AtomCreate" : {
+        "type" : "object",
+        "properties" : {
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "entryId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Leave out for an atom that hangs straight off the section"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "bullet", "skill", "language", "certification", "about_paragraph" ]
+          },
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "Language of this first wording",
+            "example" : "en",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "maximum" : 1.0,
+            "minimum" : 0.0
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          },
+          "skills" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            }
+          },
+          "metrics" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            }
+          },
+          "properNouns" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 120,
+              "minLength" : 0
+            }
+          }
+        },
+        "required" : [ "content", "kind", "sectionId" ]
+      },
+      "Content" : {
+        "type" : "object",
+        "description" : "Semantic runs; no format-specific markup",
+        "properties" : {
+          "v" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Structure version. Server-owned; leave it out when writing.",
+            "example" : 1
+          },
+          "runs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Run"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "runs" ]
+      },
+      "Run" : {
+        "type" : "object",
+        "properties" : {
+          "t" : {
+            "type" : "string",
+            "description" : "The text itself",
+            "example" : "ETL",
+            "maxLength" : 4000,
+            "minLength" : 0
+          },
+          "m" : {
+            "type" : "array",
+            "description" : "Semantic marks: technology, metric, emphasis, link, organization. Unknown marks are kept and rendered as plain text.",
+            "example" : [ "technology" ],
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "href" : {
+            "type" : "string",
+            "description" : "Only on a run marked link, and required there"
+          }
+        },
+        "required" : [ "t" ]
+      },
+      "Atom" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "entryId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Absent when the atom hangs straight off the section"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "bullet", "skill", "language", "certification", "about_paragraph" ]
+          },
+          "displayOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Weight in scoring, 0 to 1",
+            "example" : 0.5
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "alwaysInclude" : {
+            "type" : "boolean",
+            "description" : "Selection may not drop it"
+          },
+          "verbatim" : {
+            "type" : "boolean",
+            "description" : "Never sent for rewriting"
+          },
+          "skills" : {
+            "type" : "array",
+            "description" : "Canonical skill names, used for matching",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "metrics" : {
+            "type" : "array",
+            "description" : "Numbers a rewrite may not lose",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "properNouns" : {
+            "type" : "array",
+            "description" : "Names a rewrite may not invent or alter",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "manual", "cv_upload", "github" ]
+          },
+          "verified" : {
+            "type" : "boolean",
+            "description" : "The user has confirmed the fact"
+          },
+          "variants" : {
+            "type" : "array",
+            "description" : "Every wording, primary first",
+            "items" : {
+              "$ref" : "#/components/schemas/Variant"
+            }
+          },
+          "tags" : {
+            "type" : "array",
+            "description" : "The labels this atom wears. A quarter of Faz B's raw score is the overlap between these and the posting (Bolum 19.1), so they are a scoring control rather than decoration.",
+            "items" : {
+              "$ref" : "#/components/schemas/AtomTagResponse"
+            }
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send back as If-Match",
+            "example" : 0
+          }
+        }
+      },
+      "AtomTagResponse" : {
+        "type" : "object",
+        "description" : "A tag on an atom",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "auto", "user" ]
+          }
+        }
+      },
+      "Variant" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "primary" : {
+            "type" : "boolean",
+            "description" : "The wording used when nothing more specific is asked for"
+          },
+          "language" : {
+            "type" : "string",
+            "example" : "en"
+          },
+          "tone" : {
+            "type" : "string",
+            "description" : "Absent means the neutral register",
+            "enum" : [ "formal", "casual", "technical" ]
+          },
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "plainText" : {
+            "type" : "string",
+            "description" : "The same text with every mark removed"
+          },
+          "contentHash" : {
+            "type" : "string",
+            "description" : "sha256 of the plain text. Re-marking a sentence does not change it, so it is what a 'needs re-measuring' hint should watch."
+          },
+          "createdBy" : {
+            "type" : "string",
+            "description" : "Who wrote it",
+            "enum" : [ "user", "llm_extract", "llm_translate", "llm_rewrite" ]
+          },
+          "stale" : {
+            "type" : "boolean",
+            "description" : "The source has moved on; this wording needs regenerating"
+          },
+          "userEdited" : {
+            "type" : "boolean",
+            "description" : "The person wrote this wording themselves. With `stale`, it is the pair Bolum 32.2's warning is built from: the two have diverged and nothing will regenerate this one behind their back."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send back as If-Match",
+            "example" : 0
+          }
+        }
+      },
+      "VariantWrite" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "language" : {
+            "type" : "string",
+            "example" : "en",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "tone" : {
+            "type" : "string",
+            "description" : "Leave out for the neutral register",
+            "enum" : [ "formal", "casual", "technical" ]
+          },
+          "primary" : {
+            "type" : "boolean",
+            "description" : "Make this the wording used by default"
+          }
+        },
+        "required" : [ "content" ]
+      },
+      "TagRequest" : {
+        "type" : "object",
+        "description" : "A label to put on an atom",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "As typed; stored trimmed and lowercased",
+            "example" : "data-engineering",
+            "maxLength" : 64,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "label" ]
+      },
+      "AtomReorder" : {
+        "type" : "object",
+        "properties" : {
+          "sectionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "entryId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Leave out to order the section's own atoms"
+          },
+          "ids" : {
+            "type" : "array",
+            "description" : "Every atom of that group, in order",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "ids", "sectionId" ]
+      },
+      "GenerationRequest" : {
+        "type" : "object",
+        "description" : "A generation against a job posting",
+        "properties" : {
+          "jobDescription" : {
+            "type" : "string",
+            "description" : "The posting, pasted as it was found. Omitted or blank means a general CV: no posting, no LLM.",
+            "maxLength" : 60000,
+            "minLength" : 0
+          },
+          "acknowledgePreflight" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Proceed even though the preflight refused the text"
+          },
+          "challengeToken" : {
+            "type" : "string",
+            "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account (Bolum 44.4): signing in already answered a challenge, and generating spends real money on a model."
+          },
+          "maxPages" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many pages the CV may take",
+            "example" : 1,
+            "maximum" : 10,
+            "minimum" : 1
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "Which wording to render, as an ISO 639-1 code. Omitted, the profile decides — and its `auto` follows the posting.",
+            "example" : "en",
+            "pattern" : "^[a-z]{2}$"
+          },
+          "coverLetter" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Write a covering letter alongside the CV (Bolum 34). Off by default: it is a second LLM call, and most generations do not want one. It can be asked for afterwards instead, at POST /generations/{id}/cover-letter/regenerate."
+          }
+        }
+      },
+      "SelectionEditRequest" : {
+        "type" : "object",
+        "description" : "Which atoms this CV should keep and which it should drop, whatever Faz B thought of them. The generation is re-made from its own selection state — the page limit is re-checked and still holds, however many times it is edited — and a new generation replaces the one that was edited.\n\nNo LLM call and no quota: the answer is deterministic, so it costs nothing but a compilation.",
+        "properties" : {
+          "include" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          },
+          "exclude" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        }
+      },
+      "FeedbackRequest" : {
+        "type" : "object",
+        "description" : "A verdict on one generation",
+        "properties" : {
+          "rating" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "1 for good, -1 for bad",
+            "enum" : [ 1, -1 ]
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "Which part it is about",
+            "enum" : [ "selection", "writing", "format", "density", "other" ]
+          },
+          "comment" : {
+            "type" : "string",
+            "description" : "Anything else worth saying. Stored, never logged.",
+            "maxLength" : 4000,
+            "minLength" : 0
+          },
+          "contentGranted" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Allow the CV's content to be read for 48 hours so the problem can be diagnosed"
+          }
+        },
+        "required" : [ "rating" ]
+      },
+      "FeedbackResponse" : {
+        "type" : "object",
+        "description" : "A recorded verdict",
+        "properties" : {
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "rating" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "category" : {
+            "type" : "string"
+          },
+          "contentGrant" : {
+            "$ref" : "#/components/schemas/Grant",
+            "description" : "The 48-hour diagnostic permission, when there is one"
+          }
+        }
+      },
+      "Grant" : {
+        "type" : "object",
+        "properties" : {
+          "open" : {
+            "type" : "boolean"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "accessedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "revokedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "NaturalLanguageEditRequest" : {
+        "type" : "object",
+        "description" : "One sentence about what should change. It is read into a change of which atoms are on the page, and the CV is re-made from its own selection state — so the page limit is re-checked and still holds.\n\nThis one costs a model call and comes off the day's generations. The hand toggle next door does not.",
+        "properties" : {
+          "instruction" : {
+            "type" : "string",
+            "example" : "take out the Android bullet and put the Kubernetes one back",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "instruction" ]
+      },
+      "CoverLetterRequest" : {
+        "type" : "object",
+        "description" : "A covering letter for a generation that already exists",
+        "properties" : {
+          "style" : {
+            "type" : "string",
+            "default" : "default",
+            "description" : "Which of the three variants to write",
+            "enum" : [ "default", "shorter", "more_formal" ]
+          },
+          "companyNote" : {
+            "type" : "string",
+            "description" : "What you know about this employer, in your own words. Used as given; nothing is inferred from it.",
+            "example" : "They open-sourced their scheduler last year.",
+            "maxLength" : 2000,
+            "minLength" : 0
+          }
+        }
+      },
+      "CoverLetterResponse" : {
+        "type" : "object",
+        "description" : "A covering letter",
+        "properties" : {
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "coverLetter" : {
+            "type" : "string",
+            "description" : "The letter, as plain text with blank lines between parts"
+          },
+          "style" : {
+            "type" : "string",
+            "enum" : [ "default", "shorter", "more_formal" ]
+          }
+        }
+      },
+      "ArchiveRequest" : {
+        "type" : "object",
+        "description" : "Which way to set the keep-mark",
+        "properties" : {
+          "archived" : {
+            "type" : "boolean",
+            "default" : true,
+            "description" : "Absent means archive; false takes the mark off"
+          }
+        }
+      },
+      "FitReport" : {
+        "type" : "object",
+        "description" : "How much of the posting's vocabulary the CV actually says. Counts, never a percentage — Bolum 23.3.",
+        "properties" : {
+          "requiredCovered" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "requiredTotal" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "preferredCovered" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "preferredTotal" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "coveredSkills" : {
+            "type" : "array",
+            "description" : "Posting skills the page says, in the posting's own words",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "missingRequired" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "missingPreferred" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "level" : {
+            "type" : "string",
+            "enum" : [ "WEAK", "MODERATE", "GOOD", "STRONG" ]
+          }
+        }
+      },
+      "GenerationResponse" : {
+        "type" : "object",
+        "description" : "A generation that was made",
+        "properties" : {
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "completed", "failed", "superseded" ]
+          },
+          "pageCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many pages the compiled document came to"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "fitReport" : {
+            "$ref" : "#/components/schemas/FitReport"
+          },
+          "contentLanguage" : {
+            "type" : "string",
+            "description" : "The language the document was written in, as a BCP 47 tag",
+            "example" : "tr"
+          },
+          "postingLanguage" : {
+            "type" : "string",
+            "description" : "The language Faz A read the posting as. When it differs from                 contentLanguage the CV was written in the profile's language                 instead: the profile has no wording for every atom in the                 posting's language, and one document is written in one                 language.",
+            "example" : "en"
+          },
+          "coverLetter" : {
+            "type" : "string",
+            "description" : "The covering letter, as plain text with blank lines between its parts"
+          },
+          "feedback" : {
+            "$ref" : "#/components/schemas/FeedbackResponse",
+            "description" : "What this person already said about it, and the 48-hour diagnostic permission if they opened one. Absent when they have not judged it."
+          },
+          "supersededByGenerationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "The generation that replaced this one, present only when\n`status` is `SUPERSEDED`. An edit writes a new CV and retires\nthe one it edited (Bolum 24.4); the retired one is still\nreadable and still downloadable -- the CV that was sent to an\nemployer does not stop existing -- and this is where the screen\nshowing it finds the newer one to link to."
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether this one is marked to keep (Bolum 35.2). A generation\nis not archived when it is made; `POST /generations/{id}/archive`\nsets the mark and the same endpoint clears it. What the mark\nbuys is Bolum 13's retention rule -- an archived generation's\nartifact never expires -- and until object storage lands there\nis nothing that expires either way, so today it is a mark the\nowner sets and reads."
+          }
+        }
+      },
+      "UnsubscribeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "token" ]
+      },
+      "VerifyRequest" : {
+        "type" : "object",
+        "description" : "Redeem a sign-in link",
+        "properties" : {
+          "selector" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          },
+          "verifier" : {
+            "type" : "string",
+            "maxLength" : 128,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "selector", "verifier" ]
+      },
+      "SignInResponse" : {
+        "type" : "object",
+        "description" : "The outcome of signing in, beyond the cookie",
+        "properties" : {
+          "profileUpgrade" : {
+            "type" : "string",
+            "enum" : [ "upgraded", "none", "kept_existing", "unavailable" ]
+          }
+        }
+      },
+      "MagicLinkRequest" : {
+        "type" : "object",
+        "description" : "Ask for a sign-in link",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 320,
+            "minLength" : 0
+          },
+          "challengeToken" : {
+            "type" : "string",
+            "description" : "The Turnstile widget's token. Required wherever the challenge is configured; a request without one is answered `403 CHALLENGE_FAILED`.",
+            "maxLength" : 2048,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "email" ]
+      },
+      "ApplicationCreate" : {
+        "type" : "object",
+        "properties" : {
+          "company" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "position" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "applied", "interview", "offer", "rejected", "withdrawn" ]
+          },
+          "appliedAt" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "notes" : {
+            "type" : "string",
+            "maxLength" : 5000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "company", "position" ]
+      },
+      "Application" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "company" : {
+            "type" : "string"
+          },
+          "position" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "applied", "interview", "offer", "rejected", "withdrawn" ]
+          },
+          "appliedAt" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "SectionPatch" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "about", "education", "experience", "projects", "skills", "soft_skills", "languages", "custom" ]
+          },
+          "title" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "layout" : {
+            "type" : "string",
+            "enum" : [ "bullet_list", "entry_list", "inline_list", "two_column", "paragraph" ]
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EntryPatch" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "organization" : {
+            "type" : [ "string", "null" ],
+            "description" : "Send null to clear"
+          },
+          "location" : {
+            "type" : [ "string", "null" ]
+          },
+          "startDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Send null when the job becomes ongoing again"
+          },
+          "url" : {
+            "type" : [ "string", "null" ]
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "maximum" : 1.0,
+            "minimum" : 0.0
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          },
+          "minAtoms" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 50,
+            "minimum" : 0
+          }
+        }
+      },
+      "AtomPatch" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "bullet", "skill", "language", "certification", "about_paragraph" ]
+          },
+          "importance" : {
+            "type" : "number",
+            "format" : "float",
+            "description" : "Weight in scoring, 0 to 1",
+            "maximum" : 1.0,
+            "minimum" : 0.0
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "alwaysInclude" : {
+            "type" : "boolean"
+          },
+          "verbatim" : {
+            "type" : "boolean"
+          },
+          "verified" : {
+            "type" : "boolean"
+          },
+          "skills" : {
+            "type" : "array",
+            "description" : "Replaces the whole list",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            }
+          },
+          "metrics" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 80,
+              "minLength" : 0
+            }
+          },
+          "properNouns" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "maxLength" : 120,
+              "minLength" : 0
+            }
+          }
+        }
+      },
+      "VariantPatch" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content",
+            "description" : "The replacement wording. Leave it out to change nothing but the fields below."
+          },
+          "language" : {
+            "type" : "string",
+            "example" : "en",
+            "maxLength" : 16,
+            "minLength" : 2
+          },
+          "tone" : {
+            "type" : [ "string", "null" ],
+            "description" : "Send null to return the wording to the neutral register",
+            "enum" : [ "formal", "casual", "technical" ]
+          },
+          "primary" : {
+            "type" : "boolean",
+            "description" : "Make this the wording used by default"
+          },
+          "userEdited" : {
+            "type" : "boolean",
+            "description" : "Send `false` to hand a wording back: it stops being yours, and a stale one is queued for regeneration (Bolum 32.2's \"regenerate\" button). `true` is refused — a wording becomes yours by writing words, never by claiming it."
+          }
+        }
+      },
+      "ApplicationUpdate" : {
+        "type" : "object",
+        "description" : "A partial edit. Omitting a field leaves it as it is — send only what changed.\n\nRequires `If-Match` with the version from the row you are editing. A stale one is a 412: somebody else's tab changed the row first.",
+        "properties" : {
+          "company" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "position" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "applied", "interview", "offer", "rejected", "withdrawn" ]
+          },
+          "appliedAt" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "notes" : {
+            "type" : "string",
+            "maxLength" : 5000,
+            "minLength" : 0
+          },
+          "clearNotes" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "AccountSettings" : {
+        "type" : "object",
+        "properties" : {
+          "lifecycleEmails" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EntryExport" : {
+        "type" : "object",
+        "properties" : {
+          "entry" : {
+            "$ref" : "#/components/schemas/Entry"
+          },
+          "atoms" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Atom"
+            }
+          }
+        }
+      },
+      "ProfileExport" : {
+        "type" : "object",
+        "description" : "A complete, self-contained copy of a profile",
+        "properties" : {
+          "exportedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When this copy was made"
+          },
+          "profile" : {
+            "$ref" : "#/components/schemas/Profile"
+          },
+          "sections" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SectionExport"
+            }
+          }
+        }
+      },
+      "SectionExport" : {
+        "type" : "object",
+        "properties" : {
+          "section" : {
+            "$ref" : "#/components/schemas/Section"
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EntryExport"
+            }
+          },
+          "atoms" : {
+            "type" : "array",
+            "description" : "Atoms hanging straight off the section",
+            "items" : {
+              "$ref" : "#/components/schemas/Atom"
+            }
+          }
+        }
+      },
+      "ImportWarning" : {
+        "type" : "object",
+        "description" : "Something the import could not settle",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "enum" : [ "ambiguous_date", "missing_organization", "unclear_section", "scrambled_text", "overlapping_dates", "untranslatable_atom", "unsupported_by_source" ]
+          },
+          "sectionOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "entryOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "JobStatusResponse" : {
+        "type" : "object",
+        "description" : "A job's progress or its outcome",
+        "properties" : {
+          "jobId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "queued", "running", "completed", "failed", "cancelled" ]
+          },
+          "phase" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "pct" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "detail" : {
+            "type" : "string"
+          },
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "pageCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "supersededGenerationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "The generation this one replaced, when the job was a Faz G\nedit (Bolum 24.4). Absent on every other kind of job,\nincluding an ordinary generation, which replaces nothing."
+          },
+          "matchLevel" : {
+            "type" : "string",
+            "description" : "How well the page answers the posting. Absent in general mode, where there was no posting to be relevant to.",
+            "enum" : [ "WEAK", "MODERATE", "GOOD", "STRONG" ]
+          },
+          "profileId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "An import's profile, when one completed"
+          },
+          "sectionCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many sections the import wrote"
+          },
+          "atomCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many atoms the import wrote"
+          },
+          "warningCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many things could not be settled; the same number as `warnings.length`"
+          },
+          "detectedLanguage" : {
+            "type" : "string",
+            "description" : "The language the CV was read as, ISO 639-1"
+          },
+          "warnings" : {
+            "type" : "array",
+            "description" : "What could not be settled, and where. Absent for a job that is not an import.",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportWarning"
+            }
+          },
+          "error" : {
+            "type" : "object",
+            "additionalProperties" : { }
+          }
+        }
+      },
+      "GenerationPage" : {
+        "type" : "object",
+        "description" : "A page of a user's generations, newest first",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GenerationSummary"
+            }
+          },
+          "nextCursor" : {
+            "type" : "string",
+            "description" : "Pass back as `cursor` for the next page. Opaque: it is this server's to read and the client's to echo."
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "How many generations this account has in total, not how many are on this page"
+          }
+        }
+      },
+      "GenerationSummary" : {
+        "type" : "object",
+        "description" : "One generation, as a row of the history",
+        "properties" : {
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "completed", "failed", "superseded" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "pageCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "How many pages the compiled document came to; absent while it is unfinished or failed"
+          },
+          "roleTitle" : {
+            "type" : "string",
+            "description" : "The role the posting was for, as Faz A read it; absent in general mode and when the posting named none",
+            "example" : "Backend Engineer"
+          },
+          "companyName" : {
+            "type" : "string",
+            "description" : "The company the posting was for, as Faz A read it; absent in general mode and when the posting named none"
+          },
+          "matchLevel" : {
+            "type" : "string",
+            "description" : "The heading over Faz F's counts, absent in general mode",
+            "enum" : [ "WEAK", "MODERATE", "GOOD", "STRONG" ]
+          },
+          "contentLanguage" : {
+            "type" : "string",
+            "description" : "The language the document was written in, as a BCP 47 tag",
+            "example" : "tr"
+          },
+          "hasCoverLetter" : {
+            "type" : "boolean",
+            "description" : "Whether a covering letter was written for it"
+          },
+          "archived" : {
+            "type" : "boolean",
+            "description" : "Whether this one is marked to keep (Bolum 35.2). The list is where the mark is read: it is the screen a person opens to find the generation they kept."
+          }
+        }
+      },
+      "SelectionLine" : {
+        "type" : "object",
+        "description" : "One atom this generation weighed",
+        "properties" : {
+          "atomId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "text" : {
+            "type" : "string"
+          },
+          "onPage" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "SelectionViewResponse" : {
+        "type" : "object",
+        "description" : "The atoms a generation weighed, and which of them reached the page",
+        "properties" : {
+          "generationId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SelectionLine"
+            }
+          }
+        }
+      },
+      "CapabilitiesResponse" : {
+        "type" : "object",
+        "description" : "What the caller may do; the server still enforces all of it",
+        "properties" : {
+          "allowedLanguages" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "allowedTemplates" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "canCustomizeTemplate" : {
+            "type" : "boolean"
+          },
+          "canEditAtomControls" : {
+            "type" : "boolean"
+          },
+          "canAddAlternatives" : {
+            "type" : "boolean"
+          },
+          "canWriteCoverLetter" : {
+            "type" : "boolean"
+          },
+          "canSaveHistory" : {
+            "type" : "boolean"
+          },
+          "dailyGenerationQuota" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "generationsUsedToday" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "dailyProfileQuota" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "profilesUsedToday" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxAtoms" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "quotaResetsAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "anonymousExpiresAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          }
+        }
+      },
+      "SessionResponse" : {
+        "type" : "object",
+        "description" : "Whether anyone is signed in, and what they may do",
+        "properties" : {
+          "authenticated" : {
+            "type" : "boolean"
+          },
+          "capabilities" : {
+            "$ref" : "#/components/schemas/CapabilitiesResponse"
+          }
+        }
+      },
+      "Usage" : {
+        "type" : "object",
+        "description" : "One metric's allowance for today",
+        "properties" : {
+          "metric" : {
+            "type" : "string"
+          },
+          "used" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "What was actually spent. Never above `limit`, so `used`/`limit` is a pair that can be printed as it is."
+          },
+          "attempted" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Every request that took a unit, refusals included. Equal to `used` until the limit is reached, above it afterwards."
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "remaining" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "`limit - used`, never negative"
+          },
+          "resetsAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When the counters roll over, as an absolute instant. The boundary is UTC midnight."
+          }
+        }
+      }
+    }
+  }
+}

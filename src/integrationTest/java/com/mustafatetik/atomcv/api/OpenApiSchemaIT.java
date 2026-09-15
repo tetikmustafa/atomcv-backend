@@ -31,6 +31,26 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/v1/profile'].get").exists());
     }
 
+    /**
+     * EK D.6.7: the warm-up is not public API.
+     *
+     * <p>It has a URL under {@code /api/v1} and it is not part of the
+     * contract — it takes no input, answers nothing, and exists so that
+     * {@code deploy.sh} can pay the first request's cost before a person does.
+     * Published, it would appear in the frontend's generated types as a thing
+     * somebody could reasonably call.
+     *
+     * <p>Three things keep it out and this checks one: {@code @Hidden} here,
+     * {@code deny all} on the exact path in nginx, and nothing in the product
+     * linking to it.
+     */
+    @Test
+    void thewarmUpIsNotInTheContract() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths['/api/v1/warmup']").doesNotExist());
+    }
+
     @Test
     void aSingleResourceResponseDocumentsItsEtagHeader() throws Exception {
         mvc.perform(get("/v3/api-docs"))

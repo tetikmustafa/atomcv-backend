@@ -20,7 +20,7 @@ endif
 # fails. Naming sh keeps one spelling that works on Windows and on Linux.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int golden-costs
+.PHONY: dev dev-full db-reset record test test-int golden-costs openapi
 
 ## core services (postgres, redis, mailpit) + backend with the fake LLM
 dev:
@@ -57,3 +57,9 @@ test-int:
 ## re-measure the golden set's render costs (needs Docker; builds the LaTeX image)
 golden-costs:
 	$(GRADLE) latexTest --tests '*GoldenCostsIT' -Dgolden.record=true
+
+## rewrite the committed OpenAPI schema from the running application
+## (needs Docker). The frontend's contract check fetches this file, and CI
+## fails when it has drifted from what the endpoints publish.
+openapi:
+	$(GRADLE) integrationTest --tests '*OpenApiDocumentIT' -Dopenapi.record=true
