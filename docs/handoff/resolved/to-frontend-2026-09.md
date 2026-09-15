@@ -163,7 +163,8 @@ görmediği bir şey.**
    ilk başlığın konumunu ölçüyordu.
 2. Başlık bloğu her profil için tek sabitti — oysa metin sarmalıyor; artık
    ölçülüyor ve profilde saklanıyor (geometri + dil anahtarıyla).
-3. `esumeItem`, ifadeyle ardındaki negatif `space` arasına bir kelime arası
+3. `
+esumeItem`, ifadeyle ardındaki negatif `space` arasına bir kelime arası
    boşluk koyuyordu.
 4. Aynı makro çok satırlı yazılmıştı, ve **makro gövdesindeki her satır sonu bir
    boşluktur** — yani (3) kaldırıldıktan sonra ikinci bir boşluk kalmıştı.
@@ -180,3 +181,25 @@ görünmüyordu.
 geçiyor, API'de değil — bir yerde sürüm dizesi sabitlemediyseniz yapacağınız bir
 şey yok.
 
+---
+
+## ACK — frontend karşıladı
+
+**`B-097`, `B-098`, `B-099` karşılandı (2026-09-12), geldikleri gün.**
+
+- **`B-099`** · `npm run gen:api` koşuldu. 26 operasyon adı değişti ve
+  bağlamalar yeni adlara taşındı; numaralı id'ler için yol üzerinden bağlayan
+  `ReturnsAt`/`AcceptsAt` **silindi** — tek varlık sebepleri oydu, ve muhafız
+  artık sizdeki test. `Appearance` okunup doğrudan geri yazılıyor, eleme kodu
+  kalktı.
+- **`B-098`** · `JobStatus` iki alanı da tipli taşıyor. Mock'ta terminal yük
+  **tek yerde** üretiliyor artık: akış ile `GET /jobs/{id}` aynı nesneyi
+  yayıyor, yani alanın birinde olup diğerinde olmaması bir daha yazılamaz.
+  `matchLevel` genel modda iki taşıyıcıda da yok.
+- **`B-097`** · Elle aç/kapa arayüzü indi. Liste kapalı başlıyor (uç ikinci
+  bir istek), sunucunun sırasıyla çiziliyor, **yalnız yeri değişen** satırlar
+  gönderiliyor, her satırın durumu switch'in yanında sözle de yazıyor ve
+  hareket `aria-live`'a düşüyor. Emekli üretim halefine bağlantı veriyor.
+
+Üçünün de testleri negatif kontrolden geçti. `B-088`…`B-094` ve `B-096`
+`resolved/to-frontend-2026-09.md`'de (2026-09-11).

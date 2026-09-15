@@ -112,7 +112,22 @@ R2_ACCOUNT_ID=  R2_ACCESS_KEY=  R2_SECRET_KEY=  R2_BUCKET=
 
 # Bütçe
 ANOMALY_DAILY_BUDGET_USD=40
+
+# Denetimle eklenenler (2026-09-15)
+GITHUB_API_TOKEN=            # opsiyonel; yalnız § 31.8'in hız sınırı için
+UMAMI_APP_SECRET=            # yalnız `--profile analytics` ile başlatılırsa
 ```
+
+**`GITHUB_API_TOKEN` bir izin değil bir kota.** § 31.8 yalnız public veri
+okuyor ve tokensız çalışıyor; kimliksiz GitHub saatte 60 istek / adres veriyor
+ve onu bütün dağıtım paylaşıyor, tokenla 5.000 oluyor. Hiçbir kapsam
+istenmiyor — ve bu, § 40.6.1'in **kişiye ait** sağlayıcı token'ı değil:
+dağıtıma ait.
+
+**`UMAMI_APP_SECRET` yalnız analitik profili açıksa gerekiyor**
+(`docker compose --profile analytics`). Kapalıyken servis hiç başlamıyor:
+hiçbir şeyin rapor vermediği bir panel, sekiz gigabaytlık bir makinede yarım
+gigabayt.
 
 **`SESSION_SECRET` yok, ve olmamalı.** Oturum kimliği `SecureRandom`'dan gelen
 256 bitlik opak bir değer ve Redis'te duruyor; imzalanan hiçbir şey yok,
@@ -227,9 +242,29 @@ jobs:
             "cd /opt/atomcv && ./scripts/deploy.sh backend ${{ github.sha }}"
 ```
 
-> **Bugünkü hâli (Aşama 1).** Repoda `ci.yml` var, `ci-cd.yml` yok: sunucu
-> olmadığı için `deploy` ve `publish-schema` işleri henüz yazılmadı, `llm-eval`
-> ise Aşama 2'de prompt'larla gelir. Çalışan işler `build` (derleme + test +
+> **Güncel (denetim, 2026-09-15).** `publish-schema` ve `llm-eval` indi,
+> ikisi de yukarıdakinden farklı şekilde.
+>
+> **Şema bir Gradle eklentisiyle değil, zaten koşan lane ile üretiliyor.**
+> springdoc'un eklentisi belgeyi okumak için uygulamayı başlatıyor, yani bir
+> veritabanı istiyor — ki entegrasyon lane'inde zaten var. `OpenApiDocumentIT`
+> yayımlanan belgeyi **commit'li `openapi.json`** ile karşılaştırıyor ve
+> ayrışmada düşüyor; `make openapi` yeniden kaydediyor. CI işi yalnız dosyayı
+> artefakt olarak dışarı taşıyor.
+>
+> **Ve dosya `build/` altında değil, repo kökünde.** Frontend'in
+> `contract-check`'i onu `raw.githubusercontent.../build/openapi.json`'dan
+> çekiyordu; `build/` üretilen ve gitignore'lu bir dizin, yani o URL her zaman
+> 404 verdi ve iş her koşuda "skipping" dalını aldı — **iki reponun
+> ayrışmasına karşı tek muhafız, bir aşama boyunca kendini atladı.**
+>
+> **`llm-eval` yalnız bir prompt değiştiğinde ve `continue-on-error`'sız
+> koşuyor.** § 53.5'in bloker metriği var (yeni teknoloji uydurma, sıfır
+> tolerans) ve yalnız uyaran bir kapı kapı değildir. Anahtar yoksa iş bir
+> `::warning::` basıp geçiyor: koşmamış bir değerlendirmenin yeşil raporlaması
+> § 51.7'nin üçüncü kuralının tam olarak yasakladığı şey.
+>
+> **Aşama 1'den kalan.** Repoda `ci.yml` var, `ci-cd.yml` yok: sunucu Çalışan işler `build` (derleme + test +
 > integrationTest + her koşulda rapor yükleme), `codeql` ve `scan`; sırlar ayrı
 > bir `secrets-scan.yml` dosyasında, tüm geçmişi tarayacak şekilde
 > (`fetch-depth: 0`). Action sürümleri yukarıdakilerden yeni — Dependabot
@@ -477,6 +512,22 @@ enum tamamen düşüyor. Üçü birden gerekiyor, ve bunu `OpenApiSchemaIT` tutu
 ```
 
 Faz B, C, E saf fonksiyon → `selection_state` ile kendi makinende yeniden çalıştırma. Üretim verisine erişmeden hata ayıklama.
+
+> **Sapma (denetim, 2026-09-15) — böyle bir görev yok, ve okuyacağı dosya da
+> yok.** Bu aracın öncülü "üretim verisine erişmeden": elde bir
+> `selection_state` olması gerekiyor, ve onu dışarı verecek bir şey yok.
+> `GET /generations/{id}` seçim durumunu yayımlamıyor (mutlak kural 4'ün
+> yanındaki karar) ve `GET /generations/{id}/selection` tartılan satırları
+> metniyle veriyor — aynı şey değil. Dışa aktarma biçimi diye bir şey hiç
+> tanımlanmadı.
+>
+> Yani görev bugün, var olmayan bir formatı ayrıştıran bir okuyucu olurdu.
+> Üretim gerçekten koşup bir hatanın peşine düşmek gerektiğinde hangi alanların
+> taşınması gerektiği de belli olur.
+>
+> **Bugün aynı işi gören şey golden set:** Faz B, C ve E saf fonksiyonlar ve
+> `GoldenSelectionTest` onları yedi profil × üç şablon × iki dil × iki sayfa
+> sınırıyla koşuyor — veritabanı yok, derleyici yok, tek komut.
 
 ---
 

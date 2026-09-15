@@ -163,6 +163,24 @@ if (driftPct > 0.03) {
 
 Sistem kendi tahmin hatasını zamanla öğrenir.
 
+> **Sapma (denetim, 2026-09-15) — ölçülen yükseklik yok, ve pay kendini
+> genişletmiyor.** Yukarıdaki `pdfAnalyzer.measureContentHeight(pdf)` diye bir
+> şey yok: § 23'ün notu `pdfAnalyzer`'ın hiç olmadığını ve sayfa sayısının
+> derleyicinin `X-Page-Count` başlığından geldiğini kaydediyor. Yükseklik
+> üretmenin tek yolu ikinci bir derleme, ve ölçüm belgesi sayfayla aynı
+> preamble'ı paylaşsa da aynı belge değil (§ 22.4).
+>
+> Üretimin ölçebildiği çözünürlükte kaydedilen şey **sayfa**:
+> `generation.pages.drift`, bütçenin öngördüğü sayfa sayısı ile derleyiciden
+> dönen arasındaki fark, şablon etiketiyle. Sıfır olağan okuma; ortalaması
+> sıfırdan uzaklaşan bir şablonun ölçüm katmanı yanlıştır, ki § 26.6 bu sayıyı
+> zaten bunun için istiyor. Kaba, ve kaba olduğunu söylüyor.
+>
+> **Hiçbir şey ona göre davranmıyor.** Güvenlik payını üç yüzdeyi geçince
+> kendiliğinden genişleten bir kural, tam sayfa cinsinden ölçülen bir sinyalde
+> tek bir kötü belgeyle oynar ve geri dönmenin yolu yoktur. Sayı operatöre
+> gidiyor.
+
 ---
 
 ## 27. LLM Gateway
@@ -1301,6 +1319,44 @@ Birleşim:
 Eşleştirme: Jaro-Winkler (repo adı ↔ proje başlığı) + embedding benzerliği.
 
 **Öneri olarak sunulur, otomatik eklenmez.**
+
+#### 31.8.1 İnen hâli ve üç ayrım (denetim, 2026-09-15)
+
+**Hiçbir token saklanmıyor, ve bu bölümün mümkün olma sebebi o.** § 40.6.1
+`oauth_identities.access_token_enc`'i bilerek boş bırakıyor ve bir token'ın
+anahtar yönetimiyle geleceğini söylüyor — gerekmiyor: burada okunan her şey
+public. `GITHUB_API_TOKEN` isteğe bağlı ve yalnız hız sınırı için
+(kimliksiz saatte 60 / adres, tokenla 5.000); hiçbir kapsam istenmiyor.
+
+**Uçlar `/profile/github/suggestions` ve `/apply`** (§ 35.2.1). `connect` diye
+bir adım yok: bağlanacak bir şey olmadığı için. Hesap adı istekte verilebiliyor,
+verilmezse profilin iletişim bloğundan okunuyor — CV'nin işverene gösterdiği
+hesap odur. **Bir depoya giden bağlantı hesap sayılmıyor**: CV'de linklenen
+depo çoğu zaman başkasınındır.
+
+**Süzgeç listelemenin bedavaya verdiğini okuyor.** Yukarıdaki
+`isSignificant` bir commit sayısı ve README varlığı istiyor; ikisi de depo
+başına birer istek, yani otuz depolu bir hesapta altmış istek — kimliksiz
+bütçenin tamamı. Yerlerine listelemenin zaten taşıdıkları: fork değil, arşivli
+değil, 50 KB üstü, adı bir ders adı değil, ve **üstünde birinin bir şey
+yaptığına dair bir iz** — bir yıldız, bir açıklama ya da bir konu etiketi.
+Sorulan soru aynı soru. Diller yalnız süzgeci geçenler için ve en çok on tanesi
+için çekiliyor, aynı sebeple.
+
+**Eşleştirme yalnız Jaro-Winkler, ve sınırı ölçüldü.** § 7 embedding'i de
+adlandırıyor; depo başına bir gidiş dönüş, hızlı açılması gereken bir ekranda
+ve § 28.4'ün kapalı olabileceğini söylediği bir serviste. Ölçülen: normalize
+edildikten sonra gerçek eşleşmeler 1.0'a çok yakın ("order-management-system"
+↔ "Order Management System" aynı dize), yakın ıskalar 0.87-0.92
+("payments-api" ↔ "Payments API Gateway" — aynı kişinin farklı işi, ve
+Jaro-Winkler ortak öneke ikramiye veriyor). **Eşik 0.95**, yani birleştirme
+ancak neredeyse kesinken öneriliyor.
+
+Bedeli açıkça yazılı: **kısaltma ıskalanıyor.** "order-mgmt-system" gerçek bir
+eşleşme ve 0.90 alıyor, yani yakın ıskanın da altında; hiçbir dize mesafesi
+ikisini ayırmıyor. Yeni proje olarak öneriliyor, kişi reddedebiliyor —
+kaçırılan birleştirme iki satır gösterir ve silinir, yanlış birleştirme
+birinin başka bir işi anlatan paragrafına bağlantı koyar ve bunu söylemez.
 
 ### 31.9 Tamamlanma ölçütü
 

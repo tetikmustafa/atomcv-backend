@@ -511,6 +511,33 @@ run.setBold(true); run.setText(text);
 
 DOCX'te sayfa garantisi **yaklaşıktır** — kullanıcıya belirtilir.
 
+#### 22.6.1 Üçüncü renderer indi (denetim, 2026-09-15)
+
+`rendering/html/` modül haritasından beri boştu ve § 1.2'nin dördüncü iddiası
+onun üstünde duruyordu. `GET /generations/{id}/download?format=html` artık
+**tek dosyalık** bir belge veriyor: stylesheet yok, font yok, script yok,
+hiçbir şey çekilmiyor — dosya indirilenler klasöründen açılıyor, bir forma
+yapıştırılıyor ya da bir ayrıştırıcıya veriliyor, ve üçü de olmayan bir
+referansta kırılır.
+
+**Sayfa garantisi HTML'de yaklaşık değil, hiç geçerli değil.** DOCX'inki
+yaklaşıktır çünkü Word bir sayfa dizer; HTML'in sayfası yoktur. Bir genişlik
+verip ona sayfa demek, ölçmediğimiz bir şeyi iddia etmek olurdu.
+
+Yukarıdaki tablonun HTML satırındaki "headless tarayıcı ile ölçüm" bu yüzden
+**karşılıksız**: HTML→PDF diye bir çıktı yok ve olsa bile ölçümü ikinci bir
+bileşen (tarayıcı) ister. Satır bir gelecek tarifi olarak duruyor.
+
+**Kaçış merkezde ve bütün savunma o.** § 42.3'ün cümlesi burada birebir
+geçerli: LaTeX'te güvenli olan taşınmaz. CV kullanıcı içeriği, çıktı HTML, ve
+`href` bir öznitelik içinde duruyor — tırnak da kaçırılıyor, çünkü bir
+kaçırıcıyla bir enjeksiyon arasındaki mesafe tam olarak o.
+
+**`format=source` de indi** (§ 35.2, § 55'in "ham kaynak indirme"si). Ham
+LaTeX'i **okumak** § 33.1'in C katmanı değil: o kural kimsenin LaTeX
+*yazmasına* izin vermiyor, çünkü kullanıcı işaretlemesinin derleyiciye
+ulaşması bir çalıştırma yüzeyi. Buradan geri okunan hiçbir şey yok.
+
 ---
 
 ## 23. Faz F — Doğrulama

@@ -83,6 +83,27 @@ void locksAndStructuralConstraintsRespected() {
 
 ### 51.3 Golden test set
 
+> **Güncel (denetim, 2026-09-15).** `jobs/` dokuzu da taşıyor ve
+> `content-formats/` var. Eksik olan dosya sayısı değildi: § 18.1'in ön
+> kontrolü yalnız eşiklerini denemek için yazılmış dizelere karşı test
+> ediliyordu, ki o kodun yazarının kastettiğini yaptığını gösterir ve gerçek
+> bir ilanı geçirip geçirmediği hakkında hiçbir şey söylemez.
+>
+> **Dokuzun yedisi kabul ediliyor, ve bulgu o.** Kapı neredeyse her zaman açık
+> olmak üzere tasarlandı: Türkçe bir ilan, iki dilli bir ilan, gereksinim
+> listesi olmayan bir ilan, şirket adı geçmeyen bir ilan, on iki bin karakterlik
+> kurumsal düzyazı ve **enjeksiyon denemesi taşıyan bir ilan** — hepsi geçiyor.
+> Enjeksiyonu yakalayan şey § 43'ün modelin *cevabını* okuyan katmanları; metni
+> kapıda reddetmek, bir sistem mesajından alıntı yapan gerçek bir ilanı
+> reddedip başka türlü yazılmış bir denemeyi yine durduramamak olurdu.
+>
+> **`content-formats/v1.json` şimdi yazıldı, v1 hâlâ güncelken.** § 16.2'nin
+> tembel yükseltme yolunun ancak yürünecek gerçek bir belge varsa testi olur —
+> ve bir v2 geldiği gün, o göçü yazanın kendi yazdığı bir v1 belgesi yalnız
+> göçün yazarının beklediğini okuduğunu kanıtlar. Belge § 14.1'in her işaretini
+> **ve bu sürümün hiç duymadığı bir tanesini** taşıyor, ki § 16.2'nin
+> "bilinmeyen işaret korunur" sözünün tutulmasının tek yolu odur.
+>
 > **Not (Adım 1.9).** Profiller yazıldı; `jobs/`, `analyses/` ve
 > `content-formats/` Faz A ile birlikte Aşama 2'de gelecek. Dosyalar
 > `src/test/resources` değil **`src/main/resources/golden/profiles`** altında
@@ -346,6 +367,31 @@ curl -sf localhost:8080/api/v1/warmup      # tipik sorguları çalıştırır
 ```
 
 JVM CDS (`-XX:ArchiveClassesAtExit`) ile başlangıç ~%30 düşer.
+
+> **İkisi de indi (denetim, 2026-09-15).** `scripts/deploy.sh` sağlıktan sonra
+> ve trafikten önce ısıtmayı çağırıyor, `|| true` ile: soğuk bir havuz
+> yavaştır, bozuk değil, ve sağlık kontrolü sürümün iyi olduğunu zaten
+> söylemiştir — burada düşmek çalışan bir sürümü yavaş olduğu için geri alırdı.
+>
+> **Uç neyi ısıtıyor:** bir JDBC gidiş dönüşü ve bir Redis gidiş dönüşü, yani
+> ilk isteğin ödediği iki I/O yolu. XeLaTeX kendi container'ında ısınıyor
+> (§ 29.6) ve embedding sunucusu ağırlıklarını `/health`'ten önce yüklüyor
+> (§ 28.4); ikisini de kapsadığını iddia eden bir ısıtma, yapmadığı işi başarı
+> diye raporlardı. **Uç public API değil** (EK D.6.7): şemada yok, nginx onu
+> tam eşleşmeyle reddediyor, ve ikisinin de testi var.
+>
+> **CDS eğitim koşusuyla değil `-XX:+AutoCreateSharedArchive` ile.** Spring'in
+> belgelediği tarif uygulamayı başlatıp ne yüklediğini kaydediyor, yani build
+> container'ının sahip olmadığı bir veritabanı istiyor — ve o adımı sessizce
+> atlayan bir build, arşivi boş bir imaj gönderirdi. Arşiv ilk açılışta
+> yazılıyor, sonraki her açılışta map'leniyor, jar değişince kendiliğinden
+> yenileniyor.
+>
+> **Ve arşiv bir volume'de.** Bir deploy container'ı yeniden yaratıyor, yani
+> container'ın kendi katmanına yazılan bir arşiv **her açılışta yazılır ve
+> hiçbirinde okunmaz** — yalnız maliyet olan bir önbellek. İmaj derlenip iki
+> kez koşularak doğrulandı: ilk koşu 47 MB'lık arşivi yazdı, ikincisi
+> `Mapped static region` bastı.
 
 ### 52.6 Bütçe dosyası
 
