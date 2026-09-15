@@ -13,7 +13,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The only thing allowed to run xelatex (Bolum 29).
+ * The only thing allowed to run xelatex.
  *
  * <p>LaTeX is a programming language: {@code \write18} runs shell commands and
  * {@code \input} reads files. User content reaches it, so this process is the
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class CompileServer {
 
-    /** Bolum 29.5: a predictable ceiling, so a burst cannot starve Postgres. */
+    /** A predictable ceiling, so a burst cannot starve Postgres. */
     private static final Semaphore SLOTS = new Semaphore(intEnv("LATEX_CONCURRENCY", 3));
 
     private static final int COMPILE_TIMEOUT_SECONDS = intEnv("LATEX_TIMEOUT_SECONDS", 20);
@@ -37,7 +37,7 @@ public final class CompileServer {
      * What xelatex says at the end of a successful run. The compiler is the
      * only thing that knows how many pages it made, and reporting it here
      * saves the caller from parsing a PDF page tree it cannot read anyway
-     * once the output uses object streams (EK D.8.6).
+     * once the output uses object streams.
      */
     private static final java.util.regex.Pattern PAGES =
             java.util.regex.Pattern.compile("Output written on [^(]*\\((\\d+) pages?");
@@ -157,7 +157,7 @@ public final class CompileServer {
             builder.environment().put("TEXMFVAR", jobDir.toString());
             // TeX wraps its log at 79 columns, and a wrapped line is a
             // measurement the parser cannot read back. kpathsea takes this
-            // from the environment (EK D.8.9).
+            // from the environment.
             builder.environment().put("max_print_line", "10000");
             builder.redirectErrorStream(true);
 
@@ -190,7 +190,7 @@ public final class CompileServer {
     }
 
     private static void warmUp() {
-        // Bolum 29.6: the first run builds font caches and takes seconds.
+        // The first run builds font caches and takes seconds.
         // Paying that here means no user ever pays it.
         try {
             long started = System.currentTimeMillis();

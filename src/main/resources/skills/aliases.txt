@@ -1,4 +1,4 @@
-# Bolum 31.5's alias dictionary: alias = canonical
+# The alias dictionary: alias = canonical
 #
 # Applied by SkillNames to BOTH sides of every comparison — the skills read
 # out of a CV and the skills read out of a posting. An entry that only ever

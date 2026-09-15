@@ -1,4 +1,4 @@
-# The offline support reader (Bolum 48.4). Started deliberately, on the server:
+# The offline support reader. Started deliberately, on the server:
 #
 #   --spring.profiles.active=prod,support --support.generation=<uuid>
 #

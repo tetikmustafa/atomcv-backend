@@ -23,7 +23,7 @@ spring:
         format_sql: true
 
 # Swagger UI is how the API is driven by hand locally (notes/manual-test-*.md),
-# and every write has been CSRF-protected since Adim 3.3 — without this the UI
+# and every write is CSRF-protected — without this the UI
 # reads no XSRF-TOKEN cookie, sends no header, and every "Try it out" on a POST
 # answers 403. Production disables the UI entirely, so this is local-only.
 springdoc:

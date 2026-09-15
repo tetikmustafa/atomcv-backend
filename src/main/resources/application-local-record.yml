@@ -1,7 +1,7 @@
-# Real calls, saved as fixtures (Bolum 54.2). Costs money — run it deliberately
+# Real calls, saved as fixtures. Costs money — run it deliberately
 # with `make record`, then go back to local-fake.
 #
-# The provider adapters arrive in Adim 2.2's second half; until then this
+# The provider adapters arrive in the second half; until then this
 # profile carries only where the recordings land.
 atomcv:
   llm:

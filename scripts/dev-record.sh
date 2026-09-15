@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drives every prompt once so `make record` has something to record (Bolum 54.2).
+# Drives every prompt once so `make record` has something to record.
 #
 #   Kabuk 1:  make dev-full          # containers
 #   Kabuk 2:  make record            # backend, local+local-record -- REAL calls
@@ -40,7 +40,7 @@ Ornek: ./scripts/dev-record.sh /c/Users/tetik/Desktop/cv.pdf
 POSTING_FILE=${2:-}
 [ -z "$POSTING_FILE" ] || [ -f "$POSTING_FILE" ] || die "Ilan dosyasi yok: $POSTING_FILE"
 
-# Bolum 24.2's parse is asked about *your* CV, so a default sentence is a guess
+# The parse is asked about *your* CV, so a default sentence is a guess
 # about somebody else's career. This one names nothing on purpose: it is the
 # `understood: false` case, which is a real answer worth a fixture but not the
 # interesting one. Pass a sentence that names a bullet you can see.
@@ -54,7 +54,7 @@ warn "Backend'in local-record profilinde oldugu VARSAYILIYOR."
 warn "make dev ile calisiyorsa hicbir sey kaydedilmez -- sonunda soylenecek."
 warn "Su an kayitli fixture sayisi: $BEFORE"
 
-# Bolum 18.1's preflight refuses anything that does not read like a posting:
+# The preflight refuses anything that does not read like a posting:
 # 150 characters, 40 words, two signal words. This one is real enough to pass
 # and short enough to paste again later -- which matters, because the fixture
 # key is a digest of this exact text.
@@ -66,7 +66,7 @@ comfort with observability tooling, and a track record of shipping. Preferred
 qualifications include Kubernetes and Terraform. Apply with a short note about
 the systems you have run.'
 
-# A real advertisement beats this one. Bolum 18.4's gate reads the model's own
+# A real advertisement beats this one. The gate reads the model's own
 # confidence, and a short synthetic posting is exactly what a model is least
 # sure about -- refused at the gate, no Faz D, and the three prompts behind it
 # never run. Pass a file with a posting you actually applied to.
@@ -110,7 +110,7 @@ await() {
     warn "  $label: hala $status -- beklemeyi biraktim"
 }
 
-# The body is read before the id is taken out of it: Bolum 31.6.2's five
+# The body is read before the id is taken out of it: the five
 # synchronous rejections all arrive this way, and "not accepted" on its own
 # says nothing about which one it was.
 jobIdIn() { printf '%s' "$1" | json "d.get('jobId','')" 2>/dev/null || true; }
@@ -128,7 +128,7 @@ else
     BODY=$(post -X POST "$API/api/v1/profile/import" -F "file=@$CV")
     JOB=$(jobIdIn "$BODY")
     if [ -z "$JOB" ]; then
-        warn "Yukleme kabul edilmedi (Bolum 31.6.2):"
+        warn "Yukleme kabul edilmedi:"
         echo "  $BODY"
         exit 1
     fi
@@ -136,7 +136,7 @@ else
 fi
 
 # The key is per-run and not a constant, which cost a recording run to learn.
-# Bolum 30.7 replays the *same job* for a repeated key, so a run that had
+# Idempotency replays the *same job* for a repeated key, so a run that had
 # already failed under local-fake came straight back on the next attempt --
 # no Faz A, no provider call, no fixture, and a stale error on screen that
 # looked like the model had just refused.
@@ -158,7 +158,7 @@ if [ -z "$JOB" ]; then
 fi
 await "$JOB" "uretim"
 
-# Bolum 24.2. The parse is shown the lines of *this* generation, numbered, so
+# The parse is shown the lines of *this* generation, numbered, so
 # the fixture key is a digest of this profile's page -- it replays here and
 # nowhere else. What this leg is for is the other thing: seeing whether the
 # prompt gets the right numbers out of a real model at all.

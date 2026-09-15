@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-runs Faz E from an export, on this machine (Bolum 48.5).
+# Re-runs Faz E from an export, on this machine.
 #
 #   ./scripts/replay.sh export.json            # prints the LaTeX
 #   ./scripts/replay.sh export.json out.tex    # writes it instead
@@ -13,7 +13,7 @@
 # a scored tree, and a selection request carrying every atom's measured height
 # -- are stored nowhere. Rebuilding them from today's profile would answer a
 # question about last week with this week's text, which is the exact failure
-# `content_snapshot` exists to prevent (EK D.6.3).
+# `content_snapshot` exists to prevent.
 #
 # The export comes from the support reader, under the grant its owner gave:
 #

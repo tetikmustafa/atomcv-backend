@@ -26,7 +26,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6.3.0
 
-      # Bolum 47.1's format gate. First, because a failure here is a one-line
+      # The format gate. First, because a failure here is a one-line
       # fix and finding it after a twelve-minute test run wastes the run.
       - name: Format
         run: ./gradlew spotlessCheck
@@ -53,7 +53,7 @@ jobs:
             build/test-results/
           retention-days: 7
 
-      # Bolum 47.1's `publish-schema`, which never existed. The document is
+      # The `publish-schema`, which never existed. The document is
       # produced and checked by the integration step above -- OpenApiDocumentIT
       # compares what the endpoints publish against the committed openapi.json,
       # so this step only carries the file out. The frontend fetches the
@@ -112,13 +112,13 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
-  # Bolum 47.1's third job, and it is deliberately the only one that can cost
-  # money -- about $0.30 a run (Bolum 53.7). It fires on a pull request that
+  # The third job, and it is deliberately the only one that can cost
+  # money -- about $0.30 a run. It fires on a pull request that
   # touches a prompt and on nothing else: the scores are a property of the
   # prompt, and rerunning them against an unchanged one buys a second copy of
   # yesterday's answer.
   #
-  # `continue-on-error` is not set. Bolum 53.5 has a blocker -- inventing a
+  # `continue-on-error` is not set. One metric is a blocker -- inventing a
   # technology, zero tolerance -- and a gate that only warns is not a gate.
   llm-eval:
     name: Prompt evaluation
@@ -149,7 +149,7 @@ jobs:
         if: steps.changed.outputs.run == 'true'
 
       # Real calls need a real key. Without one the lane cannot run, and
-      # saying so is better than a green job that scored nothing (Bolum 51.7,
+      # saying so is better than a green job that scored nothing (
       # rule 3): a suite that runs zero tests also reports success.
       - name: Evaluate
         if: steps.changed.outputs.run == 'true'

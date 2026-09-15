@@ -1,4 +1,4 @@
-# Real calls, nothing saved (Bolum 54.2). For working on a prompt, where every
+# Real calls, nothing saved. For working on a prompt, where every
 # run should differ and no fixture should be frozen from a draft.
 atomcv:
   llm:

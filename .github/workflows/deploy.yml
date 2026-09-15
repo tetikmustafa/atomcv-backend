@@ -1,8 +1,8 @@
-# Adim V.7. Builds the backend image and asks the server to take it.
+# Builds the backend image and asks the server to take it.
 #
 # Only the backend: the frontend repository has its own workflow doing exactly
 # this for its own image, and the two carry separate tags because they deploy
-# independently (Bolum 47.3).
+# independently.
 name: Deploy
 
 on:

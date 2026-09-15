@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Measures a template's fixed costs against the real compiler (Bolum 26.4,
-# EK C.2's "Kapasite olculdu" and "Sabit maliyetler olculdu" boxes).
+# Measures a template's fixed costs against the real compiler (
+# The "Kapasite olculdu" and "Sabit maliyetler olculdu" boxes).
 #
 #   ./scripts/measure-template.sh classic
 #   ./scripts/measure-template.sh compact --font sans --size 9.5 --margin 0.45
@@ -11,7 +11,7 @@
 # the numbers it prints are what belong in TemplateRegistry.
 #
 # **It needs Docker** and builds the LaTeX image, which takes minutes the first
-# time. That is not incidental -- Bolum 26 exists because a measured height and
+# time. That is not incidental -- the whole measurement layer exists because a measured height and
 # an estimated one are different things, and there is no way to measure one
 # without the compiler that produces it.
 set -euo pipefail

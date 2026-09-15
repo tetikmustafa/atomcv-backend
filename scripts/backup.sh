@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bolum 49.2, run from cron at 03:00 (Adim V.8).
+# The nightly backup, run from cron at 03:00.
 #
 #   0 3 * * * /opt/atomcv/scripts/backup.sh >> /var/log/atomcv-backup.log 2>&1
 #
@@ -15,13 +15,13 @@ cd "$(dirname "$0")/.."
 COMPOSE="docker compose -f docker-compose.prod.yml"
 REMOTE=${BACKUP_REMOTE:-r2:atomcv-backups}
 
-# Bolum 49.1's third leg: the weekly and monthly copies go to a SECOND
+# The third leg: the weekly and monthly copies go to a SECOND
 # provider. Same-provider redundancy is not what 3-2-1 asks for -- an account
 # suspension, a billing lapse or a console mistake takes every copy in one
 # place at once, and those are the scenarios a second copy exists for.
 ARCHIVE_REMOTE=${BACKUP_ARCHIVE_REMOTE:-b2:atomcv-archive}
 
-# Bolum 49.4's retention, and the three numbers the privacy text is written
+# The retention, and the three numbers the privacy text is written
 # against: an anonymous row caught in a backup can live at most six months.
 KEEP_DAILY=${BACKUP_KEEP_DAILY:-7d}
 KEEP_WEEKLY=${BACKUP_KEEP_WEEKLY:-28d}
@@ -34,7 +34,7 @@ set -a
 [ -f .env ] && . ./.env
 set +a
 
-: "${AGE_PUBLIC_KEY:?AGE_PUBLIC_KEY is not set -- see Adim V.8}"
+: "${AGE_PUBLIC_KEY:?AGE_PUBLIC_KEY is not set -- see .env.example}"
 : "${POSTGRES_USER:?POSTGRES_USER is not set}"
 : "${POSTGRES_DB:?POSTGRES_DB is not set}"
 
@@ -62,13 +62,13 @@ fi
 
 rclone copy "$ARCHIVE" "$REMOTE/daily/"
 
-# Bolum 49.2's retention. The credential this runs under must be write-only
-# (Adim V.8) -- so if `rclone delete` is refused, that is the credential doing
+# The retention. The credential this runs under must be write-only
+# -- so if `rclone delete` is refused, that is the credential doing
 # its job and not an error worth failing the backup over.
 rclone delete --min-age "$KEEP_DAILY" "$REMOTE/daily/" \
     || echo "$(date -Is) retention skipped: the remote refused a delete" >&2
 
-# ── Bolum 49.1's second provider ──────────────────────────────────────────
+# ── the second provider ──────────────────────────────────────────
 #
 # Sunday writes the weekly copy, the first of the month writes the monthly one.
 # Both are the archive that already passed the size check above -- re-dumping
@@ -79,7 +79,7 @@ TIERS=""
 
 if [ -n "$TIERS" ]; then
     archive_host=${ARCHIVE_REMOTE%%:*}
-    # ── The base backup that makes Bolum 49.3's WAL replayable ────────────
+    # ── The base backup that makes the WAL replayable ────────────
     #
     # This is a PHYSICAL backup and the dump above is a LOGICAL one, and the
     # difference is the whole reason this block exists: WAL segments replay
@@ -126,7 +126,7 @@ if [ -n "$TIERS" ]; then
         # worth more than a cron job that failed over the second copy. But a
         # deployment running on one provider is not running 3-2-1, and the only
         # place that can be said is this log.
-        echo "$(date -Is) WARNING: no '$archive_host' remote -- Bolum 49.1's" \
+        echo "$(date -Is) WARNING: no '$archive_host' remote -- the" \
              "second provider is not configured and$TIERS copies were skipped" >&2
     fi
 fi

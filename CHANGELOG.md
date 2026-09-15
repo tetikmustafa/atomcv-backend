@@ -23,8 +23,8 @@ performance budgets and lifecycle emails have all landed. Not deployed.
   enum vocabulary, the JSONB shape and the skill arrays.
 - User- and profile-scoped repository bases, with a `ProfileRef` that cannot be
   constructed without comparing the acting user against the profile's owner.
-- `EK D` in the architecture document: every deviation, addition and correction
-  made while building, with the frontend-facing ones collected in `EK D.5`.
+- The build notes in the architecture document: every deviation, addition and correction
+  made while building, with the frontend-facing ones collected together.
 
 ### Added — Stage 0
 

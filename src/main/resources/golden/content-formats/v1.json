@@ -1,13 +1,13 @@
 {
   "_comment": [
-    "Bolum 51.3's content-formats fixture: one stored document per JSONB",
-    "version of atom_variants.content (Bolum 14.1, Bolum 16.2). This is v1,",
+    "The content-formats fixture: one stored document per JSONB",
+    "version of atom_variants.content. This is v1,",
     "which is every version there has ever been -- the directory exists so",
     "that the day there is a v2, the reader for v1 still has something real",
     "to read, rather than a document written by whoever wrote the migration.",
     "",
-    "It carries every mark the model names in Bolum 14.1 and one it does not.",
-    "`experimental` is the forward-compatibility case: Bolum 16.2 says an",
+    "It carries every mark the model names and one it does not.",
+    "`experimental` is the forward-compatibility case: an",
     "unknown mark is read, kept and rendered as plain text, and the only way",
     "to hold that promise is a document that has one in it.",
     "",

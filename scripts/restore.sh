@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The other half of Bolum 49, and the half the release checklist marks with a
+# The other half of the backup, and the half the release checklist marks with a
 # warning: "⚠️ Gercek restore testi yapildi".
 #
 #   ./scripts/restore.sh                       # newest backup -> scratch database
@@ -13,12 +13,12 @@
 # prints row counts so the answer is "yes, and there are 412 profiles in it"
 # rather than "it did not error".
 #
-# The age private key is not on the server (Adim V.8). Run this from the
+# The age private key is not on the server. Run this from the
 # machine that has it, or copy the key in for the length of the test and
 # remove it afterwards.
 #
 # **This restores a dump, which means it restores to 03:00.** The rest of
-# Bolum 49.5's window is a different procedure and different files: the weekly
+# The window is a different procedure and different files: the weekly
 # tar in $REMOTE/base/ unpacked over an empty data directory, a
 # `restore_command` pulling $REMOTE/wal/ segments, and a recovery.signal
 # telling Postgres to replay to a chosen instant. That path is for the day
@@ -39,7 +39,7 @@ set +a
 
 : "${POSTGRES_USER:?POSTGRES_USER is not set}"
 : "${POSTGRES_DB:?POSTGRES_DB is not set}"
-[ -f "$AGE_KEY" ] || { echo "No age private key at $AGE_KEY -- see Adim V.8" >&2; exit 2; }
+[ -f "$AGE_KEY" ] || { echo "No age private key at $AGE_KEY -- see .env.example" >&2; exit 2; }
 
 ARCHIVE=${1:-}
 TARGET_IS_PRODUCTION=false
@@ -80,8 +80,8 @@ psql_root -c "DROP DATABASE IF EXISTS \"$TARGET\";"
 psql_root -c "CREATE DATABASE \"$TARGET\";"
 $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$TARGET" < "$WORK/dump.sql" > /dev/null
 
-# Bolum 49.4's warning, and it is not optional in either mode. An anonymous
-# profile is a `profiles` row with no owner and an expiry (Bolum 51.6.1); a
+# The warning, and it is not optional in either mode. An anonymous
+# profile is a `profiles` row with no owner and an expiry; a
 # restore brings it back to life as a CV that was promised two hours and has
 # now had six months. The retention sweep would take it on its next pass, but
 # the window between must never open -- and in the scratch database the same
@@ -92,7 +92,7 @@ $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$TARGET" < "$WORK/dump.sq
 REMOVED=$($COMPOSE exec -T postgres psql -U "$POSTGRES_USER" -d "$TARGET" -t -A -c "
     WITH gone AS (DELETE FROM profiles WHERE expires_at IS NOT NULL RETURNING 1)
     SELECT count(*) FROM gone;")
-echo "Anonymous profiles removed (Bolum 49.4): ${REMOVED:-0}"
+echo "Anonymous profiles removed: ${REMOVED:-0}"
 
 # The assertion, and the reason this script prints anything at all. "It ran
 # without an error" is not a restore test; a schema with no rows in it would

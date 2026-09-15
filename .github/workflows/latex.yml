@@ -1,4 +1,4 @@
-# Bolum 54.5's second smoke test: compile a CV through a real XeLaTeX
+# The second smoke test: compile a CV through a real XeLaTeX
 # container and check a PDF comes out.
 #
 # Its own workflow rather than a job in ci.yml, because it is the only lane

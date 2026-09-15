@@ -65,7 +65,7 @@ openapi:
 	$(GRADLE) integrationTest --tests '*OpenApiDocumentIT' -Dopenapi.record=true
 
 ## measure one template's page capacity and fixed costs against the real
-## compiler (needs Docker; builds the LaTeX image). EK C.2's two "measured"
+## compiler (needs Docker; builds the LaTeX image). The two "measured"
 ## boxes. Pass a template and optionally a geometry:
 ##   make measure-template TEMPLATE=compact ARGS="--size 9.5 --margin 0.45"
 measure-template:

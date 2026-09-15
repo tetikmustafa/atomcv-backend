@@ -1,4 +1,4 @@
-# The only place xelatex runs (Bolum 29).
+# The only place xelatex runs.
 #
 # LaTeX is a programming language and user content reaches it, so this image is
 # built to be the blast radius: no credentials, no database, and — through the
@@ -39,7 +39,7 @@ RUN apt-get update \
  && fc-cache -f
 
 # Whitelisted fonts are copied in when a template needs one that Debian does
-# not ship (Bolum 33). The directory is created either way so the COPY below
+# not ship. The directory is created either way so the COPY below
 # has something to find.
 RUN mkdir -p /usr/local/share/fonts
 COPY fonts/ /usr/local/share/fonts/

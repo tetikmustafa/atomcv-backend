@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bolum 49.3 -- WAL archiving, the half that turns a nightly dump into
+# WAL archiving, the half that turns a nightly dump into
 # point-in-time recovery. Run from cron every five minutes:
 #
 #   */5 * * * * /opt/atomcv/scripts/archive-wal.sh >> /var/log/atomcv-wal.log 2>&1
@@ -30,7 +30,7 @@ set -a
 [ -f .env ] && . ./.env
 set +a
 
-: "${AGE_PUBLIC_KEY:?AGE_PUBLIC_KEY is not set -- see Bolum 49.2}"
+: "${AGE_PUBLIC_KEY:?AGE_PUBLIC_KEY is not set -- see .env.example}"
 
 # Segments touched in the last minute may still be mid-copy: Postgres's
 # archive_command is a plain `cp` and `cp` is not atomic. Shipping a truncated
@@ -68,7 +68,7 @@ for segment in $SEGMENTS; do
     SHIPPED=$((SHIPPED + 1))
 done
 
-# Same note as Bolum 49.2's retention: the credential this runs under should be
+# Same note as the retention: the credential this runs under should be
 # write-only, so a refused delete is the credential working.
 rclone delete --min-age "$KEEP_WAL" "$REMOTE/wal/" \
     || echo "$(date -Is) retention skipped: the remote refused a delete" >&2
