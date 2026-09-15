@@ -1,0 +1,30 @@
+Veri Muhendisi (Orta Seviye)
+Kestane Teknoloji, Istanbul Maslak, tam zamanli, hibrit
+
+Pozisyon hakkinda
+Perakende musterilerimizin gunluk satis, stok ve kampanya verisini isleyen veri
+platformunu kuran ekibe katilacak bir veri muhendisi ariyoruz. Platform gunde
+yaklasik iki yuz milyon satir isliyor ve ekibimiz dort kisiden olusuyor.
+
+Sorumluluklar
+- Kaynak sistemlerden gelen veriyi toplayan ETL hatlarini tasarlamak ve isletmek
+- Veri ambarindaki modelleri kurmak, dokumante etmek ve surdurmek
+- Veri kalitesi kontrollerini yazmak ve bozulan hatlari gidermek
+- Analitik ekibinin sorgularini hizlandirmak, gerektiginde modeli degistirmek
+- Nobet donusumune katilmak
+
+Aranan nitelikler
+- En az uc yil veri muhendisligi deneyimi
+- Python ve SQL alaninda ileri seviye yetkinlik
+- Apache Airflow veya benzeri bir is akisi aracini uretimde kullanmis olmak
+- Iliskisel veritabanlarinda performans ayari deneyimi, tercihen PostgreSQL
+- Versiyon kontrolu ve kod inceleme kulturune yatkinlik
+
+Tercihen
+- dbt ile modelleme deneyimi
+- Bulut veri ambarlarindan biriyle calismis olmak
+- Veri gizliligi ve KVKK konusunda farkindalik
+
+Basvuru
+Ozgecmisinizi ve varsa kurdugunuz bir veri hattini anlatan kisa bir notu
+iletmenizi rica ederiz. Basvurular iki hafta icinde degerlendirilir.

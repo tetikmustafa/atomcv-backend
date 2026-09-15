@@ -1,0 +1,212 @@
+Senior Software Engineer, Platform Engineering
+Meridian Group, Industrial Automation Division, Stuttgart
+
+Our organisation
+Meridian Group is a listed engineering and services company employing around
+eleven thousand people across nineteen countries. Founded in 1948 as a supplier
+of precision bearings, the group now operates four divisions: industrial
+automation, energy services, transport infrastructure and a smaller software
+business that grew out of our maintenance analytics work. Revenue for the last
+financial year was 3.4 billion euro, of which the software division contributed
+just under nine percent, the fastest growing share and the reason this position
+exists.
+
+The division
+Industrial Automation designs, installs and maintains control systems for
+manufacturing plants: automotive assembly, food and beverage, pharmaceutical
+packaging and, increasingly, battery cell production. A typical project runs
+between eighteen months and four years, involves between forty and three hundred
+of our people at different stages, and is delivered against a contract whose
+penalty clauses are measured in days of plant downtime. The division employs
+about two thousand nine hundred people and is headquartered in Stuttgart with
+engineering centres in Brno, Pune and Monterrey.
+
+The position
+We are seeking a senior software engineer to join the Platform Engineering
+group within Industrial Automation. The group builds and maintains the internal
+platform on which our project teams deliver customer-facing control and
+monitoring software: shared libraries, deployment tooling, the internal package
+registry, the observability stack and the test environments that stand in for
+plant hardware. The platform is used daily by roughly three hundred and forty
+engineers across the three engineering centres, and its availability is measured
+and reported to the divisional board each month.
+
+Reporting line and team
+The successful candidate will report to the head of platform engineering and
+will join a team of eleven engineers, two of whom are based in Brno and one in
+Pune. The team operates on a two-week cadence with a written plan published at
+the start of each period and a written review at the end. There is no formal
+sub-team structure; work is claimed rather than assigned, and the engineer who
+claims a piece of work is expected to see it through to the point where somebody
+else can maintain it.
+
+Principal accountabilities
+The role carries responsibility for the design, implementation, testing,
+documentation and ongoing maintenance of platform components. Specifically, the
+successful candidate will contribute to the architecture of the internal
+deployment tooling, which currently serves around nine hundred releases a month;
+maintain and extend the shared communication libraries used by project teams to
+speak to programmable logic controllers over OPC UA and Modbus; improve the
+hardware-in-the-loop test environment so that a project team can obtain a
+representative environment within one working day rather than the current five;
+participate in the design review process for customer-facing software, providing
+platform perspective without becoming a gatekeeper; and act as second-line
+support for platform incidents during European business hours on a rotating
+basis, currently one week in six.
+
+Quality and compliance
+Our software is deployed in environments where failure has physical
+consequences. The successful candidate will be expected to work within our
+established engineering quality framework, which is aligned to IEC 61508 for the
+safety-related components and to ISO 9001 across the division. This includes
+traceability from requirement to test, documented design decisions for anything
+that affects a safety function, and participation in the internal audit cycle.
+Candidates who have not worked in a regulated environment before should not be
+deterred: roughly half of the current team came from unregulated software, and
+the framework is taught rather than assumed.
+
+Essential requirements
+Applicants must hold a degree in computer science, software engineering,
+electrical engineering or a closely related discipline, or be able to
+demonstrate equivalent professional experience. A minimum of six years of
+professional software development experience is required, of which at least
+three must have been in a role with design responsibility rather than
+implementation alone. Strong practical knowledge of at least two of the
+following is essential: modern C++, C# on the .NET platform, Python, or Go.
+Candidates must be able to read and reason about concurrent code and must be
+comfortable with version control, code review and continuous integration as
+daily practice rather than as policy.
+
+Further essential requirements
+The role requires the ability to communicate in written and spoken English
+with colleagues who do not share a first language; our working language is
+English and all design documentation is written in it. German is useful in
+Stuttgart and is not required. Candidates must be eligible to work in Germany or
+the Czech Republic without sponsorship, or be willing to relocate with our
+assistance. Occasional travel to customer sites is expected, typically between
+four and eight trips a year, each of two to four days.
+
+Desirable experience
+The following would strengthen an application without being required:
+experience with industrial protocols, particularly OPC UA; familiarity with
+containerised deployment in environments without reliable internet access;
+exposure to hardware-in-the-loop or simulation-based testing; experience
+maintaining a library consumed by teams you do not control, and the versioning
+discipline that requires; contributions to open source, particularly in the
+industrial or embedded space; and any experience of migrating a large codebase
+between build systems, which is a piece of work this team expects to undertake
+within the next two years.
+
+What we offer
+The position carries a salary band of 78,000 to 96,000 euro depending on
+experience and location, together with a group profit-share scheme that has paid
+out in eleven of the last thirteen years. Benefits include thirty days of annual
+leave, a company pension with employer contribution of six percent, a subsidised
+canteen, a bicycle scheme, and a training budget of 2,500 euro per person per
+year which the team has historically spent on conferences and on a standing
+order of technical books. We operate a flexible hybrid arrangement: the
+expectation is two days a week in an office, and the team decides which days.
+
+Our approach to hiring
+We aim to make a decision within fifteen working days of receiving an
+application. The process consists of an initial conversation of about forty
+minutes with the hiring manager, a technical discussion of ninety minutes with
+two engineers from the team based on a piece of code we send you beforehand (we
+do not ask candidates to write code under observation), a conversation about
+design and trade-offs, and a final conversation with the head of platform
+engineering. We reimburse reasonable travel costs for any part of the process
+that takes place in person.
+
+Equal opportunity
+Meridian Group is committed to building a workforce that reflects the
+societies in which it operates. We welcome applications regardless of age,
+disability, gender identity, marital status, ethnicity, religion or belief,
+sexual orientation, or socio-economic background. If you require any adjustment
+to the application or interview process, please say so when you apply; the
+request goes to the recruitment team and not to the hiring manager.
+
+How to apply
+Please submit a curriculum vitae together with a short covering note. We read
+the note and it does not need to be long; what helps us most is one paragraph
+about a technical decision you have taken that you would now take differently,
+and why. Applications are reviewed in the order received. The closing date is
+six weeks from publication, although we may close earlier if we appoint. For
+questions about the role that are not answered here, write to the address below
+and an engineer from the team will reply.
+
+A typical project
+To give a sense of the work, here is a project the group completed last year.
+A tier-one automotive supplier asked us to replace the control software on four
+body-in-white welding lines without stopping production for more than a single
+weekend shift per line. The platform contribution was the simulation
+environment: a model of each line accurate enough that the project team could
+run the new control logic against it for six weeks before anybody went near the
+plant. Two hundred and eleven defects were found in simulation. Four were found
+on the line. The engineer who built that environment now leads the
+hardware-in-the-loop work and would be one of your colleagues.
+
+How we write software
+We write design documents for anything that will outlive a sprint, and we
+circulate them before the code rather than after it. A document is usually two
+to four pages and always has a section on what we decided not to do. Code review
+is mandatory, unhurried and not a gate we treat as a formality: the median
+review on this team takes a working day and produces comments on more than half
+of the changes. We do not measure individual output, and we do not have a story
+point. What the team reports upward each period is what shipped and what it
+cost, in prose.
+
+Testing and the plant
+The hardest thing about our testing is that the real system is a factory. We
+cannot deploy to production to see what happens, we cannot roll back a weld, and
+the customer's maintenance window is often a single night twice a year. That
+constraint shapes everything: our test environments are elaborate because they
+have to be, our releases are infrequent and large in a way that would be poor
+practice in a web company, and our appetite for a clever abstraction is low. An
+engineer joining from a continuously deployed environment usually finds the
+first quarter uncomfortable and the second one interesting.
+
+The technology, honestly described
+The platform is not new and parts of it are not pretty. The deployment tooling
+began as a set of shell scripts in 2016 and became a Go program in 2021; there
+are still four scripts. The shared communication library is C++ and carries a
+compatibility layer for a protocol version two customers still run and will run
+until at least 2029. The observability stack is Prometheus and Grafana with an
+in-house exporter for the controllers, which is the piece most people find
+interesting and the piece most likely to need rewriting. We mention this because
+a candidate who expects a clean slate will be disappointed, and a candidate who
+enjoys improving something that is already load-bearing will not.
+
+Career development
+The division runs a two-track progression framework: an engineering track that
+goes to principal without requiring management, and a management track that
+does. Both tracks are published with their expectations, and promotion decisions
+are made twice a year by a panel rather than by a single manager. Roughly a
+third of the platform team has moved between engineering centres at least once,
+usually for between six months and two years, and the group pays relocation
+costs for internal moves as well as for hiring.
+
+Working hours and on-call
+Standard hours are thirty-eight a week. The platform on-call rotation covers
+European business hours only; there is no night rotation for this team, because
+the systems it owns are not the ones that run overnight. Project teams with
+plant commitments do have night coverage, and platform engineers are sometimes
+asked to join a commissioning weekend, which is paid at the collectively agreed
+rate and compensated with time in lieu. In the last two years this has averaged
+fewer than three weekends per engineer.
+
+Security
+All platform code is scanned on every change and reviewed annually by an
+external assessor. Engineers hold no standing production credentials; access to
+a customer environment is requested, approved and time-boxed, and every session
+is recorded. Candidates should expect a background check appropriate to the
+sectors we serve, which for this position means employment history and a
+criminal records check in the country of employment, and nothing further.
+
+Onboarding
+New engineers spend their first week reading rather than writing, which is a
+rule we enforce gently and do mean. In the second week the expectation is one
+small change shipped end to end, chosen by you from a list the team keeps for
+exactly this purpose. There is a named buddy for the first three months and a
+written check-in at thirty, sixty and ninety days, the last of which is a
+two-way conversation about whether the role is what the advertisement said it
+was.

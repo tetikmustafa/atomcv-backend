@@ -87,7 +87,36 @@ class GenerationPipelineTest {
         assertThat(document.attempts()).isEqualTo(2);
         assertThat(document.budgetFactor()).isEqualTo(GenerationPipeline.BUDGET_STEP);
         assertThat(document.selection().selected().size()).isLessThan(atFullBudget);
-        assertThat(meters.counter("generation.budget.overshoot").count()).isEqualTo(1);
+        assertThat(meters.counter("generation.budget.overshoot",
+                "template", "classic").count()).isEqualTo(1);
+    }
+
+    /**
+     * Bolum 26.6's calibration signal, in the resolution production can
+     * measure: pages predicted against pages returned.
+     *
+     * <p>The tag is the whole diagnostic. A rate that moves is only readable as
+     * "the measurement layer is wrong" if it says <em>which</em> template's
+     * measurement layer, and classic, modern and compact are three different
+     * pages with three sets of measured constants.
+     *
+     * <p>Two recordings for two compilations: the first document ran to two
+     * pages against a budget that predicted one, and the second fitted. The
+     * mean is what an operator watches, and it walks away from zero exactly
+     * when the costs stop describing the page.
+     */
+    @Test
+    void thedriftBetweenPredictedAndActualPagesIsRecordedPerTemplate() {
+        var fixture = profileOf(40);
+        when(compiler.compile(anyString())).thenReturn(pdf(2), pdf(1));
+
+        run(fixture).orElseThrow();
+
+        var drift = meters.find("generation.pages.drift")
+                .tag("template", "classic").summary();
+        assertThat(drift).isNotNull();
+        assertThat(drift.count()).isEqualTo(2);
+        assertThat(drift.max()).isEqualTo(1.0);
     }
 
     @Test
