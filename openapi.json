@@ -5368,6 +5368,18 @@
           },
           "onPage" : {
             "type" : "boolean"
+          },
+          "matchedKeywords" : {
+            "type" : "array",
+            "description" : "Posting terms this line carries; absent when there are none",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "heldBackReason" : {
+            "type" : "string",
+            "description" : "Why it is not on the page; absent when it is",
+            "enum" : [ "BUDGET", "INACTIVE", "EXCLUDED_BY_DIRECTIVE", "ENTRY_BELOW_MINIMUM" ]
           }
         }
       },

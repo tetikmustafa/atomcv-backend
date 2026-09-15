@@ -207,7 +207,8 @@ public record SelectionRequest(
             boolean alwaysInclude,
             boolean active,
             String contentKey,
-            boolean headerOnly) {
+            boolean headerOnly,
+            List<String> matchedTerms) {
 
         /**
          * A candidate with nothing to break a tie by, for callers that build
@@ -223,7 +224,15 @@ public record SelectionRequest(
         public AtomCandidate(UUID atomId, UUID variantId, UUID entryId, double score,
                 double renderCostPt, boolean alwaysInclude, boolean active, String contentKey) {
             this(atomId, variantId, entryId, score, renderCostPt, alwaysInclude, active,
-                    contentKey, false);
+                    contentKey, false, List.of());
+        }
+
+        /** With P7's reasons attached: what of the posting this row carries. */
+        public AtomCandidate(UUID atomId, UUID variantId, UUID entryId, double score,
+                double renderCostPt, boolean alwaysInclude, boolean active, String contentKey,
+                List<String> matchedTerms) {
+            this(atomId, variantId, entryId, score, renderCostPt, alwaysInclude, active,
+                    contentKey, false, matchedTerms);
         }
 
         /**
@@ -244,13 +253,16 @@ public record SelectionRequest(
         public static AtomCandidate forEntryHeader(
                 UUID entryId, double score, String contentKey) {
 
+            // No wording, so nothing to have matched: an entry heading
+            // competes on the entry's own importance (Bolum 20.2).
             return new AtomCandidate(entryId, null, entryId, score, 0.0, false, true,
-                    contentKey, true);
+                    contentKey, true, List.of());
         }
 
         public AtomCandidate {
             Objects.requireNonNull(atomId, "atomId");
             contentKey = contentKey == null ? "" : contentKey;
+            matchedTerms = matchedTerms == null ? List.of() : List.copyOf(matchedTerms);
             if (headerOnly) {
                 if (entryId == null) {
                     throw new IllegalArgumentException("An entry heading belongs to an entry");

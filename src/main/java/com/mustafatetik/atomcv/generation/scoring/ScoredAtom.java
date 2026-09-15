@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.scoring;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,13 @@ import java.util.UUID;
  * has stopped contributing.
  */
 public record ScoredAtom(
-        UUID atomId, double score, double secondary, Components components) {
+        UUID atomId, double score, double secondary, Components components,
+        List<String> matchedTerms) {
+
+    /** Kept for the callers that score without a posting to match against. */
+    public ScoredAtom(UUID atomId, double score, double secondary, Components components) {
+        this(atomId, score, secondary, components, List.of());
+    }
 
     /**
      * How close two relevance scores have to be before Bolum 19.4's secondary
@@ -61,6 +68,7 @@ public record ScoredAtom(
     }
 
     public ScoredAtom {
+        matchedTerms = matchedTerms == null ? List.of() : List.copyOf(matchedTerms);
         if (score < 0 || score > 1 || Double.isNaN(score)) {
             throw new IllegalArgumentException("A score is 0..1, got " + score);
         }

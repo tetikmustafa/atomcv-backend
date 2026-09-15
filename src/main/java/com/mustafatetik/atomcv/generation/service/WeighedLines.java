@@ -48,11 +48,23 @@ public final class WeighedLines {
     }
 
     /**
-     * One candidate, with the text it competed as.
+     * One candidate, with the text it competed as and why it stands where it
+     * stands (P7).
      *
-     * @param onPage whether it reached the page of this generation
+     * @param onPage          whether it reached the page of this generation
+     * @param matchedKeywords which of the posting's terms this line carries.
+     *                        Empty in general mode, and empty on a generation
+     *                        made before Faz B recorded them
+     * @param heldBackReason  why it did not reach the page, or null when it
+     *                        did. The four values are opposite instructions to
+     *                        the reader -- "there was no room" invites a longer
+     *                        page, "you switched it off" invites the profile
+     *                        editor, and one word of explanation is the
+     *                        difference
      */
-    public record Line(UUID atomId, String text, boolean onPage) {
+    public record Line(UUID atomId, String text, boolean onPage,
+            List<String> matchedKeywords,
+            SelectionState.RejectionReason heldBackReason) {
     }
 
     /**
@@ -80,7 +92,7 @@ public final class WeighedLines {
                             wording.covers(atom.atomId())
                                     ? wording.byAtom().get(atom.atomId()).plainText()
                                     : text,
-                            true))
+                            true, atom.matchedKeywords(), null))
                     .ifPresent(lines::add);
         }
 
@@ -88,7 +100,12 @@ public final class WeighedLines {
                 .sorted(Comparator.comparingDouble(SelectionState.RejectedAtom::score).reversed()
                         .thenComparing(atom -> atom.atomId().toString()))
                 .forEach(atom -> textOf(byId.get(atom.atomId()), null, snapshot.language(), tone)
-                        .map(text -> new Line(atom.atomId(), text, false))
+                        // A held-back line has no matched terms recorded: only
+                        // the chosen ones are written to the snapshot, and
+                        // inventing them here would mean re-running Faz B --
+                        // the one thing Bolum 24.1 says not to do.
+                        .map(text -> new Line(atom.atomId(), text, false,
+                                List.of(), atom.reason()))
                         .ifPresent(lines::add));
 
         return List.copyOf(lines);

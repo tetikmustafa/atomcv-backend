@@ -41,6 +41,26 @@ public interface AtomScoreSource {
     }
 
     /**
+     * Which of the posting's terms this atom carries (P7).
+     *
+     * <p>Empty by default, and empty is the honest answer for both of the
+     * other implementations: general mode has no posting, and
+     * {@link #remembered} is reading a snapshot that already recorded them —
+     * it hands back scores so Faz C can re-run, not reasons.
+     *
+     * <p>Beside {@link #scoreOf} rather than fetched separately because the
+     * two are the same answer at different resolutions: a score says how well
+     * this atom fits and this says what made it fit. A screen showing one
+     * without the other shows a verdict with no evidence, which is the
+     * failure P7 exists to prevent.
+     *
+     * @return the terms, in a stable order, never null
+     */
+    default java.util.List<String> matchedTermsOf(Atom atom) {
+        return java.util.List.of();
+    }
+
+    /**
      * No posting to be relevant to: rank on what the profile says about itself
      * (Bolum 19.4).
      *

@@ -911,7 +911,7 @@ public final class SelectionPhase {
             contentPt += atom.renderCostPt();
             selected.put(atom.atomId(), new SelectedAtom(
                     atom.atomId(), atom.variantId(), atom.score(),
-                    atom.renderCostPt(), forcedByLock));
+                    atom.renderCostPt(), forcedByLock, atom.matchedTerms()));
             pool.remove(atom.atomId());
             retuneListCloses();
             retuneFirstSectionHeader();

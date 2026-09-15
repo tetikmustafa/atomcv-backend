@@ -230,7 +230,7 @@ public final class SelectionRequestBuilder {
     private static AtomCandidate pin(AtomCandidate candidate) {
         return new AtomCandidate(candidate.atomId(), candidate.variantId(), candidate.entryId(),
                 candidate.score(), candidate.renderCostPt(), true, candidate.active(),
-                candidate.contentKey(), candidate.headerOnly());
+                candidate.contentKey(), candidate.headerOnly(), candidate.matchedTerms());
     }
 
     /** One build, and the counters it fills in as it goes. */
@@ -284,7 +284,11 @@ public final class SelectionRequestBuilder {
                         // import. The column is already there and already a
                         // digest of exactly this content -- nothing new is
                         // computed and nothing readable travels.
-                        variant.getContentHash()));
+                        variant.getContentHash(),
+                        // P7: the terms this row carries, so the snapshot can
+                        // say why it competed and not only how well. Empty in
+                        // general mode -- there is no posting to have matched.
+                        scores.matchedTermsOf(node.atom())));
             }
             return candidates;
         }
@@ -318,7 +322,7 @@ public final class SelectionRequestBuilder {
                 rows.add(new AtomCandidate(
                         row.atomId(), row.variantId(), null, row.score(), row.renderCostPt(),
                         row.alwaysInclude() || entry.isAlwaysInclude(), row.active(),
-                        row.contentKey()));
+                        row.contentKey(), row.matchedTerms()));
             }
             return rows;
         }

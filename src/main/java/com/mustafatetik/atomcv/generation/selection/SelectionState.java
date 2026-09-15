@@ -46,12 +46,29 @@ public record SelectionState(
         this(selected, rejected, budget, headerOnlyEntries, List.of());
     }
 
+    /**
+     * @param matchedKeywords which of the posting's own terms this line carries
+     *                        (Bolum 14.5, P7). Empty in general mode, and empty
+     *                        on a snapshot written before this field existed --
+     *                        which is why the short constructor stays.
+     */
     public record SelectedAtom(
             UUID atomId,
             UUID variantId,
             double score,
             double renderCostPt,
-            boolean forcedByLock) {
+            boolean forcedByLock,
+            List<String> matchedKeywords) {
+
+        public SelectedAtom(UUID atomId, UUID variantId, double score,
+                double renderCostPt, boolean forcedByLock) {
+            this(atomId, variantId, score, renderCostPt, forcedByLock, List.of());
+        }
+
+        public SelectedAtom {
+            matchedKeywords = matchedKeywords == null
+                    ? List.of() : List.copyOf(matchedKeywords);
+        }
     }
 
     public record RejectedAtom(UUID atomId, double score, RejectionReason reason) {
