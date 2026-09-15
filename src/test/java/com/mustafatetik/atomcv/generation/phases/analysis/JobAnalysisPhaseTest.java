@@ -334,11 +334,12 @@ class JobAnalysisPhaseTest {
 
     private JobAnalysisPhase phase(
             LlmProvider provider, JobAnalysisCache cache, AnswerRecorder recorder) {
+        var meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of(provider.id())),
                         Map.of(), Duration.ofSeconds(30), 0),
                 event -> { }, CLOCK, Optional.ofNullable(recorder),
-                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
+                meters, new com.mustafatetik.atomcv.llm.gateway.ProviderBreakers(meters));
         return new JobAnalysisPhase(
                 new PromptRegistry(
                         new PromptProperties(Map.of("job_analysis", "v1"), Map.of()), JSON),

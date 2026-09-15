@@ -184,11 +184,12 @@ class ProfileStructuringTest {
     }
 
     private ProfileStructuring structuring(LlmProvider provider) {
+        var meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.MID, List.of(provider.id())),
                         Map.of(), Duration.ofSeconds(30), 0),
                 event -> { }, CLOCK, Optional.empty(),
-                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
+                meters, new com.mustafatetik.atomcv.llm.gateway.ProviderBreakers(meters));
         return new ProfileStructuring(
                 new PromptRegistry(
                         new PromptProperties(Map.of("profile_extraction", "v1"), Map.of()), JSON),
