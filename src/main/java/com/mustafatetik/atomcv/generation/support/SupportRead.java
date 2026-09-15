@@ -4,7 +4,11 @@ import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.SupportGrant;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.repository.SupportGrantLookup;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -48,14 +52,29 @@ public class SupportRead implements ApplicationRunner {
     /** {@code --support.generation=<uuid>}. */
     static final String ARGUMENT = "support.generation";
 
+    /**
+     * {@code --support.export=<path>}, which writes the file Bolum 48.5's
+     * replay reads instead of printing.
+     *
+     * <p>Under the same grant and the same stamp, because it is the same
+     * content. <strong>A file is the more dangerous of the two</strong> — a
+     * printout dies with the terminal and a file does not — so the export
+     * records the moment it was taken, and {@code scripts/replay.sh} says out
+     * loud that it should be deleted with the question it was opened for.
+     */
+    static final String EXPORT = "support.export";
+
     private final SupportGrantLookup grants;
     private final GenerationRepository generations;
     private final Clock clock;
+    private final ObjectMapper json;
 
-    SupportRead(SupportGrantLookup grants, GenerationRepository generations, Clock clock) {
+    SupportRead(SupportGrantLookup grants, GenerationRepository generations, Clock clock,
+            ObjectMapper json) {
         this.grants = grants;
         this.generations = generations;
         this.clock = clock;
+        this.json = json;
     }
 
     @Override
@@ -65,11 +84,23 @@ public class SupportRead implements ApplicationRunner {
             print("Nothing to read. Pass --" + ARGUMENT + "=<generation id>.");
             return;
         }
-        read(UUID.fromString(requested.get(0)));
+        var exportTo = arguments.getOptionValues(EXPORT);
+        read(UUID.fromString(requested.get(0)),
+                exportTo == null || exportTo.isEmpty() ? null : Path.of(exportTo.get(0)));
     }
 
     /** Package-private so the flow can be asserted without booting anything. */
     void read(UUID generationId) {
+        read(generationId, null);
+    }
+
+    /**
+     * @param exportTo where to write Bolum 48.5's file, or null to print. Every
+     *                 refusal above is the same either way: the grant is what
+     *                 makes the read lawful, and writing it to disk is more of
+     *                 a read rather than less of one
+     */
+    void read(UUID generationId, Path exportTo) {
         Instant now = clock.instant();
         Optional<SupportGrant> found = grants.newestFor(generationId);
         if (found.isEmpty()) {
@@ -100,10 +131,45 @@ public class SupportRead implements ApplicationRunner {
         if (grant.markAccessed(now)) {
             grants.save(grant);
         }
-        // Stamped before the content is printed. If printing fails halfway the
+        // Stamped before the content leaves. If writing fails halfway the
         // person is still told it was read, which is the direction an audit
         // trail has to fail in.
-        print(report(generation.get(), grant));
+        if (exportTo == null) {
+            print(report(generation.get(), grant));
+            return;
+        }
+        export(generation.get(), exportTo, now);
+    }
+
+    /**
+     * Bolum 48.5's file.
+     *
+     * <p>Pretty-printed, because the first thing anybody does with it is read
+     * it, and a diff of two of them is how a replay's answer is compared to
+     * what actually shipped.
+     */
+    private void export(Generation generation, Path exportTo, Instant now) {
+        GenerationExport export = GenerationExport.of(generation, now);
+        try {
+            Path parent = exportTo.toAbsolutePath().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            json.writerWithDefaultPrettyPrinter().writeValue(exportTo.toFile(), export);
+        } catch (IOException couldNotWrite) {
+            // The name of the failure and never the path's content. The read
+            // is already stamped, which is correct: the grant was used.
+            print("Could not write the export: " + couldNotWrite.getClass().getSimpleName());
+            return;
+        }
+        print("Wrote " + exportTo + " for generation " + generation.getId()
+                + (export.isReplayable()
+                        ? ". Replay it with ./scripts/replay.sh " + exportTo
+                        : ". It carries no content snapshot, so there is no Faz E to replay"
+                                + " -- this generation did not reach rendering.")
+                + System.lineSeparator()
+                + "It is the document that was sent to an employer. Delete it with the"
+                + " question you opened it for.");
     }
 
     /**
