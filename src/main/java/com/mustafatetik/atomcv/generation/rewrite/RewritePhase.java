@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.rewrite;
 
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
+import io.micrometer.core.instrument.MeterRegistry;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,12 +42,37 @@ public class RewritePhase {
 
     private static final Logger log = LoggerFactory.getLogger(RewritePhase.class);
 
+    /**
+     * Bolum 48.3's "Yeniden yazim red orani": the denominator. One counter per
+     * prompt, because the two prompts fail for different reasons and a single
+     * rate over both would hide whichever one is smaller.
+     */
+    static final String ATTEMPTS = "rewrite.attempts";
+
+    /**
+     * The same row's "red nedenleri dagilimi". The issue is the tag, which is
+     * the distribution -- a count with no reason says a validator is refusing
+     * things and nothing about whether the prompt or the profile is at fault.
+     */
+    static final String REFUSALS = "rewrite.refusals";
+
+    /**
+     * Attempts that never reached a model, counted apart from the refusals on
+     * purpose. A sentence nobody judged is not a sentence that failed, and
+     * folding the two together would turn a provider outage into a report that
+     * the prompt got worse.
+     */
+    static final String UNREACHABLE = "rewrite.unreachable";
+
     private final BulletRewriteService rewriter;
     private final AboutSynthesisService about;
+    private final MeterRegistry meters;
 
-    RewritePhase(BulletRewriteService rewriter, AboutSynthesisService about) {
+    RewritePhase(BulletRewriteService rewriter, AboutSynthesisService about,
+            MeterRegistry meters) {
         this.rewriter = rewriter;
         this.about = about;
+        this.meters = meters;
     }
 
     /** Which version of the rewrite prompt this bucket is on (Bolum 53.3). */
@@ -116,7 +142,27 @@ public class RewritePhase {
                 plan.shape(), todo.size(), carried.byAtom().size());
 
         Pass pass = runAll(todo);
+        record(pass.tally());
         return new RewriteOutcome(sofar.and(pass.accepted()), pass.tally());
+    }
+
+    /**
+     * One pass, counted.
+     *
+     * <p>Per pass rather than per generation: the compile loop runs Faz D
+     * again on a document that came out too long, and the second pass is calls
+     * that were really made. The trace accumulates them for one generation's
+     * record (Bolum 14.6); a rate over all generations wants them as they
+     * happen.
+     */
+    private void record(RewriteTally tally) {
+        tally.callsByPrompt().forEach((prompt, calls) ->
+                meters.counter(ATTEMPTS, "prompt", prompt).increment(calls));
+        tally.refusals().forEach((issue, count) -> meters.counter(REFUSALS,
+                "issue", issue.name().toLowerCase(java.util.Locale.ROOT)).increment(count));
+        if (tally.unreachable() > 0) {
+            meters.counter(UNREACHABLE).increment(tally.unreachable());
+        }
     }
 
     /** One thing to ask a model for, and what stands if the answer does not. */

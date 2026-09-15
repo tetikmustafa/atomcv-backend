@@ -36,6 +36,10 @@ class RewritePhaseTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
 
+    /** Bolum 48.3's rejection rate and reason distribution are read off this. */
+    private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meters =
+            new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+
     /**
      * <strong>The point of the phase.</strong> Eight calls that each take a
      * tenth of a second are eight tenths of a second in a loop and one tenth
@@ -171,7 +175,7 @@ class RewritePhaseTest {
         var fixture = strongMatches(3);
         var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
         var about = new RecordingAbout(RichContent.plain("A synthesised summary."));
-        var phase = new RewritePhase(stub, about);
+        var phase = new RewritePhase(stub, about, meters);
 
         var rewritten = phase.rewrite(
                 fixture.treeWithAbout(), fixture.selectionWithAbout(), context(),
@@ -189,7 +193,7 @@ class RewritePhaseTest {
         var fixture = strongMatches(1);
         var stub = new StubRewriter(candidate -> RichContent.plain("rewritten"));
         var about = new RecordingAbout(RichContent.plain("A synthesised summary."));
-        var phase = new RewritePhase(stub, about);
+        var phase = new RewritePhase(stub, about, meters);
 
         var first = phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(),
                 context(), RewrittenContent.none());
@@ -212,7 +216,7 @@ class RewritePhaseTest {
         var fixture = strongMatches(3);
         var phase = new RewritePhase(
                 new StubRewriter(candidate -> RichContent.plain("rewritten")),
-                new RecordingAbout(RichContent.plain("A synthesised summary.")));
+                new RecordingAbout(RichContent.plain("A synthesised summary.")), meters);
 
         var outcome = phase.rewrite(fixture.treeWithAbout(), fixture.selectionWithAbout(),
                 context(), RewrittenContent.none());
@@ -239,6 +243,69 @@ class RewritePhaseTest {
         assertThat(outcome.content().isEmpty()).isTrue();
         assertThat(outcome.tally().refusals())
                 .containsEntry(RewriteIssue.UNSUPPORTED_CLAIM, 5);
+    }
+
+    // -- Bolum 48.3: the same counts, as a rate --------------------------
+
+    /**
+     * <strong>The rejection rate needs both halves.</strong> The trace is a
+     * record of one generation; this is the number an operator watches, and a
+     * count of refusals with no count of attempts is unreadable — five
+     * refusals is a broken prompt on a quiet day and nothing at all on a busy
+     * one.
+     */
+    @Test
+    void thepassIsCountedAsAttemptsAndRefusals() {
+        var fixture = strongMatches(5);
+
+        new RewritePhase(new StubRewriter(candidate -> null), new StubAbout(), meters)
+                .rewrite(fixture.tree(), fixture.selection(), context(),
+                        RewrittenContent.none());
+
+        assertThat(counted(RewritePhase.ATTEMPTS, "prompt", BulletRewriteService.PROMPT_ID))
+                .isEqualTo(5);
+        assertThat(counted(RewritePhase.REFUSALS, "issue", "unsupported_claim"))
+                .isEqualTo(5);
+    }
+
+    /**
+     * The reason is a tag, which is what makes it a distribution. Without it
+     * the number says a validator is refusing things and nothing about whether
+     * to look at the prompt or at the profile.
+     */
+    @Test
+    void eachreasonIsCountedUnderItsOwnName() {
+        var fixture = strongMatches(2);
+
+        new RewritePhase(new StubRewriter(candidate -> null), new StubAbout(), meters)
+                .rewrite(fixture.tree(), fixture.selection(), context(),
+                        RewrittenContent.none());
+
+        assertThat(meters.find(RewritePhase.REFUSALS).counters())
+                .allSatisfy(counter ->
+                        assertThat(counter.getId().getTag("issue")).isNotBlank());
+    }
+
+    /**
+     * The compile loop's second pass is counted again, because it is calls
+     * that were really made. The trace adds them up for one generation; a rate
+     * over all generations wants them as they happen.
+     */
+    @Test
+    void asecondPassIsCountedAgain() {
+        var fixture = strongMatches(2);
+        var phase = new RewritePhase(new StubRewriter(candidate -> null), new StubAbout(), meters);
+
+        var first = phase.rewrite(
+                fixture.tree(), fixture.selection(), context(), RewrittenContent.none());
+        phase.rewrite(fixture.tree(), fixture.selection(), context(), first.content());
+
+        assertThat(counted(RewritePhase.ATTEMPTS, "prompt", BulletRewriteService.PROMPT_ID))
+                .isEqualTo(4);
+    }
+
+    private double counted(String meter, String tag, String value) {
+        return meters.get(meter).tag(tag, value).counter().count();
     }
 
     /** A pass with nothing to do spent nothing, and says so. */
@@ -281,8 +348,11 @@ class RewritePhaseTest {
      * Bolum 21.7 has its own tests; here it would be a ninth task nothing in
      * the fixture has a paragraph for.
      */
+    private static final io.micrometer.core.instrument.simple.SimpleMeterRegistry METERS =
+            new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+
     private static RewritePhase phaseOf(BulletRewriteService rewriter) {
-        return new RewritePhase(rewriter, new StubAbout());
+        return new RewritePhase(rewriter, new StubAbout(), METERS);
     }
 
     private static RewriteContext context() {

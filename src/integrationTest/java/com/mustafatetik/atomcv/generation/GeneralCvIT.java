@@ -167,6 +167,9 @@ class GeneralCvIT extends AbstractLatexTest {
      * and the download deliberately goes back through HTTP: re-rendering the
      * stored content snapshot is the part that has never met real TeX before.
      */
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.mustafatetik.atomcv.jobs.workers.JobTelemetry telemetry;
+
     private byte[] generateAndDownload() throws Exception {
         String accepted = mvc.perform(post("/api/v1/generations")
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
@@ -177,7 +180,7 @@ class GeneralCvIT extends AbstractLatexTest {
                 queue, com.mustafatetik.atomcv.jobs.queue.JobEvents.NONE, handlers,
                 new com.mustafatetik.atomcv.jobs.workers.JobWorkerProperties(
                         true, 1, null, null, null, java.time.Duration.ofSeconds(5)),
-                clock);
+                clock, telemetry);
         assertThat(worker.runOne()).as("the queued generation was taken").isTrue();
 
         String jobId = com.jayway.jsonpath.JsonPath.read(accepted, "$.jobId");

@@ -337,7 +337,8 @@ class JobAnalysisPhaseTest {
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of(provider.id())),
                         Map.of(), Duration.ofSeconds(30), 0),
-                event -> { }, CLOCK, Optional.ofNullable(recorder));
+                event -> { }, CLOCK, Optional.ofNullable(recorder),
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
         return new JobAnalysisPhase(
                 new PromptRegistry(
                         new PromptProperties(Map.of("job_analysis", "v1"), Map.of()), JSON),

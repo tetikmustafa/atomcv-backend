@@ -39,17 +39,36 @@ public class ProviderChain {
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final Optional<AnswerRecorder> recorder;
+    private final io.micrometer.core.instrument.MeterRegistry meters;
 
     public ProviderChain(List<LlmProvider> providers, LlmProperties properties,
                          ApplicationEventPublisher events, Clock clock,
-                         Optional<AnswerRecorder> recorder) {
+                         Optional<AnswerRecorder> recorder,
+                         io.micrometer.core.instrument.MeterRegistry meters) {
         this.providers = providers.stream().collect(LinkedHashMap::new,
                 (map, provider) -> map.put(provider.id(), provider), Map::putAll);
         this.properties = properties;
         this.events = events;
         this.clock = clock;
         this.recorder = recorder;
+        this.meters = meters;
     }
+
+    /**
+     * Bolum 48.3's "Saglayici fallback orani".
+     *
+     * <p>One counter with a position tag rather than two counters: a rate needs
+     * a denominator, and the denominator here is every answer the chain
+     * produced -- which is what the two tag values add up to. Counted at the
+     * answer rather than at the attempt, because an attempt that failed on a
+     * key nobody configured is not a fallback (Bolum 27.3 skips those without
+     * counting them), and a rate built on attempts would climb every time a
+     * deployment ran with fewer providers than the chain names.
+     */
+    static final String CHAIN_ANSWERS = "llm.chain.answers";
+
+    /** The walk that ran out of providers, which is the other end of the same rate. */
+    static final String CHAIN_EXHAUSTED = "llm.chain.exhausted";
 
     public <T> Result<LlmResponse<T>> call(StructuredRequest<T> request) {
         var tried = new ArrayList<String>();
@@ -78,6 +97,9 @@ public class ProviderChain {
                 // and the request that earned it are both in scope. Absent in
                 // every profile but local-record.
                 recorder.ifPresent(r -> r.record(request, answered.response().data()));
+                meters.counter(CHAIN_ANSWERS,
+                        "tier", request.preferredTier().name().toLowerCase(java.util.Locale.ROOT),
+                        "position", tried.size() == 1 ? "primary" : "fallback").increment();
                 return Result.ok(answered.response());
             }
 
@@ -91,6 +113,9 @@ public class ProviderChain {
             }
         }
 
+        meters.counter(CHAIN_EXHAUSTED,
+                "tier", request.preferredTier().name().toLowerCase(java.util.Locale.ROOT))
+                .increment();
         return Result.err(new PipelineError.AllProvidersUnavailable(tried));
     }
 
