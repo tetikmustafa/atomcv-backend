@@ -421,7 +421,23 @@ göstermediğini kendisi hatırlamak zorunda kalırdı.
 
 Rol yapısı basit: `USER`, `ADMIN`. Asıl mesele rol değil, **kaynak sahipliği** — o da repository katmanında çözülüyor.
 
+> **Sapma (denetim, 2026-09-15) — böyle bir uç yok ve olmamalı.** Aşağıdaki
+> parçacık bir HTTP ucu gösteriyor; § 48.4'ün izni **çevrimdışı** bir okuyucuyla
+> kullanılıyor: `scripts/support-read.sh` ile `application-support.yml`, ve
+> `SupportGrantLookup` ArchUnit kuralıyla `..api..`'den erişilemez tutuluyor.
+>
+> Gerekçe mutlak kural 3'ün kendisi: kapsamsız okuma yapabilen bir uç, o
+> kapsamsızlığı bir path değişkenine bağlar. Bir yönetici ucunun kendi rolü ve
+> kendi grant kontrolü olur — ve ikisi de, IDOR savunmasının yapısal olmaktan
+> çıkıp yeniden hatırlanması gereken bir şeye dönüştüğü yerdir. Çevrimdışı
+> okuyucu aynı izni okuyor, `accessed_at`'i aynı şekilde damgalıyor, ve
+> tarayıcıdan erişilebilen hiçbir yüzeyi yok.
+>
+> `USER`/`ADMIN` rolü oturumda duruyor ve bugün hiçbir uç onu okumuyor. Rolü
+> okuyan ilk uç yazıldığında bu paragraf yeniden açılır.
+
 ```java
+// Uygulanmadı — yukarıdaki sapmaya bakın.
 @AdminOnly
 @RequiresSupportGrant
 @GetMapping("/api/v1/admin/generations/{id}/content")

@@ -65,23 +65,18 @@ POST   /api/v1/profile/atoms/{id}/tags
 DELETE /api/v1/profile/atoms/{id}/tags/{tagId}
 
 ── Ingestion ───────────────────────────────────────
-POST   /api/v1/ingestion/cv                 multipart → job
-POST   /api/v1/ingestion/cv/{jobId}/apply   gözden geçirme onayı
-POST   /api/v1/ingestion/github/connect
-POST   /api/v1/ingestion/github/apply
+POST   /api/v1/profile/import               multipart → job (F-029)
+POST   /api/v1/profile/github/suggestions   önerir, yazmaz
+POST   /api/v1/profile/github/apply         seçilenleri yazar
 
 ── Şablon ──────────────────────────────────────────
-GET    /api/v1/templates
-GET    /api/v1/customizations
-POST   /api/v1/customizations
-PATCH  /api/v1/customizations/{id}
-DELETE /api/v1/customizations/{id}
+                                            (uç yok — § 35.2.1)
 
 ── Üretim ──────────────────────────────────────────
 POST   /api/v1/generations                  → 202 + job
 GET    /api/v1/generations
 GET    /api/v1/generations/{id}
-GET    /api/v1/generations/{id}/download?format=pdf|docx|source
+GET    /api/v1/generations/{id}/download?format=pdf|docx|html|source
 GET    /api/v1/generations/{id}/selection   tartılan satırlar, metniyle
 POST   /api/v1/generations/{id}/edits       Faz G: doğal dil
 POST   /api/v1/generations/{id}/selection   manuel toggle
@@ -101,12 +96,44 @@ DELETE /api/v1/applications/{id}
 
 ── Hesap ───────────────────────────────────────────
 GET    /api/v1/account/usage
-PATCH  /api/v1/account/email-preferences
+GET    /api/v1/account                      ayarlar
+PATCH  /api/v1/account                      ayarlar (§ 57.7'nin tercihi)
 DELETE /api/v1/account                      unutulma hakkı
+POST   /api/v1/email/unsubscribe            oturumsuz, opak jetonla
 
 ── Webhook ─────────────────────────────────────────
-POST   /webhooks/resend                     imza doğrulamalı
+POST   /api/v1/webhooks/resend              imza doğrulamalı
 ```
+
+#### 35.2.1 Haritanın yazıldığı gibi inmediği beş yer (denetim, 2026-09-15)
+
+Kaynak haritası ilk taslaktan beri değişmedi; kod beş yerde ondan ayrıldı ve
+ayrımların hiçbiri kayıtlı değildi. Yukarısı düzeltilmiş hâli, aşağısı
+gerekçeleri.
+
+| Haritada | Gerçekte | Neden |
+|---|---|---|
+| `POST /ingestion/cv` + `/{jobId}/apply` | `POST /profile/import` | `F-029`. Yapılan şey bir profile yazmak; ve gözden geçirme ayrı bir uç değil, § 31.6'nın ekranı profilin kendi uçlarını kullanıyor |
+| `/ingestion/github/connect` \| `/apply` | `/profile/github/suggestions` \| `/apply` | Aynı karar. **`connect` diye bir adım yok**: § 31.8 yalnız public veri okuyor, yani bağlanacak bir şey ve saklanacak bir token yok (§ 40.6.1) |
+| `PATCH /account/email-preferences` | `PATCH /account` | § 57.7'nin kararı: tercih hesabın bir ayarı, ve hesabın tek bir ayar nesnesi var |
+| `POST /webhooks/resend` | `POST /api/v1/webhooks/resend` | Tek bir önek. Sürümsüz bir yol, sürümlenmiş bir API'nin yanında ikinci bir sözleşme olurdu |
+| `GET /templates`, `/customizations` × 4 | **yok** | Aşağıda |
+
+**`template_customizations` tablosuna hiçbir şey yazmıyor, ve beş uç bunun
+için vardı.** Katman B'nin ayarları (§ 33.2) `profiles.preferences.appearance`
+içinde yaşıyor: tercih bir ayar formu, kişi başına bir tane, ve onu ayrı bir
+kaynak yapmak — kendi id'si, kendi ETag'i, kendi listesi — kimsenin istemediği
+bir şeyin CRUD'u olurdu. § 14.5 bu sapmanın yarısını zaten kaydetmişti
+(*"işaret edilecek bir `template_customizations` satırı yok"*); bu, öteki
+yarısı.
+
+**`GET /templates`'in işini `capabilities.allowedTemplates` yapıyor** (§ 35.7)
+ve orada yapması daha doğru: liste kayıtta gerçekten var olanları taşıyor, ve
+istemci onu zaten her açılışta okuduğu cevapta alıyor.
+
+**Tablo satır kazandığı gün beş uç da gerekir.** O gün geldiğinde bu blok
+silinir; bugün var olmayan bir kaynağın CRUD'unu yayımlamak, çağıranı
+hiçbir şeye bağlamayan bir id'ye bağlamak olurdu.
 
 > **Entry tarih aralığı sıralı olmak zorunda (F-002).** `startDate` ve `endDate`
 > ikisi de doluysa `endDate >= startDate`; ihlal **400 `VALIDATION_FAILED`** +
@@ -192,8 +219,9 @@ bir tane var.
 
 > **Düzeltme (`F-009`).** Yukarıdaki gövde **düzdür**; `directives` ve
 > `options` diye iç içe nesneler yoktur. Alanlar: `jobDescription?`,
-> `acknowledgePreflight`, `maxPages?`, `language?` — ve **`generalMode` diye
-> bir alan yoktur.** Bir süre şemada göründü, çünkü `GenerationRequest`
+> `acknowledgePreflight`, `maxPages?`, `language?`, `coverLetter?`,
+> `challengeToken?` ve `emphasize?` (§ 18.7.1, denetim 2026-09-15) — ve
+> **`generalMode` diye bir alan yoktur.** Bir süre şemada göründü, çünkü `GenerationRequest`
 > üzerindeki `isGeneralMode()` türetilmiş metodunu Jackson bir alan sandı;
 > `@JsonIgnore` ile kapatıldı. Genel modu isteyen tek şey `jobDescription`'ın
 > yokluğudur, ikinci bir bayrak iki ayrı "genel" tanımı doğururdu.

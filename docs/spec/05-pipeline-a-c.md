@@ -271,6 +271,35 @@ public record GenerationDirectives(
 
 **Neden JobAnalysis'ten ayrı:** İlan analizi cache'lenebilir (aynı ilan → aynı analiz), kullanıcı yönlendirmeleri her üretimde farklı. Karıştırılırsa cache bozulur.
 
+#### 18.7.1 Dört alanın üçü indi (denetim, 2026-09-15)
+
+**`emphasize` Faz B'ye bağlandı, ve bir ağırlık olarak değil bir terim
+olarak.** Kişinin öne çıkarılmasını istediği terimler ilanın kendi
+`keywords`'üne ve `tagsOf(posting)`'ine katılıyor; § 19.1'in formülü
+değişmiyor — aynı dört bileşen, aynı dört ağırlık, bir tık daha büyük bir
+küme. Yeni bir ağırlık ürünün her skorunu değiştirir ve
+`engine_version.scoringWeights`'i kendisinden önceki her üretim için yalan
+yapardı; bu, **tek bir üretimin girdisini** değiştiriyor, ki bir yönlendirme
+tam olarak odur.
+
+**Karşılığı olmayan bir terim de sayıları oynatıyor, ve bu doğru.** Keyword
+kapsaması terimlerin bir kesri (§ 19.2), yani eşleşmeyen bir terim paydayı
+büyütüyor ve bütün skorlar birlikte düşüyor — **sıra aynı kalıyor**. Vurgu bir
+CV'yi yeniden sıralar; olmayan bir alakayı icat etmez.
+
+Terimler bir kez ve `GenerationDirectives` içinde kanonikleşiyor (`Locale.ROOT`,
+mutlak kural 7). En çok on terim, her biri en çok 60 karakter: ötesi
+sıralamayı ilanın değil okuyanın listesi yapardı.
+
+**`freeformNote` inmedi, ve sebebi kaydedilmeli.** § 18.7 alanı adlandırıyor;
+**hiçbir bölüm onu kimin okuduğunu söylemiyor.** Tek makul okuyucu Faz D'nin
+prompt'u (§ 21.4), oraya bir cümle eklemek yeni bir prompt sürümü demek
+(§ 53.2), ve EK C.3 aktif sürümü değiştirmeden önce eval koşulmasını istiyor —
+o da gerçek bir sağlayıcı anahtarı. Uydurmak yerine kaydedildi; § 18.4.1 aynı
+şekildeki soruya aynı cevabı vermişti.
+
+`excludeAtoms`/`includeAtoms` § 24.4'ten beri zaten çalışıyor.
+
 ---
 
 ## 19. Faz B — Alaka Skorlama

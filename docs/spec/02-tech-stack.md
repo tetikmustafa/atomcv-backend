@@ -23,7 +23,7 @@
 | **Spring RestClient** | HTTP istemcisi | LLM API'lerine raw REST çağrıları için; SDK bağımlılığı yok |
 | **Apache PDFBox** | PDF metin çıkarımı | En olgun Java PDF kütüphanesi; **FontBox** ile TTF/OTF metrik okuma da bedava geliyor |
 | **Apache POI** | DOCX okuma/yazma | Java'da standart |
-| **Thymeleaf** | E-posta şablonları | Sunucu tarafında render; ayrı JS ekosistemi gerektirmiyor |
+| ~~Thymeleaf~~ → düz Java | E-posta şablonları | **Alınmadı (denetim, 2026-09-15).** § 57.7 listeyi kapalı tuttu: üç e-posta var (sihirli bağlantı, hoş geldin, silme onayı), her biri bir konu ve iki gövde. Bir şablon motoru, üç sınıfın döndürdüğü dizeler için ikinci bir dil, ikinci bir dosya düzeni ve çözülecek ikinci bir yerelleştirme yolu olurdu. `EmailMessage` metni ve HTML'i birlikte zorunlu tutuyor (§ 57.7), ki motorun sağlayacağı garanti oydu |
 | **springdoc-openapi** | API şeması üretimi | Frontend tip üretiminin kaynağı |
 
 **Neden .NET değil:** .NET 9 teknik olarak rekabetçi (daha düşük bellek, daha modern dil ergonomisi). Ancak: (a) Apache PDFBox/POI'nin doküman işleme olgunluğu .NET karşılıklarından belirgin üstün ve bu projenin çekirdek ihtiyacı, (b) virtual threads bu I/O-bound iş yükü için async/await'ten daha az bulaşıcı, (c) geliştiricinin mevcut yetkinliği — karmaşık bir sistemi öğrenirken inşa etmenin bilişsel maliyeti asıl problemlerden çalar.
