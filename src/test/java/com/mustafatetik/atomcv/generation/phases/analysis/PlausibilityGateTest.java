@@ -72,7 +72,7 @@ class PlausibilityGateTest {
                 .isEqualTo(Verdict.LOW_CONFIDENCE);
     }
 
-    // ── The length audit (Bolum 18.3, structural half) ───────────────────
+    // ── The length audit: the structural half of the fence ───────────────
 
     /**
      * An injected instruction does not come back as a shorter answer. It comes

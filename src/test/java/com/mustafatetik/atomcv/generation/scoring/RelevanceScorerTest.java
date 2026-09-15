@@ -19,7 +19,7 @@ class RelevanceScorerTest {
 
     private static final Offset<Double> EPSILON = Offset.offset(1e-9);
 
-    // ── Bolum 19.3: no threshold, ever ───────────────────────────────────
+    // ── No threshold, ever ──────────────────────────────────────────────
 
     /**
      * The rule that makes "no relevant content found" impossible. Someone
@@ -38,11 +38,11 @@ class RelevanceScorerTest {
         assertThat(ranked).allSatisfy(scored -> assertThat(scored.score()).isLessThan(0.5));
     }
 
-    // ── Bolum 19.6: determinism ──────────────────────────────────────────
+    // ── Determinism ─────────────────────────────────────────────────────
 
     /**
-     * Bolum 19.6 calls the tie-break mandatory, and this is why: without it
-     * the same profile and the same posting produce a different CV run to run.
+     * The tie-break is mandatory, and this is why: without it the same profile
+     * and the same posting produce a different CV run to run.
      */
     @Test
     void tiedAtomsComeBackInTheSameOrderWhateverTheInputOrder() {
@@ -73,7 +73,7 @@ class RelevanceScorerTest {
                 .isEqualTo(RelevanceScorer.rank(atoms, backendPosting(), ScoringWeights.DEFAULT));
     }
 
-    // ── Bolum 19.1: the importance multiplier ────────────────────────────
+    // ── The importance multiplier ───────────────────────────────────────
 
     @Test
     void importanceScalesTheScoreBetweenHalfAndOneAndAHalf() {
@@ -150,11 +150,11 @@ class RelevanceScorerTest {
                 .isCloseTo(0.4, EPSILON);
     }
 
-    // ── P7: the reason, not only the rank ────────────────────────────────
+    // ── The reason, not only the rank ───────────────────────────────────
 
     /**
-     * <strong>The evidence behind a score.</strong> P7 asks that the grounds
-     * of every choice be shown and names matched keywords among them; the two
+     * <strong>The evidence behind a score.</strong> The grounds of every
+     * choice have to be shown and names matched keywords among them; the two
      * comparisons above already decide this and used to keep only the count.
      * "Matched 2 of 8" is a grade — "go, postgres" is a reason, and the person
      * can act on the second.
@@ -218,13 +218,13 @@ class RelevanceScorerTest {
         }
     }
 
-    // ── Bolum 19.4: what decides between two close atoms ─────────────────
+    // ── What decides between two close atoms ────────────────────────────
 
     /**
      * Relevance dominates. A bucket apart is a bucket apart, whatever the
      * secondary score says — otherwise a recent irrelevant bullet would climb
-     * over an older relevant one, which is the failure Bolum 19 exists to
-     * prevent.
+     * over an older relevant one, which is the failure relevance scoring
+     * exists to prevent.
      */
     @Test
     void abetterRelevanceScoreWinsHoweverPoorTheSecondaryOne() {
@@ -235,9 +235,9 @@ class RelevanceScorerTest {
     }
 
     /**
-     * Within one bucket, Bolum 19.4 decides: recency, importance, impact,
-     * verification. Two atoms this close are not meaningfully different on
-     * relevance, and the weights of Bolum 19.1 are tuned to one decimal.
+     * Within one bucket, the secondary criteria decide: recency, importance,
+     * impact, verification. Two atoms this close are not meaningfully
+     * different on relevance, and the weights are tuned to one decimal.
      */
     @Test
     void withinOneBucketTheGeneralModeCriteriaDecide() {
@@ -272,9 +272,10 @@ class RelevanceScorerTest {
     }
 
     /**
-     * Bolum 19.6 is still mandatory, and it is still last. It is also reached
-     * far less often now — ids are regenerated on every import, so an ordering
-     * that leaned on them changed when the same content was imported twice.
+     * The id tie-break is still mandatory, and it is still last. It is also
+     * reached far less often now — ids are regenerated on every import, so an
+     * ordering that leaned on them changed when the same content was imported
+     * twice.
      */
     @Test
     void theidIsTheLastResortAndStillBreaksATrueTie() {
@@ -360,7 +361,7 @@ class RelevanceScorerTest {
     }
 
     /**
-     * Bolum 28.2 embeds on a queue after the fact, so an atom written a moment
+     * Embedding happens on a queue after the fact, so an atom written a moment
      * ago has no vector. Scoring that as maximally unrelated would bury
      * exactly the content the user just decided mattered.
      */
@@ -379,7 +380,7 @@ class RelevanceScorerTest {
                 .isCloseTo(0.5, EPSILON);
     }
 
-    // ── Bolum 28.4: scoring without the embedding service ────────────────
+    // ── Scoring without the embedding service ───────────────────────────
 
     /**
      * The embedding service is down. Quality drops and the product keeps

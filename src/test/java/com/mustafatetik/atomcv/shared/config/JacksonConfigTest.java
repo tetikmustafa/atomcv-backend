@@ -47,8 +47,9 @@ class JacksonConfigTest {
 
     @Test
     void thelongestJobDescriptionTheApiAcceptsIsWellInsideTheCeiling() {
-        // Bolum 18.1 caps a posting at 20,000 characters; the limit exists for
-        // documents this product would never produce, not for the ones it does.
+        // A posting is capped at 20,000 characters; the limit exists for
+        // documents this product would never produce, not for the ones it
+        // does.
         assertThatCode(() -> mapper.readTree(stringOf(20_000)))
                 .doesNotThrowAnyException();
     }

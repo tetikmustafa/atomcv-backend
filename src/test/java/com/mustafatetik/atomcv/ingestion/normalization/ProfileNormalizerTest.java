@@ -116,12 +116,12 @@ class ProfileNormalizerTest {
     // -- where a warning happened (F-018) ----------------------------------
 
     /**
-     * <strong>The path names the section, and every section used to be
-     * section zero.</strong> The form this replaced was
-     * {@code sections.entries[i]} with no section in it at all, so a warning
-     * on Education's first row and one on Experience's first row were written
-     * down as the same place. The frontend could not open the right one, which
-     * is half of what Bolum 31.6 asks for.
+     * <strong>The path names the section, and every section used to be section
+     * zero.</strong> The form this replaced was {@code sections.entries[i]}
+     * with no section in it at all, so a warning on Education's first row and
+     * one on Experience's first row were written down as the same place. The
+     * frontend could not open the right one, which is half of what the review
+     * screen asks for.
      */
     @Test
     void awarningNamesTheSectionItHappenedIn() {
@@ -269,8 +269,8 @@ class ProfileNormalizerTest {
     }
 
     /**
-     * Bolum 21 reads an absent English variant as "the source is the English".
-     * A duplicate would be a second row to keep in step for no gain.
+     * An absent English variant reads as "the source is the English". A
+     * duplicate would be a second row to keep in step for no gain.
      */
     @Test
     void anEnglishCvGetsNoSecondCopyOfItself() {

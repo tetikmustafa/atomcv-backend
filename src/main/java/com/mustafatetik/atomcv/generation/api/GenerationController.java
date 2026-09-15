@@ -294,11 +294,11 @@ public class GenerationController {
             description = """
                     Carries Faz F's coverage report: how many of the posting's                     required and preferred skills the finished page actually                     says, which ones are missing, and a level over the counts.
 
-                    **Counts, never a percentage.** Bolum 23.3 forbids one by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.
+                    **Counts, never a percentage.** One is forbidden by                     name — the measurement compares skill names, and a figure                     to the decimal place invites the reader to treat it as a                     hiring probability.
 
                     The report is measured on the atoms that reached the page,                     not on everything that was ranked, so it never credits a                     skill the document does not claim. A general-mode                     generation has no report at all: there was no posting to                     be relevant to.
 
-                    Carries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so Bolum 48.4's 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.""")
+                    Carries `feedback` when this person has judged it, so a                     reload shows the thumb they pressed rather than asking                     again, and so the 48-hour grant stays visible                     the day after it was given. Absent when they have not                     judged it; the comment never travels.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The generation"),
             @ApiResponse(responseCode = "404",
@@ -350,7 +350,7 @@ public class GenerationController {
             summary = "What this generation weighed, and what reached the page",
             operationId = "readSelection",
             description = """
-                    Bolum 24.4's toggle, as a list a screen can draw (F-031).
+                    The manual toggle, as a list a screen can draw (F-031).
 
                     Every atom this generation ranked is here, the ones that
                     reached the page first and the ones that did not after
@@ -404,11 +404,11 @@ public class GenerationController {
 
                     No LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.
 
-                    `format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.
+                    `format=docx` writes the same content as a Word                     document. **The page limit is approximate there**: the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.
 
                     `format=html` writes one self-contained file: no                     stylesheet, no font, no script, nothing fetched. **The                     page limit does not apply at all there** -- HTML has no                     page. It is for pasting into a form that wants formatted                     text, and for anything that reads structure rather than                     layout.
 
-                    `format=source` is the LaTeX the PDF was compiled from.                     Bolum 33.1 refuses to let anyone *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.""")
+                    `format=source` is the LaTeX the PDF was compiled from.                     Nobody is allowed to *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "The document",
                     content = @Content(mediaType = MediaType.APPLICATION_PDF_VALUE)),
@@ -500,7 +500,7 @@ public class GenerationController {
             operationId = "editSelection",
             summary = "Keep or drop atoms by hand, and re-make the CV",
             description = """
-                    Bolum 24.4. An edit applies to the **selection state**, \
+                    An edit applies to the **selection state**, \
                     never to the rendered document — which is what keeps the \
                     page limit true after twenty of them: every edit goes \
                     back through the selection that made the promise.
@@ -589,7 +589,7 @@ public class GenerationController {
             operationId = "editBySentence",
             summary = "Say what should change, in your own words",
             description = """
-                    Bolum 24.2, and the other half of the toggle next door. \
+                    The natural-language half, and the other half of the toggle next door. \
                     One sentence is read into a change of **which atoms are on \
                     the page**, and the CV is re-made from its own selection \
                     state — so the page limit is re-checked and still holds, \
@@ -664,7 +664,7 @@ public class GenerationController {
             operationId = "regenerateCoverLetter",
             summary = "Write a covering letter for a generation, or another one",
             description = """
-                    Bolum 34. The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.
+                    The letter is written from the atoms that                     reached the page, which is what makes it consistent with                     the CV that was sent — not from today's profile, and not                     from anything the model knows about the company.
 
                     Off the main generation path on purpose: it is a second                     LLM call and most people want a CV. Ask for it here, or                     set `coverLetter: true` when generating.
 
@@ -746,10 +746,10 @@ public class GenerationController {
             operationId = "archiveGeneration",
             summary = "Mark a generation as one to keep",
             description = """
-                    Bolum 13 pairs this mark with how long a generation's
+                    The schema pairs this mark with how long a generation's
                     artifact is kept: fourteen days ordinarily, for good when
                     it is archived. **No artifact is stored yet** — a download
-                    re-renders from the stored snapshot (EK D.6.3) and nothing
+                    re-renders from the stored snapshot and nothing
                     expires in either direction — so today the mark changes no
                     retention and is the owner's own mark on their history. It
                     is the row the retention rule reads on the day object
@@ -757,7 +757,7 @@ public class GenerationController {
 
                     The same endpoint takes it off: send `archived: false`.
                     A mark that cannot be removed is a trap, and the support
-                    grant of Bolum 48.4 answered the same question the same
+                    support grant answered the same question the same
                     way. An omitted body archives, because that is what the
                     path says.
 
@@ -802,7 +802,7 @@ public class GenerationController {
             description = """
                     A thumb, and everything after it is optional. One verdict                     per person per generation: pressing the other one changes                     your mind rather than adding a second opinion.
 
-                    `contentGranted` is Bolum 48.4's consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     how long it has left, and whether anybody has read it —                     `accessedAt` is null until the offline support reader                     stamps it, which is the only thing that can (B-078).                     Sending `contentGranted: false` later                     withdraws a grant that is still open.
+                    `contentGranted` is the support consent. Ticking it lets                     the CV's own content be read for forty-eight hours to work                     out what went wrong — everything else in this product is                     diagnosed from shapes and counts, and this is the one door                     through that. The response echoes the grant back,                     how long it has left, and whether anybody has read it —                     `accessedAt` is null until the offline support reader                     stamps it, which is the only thing that can (B-078).                     Sending `contentGranted: false` later                     withdraws a grant that is still open.
 
                     The comment is stored and never logged. It is not sent                     back either: you wrote it, you have it.""")
     @ApiResponses({

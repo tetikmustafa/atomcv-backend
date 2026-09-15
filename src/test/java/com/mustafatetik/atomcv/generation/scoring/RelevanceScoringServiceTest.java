@@ -88,7 +88,7 @@ class RelevanceScoringServiceTest {
     }
 
     /**
-     * The user is not told — Bolum 28.4 calls it an internal detail — but a
+     * The user is not told, because it is an internal detail — but a
      * deployment that scored without vectors for a week would otherwise look
      * like a prompt problem.
      */
@@ -141,9 +141,9 @@ class RelevanceScoringServiceTest {
      * "kafka" is a person saying the posting forgot to.
      *
      * <p><strong>The formula is untouched.</strong> The term joins the
-     * posting's keywords and tags; the four weights of Bolum 19.1 are the same
-     * four. A directive changes the input to one generation, which is the
-     * whole reason Bolum 18.7 keeps it out of the cached analysis.
+     * posting's keywords and tags; the four weights are the same four. A
+     * directive changes the input to one generation, which is the whole reason
+     * it is kept out of the cached analysis.
      */
     @Test
     void anemphasisedTermLiftsTheAtomThatCarriesIt() {

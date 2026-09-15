@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @param text     the translated sentence
  * @param emphasis substrings of {@code text} worth marking, quoted exactly —
- *                 the same first-match rule Bolum 31.5 uses turns them into
+ *                 the same first-match rule normalisation uses turns them into
  *                 runs, so a paraphrase produces no bold at all
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -45,8 +45,8 @@ import org.mockito.ArgumentCaptor;
  *
  * <p>Two things are worth proving here and nowhere else: that a generation
  * record describes the run that actually happened rather than a re-derived
- * one, and that the retry decision Bolum 30.5 makes from the error reaches the
- * queue as a boolean.
+ * one, and that the retry decision made from the error reaches the queue as a
+ * boolean.
  */
 class GenerationJobHandlerTest {
 

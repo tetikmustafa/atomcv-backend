@@ -30,8 +30,7 @@ import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import java.util.Map;
 
 /**
- * Three of the four tests Bolum 51.2 calls the most valuable ones, run across
- * the golden set.
+ * Three of the four most valuable tests, run across the golden set.
  *
  * <p>No database and no compiler: what is under test is the arithmetic that
  * makes the page promise, and it has to hold for every profile in the set at
@@ -236,11 +235,11 @@ class GoldenSelectionTest {
     /**
      * A re-read is a re-import, and it used to change the answer.
      *
-     * <p>Ids are minted as the fixture is read and Bolum 19.6 broke ties by
-     * id, so two atoms that scored <em>and</em> cost exactly the same swapped
-     * places between reads: the same CV uploaded twice produced two different
-     * pages. This case was written around that defect — it asserted only that
-     * the page was as full and held as many atoms, which was all that could be
+     * <p>Ids are minted as the fixture is read and ties were broken by id, so
+     * two atoms that scored <em>and</em> cost exactly the same swapped places
+     * between reads: the same CV uploaded twice produced two different pages.
+     * This case was written around that defect — it asserted only that the
+     * page was as full and held as many atoms, which was all that could be
      * asserted at the time.
      *
      * <p>The tie-break is the wording's own digest now, so the honest assertion

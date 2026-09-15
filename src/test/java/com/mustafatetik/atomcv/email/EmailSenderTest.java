@@ -94,9 +94,9 @@ class EmailSenderTest {
     }
 
     /**
-     * A refusal is reported, never thrown. Bolum 40.4 needs the magic link's
-     * answer to be the same whatever happened, and an exception escaping here
-     * would change it.
+     * A refusal is reported, never thrown. The magic link's answer has to be
+     * the same whatever happened, and an exception escaping here would change
+     * it.
      */
     @Test
     void aRefusedSendIsFalseAndNotAnException() {

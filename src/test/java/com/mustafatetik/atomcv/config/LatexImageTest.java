@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
  *
  * <pre>xelatex -ini -jobname="cvfmt" "&amp;xelatex preamble.tex\dump"</pre>
  *
- * — and Bolum 52.4 repeats it with "1-2sn kazanç" beside it. <strong>It cannot
- * work under XeTeX.</strong> Measured against the real image on 2026-09-15, the
- * engine refuses it outright:
+ * — and it is repeated elsewhere with a claimed one-to-two-second saving
+ * beside it. <strong>It cannot work under XeTeX.</strong> Measured against the
+ * real image on 2026-09-15, the engine refuses it outright:
  *
  * <pre>! Can't \dump a format with native fonts or font-mappings.</pre>
  *
@@ -52,7 +52,7 @@ class LatexImageTest {
             Path.of("docker", "latex", "server", "CompileServer.java");
 
     private static final String WHY = """
-            Bolum 29.2's snippet does not work under XeTeX: the engine answers \
+            The documented snippet does not work under XeTeX: the engine answers \
             "Can't \\dump a format with native fonts or font-mappings", because \
             the xelatex format has already loaded native fonts through TU. The \
             dump writes a .fmt anyway and the first compile that reads it fails \
@@ -71,13 +71,14 @@ class LatexImageTest {
     }
 
     /**
-     * The half of Bolum 52.4 that is real and worth keeping: the font cache is
-     * built once at build time rather than by the first compile that needs it.
+     * The half of that advice that is real and worth keeping: the font cache
+     * is built once at build time rather than by the first compile that needs
+     * it.
      */
     @Test
     void thefontCacheIsBuiltIntoTheImage() {
         assertThat(read())
-                .as("fc-cache at build time (Bolum 52.4), not on the first render")
+                .as("fc-cache at build time, not on the first render")
                 .contains("fc-cache");
     }
 

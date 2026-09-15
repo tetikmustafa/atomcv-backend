@@ -104,7 +104,7 @@ public final class ReplayRun {
                 The export comes from the support reader, under the grant its owner gave:
                   ./scripts/support-read.sh <generation-id> --export=export.json
 
-                Faz E is what replays. Faz B and Faz C are pure too (Bolum 48.5) but
+                Faz E is what replays. Faz B and Faz C are pure too but
                 their inputs -- a scored tree, and a selection request carrying every
                 atom's measured height -- are not stored anywhere, so there is nothing
                 to replay them from.""";

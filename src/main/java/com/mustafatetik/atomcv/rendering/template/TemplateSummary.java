@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /**
  * One template, as {@code GET /templates} publishes it.
  *
- * <p><strong>The capacity travels, and it is the point.</strong> Bolum 33.5
- * describes the three by how much they hold — about fifty-four lines a page,
- * fifty, sixty-four — and a chooser that showed three names and no density
- * would be asking somebody to pick blind. The figure published is the measured
- * one: the page's text height in points and the height of one line, both from
- * the same constants the selection budget is built from.
+ * <p><strong>The capacity travels, and it is the point.</strong> The three are
+ * described by how much they hold — about fifty-four lines a page, fifty,
+ * sixty-four — and a chooser that showed three names and no density would be
+ * asking somebody to pick blind. The figure published is the measured one: the
+ * page's text height in points and the height of one line, both from the same
+ * constants the selection budget is built from.
  *
  * <p><strong>No display name and no description.</strong> Those are sentences,
  * they are read by a person, and the rule is that the server sends a key and
@@ -36,7 +36,7 @@ public record TemplateSummary(
         double baselineSkipPt,
 
         @Schema(description = "Roughly how many lines of body text fit a page, "
-                + "which is how Bolum 33.5 describes the three", example = "54")
+                + "which is how the three are described", example = "54")
         int approximateLinesPerPage) {
 
     public static TemplateSummary of(String id) {

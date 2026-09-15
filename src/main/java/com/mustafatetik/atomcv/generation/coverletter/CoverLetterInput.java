@@ -17,7 +17,7 @@ import java.util.List;
  * @param companyName    the employer, from Faz A. May be blank — a posting
  *                       that never named one is ordinary
  * @param evidence       the two or three highest-scoring atoms on the page,
- *                       which Bolum 34.3's body is built from
+ *                       which the body is built from
  * @param allowedSkills  every skill on the page. The letter may name nothing
  *                       else
  * @param allowedMetrics every number on the page, as written
@@ -26,7 +26,7 @@ import java.util.List;
  *                       greeting is checked against, so that a letter cannot
  *                       be addressed to the employer it just read about
  * @param profileYears   how long this person has actually been working,
- *                       computed from the entries' dates. Bolum 34.4 calls a
+ *                       computed from the entries' dates. It calls a
  *                       claim about this the most common fabrication
  * @param companyNote    what the person themselves knows about this employer
  * . User content, and the only source of

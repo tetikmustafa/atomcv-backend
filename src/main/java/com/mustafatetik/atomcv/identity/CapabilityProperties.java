@@ -17,7 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * {@code QuotaProperties}: these are business decisions that will move, and a
  * deployment should be able to open or close one without a release.
  *
- * @param accountLanguages the output languages an account may ask for. Bolum
+ * @param accountLanguages the output languages an account may ask for. The
  *                         38.1 keeps three language axes apart and this is the
  *                         third — the document's language, not the interface's.
  */

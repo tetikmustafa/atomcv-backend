@@ -155,7 +155,7 @@ public class RenderCostService {
 
     /**
      * Which layout each atom's section is set in, so a wording is measured the
-     * way it will be printed (Bolum 22.4, rule 3).
+     * way it will be printed.
      *
      * <p>Two extra reads per measuring job, and they buy the one thing the page
      * guarantee cannot do without: an {@code INLINE_LIST} row is printed with

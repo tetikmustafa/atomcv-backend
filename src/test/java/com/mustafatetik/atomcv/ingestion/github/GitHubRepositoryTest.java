@@ -45,8 +45,8 @@ class GitHubRepositoryTest {
     }
 
     /**
-     * Bolum 31.8 names the shapes: hello-world, test, learning-*. A repository
-     * called after a lesson is a lesson.
+     * The shapes are named: hello-world, test, learning-*. A repository called
+     * after a lesson is a lesson.
      */
     @Test
     void alessonIsNot() {

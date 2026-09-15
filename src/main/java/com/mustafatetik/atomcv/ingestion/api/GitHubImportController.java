@@ -70,9 +70,9 @@ public class GitHubImportController {
             operationId = "suggestFromGitHub",
             summary = "What a public GitHub account has that this profile does not",
             description = """
-                    Reads the public repositories of one account and offers the                     significant ones (Bolum 31.8). Nothing is written.
+                    Reads the public repositories of one account and offers the                     significant ones. Nothing is written.
 
-                    **No permission is asked for and no token is kept.** Only                     public data is read, which is why this needs neither --                     Bolum 40.6.1 deliberately stores no provider token.
+                    **No permission is asked for and no token is kept.** Only                     public data is read, which is why this needs neither --                     no provider token is stored anywhere.
 
                     `username` is optional: without it the account named in the                     profile's own contact block is read, which is the one the                     CV shows an employer.
 
@@ -111,7 +111,7 @@ public class GitHubImportController {
             operationId = "applyGitHubSuggestions",
             summary = "Add the repositories a person picked",
             description = """
-                    Bolum 31.8 ends on "offered, never added automatically", and                     this is the second half of that sentence: nothing is                     written until a request names it.
+                    The rule is "offered, never added automatically", and                     this is the second half of that sentence: nothing is                     written until a request names it.
 
                     A repository this account no longer has is skipped rather                     than refused -- the list is a moment old and a repository                     can be renamed.
 

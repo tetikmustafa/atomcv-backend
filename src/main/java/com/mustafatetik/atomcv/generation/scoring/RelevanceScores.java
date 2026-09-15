@@ -64,7 +64,7 @@ public record RelevanceScores(
      * The score of one atom, ignoring the entry: relevance is a property of
      * what the atom says, not of where it sits.
      *
-     * @return {@code 0} for an atom that was never scored. Bolum 19.5 leaves
+     * @return {@code 0} for an atom that was never scored. Scoring leaves
      *         inactive atoms out, and selection rejects them as
      *         {@code INACTIVE} before the number is read — but if one ever did
      *         reach here, ranking last is the safe answer and refusing would

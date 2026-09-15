@@ -74,7 +74,7 @@ public record RenderRequest(
     /**
      * One heading with what hangs off it, already in the order it prints.
      *
-     * @param layout how Bolum 33.4 says this section is set. It was missing
+     * @param layout how this section is set. It was missing
      *               here entirely, so the renderer set every section as a
      *               bullet list whatever the column said — {@code INLINE_LIST}
      *               and {@code TWO_COLUMN} existed in the enum, in the schema

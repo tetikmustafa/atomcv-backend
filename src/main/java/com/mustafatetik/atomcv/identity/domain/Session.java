@@ -23,7 +23,7 @@ import java.util.UUID;
  *                   {@code UUID}, so that nothing is tempted to treat it as a
  *                   database key
  * @param userId     the row in {@code users}, or null when nobody has signed
- *                   in — Adim 3.6's anonymous session, whose own id is the
+ *                   in — the anonymous session, whose own id is the
  *                   identity everything below it is scoped by
  * @param role       as of the moment the session was created, or null when
  *                   anonymous

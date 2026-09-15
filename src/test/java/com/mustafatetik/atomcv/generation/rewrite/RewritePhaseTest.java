@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.5 — eight bullets at once, and every way that can go wrong.
+ * Eight bullets at once, and every way that can go wrong.
  *
  * <p>The phase is the one part of Faz D that has to answer with a CV whatever
  * happens to it. The cases below are the four things that do happen: a
@@ -166,7 +166,7 @@ class RewritePhaseTest {
     }
 
     /**
-     * <strong>Bolum 21.7 travels in the same fan-out.</strong> The summary is
+     * <strong>The summary travels in the same fan-out.</strong> The summary is
      * given the whole page, so it is the slowest task here; running it after
      * the bullets would add its latency to theirs for nothing.
      */
@@ -202,7 +202,7 @@ class RewritePhaseTest {
         assertThat(about.calls.get()).isEqualTo(1);
     }
 
-    // -- Bolum 14.6: the bill for the pass ----------------------------------
+    // -- The bill for the pass ---------------------------------------------
 
     /**
      * <strong>The two prompts are counted apart.</strong> They used to be
@@ -245,7 +245,7 @@ class RewritePhaseTest {
                 .containsEntry(RewriteIssue.UNSUPPORTED_CLAIM, 5);
     }
 
-    // -- Bolum 48.3: the same counts, as a rate --------------------------
+    // -- The same counts, as a rate --------------------------------------
 
     /**
      * <strong>The rejection rate needs both halves.</strong> The trace is a
@@ -345,7 +345,7 @@ class RewritePhaseTest {
 
     /**
      * The phase with its About half stubbed out to answer with the original.
-     * Bolum 21.7 has its own tests; here it would be a ninth task nothing in
+     * The summary has its own tests; here it would be a ninth task nothing in
      * the fixture has a paragraph for.
      */
     private static final io.micrometer.core.instrument.simple.SimpleMeterRegistry METERS =

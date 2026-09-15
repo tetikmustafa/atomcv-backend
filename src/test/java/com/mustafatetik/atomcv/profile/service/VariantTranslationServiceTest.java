@@ -60,8 +60,8 @@ class VariantTranslationServiceTest {
         atom = new Atom(profile.id(), UUID.randomUUID(), null, AtomKind.BULLET, (short) 0);
 
         // The shipped prompt rather than a stub: what this test reads out of
-        // the call is the target language, and the whole point of Bolum 32.5
-        // is which language that is.
+        // the call is the target language, and the whole point of the pivot is
+        // which language that is.
         var prompts = new PromptRegistry(
                 new PromptProperties(Map.of("translation", "v1"), Map.of()),
                 new com.fasterxml.jackson.databind.ObjectMapper());

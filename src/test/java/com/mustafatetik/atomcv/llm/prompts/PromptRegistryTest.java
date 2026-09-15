@@ -9,7 +9,10 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 53.1-53.3, against the prompt under {@code test/resources/prompts}. */
+/**
+ * Prompt loading, versioning and bucketing, against the prompt under {@code
+ * test/resources/prompts}.
+ */
 class PromptRegistryTest {
 
     private static final String PROMPT = "probe_prompt";
@@ -58,7 +61,7 @@ class PromptRegistryTest {
                 .hasMessageContaining("probe_prompt/v7.md");
     }
 
-    // ── Bolum 53.3: the split ─────────────────────────────────────────────
+    // ── The experiment split ─────────────────────────────────────────────
 
     @Test
     void withNoExperimentEveryoneGetsTheActiveVersion() {

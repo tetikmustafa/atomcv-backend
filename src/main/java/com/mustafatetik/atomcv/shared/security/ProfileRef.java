@@ -31,12 +31,12 @@ public final class ProfileRef {
          * A profile that lives only in Redis, for the length of an anonymous
          * session.
          *
-         * <p>Absent until Adim 3.6 for the reason § 41.3 gives: the constant
-         * is worthless without a checked way to produce one, and a scope
-         * anybody could construct would be a way around the ownership check
-         * rather than a part of it. {@link #ephemeral} is that way — it takes
-         * a session that is <em>already known to be anonymous</em>, so the
-         * only thing that can produce this scope is the thing it belongs to.
+         * <p>Absent at first for a reason: the constant is worthless without a
+         * checked way to produce one, and a scope anybody could construct
+         * would be a way around the ownership check rather than a part of it.
+         * {@link #ephemeral} is that way — it takes a session that is
+         * <em>already known to be anonymous</em>, so the only thing that can
+         * produce this scope is the thing it belongs to.
          */
         EPHEMERAL
     }
@@ -77,9 +77,9 @@ public final class ProfileRef {
      * first time somebody uploaded a CV.
      *
      * <p>The parameter is {@link AnonymousSessionId} and not a String on
-     * purpose. § 41.3 says the constant is worthless without a checked way to
-     * produce one; {@code shared} cannot look at a session and check, so it
-     * takes a value only the module that <em>can</em> check is able to make.
+     * purpose. The constant is worthless without a checked way to produce one;
+     * {@code shared} cannot look at a session and check, so it takes a value
+     * only the module that <em>can</em> check is able to make.
      */
     public static ProfileRef ephemeral(AnonymousSessionId sessionId) {
         Objects.requireNonNull(sessionId, "sessionId");

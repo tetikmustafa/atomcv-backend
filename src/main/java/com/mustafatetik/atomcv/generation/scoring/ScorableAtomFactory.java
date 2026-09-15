@@ -44,7 +44,7 @@ public final class ScorableAtomFactory {
     /**
      * @param tagsByAtom what {@code TagRepository.labelsByAtom} returned; an
      *                   atom missing from the map has no tags
-     * @return one entry per <em>active</em> atom. Bolum 19.5 does not score
+     * @return one entry per <em>active</em> atom. Scoring does not score
      *         inactive ones — selection rejects them as {@code INACTIVE}
      *         before a score would matter, and scoring them would spend a
      *         cosine per atom the user has switched off.

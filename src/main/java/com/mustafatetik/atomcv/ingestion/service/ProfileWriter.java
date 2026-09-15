@@ -77,12 +77,12 @@ public class ProfileWriter {
     }
 
     /**
-     * @param normalized what Bolum 31.5 produced; never partially written
+     * @param normalized what normalisation produced; never partially written
      * @return the profile the CV was written into
      */
     /**
      * @param replace what the caller answered to {@code PROFILE_ALREADY_EXISTS}
-     *                (Bolum 08b): the profile that is there is discarded first,
+     *                the profile that is there is discarded first,
      *                so the CV becomes the profile rather than being added to
      *                it. Without it a second import wrote its sections beside
      *                the first import's, and the person found out in the editor

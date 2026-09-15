@@ -150,7 +150,7 @@ class JobNotificationsIT extends AbstractIntegrationTest {
         }
         throw new AssertionError("Waited " + PATIENCE_MS + "ms for " + what
                 + " and it never happened. Either the listener is not running or the "
-                + "announcement was not delivered (Bolum 30.6).");
+                + "announcement was not delivered.");
     }
 
     private static void stayTrue(String what, BooleanSupplier holds) {

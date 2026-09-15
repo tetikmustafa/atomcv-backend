@@ -32,11 +32,11 @@ import java.util.Locale;
  *
  * <p>It lives in {@code shared} for {@link CompilationFailureKind}'s reason:
  * {@link PipelineError.UnparseableJobDescription} carries it, and {@code
- * shared} may not depend on a business module (Bolum 10.2, rule 4).
+ * shared} may not depend on a business module.
  */
 public enum UnreadablePostingReason {
 
-    // ── Preflight, Bolum 18.1. No call was made, so nothing was measured. ──
+    // ── Preflight. No call was made, so nothing was measured. ──
 
     /** Fewer characters or words than there is anything to analyse in. */
     TOO_SHORT(Origin.PREFLIGHT),
@@ -50,7 +50,7 @@ public enum UnreadablePostingReason {
     /** Prose, but nothing in it reads like a job posting. */
     NOT_JOB_LIKE(Origin.PREFLIGHT),
 
-    // ── Plausibility gate, Bolum 18.4. An answer came back and was judged. ──
+    // ── Plausibility gate. An answer came back and was judged. ──
 
     /** The model reported it was guessing. */
     LOW_CONFIDENCE(Origin.GATE),

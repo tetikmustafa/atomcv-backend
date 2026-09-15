@@ -21,7 +21,7 @@ import java.util.UUID;
  * them, which is how a record ends up describing a different run than the one
  * that happened.
  *
- * @param weights        which of Bolum 28.4's two sets scored this run. It
+ * @param weights which of the two sets scored this run. It
  *                       goes into {@code engine_version}, because a week of
  *                       generations scored without vectors is otherwise
  *                       indistinguishable from a prompt regression.
@@ -33,7 +33,7 @@ import java.util.UUID;
  *                       because the pipeline neither produces it nor has any
  *                       use for it — it is the rewriter's own record, and the
  *                       pipeline only knows the rewriter as a function
- * @param coverLetter    Bolum 34's letter, or null — it was not asked for, or
+ * @param coverLetter the letter, or null — it was not asked for, or
  *                       it was asked for and could not be written honestly.
  *                       The CV is unaffected either way: a person who asked
  *                       for both and got one has the one they came for

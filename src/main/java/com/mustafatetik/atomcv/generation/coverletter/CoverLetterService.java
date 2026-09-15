@@ -65,7 +65,7 @@ public class CoverLetterService {
     }
 
     /**
-     * @param style     which of Bolum 34.6's three buttons was pressed
+     * @param style which of the three buttons was pressed
      * @param bucketKey who this is for, so a prompt experiment keeps showing
      *  one person one variant
      */

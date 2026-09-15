@@ -25,7 +25,7 @@ public record VariantResponse(
         @Schema(description = "The source has moved on; this wording needs regenerating")
         boolean stale,
         @Schema(description = "The person wrote this wording themselves. With `stale`, "
-                + "it is the pair Bolum 32.2's warning is built from: the two have "
+                + "it is the pair the staleness warning is built from: the two have "
                 + "diverged and nothing will regenerate this one behind their back.")
         boolean userEdited,
         @Schema(description = "Send back as If-Match", example = "0") long version) {

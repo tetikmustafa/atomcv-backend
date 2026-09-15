@@ -20,8 +20,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 /**
- * Architectural rules from Bolum 51.4, plus the two that section leaves as
- * placeholders and defines elsewhere (Bolum 48.1 and 38.4).
+ * The architectural rules, plus the two that were left as placeholders: no
+ * content in logs, and no locale-sensitive case.
  *
  * <p>These are deliberately in place before the packages have content:
  * retrofitting them later means cleaning up accumulated violations first.
@@ -50,7 +50,7 @@ class ArchitectureTest {
     /**
      * The IDOR defense. Absolute rule 3 covers controllers <em>and</em>
      * services, so this is enforced across both, not only {@code ..api..} as
-     * the snippet in Bolum 51.4 has it.
+     * the original snippet had it.
      */
     @ArchTest
     static final ArchRule noRawRepositoryInApiOrService = noClasses()
@@ -64,8 +64,7 @@ class ArchitectureTest {
      * into an assembler, not into a worker.
      *
      * <p>Stated per module rather than globally: a module gains this line when
-     * it gains a repository, and the queue in Bolum 30 keeps its own package
-     * layout.
+     * it gains a repository, and the queue keeps its own package layout.
      */
     @ArchTest
     static final ArchRule profileDataIsReachedThroughAScopedRepository = noClasses()
@@ -154,7 +153,7 @@ class ArchitectureTest {
             .should().dependOnClassesThat().areAssignableTo(Repository.class);
 
     /**
-     * The same line for the queue, which Bolum 30 gives its own package layout.
+     * The same line for the queue, which has its own package layout.
      *
      * <p>{@code jobs.queue} holds both halves of the split deliberately:
      * {@code JobRepository} scopes by user for anything a browser asked for,
@@ -174,8 +173,8 @@ class ArchitectureTest {
      *
      * <p>This carried {@code allowEmptyShould(true)} while the rendering
      * module was still empty, granted here alone rather than globally so that
-     * every other rule would fail loudly if a package rename emptied it. Adim
-     * 1.4 filled the module and the grant is gone: the rule now matches real
+     * every other rule would fail loudly if a package rename emptied it. The
+     * module was filled and the grant is gone: the rule now matches real
      * classes, and emptying it again is a failure rather than a pass.
      */
     @ArchTest
@@ -214,7 +213,8 @@ class ArchitectureTest {
             .orShould().callMethod(String.class, "toUpperCase");
 
     /**
-     * EK C.1: "Dev endpoint'leri prod profilinde yok (test ile dogrulandi)."
+     * The release checklist: no dev endpoint exists under the prod profile,
+     * verified by a test.
      *
      * <p>Four beans exist only to make development possible and every one of
      * them is a hole if it ever reaches production: {@code LocalDevUser} and
@@ -242,7 +242,7 @@ class ArchitectureTest {
             .should().beAnnotatedWith(Profile.class)
             .because("a bean that stands in for a user, a session, a model or a "
                     + "database row is a hole in any deployment that is not a "
-                    + "developer's machine (EK C.1)");
+                    + "developer's machine");
 
     /**
      * <strong>A model call must not hold a database connection.</strong>
@@ -276,7 +276,7 @@ class ArchitectureTest {
                     "com.mustafatetik.atomcv.llm.gateway.ProviderChain"))))
             .because("a provider call takes up to thirty seconds and the pool "
                     + "is ten connections; a fan-out of these would starve it "
-                    + "(Bolum 21.8, Bolum 27.3)");
+                    + "(the translation fan-out and the provider chain)");
 
     /**
      * <strong>The driver is a driver everywhere but one package.</strong>
@@ -293,5 +293,5 @@ class ArchitectureTest {
             .that().resideOutsideOfPackage("com.mustafatetik.atomcv.jobs.sse")
             .should().dependOnClassesThat().resideInAPackage("org.postgresql..")
             .because("PGConnection is compiled against for LISTEN/NOTIFY and for "
-                    + "nothing else (Bolum 30.6)");
+                    + "nothing else");
 }

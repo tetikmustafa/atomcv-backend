@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * What the GitHub import needs, which is almost nothing.
  *
- * @param token optional, and only ever about the rate limit. Bolum 31.8 reads
+ * @param token optional, and only ever about the rate limit. The import reads
  *              public data, so every request here works without one;
  *              unauthenticated GitHub allows sixty an hour <em>per address</em>,
  *              which one deployment shares among everybody, and a token raises

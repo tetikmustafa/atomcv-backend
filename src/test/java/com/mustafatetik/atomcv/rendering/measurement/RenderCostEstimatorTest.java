@@ -74,8 +74,8 @@ class RenderCostEstimatorTest {
 
     @Test
     void theSafetyMarginIsInEveryAnswer() {
-        // Bolum 26.5 asks for it explicitly, and an estimate without it would
-        // be a coin toss on the page limit rather than a conservative guess.
+        // It is asked for explicitly, and an estimate without it would be a
+        // coin toss on the page limit rather than a conservative guess.
         assertThat(RenderCostEstimator.SAFETY_MARGIN).isGreaterThan(1.0);
         assertThat(estimate("Go") % CAPACITY.baselineSkipPt()).isNotZero();
     }

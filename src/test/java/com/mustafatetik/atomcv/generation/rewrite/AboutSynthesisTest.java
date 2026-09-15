@@ -20,7 +20,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.7 — what the summary is written from, decided before a call.
+ * What the summary is written from, decided before a call.
  *
  * <p>Two promises run through these cases. The paragraph is written from
  * <em>the page</em>, not from the profile: a skill that was dropped for budget
@@ -66,9 +66,8 @@ class AboutSynthesisTest {
     /**
      * <strong>The promise this phase makes about the page limit.</strong>
      * Selection costed the atoms it chose; a summary where no section held one
-     * is a block the budget never accounted for. Bolum 21.7 says how to write
-     * the paragraph and nothing about where it goes, so it goes where the
-     * person put one.
+     * is a block the budget never accounted for. How to write the paragraph is
+     * settled and where it goes is not, so it goes where the person put one.
      */
     @Test
     void aprofileWithNoAboutSectionDoesNotGetOne() {
@@ -135,9 +134,9 @@ class AboutSynthesisTest {
     }
 
     /**
-     * <strong>Bolum 21.3 still binds.</strong> The page was costed on the
-     * paragraph that is there now, so the sixty-five words is a ceiling and
-     * not an allowance — whichever of the two is smaller wins.
+     * <strong>The length ceiling still binds.</strong> The page was costed on
+     * the paragraph that is there now, so the sixty-five words is a ceiling
+     * and not an allowance — whichever of the two is smaller wins.
      */
     @Test
     void theceilingIsTheSmallerOfTheMeasuredOneAndSixtyFiveWords() {

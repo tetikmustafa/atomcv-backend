@@ -89,7 +89,7 @@ class OpenRouterProviderTest {
         logged.stop();
     }
 
-    // ── Bolum 27.3: no key is a silent skip ───────────────────────────────
+    // ── No key is a silent skip ──────────────────────────────────────────
 
     @Test
     void aProviderWithNoKeyIsUnavailableRatherThanFailing() {
@@ -118,8 +118,8 @@ class OpenRouterProviderTest {
         var body = readLastBody();
         assertThat(body.path("model").asText()).isEqualTo("some-model");
         assertThat(body.path("response_format").path("type").asText()).isEqualTo("json_schema");
-        // Bolum 53.5 wants 99%+ schema conformance on Faz A. Without strict
-        // the provider treats the schema as a suggestion.
+        // Faz A is held to 99%+ schema conformance. Without strict the
+        // provider treats the schema as a suggestion.
         assertThat(body.path("response_format").path("json_schema").path("strict").asBoolean())
                 .isTrue();
         assertThat(body.path("response_format").path("json_schema").path("schema")
@@ -187,9 +187,9 @@ class OpenRouterProviderTest {
     }
 
     /**
-     * Bolum 27.4 prices a cached input token at a fraction of a fresh one, so
-     * a cost computed without the split overstates every call a constant
-     * system prompt made cheap.
+     * A cached input token is priced at a fraction of a fresh one, so a cost
+     * computed without the split overstates every call a constant system
+     * prompt made cheap.
      */
     @Test
     void theCachedPrefixIsReadApartFromFreshInput() {
@@ -306,7 +306,7 @@ class OpenRouterProviderTest {
         assertThat(JSON.readTree(lastBody.get()).has("provider")).isFalse();
     }
 
-    // ── Bolum 27.3: which status routes where ─────────────────────────────
+    // ── Which status routes where ────────────────────────────────────────
 
     @Test
     void aRateLimitAdvancesTheChain() {

@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.1 — the cheapest rewrite is the one somebody already wrote.
+ * The cheapest rewrite is the one somebody already wrote.
  *
  * <p>These cases used to live next to the planner, and they moved with the
  * code: the choice is made in front of the budget now, because selection

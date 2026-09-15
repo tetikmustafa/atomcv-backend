@@ -134,8 +134,8 @@ class ProfileExtractionPromptTest {
     // -- and the two vocabularies match the enums --------------------------
 
     /**
-     * The kinds are the domain's, so this is the test that fires when Bolum
-     * 13 gains a section kind: the schema would go on forbidding the value
+     * The kinds are the domain's, so this is the test that fires when the
+     * schema gains a section kind: the schema would go on forbidding the value
      * the parser now understands.
      */
     @Test

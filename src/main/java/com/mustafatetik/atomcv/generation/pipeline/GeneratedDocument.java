@@ -24,7 +24,7 @@ import com.mustafatetik.atomcv.rendering.model.RenderRequest;
  *                   than counted, because {@code generations.rewritten_content}
  *                   stores it and Faz G's re-run reads it back: an edit that
  *                   moved one bullet must not pay for every other bullet's
- *                   sentences a second time (V11, Bolum 24)
+ *                   sentences a second time (V11)
  */
 public record GeneratedDocument(
         byte[] pdf,

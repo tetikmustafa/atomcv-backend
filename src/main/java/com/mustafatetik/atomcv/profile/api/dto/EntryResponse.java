@@ -23,7 +23,7 @@ public record EntryResponse(
         boolean active,
         @Schema(description = "Selection may not drop it") boolean alwaysInclude,
         @Schema(description = "Never sent for rewriting") boolean verbatim,
-        @Schema(description = "Below this many atoms the entry is dropped whole (Bolum 20)")
+        @Schema(description = "Below this many atoms the entry is dropped whole")
         short minAtoms,
         @Schema(description = "Send back as If-Match", example = "0") long version) {
 

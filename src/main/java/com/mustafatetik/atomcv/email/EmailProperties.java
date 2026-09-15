@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param fromName  what an inbox shows instead of the address
  * @param replyTo   optional; absent means replies go to {@code from}
  * @param resendKey empty outside production. Its presence is what selects the
- *                  Resend sender, on the same principle as Bolum 27.3's
+ *                  Resend sender, on the same principle as the LLM
  *                  providers: no key is a configuration fact, not a failure
  */
 @ConfigurationProperties(prefix = "atomcv.email")

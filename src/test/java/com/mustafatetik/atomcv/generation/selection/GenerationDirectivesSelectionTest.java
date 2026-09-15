@@ -20,10 +20,9 @@ import org.junit.jupiter.api.Test;
 /**
  * What a hand edit does to Faz C.
  *
- * <p>Every directive here is asserted twice: once with it and once without.
- * A selection that would have come out the same either way proves nothing
- * about the directive, and on a page this full it very nearly does
- * (spec/12-quality.md § 51.7).
+ * <p>Every directive here is asserted twice: once with it and once without. A
+ * selection that would have come out the same either way proves nothing about
+ * the directive, and on a page this full it very nearly does.
  */
 class GenerationDirectivesSelectionTest {
 

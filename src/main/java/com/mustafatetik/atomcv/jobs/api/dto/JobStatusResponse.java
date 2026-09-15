@@ -63,7 +63,7 @@ public record JobStatusResponse(
 
         @Schema(description = """
                 The generation this one replaced, when the job was a Faz G
-                edit (Bolum 24.4). Absent on every other kind of job,
+                edit. Absent on every other kind of job,
                 including an ordinary generation, which replaces nothing.""")
         UUID supersededGenerationId,
 
@@ -122,7 +122,7 @@ public record JobStatusResponse(
      * a client reading a closed vocabulary openly falls to its own general
      * sentence.
      *
-     * @param code one of Bolum 31.4's vocabulary, lowercase on the wire
+     * @param code one of the vocabulary, lowercase on the wire
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(description = "Something the import could not settle")

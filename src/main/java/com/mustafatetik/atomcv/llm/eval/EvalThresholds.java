@@ -68,7 +68,7 @@ public final class EvalThresholds {
         Double floor = FLOORS.get(metric);
         if (floor == null) {
             throw new IllegalArgumentException(
-                    "No threshold is set for " + metric + "; add it to Bolum 53.5 first");
+                    "No threshold is set for " + metric + "; add it to the threshold table first");
         }
         return floor;
     }

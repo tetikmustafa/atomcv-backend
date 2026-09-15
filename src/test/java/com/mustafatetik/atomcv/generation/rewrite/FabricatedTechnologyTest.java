@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * P3, against the shape that got past it.
+ * The rule against fabrication, tested on the shape that got past it.
  *
  * <p>A generated CV reached a real person's hands saying they were "eager to
  * explore modern caching and message queues (Redis, Kafka)". Redis was on the
@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Every {@code UNSUPPORTED_CLAIM} test written before this one used
  * Kubernetes, and Kubernetes is in the file. The guard had therefore never
- * been seen to fail on the case it exists for, which § 51.7 says is the same
- * as not knowing it works.
+ * been seen to fail on the case it exists for, which is the same as not
+ * knowing it works.
  *
  * <p>So the fixtures here are built the other way round on purpose: the
  * technology is <strong>deliberately absent</strong> from the dictionary, the

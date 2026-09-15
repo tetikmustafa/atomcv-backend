@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.shared.ratelimit;
 import java.time.Instant;
 
 /**
- * What one layer of Bolum 40.5 answered.
+ * What one rate-limit layer answered.
  *
  * <p>{@code resetsAt} is present on a refusal and only on a refusal: it is the
  * moment the oldest request in the window falls out of it, which is the

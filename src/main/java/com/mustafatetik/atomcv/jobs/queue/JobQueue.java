@@ -103,7 +103,7 @@ public class JobQueue {
      * @return the id of the job now held by {@code workerId}. The row itself
      *         is loaded afterwards through JPA — the claim is about winning
      *         it, not about reading it, and one statement doing both would mix
-     *         two concerns in a query that must stay exactly as Bolum 30.2
+     *         two concerns in a query that must stay exactly as it
      *         wrote it.
      */
     @Transactional

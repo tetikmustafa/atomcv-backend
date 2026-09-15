@@ -84,7 +84,7 @@ class CustomizationApiIT extends AbstractIntegrationTest {
         int modern = linesOf(templates, "modern");
 
         assertThat(compact)
-                .as("Bolum 33.5: compact is the high-density one")
+                .as("compact is the high-density one")
                 .isGreaterThan(modern);
     }
 

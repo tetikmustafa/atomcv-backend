@@ -117,8 +117,8 @@ class JobTelemetryTest {
     }
 
     /**
-     * The success rate of Bolum 48.3 is the outcome tag: a failed run is
-     * measured too, and under its own name.
+     * The success rate is the outcome tag: a failed run is measured too, and
+     * under its own name.
      */
     @Test
     void afailedRunIsMeasuredSeparately() {
@@ -132,7 +132,7 @@ class JobTelemetryTest {
      * <strong>The wait is the queue's, not the backoff's.</strong> A retry is
      * held back on purpose, and counting that hold as queue pressure would
      * make every failing provider look like a machine that needs to be bigger
-     * — which is the confusion Bolum 50.4 exists to stop.
+     * — which is the confusion this measurement exists to stop.
      */
     @Test
     void thequeueWaitIsMeasuredFromWhenTheJobBecameRunnable() {

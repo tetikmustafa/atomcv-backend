@@ -9,15 +9,14 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 /**
- * The gateway's value types, held to what Bolum 27.1 and Bolum 27.3 say about
- * them. These run without a provider: what is under test is the shape every
- * adapter in Adim 2.2 will be written against.
+ * The gateway's value types, held to the contract. These run without a
+ * provider: what is under test is the shape every adapter is written against.
  */
 class LlmContractTest {
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
-    // ── Bolum 27.3: which failures advance the chain ──────────────────────
+    // ── Which failures advance the chain ─────────────────────────────────
 
     @Test
     void rateLimitsAndOutagesAdvanceTheChain() {
@@ -28,9 +27,9 @@ class LlmContractTest {
     }
 
     /**
-     * The other half of Bolum 27.3, and the one that costs money when it is
-     * wrong: a schema the model could not satisfy is a property of the prompt,
-     * so walking the chain buys four more failed calls at four more vendors.
+     * The other half, and the one that costs money when it is wrong: a schema
+     * the model could not satisfy is a property of the prompt, so walking the
+     * chain buys four more failed calls at four more vendors.
      */
     @Test
     void aSchemaMismatchStaysOnTheSameProvider() {
@@ -48,7 +47,7 @@ class LlmContractTest {
         assertThat(LlmFailure.Kind.values()).hasSize(6);
     }
 
-    // ── Bolum 27.4: the cached subset is priced apart ─────────────────────
+    // ── The cached subset is priced apart ────────────────────────────────
 
     @Test
     void cachedTokensAreASubsetOfTheInputAndNotBilledAsFresh() {
@@ -88,7 +87,7 @@ class LlmContractTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    // ── Bolum 27.1 / 53.1: the request carries its prompt version ─────────
+    // ── The request carries its prompt version ───────────────────────────
 
     @Test
     void theRequestNamesThePromptAndItsVersionForTelemetry() {

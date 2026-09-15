@@ -54,7 +54,7 @@ public class TranslationWriter {
      * @param target what to write into: the stale wording for a retranslation,
      *               a wording that does not exist yet for a new language
      * @param source what it was made from, which becomes its {@code derivedFrom}
-     *               and is how Bolum 32.2 knows when it goes stale
+     *               and is how staleness is decided
      */
     @Transactional
     public Result<AtomVariant> store(ProfileRef profile, AtomVariant target,

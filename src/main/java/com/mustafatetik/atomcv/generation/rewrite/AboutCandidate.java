@@ -24,7 +24,7 @@ import java.util.UUID;
  *                   claim that is not a skill or a number
  * @param focus      what the posting is asking for, so the paragraph leads
  *                   with the part of this person the posting wants
- * @param maxChars   Bolum 21.3's ceiling, narrowed by Bolum 21.7's ~65 words
+ * @param maxChars the ceiling, narrowed by the ~65 words
  */
 public record AboutCandidate(
         UUID atomId,

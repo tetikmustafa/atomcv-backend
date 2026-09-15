@@ -258,7 +258,7 @@ class SelectionRequestBuilderTest {
     }
 
     /**
-     * <strong>The consequence Bolum 32.3 calls the right behaviour.</strong>
+     * <strong>The consequence, and it is the right behaviour.</strong>
      *
      * <p>Turkish runs longer for the same claim, so the same budget holds
      * fewer of its bullets. That the two languages select different sets is
@@ -553,7 +553,7 @@ class SelectionRequestBuilderTest {
 
     // ── fixtures ──────────────────────────────────────────────────────────
 
-    // -- Bolum 19.4: the score function is the only thing that differs -----
+    // -- The score function is the only thing that differs -----------------
 
     /**
      * What separating Faz B from Faz C buys. The builder reads numbers from

@@ -13,7 +13,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 /**
- * The third renderer (Bolum 22.6, the fourth claim).
+ * The third renderer.
  *
  * <p>The claim under test is not that the file is pretty. It is that the same
  * {@link RichContent} reaches a third output format without the content

@@ -18,7 +18,7 @@ import java.util.Locale;
  * that survived the filter, because that endpoint is one call each too.
  *
  * @param topics GitHub's own labels. Free in the listing, and the closest
- *               thing to the tags Bolum 19.2 scores against
+ *               thing to the tags scoring compares against
  */
 public record GitHubRepository(
         String name,

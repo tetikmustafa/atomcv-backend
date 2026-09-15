@@ -129,7 +129,7 @@ class DocumentExtractionTest {
         assertThat(refused.error().params()).containsEntry("limitBytes", 1024);
     }
 
-    /** The rung that catches a renamed file, which is the one Bolum 42.1 names. */
+    /** The rung that catches a renamed file. */
     @Test
     void aFileRenamedToLookLikeAPdfIsCaughtByItsFirstBytes() {
         byte[] png = new byte[] {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
@@ -196,9 +196,9 @@ class DocumentExtractionTest {
      * A PDF with no text is called a scan, and everything else with no text is
      * called empty.
      *
-     * <p>Bolum 31.10 splits them here and only here. The distinction is the
-     * sentence the user reads: "this looks like a scanned image, send a
-     * text-based PDF" is what stops them uploading the same file again.
+     * <p>They are split here and only here. The distinction is the sentence
+     * the user reads: "this looks like a scanned image, send a text-based PDF"
+     * is what stops them uploading the same file again.
      */
     @Test
     void aPdfWithNoTextIsCalledAScanRatherThanEmpty() throws IOException {

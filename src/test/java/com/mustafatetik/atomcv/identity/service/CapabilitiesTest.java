@@ -64,7 +64,7 @@ class CapabilitiesTest {
         CapabilitiesResponse capabilities = capabilities().of(Optional.empty(), null);
 
         assertThat(capabilities.dailyGenerationQuota())
-                .as("the anonymous flow can generate, so § 35.7's five stands")
+                .as("the anonymous flow can generate, so the five stands")
                 .isEqualTo(5);
         assertThat(capabilities.dailyProfileQuota())
                 .as("importing a CV anonymously is built and stays advertised")
@@ -130,13 +130,13 @@ class CapabilitiesTest {
     }
 
     /**
-     * <strong>F-028, and the pairing is the point.</strong> § 35.7.3 refuses an
-     * anonymous covering letter with {@code FEATURE_REQUIRES_ACCOUNT} and
-     * {@code params.feature = cover_letter}, but the block carried no field for
-     * it — so the frontend closed the control on {@code canSaveHistory}, which
-     * is true today and true for the wrong reason. Every
-     * {@link AccountFeature} now has a boolean here to be refused against, and
-     * this test is what says the two agree.
+     * <strong>F-028, and the pairing is the point.</strong> An anonymous
+     * covering letter is refused with {@code FEATURE_REQUIRES_ACCOUNT} and
+     * {@code params.feature = cover_letter}, but the block carried no field
+     * for it — so the frontend closed the control on {@code canSaveHistory},
+     * which is true today and true for the wrong reason. Every {@link
+     * AccountFeature} now has a boolean here to be refused against, and this
+     * test is what says the two agree.
      *
      * <p>Asserted next to {@code canSaveHistory} deliberately: the proxy worked
      * because the two happen to move together, and the day they separate is the
@@ -147,7 +147,7 @@ class CapabilitiesTest {
         stubUsage();
 
         assertThat(capabilities().of(Optional.empty(), null).canWriteCoverLetter())
-                .as("§ 35.7.3 refuses it ahead of the quota, so the control is closed")
+                .as("it is refused ahead of the quota, so the control is closed")
                 .isFalse();
         assertThat(capabilities().of(Optional.of(SOMEONE), null).canWriteCoverLetter())
                 .as("an account may ask for one, with the CV or afterwards")

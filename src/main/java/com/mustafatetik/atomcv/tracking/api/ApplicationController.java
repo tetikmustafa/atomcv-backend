@@ -130,7 +130,7 @@ public class ApplicationController {
                     Emptying the notes needs `clearNotes: true` — null cannot \
                     mean both "leave them" and "empty them".
 
-                    `If-Match` is required (Bolum 35.6).""")
+                    `If-Match` is required.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Changed",
                     headers = @Header(name = HttpHeaders.ETAG,

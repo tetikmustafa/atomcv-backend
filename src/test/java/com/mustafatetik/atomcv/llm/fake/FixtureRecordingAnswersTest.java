@@ -104,7 +104,7 @@ class FixtureRecordingAnswersTest {
         new FixtureRecordingAnswers(properties, JSON).discard(request());
     }
 
-    // ── Bolum 31.4: the document, kept beside the answer ─────────────────
+    // ── The document, kept beside the answer ────────────────────────────
 
     /**
      * <strong>An extraction's source is kept and an analysis's is not.</strong>

@@ -252,7 +252,7 @@ public class Atom implements ProfileOwned {
     /**
      * @param embedding the vector, or null to mark the atom unembedded again
      * @param sourceContentHash the {@code content_hash} it was computed from,
-     *                          which is what Bolum 28.2 compares to decide
+     *                          which is what is compared to decide
      *                          whether this is still current
      */
     public void setEmbedding(float[] embedding, String sourceContentHash) {

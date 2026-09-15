@@ -115,7 +115,7 @@ class BulletRewriteServiceTest {
                 .isEqualTo("Moved 300K rows on the Microsoft Fabric pipeline");
     }
 
-    // -- Bolum 14.6: what the trace is told ---------------------------------
+    // -- What the trace is told --------------------------------------------
 
     /**
      * <strong>Two refusals are not the same as never having asked.</strong>
@@ -167,13 +167,13 @@ class BulletRewriteServiceTest {
         assertThat(tally.unreachable()).isZero();
     }
 
-    // -- Bolum 43.1 --------------------------------------------------------
+    // -- The fence ---------------------------------------------------------
 
     /**
      * <strong>Everything the person wrote goes inside the fence.</strong> The
      * skills, the numbers and the names are the CV's content as much as the
      * sentence is, and a list of them sitting in the instruction half would be
-     * exactly the injection surface Bolum 43.1 draws the boundary to remove.
+     * exactly the injection surface the boundary exists to remove.
      */
     @Test
     void thecvsOwnWordsTravelInsideTheFenceAndNotInTheInstructions() {
@@ -195,11 +195,11 @@ class BulletRewriteServiceTest {
     /**
      * The note, and it travels the way the CV's own words do.
      *
-     * <p>It is the person's sentence about their own CV, so Bolum 43.1 puts it
-     * inside the fence rather than into the instructions — the line is drawn at
-     * where the data starts, not at which field looks structured. The prompt
-     * tells the model what a note may and may not do; the validators of
-     * Bolum 21.6 do not read it at all, which is what makes that a promise.
+     * <p>It is the person's sentence about their own CV, so it goes inside the
+     * fence rather than into the instructions — the line is drawn at where the
+     * data starts, not at which field looks structured. The prompt tells the
+     * model what a note may and may not do; the validators do not read it at
+     * all, which is what makes that a promise.
      */
     @Test
     void thepersonsOwnNoteTravelsInsideTheFenceToo() {

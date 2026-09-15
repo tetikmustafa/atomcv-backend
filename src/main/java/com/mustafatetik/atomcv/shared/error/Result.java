@@ -11,8 +11,8 @@ import java.util.function.Function;
  * that better than a throw — the compiler makes the caller look at it.
  *
  * <p>In {@code shared} with {@link PipelineError}, which it carries: every
- * module that can fail a generation returns one, and {@code llm} may not
- * reach into {@code generation} for it (Bolum 10.2, rule 2).
+ * module that can fail a generation returns one, and {@code llm} may not reach
+ * into {@code generation} for it.
  *
  * <p>No library for this. The language has sealed interfaces and pattern
  * matching, which is the whole of what a Result needs.

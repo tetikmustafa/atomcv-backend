@@ -53,9 +53,9 @@ public class ProblemDetailAdvice {
      * The container's own limit, read from the property that enforces it.
      *
      * <p>Not from {@code ingestion}: {@code shared} may not depend on a
-     * business module (Bolum 10.2, rule 4), and reading the property is
-     * better anyway — it is the number that actually refused the request,
-     * rather than a second copy of it.
+     * business module, and reading the property is better anyway — it is the
+     * number that actually refused the request, rather than a second copy of
+     * it.
      */
     private final DataSize maxUploadSize;
 
@@ -176,10 +176,9 @@ public class ProblemDetailAdvice {
 
     /**
      * A body sent as a media type no handler consumes. RFC 9110 calls this
-     * 415, and it mattered in practice: Bolum 35.6 documented {@code
-     * application/merge-patch+json} for the profile patches, which no
-     * controller declares, so every client following the specification was
-     * told the server had failed.
+     * 415, and it mattered in practice: {@code application/merge-patch+json}
+     * was documented for the profile patches, which no controller declares, so
+     * every client following the specification was told the server had failed.
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ProblemDetail> handle(HttpMediaTypeNotSupportedException exception) {

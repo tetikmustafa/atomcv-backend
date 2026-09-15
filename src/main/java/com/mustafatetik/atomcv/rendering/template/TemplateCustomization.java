@@ -34,11 +34,11 @@ public record TemplateCustomization(
      *
      * <p>The margin is the one that took arithmetic. The reference does not
      * load {@code geometry}: it loads {@code fullpage} and then moves the
-     * margins by hand — {@code \oddsidemargin -0.5in}, {@code \textwidth +1in},
-     * {@code \topmargin -.5in}, {@code \textheight +1.0in}. On letter paper
-     * that lands on a text block of 7.5 by 10 inches, which is exactly half an
-     * inch on all four sides. So {@code margin=0.5in} reproduces it exactly,
-     * and the margin stays a slider the user can move (Bolum 33.1, layer B).
+     * margins by hand — {@code \oddsidemargin -0.5in}, {@code \textwidth
+     * +1in}, {@code \topmargin -.5in}, {@code \textheight +1.0in}. On letter
+     * paper that lands on a text block of 7.5 by 10 inches, which is exactly
+     * half an inch on all four sides. So {@code margin=0.5in} reproduces it
+     * exactly, and the margin stays a slider the user can move.
      */
     public static final TemplateCustomization CLASSIC = new TemplateCustomization(
             "classic", FontFamily.MODERN, 11.0, 0.5, 1.0, HexColor.of("000000"));
@@ -100,11 +100,11 @@ public record TemplateCustomization(
      * describes a different document is the quiet failure this whole subsystem
      * exists to prevent.
      *
-     * <p><strong>Colour is not in it, on purpose.</strong> Bolum 33.1 puts
-     * colours in layer A — "no re-measurement" — because they move no box on
-     * the page. A key that included the accent would throw away every
-     * measurement a person owns the first time they changed a heading from
-     * black, and charge them a compilation to learn the same numbers again.
+     * <p><strong>Colour is not in it, on purpose.</strong> Colours are layer A
+     * — no re-measurement — because they move no box on the page. A key that
+     * included the accent would throw away every measurement a person owns the
+     * first time they changed a heading from black, and charge them a
+     * compilation to learn the same numbers again.
      *
      * <p><strong>A template at its own defaults keeps the bare key.</strong>
      * {@code classic:v6} is what every measurement in the database and in the

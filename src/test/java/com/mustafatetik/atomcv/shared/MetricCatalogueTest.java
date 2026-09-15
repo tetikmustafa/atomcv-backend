@@ -17,14 +17,14 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * Every meter this system publishes, against the row of Bolum 48.3 it answers.
+ * Every meter this system publishes, against the question it answers.
  *
- * <p><strong>Why a catalogue and not a count.</strong> Bolum 48.3 is a table of
- * seven categories and it is prose — nothing can be generated from it, and
- * nothing fails when a row quietly stops being answered. A metric is also the
- * easiest thing in a codebase to lose: renaming one breaks no build, deleting
- * one breaks no test, and the loss surfaces months later as a dashboard panel
- * that has been flat since a refactor nobody connected to it.
+ * <p><strong>Why a catalogue and not a count.</strong> What is to be measured
+ * is a table of seven categories and it is prose — nothing can be generated
+ * from it, and nothing fails when a row quietly stops being answered. A metric
+ * is also the easiest thing in a codebase to lose: renaming one breaks no
+ * build, deleting one breaks no test, and the loss surfaces months later as a
+ * dashboard panel that has been flat since a refactor nobody connected to it.
  *
  * <p>So this reads the meter names out of the source and holds them against a
  * list with a reason beside each. Adding a meter fails until it is written
@@ -46,9 +46,8 @@ import org.junit.jupiter.api.Test;
 class MetricCatalogueTest {
 
     /**
-     * The meter, and the row of Bolum 48.3 it answers. Two meters may answer
-     * one row: a rate needs a numerator and a denominator, and those are
-     * separate series.
+     * The meter, and the question it answers. Two meters may answer one row: a
+     * rate needs a numerator and a denominator, and those are separate series.
      */
     private static final Map<String, String> CATALOGUE = new TreeMap<>(Map.ofEntries(
             // Pipeline -- "Faz bazinda p50/p95 gecikme, basari orani"
@@ -60,14 +59,14 @@ class MetricCatalogueTest {
             // Secim -- "Butce doluluk orani, sayfa sapma orani, tahmin kullanim orani"
             Map.entry("generation.budget.overshoot", "a selection that did not fit the page"),
             Map.entry("generation.pages.drift",
-                    "predicted pages against printed pages (Bolum 23)"),
+                    "predicted pages against printed pages"),
             Map.entry("generation.scoring.weights", "which weight set Faz B ran with"),
             Map.entry("generation.ats.clean", "a document that passed the ATS check"),
             Map.entry("generation.ats.defect", "and one that did not"),
 
             // LLM -- "Saglayici fallback orani, sema hata orani, token maliyeti/gun"
             Map.entry("llm.chain.answers",
-                    "the fallback rate: the position tag is the ratio (Bolum 27.3)"),
+                    "the fallback rate: the position tag is the ratio"),
             Map.entry("llm.chain.exhausted", "walks that ran out of providers"),
             Map.entry("llm.provider.breaker.open",
                     "which vendors the circuit breaker is currently refusing -- the"
@@ -85,12 +84,12 @@ class MetricCatalogueTest {
                     "attempts that never reached a model, counted apart from the refusals"),
 
             // Kullanici -- "Manuel duzenleme orani"
-            Map.entry("selection.manual_include", "an atom the person put back (Bolum 24)"),
+            Map.entry("selection.manual_include", "an atom the person put back"),
             Map.entry("selection.manual_exclude", "and one they took out"),
 
             // Sistem -- "kuyruk bekleme suresi". CPU, RAM and disk come from
             // Micrometer's own binders and are not declared here.
-            Map.entry("job.queue.wait", "how long work waited before it ran (Bolum 50.4)"),
+            Map.entry("job.queue.wait", "how long work waited before it ran"),
 
             // E-posta -- "Teslimat orani, bounce orani"
             Map.entry("email.sent", "whether the provider accepted the message"),
@@ -99,9 +98,9 @@ class MetricCatalogueTest {
 
             // The brake. Not one of 48.3's rows, and watched for its own
             // reasons.
-            Map.entry("anomaly.budget_exceeded", "Bolum 44.3: the daily budget went over"),
-            Map.entry("anomaly.heavy_user", "Bolum 44.3: one account ran away with it"),
-            Map.entry("anomaly.signup_burst", "Bolum 44.3: sign-ups arriving too fast")));
+            Map.entry("anomaly.budget_exceeded", "the daily budget went over"),
+            Map.entry("anomaly.heavy_user", "one account ran away with it"),
+            Map.entry("anomaly.signup_burst", "sign-ups arriving too fast")));
 
     /** Where an argument list starts. Unqualified too: a private helper is one. */
     private static final Pattern CALL =
@@ -121,7 +120,7 @@ class MetricCatalogueTest {
         assertThat(published())
                 .as("""
                         A meter is published that nothing wrote down. Add it to \
-                        CATALOGUE with the row of Bolum 48.3 it answers -- and if it \
+                        CATALOGUE with the question it answers -- and if it \
                         answers none of them, that is worth knowing before it reaches \
                         a dashboard.\
                         """)

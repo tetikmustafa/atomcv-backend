@@ -14,7 +14,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * P3's guard, measured against a real extraction rather than a written one.
+ * The fabrication guard, measured against a real extraction rather than a
+ * written one.
  *
  * <p>{@link ExtractionFidelityTest} proves the rule: an atom naming something
  * the document does not say raises a warning, and one that only rewords does

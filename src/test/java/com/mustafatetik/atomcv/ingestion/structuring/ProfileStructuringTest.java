@@ -66,9 +66,9 @@ class ProfileStructuringTest {
     }
 
     /**
-     * Bolum 5.4 puts reading a whole CV at MID, and this is the one call in the
-     * product where the tier is a cost decision rather than a quality one — the
-     * input is the whole document.
+     * Reading a whole CV is MID tier, and this is the one call in the product
+     * where the tier is a cost decision rather than a quality one — the input
+     * is the whole document.
      */
     @Test
     void theCallAsksForTheMidTier() {
@@ -148,8 +148,8 @@ class ProfileStructuringTest {
     }
 
     /**
-     * <strong>Bolum 43.2 in one assertion.</strong> An answer refused by the
-     * field-length audit and a document that yielded nothing are the same
+     * <strong>Saying nothing, in one assertion.</strong> An answer refused by
+     * the field-length audit and a document that yielded nothing are the same
      * answer, because a message that told them apart would tell whoever wrote
      * the injected text that it was noticed.
      */
@@ -166,8 +166,8 @@ class ProfileStructuringTest {
 
     /**
      * An outage is an outage. Restating it as an unreadable CV would send the
-     * user to the manual form because a provider was down, and Bolum 30.5
-     * would then refuse to retry a job that should be retried.
+     * user to the manual form because a provider was down, and the retry
+     * policy would then refuse a job that should be retried.
      */
     @Test
     void aProviderOutageTravelsAsItselfAndNotAsAnUnreadableCv() {

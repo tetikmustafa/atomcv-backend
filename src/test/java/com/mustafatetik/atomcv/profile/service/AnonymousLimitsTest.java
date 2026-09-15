@@ -90,8 +90,8 @@ class AnonymousLimitsTest {
     // -- which fields are controls ------------------------------------------
 
     /**
-     * The four the schema itself labels {@code -- kullanıcı kontrolleri}
-     * (§ 04-data-model): importance, active, always_include, verbatim.
+     * The four the schema itself labels the user's controls: importance,
+     * active, always_include, verbatim.
      */
     @Test
     void thefourControlsAreTheFourTheSchemaNames() {

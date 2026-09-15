@@ -74,7 +74,7 @@ public record GoldenProfileDocument(
      * @param tags         what this atom is <em>about</em>, which is not the
      *                     same list as {@code skills}: a skill is a technology
      *                     the sentence names and a tag is a theme somebody
-     *                     would search their own profile by. Bolum 19.1 gives
+     *                     would search their own profile by. The formula gives
      *                     the tag term a quarter of the raw score, and a
      *                     fixture set with none makes that quarter
      *                     structurally zero -- which is what every golden

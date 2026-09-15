@@ -118,7 +118,7 @@ class BulletRewriteEvalIT extends AbstractIntegrationTest {
         // The blocker first, and on its own line: it is the one refusal that
         // is about the product rather than about quality.
         assertThat(REPORT.rate(EvalThresholds.NO_NEW_TECHNOLOGIES))
-                .as("zero invented technologies (Bolum 53.5)")
+                .as("zero invented technologies")
                 .isEqualTo(1.0);
 
         assertThat(REPORT.rate(EvalThresholds.NUMBERS_PRESERVED))

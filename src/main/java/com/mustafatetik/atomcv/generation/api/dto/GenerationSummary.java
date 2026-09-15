@@ -72,7 +72,7 @@ public record GenerationSummary(
         @Schema(description = "Whether a covering letter was written for it")
         boolean hasCoverLetter,
 
-        @Schema(description = "Whether this one is marked to keep (Bolum 35.2). "
+        @Schema(description = "Whether this one is marked to keep. "
                 + "The list is where the mark is read: it is the screen a "
                 + "person opens to find the generation they kept.")
         boolean archived) {

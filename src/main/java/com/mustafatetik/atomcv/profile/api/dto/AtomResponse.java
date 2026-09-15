@@ -35,7 +35,7 @@ public record AtomResponse(
         @Schema(description = "The user has confirmed the fact") boolean verified,
         @Schema(description = "Every wording, primary first") List<VariantResponse> variants,
         @Schema(description = "The labels this atom wears. A quarter of Faz B's raw "
-                + "score is the overlap between these and the posting (Bolum 19.1), "
+                + "score is the overlap between these and the posting, "
                 + "so they are a scoring control rather than decoration.")
         List<AtomTagResponse> tags,
         @Schema(description = "Send back as If-Match", example = "0") long version) {

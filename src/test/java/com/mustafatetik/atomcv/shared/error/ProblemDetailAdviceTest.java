@@ -28,14 +28,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Every failure leaves as the body of Bolum 35.4. The controller here exists
- * only to throw; the advice under test is production code.
+ * Every failure leaves as an RFC 7807 body. The controller here exists only to
+ * throw; the advice under test is production code.
  */
 // `controllers` narrows the slice to this test's own controller, so the real
 // ones stay out of it; `@Import` is what actually registers it, since a nested
 // test class is never component-scanned.
 @WebMvcTest(controllers = ProblemDetailAdviceTest.ThrowingController.class)
-// No filter chain. Since Adim 3.3 put Spring Security on the classpath, a
+// No filter chain. Since Spring Security landed on the classpath, a
 // @WebMvcTest slice auto-configures its default chain — which is not ours and
 // refuses everything — and each case below would assert Spring Security's 401
 // instead of the advice under test. The chain has its own tests; this one is
@@ -51,9 +51,9 @@ class ProblemDetailAdviceTest {
     private MockMvc mvc;
 
     /**
-     * Adim 3.4. Without this branch an oversized upload reaches the catch-all
-     * and leaves as a 500 — telling the person their CV broke the server
-     * rather than that it was too large for it.
+     * Without this branch an oversized upload reaches the catch-all and leaves
+     * as a 500 — telling the person their CV broke the server rather than that
+     * it was too large for it.
      */
     @Test
     void anOversizedUploadIsAPayloadTooLargeAndNotAServerFailure() throws Exception {
@@ -142,7 +142,7 @@ class ProblemDetailAdviceTest {
 
     @Test
     void aMediaTypeNothingConsumesIsTheClientsMistake() throws Exception {
-        // The exact request Bolum 35.6 documented for the profile patches.
+        // The exact request that was documented for the profile patches.
         mvc.perform(post("/test/validated")
                         .contentType(MediaType.valueOf("application/merge-patch+json"))
                         .content("{\"title\":\"x\"}"))

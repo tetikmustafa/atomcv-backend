@@ -105,7 +105,7 @@ public final class TemplateRegistry {
             % its entries in: label-less, at the same indent. It writes its
             % About with \\resumeSubHeadingListStart and its Tech Stack with the
             % same itemize spelled out, so these are that list under names that
-            % say which of the two is being opened (Bolum 33.4).
+            % say which of the two is being opened.
             \\newcommand{\\resumeParagraphListStart}%
               {\\begin{itemize}[leftmargin=0.15in, label={}]}
             \\newcommand{\\resumeParagraphListEnd}{\\end{itemize}}
@@ -133,14 +133,14 @@ public final class TemplateRegistry {
      * negative leading around a section heading is deeper, the lists set their
      * items with no separation at all, and the name at the top is one size down.
      *
-     * <p>Its density is not only here. Bolum 33.1 calls font size, margin and
-     * line spacing layer B, and {@link TemplateCustomization#COMPACT} moves all
-     * three — 10pt on a 0.4in margin at 0.95 leading. This preamble is what
-     * cannot be reached from a slider.
+     * <p>Its density is not only here. Font size, margin and line spacing are
+     * layer B, and {@link TemplateCustomization#COMPACT} moves all three —
+     * 10pt on a 0.4in margin at 0.95 leading. This preamble is what cannot be
+     * reached from a slider.
      *
      * <p>Still ATS-safe: no columns, no graphics, no colour by default.
-     * Bolum 33.5 gives density to a person with too much history, not a
-     * different kind of document.
+     * Density is for a person with too much history, not a different kind of
+     * document.
      */
     private static final String COMPACT_BASE = """
             \\usepackage{titlesec}
@@ -213,7 +213,7 @@ public final class TemplateRegistry {
      * Modern: lightly coloured headings, for the technology sector.
      *
      * <p><strong>The colour is on the rule and not on the heading.</strong>
-     * Bolum 33.5 asks for "light", and a coloured word is not light — it is a
+     * What is asked for is "light", and a coloured word is not light — it is a
      * different document. A rule carries the identity, the heading stays
      * black, and a CV printed in black and white loses a tint rather than a
      * weight. The accent is a slider either way (layer A), so a person who
@@ -291,7 +291,7 @@ public final class TemplateRegistry {
      *
      * <p>These hold for {@link TemplateCustomization#CLASSIC} only. Font size,
      * family, margin and line spacing all move them, which is exactly why
-     * Bolum 33.1 calls those "layer B": changing one costs a measurement.
+     * those are layer B: changing one costs a measurement.
      *
      * <p>{@code LatexCalibrationIT} re-derives every number here from a real
      * compilation. When the template's geometry changes, that test fails —
@@ -443,10 +443,11 @@ public final class TemplateRegistry {
     /**
      * The capacity model for a customization, if one has been measured.
      *
-     * <p>Bolum 22.2 returns a model unconditionally. It cannot: a
-     * customization nobody has measured has no capacity, and inventing one
-     * would break the page guarantee silently — which is the one failure this
-     * whole system exists to prevent. Empty means "measure first".
+     * <p>The interface was written to return a model unconditionally. It
+     * cannot: a customization nobody has measured has no capacity, and
+     * inventing one would break the page guarantee silently — which is the one
+     * failure this whole system exists to prevent. Empty means "measure
+     * first".
      */
     public static java.util.Optional<CapacityModel> capacityOf(
             TemplateCustomization customization) {

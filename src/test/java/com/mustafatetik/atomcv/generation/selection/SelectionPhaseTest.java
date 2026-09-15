@@ -122,7 +122,10 @@ class SelectionPhaseTest {
         });
     }
 
-    /** Bolum 20.3 stage 1: pinned content that cannot fit is a conflict, not a silent trim. */
+    /**
+     * Stage one: pinned content that cannot fit is a conflict, not a silent
+     * trim.
+     */
     @Test
     void pinnedContentThatCannotFitIsRefusedWithSomethingToDo() {
         var atoms = new ArrayList<AtomCandidate>();
@@ -241,8 +244,7 @@ class SelectionPhaseTest {
      * an id the screen cannot resolve to anything, which is worse than
      * silence. But silence is what a person sees when their degree line
      * disappears off a full page, and "the page ran out" is exactly the answer
-     * P7 says every drop owes them. So the id goes where it is what it claims
-     * to be.
+     * every drop owes them. So the id goes where it is what it claims to be.
      */
     @Test
     void aHeadingThatDoesNotFitIsRejectedAsAnEntryAndNotAsAnAtom() {
@@ -378,9 +380,9 @@ class SelectionPhaseTest {
     // ── what a dropped entry gives back ───────────────────────────────────
 
     /**
-     * Bolum 20.3. An entry that cannot reach its minimum leaves the page and
-     * refunds everything it was charged, and that budget has to be offered to
-     * somebody else.
+     * An entry that cannot reach its minimum leaves the page and refunds
+     * everything it was charged, and that budget has to be offered to somebody
+     * else.
      *
      * <p>Measured on a real run before this was true: 133 pt of a 352 pt free
      * budget sat unclaimed while ten atoms carried {@code BUDGET}. The greedy

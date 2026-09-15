@@ -38,7 +38,9 @@ class EntityTagsTest {
         assertThatCode(() -> EntityTags.requireMatch("\"0\"", null)).doesNotThrowAnyException();
     }
 
-    /** P8: a write with no precondition is a silent overwrite waiting to happen. */
+    /**
+     * A write with no precondition is a silent overwrite waiting to happen.
+     */
     @Test
     void aMissingPreconditionIsRefused() {
         assertThatThrownBy(() -> EntityTags.requireMatch(null, 7L))

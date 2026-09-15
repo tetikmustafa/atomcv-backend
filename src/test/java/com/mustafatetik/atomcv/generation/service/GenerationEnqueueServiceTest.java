@@ -44,7 +44,7 @@ class GenerationEnqueueServiceTest {
 
     private static final UUID USER = UUID.randomUUID();
 
-    /** Long enough and job-like enough to pass Bolum 18.1. */
+    /** Long enough and job-like enough to pass the preflight. */
     private static final String POSTING = """
             We are seeking a senior backend engineer for our payments team.
             Responsibilities include designing distributed services in Go and
@@ -123,8 +123,8 @@ class GenerationEnqueueServiceTest {
     }
 
     /**
-     * Bolum 30.7. Answered with the job that exists rather than with a
-     * conflict: the caller asked for one generation and there is one.
+     * Answered with the job that exists rather than with a conflict: the
+     * caller asked for one generation and there is one.
      */
     @Test
     void aknownIdempotencyKeyAnswersWithoutTouchingAnything() {

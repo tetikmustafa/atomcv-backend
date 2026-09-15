@@ -81,7 +81,7 @@ class LatexDocumentRendererTest {
                 .contains("\\typeout{ATOMCOST|var-2|\\the\\ht\\measurebox|\\the\\dp\\measurebox}");
     }
 
-    /** EK D.8.1: {@code \mbox} is already a LaTeX command. */
+    /** {@code \mbox} is already a LaTeX command. */
     @Test
     void theMeasurementBoxIsNotNamedAfterAnExistingCommand() {
         String measurement = renderer.renderMeasurement(

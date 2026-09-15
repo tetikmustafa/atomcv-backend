@@ -88,9 +88,9 @@ class ErrorPresenterTest {
     }
 
     /**
-     * Bolum 18.1 is explicit that a posting which does not look like one is a
-     * question, not a refusal — so all three ways out are offered, and the
-     * first of them is proceeding with the same text.
+     * A posting that does not look like one is a question, not a refusal — so
+     * all three ways out are offered, and the first of them is proceeding with
+     * the same text.
      */
     @Test
     void aPreflightRefusalIsAQuestionWithThreeWaysOut() {
@@ -190,8 +190,8 @@ class ErrorPresenterTest {
     }
 
     /**
-     * Bolum 27.3 skips a provider with no key silently. Reporting it as tried
-     * would tell the user a vendor this deployment never configured is down.
+     * A provider with no key is skipped silently. Reporting it as tried would
+     * tell the user a vendor this deployment never configured is down.
      */
     @Test
     void aChainThatFoundNothingConfiguredReportsAnEmptyList() {

@@ -126,13 +126,13 @@ class GoldenMasterCvTest {
     /**
      * <strong>No category is ever synthesised.</strong>
      *
-     * <p>Bolum 33 allows a Tech Stack to be filtered — items dropped, a category
-     * dropped once it empties — and nothing else. A hand-tailored version of
-     * this same CV grew a <em>Software Engineering Practices</em> row whose
-     * terms were pulled out of narrative About and Experience text; that is the
-     * one thing this section may not do, and the check is written as an
-     * inclusion rather than as a list of forbidden names, so a category nobody
-     * has thought of yet fails it too.
+     * <p>A Tech Stack may be filtered — items dropped, a category dropped once
+     * it empties — and nothing else. A hand-tailored version of this same CV
+     * grew a <em>Software Engineering Practices</em> row whose terms were
+     * pulled out of narrative About and Experience text; that is the one thing
+     * this section may not do, and the check is written as an inclusion rather
+     * than as a list of forbidden names, so a category nobody has thought of
+     * yet fails it too.
      */
     @Test
     void everyTechStackCategoryIsOneTheProfileAlreadyHad() {
@@ -152,10 +152,10 @@ class GoldenMasterCvTest {
      * complaint this filter exists for: a list of things rather than an answer
      * to the advertisement.
      *
-     * <p>What may stay is the pair Bolum 33.4 allows, and nothing else: an item
-     * the posting named, or one the rest of the page already talks about. The
-     * check is written that way round — for each item printed, why — so an item
-     * kept for a third reason nobody has thought of fails it.
+     * <p>What may stay is one of two things, and nothing else: an item the
+     * posting named, or one the rest of the page already talks about. The
+     * check is written that way round — for each item printed, why — so an
+     * item kept for a third reason nobody has thought of fails it.
      */
     @Test
     void everyTechStackItemIsEitherAskedForOrAlreadyOnThePage() {
@@ -194,7 +194,8 @@ class GoldenMasterCvTest {
     // ── nothing on the page that is not in the profile ────────────────────
 
     /**
-     * P3, checked against the page rather than against one phase of it.
+     * The rule against fabrication, checked against the page rather than
+     * against one phase of it.
      *
      * <p>{@link ClaimVocabulary#introducedNames} asks the closed question —
      * "does this name something none of its sources carry?" — and the source

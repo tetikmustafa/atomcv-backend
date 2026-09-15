@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * <p>Both fields are optional and an empty body is a valid request: write the
  * letter, the ordinary way, with nothing extra known about the employer.
  *
- * @param companyNote Bolum 34.5. What the person themselves knows about this
+ * @param companyNote what the person themselves knows about this
  *                    company, in their own words — the only source of
  *                    personalisation the letter has. A model asked to admire a
  *                    company it has never heard of writes the paragraph

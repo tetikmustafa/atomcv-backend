@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param enabled        false leaves the queue alone. Integration tests drive
  *                       the worker by hand, and a scheduler firing underneath
  *                       them would claim the rows they are asserting about.
- * @param concurrency    how many jobs this instance runs at once. Bolum 30 does
+ * @param concurrency    how many jobs this instance runs at once. Nothing does
  *                       not give a number; two is chosen because a generation
  *                       spends most of its time waiting on a provider or on
  *                       TeX, and one instance that can only wait once wastes
@@ -18,7 +18,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                       on the screen does not feel it, long enough that an
  *                       idle deployment is not running a statement twice a
  *                       second.
- * @param heartbeatEvery Bolum 30.4, and it must stay well under
+ * @param heartbeatEvery how often a claim is refreshed, and it must stay well under
  *                       {@code staleAfter} — a heartbeat that fires as rarely
  *                       as the collector looks makes every slow job a zombie.
  * @param staleAfter     how long a silent worker is given before its jobs go

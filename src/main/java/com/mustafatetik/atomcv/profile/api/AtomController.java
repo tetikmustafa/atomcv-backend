@@ -81,7 +81,7 @@ public class AtomController {
 
     @Operation(operationId = "listAtoms", summary = "List atoms with their wordings",
             description = "Unpaginated: a profile holds tens to a few hundred atoms "
-                    + "and the editor loads all of them (EK D.6.2).")
+                    + "and the editor loads all of them.")
     @ApiResponse(responseCode = "200", description = "Every matching atom, in display order",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(schema = @Schema(implementation = AtomResponse.class))))
@@ -196,7 +196,7 @@ public class AtomController {
 
     @Operation(operationId = "tagAtom", summary = "Put a label on an atom",
             description = """
-                    A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for (Bolum 19.1), so                     this is a scoring control rather than a label.
+                    A quarter of Faz B's raw score is the overlap between an                     atom's tags and what the posting asks for, so                     this is a scoring control rather than a label.
 
                     The label is stored canonical — trimmed and lowercased —                     because that is the form the scorer compares, and the                     response carries the stored form back. A label the profile                     already knows reuses its row rather than making a second                     one that would never match the first.
 

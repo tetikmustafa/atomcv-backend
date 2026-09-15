@@ -29,7 +29,7 @@ import java.util.UUID;
  * @param cachedTokens  the discounted subset of {@code inputTokens}
  * @param latencyMs     measured around the call
  * @param occurredAt    when, from the injected clock
- * @param userId        whose work this was, or null. Bolum 44.3's brake reads
+ * @param userId whose work this was, or null. The brake reads
  *                      the daily total and does not need it; "which user cost
  *                      what" has no other source and cannot be backfilled
  * @param jobId         which queued job made the call, or null. Same argument:

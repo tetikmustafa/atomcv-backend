@@ -13,9 +13,9 @@ import java.util.List;
  * behind it; this exists so a user meets a limit as a disabled control rather
  * than as an error, which is design principle 4 applied to permissions.
  *
- * @param allowedLanguages     output languages, Bolum 38.1's third axis
+ * @param allowedLanguages output languages, the third axis
  * @param allowedTemplates     the templates that actually exist, not the ones
- *                             § 35.7's example lists — it names three and the
+ *                             The example lists — it names three and the
  *                             registry holds one, and publishing a template
  *                             the renderer cannot produce is a selectable
  *                             option that fails at generation time
@@ -35,9 +35,9 @@ import java.util.List;
  *                             account, which has none. Absent from the JSON
  *                             rather than sent as a number a client would draw
  *                             a progress bar against
- * @param quotaResetsAt        EK D.6.5: an absolute instant, never an hour
- * @param anonymousExpiresAt   EK D.6.6's sliding two hours. {@code null} until
- *                             Adim 3.6 mints anonymous sessions, and always
+ * @param quotaResetsAt        an absolute instant, never an hour
+ * @param anonymousExpiresAt the sliding two hours. {@code null} until
+ *                             An anonymous session is always minted, and always
  *                             {@code null} for an account
  */
 @Schema(description = "What the caller may do; the server still enforces all of it")

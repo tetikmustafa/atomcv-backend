@@ -19,7 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                    30s timeout each is a 90s worst case, and that is the
  *                    intended trade against failing on one slow vendor
  * @param schemaRetries how many times a schema mismatch is retried on the same
- *                    provider before the walk stops. Bolum 27.3 says to retry
+ *                    provider before the walk stops. The rule is to retry
  *                    there rather than move on but does not say how often; one
  *                    retry catches a model that simply wandered, and more
  *                    would be paying repeatedly for a prompt that is wrong.

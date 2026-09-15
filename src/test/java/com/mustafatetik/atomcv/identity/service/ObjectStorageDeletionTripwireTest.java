@@ -9,15 +9,15 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * The reminder Bolum 57.4 asks a paragraph to be.
+ * The reminder a paragraph was asked to be.
  *
  * <p><strong>Object storage is deliberately not in the MVP</strong> (the
- * decision of 2026-08-28, recorded in Bolum 57.4 and EK D.6.3): nothing stores
- * bytes, a download re-renders from {@code content_snapshot}, and
- * {@code generations.pdf_key} is null on every row. So there is no PDF to
- * delete, and the deletion list is not wrong — it is unbacked.
+ * decision of 2026-08-28): nothing stores bytes, a download re-renders from
+ * {@code content_snapshot}, and {@code generations.pdf_key} is null on every
+ * row. So there is no PDF to delete, and the deletion list is not wrong — it
+ * is unbacked.
  *
- * <p>Bolum 57.4 then says the thing this test exists for:
+ * <p>And then the thing this test exists for:
  *
  * <blockquote>Depolama indigi gun silme yolunun oradan da gecmesi gerekir, ve
  * bunu hatirlatacak tek sey bu paragraftir: {@code AccountDeletionIT} tablolari
@@ -45,10 +45,10 @@ class ObjectStorageDeletionTripwireTest {
             "delete those objects from the bucket, and fail the deletion if the "
                     + "bucket refuses -- a row gone with its object left behind is "
                     + "the worst of both",
-            "cover the anonymous sweep too (Bolum 51.6.1), which deletes profiles "
+            "cover the anonymous sweep too, which deletes profiles "
                     + "nobody is signed in to and would otherwise leak every "
                     + "artifact they made",
-            "say so in the privacy policy, which Bolum 57.4 names in the same "
+            "say so in the privacy policy, which is named in the same "
                     + "breath as the code");
 
     @Test
@@ -63,7 +63,7 @@ class ObjectStorageDeletionTripwireTest {
         assertThat(writers)
                 .as("""
                         `%s` can now set a pdf_key, so bytes are about to live in a \
-                        bucket -- and Bolum 57.4's deletion path does not go through \
+                        bucket -- and the deletion path does not go through \
                         it. Before this ships, account deletion has to: %s. \
                         Then delete this test and add the real one to \
                         AccountDeletionIT, which cannot see a bucket on its own.\
@@ -81,7 +81,7 @@ class ObjectStorageDeletionTripwireTest {
     @Test
     void thereIsNoObjectStoreClient() {
         assertThat(onTheClasspath("software.amazon.awssdk.services.s3.S3Client"))
-                .as("An S3/R2 client is on the classpath. Bolum 57.4's deletion "
+                .as("An S3/R2 client is on the classpath. The deletion "
                         + "path has to go through it before anything stores a "
                         + "user's PDF: %s", String.join("; ", WHAT_DELETION_WOULD_NEED))
                 .isFalse();

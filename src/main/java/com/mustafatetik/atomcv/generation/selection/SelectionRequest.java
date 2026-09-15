@@ -150,7 +150,7 @@ public record SelectionRequest(
     /**
      * @param minAtoms below this many bullets the entry is not worth printing,
      *                 so selection either keeps this many or drops it whole
-     *                 (Bolum 20.2, constraint 4)
+     *                 (the fourth constraint)
      */
     public record EntryPlan(
             UUID entryId, short minAtoms, boolean bare, List<AtomCandidate> atoms) {

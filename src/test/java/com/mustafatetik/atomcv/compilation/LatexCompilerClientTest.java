@@ -52,7 +52,7 @@ class LatexCompilerClientTest {
     /**
      * Faz F checks a page count it did not compute itself. A compiler that
      * does not report one is the wrong compiler, and answering with a document
-     * of unknown length would break the one promise the product makes (P4).
+     * of unknown length would break the one promise the product makes.
      */
     @Test
     void aDocumentWithNoPageCountIsRefusedRatherThanGuessed() {

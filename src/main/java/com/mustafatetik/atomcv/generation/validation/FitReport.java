@@ -49,7 +49,7 @@ import java.util.Set;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "How much of the posting's vocabulary the CV actually says. "
-        + "Counts, never a percentage — Bolum 23.3.")
+        + "Counts, never a percentage.")
 public record FitReport(
         int requiredCovered,
         int requiredTotal,

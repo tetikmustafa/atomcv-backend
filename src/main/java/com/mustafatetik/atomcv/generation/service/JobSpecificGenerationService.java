@@ -110,8 +110,8 @@ public class JobSpecificGenerationService {
     /**
      * @param jobDescription        the pasted posting
      * @param preflightAcknowledged the user chose {@code continue_anyway}
-     *  after Bolum 18.1 refused
-     * @param coverLetter           Bolum 34's letter was asked for. Off by
+     *  after the preflight refused
+     * @param coverLetter the letter was asked for. Off by
      *                              default and a second call when it is on;
      *                              a letter that cannot be written honestly
      *                              does not fail the CV

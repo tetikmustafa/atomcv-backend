@@ -94,7 +94,7 @@ public class SupportRead implements ApplicationRunner {
     }
 
     /**
-     * @param exportTo where to write Bolum 48.5's file, or null to print. Every
+     * @param exportTo where to write the file, or null to print. Every
      *                 refusal above is the same either way: the grant is what
      *                 makes the read lawful, and writing it to disk is more of
      *                 a read rather than less of one

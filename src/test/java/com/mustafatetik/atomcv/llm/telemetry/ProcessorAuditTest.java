@@ -10,7 +10,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * The list EK C.1 says has to be current and public.
+ * The sub-processor list, which has to be current and public.
  *
  * <p>It is a fact about configuration rather than about the product, which is
  * why it is computed rather than written down: a deployment that adds a vendor
@@ -30,7 +30,7 @@ class ProcessorAuditTest {
     }
 
     /**
-     * A provider with no model is one Bolum 27.3 skips, so it receives nothing
+     * A provider with no model is one the walk skips, so it receives nothing
      * and does not belong on a list of who does. This is the shape of a
      * deployment that has configured one vendor of the two.
      */

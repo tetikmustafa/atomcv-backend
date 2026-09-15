@@ -14,7 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 /**
- * The three development profiles of Bolum 54.2, held to actually existing.
+ * The three development profiles, held to actually existing.
  *
  * <p>This guard is here because of how the gap presented itself: Spring
  * accepts an unknown profile name in silence. Before these files were written,

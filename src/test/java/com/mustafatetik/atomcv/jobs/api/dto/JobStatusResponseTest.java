@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * What polling a job can learn (F-018, EK D.6.4).
+ * What polling a job can learn (F-018).
  *
  * <p>The stream is not the only way to a result — a client that reloaded the
  * page has only this — and until now it could say nothing at all about an
