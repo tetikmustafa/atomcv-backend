@@ -99,7 +99,7 @@ class GenerationJobHandlerTest {
     @Test
     void asuccessfulRunIsWrittenDownAndItsIdComesBack() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         JobOutcome outcome = handler.handle(job(), ProgressSink.NONE);
@@ -121,7 +121,7 @@ class GenerationJobHandlerTest {
     @Test
     void thesnapshotCarriesEnoughToDrawThePageAgain() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -139,7 +139,7 @@ class GenerationJobHandlerTest {
     @Test
     void thepostingIsRecordedWithTheHashTheCacheUses() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -159,7 +159,7 @@ class GenerationJobHandlerTest {
     @Test
     void theengineVersionNamesWhatActuallyRan() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.WITHOUT_EMBEDDING, "v7")));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -185,7 +185,7 @@ class GenerationJobHandlerTest {
     @Test
     void thetraceCarriesOnlyThePhasesThatAreInstrumented() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generated()));
 
         handler.handle(job(), ProgressSink.NONE);
@@ -209,7 +209,7 @@ class GenerationJobHandlerTest {
     @Test
     void thetraceSaysWhyFazDChangedNothing() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.DEFAULT, "v1",
                         new RewriteTally(Map.of(BulletRewriteService.PROMPT_ID, 4),
                                 Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 3,
@@ -239,7 +239,7 @@ class GenerationJobHandlerTest {
     @Test
     void therejectReasonsAreWrittenInTheEnumsOwnOrder() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.ok(generatedWith(ScoringWeights.DEFAULT, "v1",
                         // Handed over in the reverse of the enum's own order.
                         new RewriteTally(Map.of(),
@@ -265,7 +265,7 @@ class GenerationJobHandlerTest {
     @Test
     void aprovideroutageComesBackRetryableAndWritesNoRecord() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.AllProvidersUnavailable(List.of("openrouter"))));
 
@@ -285,7 +285,7 @@ class GenerationJobHandlerTest {
     @Test
     void athinProfileComesBackFinal() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
-                any(), any(), any()))
+                any(), any(), any(), any()))
                 .thenReturn(Result.err(
                         new PipelineError.InsufficientProfile(10, List.of("atoms"))));
 
@@ -312,7 +312,7 @@ class GenerationJobHandlerTest {
             assertThat(failed.error().code()).isEqualTo(ErrorCode.ANONYMOUS_SESSION_EXPIRED);
         });
         verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(),
-                anyBoolean(), any(), any(), any());
+                anyBoolean(), any(), any(), any(), any());
     }
 
     /**
@@ -336,7 +336,7 @@ class GenerationJobHandlerTest {
                     .containsExactly(com.mustafatetik.atomcv.shared.error.ResolutionAction.SIGN_UP);
         });
         verify(generations, never()).generateForJob(any(), any(), anyBoolean(), any(), any(),
-                anyBoolean(), any(), any(), any());
+                anyBoolean(), any(), any(), any(), any());
     }
 
     // ── fixtures ─────────────────────────────────────────────────────────
@@ -346,7 +346,7 @@ class GenerationJobHandlerTest {
     }
 
     private static Map<String, Object> payload() {
-        return new GenerationPayload(POSTING, false, 1, "en", false, java.util.List.of(),
+        return new GenerationPayload(POSTING, false, 1, "en", false, java.util.List.of(), null,
                 com.mustafatetik.atomcv.billing.QuotaSubject.of(
                         com.mustafatetik.atomcv.shared.security.UserContext.of(USER)))
                 .toMap();

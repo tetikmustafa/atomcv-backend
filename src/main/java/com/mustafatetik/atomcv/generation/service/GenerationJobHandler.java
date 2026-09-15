@@ -127,6 +127,7 @@ public class GenerationJobHandler implements JobHandler {
                 : generations.generateForJob(
                         subject, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
+                        payload.customizationId(),
                         // Bolum 18.7: the directive belongs to this run, never
                         // to the cached analysis the posting hash keys.
                         GenerationDirectives.emphasising(payload.emphasize()),

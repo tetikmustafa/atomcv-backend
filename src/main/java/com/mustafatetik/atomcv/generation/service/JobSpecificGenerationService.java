@@ -30,6 +30,7 @@ import com.mustafatetik.atomcv.rendering.measurement.RenderCostService;
 import com.mustafatetik.atomcv.rendering.measurement.Capacities;
 import com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
+import com.mustafatetik.atomcv.rendering.service.CustomizationService;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -75,6 +76,7 @@ public class JobSpecificGenerationService {
     private final RelevanceScoringService relevance;
     private final RenderCostService renderCosts;
     private final RewritePhase rewrites;
+    private final CustomizationService customizations;
     private final CoverLetterWriter letters;
     private final GenerationPipeline pipeline;
 
@@ -84,7 +86,7 @@ public class JobSpecificGenerationService {
             JobAnalysisPhase analysis,
             RelevanceScoringService relevance,
             RenderCostService renderCosts,
-            RewritePhase rewrites,
+            RewritePhase rewrites, CustomizationService customizations,
             CoverLetterWriter letters,
             GenerationPipeline pipeline,
             Capacities capacities, TemplateMeasurements measurements) {
@@ -97,6 +99,7 @@ public class JobSpecificGenerationService {
         this.relevance = relevance;
         this.renderCosts = renderCosts;
         this.rewrites = rewrites;
+        this.customizations = customizations;
         this.letters = letters;
         this.pipeline = pipeline;
     }
@@ -120,6 +123,7 @@ public class JobSpecificGenerationService {
             Integer maxPages,
             String language,
             boolean coverLetter,
+            java.util.UUID customizationId,
             GenerationDirectives directives,
             ProgressSink progress,
             java.util.UUID jobId) {
@@ -148,7 +152,11 @@ public class JobSpecificGenerationService {
 
         GenerationOptions options = GenerationOptions.forPosting(head, tree, posting.jdLanguage())
                 .withMaxPages(maxPages)
-                .withLanguage(language);
+                .withLanguage(language)
+                // Bolum 14.4: a saved set, when the request named one. Nothing
+                // named leaves the profile's own working settings (Bolum 33.2).
+                .withCustomization(
+                        customizations.settingsOf(profile, customizationId).orElse(null));
 
         if (posting.jdLanguage() != null && !posting.jdLanguage().isBlank()
                 && !posting.jdLanguage().strip().equals(options.language())) {

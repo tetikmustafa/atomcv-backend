@@ -103,6 +103,18 @@ public record GenerationOptions(
         return preferred == null || "auto".equals(preferred) ? sourceLanguage : preferred;
     }
 
+    /**
+     * The same options, rendered with a set somebody saved (Bolum 14.4's
+     * {@code options.customizationId}).
+     *
+     * <p>Null leaves the profile's working settings alone, which is what a
+     * request that names nothing means — and that is nearly every request.
+     * A named set wins because naming one is the more specific statement.
+     */
+    public GenerationOptions withCustomization(TemplateCustomization named) {
+        return named == null ? this : new GenerationOptions(maxPages, language, named);
+    }
+
     /** The template the profile named, with whatever sliders it moved. */
     private static TemplateCustomization customizationFor(Preferences.Defaults defaults) {
         Preferences.Appearance moved = defaults.appearance();

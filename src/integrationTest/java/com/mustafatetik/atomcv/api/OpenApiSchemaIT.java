@@ -359,7 +359,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(7)))
+                        .value(Matchers.aMapWithSize(8)))
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -368,10 +368,10 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.language").exists())
-                // Bolum 44.4's token, sent by a caller with no account. Seven
-                // and not six since Bolum 18.7's emphasis landed -- the count
-                // above is what makes this a guard, so it moves when a property
-                // is meant and fails when one is not.
+                // Bolum 44.4's token, sent by a caller with no account. Eight
+                // now: Bolum 18.7's emphasis and Bolum 14.4's customizationId --
+                // the count above is what makes this a guard, so it moves when a
+                // property is meant and fails when one is not.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.challengeToken").exists())
                 // Bolum 34, opt-in.
@@ -384,7 +384,10 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.emphasize").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
-                        + ".properties.emphasizeOrEmpty").doesNotExist());
+                        + ".properties.emphasizeOrEmpty").doesNotExist())
+                // Bolum 14.4: a saved set to render this one with.
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.customizationId").exists());
     }
 
     @Test

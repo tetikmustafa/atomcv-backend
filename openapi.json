@@ -40,6 +40,9 @@
     "name" : "Applications",
     "description" : "Keeping track of where a CV went"
   }, {
+    "name" : "Templates",
+    "description" : "How a CV is set, and the settings somebody kept"
+  }, {
     "name" : "Entries",
     "description" : "Positions, degrees and projects"
   }, {
@@ -1738,6 +1741,87 @@
         }
       }
     },
+    "/api/v1/customizations" : {
+      "get" : {
+        "tags" : [ "Templates" ],
+        "summary" : "The settings this profile kept",
+        "description" : "Oldest first, which is the order somebody made them in.",
+        "operationId" : "listCustomizations",
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every saved set",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CustomizationResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Keep a set of appearance settings under a name",
+        "description" : "Bolum 33.2's Layer B, saved. The profile's own\n`preferences.appearance` is still the working set and is\nwhat a generation uses when it names nothing; this is for\nthe person who keeps a dense set for a long CV and a\nroomier one for a short one.\n\nEvery value is bounded by Bolum 33.2's ranges, and the\nranges are why a bad page is not reachable from here.\n\nAt most twenty per profile, and names are unique within\none.",
+        "operationId" : "createCustomization",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CustomizationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomizationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "VALIDATION_FAILED — an unknown template, a name already used, or one set too many",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/verify" : {
       "post" : {
         "tags" : [ "Auth" ],
@@ -2458,6 +2542,85 @@
         }
       }
     },
+    "/api/v1/customizations/{id}" : {
+      "delete" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Forget one",
+        "description" : "A generation already made with it is unaffected: Bolum 14.5 writes the settings themselves into the selection snapshot rather than an id, so a document can always be re-rendered exactly as it was sent.",
+        "operationId" : "deleteCustomization",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Deleted"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Rename or re-set one",
+        "description" : "The settings are replaced whole. Bolum 33.2's parameters are read together by the renderer, and a half-applied geometry is a page nobody asked for. Sending only a name renames it and leaves the settings.",
+        "operationId" : "patchCustomization",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CustomizationPatch"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "The set as it now stands",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomizationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/applications/{applicationId}" : {
       "delete" : {
         "tags" : [ "Applications" ],
@@ -2650,6 +2813,39 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AccountSettings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/templates" : {
+      "get" : {
+        "tags" : [ "Templates" ],
+        "summary" : "The templates a CV can be rendered with",
+        "description" : "The registry's own list, with the measured capacity of                     each: Bolum 33.5 describes the three by how much they hold,                     and a chooser showing three names and no density asks                     somebody to pick blind.\n\nNo display name and no description — those are sentences,                     and Bolum 35.4's rule is that the server sends a key and                     the client writes the sentence. The id is the key.\n\nThe same list `capabilities.allowedTemplates` publishes,                     which is what a client reads to know which of these it may                     offer. This one says what each of them is.",
+        "operationId" : "listTemplates",
+        "responses" : {
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Every template in the registry",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TemplateSummary"
+                  }
                 }
               }
             }
@@ -4166,6 +4362,11 @@
             },
             "maxItems" : 10,
             "minItems" : 0
+          },
+          "customizationId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "A set of appearance settings saved under\n`/api/v1/customizations`, to render this one with\n(Bolum 14.4). Absent uses the profile's own working settings,\nwhich is what nearly every request means.\n\nA set belonging to somebody else is not found."
           }
         }
       },
@@ -4427,6 +4628,104 @@
           }
         },
         "required" : [ "token" ]
+      },
+      "CustomizationRequest" : {
+        "type" : "object",
+        "description" : "Appearance settings to keep",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "What to call it; unique within the profile",
+            "example" : "Compact, one page",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "baseTemplateId" : {
+            "type" : "string",
+            "description" : "Which template it is built on",
+            "example" : "classic",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "fontSizePt" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "9 to 12 (Bolum 33.2)",
+            "example" : 10.5,
+            "maximum" : 12.0,
+            "minimum" : 9.0
+          },
+          "marginInches" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "0.4 to 1.0 inches",
+            "example" : 0.5,
+            "maximum" : 1.0,
+            "minimum" : 0.4
+          },
+          "lineSpacing" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "0.9 to 1.3",
+            "example" : 1.0,
+            "maximum" : 1.3,
+            "minimum" : 0.9
+          },
+          "fontFamily" : {
+            "type" : "string",
+            "description" : "One of the whitelisted families (Bolum 5.5)",
+            "example" : "sans"
+          },
+          "accentColor" : {
+            "type" : "string",
+            "description" : "Six hex digits, no hash",
+            "example" : "1D4ED8",
+            "pattern" : "^[0-9A-Fa-f]{6}$"
+          }
+        },
+        "required" : [ "baseTemplateId", "name" ]
+      },
+      "CustomizationResponse" : {
+        "type" : "object",
+        "description" : "A saved set of appearance settings",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "baseTemplateId" : {
+            "type" : "string"
+          },
+          "templateVersion" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "fontSizePt" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "marginInches" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lineSpacing" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "fontFamily" : {
+            "type" : "string"
+          },
+          "accentColor" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
       },
       "VerifyRequest" : {
         "type" : "object",
@@ -4703,6 +5002,49 @@
           }
         }
       },
+      "CustomizationPatch" : {
+        "type" : "object",
+        "description" : "What to change about a saved set",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "A new name, or absent to keep the one it has",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "baseTemplateId" : {
+            "type" : "string",
+            "description" : "Present to replace the settings; absent to leave them",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "fontSizePt" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 12.0,
+            "minimum" : 9.0
+          },
+          "marginInches" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1.0,
+            "minimum" : 0.4
+          },
+          "lineSpacing" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1.3,
+            "minimum" : 0.9
+          },
+          "fontFamily" : {
+            "type" : "string"
+          },
+          "accentColor" : {
+            "type" : "string",
+            "pattern" : "^[0-9A-Fa-f]{6}$"
+          }
+        }
+      },
       "ApplicationUpdate" : {
         "type" : "object",
         "description" : "A partial edit. Omitting a field leaves it as it is — send only what changed.\n\nRequires `If-Match` with the version from the row you are editing. A stale one is a 412: somebody else's tab changed the row first.",
@@ -4744,6 +5086,41 @@
         "properties" : {
           "lifecycleEmails" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "TemplateSummary" : {
+        "type" : "object",
+        "description" : "A template a CV can be rendered with",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "The id used everywhere else",
+            "example" : "classic"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Renderer version; moves when the geometry does",
+            "example" : 6
+          },
+          "pageTextHeightPt" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "The text height of one page, in points",
+            "example" : 648.0
+          },
+          "baselineSkipPt" : {
+            "type" : "number",
+            "format" : "double",
+            "description" : "One line of body text, in points",
+            "example" : 13.6
+          },
+          "approximateLinesPerPage" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Roughly how many lines of body text fit a page, which is how Bolum 33.5 describes the three",
+            "example" : 54
           }
         }
       },
