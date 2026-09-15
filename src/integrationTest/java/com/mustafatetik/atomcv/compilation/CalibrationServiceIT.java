@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The runtime measurement path, checked against the numbers a person wrote
- * down (Bolum 26.4, 33.1).
+ * down.
  *
  * <p><strong>This is the test that lets layer B exist.</strong> Both stored
  * capacities were derived by hand from {@code LatexCalibrationIT}'s own

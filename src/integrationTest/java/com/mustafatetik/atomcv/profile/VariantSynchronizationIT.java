@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 32.2, against a real database and a real queue.
+ * Variant synchronisation, against a real database and a real queue.
  *
  * <p>The rule has two halves that are easy to collapse into one and must not
  * be. Everything derived from an edited wording goes <strong>stale</strong>,
@@ -100,7 +100,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
     /**
      * The half that is easy to lose. A wording the person wrote is marked so
      * the screen can say the two have diverged, and is <em>not</em> queued —
-     * Bolum 32.2 gives them the choice rather than making it for them.
+     * the choice is theirs rather than made for them.
      */
     @Test
     void awordingThePersonWroteIsMarkedStaleButNeverRegenerated() {
@@ -152,7 +152,7 @@ class VariantSynchronizationIT extends AbstractIntegrationTest {
         assertThat(reload(turkish).isUserEdited()).isTrue();
     }
 
-    // -- handing a wording back (Bolum 32.2's other button) ----------------
+    // -- handing a wording back: the other button --------------------------
 
     /**
      * The half dilim 1 owed. A wording becomes the person's by typing; taking

@@ -90,7 +90,7 @@ class AtomEmbeddingMappingIT extends AbstractIntegrationTest {
         assertThat(reloaded.getEmbeddingHash()).isNull();
     }
 
-    /** Bolum 28.2: the hash is what says whether the vector is still current. */
+    /** The hash is what says whether the vector is still current. */
     @Test
     void anAtomKnowsWhenItsVectorIsStale() {
         var atom = persistedAtom();

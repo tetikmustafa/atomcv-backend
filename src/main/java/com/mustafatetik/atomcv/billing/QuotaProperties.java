@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.billing;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * The daily ceilings of Bolum 44.1.
+ * The daily ceilings.
  *
  * <p>Configuration rather than constants because the numbers are a business
  * decision that will move — and because a deployment under attack should be

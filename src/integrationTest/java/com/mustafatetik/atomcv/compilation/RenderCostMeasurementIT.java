@@ -128,7 +128,7 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
         assertThat(renderCosts.measureMissing(profile, TemplateCustomization.CLASSIC)).isZero();
     }
 
-    /** Bolum 26.5: new words, new size, so the old number has to go. */
+    /** New words, new size, so the old number has to go. */
     @Test
     void editingTheWordsThrowsAwayTheMeasurement() {
         UUID variantId = seedVariant(RichContent.plain("Built ETL pipelines"));

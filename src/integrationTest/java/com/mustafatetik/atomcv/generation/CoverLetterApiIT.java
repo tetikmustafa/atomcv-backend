@@ -38,12 +38,13 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * {@code POST /generations/{id}/cover-letter/regenerate}.
  *
- * <p><strong>This lane has no LLM provider configured at all</strong>, so every
- * call here ends in Bolum 27.3's empty chain. That is not a limitation for
- * what is worth asserting: the endpoint's promise is that nothing unchecked
- * reaches {@code generations.cover_letter}, and a failure on the way to the
- * model exercises it exactly as a refused draft would. The refusal itself is
- * pinned in {@code CoverLetterServiceTest}, where the answer can be dictated.
+ * <p><strong>This lane has no LLM provider configured at all</strong>, so
+ * every call here ends in an empty provider chain. That is not a limitation
+ * for what is worth asserting: the endpoint's promise is that nothing
+ * unchecked reaches {@code generations.cover_letter}, and a failure on the way
+ * to the model exercises it exactly as a refused draft would. The refusal
+ * itself is pinned in {@code CoverLetterServiceTest}, where the answer can be
+ * dictated.
  */
 @AutoConfigureMockMvc
 class CoverLetterApiIT extends AbstractIntegrationTest {

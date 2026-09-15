@@ -41,7 +41,7 @@ public interface AtomScoreSource {
     }
 
     /**
-     * Which of the posting's terms this atom carries (P7).
+     * Which of the posting's terms this atom carries.
      *
      * <p>Empty by default, and empty is the honest answer for both of the
      * other implementations: general mode has no posting, and
@@ -51,8 +51,8 @@ public interface AtomScoreSource {
      * <p>Beside {@link #scoreOf} rather than fetched separately because the
      * two are the same answer at different resolutions: a score says how well
      * this atom fits and this says what made it fit. A screen showing one
-     * without the other shows a verdict with no evidence, which is the
-     * failure P7 exists to prevent.
+     * without the other shows a verdict with no evidence, which is exactly
+     * what showing a reason is meant to prevent.
      *
      * @return the terms, in a stable order, never null
      */
@@ -102,9 +102,9 @@ public interface AtomScoreSource {
      * <p><strong>Zero for anything the snapshot never scored.</strong> An atom
      * written after the generation was made was not part of this CV's world
      * and does not get to walk into it by being new; if the person wants it
-     * there they can ask for it by name, and a directive outranks a score.
-     * The alternative is re-running Faz B, which is the thing Bolum 24.1 says
-     * not to do.
+     * there they can ask for it by name, and a directive outranks a score. The
+     * alternative is re-running Faz B, which is the one thing an edit must not
+     * do.
      *
      * @param byId score by atom id, and by entry id for a heading
      */

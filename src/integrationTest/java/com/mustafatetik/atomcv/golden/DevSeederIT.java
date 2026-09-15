@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The local seed (XI-A.3 Adim 1.9).
+ * The local seed.
  *
  * <p>Two things are worth a test rather than a look: that it puts a whole
  * profile in — the fixture's rows go into four tables with foreign keys

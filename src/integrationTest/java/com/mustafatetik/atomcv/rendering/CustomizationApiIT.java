@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.MvcResult;
  * <p><strong>Five endpoints the resource map has always listed, against a
  * table that has existed since V1 with no writer.</strong> The settings a
  * person is working with live in {@code preferences.appearance} and always
- * did; what was missing is Bolum 33.2's other half — keeping more than one.
+ * did; what was missing is the other half — keeping more than one.
  */
 @AutoConfigureMockMvc
 class CustomizationApiIT extends AbstractIntegrationTest {
@@ -51,8 +51,8 @@ class CustomizationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 33.5 describes the three templates by how much they hold, so the
-     * capacity is what makes this list a chooser rather than three names.
+     * The three templates are described by how much they hold, so the capacity
+     * is what makes this list a chooser rather than three names.
      */
     @Test
     void thetemplateListCarriesWhatEachOneHolds() throws Exception {
@@ -70,7 +70,7 @@ class CustomizationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>Compact really is denser.</strong> Bolum 33.5's table is a claim
+     * <strong>Compact really is denser.</strong> The catalogue is a claim
      * about the measured constants, and a list that reported the same figure
      * for all three would be publishing a number nobody measured.
      */
@@ -107,10 +107,9 @@ class CustomizationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>Bolum 33.2's ranges are the safety, and they are enforced at the
-     * door.</strong> The section's own sentence is that the ranges are kept
-     * narrow so a bad result is physically impossible; a value outside one
-     * must not reach a preamble.
+     * <strong>The ranges are the safety, and they are enforced at the
+     * door.</strong> They are kept narrow so a bad result is physically
+     * impossible; a value outside one must not reach a preamble.
      */
     @Test
     void avalueOutsideBolum33sRangeIsRefused() throws Exception {
@@ -140,7 +139,7 @@ class CustomizationApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.params.fields[0]").value("baseTemplateId"));
     }
 
-    /** Bolum 13's UNIQUE (profile_id, name), answered before the constraint sees it. */
+    /** UNIQUE (profile_id, name), answered before the constraint sees it. */
     @Test
     void twosetsCannotShareAname() throws Exception {
         created("{ \"name\": \"Mine\", \"baseTemplateId\": \"classic\" }");

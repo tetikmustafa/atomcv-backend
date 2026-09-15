@@ -12,20 +12,20 @@ import java.util.regex.Pattern;
 /**
  * Faz B: how well each atom answers this posting.
  *
- * <p><strong>There is no threshold.</strong> Bolum 19.3 is emphatic and it is
- * the reason the product never says "nothing relevant found": someone applying
- * outside their field still gets a full page, their scores are simply low in
- * absolute terms — and Faz F says so honestly rather than the page being
- * empty.
+ * <p><strong>There is no threshold, and the rule is emphatic about
+ * it.</strong> It is the reason the product never says "nothing relevant
+ * found": someone applying outside their field still gets a full page, their
+ * scores are simply low in absolute terms — and Faz F says so honestly rather
+ * than the page being empty.
  *
- * <p>Pure and deterministic. No clock, no database, no session: Bolum 51.2's
+ * <p>Pure and deterministic. No clock, no database, no session: the
  * determinism test compares two runs over the same inputs, and a scorer that
  * reached for any of those could not pass it.
  *
  * <p>The embedding similarity is computed here rather than through pgvector's
- * {@code <=>}. Bolum 19.2's snippet implies a query, but the profile tree is
- * already in memory by the time Faz B runs — a query would add a round trip to
- * fetch what is loaded, and it would move the ranking into SQL where the
+ * {@code <=>}. A similarity query is the obvious reading, but the profile tree
+ * is already in memory by the time Faz B runs — a query would add a round trip
+ * to fetch what is loaded, and it would move the ranking into SQL where the
  * determinism test cannot reach it.
  */
 public final class RelevanceScorer {
@@ -41,11 +41,11 @@ public final class RelevanceScorer {
     /**
      * Every atom, ranked.
      *
-     * <p>Ordering is Bolum 19.6 and Bolum 19.4 together, and lives on
-     * {@link ScoredAtom#MOST_RELEVANT_FIRST}: relevance in buckets, then the
-     * general-mode criteria within a bucket, then the id. This function stays
-     * a pure comparison of values — the secondary score arrives on the
-     * {@link ScorableAtom}, computed where the clock is.
+     * <p>Ordering is the relevance buckets and the secondary criteria
+     * together, and lives on {@link ScoredAtom#MOST_RELEVANT_FIRST}: relevance
+     * in buckets, then the general-mode criteria within a bucket, then the id.
+     * This function stays a pure comparison of values — the secondary score
+     * arrives on the {@link ScorableAtom}, computed where the clock is.
      */
     public static List<ScoredAtom> rank(
             List<ScorableAtom> atoms, JobAnalysis posting, float[] postingVector,
@@ -85,9 +85,9 @@ public final class RelevanceScorer {
                 + weights.skill() * skill
                 + weights.keyword() * keyword;
 
-        // Bolum 19.1: importance in [0,1] becomes a multiplier in [0.5, 1.5].
-        // A raw score can therefore exceed one, which is why the final score
-        // is clamped rather than assumed to be a fraction.
+        // Importance in [0,1] becomes a multiplier in [0.5, 1.5]. A raw score
+        // can therefore exceed one, which is why the final score is clamped
+        // rather than assumed to be a fraction.
         double finalScore = clamp(raw * (0.5 + atom.importance()));
         return new ScoredAtom(atom.atomId(), finalScore, atom.secondaryScore(),
                 new ScoredAtom.Components(embedding, tag, skill, keyword),
@@ -95,20 +95,20 @@ public final class RelevanceScorer {
     }
 
     /**
-     * Which of the posting's own terms this atom actually carries (P7).
+     * Which of the posting's own terms this atom actually carries.
      *
      * <p>The two comparisons above already decide this and throw the answer
-     * away — they count matches and keep the count. P7 asks for the terms, and
-     * a number is the one thing it explicitly does not ask for: "matched 3 of
-     * 12" is a grade, "go, kubernetes" is a reason.
+     * away — they count matches and keep the count. What is wanted is the
+     * terms, and a number is the one thing explicitly not wanted: "matched 3
+     * of 12" is a grade, "go, kubernetes" is a reason.
      *
      * <p><strong>Sorted, and that is not a presentation choice.</strong> The
      * sets it walks are {@code Set.copyOf} results, and those iterate in an
      * order salted per JVM run: taking them as they come would write a
      * different order on every run of the same generation. The list lands in a
-     * JSONB column and in Bolum 51.2's determinism comparison, so it would
-     * pass here, fail on the runner, and read as a flake. Sorting is the
-     * cheapest order that is the same everywhere.
+     * JSONB column and in the determinism comparison, so it would pass here,
+     * fail on the runner, and read as a flake. Sorting is the cheapest order
+     * that is the same everywhere.
      *
      * <p>Costs one more pass over sets already in hand. It runs for every atom
      * of every job-specific generation, which is why it does not re-tokenise
@@ -174,7 +174,7 @@ public final class RelevanceScorer {
     }
 
     /**
-     * Bolum 19.2, weighted by what the posting asked for.
+     * Skill overlap, weighted by what the posting asked for.
      *
      * <p>The denominator is the required list, not the union: a posting with
      * two requirements and twelve nice-to-haves should let an atom covering
@@ -197,8 +197,8 @@ public final class RelevanceScorer {
     }
 
     /**
-     * How many of the posting's literal phrases the atom actually says
-     * (Bolum 19.1's fourth term).
+     * How many of the posting's literal phrases the atom actually says — the
+     * fourth term of the score.
      *
      * <p>Measured against the atom's <em>words</em> rather than its tags,
      * which is what makes this a component of its own. The tag term already
@@ -251,7 +251,7 @@ public final class RelevanceScorer {
      * into "sqı", and no atom would ever match it.
      */
     public static String canonicalSkill(String canonical) {
-        // Delegated, not reimplemented. Bolum 31.5 adds an alias dictionary,
+        // Delegated, not reimplemented. Ingestion adds an alias dictionary,
         // and a dictionary applied on one side of a comparison is worse than
         // none: a posting saying "React.js" would stop matching an atom
         // normalised to "react", and the pairs that broke would be the ones
@@ -280,8 +280,8 @@ public final class RelevanceScorer {
     }
 
     /**
-     * The posting reduced to the sets Bolum 19.2 compares against, computed
-     * once for the whole ranking rather than per atom.
+     * The posting reduced to the sets the four components compare against,
+     * computed once for the whole ranking rather than per atom.
      */
     record PostingTarget(
             Set<String> tags, Set<String> keywords,
@@ -292,17 +292,16 @@ public final class RelevanceScorer {
         }
 
         /**
-         * <strong>Bolum 18.7's emphasis is a term, not a weight.</strong> What
-         * a person asks to bring forward joins the posting's own keywords and
-         * tags, and the formula of Bolum 19.1 is untouched -- the same four
+         * <strong>A directive's emphasis is a term, not a weight.</strong>
+         * What a person asks to bring forward joins the posting's own keywords
+         * and tags, and the score formula is untouched -- the same four
          * components with the same four weights, reading one larger set.
          *
          * <p>That is the whole of why it is safe. A new weight would change
          * every score in the product and make {@code engine_version
          * .scoringWeights} a lie for every generation before it; this changes
-         * the input to one generation, which is what a directive is
-         * (Bolum 18.7: the analysis is cached and shared, the directive is
-         * neither).
+         * the input to one generation, which is what a directive is: the
+         * analysis is cached and shared, the directive is neither.
          *
          * <p>Both sets, because the two components answer different questions:
          * the tag overlap asks whether this atom is about that, and the keyword

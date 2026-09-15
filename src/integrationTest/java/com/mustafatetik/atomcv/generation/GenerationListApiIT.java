@@ -32,17 +32,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * {@code GET /api/v1/generations} (F-020, EK D.8.7, Bolum 41.2).
+ * {@code GET /api/v1/generations} (F-020).
  *
- * <p>The endpoint was on Bolum 35's resource map from the beginning and was
- * never written, so {@code capabilities.canSaveHistory} was true against
- * nothing a person could open. It also cost the account-deletion screen a
- * number: that screen has to say what goes, and a wrong count in the one
- * irreversible place is worse than no count.
+ * <p>The endpoint was on the resource map from the beginning and was never
+ * written, so {@code capabilities.canSaveHistory} was true against nothing a
+ * person could open. It also cost the account-deletion screen a number: that
+ * screen has to say what goes, and a wrong count in the one irreversible place
+ * is worse than no count.
  *
- * <p><strong>Cursor, not offset.</strong> EK D.8.7 settled it and the reason
- * is here as a test: this list grows from the top, and an offset page two
- * taken after a new row lands repeats a row and hides another.
+ * <p><strong>Cursor, not offset.</strong> The reason is here as a test: this
+ * list grows from the top, and an offset page two taken after a new row lands
+ * repeats a row and hides another.
  */
 @AutoConfigureMockMvc
 class GenerationListApiIT extends AbstractIntegrationTest {
@@ -119,10 +119,11 @@ class GenerationListApiIT extends AbstractIntegrationTest {
      *
      * <p>The list shipped without a label on purpose — every label a history
      * screen wants is read out of the posting, and putting one here would have
-     * answered absolute rule 4's question by accident instead of on the record.
-     * The frontend built the screen, saw that a row saying "one page · a date ·
-     * strong" tells nobody which application it was, and asked. Bolum 57 now
-     * says where the exception stops, and this is the half of it that runs.
+     * answered absolute rule 4's question by accident instead of on the
+     * record. The frontend built the screen, saw that a row saying "one page ·
+     * a date · strong" tells nobody which application it was, and asked. Where
+     * the exception stops is now written down, and this is the half of it that
+     * runs.
      */
     @Test
     void arowIsLabelledByWhatFazAReadAndNotByThePosting() throws Exception {
@@ -135,8 +136,8 @@ class GenerationListApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].roleTitle").value("Backend Engineer"))
                 .andExpect(jsonPath("$.items[0].companyName").value("Atlas Yazilim"))
-                // The line Bolum 57 draws: enough to name the row, never the
-                // posting it was named from.
+                // The line: enough to name the row, never the posting it was
+                // named from.
                 .andExpect(jsonPath("$.items[0].jobDescription").doesNotExist());
     }
 
@@ -266,9 +267,9 @@ class GenerationListApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 24.4. Twenty hand edits of one CV is twenty-one rows and one of
-     * them is the CV; the other twenty are steps the person walked through and
-     * would not recognise as separate generations.
+     * Twenty hand edits of one CV is twenty-one rows and one of them is the
+     * CV; the other twenty are steps the person walked through and would not
+     * recognise as separate generations.
      *
      * <p>Not listed and not counted, and those two have to agree: a total that
      * counted the retired rows would print a number the list under it
@@ -356,7 +357,7 @@ class GenerationListApiIT extends AbstractIntegrationTest {
         return generations.save(user(), record);
     }
 
-    /** What an edit writes: a new row naming the one it retired (Bolum 24.4). */
+    /** What an edit writes: a new row naming the one it retired. */
     private Generation saveReplacing(UUID retired) {
         var record = new Generation(
                 LocalDevUser.DEV_USER_ID, profileId(), options(), selection(), engine());

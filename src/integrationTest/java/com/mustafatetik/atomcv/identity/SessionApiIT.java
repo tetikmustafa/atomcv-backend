@@ -61,7 +61,7 @@ class SessionApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Adim 3.6: a caller with no session gets one, and it is anonymous.
+     * A caller with no session gets one, and it is anonymous.
      *
      * <p>The bogus cookie is how this is reached without a second application
      * context. Under {@code local} every cookie-less request is the dev user,
@@ -77,14 +77,14 @@ class SessionApiIT extends AbstractIntegrationTest {
                         .cookie(new Cookie("sid", "not-a-session")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(false))
-                // Bolum 9's limits, not an account's.
+                // The anonymous limits, not an account's.
                 .andExpect(jsonPath("$.capabilities.canSaveHistory").value(false))
                 .andExpect(jsonPath("$.capabilities.maxAtoms").value(60))
-                // Bolum 9's five, and true again: the anonymous flow generates.
+                // Five of them, and true again: the anonymous flow generates.
                 .andExpect(jsonPath("$.capabilities.dailyGenerationQuota").value(5))
                 // The half that is built keeps its number.
                 .andExpect(jsonPath("$.capabilities.dailyProfileQuota").value(3))
-                // EK D.6.6: the countdown the client renders.
+                // The countdown the client renders.
                 .andExpect(jsonPath("$.capabilities.anonymousExpiresAt").exists())
                 .andReturn();
 
@@ -125,7 +125,7 @@ class SessionApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 40.1 chose Redis over a JWT for exactly this: the session is gone
+     * Redis was chosen over a JWT for exactly this: the session is gone
      * server-side, not merely forgotten by the browser.
      */
     @Test

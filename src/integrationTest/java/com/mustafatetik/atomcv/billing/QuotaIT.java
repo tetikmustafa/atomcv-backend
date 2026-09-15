@@ -132,7 +132,7 @@ class QuotaIT extends AbstractIntegrationTest {
         assertThat(usage.remaining()).isZero();
     }
 
-    /** Bolum 44.1: one limit would let extraction eat the whole of it. */
+    /** One limit would let extraction eat the whole of it. */
     @Test
     void thetwoMetricsAreCountedApart() {
         quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
@@ -151,8 +151,8 @@ class QuotaIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44.1's anonymous pair, and they are lower on purpose: an address
-     * is a weaker claim about who is asking than an account, and it is what
+     * The anonymous pair, and they are lower on purpose: an address is a
+     * weaker claim about who is asking than an account, and it is what
      * somebody spending our money rotates.
      */
     @Test
@@ -193,7 +193,7 @@ class QuotaIT extends AbstractIntegrationTest {
         assertThat(quotas.usage(QuotaSubject.of(user), QuotaMetric.GENERATION).used()).isZero();
     }
 
-    /** Bolum 44.2: a failure the user got no document out of is given back. */
+    /** A failure the user got no document out of is given back. */
     @Test
     void arefundGivesTheUnitBack() {
         quotas.consume(QuotaSubject.of(user), QuotaMetric.GENERATION);
@@ -251,7 +251,7 @@ class QuotaIT extends AbstractIntegrationTest {
         assertThat(stored).isEqualTo(LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC));
     }
 
-    // ── Bolum 44.3: the brake ────────────────────────────────────────────
+    // ── The brake ───────────────────────────────────────────────────────
 
     /**
      * An empty table serves. A deployment that has never touched a flag must

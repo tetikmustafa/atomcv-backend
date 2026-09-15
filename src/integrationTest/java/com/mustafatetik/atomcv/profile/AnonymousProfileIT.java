@@ -27,14 +27,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * An anonymous session's profile, as rows.
  *
- * <p><strong>Sapma, and the deleted test said so first.</strong> Bolum 14's step
- * 9 carries a privacy test — "DB'ye hiçbir satır yazmamalı" — and this file
- * replaces the one that enforced it. What that one's javadoc warned about is
- * exactly what now happens: "a profile in Postgres with a nullable owner and a
- * cleanup job keeps it on paper and breaks it in a backup". The decision to
- * accept that was taken on 2026-09-09 and written into § 9, § 2's store choice
- * and § 57.4; the privacy text says the number, which is up to six months in an
- * encrypted archive.
+ * <p><strong>A deviation, and the deleted test said so first.</strong> The
+ * build guide carried a privacy test — "DB'ye hiçbir satır yazmamalı" — and
+ * this file replaces the one that enforced it. What that one's javadoc warned
+ * about is exactly what now happens: "a profile in Postgres with a nullable
+ * owner and a cleanup job keeps it on paper and breaks it in a backup". The
+ * decision to accept that was taken on 2026-09-09 and written into the store
+ * choice and the privacy rules; the privacy text says the number, which is up
+ * to six months in an encrypted archive.
  *
  * <p>So what is asserted here is the second-best promise, and every part of it
  * has to hold or the first one was given up for nothing: the row has no owner,
@@ -127,8 +127,8 @@ class AnonymousProfileIT extends AbstractIntegrationTest {
     }
 
     /**
-     * § 41.3: the ref is what addresses this, and a persistent one is refused
-     * rather than quietly reaching an account's profile by id.
+     * The ref is what addresses this, and a persistent one is refused rather
+     * than quietly reaching an account's profile by id.
      *
      * <p><strong>It arrives as {@code InvalidDataAccessApiUsageException}, and
      * that is worth pinning.</strong> The guard throws
@@ -170,7 +170,7 @@ class AnonymousProfileIT extends AbstractIntegrationTest {
 
     // -- the window --------------------------------------------------------
 
-    /** Writing is activity, and activity slides the window (EK D.6.6). */
+    /** Writing is activity, and activity slides the window. */
     @Test
     void writingAgainPushesTheExpiryOut() {
         ProfileRef ref = anonymousRef();

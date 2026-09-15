@@ -16,7 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 44.3's tightening, from the mark to the refusal.
+ * The tightening, from the mark to the refusal.
  *
  * <p>The gap this closes is a rate, not a total. A daily ceiling of twenty says
  * nothing about spending twenty in four minutes, and the detector that would
@@ -87,9 +87,9 @@ class TighteningIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The refusal must not also cost a unit. Bolum 44.3 puts the brake in
-     * front of the quota for this reason and the tightening sits in the same
-     * place: a request that was never going to run has nothing to charge for.
+     * The refusal must not also cost a unit. The brake sits in front of the
+     * quota for this reason and the tightening sits in the same place: a
+     * request that was never going to run has nothing to charge for.
      */
     @Test
     void aRefusalWhileTightenedSpendsNothing() {

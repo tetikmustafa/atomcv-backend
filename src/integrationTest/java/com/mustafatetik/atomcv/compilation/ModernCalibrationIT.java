@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Modern's stored capacity, re-derived from the compiler (Bolum 26.4, 33.5).
+ * Modern's stored capacity, re-derived from the compiler.
  *
  * <p>Shorter than the other two calibration classes because it does not have
  * to be long any more: {@code CalibrationService} derives the seventeen
@@ -69,7 +69,9 @@ class ModernCalibrationIT extends AbstractLatexTest {
                 .isGreaterThan(classic.fixedCost(CapacityModel.SECTION_HEADER));
     }
 
-    /** Bolum 33.5 asks for about fifty lines against classic's fifty-four. */
+    /**
+     * The catalogue asks for about fifty lines against classic's fifty-four.
+     */
     @Test
     void thepageHoldsAboutFiftyLines() {
         CapacityModel modern = capacity(TemplateCustomization.MODERN);

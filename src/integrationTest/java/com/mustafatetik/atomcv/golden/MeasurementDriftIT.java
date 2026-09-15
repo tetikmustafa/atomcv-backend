@@ -34,8 +34,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * How far the budget is from the page (XI-A.3's completion checklist, Bolum
- * 23.1).
+ * How far the budget is from the page.
  *
  * <p>Everything else proves the arithmetic is consistent with itself: the
  * measured costs add up to the budget, the budget is not exceeded, the page

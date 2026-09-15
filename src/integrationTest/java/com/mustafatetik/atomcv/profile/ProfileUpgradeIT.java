@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The anonymous profile becomes the account's (Adim 3.6, dilim 6).
+ * The anonymous profile becomes the account's.
  *
  * <p>What these cases hold is that it is the <em>same</em> profile and not a
  * copy of one. The rows are written with the ids they already had, which is
@@ -116,7 +116,7 @@ class ProfileUpgradeIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The two jobs § 31.6.3 skipped while the profile had no rows. They are
+     * The two jobs that were skipped while the profile had no rows. They are
      * possible now, and worth doing: the first generation from an account
      * should not be the degraded one.
      */

@@ -24,13 +24,13 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Bolum 31.2's ladder and Bolum 31.1's split, over the wire.
+ * The validation ladder and the request/queue split, over the wire.
  *
  * <p>The split is what these cases are about: a file this deployment cannot
  * read is refused <em>here</em>, and a file it can read is answered 202 with a
- * job. Bolum 31.10's first three failures are things a person acts on at once,
- * and a queued extraction would deliver them eight seconds later where they
- * are least useful.
+ * job. The first three failures are things a person acts on at once, and a
+ * queued extraction would deliver them eight seconds later where they are
+ * least useful.
  */
 @AutoConfigureMockMvc
 class ProfileImportApiIT extends AbstractIntegrationTest {
@@ -60,8 +60,8 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>The text is queued, never the file.</strong> Adim 3.4's first
-     * slice decided the bytes are not stored, and this is the assertion that
+     * <strong>The text is queued, never the file.</strong> It was decided
+     * early that the bytes are not stored, and this is the assertion that
      * keeps it true: a payload carrying the PDF would be the decision quietly
      * reversed by a later refactor.
      */
@@ -78,10 +78,10 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 30.7. An upload is the request a flaky connection repeats most
-     * easily, and profile extraction has the smallest allowance in the
-     * product — a second unit spent on the same file would be the user paying
-     * for their own bad wifi.
+     * An upload is the request a flaky connection repeats most easily, and
+     * profile extraction has the smallest allowance in the product — a second
+     * unit spent on the same file would be the user paying for their own bad
+     * wifi.
      */
     @Test
     void thesameUploadTwiceUnderOneKeyIsOneJobAndOneUnit() throws Exception {
@@ -151,9 +151,9 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44.2: nothing was extracted, so nothing was spent. Without the
-     * refund a person could burn a day's allowance on files that never made it
-     * past the first rung.
+     * Nothing was extracted, so nothing was spent. Without the refund a person
+     * could burn a day's allowance on files that never made it past the first
+     * rung.
      */
     @Test
     void arefusedFileGivesTheAllowanceBack() throws Exception {
@@ -168,11 +168,11 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
     /**
      * {@code mode=replace}, and it is not incidental: {@code DevSeeder} gives
      * the acting user a golden profile at start-up, so every upload here is by
-     * definition a second one and would be refused with 409 (Bolum 08b). These
-     * cases are about the door — the format ladder, the allowance, the
-     * idempotency key — and the second-CV rule has {@code SecondImportIT} to
-     * itself. Nothing is actually overwritten: the worker is off in this
-     * suite, so the job is queued and never run.
+     * definition a second one and would be refused with 409. These cases are
+     * about the door — the format ladder, the allowance, the idempotency key —
+     * and the second-CV rule has {@code SecondImportIT} to itself. Nothing is
+     * actually overwritten: the worker is off in this suite, so the job is
+     * queued and never run.
      */
     private static org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
             upload(String filename, String contentType, byte[] bytes) {
@@ -203,9 +203,9 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
                 content.beginText();
                 content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
                 content.newLineAtOffset(50, 700);
-                // Over Bolum 31.2's hundred-character floor on purpose: a
-                // shorter fixture would be refused by the last rung and this
-                // class would be testing that instead of the happy path.
+                // Over the hundred-character floor on purpose: a shorter
+                // fixture would be refused by the last rung and this class
+                // would be testing that instead of the happy path.
                 content.showText("Ada Lovelace, Analytical Engine programmer, London. "
                         + "Engineered the first published algorithm intended for a machine, "
                         + "and translated Menabrea's memoir in 1843.");

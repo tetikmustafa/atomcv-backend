@@ -16,18 +16,18 @@ import java.time.temporal.ChronoUnit;
  * <p>Pure and deterministic, like everything Faz C stands on. Today's date is
  * a parameter rather than a call to {@code now()} for that reason: a scorer
  * that reads the clock cannot be tested for the same-input-same-output
- * property that Bolum 51.2 requires.
+ * property the determinism test requires.
  */
 public final class GeneralModeScorer {
 
     /**
      * How long it takes for an entry's recency to halve.
      *
-     * <p>Bolum 19.4 asks for exponential decay and does not give a rate. Five
-     * years puts a job from a decade ago at a quarter of a current one, which
-     * matches the advice CVs are actually written by; it does not put it at
-     * zero, because a decade-old bullet with a metric in it can still be the
-     * best thing on the page.
+     * <p>Exponential decay is what is asked for, and no rate comes with it.
+     * Five years puts a job from a decade ago at a quarter of a current one,
+     * which matches the advice CVs are actually written by; it does not put it
+     * at zero, because a decade-old bullet with a metric in it can still be
+     * the best thing on the page.
      */
     static final double HALF_LIFE_YEARS = 5.0;
 
@@ -65,8 +65,8 @@ public final class GeneralModeScorer {
      * heading carries no metric and is not verified. Dropping them and leaving
      * the other two at their own weights would cap a degree line at 0.65 and
      * make it lose every comparison it should win, so what survives is
-     * renormalised — the <em>ratio</em> Bolum 19.4 gives between recency and
-     * importance is what matters, and it is kept exactly.
+     * renormalised — the <em>ratio</em> between recency and importance is what
+     * matters, and it is kept exactly.
      */
     public static double scoreOfEntry(Entry entry, LocalDate today) {
         double total = RECENCY_WEIGHT + IMPORTANCE_WEIGHT;

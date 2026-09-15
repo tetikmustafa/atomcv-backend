@@ -110,11 +110,10 @@ class AtomEmbeddingIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 28: the comparison happens in one language, and a similarity
-     * between a Turkish sentence and an English one measures the languages
-     * rather than the match. An atom with no English wording is left alone —
-     * a vector in the wrong space is worse than none, because scoring would
-     * use it.
+     * The comparison happens in one language, and a similarity between a
+     * Turkish sentence and an English one measures the languages rather than
+     * the match. An atom with no English wording is left alone — a vector in
+     * the wrong space is worse than none, because scoring would use it.
      */
     @Test
     void theTextThatIsEmbeddedIsTheEnglishOneAndNotTheSource() {
@@ -134,9 +133,9 @@ class AtomEmbeddingIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 28.2 compares by content hash, not by timestamp. Running twice
-     * over an unchanged profile must cost nothing — this job is queued after
-     * every import and every edit.
+     * The comparison is by content hash, not by timestamp. Running twice over
+     * an unchanged profile must cost nothing — this job is queued after every
+     * import and every edit.
      */
     @Test
     void asecondRunOverAnUnchangedProfileEmbedsNothing() {

@@ -42,7 +42,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * A profile in, a PDF out, through the real compiler (Bolum 20-23).
+ * A profile in, a PDF out, through the real compiler.
  *
  * <p>This is the walking skeleton's end: everything between a stored profile
  * and a document exists and is joined up. The unit test next to it proves the

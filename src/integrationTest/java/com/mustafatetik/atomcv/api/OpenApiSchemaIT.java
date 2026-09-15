@@ -32,7 +32,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     /**
-     * EK D.6.7: the warm-up is not public API.
+     * The warm-up is not public API.
      *
      * <p>It has a URL under {@code /api/v1} and it is not part of the
      * contract — it takes no input, answers nothing, and exists so that
@@ -77,9 +77,9 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                                 "increase_page_limit", "review_pins", "keep_top_pinned", "sign_up",
                                 "paste_full_posting", "continue_as_general_cv",
                                 "switch_to_manual_form", "complete_profile",
-                                // Adim 2.3, handoff B-037: Bolum 18.1 offers
-                                // three ways past a preflight refusal and the
-                                // vocabulary named only two of them.
+                                // Handoff B-037: a preflight refusal offers
+                                // three ways past it and the vocabulary named
+                                // only two of them.
                                 "continue_anyway", "retry",
                         "replace_profile", "keep_existing_profile")));
     }
@@ -87,10 +87,10 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     /**
      * F-023: the import's warning vocabulary has to be published as an enum.
      *
-     * <p>{@code ImportWarning.code} went out as a bare {@code string}, and
-     * Bolum 31.6.4 tells a client to build its message from that code. Between
-     * the two, only one of the six values was written down anywhere the
-     * frontend could read it — Bolum 31.4's example — so five messages could
+     * <p>{@code ImportWarning.code} went out as a bare {@code string}, and a
+     * client is told to build its message from that code. Between the two,
+     * only one of the six values was written down anywhere the frontend could
+     * read it — one example in the extraction schema — so five messages could
      * not be written at all, and a guessed key set would have been six lines
      * that never match. The review screen counted its warnings and opened
      * their sections without ever naming one.
@@ -198,9 +198,9 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
 
     @Test
     void everyErrorBodyPromisesACodeAndAStatus() throws Exception {
-        // EK D.9 · 12: every error carries a code, INTERNAL_ERROR included, so
-        // that the client's error path always has something to translate.
-        // Published as optional it is a guarantee nobody can rely on.
+        // Every error carries a code, INTERNAL_ERROR included, so that the
+        // client's error path always has something to translate. Published as
+        // optional it is a guarantee nobody can rely on.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.ApiError.required")
                         .value(Matchers.containsInAnyOrder("code", "status")));
@@ -368,27 +368,28 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.language").exists())
-                // Bolum 44.4's token, sent by a caller with no account. Nine
-                // now: Bolum 18.7's two directives and Bolum 14.4's set --
-                // the count above is what makes this a guard, so it moves when a
+                // The challenge token, sent by a caller with no account. Nine
+                // now: the two directives and the saved customization -- the
+                // count above is what makes this a guard, so it moves when a
                 // property is meant and fails when one is not.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.challengeToken").exists())
-                // Bolum 34, opt-in.
+                // The covering letter, opt-in.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.coverLetter").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.wantsCoverLetter").doesNotExist())
-                // Bolum 18.7's directive, and its own derived getter kept off
+                // The emphasis directive, and its own derived getter kept off
                 // the wire by the same two annotations F-009 needed.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.emphasize").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.emphasizeOrEmpty").doesNotExist())
-                // Bolum 14.4: a saved set to render this one with.
+                // A saved set to render this one with.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.customizationId").exists())
-                // Bolum 18.7's fourth field, which reaches Faz D and nothing else.
+                // The directive's fourth field, which reaches Faz D and
+                // nothing else.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.note").exists());
     }
@@ -399,7 +400,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // F-029. springdoc builds a multipart body from the @RequestParts and
         // publishes every @RequestParam beside them as a *query* parameter.
         // `mode` is one, correctly. `challengeToken` became one by accident,
-        // and § 35.7.4 calls it a form field -- the difference is that a token
+        // and it is meant to be a form field -- the difference is that a token
         // in a URL is written to access logs, proxy logs and browser history,
         // which is most of what it exists to make hard.
         //
@@ -443,9 +444,9 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     @Test
     void theFitReportIsPublishedAsCountsAndAClosedVocabulary() throws Exception {
         // F-008. The frontend cannot draw a result screen from a report that
-        // is not in the schema, and Bolum 23.3 forbids a percentage by name —
-        // so what is published has to be the counts and a closed set of
-        // levels, not a number the client is tempted to render as a bar.
+        // is not in the schema, and a percentage is forbidden by name — so
+        // what is published has to be the counts and a closed set of levels,
+        // not a number the client is tempted to render as a bar.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.paths['/api/v1/generations/{generationId}'].get")
                         .exists())
@@ -564,8 +565,8 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
 
     @Test
     void theProfileShapeIsPublishedWithoutAnIdentifier() throws Exception {
-        // Bolum 35.1: no path carries a profile id, so the schema does not
-        // suggest one exists to be sent back.
+        // No path carries a profile id, so the schema does not suggest one
+        // exists to be sent back.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.Profile.properties.completeness").exists())
                 .andExpect(jsonPath("$.components.schemas.Profile.properties.contact").exists())

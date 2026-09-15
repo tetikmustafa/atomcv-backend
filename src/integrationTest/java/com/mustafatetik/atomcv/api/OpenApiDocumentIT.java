@@ -17,10 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * The schema in git, against the schema the application publishes.
  *
- * <p><strong>Why a committed file at all.</strong> Bolum 47.1 gives the
- * frontend a {@code contract-check} job that fetches
- * {@code raw.githubusercontent.com/.../build/openapi.json} — and {@code build/}
- * is generated and ignored, so that URL has always answered 404 and the job has
+ * <p><strong>Why a committed file at all.</strong> CI gives the frontend a
+ * {@code contract-check} job that fetches {@code
+ * raw.githubusercontent.com/.../build/openapi.json} — and {@code build/} is
+ * generated and ignored, so that URL has always answered 404 and the job has
  * always taken its {@code || echo "schema fetch failed, skipping"} branch. The
  * one guard against the two repositories drifting apart was skipping itself.
  * The file lives at the repository root instead, where it can be committed.

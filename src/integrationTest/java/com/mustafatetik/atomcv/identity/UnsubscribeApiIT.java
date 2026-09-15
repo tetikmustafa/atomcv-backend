@@ -70,8 +70,8 @@ class UnsubscribeApiIT extends AbstractIntegrationTest {
 
     /**
      * <strong>An unknown token answers exactly as a real one does.</strong>
-     * Bolum 40.4's reasoning in a smaller place: a different status would turn
-     * this into an oracle for which tokens are live.
+     * The enumeration reasoning in a smaller place: a different status would
+     * turn this into an oracle for which tokens are live.
      */
     @Test
     void atokenThatBelongsToNobodyIsAnsweredTheSameWay() throws Exception {

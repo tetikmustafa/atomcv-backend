@@ -48,8 +48,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Bolum 9's promise, end to end: somebody who has not signed up can import a
- * CV, and leaves nothing behind.
+ * The promise, end to end: somebody who has not signed up can import a CV, and
+ * leaves nothing behind.
  *
  * <p><strong>The second half is what this class exists for.</strong> The first
  * — a 202 and a job — would be satisfied by writing an anonymous profile into
@@ -155,9 +155,9 @@ class AnonymousImportIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44.1: an anonymous upload is counted against the address, because
-     * a session is a cookie and counting by one would hand an unlimited
-     * allowance to whoever clears theirs.
+     * An anonymous upload is counted against the address, because a session is
+     * a cookie and counting by one would hand an unlimited allowance to
+     * whoever clears theirs.
      */
     @Test
     void theunitIsSpentByTheAddressAndByNoUser() throws Exception {
@@ -200,9 +200,9 @@ class AnonymousImportIT extends AbstractIntegrationTest {
 
     /**
      * And the person is told where their profile is, in the same terminal
-     * event an account gets: Bolum 30.6's client renders one screen from it,
-     * and an anonymous run answering without a {@code profileId} would have
-     * nowhere to send them next.
+     * event an account gets: the client renders one screen from it, and an
+     * anonymous run answering without a {@code profileId} would have nowhere
+     * to send them next.
      */
     @Test
     void theterminalEventNamesTheProfileTheSessionOwns() throws Exception {
@@ -229,7 +229,7 @@ class AnonymousImportIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>Bolum 44.2, and the reason the payload carries a subject at
+     * <strong>The refund, and the reason the payload carries a subject at
      * all.</strong> The unit was spent by an address, and the worker runs
      * outside the request that knew it — without the subject travelling in the
      * payload there is nothing to give it back to, and a person whose

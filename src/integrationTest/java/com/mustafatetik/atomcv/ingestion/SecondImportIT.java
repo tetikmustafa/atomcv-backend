@@ -18,7 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Bolum 08b: a second CV is a 409, and the only way past it is saying so.
+ * A second CV is a 409, and the only way past it is saying so.
  *
  * <p>{@code PROFILE_ALREADY_EXISTS} sat in the catalogue with nothing producing
  * it while {@code ProfileWriter} quietly <em>added</em> the second CV to the
@@ -65,7 +65,7 @@ class SecondImportIT extends AbstractIntegrationTest {
      * The empty row every signed-in person has is not a profile — the check is
      * "is there anything in it", not "is there a row". Refusing against a row
      * would answer 409 to somebody who has never uploaded anything, which is
-     * the same mistake the anonymous upgrade was making before Adim 3.6's fix.
+     * the same mistake the anonymous upgrade was making before it was fixed.
      *
      * <p>Asserted on the predicate rather than through the endpoint, because
      * the endpoint acts as the seeded user and manufacturing an empty profile
@@ -93,7 +93,7 @@ class SecondImportIT extends AbstractIntegrationTest {
                                 "replace_profile", "keep_existing_profile")));
     }
 
-    /** And no merge among them: Bolum 08b says replace or keep, and means it. */
+    /** And no merge among them: replace or keep, and it means it. */
     @Test
     void theRefusalNeverOffersAMerge() throws Exception {
         mvc.perform(multipart("/api/v1/profile/import").file(file()))

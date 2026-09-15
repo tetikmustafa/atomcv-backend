@@ -336,7 +336,8 @@ class AtomApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.primary").value(true))
                 // The tone was the user's choice. Writing it unconditionally
-                // wiped it on every promote (P8).
+                // wiped it on every promote, which is the effort a person put
+                // in being silently thrown away.
                 .andExpect(jsonPath("$.tone").value("technical"))
                 .andExpect(jsonPath("$.plainText").value("Veri hatları"));
     }

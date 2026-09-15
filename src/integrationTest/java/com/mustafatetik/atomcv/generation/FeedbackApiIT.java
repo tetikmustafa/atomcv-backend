@@ -33,8 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
  * {@code POST /generations/{id}/feedback}.
  *
  * <p>Two things are being protected here and only one of them is the row. The
- * other is Bolum 48.4's consent: it opens the single door through absolute
- * rule 4, so it has to close again when the person says so, and it has to be
+ * other is the support consent: it opens the single door through absolute rule
+ * 4, so it has to close again when the person says so, and it has to be
  * visible to them either way.
  */
 @AutoConfigureMockMvc
@@ -89,7 +89,7 @@ class FeedbackApiIT extends AbstractIntegrationTest {
         assertThat(countFeedback()).isEqualTo(1);
     }
 
-    /** Bolum 13 allows exactly two values, and zero is neither of them. */
+    /** The column allows exactly two values, and zero is neither of them. */
     @Test
     void aratingThatIsNeitherThumbIsRefused() throws Exception {
         mvc.perform(feedback("{\"rating\":0}"))
@@ -101,10 +101,10 @@ class FeedbackApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * <strong>Bolum 48.4's door, and the audit trail that makes it a
+     * <strong>The support door, and the audit trail that makes it a
      * consent.</strong> Everything else in this product is diagnosed from
-     * shapes; this is the one way to the content, and the person is shown
-     * when it runs out and whether it was used.
+     * shapes; this is the one way to the content, and the person is shown when
+     * it runs out and whether it was used.
      */
     @Test
     void grantingAccessOpensAWindowThePersonCanSee() throws Exception {
@@ -187,10 +187,10 @@ class FeedbackApiIT extends AbstractIntegrationTest {
     /**
      * A verdict that cannot be read back is a verdict the screen forgets.
      *
-     * <p>Bolum 13's rule is that pressing a thumb again shows the standing
-     * selection rather than a thank-you, and until this landed a client could
-     * only honour that for as long as the tab stayed open: nothing published
-     * the answer, so a reload started blank and offered to collect the same
+     * <p>The rule is that pressing a thumb again shows the standing selection
+     * rather than a thank-you, and until this landed a client could only
+     * honour that for as long as the tab stayed open: nothing published the
+     * answer, so a reload started blank and offered to collect the same
      * verdict a second time.
      */
     @Test
@@ -216,10 +216,10 @@ class FeedbackApiIT extends AbstractIntegrationTest {
      * The sharper half of F-019: the grant comes back tomorrow, when the person
      * who most needs to check on it is the one who returns.
      *
-     * <p><strong>And the audit trail comes back with it.</strong> Bolum 48.4
-     * promises the person can see when their content was actually read.
-     * {@code accessedAt} left the wire in `B-075` because nothing could write it
-     * — absolute rule 3 leaves no cross-user read path — and the offline support
+     * <p><strong>And the audit trail comes back with it.</strong> The grant
+     * promises the person can see when their content was actually read. {@code
+     * accessedAt} left the wire in `B-075` because nothing could write it —
+     * absolute rule 3 leaves no cross-user read path — and the offline support
      * reader stamps it now (`B-078`), so it is published again. Absent here
      * because nobody has read this one, which is the honest value rather than
      * the structural one it used to be.

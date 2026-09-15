@@ -24,7 +24,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Bolum 44.4 with the challenge actually switched on.
+ * The bot check with the challenge actually switched on.
  *
  * <p>The rest of the suite runs without a secret, which is the local branch and
  * the right one there — but it means nothing else in this repository ever
@@ -101,9 +101,9 @@ class ChallengeApiIT extends AbstractIntegrationTest {
     /**
      * The refusal, and what it must leave behind: nothing.
      *
-     * <p>Bolum 40.4.1's whole worry is that this endpoint creates a user row
-     * for any address anyone types. A challenge that answered 403 after the
-     * row was written would be a check on the response and not on the effect.
+     * <p>The whole worry is that this endpoint creates a user row for any
+     * address anyone types. A challenge that answered 403 after the row was
+     * written would be a check on the response and not on the effect.
      */
     @Test
     void aTokenTheVerifierRejectsCreatesNoAccount() throws Exception {

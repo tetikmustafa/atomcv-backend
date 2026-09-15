@@ -73,7 +73,7 @@ class JobAnalysisCacheIT {
                 "Senior Backend Engineer. Go. design payment systems. distributed systems");
     }
 
-    /** Bolum 18.6: seven days, and a key with no expiry would never age out. */
+    /** Seven days, and a key with no expiry would never age out. */
     @Test
     void theEntryCarriesTheDocumentedLifetime() {
         cache.put("a posting with a lifetime", "v1", analysis());
@@ -108,10 +108,10 @@ class JobAnalysisCacheIT {
     }
 
     /**
-     * The rule Bolum 18.6 does not state: a cache is an optimisation, and an
-     * optimisation whose outage takes the product down is worse than not
-     * having one. Measured against a server that is genuinely gone rather
-     * than against a mock that was told to throw.
+     * The rule nothing states: a cache is an optimisation, and an optimisation
+     * whose outage takes the product down is worse than not having one.
+     * Measured against a server that is genuinely gone rather than against a
+     * mock that was told to throw.
      */
     @Test
     void aServerThatIsGoneIsAMissRatherThanAFailure() {

@@ -135,7 +135,7 @@ class JobStreamIT extends AbstractIntegrationTest {
         assertThat(streams.watcherCount(job.getId())).isZero();
     }
 
-    /** Every event carries an id, which orders one stream (EK D.6.4). */
+    /** Every event carries an id, which orders one stream. */
     @Test
     void eventsAreNumbered() throws Exception {
         Job job = queued();

@@ -47,8 +47,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 class QueuedGenerationApiIT extends AbstractIntegrationTest {
 
     /**
-     * Long enough, varied enough and full of the words Bolum 18.1 looks for.
-     * Anything less and the preflight refuses it — which is its own test.
+     * Long enough, varied enough and full of the words the preflight looks
+     * for. Anything less and the preflight refuses it — which is its own test.
      */
     private static final String POSTING = """
             We are seeking a senior backend engineer to join our payments team.
@@ -146,7 +146,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
         assertThat((String) payload.get("jobDescription")).contains("payments team");
     }
 
-    // ── Bolum 35.3: the preflights are synchronous ───────────────────────
+    // ── The preflights are synchronous ──────────────────────────────────
 
     /**
      * The point of doing this here rather than in the worker: a request that
@@ -165,12 +165,12 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 // F-016: one code, eight reasons — and this is the only place
                 // that shows the reason surviving the whole way to the body.
                 // "hire me plz" is short before it is anything else, and
-                // Bolum 18.1 checks length first on purpose.
+                // length is checked first on purpose.
                 .andExpect(jsonPath("$.params.reason").value("too_short"))
                 // The preflight analysed nothing, and says so.
                 .andExpect(jsonPath("$.params.confidence").value(0.0))
                 .andExpect(jsonPath("$.params.skillsFound").value(0))
-                // Bolum 18.1's three ways out, unchanged for a preflight refusal.
+                // The three ways out, unchanged for a preflight refusal.
                 .andExpect(jsonPath("$.resolutions[*].action").value(
                         org.hamcrest.Matchers.contains(
                                 "continue_anyway", "paste_full_posting",
@@ -192,8 +192,8 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * EK D.6.1: the heuristics are cheap on purpose and a person may know
-     * better than they do.
+     * The heuristics are cheap on purpose and a person may know better than
+     * they do.
      */
     @Test
     void acknowledgingThePreflightGetsPastIt() throws Exception {
@@ -209,10 +209,10 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 19.4: no posting is not a bad request, it is a general CV. The
-     * column agrees — {@code generations.job_description} is NULL for exactly
-     * this case — and it is the same endpoint because everything from
-     * selection onwards is the same pipeline.
+     * No posting is not a bad request, it is a general CV. The column agrees —
+     * {@code generations.job_description} is NULL for exactly this case — and
+     * it is the same endpoint because everything from selection onwards is the
+     * same pipeline.
      */
     @Test
     void nopostingIsAGeneralCvRatherThanARequestError() throws Exception {
@@ -230,7 +230,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Bolum 44.1 on the wire, and EK D.6.5 asks for both numbers.
+     * The quota on the wire, and both numbers are asked for.
      *
      * <p>{@code resetsAt} is an absolute instant the client renders in the
      * user's own locale; {@code Retry-After} is a duration, and it is the only
@@ -261,7 +261,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
         assertThat(queuedJobs()).as("a refused request queues nothing").isZero();
     }
 
-    // ── Bolum 30.7: idempotency ──────────────────────────────────────────
+    // ── Idempotency ─────────────────────────────────────────────────────
 
     /** A double click produces one CV, not two identical ones a second apart. */
     @Test
@@ -293,7 +293,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .isNotEqualTo(jobIdFrom(postWithKey(null)));
     }
 
-    // ── EK D.6.4: following it ───────────────────────────────────────────
+    // ── Following it ────────────────────────────────────────────────────
 
     @Test
     void aqueuedJobReportsItselfWithoutAGenerationOrAnError() throws Exception {
@@ -351,7 +351,7 @@ class QueuedGenerationApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
     }
 
-    /** Bolum 30.6's progress, read back through the polling fallback. */
+    /** Progress, read back through the polling fallback. */
     @Test
     void reportedProgressShowsUpInTheStatus() throws Exception {
         seedCareer();

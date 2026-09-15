@@ -102,8 +102,9 @@ class SelectionEditCvIT extends AbstractLatexTest {
     }
 
     /**
-     * The whole promise of Bolum 24, as a document: a bullet is taken off, a
-     * real XeLaTeX run produces a real PDF, and the page limit still holds.
+     * The whole promise of the edit loop, as a document: a bullet is taken
+     * off, a real XeLaTeX run produces a real PDF, and the page limit still
+     * holds.
      */
     @Test
     void abulletIsTakenOffAndTheDocumentIsMadeAgain() throws Exception {
@@ -132,7 +133,8 @@ class SelectionEditCvIT extends AbstractLatexTest {
      * with a synthetic sentence that the validator refuses, so a real run here
      * prints the original and leaves {@code rewritten_content} empty
      * (docs/notes). Waiting for a fixture would mean this path is exercised by
-     * unit tests and nothing else — the shape § 51.7 calls unverified wiring.
+     * unit tests and nothing else — the shape that counts as unverified
+     * wiring.
      *
      * <p>What is being checked is therefore the carry itself, through the real
      * worker, the real renderer and a real compiler: a sentence that was on the

@@ -29,16 +29,16 @@ import org.springframework.test.web.servlet.MockMvc;
  * The profile editor, driven by somebody who has not signed up.
  *
  * <p><strong>Through HTTP on purpose.</strong> The services underneath were
- * already caller-agnostic — they take a {@code ProfileRef} — so what this slice
- * actually changed is one line in each of three controllers and the seam behind
- * it. Bolum 51.2's rule about wiring applies exactly here: asserting on
- * {@code CallerProfiles} would prove the seam and nothing about whether an
+ * already caller-agnostic — they take a {@code ProfileRef} — so what this
+ * slice actually changed is one line in each of three controllers and the seam
+ * behind it. The rule about unverified wiring applies exactly here: asserting
+ * on {@code CallerProfiles} would prove the seam and nothing about whether an
  * anonymous cookie reaches it.
  *
- * <p>§ 35.7's limits are asserted here too, at the layer that publishes them.
- * The capability block says {@code canEditAtomControls: false} and
- * {@code canAddAlternatives: false}, and the section ends with the sentence this
- * file exists for: <em>"Sunucu yine de doğrular."</em>
+ * <p>The capability limits are asserted here too, at the layer that publishes
+ * them. The block says {@code canEditAtomControls: false} and {@code
+ * canAddAlternatives: false}, and the rule this file exists for is that the
+ * server verifies them anyway.
  */
 @AutoConfigureMockMvc
 class AnonymousEditorIT extends AbstractIntegrationTest {
@@ -100,7 +100,7 @@ class AnonymousEditorIT extends AbstractIntegrationTest {
                 Integer.class, profileId())).isEqualTo(1);
     }
 
-    // -- and § 35.7's limits bite -------------------------------------------
+    // -- and the capability limits bite -------------------------------------
 
     /**
      * An atom control, refused with the name of the feature so the screen can
@@ -166,12 +166,13 @@ class AnonymousEditorIT extends AbstractIntegrationTest {
     }
 
     // A caller with no session at all is refused with `sign_up`, and that is
-    // NOT asserted here: this lane runs the `local` profile, where LocalDevUser
-    // and LocalDevSessions answer "who is acting" without a credential (EK C.1
-    // guards them with @Profile for exactly that reason). A request with no
-    // cookie is served as the dev user and returns 200, so a test of the refusal
-    // here would be a test of the stand-in. CallerProfiles' own refusal is the
-    // one JobOwner.of already gives and AnonymousLimitsTest reaches directly.
+    // NOT asserted here: this lane runs the `local` profile, where
+    // LocalDevUser and LocalDevSessions answer "who is acting" without a
+    // credential (both are guarded with @Profile for exactly that reason). A
+    // request with no cookie is served as the dev user and returns 200, so a
+    // test of the refusal here would be a test of the stand-in.
+    // CallerProfiles' own refusal is the one JobOwner.of already gives and
+    // AnonymousLimitsTest reaches directly.
 
     // -- fixtures ----------------------------------------------------------
 

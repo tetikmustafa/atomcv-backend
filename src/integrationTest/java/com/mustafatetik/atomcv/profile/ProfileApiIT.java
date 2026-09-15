@@ -104,7 +104,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.type").value("/errors/resource-not-found"));
     }
 
-    // ─── writes carry a precondition (Bolum 35.6, P8) ───
+    // ─── writes carry a precondition ───
 
     @Test
     void replacingTheHeadStoresItAndMovesTheVersionOn() throws Exception {
@@ -427,7 +427,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.completeness").value(0));
     }
 
-    // ─── export (Bolum 13.1: leaving has to be possible) ───
+    // ─── export: leaving has to be possible ───
 
     @Test
     void theProfileCanBeTakenAwayAsJsonOrAsMarkdown() throws Exception {

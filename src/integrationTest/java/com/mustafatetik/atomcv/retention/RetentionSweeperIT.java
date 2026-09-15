@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Bolum 57's retention window, exercised against a real schema.
+ * The retention window, exercised against a real schema.
  *
  * <p>The sweeper is off for the rest of the suite — a scheduled clear over
  * shared tables would empty rows other tests assert on. So this class turns it

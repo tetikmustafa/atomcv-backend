@@ -370,8 +370,8 @@ class LatexCalibrationIT {
 
     @Test
     void anUncalibratedCustomizationHasNoCapacityAtAll() {
-        // Bolum 33.1's layer B: font size, family, margin and spacing all move
-        // these numbers, and a guessed capacity is how a page guarantee breaks
+        // Layer B: font size, family, margin and spacing all move these
+        // numbers, and a guessed capacity is how a page guarantee breaks
         // without an error.
         var different = new TemplateCustomization("classic",
                 TemplateCustomization.CLASSIC.fontFamily(), 12.0, 0.6, 1.0,

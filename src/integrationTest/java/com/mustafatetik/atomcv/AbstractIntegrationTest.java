@@ -24,9 +24,9 @@ import org.testcontainers.utility.DockerImageName;
  * data to everyone. Tests live under the same rule as development does.
  *
  * <p>Hibernate statistics are on for the whole suite. They cost nothing here
- * and they are how the six-query budget of Bolum 52.2 is measured; leaving the
- * property on a single class meant it disappeared the moment that class was
- * refactored, and the counter then read zero without failing.
+ * and they are how the six-query budget is measured; leaving the property on a
+ * single class meant it disappeared the moment that class was refactored, and
+ * the counter then read zero without failing.
  *
  * <p>The container is started here and never stopped — the singleton pattern
  * Testcontainers documents. {@code @Testcontainers} with {@code @Container}
@@ -66,12 +66,12 @@ public abstract class AbstractIntegrationTest {
             DockerImageName.parse("pgvector/pgvector:pg17").asCompatibleSubstituteFor("postgres"));
 
     /**
-     * Bolum 40.1 puts sessions in Redis, so the suite needs a real one. With
-     * none, {@code SessionStore} fails every lookup and fails it the way it is
-     * meant to — as nobody signed in — and a test of the session would be
-     * asserting against an outage rather than against the store. Bolum 18.6's
-     * analysis cache lands here too; it had been tolerating the same absence
-     * unnoticed, because a cache miss and an outage look alike from outside.
+     * Sessions live in Redis, so the suite needs a real one. With none, {@code
+     * SessionStore} fails every lookup and fails it the way it is meant to —
+     * as nobody signed in — and a test of the session would be asserting
+     * against an outage rather than against the store. The analysis cache
+     * lands here too; it had been tolerating the same absence unnoticed,
+     * because a cache miss and an outage look alike from outside.
      */
     @ServiceConnection(name = "redis")
     static final GenericContainer<?> REDIS =

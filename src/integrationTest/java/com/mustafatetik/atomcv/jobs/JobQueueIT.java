@@ -33,7 +33,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The queue against a real Postgres (Bolum 30.2, 30.4).
+ * The queue against a real Postgres.
  *
  * <p><strong>Not {@code @Transactional}.</strong> The property this class
  * exists to prove is what two concurrent transactions do to one row, and a
@@ -69,7 +69,7 @@ class JobQueueIT extends AbstractIntegrationTest {
                 UUID.class, UUID.randomUUID() + "@example.com");
     }
 
-    // ── Bolum 30.2: taking a job ─────────────────────────────────────────
+    // ── Taking a job ────────────────────────────────────────────────────
 
     /**
      * Two workers asking at the same instant get different rows or nothing —
@@ -155,7 +155,7 @@ class JobQueueIT extends AbstractIntegrationTest {
         }
     }
 
-    /** Bolum 30.3: the user waiting on a screen goes before the background work. */
+    /** The user waiting on a screen goes before the background work. */
     @Test
     void thelowestPriorityNumberIsTakenFirst() {
         enqueue(JobType.MEASUREMENT);
@@ -167,7 +167,7 @@ class JobQueueIT extends AbstractIntegrationTest {
         assertThat(queue.find(first).orElseThrow().getType()).isEqualTo(JobType.GENERATION);
     }
 
-    /** Bolum 30.5's backoff is only a backoff if the claim honours it. */
+    /** The backoff is only a backoff if the claim honours it. */
     @Test
     void ajobWaitingOutItsBackoffIsNotTaken() {
         var waiting = new Job(JobType.GENERATION, userId, Map.of(),
@@ -197,7 +197,7 @@ class JobQueueIT extends AbstractIntegrationTest {
         assertThat(queue.claim("worker")).isEmpty();
     }
 
-    // ── Bolum 30.4: durability ───────────────────────────────────────────
+    // ── Durability ──────────────────────────────────────────────────────
 
     /** A worker that stopped answering has its job taken away from it. */
     @Test
@@ -297,7 +297,7 @@ class JobQueueIT extends AbstractIntegrationTest {
         assertThat(jobs.findById(UserContext.of(userId), anonymous.getId())).isEmpty();
     }
 
-    /** Bolum 30.7: a double click produces one job, not two. */
+    /** A double click produces one job, not two. */
     @Test
     void thesameIdempotencyKeyFindsTheJobItAlreadyMade() {
         Job first = new Job(JobType.GENERATION, userId, Map.of(), clock.instant());
