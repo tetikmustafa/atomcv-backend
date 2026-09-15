@@ -162,6 +162,12 @@ dependencies {
     implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.55.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
+    // Compiled against as well as shipped, for one class: LISTEN/NOTIFY is
+    // what Bolum 30.6 names as the way out of an in-process SSE registry, and
+    // PGConnection#getNotifications has no vendor-neutral spelling. compileOnly
+    // beside runtimeOnly rather than implementation, so the runtime classpath
+    // is exactly what it was; an ArchUnit rule keeps the import to one package.
+    compileOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")

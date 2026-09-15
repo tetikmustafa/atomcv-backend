@@ -278,4 +278,21 @@ class ArchitectureTest {
             .because("a provider call takes up to thirty seconds and the pool "
                     + "is ten connections; a fan-out of these would starve it "
                     + "(Bolum 21.8, Bolum 27.3)");
+
+    /**
+     * <strong>The driver is a driver everywhere but one package.</strong>
+     *
+     * <p>{@code org.postgresql} became compilable when Bolum 30.6's
+     * {@code LISTEN/NOTIFY} landed, because {@code PGConnection#getNotifications}
+     * has no vendor-neutral spelling. That is one class's need and it must not
+     * become everybody's: JPA, Flyway and the pool all speak Postgres through
+     * interfaces that survive a driver upgrade, and a service that reached for
+     * the vendor type would be the one thing an upgrade breaks.
+     */
+    @ArchTest
+    static final ArchRule theDriverIsUsedInOnePlace = noClasses()
+            .that().resideOutsideOfPackage("com.mustafatetik.atomcv.jobs.sse")
+            .should().dependOnClassesThat().resideInAPackage("org.postgresql..")
+            .because("PGConnection is compiled against for LISTEN/NOTIFY and for "
+                    + "nothing else (Bolum 30.6)");
 }

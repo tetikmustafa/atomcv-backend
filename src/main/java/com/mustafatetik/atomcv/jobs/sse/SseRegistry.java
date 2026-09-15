@@ -111,6 +111,20 @@ public class SseRegistry implements JobEvents {
         return watchers.getOrDefault(jobId, List.of()).size();
     }
 
+    /**
+     * How many events this job's stream has carried, which is the id the last
+     * one went out with.
+     *
+     * <p>Readable because a publish has no other visible effect: an
+     * {@link SseEmitter} has no read side, so "did the watcher hear it" is
+     * otherwise only answerable by standing up an HTTP client. Zero once the
+     * job is terminal and the counter is dropped with the watchers.
+     */
+    public long eventsSent(UUID jobId) {
+        AtomicLong counted = sequences.get(jobId);
+        return counted == null ? 0L : counted.get();
+    }
+
     private void broadcast(UUID jobId, String event, Object payload) {
         for (SseEmitter emitter : watchers.getOrDefault(jobId, List.of())) {
             sendTo(emitter, jobId, event, payload);
