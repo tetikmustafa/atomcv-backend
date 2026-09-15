@@ -40,7 +40,7 @@ RUN apt-get update \
 
 # Never root. Nothing in this image needs to write outside /tmp, and the
 # LaTeX container next door already runs as 1000:1000 for the same reason.
-RUN useradd --system --uid 1000 --create-home atomcv
+RUN useradd --system --uid 1000 --create-home atomcv     && mkdir -p /var/cache/atomcv && chown atomcv:atomcv /var/cache/atomcv
 USER atomcv
 WORKDIR /app
 
@@ -48,11 +48,31 @@ COPY --from=build --chown=atomcv:atomcv /src/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
+# Bolum 52.5's cold start. A class-data archive maps the loaded classes instead
+# of parsing and verifying them again, and Spring loads a great many.
+#
+# `AutoCreateSharedArchive` rather than a training run at build time: the
+# documented Spring CDS recipe starts the application to record what it loaded,
+# which needs a database this build container does not have -- and a build that
+# quietly skipped the training step would ship an image whose archive was
+# empty. This writes the archive on the first start and maps it on every one
+# after, and regenerates it by itself when the jar changes, so a stale archive
+# from a previous image cannot be used against a new one.
+#
+# The path is a cache directory rather than /tmp, and compose mounts a volume
+# over it: a container is recreated on every deploy, so an archive written
+# inside the container's own layer would be written on every start and read on
+# none. Losing it costs one slow start, never a wrong one.
+
 # Compose overrides this with the memory percentage and the locale (Bolum
 # 11.1); repeated here so the image is correct when run on its own.
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -Duser.language=en -Duser.country=US"
+ENV JAVA_CDS_OPTS="-XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=/var/cache/atomcv/atomcv.jsa"
 
 HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Shell form so that JAVA_CDS_OPTS expands. The archive flags are deliberately
+# not in JAVA_TOOL_OPTIONS: compose overrides that variable wholesale
+# (Bolum 11.1), and a deployment that set it would silently drop the archive.
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_CDS_OPTS -jar app.jar"]

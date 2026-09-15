@@ -47,6 +47,12 @@ services:
     # Publishing it to 0.0.0.0 would put an unauthenticated API beside the one
     # nginx rate limits.
     ports: ["127.0.0.1:8080:8080"]
+    # Bolum 52.5's class-data archive. A volume and not the container's own
+    # layer: a deploy recreates the container, so an archive written inside it
+    # would be written on every start and read on none. The JVM regenerates it
+    # by itself when the jar changes, so one from the previous image is
+    # replaced rather than used.
+    volumes: [backendcache:/var/cache/atomcv]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -60,7 +66,11 @@ services:
   postgres:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
-    volumes: [pgdata:/var/lib/postgresql/data]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs on first initialisation only, which is the one chance there is to
+      # create Umami's database beside the application's.
+      - ./docker/postgres/init-umami.sql:/docker-entrypoint-initdb.d/10-umami.sql:ro
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -117,7 +127,40 @@ services:
       resources:
         limits: { cpus: '1.0', memory: 2.5G }
 
+  # Bolum 5.7's analytics: cookieless and self-hosted, which is what makes
+  # Bolum 57.3's "no consent banner" true rather than merely claimed.
+  #
+  # Its own database on the same server and not the application's. Umami runs
+  # its own migrations, and a tool that migrates a schema it shares with the
+  # product is one upgrade away from an outage nobody planned.
+  #
+  # Behind a compose profile, so `up -d` does not start it until somebody has
+  # set APP_SECRET and the frontend has a website id to report to:
+  #
+  #   docker compose --profile analytics -f docker-compose.prod.yml up -d
+  #
+  # A dashboard nothing reports to is half a gigabyte of an eight-gigabyte
+  # machine spent on an empty page.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    profiles: [analytics]
+    restart: unless-stopped
+    environment:
+      - DATABASE_TYPE=postgresql
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/umami
+      - APP_SECRET=${UMAMI_APP_SECRET}
+      # Served under a path on the one domain (Bolum 11.2). That is what keeps
+      # the tracker script same-origin, so the Content-Security-Policy needs no
+      # host of its own for it -- the opposite of Turnstile.
+      - BASE_PATH=/analytics
+    depends_on:
+      postgres: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: '0.5', memory: 512M }
+
 volumes:
+  backendcache:
   pgdata:
   redisdata:
   modelcache:
