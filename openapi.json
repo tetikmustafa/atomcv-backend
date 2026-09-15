@@ -2714,8 +2714,8 @@
     "/api/v1/generations/{generationId}/download" : {
       "get" : {
         "tags" : [ "Generation" ],
-        "summary" : "Download a generation, as a PDF or a Word document",
-        "description" : "Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.\n\nNo LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.\n\n`format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.",
+        "summary" : "Download a generation as a PDF, Word, HTML or LaTeX source",
+        "description" : "Re-rendered from the stored content snapshot, never from                     the profile. Editing a bullet afterwards does not change                     a CV that has already been sent — the document that comes                     back is the one that was made.\n\nNo LLM and no scoring: one compilation, and the same                     generation produces the same bytes on any day.\n\n`format=docx` writes the same content as a Word                     document. **The page limit is approximate there** (Bolum                     22.6): the atoms are the ones that fitted a typeset page,                     and Word sets them in whatever room its own fonts take.                     Same CV, not a second promise -- say so next to the                     button.\n\n`format=html` writes one self-contained file: no                     stylesheet, no font, no script, nothing fetched. **The                     page limit does not apply at all there** -- HTML has no                     page. It is for pasting into a form that wants formatted                     text, and for anything that reads structure rather than                     layout.\n\n`format=source` is the LaTeX the PDF was compiled from.                     Bolum 33.1 refuses to let anyone *write* LaTeX, because                     user markup reaching a compiler is an execution surface;                     reading back what this product generated is the opposite                     direction and carries none of it.",
         "operationId" : "downloadGeneration",
         "parameters" : [ {
           "name" : "generationId",
@@ -2742,7 +2742,7 @@
             }
           },
           "400" : {
-            "description" : "VALIDATION_FAILED — a format that is not `pdf` or `docx`",
+            "description" : "VALIDATION_FAILED — a format that is not `pdf`, `docx`, `html` or `source`",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
