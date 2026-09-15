@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The queued half of a job-specific generation (Bolum 30, Bolum 35.3).
+ * The queued half of a job-specific generation.
  *
  * <p>Where the two modules meet, and the meeting is one-directional:
  * {@code jobs} knows how to run a handler and nothing about generations, this
@@ -98,10 +98,10 @@ public class GenerationJobHandler implements JobHandler {
     @Override
     public JobOutcome handle(Job job, ProgressSink progress) {
         // Asked before the payload is parsed as anything else.
-        // GenerationPayload.from is forgiving about absence, so an edit read as
-        // a generation would come out as general CV mode and quietly rebuild
-        // the document from scratch -- same person, same profile, none of their
-        // edits, and no error anywhere to say so (Bolum 24.4).
+        // GenerationPayload.from is forgiving about absence, so an edit read
+        // as a generation would come out as general CV mode and quietly
+        // rebuild the document from scratch -- same person, same profile, none
+        // of their edits, and no error anywhere to say so.
         if (SelectionEditPayload.isEdit(job.getPayload())) {
             return handleEdit(job, progress);
         }
@@ -149,7 +149,7 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     /**
-     * Faz G's manual toggle, once the queue has reached it (Bolum 24.4).
+     * Faz G's manual toggle, once the queue has reached it.
      *
      * <p>Nothing is refunded on failure and nothing was consumed: a hand edit
      * re-runs selection, the renderer and the compiler and asks no model
@@ -194,7 +194,7 @@ public class GenerationJobHandler implements JobHandler {
             if (read instanceof Result.Err<EditPlan> refused) {
                 // Refunded here rather than at the end: the parse is what was
                 // paid for, and a sentence that named no line got nothing for
-                // it (Bolum 44.2).
+                // it.
                 refund(payload);
                 return failed(refused.error());
             }
@@ -359,10 +359,10 @@ public class GenerationJobHandler implements JobHandler {
         GeneratedDocument document = generated.document();
         SelectionState selection = document.selection();
 
-        // Null for an anonymous session, which the column has allowed since V1.
-        // Nothing else about the row differs and nothing has to expire it:
+        // Null for an anonymous session, which the column has allowed since
+        // V1. Nothing else about the row differs and nothing has to expire it:
         // generations.profile_id cascades from profiles, so this dies with the
-        // profile the sweep deletes (§ 51.6.1).
+        // profile the sweep deletes.
         var record = new Generation(
                 subject.userId(),
                 generated.profileId(),

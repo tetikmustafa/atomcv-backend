@@ -33,8 +33,8 @@ import org.springframework.stereotype.Component;
  * has asked for, and the costs are filled in on demand when they are.
  *
  * <p><strong>A failure here is not a failed import.</strong> Selection falls
- * back to an estimate for anything unmeasured and says so (Bolum 20.4). What
- * is lost is the exactness, not the document.
+ * back to an estimate for anything unmeasured and says so. What is lost is the
+ * exactness, not the document.
  */
 @Component
 public class MeasurementJobHandler implements JobHandler {
@@ -62,11 +62,11 @@ public class MeasurementJobHandler implements JobHandler {
     public JobOutcome handle(Job job, ProgressSink progress) {
         UUID userId = job.getOwnerId();
         if (userId == null) {
-            // A measurement that belongs to nobody is a template calibration
-            // (Bolum 33.3): a capacity belongs to a geometry rather than to a
-            // person, so the job that produces one has no owner. That used to
-            // be an impossible state and is now the second kind of work this
-            // type carries.
+            // A measurement that belongs to nobody is a template calibration:
+            // a capacity belongs to a geometry rather than to a person, so the
+            // job that produces one has no owner. That used to be an
+            // impossible state and is now the second kind of work this type
+            // carries.
             return calibrations.run(job);
         }
         try {

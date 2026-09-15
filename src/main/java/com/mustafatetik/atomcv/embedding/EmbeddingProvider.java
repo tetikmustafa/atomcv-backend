@@ -3,16 +3,16 @@ package com.mustafatetik.atomcv.embedding;
 import java.util.List;
 
 /**
- * Text as a vector (Bolum 28.3).
+ * Text as a vector.
  *
  * <p>Ports and adapters: BGE-M3 is self-hosted today because the content is
  * the user's own CV and Bolum 28.1 keeps it inside, but the day that changes
  * it should be one adapter and nothing else.
  *
- * <p>Every vector is computed from the <strong>English</strong> variant
- * (Bolum 28.2). A multilingual model still places a Turkish sentence and its
- * English translation apart, so a similarity between a Turkish bullet and an
- * English posting would measure the languages as much as the match.
+ * <p>Every vector is computed from the <strong>English</strong> variant. A
+ * multilingual model still places a Turkish sentence and its English
+ * translation apart, so a similarity between a Turkish bullet and an English
+ * posting would measure the languages as much as the match.
  */
 public interface EmbeddingProvider {
 

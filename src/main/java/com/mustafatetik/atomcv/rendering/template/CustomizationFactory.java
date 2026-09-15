@@ -5,8 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A template and the sliders somebody moved, as one customization
- * (Bolum 33.1).
+ * A template and the sliders somebody moved, as one customization.
  *
  * <p>Plain values rather than a preferences record, so the rendering module
  * does not learn what a profile is. Two callers need this and they are in

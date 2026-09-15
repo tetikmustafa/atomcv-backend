@@ -5,7 +5,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The five things a CV may arrive as (Bolum 31.3).
+ * The five things a CV may arrive as.
  *
  * <p>Each one carries the three facts the validation ladder of Bolum 31.2
  * needs: the extensions a user's file may end in, the media types a client may

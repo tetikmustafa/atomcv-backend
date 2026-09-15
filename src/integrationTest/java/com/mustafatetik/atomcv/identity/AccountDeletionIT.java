@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * {@code DELETE /account}: the right to be forgotten, checked against the
- * schema rather than against a list (Bolum 57.4).
+ * schema rather than against a list.
  *
  * <p><strong>The table list is read out of the database.</strong> A test that
  * named the tables would pass for ever after somebody added the one it does
@@ -46,10 +46,10 @@ import org.springframework.test.web.servlet.MockMvc;
 class AccountDeletionIT extends AbstractIntegrationTest {
 
     /**
-     * The two rows that survive on purpose (Bolum 57.4), each for its own
-     * reason. Cost history keeps its row with the link cut; a suppressed
-     * address belongs to the address rather than to the account, and dropping
-     * it would let the product mail somewhere that had already bounced.
+     * The two rows that survive on purpose, each for its own reason. Cost
+     * history keeps its row with the link cut; a suppressed address belongs to
+     * the address rather than to the account, and dropping it would let the
+     * product mail somewhere that had already bounced.
      */
     private static final List<String> SURVIVES = List.of("llm_invocations");
 

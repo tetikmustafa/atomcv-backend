@@ -15,8 +15,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The challenge in front of the two endpoints that spend money for somebody who
- * has answered nothing (Bolum 44.4, Bolum 9).
+ * The challenge in front of the two endpoints that spend money for somebody
+ * who has answered nothing.
  *
  * <p><strong>Tested here because the integration lane cannot.</strong>
  * {@code ChallengeConfig} hands out {@code token -> true} where there is no
@@ -41,9 +41,8 @@ class CallerChallengeTest {
     // -- an account has already answered one --------------------------------
 
     /**
-     * Signing in is where the challenge is asked (Bolum 40.4.1), so asking an
-     * account again is friction with nothing behind it. Not even the token is
-     * looked at.
+     * Signing in is where the challenge is asked, so asking an account again
+     * is friction with nothing behind it. Not even the token is looked at.
      */
     @Test
     void anaccountIsNotAsked() {

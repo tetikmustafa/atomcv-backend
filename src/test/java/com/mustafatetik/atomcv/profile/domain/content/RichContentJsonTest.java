@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 /**
- * Rich content survives a JSONB column (Bolum 12, Bolum 14.1).
+ * Rich content survives a JSONB column.
  *
  * <p>Written after a 500 that only appeared with a real database in the loop:
  * {@code Mark} exposed a derived {@code isKnown()} that Jackson wrote out and

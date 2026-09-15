@@ -9,8 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The dates a CV actually contains, read into a year and a month
- * (Bolum 31.5).
+ * The dates a CV actually contains, read into a year and a month.
  *
  * <p><strong>An unreadable date is left out, never guessed at.</strong> Bolum
  * 31.5 says so and the reason is that a plausible wrong date is the one kind
@@ -24,9 +23,9 @@ import java.util.regex.Pattern;
  * months of employment. The person is asked.
  *
  * <p>Turkish and English month names, because those are the two languages the
- * product reads (Bolum 32). {@code Locale.ROOT} on the folding, absolute rule
- * 7: a Turkish default locale lowercases "IX" to "ıx" and the Roman numeral
- * some CVs use would stop matching.
+ * product reads. {@code Locale.ROOT} on the folding, absolute rule 7: a
+ * Turkish default locale lowercases "IX" to "ıx" and the Roman numeral some
+ * CVs use would stop matching.
  */
 public final class PartialDates {
 

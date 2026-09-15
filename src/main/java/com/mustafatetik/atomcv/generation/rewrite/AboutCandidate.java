@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * The About paragraph, and everything it is allowed to say (Bolum 21.7).
+ * The About paragraph, and everything it is allowed to say.
  *
  * <p><strong>The lists are the whole of what the paragraph may claim.</strong>
  * Bolum 21.7's rule is that every technology in the About appears in the union

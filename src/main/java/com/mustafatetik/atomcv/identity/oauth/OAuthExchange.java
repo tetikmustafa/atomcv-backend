@@ -7,9 +7,9 @@ import com.mustafatetik.atomcv.identity.domain.OAuthAccount;
  *
  * <p>Not {@code Result<T>}: that one carries a {@link
  * com.mustafatetik.atomcv.shared.error.PipelineError}, which is the generation
- * pipeline's closed vocabulary (Bolum 25.1). A failed sign-in is not a failed
- * generation, and widening that hierarchy to hold one would make every
- * pipeline {@code switch} answer for a case it can never see.
+ * pipeline's closed vocabulary. A failed sign-in is not a failed generation,
+ * and widening that hierarchy to hold one would make every pipeline {@code
+ * switch} answer for a case it can never see.
  */
 public sealed interface OAuthExchange {
 

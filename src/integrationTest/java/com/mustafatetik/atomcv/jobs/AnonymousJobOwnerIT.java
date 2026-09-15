@@ -20,7 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * A job that belongs to somebody who has not signed up (Adim 3.6).
+ * A job that belongs to somebody who has not signed up.
  *
  * <p>The queue has had a column for this since V1 and no way to use it: every
  * read was scoped to a user, so an anonymous caller could not poll the job

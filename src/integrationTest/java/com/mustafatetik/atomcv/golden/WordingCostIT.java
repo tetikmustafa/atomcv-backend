@@ -30,7 +30,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * What a wording is charged is what the page pays for it (Bolum 22.4).
+ * What a wording is charged is what the page pays for it.
  *
  * <p><strong>The one assertion the drift test cannot make.</strong> Drift
  * compares a whole document against a whole budget, so an error of one line in

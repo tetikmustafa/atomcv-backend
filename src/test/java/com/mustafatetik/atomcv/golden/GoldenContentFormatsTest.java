@@ -14,7 +14,7 @@ import java.io.UncheckedIOException;
 import org.junit.jupiter.api.Test;
 
 /**
- * A stored document of each JSONB version, read back (Bolum 51.3, Bolum 16.2).
+ * A stored document of each JSONB version, read back.
  *
  * <p><strong>What the directory is for.</strong> {@code ContentMigrator} is a
  * lazy upgrade path: a row written under an older stamp is walked forward when

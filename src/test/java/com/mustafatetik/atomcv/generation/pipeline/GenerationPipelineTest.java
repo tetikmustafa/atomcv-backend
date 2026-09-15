@@ -41,7 +41,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Faz C to Faz F end to end, with the compiler stubbed (Bolum 23.1).
+ * Faz C to Faz F end to end, with the compiler stubbed.
  *
  * <p>The renderer is real: what is under test is the feedback loop, and a
  * loop that fed a fake renderer would prove nothing about the document whose

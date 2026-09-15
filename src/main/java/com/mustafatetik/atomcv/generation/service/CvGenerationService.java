@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
  * <p>Faz A and Faz B are skipped — there is nothing to analyse and nothing to
  * be relevant to — and the rest of the pipeline is unchanged. That is what
  * separating scoring from selection buys: general mode is a different score
- * function and nothing else (Bolum 19.4).
+ * function and nothing else.
  *
  * <p>The order of the steps is the point. Measurement happens before the tree
  * is loaded, so selection reads costs that exist; the profile is checked before
@@ -83,9 +83,9 @@ public class CvGenerationService {
                 .withMaxPages(maxPages)
                 .withLanguage(language);
 
-        // Measured if anybody has compiled this geometry, estimated if not
-        // (Bolum 33.3). Empty now means only that the template itself has no
-        // measured default, which would be estimating from nothing.
+        // Measured if anybody has compiled this geometry, estimated if not.
+        // Empty now means only that the template itself has no measured
+        // default, which would be estimating from nothing.
         Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
@@ -107,7 +107,7 @@ public class CvGenerationService {
         progress.report(GenerationPhase.MEASURING.at(30));
 
         // One compilation for everything that has no cost yet, before
-        // selection asks for numbers (Bolum 26.2).
+        // selection asks for numbers.
         try {
             if (renderCosts.measureMissing(profile, options.customization(), head,
                     java.util.Locale.forLanguageTag(options.language())) > 0) {
@@ -131,7 +131,7 @@ public class CvGenerationService {
         }
         if (built.estimatedAtoms() > 0) {
             // Counts, never content. A generation full of estimates is one the
-            // measurement did not reach (Bolum 26.5).
+            // measurement did not reach.
             log.info("Selecting with {} estimated costs and {} atoms with no wording",
                     built.estimatedAtoms(), built.withoutWording());
         }
@@ -139,12 +139,12 @@ public class CvGenerationService {
         progress.report(GenerationPhase.RENDERING.at(70));
 
         // No posting, so no Faz D: Bolum 21.2's tiers are Faz B scores, and
-        // there is nothing here to be relevant to (Bolum 19.4).
+        // there is nothing here to be relevant to.
         return pipeline.run(head, tree, built.request().withBudgetFactor(resolved.budgetFactor()),
                         ContentRewriter.none(),
                         options.customization(), options.locale())
                 // No posting and no Faz B: both are null, and the record says
-                // so rather than pretending a comparison happened (Bolum 19.4).
+                // so rather than pretending a comparison happened.
                 .map(document -> new GeneratedGeneration(
                         profile.id(), null, options, null, Map.of(), document));
     }

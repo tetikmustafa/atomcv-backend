@@ -67,7 +67,7 @@ class EvalReportTest {
                         EvalThresholds.NO_NEW_TECHNOLOGIES);
     }
 
-    // ── thresholds (Bolum 53.5) ───────────────────────────────────────────
+    // ── thresholds ───────────────────────────────────────────
 
     @Test
     void thefloorsAreTheOnesTheSpecificationSets() {

@@ -7,14 +7,13 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The block at the top of the page, assembled from a profile (Bolum 22.2).
+ * The block at the top of the page, assembled from a profile.
  *
  * <p>Here rather than in the render phase because two things build it now and
  * they must build the same one. The renderer prints it; the measurement
  * document sets it in order to find out how tall it is, and a header measured
  * from slightly different text is a measurement of a different header — the
- * same trap as measuring a bullet at a width no bullet is ever set at
- * (Bolum 22.4).
+ * same trap as measuring a bullet at a width no bullet is ever set at.
  *
  * <p>The labels are translated, so the same profile has a different header in
  * each language and, being text, a different height.

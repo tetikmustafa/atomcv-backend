@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Generating without an account, at the two ends the worker does not sit
- * between (Bolum 9).
+ * between.
  *
  * <p><strong>What is not here, and why.</strong> A whole anonymous generation
  * cannot run in this lane: the {@code local} profile registers no LLM provider,

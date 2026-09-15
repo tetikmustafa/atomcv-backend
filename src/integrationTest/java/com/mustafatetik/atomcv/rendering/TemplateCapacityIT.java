@@ -98,7 +98,7 @@ class TemplateCapacityIT extends AbstractIntegrationTest {
         assertThat(lookup.isMeasured(MOVED)).isTrue();
     }
 
-    // -- what resolve() does with an unmeasured geometry (Bolum 33.3) --------
+    // -- what resolve() does with an unmeasured geometry --------
 
     /**
      * A person who has just moved a slider is waiting and the measurement is a

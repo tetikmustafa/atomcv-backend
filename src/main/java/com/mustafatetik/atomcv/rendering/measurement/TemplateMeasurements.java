@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Asks for a geometry to be measured, once (Bolum 33.3).
+ * Asks for a geometry to be measured, once.
  *
  * <p>The second step of Bolum 33.3's flow, and it is triggered by a
  * generation rather than by the slider itself. Saving a preference nobody ever

@@ -5,7 +5,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Who a counter belongs to (Bolum 44.1).
+ * Who a counter belongs to.
  *
  * <p>Not a user id, because the anonymous flow is counted by IP and the
  * anonymous session by its own id — three kinds of subject, one table, and the
@@ -37,7 +37,7 @@ public record QuotaSubject(Type type, String id) {
     }
 
     /**
-     * The anonymous flow's subject (Bolum 44.1, Adim 3.6).
+     * The anonymous flow's subject.
      *
      * <p><strong>The address and not the session</strong>, and Bolum 44.1 says
      * so for the reason that matters: a session is a cookie, and a cookie is

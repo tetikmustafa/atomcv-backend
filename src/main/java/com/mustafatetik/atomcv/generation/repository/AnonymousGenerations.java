@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A generation an anonymous session made, reached without a user because there
- * is not one (Bolum 9).
+ * is not one.
  *
  * <p><strong>Profile-scoped, and that is not a workaround.</strong>
  * {@link GenerationRepository} is user-scoped and correct as it stands — a row
@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p><strong>Nothing expires here.</strong> {@code generations.profile_id}
  * references {@code profiles(id) ON DELETE CASCADE}, so these rows go when the
- * anonymous profile does — which the sweep deletes within minutes of the session
- * ending (§ 51.6.1). A second expiry column would be a second thing to keep in
+ * anonymous profile does — which the sweep deletes within minutes of the
+ * session ending. A second expiry column would be a second thing to keep in
  * step with the first.
  */
 @Repository
@@ -91,12 +91,12 @@ public class AnonymousGenerations {
     }
 
     /**
-     * Every generation this session made becomes the account's (Adim 3.6).
+     * Every generation this session made becomes the account's.
      *
-     * <p><strong>Rows loaded rather than updated in bulk, on purpose.</strong> A
-     * session may make five (§ 35.7), so the whole set is a handful and the
-     * domain rule stays where it belongs: {@code Generation.adoptedBy} refuses a
-     * row that already has an owner, and a {@code @Modifying} update would have
+     * <p><strong>Rows loaded rather than updated in bulk, on purpose.</strong>
+     * A session may make five, so the whole set is a handful and the domain
+     * rule stays where it belongs: {@code Generation.adoptedBy} refuses a row
+     * that already has an owner, and a {@code @Modifying} update would have
      * moved that rule into a WHERE clause and taken the version and the
      * timestamps with it.
      *

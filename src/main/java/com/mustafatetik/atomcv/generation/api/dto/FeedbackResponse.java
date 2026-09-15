@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * What was recorded, and what the permission is doing (Bolum 48.4).
+ * What was recorded, and what the permission is doing.
  *
  * <p><strong>The grant is echoed back because a consent nobody can check is
  * not a consent.</strong> Bolum 48.4 promises the person can see when their

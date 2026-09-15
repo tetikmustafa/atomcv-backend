@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * Permission to read a CV, and the record of what was done with it
- * (Bolum 48.4).
+ * Permission to read a CV, and the record of what was done with it.
  *
  * <p>Scoped like everything else, and here the rule earns its keep twice
  * over: this table is the one door through absolute rule 4, so a read that

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /**
- * What {@code FEATURE_REQUIRES_ACCOUNT} names in its {@code feature} parameter
- * (§ 35.7, EK D.6).
+ * What {@code FEATURE_REQUIRES_ACCOUNT} names in its {@code feature}
+ * parameter.
  *
  * <p><strong>A closed set, and it was a bare {@code String} until F-030.</strong>
  * The frontend asked what the whole vocabulary was, could not find it written
@@ -36,15 +36,15 @@ public enum AccountFeature {
     ALTERNATIVES,
 
     /**
-     * A covering letter, asked for with the CV or regenerated afterwards
-     * (Bolum 34). Paired with {@code canWriteCoverLetter}.
+     * A covering letter, asked for with the CV or regenerated afterwards.
+     * Paired with {@code canWriteCoverLetter}.
      */
     COVER_LETTER,
 
     /**
-     * A verdict on a generation, and the support grant that can ride with it
-     * (Bolum 34.6). Paired with {@code canSaveHistory}: feedback is a row keyed
-     * to a user, so it needs the same thing history does.
+     * A verdict on a generation, and the support grant that can ride with it.
+     * Paired with {@code canSaveHistory}: feedback is a row keyed to a user,
+     * so it needs the same thing history does.
      */
     FEEDBACK,
 

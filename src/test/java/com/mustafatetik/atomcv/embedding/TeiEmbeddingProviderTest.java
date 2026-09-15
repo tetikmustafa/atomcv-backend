@@ -191,7 +191,7 @@ class TeiEmbeddingProviderTest {
                 .isInstanceOf(EmbeddingException.class);
     }
 
-    // ── Health (Bolum 28.4) ──────────────────────────────────────────────
+    // ── Health ──────────────────────────────────────────────
 
     @Test
     void healthFollowsTheServicesOwnEndpoint() {

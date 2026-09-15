@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * The named appearance settings of one profile (Bolum 33.2).
+ * The named appearance settings of one profile.
  *
  * <p>Scoped like everything else under a profile: a customization id that
  * belongs to somebody else reads as absent, never as forbidden (absolute

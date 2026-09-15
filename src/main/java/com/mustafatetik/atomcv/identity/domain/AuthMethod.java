@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.identity.domain;
 
 /**
- * How the person behind a session proved who they are (Bolum 40).
+ * How the person behind a session proved who they are.
  *
  * <p>Declared whole even though Adim 3.3's first slice can only produce
  * {@link #LOCAL_DEV}: a session lives in Redis for as long as its TTL, so a

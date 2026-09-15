@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Reads our own PDF back and checks the text is still in it (Bolum 23.2).
+ * Reads our own PDF back and checks the text is still in it.
  *
  * <p>The other half of Bolum 23 was built in Stage 1 and this one was left:
  * {@code FitReport} counts what the <em>selection</em> put on the page, which

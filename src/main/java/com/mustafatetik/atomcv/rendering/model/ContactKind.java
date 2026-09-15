@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.rendering.model;
 import java.util.Locale;
 
 /**
- * The contact fields a header can print, and what to call them (Bolum 22).
+ * The contact fields a header can print, and what to call them.
  *
  * <p>The block used to be the bare values joined by a middle dot, which reads
  * as a list of strings rather than as a way to reach someone: an address, a

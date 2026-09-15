@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
 /**
- * One vendor, behind one shape (Bolum 27.1).
+ * One vendor, behind one shape.
  *
  * <p>Raw REST underneath, no vendor SDK: Bolum 5.4 keeps the abstraction here
  * rather than taking five dependencies that break on their own schedules.

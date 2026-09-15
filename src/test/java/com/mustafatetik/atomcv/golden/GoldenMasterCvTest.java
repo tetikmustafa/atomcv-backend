@@ -39,8 +39,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 /**
- * The real master CV against a real posting, end to end without a model
- * (Bolum 51.3).
+ * The real master CV against a real posting, end to end without a model.
  *
  * <p>Three fixtures, and each one was read rather than written:
  * {@code golden/profiles/master_cv_en.json} is the profile a real import of
@@ -58,8 +57,8 @@ import org.junit.jupiter.api.Test;
  * measured page.
  *
  * <p>No embedding service and no compiler, so it runs in the fast lane. Faz B
- * falls back to {@link ScoringWeights#WITHOUT_EMBEDDING} (Bolum 28.4), which is
- * a documented degraded mode rather than a fiction — and it is deterministic,
+ * falls back to {@link ScoringWeights#WITHOUT_EMBEDDING}, which is a
+ * documented degraded mode rather than a fiction — and it is deterministic,
  * which the real one is not from a test's point of view.
  */
 class GoldenMasterCvTest {
@@ -299,9 +298,9 @@ class GoldenMasterCvTest {
 
     /**
      * Faz D's one deterministic half, and the only part of it this test can
-     * run: the Tech Stack cut to the posting (Bolum 33.4). The rewrites need a
-     * model and are absent here, which is what {@code RewrittenContent}'s
-     * "absent means original" rule is for.
+     * run: the Tech Stack cut to the posting. The rewrites need a model and
+     * are absent here, which is what {@code RewrittenContent}'s "absent means
+     * original" rule is for.
      */
     private static RewrittenContent techStackCutToThePosting(SelectionState state) {
         var context = RewriteContext.of(POSTING, PROFILE.profile().getSelfDescription(),

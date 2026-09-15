@@ -4,7 +4,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Everything a user may change about how a CV looks (Bolum 33.2).
+ * Everything a user may change about how a CV looks.
  *
  * <p>The ranges are narrow on purpose: a bad-looking result should be
  * physically impossible rather than merely discouraged. The user is warned at
@@ -25,7 +25,7 @@ public record TemplateCustomization(
         HexColor accentColor) {
 
     /**
-     * The reference CV's own settings, to the point (Bolum 33.5).
+     * The reference CV's own settings, to the point.
      *
      * <p>Every one of these is a number read out of the document this template
      * was taken from rather than a taste: {@code \documentclass[11pt]},
@@ -44,7 +44,7 @@ public record TemplateCustomization(
             "classic", FontFamily.MODERN, 11.0, 0.5, 1.0, HexColor.of("000000"));
 
     /**
-     * Compact at its own settings (Bolum 33.5).
+     * Compact at its own settings.
      *
      * <p>Three of the four differences from classic are layer B — 10pt rather
      * than 11, a 0.4in margin rather than 0.5, 0.95 leading rather than 1.0 —
@@ -60,7 +60,7 @@ public record TemplateCustomization(
             "compact", FontFamily.MODERN, 10.0, 0.4, 0.95, HexColor.of("000000"));
 
     /**
-     * Modern at its own settings (Bolum 33.5).
+     * Modern at its own settings.
      *
      * <p>The only template whose accent is not black, and the only reason it
      * is a template rather than a preset: a coloured rule cannot be reached
@@ -86,7 +86,7 @@ public record TemplateCustomization(
     }
 
     /**
-     * The key measured render costs are stored under (Bolum 16.3).
+     * The key measured render costs are stored under.
      *
      * <p>It carries the template version, so a geometric change to the
      * renderer invalidates old measurements instead of silently keeping them —

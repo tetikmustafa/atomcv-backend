@@ -84,9 +84,9 @@ class BulletRewriteEvalIT extends AbstractIntegrationTest {
                     !issues.contains(RewriteIssue.UNSUPPORTED_CLAIM));
             REPORT.record(EvalThresholds.LENGTH_WITHIN_BOUNDS,
                     !issues.contains(RewriteIssue.TOO_LONG));
-            // What Faz D would have done with it: an answer carrying any
-            // issue is thrown away and the original printed (Bolum 21.6), so
-            // this rate is how often the phase was worth its call.
+            // What Faz D would have done with it: an answer carrying any issue
+            // is thrown away and the original printed, so this rate is how
+            // often the phase was worth its call.
             REPORT.record(EvalThresholds.VALIDATION_ACCEPTED, issues.isEmpty());
         }
 

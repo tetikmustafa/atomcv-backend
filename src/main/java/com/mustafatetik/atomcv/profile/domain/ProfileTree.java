@@ -9,10 +9,10 @@ import java.util.stream.Stream;
  * A whole profile in memory: sections, their entries, their atoms and every
  * wording of each atom.
  *
- * <p>This is what the four flat queries add up to (Bolum 52.2). The entities
- * themselves hold no associations, so the shape a caller wants exists only
- * here — which keeps "how a profile is loaded" one decision in one place
- * rather than a lazy proxy anyone can trip over.
+ * <p>This is what the four flat queries add up to. The entities themselves
+ * hold no associations, so the shape a caller wants exists only here — which
+ * keeps "how a profile is loaded" one decision in one place rather than a lazy
+ * proxy anyone can trip over.
  */
 public record ProfileTree(UUID profileId, List<SectionNode> sections) {
 

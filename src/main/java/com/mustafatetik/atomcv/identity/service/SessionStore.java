@@ -80,7 +80,7 @@ public class SessionStore {
     }
 
     /**
-     * A session for somebody who has not signed in (Adim 3.6).
+     * A session for somebody who has not signed in.
      *
      * <p>No user index entry, because there is no user to revoke every
      * session of. What ends one is its own TTL, and that is the whole of its
@@ -103,7 +103,7 @@ public class SessionStore {
 
     /**
      * Two hours for a session nobody signed in to, thirty days for one they
-     * did (Bolum 9, EK D.6.6).
+     * did.
      *
      * <p>Read from the session rather than passed in, so that the refresh and
      * the creation cannot disagree — a sliding TTL that slid to the wrong
@@ -114,8 +114,7 @@ public class SessionStore {
     }
 
     /**
-     * The session behind a cookie value, with its sliding TTL refreshed
-     * (EK D.6.6).
+     * The session behind a cookie value, with its sliding TTL refreshed.
      *
      * <p>The refresh is skipped when the session was seen within
      * {@link SessionProperties#touchInterval()}, so an active browser costs one

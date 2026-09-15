@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
- * The repositories a person picked out of a suggestion list (Bolum 31.8).
+ * The repositories a person picked out of a suggestion list.
  *
  * <p>Names rather than indexes, because the list is a moment old: an index
  * would point at whatever moved into that position, and a name that is no

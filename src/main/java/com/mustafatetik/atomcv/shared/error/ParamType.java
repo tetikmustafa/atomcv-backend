@@ -9,8 +9,8 @@ import java.util.UUID;
  *
  * <p>The frontend writes an ICU message per error code, and an ICU placeholder
  * cannot be written without knowing whether the value is a number or a string:
- * {@code {pinnedPages, number}} formats, {@code {pinnedPages}} interpolates. So
- * the type is part of the contract, not an implementation detail (EK D.6).
+ * {@code {pinnedPages, number}} formats, {@code {pinnedPages}} interpolates.
+ * So the type is part of the contract, not an implementation detail.
  */
 public enum ParamType {
 

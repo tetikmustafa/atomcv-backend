@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What Faz D changed, and nothing else (Bolum 21.5).
+ * What Faz D changed, and nothing else.
  *
  * <p>Only the atoms whose rewrite was accepted appear here. Everything else is
  * printed the way the person wrote it, and there is no entry for it — an atom

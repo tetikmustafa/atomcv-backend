@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.rewrite;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 
 /**
- * One atom's answer, and what it took to get it (Bolum 21.6, Bolum 14.6).
+ * One atom's answer, and what it took to get it.
  *
  * <p>The content half is the whole of what Faz E needs: the rewrite when it
  * passed, and the person's own sentence when it did not, with the caller unable

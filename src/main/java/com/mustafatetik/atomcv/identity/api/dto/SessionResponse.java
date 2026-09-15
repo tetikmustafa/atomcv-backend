@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * cache, a screenshot or a log could pick up.
  *
  * @param authenticated whether a session with an account behind it was found.
- *                      An anonymous session (Adim 3.6) is also a session, and
+ *  An anonymous session is also a session, and
  *                      also answers {@code false} — the cookie is the same one
  */
 @Schema(description = "Whether anyone is signed in, and what they may do")

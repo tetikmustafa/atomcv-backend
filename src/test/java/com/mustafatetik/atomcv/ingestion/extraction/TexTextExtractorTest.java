@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 /**
- * A {@code .tex} upload, read as the prose inside it (Bolum 31.3).
+ * A {@code.tex} upload, read as the prose inside it.
  *
  * <p>The reference CV this product's template comes from is written with
  * four-argument commands, and reading it back is where the extractor's own

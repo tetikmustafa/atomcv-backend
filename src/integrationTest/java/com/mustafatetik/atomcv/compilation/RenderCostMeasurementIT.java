@@ -32,8 +32,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 /**
- * Profile content to stored render costs, through the real compiler
- * (Bolum 26.2).
+ * Profile content to stored render costs, through the real compiler.
  *
  * <p>Everything before this could be true in isolation and still not add up:
  * the renderer producing plausible LaTeX, the parser reading plausible logs,
@@ -155,8 +154,7 @@ class RenderCostMeasurementIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The estimator's one promise: it never charges less than TeX does
-     * (Bolum 26.5, EK D.8.7).
+     * The estimator's one promise: it never charges less than TeX does.
      *
      * <p>An underestimate is a page limit broken quietly, which is the one
      * failure the whole measurement layer exists to prevent — so this is

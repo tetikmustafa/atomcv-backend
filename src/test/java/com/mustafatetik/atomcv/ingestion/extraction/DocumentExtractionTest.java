@@ -48,7 +48,7 @@ class DocumentExtractionTest {
                     new TexTextExtractor(), new PlainTextExtractor()),
             new ExtractionProperties(0, 20));
 
-    // -- the ladder, rung by rung (Bolum 31.2) -----------------------------
+    // -- the ladder, rung by rung -----------------------------
 
     @Test
     void everyFormatHasAReader() {
@@ -152,7 +152,7 @@ class DocumentExtractionTest {
                 .isEqualTo(ErrorCode.UNSUPPORTED_DOCUMENT);
     }
 
-    // -- PDF (Bolum 31.3) --------------------------------------------------
+    // -- PDF --------------------------------------------------
 
     @Test
     void aPdfGivesUpItsText() throws IOException {

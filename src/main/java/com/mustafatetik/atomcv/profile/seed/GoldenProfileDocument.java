@@ -9,13 +9,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * A profile as a fixture (Bolum 51.3).
+ * A profile as a fixture.
  *
  * <p>Not the export shape. An export carries an id and a version for every
  * row, which a person writing a fixture by hand would have to invent sixty
  * times, and which would be wrong the moment the file was loaded into a second
  * database. Here identity is the file's position in the tree, and the reader
- * mints the ids (EK D.8.9).
+ * mints the ids.
  *
  * <p>Everything but the text is optional and defaults to what a new row would
  * have, so a fixture says only what makes it interesting.

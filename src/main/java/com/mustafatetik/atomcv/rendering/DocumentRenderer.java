@@ -8,7 +8,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import java.util.Set;
 
 /**
- * A format the profile can be rendered into (Bolum 22.2).
+ * A format the profile can be rendered into.
  *
  * <p>Two documents come out of one implementation, and the contract between
  * them is the point: whatever preamble the final document uses, the
@@ -26,8 +26,8 @@ public interface DocumentRenderer {
     RenderedSource renderFinal(RenderRequest request);
 
     /**
-     * A document that prints nothing and reports heights (Bolum 26). It exists
-     * so that selection can know what fits before anything is generated.
+     * A document that prints nothing and reports heights. It exists so that
+     * selection can know what fits before anything is generated.
      */
     RenderedSource renderMeasurement(MeasurementRequest request);
 
@@ -37,7 +37,7 @@ public interface DocumentRenderer {
      * <p>Bolum 22.2 returns a model unconditionally; this returns an empty
      * optional for a customization nobody has calibrated. A capacity that was
      * guessed rather than measured breaks the page guarantee without saying
-     * so, and that is the one failure the product cannot afford (EK D.8.3).
+     * so, and that is the one failure the product cannot afford.
      */
     java.util.Optional<CapacityModel> capacity(TemplateCustomization customization);
 

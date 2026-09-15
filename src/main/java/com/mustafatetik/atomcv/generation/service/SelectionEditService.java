@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * The manual half of Faz G: a toggle, checked and queued (Bolum 24.4).
+ * The manual half of Faz G: a toggle, checked and queued.
  *
  * <p><strong>Two doors and two prices.</strong> A hand toggle re-runs nothing
  * but deterministic work — selection, render, compile — so there is nothing
@@ -71,8 +71,7 @@ public class SelectionEditService {
     }
 
     /**
-     * A sentence: the ids are not decided yet, and reading it costs a call
-     * (Bolum 24.2).
+     * A sentence: the ids are not decided yet, and reading it costs a call.
      *
      * <p>The ceiling is taken here rather than in the worker, for the reason
      * Bolum 44.2 takes it at every other queue point: a request that is going
@@ -141,8 +140,7 @@ public class SelectionEditService {
      * miss — so the bucket travels as a tag.
      *
      * <p>This is not a learning system. Nothing reads these counters back into
-     * the algorithm; they are for the developer deciding what to change
-     * (Bolum 24.5).
+     * the algorithm; they are for the developer deciding what to change.
      */
     private void countManualEdits(StoredSelection snapshot, GenerationDirectives asked) {
         Map<UUID, Double> weighed = snapshot.scoresByCandidate();

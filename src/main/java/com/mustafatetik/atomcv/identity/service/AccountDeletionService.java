@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The right to be forgotten (Bolum 57.4).
+ * The right to be forgotten.
  *
  * <p><strong>The database does most of this, and that is deliberate.</strong>
  * Every table that holds a person's content references {@code users(id)} with
@@ -60,12 +60,11 @@ public class AccountDeletionService {
      *         which is not an error: a second press of the button is the same
      *         answer as the first.
      *
-     *         <p><strong>The caller sends, and that is the point</strong>
-     *         (Bolum 57.7). This method is the transaction; returning from it
-     *         is what makes the confirmation land after a commit rather than
-     *         before one, and a rolled-back deletion therefore tells nobody
-     *         anything. The address is read here because after the row is gone
-     *         there is nowhere left to read it from.
+     * <p><strong>The caller sends, and that is the point</strong>. This method
+     * is the transaction; returning from it is what makes the confirmation
+     * land after a commit rather than before one, and a rolled-back deletion
+     * therefore tells nobody anything. The address is read here because after
+     * the row is gone there is nowhere left to read it from.
      */
     @Transactional
     public Optional<Deleted> delete(UserContext user) {

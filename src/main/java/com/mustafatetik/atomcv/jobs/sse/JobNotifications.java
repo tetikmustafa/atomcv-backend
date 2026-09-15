@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
- * The same event, on the other instance (Bolum 30.6, Bolum 50.3).
+ * The same event, on the other instance.
  *
  * <p><strong>What this closes.</strong> {@link SseRegistry} is in-process, and
  * Bolum 30.6 says so with a date on it: one instance runs the workers and

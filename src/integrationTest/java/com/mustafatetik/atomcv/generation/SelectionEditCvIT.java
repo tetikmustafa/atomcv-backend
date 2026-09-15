@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * A hand edit, all the way to a PDF (Bolum 24.4).
+ * A hand edit, all the way to a PDF.
  *
  * <p><strong>The gap the other lanes named and could not close.</strong>
  * {@code SelectionEditApiIT} proves what the request did and
@@ -166,7 +166,7 @@ class SelectionEditCvIT extends AbstractLatexTest {
 
     /**
      * The edited row is retired rather than rewritten, so the CV that was
-     * already sent to somebody is still downloadable (EK D.6.3).
+     * already sent to somebody is still downloadable.
      */
     @Test
     void theeditedGenerationIsRetiredAndStillDownloads() throws Exception {

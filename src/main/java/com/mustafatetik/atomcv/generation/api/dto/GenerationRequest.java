@@ -9,12 +9,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * A CV asked for (Bolum 35.3).
+ * A CV asked for.
  *
  * <p>{@code jobDescription} is optional, and leaving it out is not a mistake:
- * it is general CV mode (Bolum 19.4), where there is nothing to be relevant to
- * and the profile is ranked on its own terms. The column says the same thing —
- * {@code generations.job_description} is NULL for exactly this case.
+ * it is general CV mode, where there is nothing to be relevant to and the
+ * profile is ranked on its own terms. The column says the same thing — {@code
+ * generations.job_description} is NULL for exactly this case.
  *
  * @param acknowledgePreflight the user was told the text does not look like a
  *                             posting and asked to go ahead anyway

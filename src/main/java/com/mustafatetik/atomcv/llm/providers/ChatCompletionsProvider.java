@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The shape OpenAI defined and several vendors answer to (Bolum 27.2).
+ * The shape OpenAI defined and several vendors answer to.
  *
  * <p>Two rows of that table are the same protocol: OpenAI's own
  * {@code /v1/chat/completions} and DeepSeek's {@code /chat/completions}. They
@@ -184,7 +184,7 @@ abstract class ChatCompletionsProvider implements LlmProvider {
      * <p>OpenAI reports it as {@code prompt_tokens_details.cached_tokens};
      * DeepSeek reports the same quantity as {@code prompt_cache_hit_tokens}.
      * Reading only one would price a cached call as fresh at the other vendor
-     * (Bolum 27.4) — quietly, and always in the expensive direction.
+     * — quietly, and always in the expensive direction.
      */
     private static int cachedTokens(JsonNode usage) {
         JsonNode nested = usage.path("prompt_tokens_details").path("cached_tokens");

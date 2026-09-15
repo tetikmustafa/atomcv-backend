@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 
 /**
- * {@code POST /generations/{id}/archive} (Bolum 35.2, Bolum 13).
+ * {@code POST /generations/{id}/archive}.
  *
  * <p>The endpoint was in the resource map from the start and the column was in
  * {@code V1}; neither had ever met the other, so {@code generations.archived}
@@ -107,7 +107,7 @@ class ArchiveApiIT extends AbstractIntegrationTest {
     /**
      * Idempotent, and not by accident of the write: the caller asked for a
      * state and the row is in it. The same answer as the second press of
-     * account deletion (Bolum 57.4.1).
+     * account deletion.
      */
     @Test
     void archivingSomethingAlreadyArchivedIsNotAconflict() throws Exception {

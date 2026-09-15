@@ -31,7 +31,7 @@ import java.util.UUID;
  * the snapshot named, otherwise the wording the alternative picker would have
  * chosen. Today's profile is the wrong source on its own: the person may have
  * edited a bullet since, and a list showing them a sentence their CV does not
- * contain would have them acting on the wrong line (EK D.6.3).
+ * contain would have them acting on the wrong line.
  *
  * <p><strong>Held-back lines carry the profile's wording, not Faz D's.</strong>
  * They were not printed by this generation, so there is nothing it printed to

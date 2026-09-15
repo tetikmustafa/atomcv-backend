@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.email;
 import java.util.Locale;
 
 /**
- * The one email this product sends so far (Bolum 40.2).
+ * The one email this product sends so far.
  *
  * <p>Prose in the backend, which the error catalogue is careful never to do —
  * and the difference is real. An error is read inside a client that already

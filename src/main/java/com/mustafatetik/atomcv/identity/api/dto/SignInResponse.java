@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.identity.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * What redeeming a sign-in link answers (Adim 3.6).
+ * What redeeming a sign-in link answers.
  *
  * <p>It used to be {@code 204}, and the one thing that made a body worth
  * having is here: what became of the work the person was carrying. It is a

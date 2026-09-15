@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Where a page of history left off (EK D.8.7).
+ * Where a page of history left off.
  *
  * <p><strong>Both halves of the sort key, not just the timestamp.</strong> The
  * list is ordered {@code created_at DESC, id DESC} because two generations a

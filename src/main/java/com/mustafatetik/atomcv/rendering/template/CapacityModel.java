@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * <p>Every number here was measured against the real compiler, not estimated.
  * A calibration test re-derives them and fails when the template moves, which
- * is the moment its version has to be raised (Bolum 16.3).
+ * is the moment its version has to be raised.
  *
  * @param pageTextHeightPt the height of the text block, {@code \textheight}
  * @param textWidthPt      the width a line is set at, {@code \textwidth}
@@ -88,7 +88,7 @@ public record CapacityModel(
      * <p>Nine points more, because the paragraph skip between two blocks
      * applies and the section heading's own spacing does not. A CV of four
      * jobs pays it three times; charging every entry the cheaper number is how
-     * a page overflows by half a bullet for no visible reason (EK D.8.10).
+     * a page overflows by half a bullet for no visible reason.
      */
     public static final String ENTRY_HEADER_AFTER_LIST = "entryHeaderAfterList";
 
@@ -217,11 +217,11 @@ public record CapacityModel(
     /**
      * Every piece of furniture a capacity has to name to be usable.
      *
-     * <p>Kept as a list because a stored capacity outlives the model that wrote
-     * it (Bolum 33.1): a row measured before this grew is missing whatever was
-     * added, and a missing cost charged as zero over-fills a page in silence.
-     * {@code Capacities} checks a row against this and treats a short one as
-     * never measured.
+     * <p>Kept as a list because a stored capacity outlives the model that
+     * wrote it: a row measured before this grew is missing whatever was added,
+     * and a missing cost charged as zero over-fills a page in silence. {@code
+     * Capacities} checks a row against this and treats a short one as never
+     * measured.
      */
     public static final java.util.Set<String> REQUIRED_COSTS = java.util.Set.of(
             HEADER_BLOCK, SECTION_HEADER, SECTION_HEADER_AFTER_LIST,

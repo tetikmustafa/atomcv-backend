@@ -30,7 +30,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * {@code POST /generations/{id}/feedback} (Bolum 13, Bolum 48.4).
+ * {@code POST /generations/{id}/feedback}.
  *
  * <p>Two things are being protected here and only one of them is the row. The
  * other is Bolum 48.4's consent: it opens the single door through absolute

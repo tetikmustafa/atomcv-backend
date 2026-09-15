@@ -24,8 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * {@code tags} and {@code atom_tags} against the real schema (Bolum 13,
- * Bolum 19.2).
+ * {@code tags} and {@code atom_tags} against the real schema.
  *
  * <p>Two things here are only true against a database. The composite key is
  * one: an {@code @IdClass} that disagrees with the primary key compiles and

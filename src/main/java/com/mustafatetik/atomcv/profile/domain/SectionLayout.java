@@ -7,8 +7,8 @@ import jakarta.persistence.Converter;
 import java.util.Locale;
 
 /**
- * How a section is laid out. Stored in {@code sections.layout}, which carries a
- * matching CHECK constraint (Bolum 13).
+ * How a section is laid out. Stored in {@code sections.layout}, which carries
+ * a matching CHECK constraint.
  */
 public enum SectionLayout {
     BULLET_LIST,
@@ -18,7 +18,7 @@ public enum SectionLayout {
 
     /**
      * Prose, set straight under the section heading with no bullet in front of
-     * it (Bolum 33.4).
+     * it.
      *
      * <p>A summary is the section this exists for. It is one flowing paragraph
      * in every CV that has one, and it was being printed as a bulleted item

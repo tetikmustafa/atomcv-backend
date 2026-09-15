@@ -13,7 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Every pipeline failure, as a body a user can act on (Bolum 25.3).
+ * Every pipeline failure, as a body a user can act on.
  *
  * <p>{@code UserFacingError} validates its parameters against the catalogue as
  * it is built, so each of these also proves the error publishes exactly what

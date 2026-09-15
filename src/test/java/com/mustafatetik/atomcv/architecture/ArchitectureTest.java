@@ -126,7 +126,7 @@ class ArchitectureTest {
             .haveFullyQualifiedName("com.mustafatetik.atomcv.jobs.queue.JobQueue");
 
     /**
-     * The same line for the support grant's unscoped lookup (Bolum 48.4).
+     * The same line for the support grant's unscoped lookup.
      *
      * <p>{@code SupportGrantLookup} finds a grant without an acting user,
      * because the grant is what says whose CV the generation is — that is the

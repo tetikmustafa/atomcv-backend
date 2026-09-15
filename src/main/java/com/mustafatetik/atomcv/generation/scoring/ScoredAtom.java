@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * One atom's relevance, with the parts it was made of (Bolum 19).
+ * One atom's relevance, with the parts it was made of.
  *
  * <p>The components are kept rather than discarded because Faz F reports
  * honestly: telling a user their page scored low is worth little, telling them
@@ -52,10 +52,10 @@ public record ScoredAtom(
      * the secondary score says. Within one bucket, Bolum 19.4 decides —
      * recency, importance, impact, verification.
      *
-     * <p>The id is last and still mandatory (Bolum 19.6). It is also now
-     * reached far less often, which matters: ids are regenerated on every
-     * import, so an ordering that leaned on them changed when the same content
-     * was imported twice.
+     * <p>The id is last and still mandatory. It is also now reached far less
+     * often, which matters: ids are regenerated on every import, so an
+     * ordering that leaned on them changed when the same content was imported
+     * twice.
      */
     public static final Comparator<ScoredAtom> MOST_RELEVANT_FIRST =
             Comparator.comparingLong(ScoredAtom::relevanceBucket).reversed()

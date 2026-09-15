@@ -73,7 +73,7 @@ public class JobQueue {
      * loading what it just won has no acting user to check against.
      */
     /**
-     * Whether an ownerless job under this key is still in flight (Bolum 30.7).
+     * Whether an ownerless job under this key is still in flight.
      *
      * <p>{@code enqueue} does not deduplicate — the caller does, and every
      * caller until now had an owner to look the key up under. A capacity
@@ -118,7 +118,7 @@ public class JobQueue {
     }
 
     /**
-     * "Still working" (Bolum 30.4).
+     * "Still working".
      *
      * <p>Scoped to the worker's own ids as well as to the ids given: a worker
      * that lost a job to the zombie collector must not go on refreshing
@@ -144,8 +144,7 @@ public class JobQueue {
     }
 
     /**
-     * Jobs whose worker stopped saying anything, back to the queue
-     * (Bolum 30.4).
+     * Jobs whose worker stopped saying anything, back to the queue.
      *
      * <p>The attempt is <em>not</em> given back. A worker that was killed
      * mid-generation may well have been killed by the generation, and a job
@@ -184,7 +183,7 @@ public class JobQueue {
     }
 
     /**
-     * Hand everything back on the way down (Bolum 30.4).
+     * Hand everything back on the way down.
      *
      * <p>Without it a rolling deploy leaves every in-flight job locked until
      * the zombie collector notices, which is the stale timeout of dead time on

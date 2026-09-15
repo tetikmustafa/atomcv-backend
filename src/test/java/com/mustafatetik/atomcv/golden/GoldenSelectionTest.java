@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * Three of the four tests Bolum 51.2 calls the most valuable ones, run across
- * the golden set (Bolum 51.3).
+ * the golden set.
  *
  * <p>No database and no compiler: what is under test is the arithmetic that
  * makes the page promise, and it has to hold for every profile in the set at
@@ -136,7 +136,7 @@ class GoldenSelectionTest {
     }
 
     /**
-     * The line a person cannot write a bullet for (Bolum 20.2).
+     * The line a person cannot write a bullet for.
      *
      * <p>A diploma has no achievements under it, and selection works atom by
      * atom: no atom meant no candidate, and the entry could not reach the page
@@ -170,9 +170,9 @@ class GoldenSelectionTest {
         double charged = withEntry.budget().fixedPt() - withoutEntry.budget().fixedPt();
         // The heading follows the bullets of the degree above it, so it is the
         // dearer of the two headings — and no ITEMIZE_OVERHEAD, because a line
-        // with no bullets opens no list (EK D.8.10).
-        // A tolerance, not equality: this is a difference of two sums of
-        // measured points, and the constants carry five decimals.
+        // with no bullets opens no list. A tolerance, not equality: this is a
+        // difference of two sums of measured points, and the constants carry
+        // five decimals.
         assertThat(charged)
                 .isCloseTo(CAPACITY.fixedCost(CapacityModel.ENTRY_HEADER_AFTER_LIST),
                         org.assertj.core.data.Offset.offset(0.001));
@@ -216,7 +216,7 @@ class GoldenSelectionTest {
         }
     }
 
-    // ── 2. determinism (Bolum 51.2, Bolum 19.6) ───────────────────────────
+    // ── 2. determinism ───────────────────────────
 
     @Test
     void fiftyRunsOfEveryProfileGiveTheSameAnswer() {
@@ -236,12 +236,12 @@ class GoldenSelectionTest {
     /**
      * A re-read is a re-import, and it used to change the answer.
      *
-     * <p>Ids are minted as the fixture is read and Bolum 19.6 broke ties by id,
-     * so two atoms that scored <em>and</em> cost exactly the same swapped
+     * <p>Ids are minted as the fixture is read and Bolum 19.6 broke ties by
+     * id, so two atoms that scored <em>and</em> cost exactly the same swapped
      * places between reads: the same CV uploaded twice produced two different
      * pages. This case was written around that defect — it asserted only that
      * the page was as full and held as many atoms, which was all that could be
-     * asserted at the time (EK D.8.9).
+     * asserted at the time.
      *
      * <p>The tie-break is the wording's own digest now, so the honest assertion
      * is available: the same wordings, in the same order. Ids still differ

@@ -17,13 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Faz A: a posting, read as structure (Bolum 18).
+ * Faz A: a posting, read as structure.
  *
  * <p>Three gates around one call. The preflight refuses what is not worth
- * sending (Bolum 18.1), the schema constrains what can come back
- * (Bolum 18.2), and the plausibility gate refuses what came back anyway
- * (Bolum 18.4). Only the middle one costs money, which is the whole shape of
- * design principle 5.
+ * sending, the schema constrains what can come back, and the plausibility gate
+ * refuses what came back anyway. Only the middle one costs money, which is the
+ * whole shape of design principle 5.
  *
  * <p>The tier is {@link ModelTier#CHEAP}: Bolum 5.4 classes structured
  * extraction from a posting as an easy task, and it is the call the product
@@ -59,16 +58,16 @@ public class JobAnalysisPhase {
      * @param jobDescription        the pasted posting. General CV mode never
      *                              reaches here: there is nothing to analyse,
      *                              and the caller takes that branch before
-     *                              paying for a call (Bolum 18.1).
+     *  paying for a call.
      * @param preflightAcknowledged the user chose {@code continue_anyway} after
-     *                              a refusal (EK D.6.1). They may know better
+     *  a refusal. They may know better
      *                              than the heuristics, which are cheap on
      *                              purpose — the plausibility gate still runs.
      * @param bucketKey             the user id, so an A/B experiment keeps one
-     *                              person on one prompt version (Bolum 53.3)
+     *  person on one prompt version
      */
     /**
-     * Which prompt version this bucket runs on (Bolum 53.3).
+     * Which prompt version this bucket runs on.
      *
      * <p>Asked separately rather than returned from {@link #analyse}, and that
      * is safe for one reason: the selection is a pure function of the prompt id

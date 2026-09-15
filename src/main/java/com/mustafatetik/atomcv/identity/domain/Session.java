@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * One signed-in browser, as the server remembers it (Bolum 40.1).
+ * One signed-in browser, as the server remembers it.
  *
  * <p>The record is what lives in Redis. It carries the role rather than
  * looking it up per request, which is the trade Bolum 40.1 already made when
@@ -29,7 +29,7 @@ import java.util.UUID;
  *                   anonymous
  * @param method     how they signed in, or null when they did not
  * @param createdAt  when the session began — fixed, and not moved by activity
- * @param lastSeenAt the last request that refreshed the sliding TTL (EK D.6.6)
+ * @param lastSeenAt the last request that refreshed the sliding TTL
  */
 public record Session(
         String id,
@@ -59,7 +59,7 @@ public record Session(
     }
 
     /**
-     * A session for somebody who has not signed in (Adim 3.6, Bolum 9).
+     * A session for somebody who has not signed in.
      *
      * <p>The same cookie as an account's, deliberately: § 35.7 makes
      * authentication a question the client asks {@code capabilities} rather

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * The sentence, resolved back to the atoms it named (Bolum 24.2).
+ * The sentence, resolved back to the atoms it named.
  *
  * <p>Its own type rather than a {@link GenerationDirectives} straight out of
  * the phase, because the two are different statements. This is what one

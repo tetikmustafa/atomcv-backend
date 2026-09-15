@@ -20,7 +20,7 @@ import org.hibernate.type.SqlTypes;
  *
  * <p>{@code profileId} is denormalized so that every user-scoped query stays a
  * flat one. A composite foreign key binds it to the parent section's profile,
- * so the two cannot disagree (Bolum 13).
+ * so the two cannot disagree.
  */
 @Entity
 @Table(name = "entries")
@@ -78,14 +78,14 @@ public class Entry implements ProfileOwned {
 
     /**
      * Below this many atoms the entry is not worth printing at all: selection
-     * either keeps this many or drops the entry whole (Bolum 20).
+     * either keeps this many or drops the entry whole.
      */
     @Column(nullable = false)
     private short minAtoms = DEFAULT_MIN_ATOMS;
 
     /**
-     * Measured height of the entry's own furniture in points, keyed by
-     * {@code template:version} (Bolum 26). Empty until measured.
+     * Measured height of the entry's own furniture in points, keyed by {@code
+     * template:version}. Empty until measured.
      */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)

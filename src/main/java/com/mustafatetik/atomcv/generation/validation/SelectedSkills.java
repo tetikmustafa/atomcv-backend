@@ -11,8 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * What the finished page actually claims, in canonical skill keys
- * (Bolum 23.3).
+ * What the finished page actually claims, in canonical skill keys.
  *
  * <p><strong>Selected, not scored.</strong> Faz B ranks every atom in the
  * profile and Faz C then drops most of them for budget, so the ranking is not

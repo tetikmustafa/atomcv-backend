@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Permission to read one person's CV, for two days (Bolum 48.4).
+ * Permission to read one person's CV, for two days.
  *
  * <p>Everything else in this product is diagnosed from shapes — character
  * counts, run counts, render costs — because absolute rule 4 keeps content out
@@ -98,7 +98,7 @@ public class SupportGrant implements UserOwned {
     }
 
     /**
-     * Somebody looked, and the person is shown when (Bolum 48.4).
+     * Somebody looked, and the person is shown when.
      *
      * <p><strong>The first read wins.</strong> The column holds one instant, so
      * it answers "was this looked at, and from when" rather than "how many

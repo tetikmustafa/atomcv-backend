@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Files, not rows: a prompt and the code that consumes its answer — the
  * schema, the parse, the validator — change in the same commit. Stored in the
- * database they would be deployable apart, and would drift (Bolum 53.1).
+ * database they would be deployable apart, and would drift.
  *
  * <p>Loaded once and cached. The resources are immutable for the life of the
  * process, so re-reading them per call would be work repeated for nothing.
@@ -37,7 +37,7 @@ public class PromptRegistry {
     }
 
     /**
-     * The version this call should run (Bolum 53.3).
+     * The version this call should run.
      *
      * <p>{@code bucketKey} is the user id, not the request id: a user who saw
      * one variant must keep seeing it, or an experiment measures the variance

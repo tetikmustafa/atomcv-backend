@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The product's central promise, checked (Bolum 20).
+ * The product's central promise, checked.
  *
  * <p>The measured capacity of the classic template is used rather than a made
  * up one: these are the numbers a real page has, so a test that passes here

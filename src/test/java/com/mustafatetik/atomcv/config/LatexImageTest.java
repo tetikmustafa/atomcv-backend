@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 /**
- * What the LaTeX image must and must not contain (Bolum 29.2).
+ * What the LaTeX image must and must not contain.
  *
  * <p><strong>The one it must not is a line the specification still shows.</strong>
  * Bolum 29.2's Dockerfile snippet ends with a preamble format dump —

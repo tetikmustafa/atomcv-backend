@@ -21,7 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
- * The acting user, read from the {@code sid} cookie (Bolum 40.1).
+ * The acting user, read from the {@code sid} cookie.
  *
  * <p><strong>Resolved on demand, not in a filter.</strong> A filter would put a
  * Redis round trip in front of every request, including the ones that never
@@ -65,11 +65,10 @@ public class SessionCurrentUser implements CurrentUser {
     /**
      * Who is acting, when somebody is.
      *
-     * <p>An anonymous session is a session and not a user (Adim 3.6), so it
-     * answers empty here — and {@link #require()} then refuses with
-     * {@code AUTHENTICATION_REQUIRED} and a {@code sign_up} way out, which is
-     * exactly the right answer for a user-scoped endpoint reached without an
-     * account.
+     * <p>An anonymous session is a session and not a user, so it answers empty
+     * here — and {@link #require()} then refuses with {@code
+     * AUTHENTICATION_REQUIRED} and a {@code sign_up} way out, which is exactly
+     * the right answer for a user-scoped endpoint reached without an account.
      */
     @Override
     public Optional<UserContext> find() {
@@ -78,7 +77,7 @@ public class SessionCurrentUser implements CurrentUser {
 
     /**
      * The anonymous session behind this request, when nobody has signed in on
-     * it (Adim 3.6).
+     * it.
      *
      * <p>This is the one place an {@link AnonymousSessionId} is made, and that
      * is the point of the type: it is produced from a session already
@@ -93,8 +92,8 @@ public class SessionCurrentUser implements CurrentUser {
     }
 
     /**
-     * When this anonymous session ends, computed the one way it is computed
-     * (EK D.6.6): the last request that touched it, plus the anonymous TTL.
+     * When this anonymous session ends, computed the one way it is computed:
+     * the last request that touched it, plus the anonymous TTL.
      *
      * <p>The window slides, so this moves with activity — which is what makes it
      * the right value to hang an anonymous profile's expiry on rather than a

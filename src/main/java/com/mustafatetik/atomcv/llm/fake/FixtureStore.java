@@ -14,7 +14,7 @@ import java.util.HexFormat;
 import java.util.Optional;
 
 /**
- * Recorded provider answers on disk (Bolum 54.2).
+ * Recorded provider answers on disk.
  *
  * <p>One file per call, named by the prompt, its version and a hash of the
  * user prompt — so a fixture is found again only for the input that produced
@@ -63,7 +63,7 @@ public class FixtureStore {
     }
 
     /**
-     * The prompt that earned an answer, beside the answer (Bolum 31.4).
+     * The prompt that earned an answer, beside the answer.
      *
      * <p><strong>The one deliberate exception to "the file holds the answer,
      * never the prompt".</strong> {@link com.mustafatetik.atomcv.ingestion

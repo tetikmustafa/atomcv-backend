@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A contiguous piece of text carrying zero or more semantic marks (Bolum 12).
+ * A contiguous piece of text carrying zero or more semantic marks.
  *
  * <p>The run model was chosen over Markdown, character offsets and substring
  * matching: there is no escaping problem, no offset drift when the text is

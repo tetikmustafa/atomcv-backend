@@ -3,8 +3,7 @@ package com.mustafatetik.atomcv.llm.prompts;
 import com.mustafatetik.atomcv.llm.gateway.JsonSchema;
 
 /**
- * One prompt at one version, with the schema its answer must match
- * (Bolum 53.1).
+ * One prompt at one version, with the schema its answer must match.
  *
  * <p>The text and the schema travel together because they change together:
  * Bolum 53.1 keeps prompts in files rather than in the database for exactly

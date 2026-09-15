@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * One generation, in the shape {@code gradlew replay} can read (Bolum 48.5).
+ * One generation, in the shape {@code gradlew replay} can read.
  *
  * <p><strong>Bolum 48.5's premise is "without touching production data", and
  * that premise needed a file.</strong> The section describes a task that

@@ -31,11 +31,11 @@ import org.springframework.stereotype.Component;
  * reports what the document says, and everything that has to be the same
  * across two documents is decided here.
  *
- * <p>Two of the seven were already built. {@code plainText} and
- * {@code contentHash} are {@link RichContent}'s own, computed over the plain
- * text so that re-marking a sentence does not invalidate its embedding
- * (Bolum 16.2); and tag canonicalisation is {@link Tag#canonical}, which the
- * column already enforces.
+ * <p>Two of the seven were already built. {@code plainText} and {@code
+ * contentHash} are {@link RichContent}'s own, computed over the plain text so
+ * that re-marking a sentence does not invalidate its embedding; and tag
+ * canonicalisation is {@link Tag#canonical}, which the column already
+ * enforces.
  */
 @Component
 public class ProfileNormalizer {
@@ -230,7 +230,7 @@ public class ProfileNormalizer {
         for (String tag : tags) {
             if (tag != null && !tag.isBlank()) {
                 // The column's own rule, so a tag written here and a tag typed
-                // into the editor are one row (Bolum 19.2).
+                // into the editor are one row.
                 canonical.add(Tag.canonical(tag));
             }
         }

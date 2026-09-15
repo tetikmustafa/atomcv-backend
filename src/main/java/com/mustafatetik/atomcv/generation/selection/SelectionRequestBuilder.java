@@ -33,7 +33,7 @@ import java.util.Optional;
  *
  * <p>Pure and deterministic. The date is a parameter and the wordings come
  * from the tree, so the same profile on the same day produces the same request
- * every time (Bolum 19.6).
+ * every time.
  */
 public final class SelectionRequestBuilder {
 
@@ -42,7 +42,7 @@ public final class SelectionRequestBuilder {
 
     /**
      * @param estimatedAtoms how many atoms were charged an estimate rather
-     *                       than a measurement (Bolum 26.5). Worth watching:
+     *  than a measurement. Worth watching:
      *                       a generation full of estimates is one the
      *                       measurement job did not reach in time.
      * @param withoutWording atoms that have no wording in any language and so
@@ -53,8 +53,7 @@ public final class SelectionRequestBuilder {
     }
 
     /**
-     * General CV mode: rank on what the profile says about itself
-     * (Bolum 19.4).
+     * General CV mode: rank on what the profile says about itself.
      */
     public static BuiltRequest build(
             ProfileTree tree,
@@ -85,7 +84,7 @@ public final class SelectionRequestBuilder {
     }
 
     /**
-     * @param tone   how the profile asked to sound (Bolum 21.1). It belongs
+     * @param tone how the profile asked to sound. It belongs
      *               here rather than in Faz D because the wording it chooses
      *               is the one this charges the budget for: a tone applied
      *               after selection would print a line nothing had costed
@@ -93,7 +92,7 @@ public final class SelectionRequestBuilder {
      *               posting, or the general-mode scorer when there is none.
      *               It is the only difference between the two modes: the
      *               algorithm below reads numbers and does not know which
-     *               produced them (Bolum 19.4).
+     *  produced them.
      */
     public static BuiltRequest build(
             ProfileTree tree,
@@ -152,7 +151,7 @@ public final class SelectionRequestBuilder {
                 if (candidates.isEmpty()) {
                     // No bullets to offer, so the entry itself is the offer.
                     // Until this existed the loop skipped it and a degree line
-                    // could not reach the page at all (Bolum 20.2).
+                    // could not reach the page at all.
                     candidates = List.of(run.heading(entry.entry()));
                 }
                 short minAtoms = entry.entry().getMinAtoms();
@@ -160,7 +159,7 @@ public final class SelectionRequestBuilder {
                     // "This job stays on the CV" is a statement about the
                     // entry, and SelectionPhase only understands atom locks.
                     // The budget meaning of the two is the same: the heading
-                    // plus the minimum it is worth printing at (EK D.8.7).
+                    // plus the minimum it is worth printing at.
                     candidates = pinBest(candidates, Math.max(1, minAtoms));
                 }
                 // A project is the entry with no employer, no place and no
@@ -206,7 +205,7 @@ public final class SelectionRequestBuilder {
 
     /**
      * Pins the highest-scoring candidates, ties broken by id so that two runs
-     * of the same profile pin the same ones (Bolum 19.6).
+     * of the same profile pin the same ones.
      */
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
@@ -295,7 +294,7 @@ public final class SelectionRequestBuilder {
 
         /**
          * The rows of an {@code INLINE_LIST} entry, filed where the renderer
-         * prints them (Bolum 33.4).
+         * prints them.
          *
          * <p>Scored <em>with</em> the entry, because that is what the row
          * belongs to and where a date would be found; filed <em>without</em>
@@ -328,15 +327,14 @@ public final class SelectionRequestBuilder {
         }
 
         /**
-         * The entry as its own candidate, for one that has no bullets at all
-         * (Bolum 20.2).
+         * The entry as its own candidate, for one that has no bullets at all.
          *
          * <p>Its score comes from the entry rather than from any atom, because
          * there is no atom — see {@link AtomScoreSource#scoreOfEntry}. Its
-         * tie-break is a digest of the heading, for the same reason every other
-         * tie-break here is derived from content: entry ids are minted fresh on
-         * every import, and two degree lines that score and cost the same would
-         * otherwise swap places between two reads of one CV (Bolum 20.3).
+         * tie-break is a digest of the heading, for the same reason every
+         * other tie-break here is derived from content: entry ids are minted
+         * fresh on every import, and two degree lines that score and cost the
+         * same would otherwise swap places between two reads of one CV.
          */
         AtomCandidate heading(Entry entry) {
             return AtomCandidate.forEntryHeader(entry.getId(), scores.scoreOfEntry(entry),

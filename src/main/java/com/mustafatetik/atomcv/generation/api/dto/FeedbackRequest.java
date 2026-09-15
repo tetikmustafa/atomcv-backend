@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import java.util.Locale;
 
 /**
- * What somebody thought of a generation (Bolum 13, Bolum 48.4).
+ * What somebody thought of a generation.
  *
  * <p>Only the thumb is required. A form that demanded a reason before it
  * accepted the verdict would collect fewer verdicts and worse ones — the

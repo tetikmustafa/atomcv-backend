@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * A measured header outlives nothing but its own text (Bolum 26.4).
+ * A measured header outlives nothing but its own text.
  *
  * <p>The cost is the height of a block of words. Change the words and the
  * height is a claim about a header that is no longer printed — and a stale one

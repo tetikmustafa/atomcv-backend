@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Turning the optional post off from an inbox (Bolum 57.7).
+ * Turning the optional post off from an inbox.
  *
  * <p>The token is the whole credential, so the cases worth having are about
  * what it can and cannot do: it stops this account's email, it says the same

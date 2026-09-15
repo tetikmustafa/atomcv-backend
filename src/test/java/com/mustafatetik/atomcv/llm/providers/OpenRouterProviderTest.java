@@ -253,7 +253,7 @@ class OpenRouterProviderTest {
     }
 
     /**
-     * Who may serve the call, stated on every call (EK C.1).
+     * Who may serve the call, stated on every call.
      *
      * <p>The prompt is somebody's CV, so the question "may a provider keep this
      * for training" has one defensible default and this is where it is given.

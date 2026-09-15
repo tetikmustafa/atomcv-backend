@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 /**
- * What a 202 carries (Bolum 35.3).
+ * What a 202 carries.
  *
  * <p>{@code streamUrl} is published rather than left to the client to build:
  * it is the one place the shape of that path is decided, and a client that

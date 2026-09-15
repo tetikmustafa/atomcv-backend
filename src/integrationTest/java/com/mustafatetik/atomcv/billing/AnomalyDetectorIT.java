@@ -192,10 +192,9 @@ class AnomalyDetectorIT extends AbstractIntegrationTest {
     }
 
     /**
-     * Failures cost money too (Bolum 27.5): a provider that answers with a
-     * schema error still bills for the tokens it produced. A total that
-     * counted only successes would understate exactly the bad day that
-     * matters.
+     * Failures cost money too: a provider that answers with a schema error
+     * still bills for the tokens it produced. A total that counted only
+     * successes would understate exactly the bad day that matters.
      */
     @Test
     void failedCallsCountTowardsTheBill() {

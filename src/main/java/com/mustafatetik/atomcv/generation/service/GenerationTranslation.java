@@ -57,8 +57,8 @@ public class GenerationTranslation {
     private static final Logger log = LoggerFactory.getLogger(GenerationTranslation.class);
 
     /**
-     * More atoms than a two-page CV prints, and far fewer than a profile holds.
-     * Faz D's ceiling is eight for the same kind of reason (Bolum 21.3.1).
+     * More atoms than a two-page CV prints, and far fewer than a profile
+     * holds. Faz D's ceiling is eight for the same kind of reason.
      */
     static final int TRANSLATION_BUDGET = 60;
 
@@ -119,7 +119,7 @@ public class GenerationTranslation {
             if (source == null || source.getPlainText().isBlank()) {
                 // Nothing to translate from is not a failure of translation,
                 // and it is not something a retry fixes. Selection already
-                // counts an atom with no wording (Bolum 20.4).
+                // counts an atom with no wording.
                 return false;
             }
             return translations.translateInto(

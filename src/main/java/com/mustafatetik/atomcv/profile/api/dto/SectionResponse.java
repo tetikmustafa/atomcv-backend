@@ -12,7 +12,7 @@ import java.util.UUID;
  * <p>The version is a field here, unlike on the profile head. Sections appear
  * both alone and inside a collection, and a field that vanished depending on
  * which endpoint returned it would be worse than the small redundancy of
- * sending it beside the {@code ETag} (EK D.6.2).
+ * sending it beside the {@code ETag}.
  */
 @Schema(name = "Section")
 public record SectionResponse(

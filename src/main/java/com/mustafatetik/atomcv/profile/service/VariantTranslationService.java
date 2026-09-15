@@ -21,10 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * One stale wording, brought back into step with the one it came from
- * (Bolum 21.8, Bolum 32.2) — and one wording that never existed at all
- * (Bolum 21.8's second step), by way of English when that is the better route
- * (Bolum 32.5).
+ * One stale wording, brought back into step with the one it came from — and
+ * one wording that never existed at all (Bolum 21.8's second step), by way of
+ * English when that is the better route.
  *
  * <p><strong>It never touches a wording the user wrote.</strong> That is the
  * whole of Bolum 32.2's protection: an edit to the Turkish marks the English

@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Who is on a shorter leash, and until when (Bolum 44.3).
+ * Who is on a shorter leash, and until when.
  *
  * <p>Bolum 44.3's snippet ends its heavy-user branch with
  * {@code rateLimiter.tighten(u.userId(), Duration.ofHours(6))} and the section

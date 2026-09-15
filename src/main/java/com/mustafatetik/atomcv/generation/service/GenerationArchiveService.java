@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p><strong>Idempotent, and that is not an accident of the write.</strong>
  * Pressing archive on something already archived is not a conflict: the caller
  * asked for a state and the row is in it. The same reasoning as the second
- * press of account deletion (Bolum 57.4.1).
+ * press of account deletion.
  *
  * <p>Scoped, which is the IDOR defense here as everywhere: someone else's
  * generation reads as absent, and the endpoint answers 404 rather than telling

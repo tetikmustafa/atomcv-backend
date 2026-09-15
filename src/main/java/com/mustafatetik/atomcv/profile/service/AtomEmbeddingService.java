@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Every atom's vector, brought up to date (Bolum 28.2).
+ * Every atom's vector, brought up to date.
  *
  * <p><strong>From the English wording and nothing else.</strong> A similarity
  * between a Turkish sentence and an English one measures the languages rather

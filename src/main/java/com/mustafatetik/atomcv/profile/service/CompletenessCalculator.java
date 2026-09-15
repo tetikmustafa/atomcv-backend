@@ -7,11 +7,11 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import java.util.Set;
 
 /**
- * How complete a profile is, 0 to 100 (Bolum 31.9).
+ * How complete a profile is, 0 to 100.
  *
  * <p>The number is not decoration: the preflight gate refuses to start a
- * generation below a threshold (Bolum 25.5), and the figure the user sees has
- * to be the figure that gate uses.
+ * generation below a threshold, and the figure the user sees has to be the
+ * figure that gate uses.
  *
  * <p>Bolum 31.9 gives the weights but leaves the predicates to be read off
  * method names. What each one counts is settled here and recorded in EK D.6.2.

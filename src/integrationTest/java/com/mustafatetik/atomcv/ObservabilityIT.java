@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * What the deployment publishes about itself (Bolum 44.3, Bolum 2).
+ * What the deployment publishes about itself.
  *
  * <p><strong>The exporter is off unless a URL is given, and that is what is
  * asserted here.</strong> An OTLP registry with nowhere to send retries on a

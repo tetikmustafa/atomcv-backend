@@ -1,8 +1,7 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
 /**
- * Why one provider did not answer, and what the chain should do next
- * (Bolum 27.3).
+ * Why one provider did not answer, and what the chain should do next.
  *
  * <p>This is deliberately <em>not</em> a {@code PipelineError}. Bolum 27.3's
  * snippet returns a failed provider call straight to the caller, which would

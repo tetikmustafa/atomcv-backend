@@ -84,7 +84,7 @@ class ContentMigratorTest {
         assertThat(content.runs()).containsExactly(Run.of("bare run"));
     }
 
-    // ─── forward compatibility (Bolum 16.2) ───
+    // ─── forward compatibility ───
 
     @Test
     void anUnknownMarkSurvivesTheRoundTrip() {

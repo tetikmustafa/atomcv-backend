@@ -23,7 +23,7 @@ import java.util.Locale;
  * <p><strong>A warning is not a refusal.</strong> Every value here describes a
  * field the person can correct on the review screen, which is why that screen
  * is mandatory. What cannot be corrected — no language, no content at all —
- * ends the extraction instead (Bolum 31.10).
+ * ends the extraction instead.
  *
  * <p><strong>It lives in {@code shared} because two modules touch it</strong>
  * ({@code F-023}). Bolum 31 raises these codes and {@code GET /jobs/&#123;id&#125;}
@@ -98,8 +98,7 @@ public enum ExtractionWarningCode {
      * <p>{@link #UNSUPPORTED_BY_SOURCE} is the exception and is raised by the
      * pipeline, against the document, after the model has answered. Putting it
      * in the schema would offer the model a way to grade its own honesty, and
-     * would cost a new prompt version (Bolum 53.2) for a code it must never
-     * write.
+     * would cost a new prompt version for a code it must never write.
      */
     private final boolean raisedByModel;
 

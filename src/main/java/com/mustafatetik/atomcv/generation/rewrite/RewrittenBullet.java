@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * What the model answers for one bullet (Bolum 21.4).
+ * What the model answers for one bullet.
  *
  * <p>The same two fields a translation answers with, and for the same reason:
  * the runs are rebuilt on this side from the text and the quotations

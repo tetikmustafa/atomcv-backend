@@ -34,13 +34,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Where a CV comes in (Bolum 31.1).
+ * Where a CV comes in.
  *
- * <p><strong>Two answers, and the difference between them is the point.</strong>
- * A file this deployment cannot read is refused here and now, with a code that
- * says which of the five things went wrong (Bolum 31.2, Bolum 31.10). A file it
- * can read is answered {@code 202} with a job to follow, because what remains
- * is an LLM call over a whole document — Bolum 31.6 budgets eight seconds and
+ * <p><strong>Two answers, and the difference between them is the
+ * point.</strong> A file this deployment cannot read is refused here and now,
+ * with a code that says which of the five things went wrong. A file it can
+ * read is answered {@code 202} with a job to follow, because what remains is
+ * an LLM call over a whole document — Bolum 31.6 budgets eight seconds and
  * puts a screen in front of the person while it runs.
  *
  * <p>The bytes are not stored. They are read into text inside this request and
@@ -168,7 +168,7 @@ public class ProfileImportController {
     }
 
     /**
-     * Whose daily ceiling this upload spends (Bolum 44.1).
+     * Whose daily ceiling this upload spends.
      *
      * <p>An account spends its own; an anonymous caller spends their address's.
      * Not their session's, and Bolum 44.1 decides it: a session is a cookie,

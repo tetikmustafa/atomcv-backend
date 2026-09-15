@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * What an account may do, as far as the client needs to know (§ 35.7).
+ * What an account may do, as far as the client needs to know.
  *
  * <p><strong>§ 35.7 only ever wrote down the anonymous set.</strong> Its
  * example is an {@code "authenticated": false} body, and no section states the

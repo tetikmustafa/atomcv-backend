@@ -22,16 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * {@code POST} and {@code DELETE} on {@code /profile/atoms/{id}/tags}
- * (Bolum 35.2, Bolum 13).
+ * {@code POST} and {@code DELETE} on {@code /profile/atoms/{id}/tags}.
  *
  * <p><strong>The tables were empty and nothing said so.</strong> Both
  * endpoints were in the resource map from the start and neither existed;
  * {@code tags} and {@code atom_tags} had no writer at all, including the
- * import, so Faz B's tag overlap — a quarter of the raw score (Bolum 19.1) —
- * was zero for every atom this product has ever scored. A scoring component
- * that is structurally zero does not fail a test; it lowers every number
- * together.
+ * import, so Faz B's tag overlap — a quarter of the raw score — was zero for
+ * every atom this product has ever scored. A scoring component that is
+ * structurally zero does not fail a test; it lowers every number together.
  */
 @AutoConfigureMockMvc
 class AtomTagApiIT extends AbstractIntegrationTest {
@@ -70,9 +68,9 @@ class AtomTagApiIT extends AbstractIntegrationTest {
     void alabelIsStoredAsTheScorerWillReadIt() throws Exception {
         JsonNode tag = tag("Data-Engineering");
 
-        // Canonical, because that is the form Faz B compares against a posting
-        // (Bolum 19.2). An editor showing the typed spelling would show
-        // something the scorer never sees.
+        // Canonical, because that is the form Faz B compares against a
+        // posting. An editor showing the typed spelling would show something
+        // the scorer never sees.
         assertThat(tag.get("label").asText()).isEqualTo("data-engineering");
         assertThat(tag.get("source").asText()).isEqualTo("user");
 

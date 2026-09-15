@@ -4,14 +4,14 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Where the embedding service is and how long it is given (Bolum 28).
+ * Where the embedding service is and how long it is given.
  *
  * @param baseUrl        the TEI container. In development the port is
  *                       published; in production it is a name on the isolated
  *                       network, the same arrangement the compiler has.
  * @param requestTimeout per call. CPU inference on a batch is slower than a
  *                       web request has any right to be, and the work runs on
- *                       a queue rather than in front of a user (Bolum 28.2).
+ *  a queue rather than in front of a user.
  * @param healthTimeout  short: a health check that waits as long as a real
  *                       call would defeats the point of asking.
  * @param batchSize      how many texts go in one request.

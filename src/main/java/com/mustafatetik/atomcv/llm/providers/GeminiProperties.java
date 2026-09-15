@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.llm.providers;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * The second vendor's credentials (Bolum 27.3).
+ * The second vendor's credentials.
  *
  * @param apiKey  from Google AI Studio. Absent means the provider is skipped
  *                silently, exactly as OpenRouter's absence is — a deployment

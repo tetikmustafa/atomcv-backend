@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * One bullet, rewritten for one posting — or not (Bolum 21.4, Bolum 21.6).
+ * One bullet, rewritten for one posting — or not.
  *
  * <p><strong>This never fails.</strong> It answers with the rewrite when the
  * rewrite is good, and with what the person originally wrote when it is not,

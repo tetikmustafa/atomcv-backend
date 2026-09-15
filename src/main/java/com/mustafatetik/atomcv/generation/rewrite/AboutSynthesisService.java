@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * The opening paragraph, written from the rest of the page (Bolum 21.7).
+ * The opening paragraph, written from the rest of the page.
  *
  * <p>Next to {@link BulletRewriteService} and deliberately not inside it. The
  * two share a shape — two attempts, then what the person wrote — and share
@@ -123,7 +123,7 @@ public class AboutSynthesisService {
 
     /**
      * Everything the model is given, inside the fence — all of it either the
-     * person's content or the posting's (Bolum 43.1).
+     * person's content or the posting's.
      */
     private static String fencedData(AboutCandidate candidate) {
         return "current: " + candidate.originalText()

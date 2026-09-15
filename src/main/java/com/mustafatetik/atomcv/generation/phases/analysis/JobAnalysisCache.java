@@ -9,7 +9,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * The same posting, analysed once (Bolum 18.6).
+ * The same posting, analysed once.
  *
  * <p>Worth having because the same text arrives again far more often than it
  * looks: Faz G's edit loop re-runs the pipeline, trying another template or
@@ -76,7 +76,7 @@ public class JobAnalysisCache {
      * prompt change has to invalidate: without it a v2 prompt would serve v1's
      * answers for a week, and — worse — an A/B experiment would be measuring
      * nothing at all, since the bucket sent to v2 would read whatever v1 had
-     * already cached for that posting (Bolum 53.3).
+     * already cached for that posting.
      */
     String keyFor(String jobDescription, String promptVersion) {
         return PREFIX + promptVersion + ":" + JobDescriptionDigest.of(jobDescription);

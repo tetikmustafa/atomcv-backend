@@ -13,7 +13,7 @@ import java.util.UUID;
  * reason that costs money to get wrong: an analysis is cached by the hash of
  * the posting, so two people asking about one job share it. A directive is the
  * opposite — it belongs to a person and to a single run, and folding it into
- * the cached half would serve one caller's edits to the next (Bolum 18.7).
+ * the cached half would serve one caller's edits to the next.
  *
  * <p><strong>Ids only.</strong> Bolum 18.7 gives the record two more fields,
  * {@code emphasize} and {@code freeformNote}, and neither is here yet: they are

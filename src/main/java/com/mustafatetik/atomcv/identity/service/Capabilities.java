@@ -30,12 +30,12 @@ public class Capabilities {
     /**
      * § 35.7's five, and it is true again.
      *
-     * <p>It was zero for a day: the block was advertising a generation
-     * {@code POST /generations} refused, because the anonymous flow had a profile
-     * and no pipeline. Both ends exist now — the request is queued as the
-     * session's own work and paid for by the address (Bolum 44.1), the pipeline
-     * takes a subject rather than a user, and the finished generation is readable
-     * and downloadable by the session that owns it.
+     * <p>It was zero for a day: the block was advertising a generation {@code
+     * POST /generations} refused, because the anonymous flow had a profile and
+     * no pipeline. Both ends exist now — the request is queued as the
+     * session's own work and paid for by the address, the pipeline takes a
+     * subject rather than a user, and the finished generation is readable and
+     * downloadable by the session that owns it.
      *
      * <p>What the number does <em>not</em> cover is the cover letter: § 35.7 gives
      * that to an account, and asking for one is refused before the quota is

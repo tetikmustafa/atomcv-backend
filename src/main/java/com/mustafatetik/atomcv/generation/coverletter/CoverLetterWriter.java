@@ -44,7 +44,7 @@ public class CoverLetterWriter {
 
     /**
      * @param companyNote what the person knows about this employer
-     *                    (Bolum 34.5), or blank
+     * , or blank
      * @return the letter, or the reason there is none
      */
     public Result<CoverLetterDraft> write(

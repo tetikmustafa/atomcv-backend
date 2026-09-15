@@ -33,8 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What GitHub knows about somebody's projects, offered to their profile
- * (Bolum 31.8).
+ * What GitHub knows about somebody's projects, offered to their profile.
  *
  * <p><strong>Public data, no stored token, no LLM.</strong> Three things this
  * is not, and each is why it can exist at all: Bolum 40.6.1 deliberately does

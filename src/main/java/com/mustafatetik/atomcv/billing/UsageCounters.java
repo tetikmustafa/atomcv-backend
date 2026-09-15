@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * {@code usage_counters}, read and written the only way it can be safely
- * (Bolum 44).
+ * {@code usage_counters}, read and written the only way it can be safely.
  *
  * <p><strong>The increment is one statement.</strong> {@code INSERT … ON
  * CONFLICT DO UPDATE … RETURNING count} decides inside the database, so two
@@ -68,7 +67,7 @@ public class UsageCounters {
     }
 
     /**
-     * Gives one back (Bolum 44.2).
+     * Gives one back.
      *
      * <p>Floored at zero. A refund for a use that was never counted — a job
      * failing twice, a retry that refunded on each attempt — would otherwise

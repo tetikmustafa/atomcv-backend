@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Everything selection needs, and nothing it does not (Bolum 20).
+ * Everything selection needs, and nothing it does not.
  *
  * <p>No text: what a bullet says does not change what it costs or what it
  * scores, and both of those are already here. Selection works on numbers,
@@ -16,7 +16,7 @@ import java.util.UUID;
  * are prose are read by Faz B and Faz D, and do not come in here.
  *
  * @param directives what the user asked for by hand on this one document
- *                   (Bolum 24.4). Carried here rather than applied by the
+ * . Carried here rather than applied by the
  *                   builder because a rejection has to say <em>why</em>, and
  *                   an atom switched off in the profile and one taken off this
  *                   CV are two different sentences to the person reading them
@@ -63,7 +63,7 @@ public record SelectionRequest(
     }
 
     /**
-     * The same request with less room (Bolum 23.1).
+     * The same request with less room.
      *
      * <p>Faz F asks for this when the compiled document came out longer than
      * the limit: the measurement was optimistic somewhere, so selection runs
@@ -75,7 +75,7 @@ public record SelectionRequest(
     }
 
     /**
-     * The same candidates, with what the user asked for by hand (Bolum 24.4).
+     * The same candidates, with what the user asked for by hand.
      *
      * <p>Applied after the build rather than inside it, because
      * {@link SelectionRequestBuilder} answers "what could go on the page" and
@@ -119,7 +119,7 @@ public record SelectionRequest(
          * <p>The layout is here because it costs the budget, not because the
          * renderer needs it: the three label-less shapes open for three
          * different numbers, and an inline row pays no separation where a
-         * bullet does (Bolum 33.4).
+         * bullet does.
          */
         public SectionPlan(UUID sectionId, boolean alwaysInclude, int priority,
                 SectionFloor floor, List<EntryPlan> entries, List<AtomCandidate> atoms) {
@@ -178,7 +178,7 @@ public record SelectionRequest(
             // The atom has to agree about which entry it is in. When it does
             // not, selection charges nothing for the entry heading and the
             // budget silently gains 22.76 points per entry — a page that
-            // overflows for no visible reason (EK D.8.5).
+            // overflows for no visible reason.
             UUID owner = entryId;
             atoms.forEach(atom -> {
                 if (!owner.equals(atom.entryId())) {
@@ -254,7 +254,7 @@ public record SelectionRequest(
                 UUID entryId, double score, String contentKey) {
 
             // No wording, so nothing to have matched: an entry heading
-            // competes on the entry's own importance (Bolum 20.2).
+            // competes on the entry's own importance.
             return new AtomCandidate(entryId, null, entryId, score, 0.0, false, true,
                     contentKey, true, List.of());
         }

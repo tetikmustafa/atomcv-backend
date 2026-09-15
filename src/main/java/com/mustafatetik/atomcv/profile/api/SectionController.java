@@ -37,10 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Sections of the Master Profile (Bolum 35.2).
+ * Sections of the Master Profile.
  *
  * <p>The collection is not paginated: a profile has a handful of sections, and
- * the editor loads all of them anyway (EK D.6.2).
+ * the editor loads all of them anyway.
  */
 @RestController
 @RequestMapping("/api/v1/profile/sections")

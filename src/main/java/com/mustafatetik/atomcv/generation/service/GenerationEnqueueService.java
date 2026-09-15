@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Everything that happens before a generation is queued (Bolum 35.3).
+ * Everything that happens before a generation is queued.
  *
  * <p><strong>The preflights are synchronous and that is the whole point.</strong>
  * Bolum 35.3 says so and the reason is what a user sees: a request that was
@@ -34,9 +34,9 @@ import org.springframework.stereotype.Service;
  * reads the profile, the other counts characters — so refusing costs nothing
  * and accepting costs a worker.
  *
- * <p>The quota goes first of all (Bolum 44). It is one statement against one
- * row, and a user over their limit should not have their profile loaded or
- * their posting measured to find that out. It is also the only gate here that
+ * <p>The quota goes first of all. It is one statement against one row, and a
+ * user over their limit should not have their profile loaded or their posting
+ * measured to find that out. It is also the only gate here that
  * <em>writes</em> — which is why it runs after idempotency: answering with a
  * job that already exists must not cost a second unit.
  */

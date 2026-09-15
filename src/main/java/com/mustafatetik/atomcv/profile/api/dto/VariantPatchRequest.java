@@ -19,7 +19,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
  *
  * <p>{@code tone} is a JsonNullable for the same reason an entry's dates are:
  * leaving it out has to mean something different from clearing it. Sending it
- * unconditionally is what made a promote wipe the user's tone (EK D.6.8).
+ * unconditionally is what made a promote wipe the user's tone.
  */
 @Schema(name = "VariantPatch")
 public record VariantPatchRequest(

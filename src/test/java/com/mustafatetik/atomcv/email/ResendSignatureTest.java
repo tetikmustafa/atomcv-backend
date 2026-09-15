@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.Test;
 
 /**
- * The whole security of an unauthenticated endpoint (Bolum 40.2).
+ * The whole security of an unauthenticated endpoint.
  *
  * <p>Anything believed at the webhook can suppress an address, and a suppressed
  * address cannot sign in — so a forged {@code email.bounced} is a denial of

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * One public repository, as the listing endpoint describes it (Bolum 31.8).
+ * One public repository, as the listing endpoint describes it.
  *
  * <p><strong>Only what {@code /users/{login}/repos} carries.</strong> Bolum
  * 31.8's filter also names a commit count and whether there is a README, and

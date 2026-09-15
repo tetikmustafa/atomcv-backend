@@ -14,8 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 /**
  * The published schema is the contract between the two repositories: the
  * frontend generates its types from it. Six of the sixteen contract gaps close
- * by themselves once it exists — but only if it carries the closed vocabularies
- * and the headers, not just happy-path payloads (EK D.6).
+ * by themselves once it exists — but only if it carries the closed
+ * vocabularies and the headers, not just happy-path payloads.
  */
 @AutoConfigureMockMvc
 class OpenApiSchemaIT extends AbstractIntegrationTest {
@@ -162,10 +162,10 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // field is a string that may be null. A generated client must not end
         // up with a { present, value } object to fill in.
         //
-        // "may be null" is half the point and used to be missing: this asserted
-        // the type alone, so the schema published a plain string for a field
-        // whose documented purpose is to accept null, and a generated client
-        // rejected the body that clears an end date (EK D.6.8). In OpenAPI 3.1
+        // "may be null" is half the point and used to be missing: this
+        // asserted the type alone, so the schema published a plain string for
+        // a field whose documented purpose is to accept null, and a generated
+        // client rejected the body that clears an end date. In OpenAPI 3.1
         // null is a type, so it belongs in the list.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.components.schemas.EntryPatch.properties.organization.type")
@@ -211,7 +211,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
         // Ten operations declared only their failures. Between them that is
         // every collection read and every partial write — the two things the
         // profile editor does constantly — so a generated client had no
-        // response type for any of them (EK D.6.8).
+        // response type for any of them.
         for (String path : new String[] {
                 "/api/v1/profile/sections", "/api/v1/profile/entries", "/api/v1/profile/atoms"}) {
             mvc.perform(get("/v3/api-docs"))
@@ -255,7 +255,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     @Test
     void aCollectionReadCarriesNoEtagBecauseItCoversManyRows() throws Exception {
         // Deliberate: one tag cannot stand for a list. The per-item `version`
-        // is what the editor uses instead (EK D.6.2).
+        // is what the editor uses instead.
         mvc.perform(get("/v3/api-docs"))
                 .andExpect(jsonPath("$.paths['/api/v1/profile/sections'].get.responses.200.headers")
                         .doesNotExist());
@@ -302,7 +302,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The guard, rather than four more assertions above it (§ 51.7).
+     * The guard, rather than four more assertions above it.
      *
      * <p>Naming the ids that collide today fixes today. What made F-033 cost a
      * fortnight of a wrong binding is that the numbering is decided by how

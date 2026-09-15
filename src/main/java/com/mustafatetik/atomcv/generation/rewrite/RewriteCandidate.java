@@ -16,7 +16,7 @@ import java.util.UUID;
  * request to write whatever sounds good.
  *
  * @param atomId      what is being rewritten
- * @param variantId   the wording chosen for it (Bolum 21.1), which is what the
+ * @param variantId the wording chosen for it, which is what the
  *                    rewrite replaces if it succeeds and what stands if it
  *                    does not
  * @param original    that wording, marks and all — the length ceiling and the

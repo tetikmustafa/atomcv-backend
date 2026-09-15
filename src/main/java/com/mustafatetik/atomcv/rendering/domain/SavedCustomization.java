@@ -33,10 +33,10 @@ import org.hibernate.type.SqlTypes;
  * (Bolum 14.4's {@code options.customizationId}); saying nothing still gets
  * the preference.
  *
- * <p><strong>No {@code version} column, and that is deliberate</strong>
- * (EK D.6.2): ETags cover the six tables V1 gave one to, and this is not among
- * them. A customization is a small whole object a person replaces rather than
- * a row two tabs edit a field of at once.
+ * <p><strong>No {@code version} column, and that is deliberate</strong>: ETags
+ * cover the six tables V1 gave one to, and this is not among them. A
+ * customization is a small whole object a person replaces rather than a row
+ * two tabs edit a field of at once.
  *
  * <p><strong>{@code fixed_costs}, {@code page_text_height_pt} and
  * {@code measured_at} stay null.</strong> V12's {@code template_capacities} is

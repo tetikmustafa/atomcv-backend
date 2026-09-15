@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * What produced this document (Bolum 14.7).
+ * What produced this document.
  *
  * <p>Stored because a generation is reproducible only against the engine that
  * made it: a scoring weight change or a template revision moves the output,
@@ -14,7 +14,7 @@ import java.util.Map;
  * "we shipped a new renderer" is unanswerable after the fact.
  *
  * @param template        {@code id:vN}, the customization's own cost key
- * @param promptVersions  which version of each prompt ran (Bolum 53.2)
+ * @param promptVersions which version of each prompt ran
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record EngineVersion(

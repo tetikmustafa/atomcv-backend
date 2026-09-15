@@ -13,7 +13,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Who this deployment may send a person's content to (EK C.1, Bolum 57).
+ * Who this deployment may send a person's content to.
  *
  * <p>EK C.1's pre-launch item is "the AI provider list is current and public",
  * and until now the only way to check it was to read three configuration files

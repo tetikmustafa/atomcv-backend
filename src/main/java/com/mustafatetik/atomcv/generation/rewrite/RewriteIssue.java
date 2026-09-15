@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
 /**
- * What was wrong with a rewrite (Bolum 21.6).
+ * What was wrong with a rewrite.
  *
  * <p><strong>A kind and nothing else, on purpose.</strong> Naming the number
  * that went missing or quoting the sentence that drifted would put the user's
@@ -15,9 +15,9 @@ public enum RewriteIssue {
     NUMBER_LOST,
 
     /**
-     * A number the page does not carry is in the answer (Bolum 21.7). The
-     * mirror image of {@link #NUMBER_LOST}, and it belongs to the summary: a
-     * synthesis is where three years here and four there become "a decade".
+     * A number the page does not carry is in the answer. The mirror image of
+     * {@link #NUMBER_LOST}, and it belongs to the summary: a synthesis is
+     * where three years here and four there become "a decade".
      */
     NUMBER_INVENTED,
 

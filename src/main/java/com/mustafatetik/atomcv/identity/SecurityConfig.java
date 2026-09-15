@@ -12,7 +12,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 /**
- * The filter chain, and what Spring Security is here for (EK D.6.6).
+ * The filter chain, and what Spring Security is here for.
  *
  * <p><strong>It does not own authentication.</strong> Who is acting comes from
  * the {@code sid} cookie and Redis — see {@code identity.service} — and
@@ -47,8 +47,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/v1/webhooks/**"))
                 .exceptionHandling(handling -> handling.accessDeniedHandler(csrfProblems))
                 .headers(SecurityConfig::responseHeaders)
-                // Ownership is the gate (Bolum 41.4). Paths listed here would
-                // be a second, drifting copy of that decision.
+                // Ownership is the gate. Paths listed here would be a second,
+                // drifting copy of that decision.
                 .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
                 // No servlet session, ever: ours lives in Redis, and a
                 // JSESSIONID appearing beside sid would be a second identity
@@ -74,10 +74,10 @@ public class SecurityConfig {
      * upgrade drops one is the day a test says so.
      *
      * <p><strong>HSTS</strong> is on with a year and subdomains. Nginx
-     * terminates TLS (Bolum 11.2) and could send it instead, but a header the
-     * application depends on for its own safety should not live in a file the
-     * application does not ship. It is skipped on a plain-http request, so
-     * {@code make dev} is unaffected.
+     * terminates TLS and could send it instead, but a header the application
+     * depends on for its own safety should not live in a file the application
+     * does not ship. It is skipped on a plain-http request, so {@code make
+     * dev} is unaffected.
      *
      * <p><strong>CSP</strong> is the one Spring does not send. This API serves
      * JSON, and the two exceptions are Swagger UI — disabled in production —

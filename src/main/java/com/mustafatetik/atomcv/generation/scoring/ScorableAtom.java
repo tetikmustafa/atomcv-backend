@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Everything Faz B needs about one atom, and nothing else (Bolum 19.2).
+ * Everything Faz B needs about one atom, and nothing else.
  *
  * <p>A projection rather than the entity, so that the scorer is a pure
  * function of values: it can be called with a hand-written atom in a test, it

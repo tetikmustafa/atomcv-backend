@@ -110,7 +110,7 @@ public class JobSpecificGenerationService {
     /**
      * @param jobDescription        the pasted posting
      * @param preflightAcknowledged the user chose {@code continue_anyway}
-     *                              after Bolum 18.1 refused (EK D.6.1)
+     *  after Bolum 18.1 refused
      * @param coverLetter           Bolum 34's letter was asked for. Off by
      *                              default and a second call when it is on;
      *                              a letter that cannot be written honestly
@@ -141,8 +141,8 @@ public class JobSpecificGenerationService {
         }
 
         // Faz A. The bucket key keeps one person on one prompt version across
-        // their generations (Bolum 53.3) -- their user id, or the profile id when
-        // there is no account behind the request.
+        // their generations -- their user id, or the profile id when there is
+        // no account behind the request.
         progress.report(GenerationPhase.ANALYSING.at(10));
         String bucketKey = subject.bucketKey();
         Result<JobAnalysis> analysed =
@@ -157,13 +157,13 @@ public class JobSpecificGenerationService {
                 .withMaxPages(maxPages)
                 .withLanguage(language)
                 // Bolum 14.4: a saved set, when the request named one. Nothing
-                // named leaves the profile's own working settings (Bolum 33.2).
+                // named leaves the profile's own working settings.
                 .withCustomization(
                         customizations.settingsOf(profile, customizationId).orElse(null));
 
-        // Measured if anybody has compiled this geometry, estimated if not
-        // (Bolum 33.3). Empty now means only that the template itself has no
-        // measured default, which would be estimating from nothing.
+        // Measured if anybody has compiled this geometry, estimated if not.
+        // Empty now means only that the template itself has no measured
+        // default, which would be estimating from nothing.
         Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
@@ -179,7 +179,7 @@ public class JobSpecificGenerationService {
         progress.report(GenerationPhase.MEASURING.at(30));
 
         // One compilation for everything that has no cost yet, before
-        // selection asks for numbers (Bolum 26.2).
+        // selection asks for numbers.
         try {
             if (renderCosts.measureMissing(profile, options.customization(), head,
                     java.util.Locale.forLanguageTag(options.language())) > 0) {
@@ -194,7 +194,7 @@ public class JobSpecificGenerationService {
 
         // Faz B. The fifth query of the generation, and the only one general
         // mode does not make: tags are a scoring input, not part of the tree
-        // that gets rendered (Bolum 52.2).
+        // that gets rendered.
         RelevanceScores scores = relevance.scoreAgainst(
                 tree, tags.labelsByAtom(profile), posting, directives.emphasize());
 
@@ -215,11 +215,11 @@ public class JobSpecificGenerationService {
             }
 
             // The measurement above is behind the language either way, and
-            // this is the reason the step sits here rather than after Faz C:
-            // a carried profile has wordings nobody has costed, and a
-            // fallback moved the header into a language nobody has measured.
-            // Selection is allowed to estimate (Bolum 33.3) but should not
-            // have to, and this is one query when there is nothing to do.
+            // this is the reason the step sits here rather than after Faz C: a
+            // carried profile has wordings nobody has costed, and a fallback
+            // moved the header into a language nobody has measured. Selection
+            // is allowed to estimate but should not have to, and this is one
+            // query when there is nothing to do.
             try {
                 int measured = renderCosts.measureMissing(profile, options.customization(),
                         head, java.util.Locale.forLanguageTag(options.language()));
@@ -328,8 +328,8 @@ public class JobSpecificGenerationService {
     }
 
     /**
-     * The versions that actually ran (Bolum 53.3), and it is now read off the
-     * calls rather than off the result.
+     * The versions that actually ran, and it is now read off the calls rather
+     * than off the result.
      *
      * <p><strong>Duzeltme.</strong> This used to key off "Faz D changed
      * something", which conflated three different runs. A generation whose only

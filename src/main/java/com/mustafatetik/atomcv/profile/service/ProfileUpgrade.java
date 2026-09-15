@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.profile.service;
 import java.util.Locale;
 
 /**
- * What became of the anonymous profile when its owner signed in (Adim 3.6).
+ * What became of the anonymous profile when its owner signed in.
  *
  * <p>Four answers rather than a boolean, because the three that are not
  * {@link #UPGRADED} lead to three different sentences. "There was nothing to

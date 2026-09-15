@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 /**
- * A LaTeX source read as the prose inside it (Bolum 31.3).
+ * A LaTeX source read as the prose inside it.
  *
  * <p><strong>Nothing here compiles anything.</strong> A {@code .tex} upload is
  * text we simplify with regular expressions; handing it to a compiler would be

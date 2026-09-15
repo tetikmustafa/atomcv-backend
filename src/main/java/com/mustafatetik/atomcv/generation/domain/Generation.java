@@ -51,7 +51,7 @@ import org.hibernate.type.SqlTypes;
  *
  * <p>No {@code @Version}: the column does not exist, and nothing updates a
  * generation concurrently — Faz G writes a <em>new</em> row and marks this one
- * superseded (Bolum 24).
+ * superseded.
  */
 @Entity
 @Table(name = "generations")
@@ -118,7 +118,7 @@ public class Generation implements UserOwned {
     private String coverLetter;
 
     /**
-     * Faz F's coverage counts (Bolum 23.3).
+     * Faz F's coverage counts.
      *
      * <p>Null for a general-mode generation, and that is the honest value:
      * there was no posting to be relevant to, so every count would be zero and
@@ -179,7 +179,7 @@ public class Generation implements UserOwned {
     /** Null for an anonymous generation, which no scoped read may then return. */
     /**
      * This generation stops belonging to nobody and starts belonging to
-     * somebody (Adim 3.6).
+     * somebody.
      *
      * <p>The mirror of {@code Profile.adoptedBy}, and it happens in the same
      * transaction: signing up from an anonymous session carries the profile, and

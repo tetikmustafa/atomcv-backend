@@ -98,7 +98,7 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
         assertThat(unitsSpent()).isEqualTo(1);
     }
 
-    // -- what does not (Bolum 31.2, Bolum 31.10) ---------------------------
+    // -- what does not ---------------------------
 
     @Test
     void aFormatWeDoNotReadIsRefusedHereAndSaysWhatWeDo() throws Exception {

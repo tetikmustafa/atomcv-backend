@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * A label to put on an atom (Bolum 35.2).
+ * A label to put on an atom.
  *
  * <p>The label travels as the person typed it and is canonicalised on the
  * server — trimmed and lowercased with {@code Locale.ROOT} (Bolum 19.2,

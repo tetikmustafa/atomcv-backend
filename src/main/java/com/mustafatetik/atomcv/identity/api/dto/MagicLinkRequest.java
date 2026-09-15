@@ -8,8 +8,8 @@ import jakarta.validation.constraints.Size;
 /**
  * @param email          where to send the link. Validated for shape only —
  *                       whether it has an account is the one thing the answer
- *                       must not depend on (Bolum 40.4)
- * @param challengeToken what the Turnstile widget produced (Bolum 44.4).
+ *  must not depend on
+ * @param challengeToken what the Turnstile widget produced.
  *                       <strong>Optional here and required by the challenge
  *                       itself</strong>, which is not the same thing: a
  *                       deployment with no secret configured has no challenge

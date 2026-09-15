@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.shared.wire;
 
 /**
- * How well the page answers the posting, as four named steps (Bolum 23.3).
+ * How well the page answers the posting, as four named steps.
  *
  * <p><strong>Four words and never a percentage.</strong> Bolum 23.3 opens by
  * forbidding one: a number to the decimal place claims a precision that

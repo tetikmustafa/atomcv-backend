@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 /**
- * The letter that was written (Bolum 34.7).
+ * The letter that was written.
  *
  * <p>Plain text and no document. Bolum 34.7 renders nothing: a covering letter
  * is pasted into an application form or the body of an email, so a PDF of it

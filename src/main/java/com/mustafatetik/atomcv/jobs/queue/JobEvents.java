@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.jobs.queue;
 
 /**
- * Where the queue announces that something happened (Bolum 30.6).
+ * Where the queue announces that something happened.
  *
  * <p>An interface with no-op defaults, so the worker can be built without a
  * listener: the integration tests that assert on rows do not want an SSE
@@ -10,8 +10,7 @@ package com.mustafatetik.atomcv.jobs.queue;
  *
  * <p>Announcing is not recording. Every event here has already been written to
  * the job row by the time it is published — an event reaches whoever is
- * connected right now, and the row is what anyone else is caught up from
- * (EK D.6.4).
+ * connected right now, and the row is what anyone else is caught up from.
  */
 public interface JobEvents {
 

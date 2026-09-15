@@ -14,9 +14,9 @@ import org.springframework.http.ProblemDetail;
 public final class ProblemDetails {
 
     /**
-     * Relative on purpose. Bolum 35.4's example uses the production domain, but
-     * the product document requires that neither the name nor the domain is
-     * baked into code (EK C.5) — and RFC 7807 allows a relative reference.
+     * Relative on purpose. Bolum 35.4's example uses the production domain,
+     * but the product document requires that neither the name nor the domain
+     * is baked into code — and RFC 7807 allows a relative reference.
      */
     private static final String TYPE_PREFIX = "/errors/";
 
@@ -43,9 +43,9 @@ public final class ProblemDetails {
     }
 
     /**
-     * Developer-facing English, never displayed (EK D.6.2). The frontend
-     * resolves {@code errors.{CODE}} in the user's language; this exists so a
-     * log line and a debugging session have a sentence to read.
+     * Developer-facing English, never displayed. The frontend resolves {@code
+     * errors.{CODE}} in the user's language; this exists so a log line and a
+     * debugging session have a sentence to read.
      */
     static String title(ErrorCode code) {
         String words = code.name().toLowerCase(Locale.ROOT).replace('_', ' ');

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * A profile, whole, in a format the user can keep (Bolum 13.1, EK C.1).
+ * A profile, whole, in a format the user can keep.
  *
  * <p>This is not the CV renderer. There is no page budget, no template and no
  * measurement here — an export is a copy of the data, and it stays readable

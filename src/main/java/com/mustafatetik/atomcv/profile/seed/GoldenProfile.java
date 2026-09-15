@@ -29,7 +29,7 @@ public record GoldenProfile(
         List<Atom> atoms,
         List<AtomVariant> variants,
         /**
-         * What Faz B is handed as {@code tagsByAtom} (Bolum 19.1, Bolum 52.2).
+         * What Faz B is handed as {@code tagsByAtom}.
          *
          * <p>Beside the rows rather than inside them, because that is where it
          * lives in production: a tag is a row in {@code tags} joined through

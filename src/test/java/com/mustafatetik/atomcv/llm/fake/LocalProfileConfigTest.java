@@ -61,10 +61,10 @@ class LocalProfileConfigTest {
     /**
      * The base configuration, for contrast: the real adapters, in order.
      *
-     * <p>Two of them, and the order is the fallback (Bolum 27.3). It said
-     * {@code openrouter} alone until the second adapter existed — the chain
-     * mechanism was built, tested and had exactly one link, so a single
-     * vendor's outage stopped the product.
+     * <p>Two of them, and the order is the fallback. It said {@code
+     * openrouter} alone until the second adapter existed — the chain mechanism
+     * was built, tested and had exactly one link, so a single vendor's outage
+     * stopped the product.
      */
     @Test
     void withoutTheFakeProfileTheChainNamesTheRealAdapters() {

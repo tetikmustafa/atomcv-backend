@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * What a queued calibration carries in {@code jobs.payload} (Bolum 33.3).
+ * What a queued calibration carries in {@code jobs.payload}.
  *
  * <p>The geometry itself rather than a cost key, because the key is a summary:
  * the calibration document has to be rendered at these settings, and reading

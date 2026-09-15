@@ -92,7 +92,7 @@ class FabricatedTechnologyTest {
 
     /**
      * The other half, and the reason this is not simply "refuse proper nouns":
-     * a name the person wrote themselves is theirs to keep (Bolum 21.6.1).
+     * a name the person wrote themselves is theirs to keep.
      */
     @Test
     void anameThePersonAlreadyWroteIsNotAnInvention() {

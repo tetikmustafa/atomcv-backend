@@ -190,7 +190,7 @@ class SessionCurrentUserTest {
 
     /**
      * An anonymous session has no account, so there is nothing to check and no
-     * lookup to spend on it (Adim 3.6).
+     * lookup to spend on it.
      */
     @Test
     void anAnonymousSessionIsNeverLookedUpAsAnAccount() {

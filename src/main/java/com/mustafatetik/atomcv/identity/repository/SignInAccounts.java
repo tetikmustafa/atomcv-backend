@@ -101,7 +101,7 @@ public class SignInAccounts {
 
     /**
      * The one lookup that takes something out of an email rather than out of a
-     * session (Bolum 57.7).
+     * session.
      *
      * <p>Safe for the reason the token is random: it cannot be derived from an
      * address or an id, so holding it is the only way to name the row, and

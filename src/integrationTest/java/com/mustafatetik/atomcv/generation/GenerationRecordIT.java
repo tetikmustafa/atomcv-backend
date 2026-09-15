@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The generation record against the real schema (Bolum 14).
+ * The generation record against the real schema.
  *
  * <p>Nine JSONB columns and an enum converted to text, none of which schema
  * validation checks the shape of. What is being proved is that the snapshot
@@ -220,7 +220,7 @@ class GenerationRecordIT extends AbstractIntegrationTest {
 
     /**
      * V11, and the column exists because the one next to it cannot answer this
-     * question (Bolum 24).
+     * question.
      *
      * <p>{@code content_snapshot} holds the same sentence and no atom id —
      * Bolum 22.2 built the render to carry none — so an edit that re-runs

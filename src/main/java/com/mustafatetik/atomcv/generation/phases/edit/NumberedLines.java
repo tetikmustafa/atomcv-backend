@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the person can be talking about, numbered (Bolum 24.2).
+ * What the person can be talking about, numbered.
  *
  * <p>This is the piece that makes an invented atom id impossible rather than
  * merely detectable. The model is shown numbers and answers with numbers; the
@@ -24,7 +24,7 @@ import java.util.UUID;
  *
  * <p>Order is fixed by the caller and kept, because the same generation has to
  * produce the same prompt twice — a numbering that moved between two reads
- * would make one recorded answer mean two different things (Bolum 53.3).
+ * would make one recorded answer mean two different things.
  */
 public final class NumberedLines {
 
@@ -108,7 +108,7 @@ public final class NumberedLines {
      *
      * @param text what it says, already resolved to the wording this CV
      *             printed — not today's, which the person may have edited
-     *             since (EK D.6.3)
+     *  since
      */
     public record Line(UUID atomId, String text) {
     }

@@ -128,8 +128,8 @@ public class AtomService {
     @Transactional
     public Atom patch(ProfileRef profile, UUID id, String ifMatch, AtomPatch patch) {
         // Refused whole rather than field by field: a write that silently
-        // dropped the control would leave the screen showing a value the server
-        // does not hold (§ 35.7).
+        // dropped the control would leave the screen showing a value the
+        // server does not hold.
         if (AnonymousLimits.touchesAtomControls(patch)) {
             AnonymousLimits.requireAccountFor(profile, AccountFeature.ATOM_CONTROLS);
         }
@@ -209,9 +209,9 @@ public class AtomService {
      * reorder. Two people tagging one atom do not conflict: they end up with
      * both tags, which is what each of them asked for.
      *
-     * <p>Faz B's tag component is a quarter of the raw score (Bolum 19.1), so
-     * this is a scoring control, not a label — which is why it is here and not
-     * a field on the atom patch.
+     * <p>Faz B's tag component is a quarter of the raw score, so this is a
+     * scoring control, not a label — which is why it is here and not a field
+     * on the atom patch.
      */
     @Transactional
     public AtomTagRow tag(ProfileRef profile, UUID atomId, String label) {

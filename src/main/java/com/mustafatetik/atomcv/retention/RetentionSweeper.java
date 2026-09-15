@@ -111,7 +111,7 @@ public class RetentionSweeper {
     }
 
     /**
-     * Its own schedule, minutes apart rather than once a night (Bolum 9).
+     * Its own schedule, minutes apart rather than once a night.
      *
      * <p>The two sweeps answer different promises. The nightly one keeps a
      * retention window measured in days, where a few hours either way changes

@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 /**
- * One structured call, provider-independent (Bolum 27.1).
+ * One structured call, provider-independent.
  *
  * <p>Everything an adapter needs and nothing about how a particular vendor
  * asks for it: the five mechanisms in Bolum 27.2 are the adapters' business,
@@ -12,18 +12,18 @@ import java.util.UUID;
  *
  * <p>{@code promptId} and {@code promptVersion} travel with the request rather
  * than being looked up at the edge, because telemetry records the version that
- * actually ran (Bolum 27.5) and an A/B experiment can hand two calls different
- * versions of the same prompt (Bolum 53.3).
+ * actually ran and an A/B experiment can hand two calls different versions of
+ * the same prompt.
  *
  * @param promptId      which prompt, as its directory name under
- *                      {@code resources/prompts} (Bolum 53.1)
+ *  {@code resources/prompts}
  * @param promptVersion which version of it ran, e.g. {@code v1}
  * @param systemPrompt  held constant across calls so that provider-side prompt
- *                      caching can discount it (Bolum 27.4)
+ *  caching can discount it
  * @param userPrompt    the varying part
  * @param outputSchema  the shape the answer must take
  * @param resultType    what the answer is parsed into
- * @param preferredTier which chain to walk (Bolum 27.3)
+ * @param preferredTier which chain to walk
  * @param timeout       per provider, not for the chain as a whole
  * @param userId        whose work this call is doing, or {@code null} for an
  *                      anonymous caller and for the calls no user asked for.
@@ -37,7 +37,7 @@ import java.util.UUID;
  *                      at all, so tying a billed call to the work that caused
  *                      it meant matching timestamps to the millisecond — which
  *                      is how a 4-page CV was found to have been paid for twice
- *                      with one job row to show for it (Bolum 27.5)
+ *  with one job row to show for it
  */
 
 public record StructuredRequest<T>(

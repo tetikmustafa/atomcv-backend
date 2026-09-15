@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 /**
- * Replacement preferences (Bolum 14.3).
+ * Replacement preferences.
  *
  * <p>Separate from the domain record because the domain one enforces its
  * invariants in a constructor, and a constructor that throws during

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /**
- * What a user can do about an error (Bolum 35.4, EK D.6).
+ * What a user can do about an error.
  *
  * <p>The server owns this list. Buttons are generated from the
  * {@code resolutions} array rather than written per error screen, so an action
@@ -49,7 +49,7 @@ public enum ResolutionAction {
     CONTINUE_AS_GENERAL_CV,
 
     /**
-     * Send the same text again, this time past the preflight (Bolum 18.1).
+     * Send the same text again, this time past the preflight.
      *
      * <p>Bolum 18.1 is explicit that a posting which does not look like one is
      * a question, not a refusal — the user may know better than the heuristic.

@@ -15,8 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What happens to the other languages when one of them is edited
- * (Bolum 32.2).
+ * What happens to the other languages when one of them is edited.
  *
  * <p><strong>Everything derived goes stale; only some of it is regenerated.</strong>
  * The two are different questions and Bolum 32.2 answers them differently. A
@@ -50,7 +49,7 @@ public class VariantSynchronization {
     }
 
     /**
-     * One wording the person has just handed back (Bolum 32.2).
+     * One wording the person has just handed back.
      *
      * <p>The other half of the protection. Marking a wording as the person's
      * own is something they do by typing; taking that back is something they

@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
 /**
- * Somewhere to put an answer a real provider gave (Bolum 54.2).
+ * Somewhere to put an answer a real provider gave.
  *
  * <p>The seam exists because recording cannot ride on
  * {@code LlmInvocationEvent}: that event carries a shape and never content,

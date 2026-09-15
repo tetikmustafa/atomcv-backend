@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The OAuth round trip (Bolum 40.6).
+ * The OAuth round trip.
  *
  * <p><strong>Both endpoints are browser navigations, so every outcome is a
  * redirect.</strong> Nobody reads a JSON body here — the person is looking at
@@ -42,13 +42,13 @@ import org.springframework.web.bind.annotation.RestController;
  * with the session cookie set.
  *
  * <p><strong>Success does not land on the destination directly, and that is
- * not a detour.</strong> The session cookie is {@code SameSite=Strict}
- * (Bolum 40.1), and a browser withholds a Strict cookie from a request whose
- * redirect chain began on another site — which this one did, at the provider.
- * Redirecting straight to the app would render the first page signed out and
- * only a manual refresh would fix it: a bug that reads as a flaky login. The
- * landing route exists so the client can ask {@code /auth/session} with a
- * same-origin fetch, which does carry the cookie, and route on from there.
+ * not a detour.</strong> The session cookie is {@code SameSite=Strict}, and a
+ * browser withholds a Strict cookie from a request whose redirect chain began
+ * on another site — which this one did, at the provider. Redirecting straight
+ * to the app would render the first page signed out and only a manual refresh
+ * would fix it: a bug that reads as a flaky login. The landing route exists so
+ * the client can ask {@code /auth/session} with a same-origin fetch, which
+ * does carry the cookie, and route on from there.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -155,7 +155,7 @@ public class OAuthController {
         var session = ((SignInOutcome.SignedIn) outcome).session();
         // Before the cookie is replaced: after this response the browser no
         // longer holds the anonymous session, and the profile built under it
-        // is addressed by a value derived from that id (Adim 3.6).
+        // is addressed by a value derived from that id.
         ProfileUpgrade upgrade = handover.follow(session);
         // The provider and the outcome, never the address or the subject.
         log.info("Signed in through {}", target.wireValue());

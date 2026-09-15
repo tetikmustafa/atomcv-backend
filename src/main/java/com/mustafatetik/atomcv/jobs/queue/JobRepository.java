@@ -35,7 +35,7 @@ public class JobRepository extends UserScopedRepository<Job> {
     }
 
     /**
-     * Every job this caller started (Adim 3.6).
+     * Every job this caller started.
      *
      * <p>Owner rather than user, and that is the whole of the change: the
      * queue always had a column for an anonymous session and no way to say

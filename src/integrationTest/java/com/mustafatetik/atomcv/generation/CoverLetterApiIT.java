@@ -36,7 +36,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * {@code POST /generations/{id}/cover-letter/regenerate} (Bolum 34.6).
+ * {@code POST /generations/{id}/cover-letter/regenerate}.
  *
  * <p><strong>This lane has no LLM provider configured at all</strong>, so every
  * call here ends in Bolum 27.3's empty chain. That is not a limitation for

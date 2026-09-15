@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Where somebody applied, and what happened (Bolum 55, Bolum 35.3).
+ * Where somebody applied, and what happened.
  *
  * <p>Four verbs over one table, and the least clever endpoint in this
  * application: it records what a person tells it. Nothing here forbids a

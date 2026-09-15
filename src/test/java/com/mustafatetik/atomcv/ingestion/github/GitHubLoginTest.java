@@ -8,7 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The SSRF boundary of the GitHub import (Bolum 42.2, Bolum 31.8).
+ * The SSRF boundary of the GitHub import.
  *
  * <p>The host is a constant, so the only thing a person decides about the
  * request is the login — and a login goes into a path. Everything here is

@@ -8,18 +8,18 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What Faz B produced for one posting (Bolum 19).
+ * What Faz B produced for one posting.
  *
  * <p>Both halves are kept. The ranking is what selection consumes; the weights
  * are what says whether the embedding component took part, and a deployment
  * that scored without vectors for a week would otherwise look like a prompt
- * problem (Bolum 28.4).
+ * problem.
  *
  * <p>The components inside each {@link ScoredAtom} survive this far for
  * Faz F's honest report: "your page scored low" is worth little, "none of your
  * skills matched" is worth acting on.
  *
- * @param ranked most relevant first, ties broken by id (Bolum 19.6)
+ * @param ranked most relevant first, ties broken by id
  * @param byAtom the same scores, indexed. A component rather than a method,
  *               because selection looks up every atom in the profile and
  *               rebuilding the index per lookup would make the build

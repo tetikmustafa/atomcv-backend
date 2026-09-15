@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 import java.util.List;
 
 /**
- * One format's reader (Bolum 31.3).
+ * One format's reader.
  *
  * <p>Returns text and throws {@link com.mustafatetik.atomcv.shared.error.ApiException}
  * for the failures that are the user's to act on — an encrypted PDF, a

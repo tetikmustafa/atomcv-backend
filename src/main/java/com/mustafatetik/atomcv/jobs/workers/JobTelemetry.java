@@ -58,9 +58,9 @@ public class JobTelemetry {
      * Starts measuring one run, and records what it already waited.
      *
      * <p>From {@code runAfter} rather than from {@code createdAt}: a retry is
-     * deliberately held back (Bolum 30.5) and a job that waited its backoff
-     * correctly is not a queue that is behind. For a first attempt the two are
-     * the same instant.
+     * deliberately held back and a job that waited its backoff correctly is
+     * not a queue that is behind. For a first attempt the two are the same
+     * instant.
      */
     public Run started(Job job) {
         Duration waited = Duration.between(job.getRunAfter(), clock.instant());

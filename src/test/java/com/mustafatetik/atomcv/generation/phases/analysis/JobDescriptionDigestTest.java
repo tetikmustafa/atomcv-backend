@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * The hash two subsystems have to agree on (Bolum 18.6, Bolum 13).
+ * The hash two subsystems have to agree on.
  *
  * <p>Worth its own class because the failure it guards against is silent: the
  * cache and {@code generations.jd_hash} would simply stop matching, no error

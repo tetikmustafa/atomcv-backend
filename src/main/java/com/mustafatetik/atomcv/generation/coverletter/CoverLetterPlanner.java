@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The letter's input, read off the page (Bolum 34.2), without an LLM.
+ * The letter's input, read off the page, without an LLM.
  *
  * <p>Pure and static, like the other planners: a profile, a selection and an
  * analysis go in, the constraints come out. Everything it collects it collects
@@ -42,7 +42,7 @@ public final class CoverLetterPlanner {
     /**
      * @param posting     Faz A's reading of the job
      * @param companyNote what the person told us about this employer
-     *                    (Bolum 34.5), or blank
+     * , or blank
      */
     public static CoverLetterInput plan(
             Profile profile,

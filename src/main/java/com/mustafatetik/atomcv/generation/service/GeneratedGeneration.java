@@ -27,8 +27,8 @@ import java.util.UUID;
  *                       indistinguishable from a prompt regression.
  * @param promptVersions the versions that actually ran, which under an A/B
  *                       experiment is not the same as the configured defaults
- *                       (Bolum 53.3)
- * @param rewriteTally   what Faz D called and what it refused (Bolum 14.6).
+ *
+ * @param rewriteTally what Faz D called and what it refused.
  *                       Carried here rather than on {@link GeneratedDocument}
  *                       because the pipeline neither produces it nor has any
  *                       use for it — it is the rewriter's own record, and the
@@ -55,9 +55,9 @@ public record GeneratedGeneration(
         String coverLetter) {
 
     /**
-     * General mode: no posting, no report, no letter (Bolum 19.4) — and no Faz
-     * D, which is why the tally is empty rather than absent. Zero calls is a
-     * fact about this run; a missing tally would read as "not instrumented".
+     * General mode: no posting, no report, no letter — and no Faz D, which is
+     * why the tally is empty rather than absent. Zero calls is a fact about
+     * this run; a missing tally would read as "not instrumented".
      */
     public GeneratedGeneration(
             UUID profileId, JobAnalysis posting, GenerationOptions options,

@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
 /**
- * How much model a call is worth (Bolum 5.4, Bolum 27.1).
+ * How much model a call is worth.
  *
  * <p>Two classes, not five. Bolum 5.4 assigns every phase to one of them:
  * structured extraction from a job posting, a bullet rewrite and an edit-intent
@@ -10,7 +10,7 @@ package com.mustafatetik.atomcv.llm.gateway;
  *
  * <p>The tier names a chain in configuration, never a model — model names are
  * environment variables because vendors rename them faster than a release
- * cycle (Bolum 5.4).
+ * cycle.
  */
 public enum ModelTier {
 

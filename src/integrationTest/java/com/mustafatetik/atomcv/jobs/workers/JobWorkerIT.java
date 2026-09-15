@@ -111,7 +111,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
 
         var progress = queue.find(queued.getId()).orElseThrow().getProgress();
         assertThat(progress.phase()).isEqualTo("B");
-        // A key, never a sentence: the frontend owns the words (Bolum 35.4).
+        // A key, never a sentence: the frontend owns the words.
         assertThat(progress.label()).isEqualTo("generation.phase.SCORING");
         assertThat(progress.pct()).isEqualTo(50);
 

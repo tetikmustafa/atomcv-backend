@@ -53,7 +53,7 @@ public class Atom implements ProfileOwned {
     @Column(nullable = false)
     private short displayOrder;
 
-    // ─── user controls (Bolum 20) ───
+    // ─── user controls ───
 
     @Column(nullable = false)
     private float importance = 0.5f;
@@ -85,7 +85,7 @@ public class Atom implements ProfileOwned {
     private String[] properNouns = new String[0];
 
     /**
-     * BGE-M3's dense vector for the English variant (Bolum 28).
+     * BGE-M3's dense vector for the English variant.
      *
      * <p>Null until something has embedded it, which is not the same as an
      * atom with no content: Bolum 28.2 computes these on a queue after the
@@ -266,8 +266,7 @@ public class Atom implements ProfileOwned {
     }
 
     /**
-     * Whether the stored vector still describes the given English variant
-     * (Bolum 28.2).
+     * Whether the stored vector still describes the given English variant.
      *
      * <p>Compared by content hash rather than by timestamp: an edit that put
      * the text back the way it was leaves the hash unchanged, and re-embedding

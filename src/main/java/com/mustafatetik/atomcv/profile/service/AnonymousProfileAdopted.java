@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * An anonymous session's profile has just become an account's (Adim 3.6).
+ * An anonymous session's profile has just become an account's.
  *
  * <p><strong>An event because the alternative is a cycle.</strong> Whatever else
  * the session made hangs off this profile and has to change owner with it — its

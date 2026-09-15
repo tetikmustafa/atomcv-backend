@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * One tracked application (Bolum 55).
+ * One tracked application.
  *
  * @param generationId the CV it was sent with, or null once that CV has been
  *                     deleted. Null is not "never had one" and the screen

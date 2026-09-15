@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The daily allowance against a real Postgres (Bolum 44).
+ * The daily allowance against a real Postgres.
  *
  * <p><strong>Not {@code @Transactional}.</strong> The property worth proving
  * is what two concurrent requests do to one counter row, and wrapping them in

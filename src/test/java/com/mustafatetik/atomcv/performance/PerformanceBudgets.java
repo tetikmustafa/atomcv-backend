@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * {@code performance-budgets.yaml}, read (Bolum 52.6).
+ * {@code performance-budgets.yaml}, read.
  *
  * <p>A file rather than numbers in assertions, because the specification asks
  * for exactly that: a budget somebody wants to raise has to raise it in a file,

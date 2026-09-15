@@ -30,7 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 
 /**
- * The offline support reader (Bolum 48.4), and what it refuses.
+ * The offline support reader, and what it refuses.
  *
  * <p>The promise this closes is the one {@code accessedAt} makes: a consent
  * nobody can check the use of is not a consent. So the assertions are about the

@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.jobs.queue;
 
 /**
- * Where a handler says how far along it is (Bolum 30.6).
+ * Where a handler says how far along it is.
  *
  * <p>Passed in rather than reached for, so that a handler can be run with a
  * sink that does nothing: the pipeline's own tests care about the document,

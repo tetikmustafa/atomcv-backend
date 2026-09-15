@@ -150,8 +150,8 @@ class ProfileExtractionPromptTest {
      * The schema offers the model the codes the model may raise, and only
      * those. {@code UNSUPPORTED_BY_SOURCE} is the pipeline's answer to the
      * document after the model has spoken; naming it here would invite the
-     * model to grade its own honesty, and would cost a prompt version
-     * (Bolum 53.2) for a value it must never write.
+     * model to grade its own honesty, and would cost a prompt version for a
+     * value it must never write.
      */
     @Test
     void theWarningCodesInTheSchemaAreTheOnesTheModelMayRaise() {

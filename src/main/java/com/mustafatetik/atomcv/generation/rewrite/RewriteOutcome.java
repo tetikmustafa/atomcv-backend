@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
 /**
- * What one pass of Faz D produced (Bolum 21.5, Bolum 14.6).
+ * What one pass of Faz D produced.
  *
  * <p>Two halves that go to two different places and must not be folded into
  * one: {@link RewrittenContent} is what the renderer reads and is deliberately

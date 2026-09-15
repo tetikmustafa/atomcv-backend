@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
- * GitHub, which needs two profile calls rather than one (Bolum 40.6).
+ * GitHub, which needs two profile calls rather than one.
  *
  * <p><strong>{@code /user} is not enough.</strong> Its {@code email} field is
  * whatever the person set as publicly visible, and it is {@code null} for

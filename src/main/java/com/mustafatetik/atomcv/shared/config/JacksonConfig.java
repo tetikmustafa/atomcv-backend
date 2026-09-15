@@ -29,10 +29,10 @@ public class JacksonConfig {
     /**
      * Bolum 42.4's ceiling on a single string value, in characters.
      *
-     * <p>A megabyte against a job description capped at 20,000 characters
-     * (Bolum 18.1) and an upload capped by {@code max-file-size} before a
-     * parser ever sees it. Jackson's own default is twenty times this, which
-     * is a limit in name only.
+     * <p>A megabyte against a job description capped at 20,000 characters and
+     * an upload capped by {@code max-file-size} before a parser ever sees it.
+     * Jackson's own default is twenty times this, which is a limit in name
+     * only.
      */
     static final int MAX_STRING_LENGTH = 1_000_000;
 

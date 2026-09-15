@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The error body, for the published schema (Bolum 35.4).
+ * The error body, for the published schema.
  *
  * <p>Responses are produced by {@link ProblemDetailAdvice}, not by this record.
  * It exists so that the generated OpenAPI document carries the two closed

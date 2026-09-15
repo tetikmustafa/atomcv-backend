@@ -3,10 +3,10 @@ package com.mustafatetik.atomcv.llm.providers;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * DeepSeek's endpoint (Bolum 27.2).
+ * DeepSeek's endpoint.
  *
  * @param apiKey  {@code DEEPSEEK_API_KEY}; blank means the provider is skipped
- *                silently (Bolum 27.3)
+ *  silently
  * @param baseUrl overridable so a test can point it at a socket it owns
  */
 @ConfigurationProperties(prefix = "atomcv.llm.deepseek")

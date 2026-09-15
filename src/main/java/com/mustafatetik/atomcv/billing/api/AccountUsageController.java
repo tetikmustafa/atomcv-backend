@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * What today has cost the user so far (Bolum 44.1, § 35.7).
+ * What today has cost the user so far.
  *
  * <p>Published so the limit is visible <em>before</em> it is hit. A quota that
  * only ever appears as a 429 is a quota the user meets by being stopped

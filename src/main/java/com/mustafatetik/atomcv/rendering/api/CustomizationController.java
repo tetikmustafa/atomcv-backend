@@ -29,8 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Templates, and the appearance settings somebody named (Bolum 35.2,
- * Bolum 33.2, Bolum 33.5).
+ * Templates, and the appearance settings somebody named.
  *
  * <p><strong>Five endpoints the resource map has always listed and nothing
  * served.</strong> {@code template_customizations} has existed since V1 with
@@ -38,10 +37,10 @@ import org.springframework.web.bind.annotation.RestController;
  * which is right for the one set a person is working with and cannot be
  * several. Bolum 33.2 is about several.
  *
- * <p><strong>No ETag on either</strong> (EK D.6.2). Templates are the
- * registry's own constants and change with a release, not with a request; a
- * customization has no {@code version} column and is a small whole object a
- * person replaces rather than a row two tabs edit a field of at once.
+ * <p><strong>No ETag on either</strong>. Templates are the registry's own
+ * constants and change with a release, not with a request; a customization has
+ * no {@code version} column and is a small whole object a person replaces
+ * rather than a row two tabs edit a field of at once.
  */
 @RestController
 @Tag(name = "Templates", description = "How a CV is set, and the settings somebody kept")

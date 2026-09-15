@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * What Faz D did, beyond what it changed (Bolum 14.6).
+ * What Faz D did, beyond what it changed.
  *
  * <p>{@link RewrittenContent} carries the accepted rewrites and, by design,
  * nothing else — an atom the model refused twice and one that was never a

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The second adapter, against a real socket (Bolum 27.2).
+ * The second adapter, against a real socket.
  *
  * <p>A local {@link HttpServer} rather than a mocked client, for the reason the
  * first adapter's test gives: what is being tested is the shape that goes on
@@ -153,7 +153,7 @@ class GeminiProviderTest {
         assertThat(response.inputTokens()).isEqualTo(120);
         assertThat(response.outputTokens()).isEqualTo(30);
         // A cached token is a discounted subset of the input, never an
-        // addition (Bolum 27.4).
+        // addition.
         assertThat(response.cachedTokens()).isEqualTo(80);
         assertThat(response.billedInputTokens()).isEqualTo(40);
     }

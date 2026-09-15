@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * One line of a CV in another language (Bolum 21.8, Bolum 32.5).
+ * One line of a CV in another language.
  *
  * @param text     the translated sentence
  * @param emphasis substrings of {@code text} worth marking, quoted exactly —

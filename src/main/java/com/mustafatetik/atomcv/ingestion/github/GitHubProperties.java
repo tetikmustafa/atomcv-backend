@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.ingestion.github;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * What the GitHub import needs, which is almost nothing (Bolum 31.8).
+ * What the GitHub import needs, which is almost nothing.
  *
  * @param token optional, and only ever about the rate limit. Bolum 31.8 reads
  *              public data, so every request here works without one;

@@ -71,8 +71,8 @@ class WelcomeGreetingTest {
     }
 
     /**
-     * The link is what makes the preference reachable at all (Bolum 57.7), so
-     * an email that lost it would be one nobody could act on.
+     * The link is what makes the preference reachable at all, so an email that
+     * lost it would be one nobody could act on.
      */
     @Test
     void itcarriesTheWayToStopIt() {

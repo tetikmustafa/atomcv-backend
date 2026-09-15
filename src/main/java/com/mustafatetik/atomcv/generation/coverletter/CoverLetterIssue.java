@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.generation.coverletter;
 
 /**
- * What was wrong with a draft (Bolum 34.4).
+ * What was wrong with a draft.
  *
  * <p>A kind and nothing else, for the reason {@code RewriteIssue} gives: the
  * value that went wrong is the person's own letter, and naming it would put

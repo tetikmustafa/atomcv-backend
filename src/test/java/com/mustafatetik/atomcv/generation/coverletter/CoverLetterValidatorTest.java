@@ -238,7 +238,7 @@ class CoverLetterValidatorTest {
         assertThat(issues).contains(CoverLetterIssue.CLICHE);
     }
 
-    // -- numbers said in words (Bolum 34.4.2) ------------------------------
+    // -- numbers said in words ------------------------------
 
     /**
      * <strong>The measured failure.</strong> The page says a response time

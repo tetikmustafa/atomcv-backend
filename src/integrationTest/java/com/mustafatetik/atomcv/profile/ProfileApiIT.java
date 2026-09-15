@@ -378,7 +378,7 @@ class ProfileApiIT extends AbstractIntegrationTest {
                                   "enabledLanguages": ["en"] }"""))
                 .andExpect(status().isOk());
 
-        // Contact alone is worth 15 (Bolum 31.9).
+        // Contact alone is worth 15.
         mvc.perform(get("/api/v1/profile")).andExpect(jsonPath("$.completeness").value(15));
 
         String section = JSON.readTree(mvc.perform(post("/api/v1/profile/sections")

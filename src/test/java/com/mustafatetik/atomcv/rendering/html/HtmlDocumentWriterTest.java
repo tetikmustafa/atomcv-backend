@@ -99,8 +99,8 @@ class HtmlDocumentWriterTest {
     }
 
     /**
-     * Structure, because the reader may be a machine (Bolum 2.1). A heading is
-     * a heading and a bullet is a list item; there is no table and no column.
+     * Structure, because the reader may be a machine. A heading is a heading
+     * and a bullet is a list item; there is no table and no column.
      */
     @Test
     void thestructureIsWhatAnAtsReads() {

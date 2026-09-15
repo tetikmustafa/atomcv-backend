@@ -21,8 +21,8 @@ import org.springframework.stereotype.Component;
  * column followed by a line of the right. The result reads as ruined to a
  * person and as noise to a model, and nothing downstream can undo it.
  *
- * <p>PDFBox executes nothing while reading — no JavaScript, no embedded action
- * (Bolum 42.1). That is the reason it is here rather than a renderer.
+ * <p>PDFBox executes nothing while reading — no JavaScript, no embedded
+ * action. That is the reason it is here rather than a renderer.
  */
 @Component
 class PdfTextExtractor implements TextExtractor {

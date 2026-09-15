@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * What every bullet in one generation shares (Bolum 21.4).
+ * What every bullet in one generation shares.
  *
  * <p>Built once per generation rather than per atom: the posting's skills, the
  * language and the tone are the same for all eight candidates, and passing
@@ -30,14 +30,14 @@ import java.util.Locale;
  *                      the golden posting, where five of eighteen skills spell
  *                      a word their canonical form does not carry
  * @param postingFocus  what the job is <em>about</em>, which the About
- *                      paragraph leads with (Bolum 21.7). Separate from the
+ *  paragraph leads with. Separate from the
  *                      skills because it is emphasis rather than vocabulary
  * @param ownWords      {@code profiles.self_description}: the only source the
  *                      summary has for a claim that is not a skill or a number
  * @param language      the language the CV is being written in
  * @param tone          how the profile asked to sound
  * @param bucketKey     who this generation is for, so that a prompt experiment
- *                      keeps showing one person one variant (Bolum 53.3)
+ *  keeps showing one person one variant
  */
 public record RewriteContext(
         List<String> postingSkills,
@@ -87,7 +87,7 @@ public record RewriteContext(
     }
 
     /**
-     * @param userId whose generation this is (Bolum 27.5). Not the same thing
+     * @param userId whose generation this is. Not the same thing
      *               as {@code bucketKey}, which is an experiment bucket and is
      *               a session id for an anonymous caller
      */

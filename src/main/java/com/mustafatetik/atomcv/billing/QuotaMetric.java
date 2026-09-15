@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.billing;
 import java.util.Locale;
 
 /**
- * What is being counted. Stored in {@code usage_counters.metric} (Bolum 44.1).
+ * What is being counted. Stored in {@code usage_counters.metric}.
  *
  * <p><strong>Two counters, not one, and Bolum 44.1 is explicit about why:</strong>
  * with a single limit somebody could spend the whole of it on profile

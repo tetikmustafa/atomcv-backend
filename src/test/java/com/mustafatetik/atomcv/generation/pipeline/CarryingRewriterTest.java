@@ -11,8 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Faz D on a re-run: it answers out of the parent row and asks nothing
- * (Bolum 24.1).
+ * Faz D on a re-run: it answers out of the parent row and asks nothing.
  *
  * <p>This is what makes a hand edit free, so the thing worth checking is not
  * that it produces sentences but that it produces them <em>without a model</em>

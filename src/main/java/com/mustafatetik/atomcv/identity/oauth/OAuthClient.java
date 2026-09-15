@@ -4,7 +4,7 @@ import com.mustafatetik.atomcv.identity.domain.OAuthProvider;
 import java.net.URI;
 
 /**
- * One provider's half of the round trip (Bolum 40.6).
+ * One provider's half of the round trip.
  *
  * <p>Two calls and no state: the {@code state} parameter belongs to
  * {@link OAuthStateStore}, and the session to {@code identity.service}. An

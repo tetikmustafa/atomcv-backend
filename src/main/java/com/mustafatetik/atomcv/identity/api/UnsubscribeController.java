@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Turning the optional post off from an inbox (Bolum 57.7).
+ * Turning the optional post off from an inbox.
  *
  * <p><strong>A POST, and the link in the email is not this.</strong> The link
  * lands on a page that carries a button, which then calls here. Bolum 40.3 is

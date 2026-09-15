@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * What can go wrong on the way to a CV (Bolum 25.2).
+ * What can go wrong on the way to a CV.
  *
  * <p>Sealed, so that presenting an error is an exhaustive switch: a new kind
  * of failure does not compile until someone has decided what the user is told
@@ -25,7 +25,7 @@ import java.util.Objects;
 public sealed interface PipelineError {
 
     /**
-     * There is not enough profile to make a CV out of (Bolum 25.2).
+     * There is not enough profile to make a CV out of.
      *
      * <p>Raised before anything is measured, rendered or compiled: the first
      * of the preflight checks design principle 5 asks for.
@@ -43,7 +43,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The posting could not be read as one (Bolum 18.1, Bolum 18.4).
+     * The posting could not be read as one.
      *
      * <p>Both gates raise it: the preflight before any call is made, and the
      * plausibility gate on what came back. The catalogue still publishes one
@@ -96,7 +96,7 @@ public sealed interface PipelineError {
 
     /**
      * The compiled document came out longer than the limit and shrinking the
-     * budget did not save it (Bolum 23.1).
+     * budget did not save it.
      *
      * <p>Reaching this means the measurement layer was optimistic by more than
      * the retries could absorb. It is a defect signal as much as a user
@@ -109,8 +109,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * Every provider in the chain was tried and none of them answered
-     * (Bolum 25.2, Bolum 27.3).
+     * Every provider in the chain was tried and none of them answered.
      *
      * <p>The only LLM failure a user is ever shown. A single provider's 429 or
      * schema mismatch has no code in the catalogue and stays inside the llm
@@ -130,7 +129,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The user has used up today's allowance (Bolum 44.1).
+     * The user has used up today's allowance.
      *
      * <p>Raised before anything is queued, because the whole point of a quota
      * is that it costs nothing to enforce. Never retryable: the next attempt
@@ -146,7 +145,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The brake is on (Bolum 44.3).
+     * The brake is on.
      *
      * <p>Not the user's doing and not their problem to solve, which is why it
      * carries no parameters — there is nothing about their request to change.
@@ -177,7 +176,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The anonymous session this work belonged to is gone (Bolum 9).
+     * The anonymous session this work belonged to is gone.
      *
      * <p>Between the request and the worker the two hours ran out and the sweep
      * took the profile, so there is nothing to generate from. Not a system
@@ -188,7 +187,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The document did not compile, or the compiler was not there (Bolum 29).
+     * The document did not compile, or the compiler was not there.
      *
      * @param kind   which of the four, so the caller knows whether to retry
      * @param texLog what TeX said — user content, never logged (absolute rule 4)
@@ -202,7 +201,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * A CV whose language could not be settled (Bolum 31.10).
+     * A CV whose language could not be settled.
      *
      * <p>Bolum 31.10 says to ask rather than to guess, and the reason is that
      * the guess is not recoverable by the user: the language chosen here
@@ -221,7 +220,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * A document that produced no usable content (Bolum 31.10).
+     * A document that produced no usable content.
      *
      * <p>No parameters, and one case covering two causes: a CV the model found
      * nothing in, and an answer refused by the field-length audit. Bolum 43.2
@@ -233,7 +232,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * A translation that changed something it was not allowed to (Bolum 21.8).
+     * A translation that changed something it was not allowed to.
      *
      * <p>A CV is a set of claims about a person, and a language change must not
      * change any of them. A wording that lost a number or renamed an employer
@@ -249,7 +248,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * Faz G read the sentence and it named no line (Bolum 24.2).
+     * Faz G read the sentence and it named no line.
      *
      * <p><strong>An ordinary answer, not a broken one.</strong> "Make it
      * shorter" names no bullet, "reword the first one" asks for something this

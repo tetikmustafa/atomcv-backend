@@ -37,7 +37,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * {@code POST /generations}: the 202, the gates in front of it, and the job it
- * makes (Bolum 35.3, EK D.6.4).
+ * makes.
  *
  * <p>The worker is off for the whole suite, so a queued job stays queued and
  * every assertion here is about what the request did rather than about what a

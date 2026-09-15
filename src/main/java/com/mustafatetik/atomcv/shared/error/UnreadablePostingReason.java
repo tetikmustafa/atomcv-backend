@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.shared.error;
 import java.util.Locale;
 
 /**
- * Why a posting could not be turned into an analysis (Bolum 18.1, Bolum 18.4).
+ * Why a posting could not be turned into an analysis.
  *
  * <p>Seven reasons behind one code. The catalogue publishes
  * {@link ErrorCode#UNPARSEABLE_JOB_DESCRIPTION} and keeps publishing it: from

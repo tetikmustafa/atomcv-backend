@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
- * TXT and Markdown, which need no reader (Bolum 31.3).
+ * TXT and Markdown, which need no reader.
  *
  * <p>Markdown's syntax is left standing on purpose. A model reads
  * {@code ## Experience} as a heading and {@code - built X} as a bullet, so

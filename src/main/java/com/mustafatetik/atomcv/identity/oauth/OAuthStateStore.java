@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
  * client cannot reach it.
  *
  * <p>Bolum 40.6's snippet puts it in a servlet session. There isn't one — the
- * chain is stateless by design (Bolum 40.1) — so it lives in Redis under the
- * state value itself, which is strictly better than the cookie alternative:
+ * chain is stateless by design — so it lives in Redis under the state value
+ * itself, which is strictly better than the cookie alternative:
  * <strong>redemption is a single atomic read-and-delete</strong>, so a
  * callback URL replayed from a history file, a proxy log or a shared screen is
  * refused the second time. A cookie-only double submit cannot do that.

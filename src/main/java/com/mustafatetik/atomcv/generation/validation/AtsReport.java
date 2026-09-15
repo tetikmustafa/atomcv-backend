@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.validation;
 import java.util.List;
 
 /**
- * Whether the page we just produced can be read back as text (Bolum 23.2).
+ * Whether the page we just produced can be read back as text.
  *
  * <p>Every other check in this product measures the CV before it is a PDF —
  * the budget, the fit report, the validators. This one is the only one that

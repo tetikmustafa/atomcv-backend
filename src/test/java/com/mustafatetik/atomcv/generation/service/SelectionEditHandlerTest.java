@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * What the queue does with a hand edit (Bolum 24.4).
+ * What the queue does with a hand edit.
  *
  * <p>Two things are proved here and nowhere else. The row an edit writes is a
  * <em>new</em> generation pointing at the one it replaced — not an update, so

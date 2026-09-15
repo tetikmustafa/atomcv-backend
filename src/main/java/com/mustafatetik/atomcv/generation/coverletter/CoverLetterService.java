@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * One covering letter, written from the page (Bolum 34).
+ * One covering letter, written from the page.
  *
  * <p><strong>This one can fail, and that is the difference.</strong> Every
  * other phase that asks a model for words has the person's own text to fall
@@ -67,7 +67,7 @@ public class CoverLetterService {
     /**
      * @param style     which of Bolum 34.6's three buttons was pressed
      * @param bucketKey who this is for, so a prompt experiment keeps showing
-     *                  one person one variant (Bolum 53.3)
+     *  one person one variant
      */
     public Result<CoverLetterDraft> write(
             CoverLetterInput input, CoverLetterStyle style, String bucketKey,

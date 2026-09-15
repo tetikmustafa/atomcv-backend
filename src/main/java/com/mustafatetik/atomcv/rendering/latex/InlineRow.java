@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * One row of an {@code INLINE_LIST} section: a label, then the list it
- * introduces (Bolum 33.4).
+ * introduces.
  *
  * <p>A skills matrix is not a paragraph that happens to contain a colon. It is
  * a table with the rule left out — {@code Programming Languages: Java, Python,

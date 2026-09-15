@@ -4,8 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The templates that exist, and the LaTeX each one adds to a preamble
- * (Bolum 33.5).
+ * The templates that exist, and the LaTeX each one adds to a preamble.
  *
  * <p>A template id from a request is looked up here and nowhere else: an id
  * that is not in this map is not a template, so no request can name one into
@@ -16,9 +15,9 @@ public final class TemplateRegistry {
     /**
      * Raise a version when the geometry changes — spacing, rules, indents.
      *
-     * <p>Measured costs are keyed by it (Bolum 16.3). Forgetting to raise it
-     * leaves old measurements looking valid for a document that no longer
-     * matches them, and the page guarantee fails quietly rather than loudly.
+     * <p>Measured costs are keyed by it. Forgetting to raise it leaves old
+     * measurements looking valid for a document that no longer matches them,
+     * and the page guarantee fails quietly rather than loudly.
      */
     // All three moved twice on one fault, in one day. \resumeItem let a space
     // reach the page that the measurement never saw: first an interword space
@@ -32,7 +31,7 @@ public final class TemplateRegistry {
             Map.of("classic", 6, "compact", 2, "modern", 3);
 
     /**
-     * Classic (Bolum 33.5): plain, ATS-safe, academic or corporate.
+     * Classic: plain, ATS-safe, academic or corporate.
      *
      * <p><strong>This is the reference CV's own preamble, ported.</strong> Not
      * a template in its spirit — its commands, its spacing and its type, to the
@@ -125,7 +124,7 @@ public final class TemplateRegistry {
             """;
 
     /**
-     * Compact (Bolum 33.5): high density, for a career that does not fit.
+     * Compact: high density, for a career that does not fit.
      *
      * <p><strong>The same furniture, closer together.</strong> Every command
      * classic defines is defined here under the same name, because the renderer
@@ -211,8 +210,7 @@ public final class TemplateRegistry {
             """;
 
     /**
-     * Modern (Bolum 33.5): lightly coloured headings, for the technology
-     * sector.
+     * Modern: lightly coloured headings, for the technology sector.
      *
      * <p><strong>The colour is on the rule and not on the heading.</strong>
      * Bolum 33.5 asks for "light", and a coloured word is not light — it is a
@@ -289,7 +287,7 @@ public final class TemplateRegistry {
 
     /**
      * Classic at its default customization, measured against the compiler
-     * rather than estimated (Bolum 26.4).
+     * rather than estimated.
      *
      * <p>These hold for {@link TemplateCustomization#CLASSIC} only. Font size,
      * family, margin and line spacing all move them, which is exactly why
@@ -321,7 +319,7 @@ public final class TemplateRegistry {
                     // Two lines: the title, and the organization with its
                     // dates. A hand-written probe that lost the line break
                     // measured 10.87 and looked entirely plausible - the
-                    // calibration test is what caught it (EK D.8.3).
+                    // calibration test is what caught it.
                     Map.entry(CapacityModel.ENTRY_HEADER, 30.19998),
                     Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 31.17004),
                     // A project's heading is one line, not two.
@@ -345,8 +343,8 @@ public final class TemplateRegistry {
 
     /**
      * Compact at its default customization, measured the same way classic was
-     * (Bolum 26.4) — never estimated, and never derived from classic's numbers
-     * by arithmetic.
+     * — never estimated, and never derived from classic's numbers by
+     * arithmetic.
      *
      * <p>Two of these say the template is doing what it claims. A bullet
      * advances the page by exactly one small baseline, 10.44996 against
@@ -395,7 +393,7 @@ public final class TemplateRegistry {
 
     /**
      * Modern at its default customization, measured the same way the other two
-     * were (Bolum 26.4) — never estimated, never scaled from classic's.
+     * were — never estimated, never scaled from classic's.
      *
      * <p>About fifty-one bullet lines to a page against classic's sixty, which
      * is where Bolum 33.5's "~50" lands once the furniture is taken out. The
@@ -445,10 +443,10 @@ public final class TemplateRegistry {
     /**
      * The capacity model for a customization, if one has been measured.
      *
-     * <p>Bolum 22.2 returns a model unconditionally. It cannot: a customization
-     * nobody has measured has no capacity, and inventing one would break the
-     * page guarantee silently — which is the one failure this whole system
-     * exists to prevent. Empty means "measure first" (EK D.8.3).
+     * <p>Bolum 22.2 returns a model unconditionally. It cannot: a
+     * customization nobody has measured has no capacity, and inventing one
+     * would break the page guarantee silently — which is the one failure this
+     * whole system exists to prevent. Empty means "measure first".
      */
     public static java.util.Optional<CapacityModel> capacityOf(
             TemplateCustomization customization) {
@@ -471,7 +469,7 @@ public final class TemplateRegistry {
     }
 
     /**
-     * The settings a template is meant to be read at (Bolum 33.5).
+     * The settings a template is meant to be read at.
      *
      * <p>A template id on its own does not describe a document: three of
      * compact's four differences from classic are layer-B numbers, and a

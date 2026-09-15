@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.rendering.latex;
 import java.util.Map;
 
 /**
- * The one place text becomes LaTeX-safe (Bolum 22.3).
+ * The one place text becomes LaTeX-safe.
  *
  * <p>In the previous generation this was a rule in a prompt. It is code now,
  * which means a model cannot get it wrong: every character of user text passes

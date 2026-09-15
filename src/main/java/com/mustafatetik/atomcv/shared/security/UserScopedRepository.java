@@ -5,8 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Base for repositories over entities whose table carries {@code user_id}
- * (Bolum 41.2).
+ * Base for repositories over entities whose table carries {@code user_id}.
  *
  * <p>IDOR is the risk this exists for: a user changing an identifier in a URL
  * to reach someone else's row. The defense is structural rather than a rule to

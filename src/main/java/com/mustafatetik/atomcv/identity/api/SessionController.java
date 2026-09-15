@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The session, as the client asks about it (§ 35.7, Bolum 40.1).
+ * The session, as the client asks about it.
  *
  * <p>Both endpoints answer for a caller with no session at all — that is the
  * point of the first one, and the second has to be safe to call twice. Neither
@@ -76,7 +76,7 @@ public class SessionController {
     }
 
     /**
-     * When an anonymous session runs out, as an absolute instant (EK D.6.6).
+     * When an anonymous session runs out, as an absolute instant.
      *
      * <p>Computed from {@code lastSeenAt} and not from {@code createdAt}: the
      * window slides, and a client told the wrong one would count down to a

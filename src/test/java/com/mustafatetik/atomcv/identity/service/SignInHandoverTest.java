@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The one line between signing in and the cookie being replaced (Adim 3.6).
+ * The one line between signing in and the cookie being replaced.
  *
  * <p>Two things are worth holding here and neither is the upgrade itself,
  * which has its own tests against a real database: that the account the

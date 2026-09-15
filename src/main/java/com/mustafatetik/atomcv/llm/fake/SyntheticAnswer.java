@@ -8,12 +8,12 @@ import com.mustafatetik.atomcv.llm.gateway.JsonSchema;
 import java.util.Locale;
 
 /**
- * An answer shaped like the schema, for calls no fixture covers (Bolum 54.2).
+ * An answer shaped like the schema, for calls no fixture covers.
  *
  * <p>What this is for: working on the pipeline's logic and its error paths
  * without paying for a call, before any fixture has been recorded. It is not a
  * model — the values are placeholders. Anything asserting on <em>content</em>
- * belongs against a fixture or against the eval suite (Bolum 53.4).
+ * belongs against a fixture or against the eval suite.
  *
  * <p>Deterministic: the same schema and the same seed produce the same
  * document, so a test that fails does so for a reason rather than by draw.

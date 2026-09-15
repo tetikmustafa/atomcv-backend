@@ -8,7 +8,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * Everything a renderer is allowed to know (Bolum 22.2).
+ * Everything a renderer is allowed to know.
  *
  * <p><strong>No atom id, no score, no lock.</strong> The renderer does not
  * know why this content was chosen, and cannot be tempted to make a selection

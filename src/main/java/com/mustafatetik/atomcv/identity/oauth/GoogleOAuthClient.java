@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
- * Google, through OpenID Connect's userinfo endpoint (Bolum 40.6).
+ * Google, through OpenID Connect's userinfo endpoint.
  *
  * <p><strong>The {@code id_token} is deliberately ignored.</strong> Its claims
  * carry everything needed, but reading them means either verifying an RS256

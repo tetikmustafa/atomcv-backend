@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * The checks that run before a call is paid for (Bolum 18.1).
+ * The checks that run before a call is paid for.
  *
  * <p>Design principle 5: everything that can refuse a generation runs before
  * anything is spent. A posting that is 30 characters of nothing costs a token
@@ -64,8 +64,8 @@ public final class JobDescriptionPreflight {
     /**
      * Why a posting was refused, or {@link Verdict#ACCEPTED}.
      *
-     * <p>The catalogue still publishes one code for all of them (EK D.6), but
-     * the distinction now reaches the user in {@code params.reason} rather than
+     * <p>The catalogue still publishes one code for all of them, but the
+     * distinction now reaches the user in {@code params.reason} rather than
      * stopping at a log line (F-016). It was always worth a metric — "postings
      * refused" says nothing, "refused as low-entropy" says the heuristic may
      * need looking at — and it turns out to be worth a sentence too: the four
@@ -110,7 +110,7 @@ public final class JobDescriptionPreflight {
     /**
      * @param jobDescription the pasted text; null or blank is general CV mode
      *                       and passes, because there is nothing to analyse
-     *                       rather than something wrong (Bolum 18.1)
+     *  rather than something wrong
      */
     public static Verdict check(String jobDescription) {
         if (jobDescription == null || jobDescription.isBlank()) {

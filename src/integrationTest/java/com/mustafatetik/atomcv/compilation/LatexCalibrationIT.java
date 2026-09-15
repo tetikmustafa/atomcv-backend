@@ -23,8 +23,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * The numbers the page guarantee is built on, re-derived from the compiler
- * (Bolum 26.4).
+ * The numbers the page guarantee is built on, re-derived from the compiler.
  *
  * <p>{@code TemplateRegistry} stores what the classic template's furniture
  * costs. Those were measured once; this measures them again every time it
@@ -91,7 +90,7 @@ class LatexCalibrationIT {
     @Test
     void theLineIsAsWideAsTheStoredCapacitySays() {
         // The width an estimate divides by. Wrong here, and every unmeasured
-        // atom is charged for the wrong number of lines (EK D.8.7).
+        // atom is charged for the wrong number of lines.
         assertThat(probes.get("textwidth"))
                 .isCloseTo(capacity().textWidthPt(), offset());
     }
@@ -248,7 +247,7 @@ class LatexCalibrationIT {
 
     /**
      * An entry with nothing under it — a degree line — is the heading and the
-     * sub-heading list it opens, and nothing else (Bolum 20.2).
+     * sub-heading list it opens, and nothing else.
      *
      * <p>Every other entry number is derived from this one, so it is measured
      * on its own rather than backed out of a block that also holds a list.

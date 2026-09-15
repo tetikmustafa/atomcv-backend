@@ -4,8 +4,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The sign-in providers (Bolum 40.6), and the exact strings the database
- * stores.
+ * The sign-in providers, and the exact strings the database stores.
  *
  * <p>The wire value is written down rather than derived from {@code name()}:
  * {@code oauth_identities.provider} carries a CHECK over these two literals

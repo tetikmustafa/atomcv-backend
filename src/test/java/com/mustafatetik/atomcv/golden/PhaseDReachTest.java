@@ -64,8 +64,8 @@ import org.junit.jupiter.api.Test;
  *
  * <p>With {@link ScoringWeights#DEFAULT} and no vectors it totals 0.276 — and
  * 0.200 of that is the same constant every atom gets, because a missing vector
- * scores the neutral 0.5 (Bolum 28.2) and 0.40 x 0.5 is a pedestal, not a
- * signal. The whole distribution sits between 0.20 and 0.28.
+ * scores the neutral 0.5 and 0.40 x 0.5 is a pedestal, not a signal. The whole
+ * distribution sits between 0.20 and 0.28.
  *
  * <p><strong>What this test is for.</strong> Not to bless the behaviour: to
  * make the next change to either half visible. Move a threshold, change

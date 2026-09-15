@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * What this caller may do, so the client can show it before the server has to
- * refuse it (§ 35.7).
+ * refuse it.
  *
  * <p><strong>The server still checks.</strong> Every field here has a gate
  * behind it; this exists so a user meets a limit as a disabled control rather
@@ -20,7 +20,7 @@ import java.util.List;
  *                             the renderer cannot produce is a selectable
  *                             option that fails at generation time
  * @param canWriteCoverLetter  whether a covering letter may be asked for, with
- *                             the CV or afterwards (Bolum 34, § 35.7.3).
+ *  the CV or afterwards.
  *                             <strong>Added for F-030's sake as much as
  *                             F-028's:</strong> the block had no field for it,
  *                             so the frontend closed the control on

@@ -18,7 +18,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Handing back a document that was already made (EK D.6.3).
+ * Handing back a document that was already made.
  *
  * <p>Stage 2 stores no bytes — {@code pdf_key} is for R2 and R2 arrives in
  * Stage 3 — so a download is a re-render. That is not a workaround: EK D.6.3
@@ -76,7 +76,7 @@ public class GenerationDownloadService {
     }
 
     /**
-     * The same CV as a Word document (Bolum 22.6).
+     * The same CV as a Word document.
      *
      * <p>No compiler and no failure to report: POI writes the package
      * itself, so unlike the PDF this cannot come back as a compilation
@@ -92,7 +92,7 @@ public class GenerationDownloadService {
     }
 
     /**
-     * The same CV as one self-contained HTML file (Bolum 22.6).
+     * The same CV as one self-contained HTML file.
      *
      * <p>No compiler here either, and no page: HTML has none, so the guarantee
      * does not merely become approximate the way it does for Word -- it does
@@ -126,7 +126,7 @@ public class GenerationDownloadService {
      *
      * <p>Shared by both formats on purpose: two readings of one row would be
      * two documents, and the whole reason the snapshot exists is that the text
-     * under an atom keeps changing (EK D.6.3).
+     * under an atom keeps changing.
      */
     private static RenderRequest requestFor(Generation generation) {
         RenderedContent content = generation.getContentSnapshot();

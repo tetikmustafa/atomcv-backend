@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 /**
  * Faz B, with the two things {@link RelevanceScorer} deliberately does not
  * have: a vector for the posting, and an opinion about whether the embedding
- * service is up (Bolum 19, Bolum 28.4).
+ * service is up.
  *
  * <p>The scorer stays pure. Everything that talks to something — the embedding
  * call, the health check, the meter — is here, so the determinism test of

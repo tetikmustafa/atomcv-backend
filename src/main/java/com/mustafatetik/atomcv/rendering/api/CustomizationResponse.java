@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * One saved set, as a client reads it back (Bolum 33.2).
+ * One saved set, as a client reads it back.
  *
  * <p>Flat rather than a nested {@code params} object: the column is nested
  * because JSONB has to be, and the wire shape is the shape the request has —
@@ -15,7 +15,7 @@ import java.util.UUID;
  * unwrap it (the lesson of {@code Appearance} in F-033).
  *
  * @param templateVersion the renderer version this was saved against
- *                        (Bolum 16.3). A client caching anything derived from
+ * . A client caching anything derived from
  *                        it keys on this; a mismatch with
  *                        {@code GET /templates} means the geometry moved under
  *                        it and any measured cost is void

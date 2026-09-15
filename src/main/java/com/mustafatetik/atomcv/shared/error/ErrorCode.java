@@ -26,7 +26,7 @@ import java.util.Optional;
  */
 public enum ErrorCode {
 
-    // ── Preflight, before any LLM call is made (Bolum 25.2) ──
+    // ── Preflight, before any LLM call is made ──
     INSUFFICIENT_PROFILE(422, param("completeness", INTEGER), param("missing", STRING_ARRAY)),
     /**
      * One code, eight reasons. {@code reason} is the closed vocabulary of
@@ -46,7 +46,7 @@ public enum ErrorCode {
     FEATURE_REQUIRES_ACCOUNT(403, param("feature", STRING)),
     QUOTA_EXCEEDED(429, param("metric", STRING), param("resetsAt", TIMESTAMP)),
 
-    // ── Pipeline runtime (Bolum 25.2) ──
+    // ── Pipeline runtime ──
     ALL_PROVIDERS_UNAVAILABLE(503, param("tried", STRING_ARRAY)),
     COMPILATION_FAILED(502, param("detail", STRING), param("rawSourceAvailable", BOOLEAN)),
     PAGE_LIMIT_EXCEEDED(422, param("actual", INTEGER), param("limit", INTEGER)),
@@ -112,7 +112,7 @@ public enum ErrorCode {
     LANGUAGE_UNDETECTED(422, param("detectedCandidates", STRING_ARRAY)),
 
     /**
-     * A wording could not be regenerated in another language (Adim 3.5).
+     * A wording could not be regenerated in another language.
      *
      * <p>Parameterless, and it names no sentence: what a translation dropped
      * is the user's own content (absolute rule 4). It is also barely a
@@ -124,17 +124,17 @@ public enum ErrorCode {
     TRANSLATION_FAILED(422),
     PROFILE_QUOTA_EXCEEDED(429, param("limit", INTEGER), param("resetsAt", TIMESTAMP)),
 
-    // ── Anonymous mode (EK D.6) ──
+    // ── Anonymous mode ──
     ANONYMOUS_SESSION_EXPIRED(401),
     ATOM_LIMIT_EXCEEDED(422, param("limit", INTEGER), param("current", INTEGER)),
     PROFILE_ALREADY_EXISTS(409),
 
-    // ── Artifacts and sessions (EK D.6) ──
+    // ── Artifacts and sessions ──
     GENERATION_ARTIFACT_EXPIRED(410),
 
     /**
      * A newer generation has replaced this one, so the edit was aimed at a CV
-     * that is no longer anybody's current one (Bolum 24.4).
+     * that is no longer anybody's current one.
      *
      * <p>Refused rather than applied, because applying it would fork the
      * lineage: two children of one parent, both finished, and nothing in the
@@ -145,7 +145,7 @@ public enum ErrorCode {
     GENERATION_SUPERSEDED(409),
 
     /**
-     * A natural-language edit named no line of the CV (Bolum 24.2).
+     * A natural-language edit named no line of the CV.
      *
      * <p>422 rather than 400: the request was well formed and was read: what
      * could not be done is what it asked for. The way out is another sentence,
@@ -172,7 +172,7 @@ public enum ErrorCode {
     AUTHENTICATION_REQUIRED(401),
 
     /**
-     * A sign-in that did not happen (Adim 3.3, Bolum 40.6).
+     * A sign-in that did not happen.
      *
      * <p>One code with a closed {@code reason} rather than seven codes, which
      * is the shape F-016 asked for: the frontend resolves one ICU key with a
@@ -188,7 +188,7 @@ public enum ErrorCode {
     OAUTH_FAILED(400, param("reason", STRING)),
 
     /**
-     * A sign-in link that will not be redeemed (Bolum 40.2).
+     * A sign-in link that will not be redeemed.
      *
      * <p><strong>No parameters, and deliberately no reason.</strong> Everywhere
      * else in this catalogue a closed vocabulary is the better shape; here it
@@ -199,7 +199,7 @@ public enum ErrorCode {
     MAGIC_LINK_INVALID(400),
 
     /**
-     * Too many sign-in requests, from this address or this caller (Bolum 40.5).
+     * Too many sign-in requests, from this address or this caller.
      *
      * <p><strong>Which of the three layers refused is not published.</strong>
      * The sentence a user reads is the same either way — wait, then try again
@@ -220,7 +220,7 @@ public enum ErrorCode {
     RATE_LIMITED(429, param("resetsAt", TIMESTAMP)),
 
     /**
-     * The bot check did not pass (Bolum 44.4).
+     * The bot check did not pass.
      *
      * <p><strong>Named for what it is, not for who provides it.</strong> The
      * same reasoning that made the observability variables {@code OTLP_*}
@@ -242,9 +242,9 @@ public enum ErrorCode {
     VALIDATION_FAILED(400, param("fields", STRING_ARRAY)),
     INTERNAL_ERROR(500),
 
-    // ── Protocol-level rejections (EK D.6.8). A correct client never sees
-    // these; they exist so that a malformed request is answered as the
-    // client's mistake rather than as a server failure.
+    // ── Protocol-level rejections. A correct client never sees these; they
+    // exist so that a malformed request is answered as the client's mistake
+    // rather than as a server failure.
     METHOD_NOT_ALLOWED(405),
     NOT_ACCEPTABLE(406),
     UNSUPPORTED_MEDIA_TYPE(415);

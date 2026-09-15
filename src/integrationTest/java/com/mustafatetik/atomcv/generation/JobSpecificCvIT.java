@@ -55,9 +55,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * the suite runs on {@code local} and would call a provider with no key here,
  * failing every generation with ALL_PROVIDERS_UNAVAILABLE. {@code local-fake}
  * answers from a fixture, or synthesises a schema-shaped answer when no
- * fixture covers the posting (Bolum 54.2) — which is what makes this runnable
- * on a fresh clone. The extra context costs seconds in a lane that already
- * spends minutes building an image.
+ * fixture covers the posting — which is what makes this runnable on a fresh
+ * clone. The extra context costs seconds in a lane that already spends minutes
+ * building an image.
  *
  * <p>Mocking the chain instead would have been cheaper and would have mocked
  * away the thing being tested.
@@ -157,7 +157,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * <strong>Compact, as a document (Bolum 33.5).</strong>
+     * <strong>Compact, as a document.</strong>
      *
      * <p>{@code CompactCalibrationIT} proves the seventeen numbers are what
      * the compiler says. It does not prove that a CV comes out of them: the
@@ -231,7 +231,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * Modern, as a document (Bolum 33.5).
+     * Modern, as a document.
      *
      * <p>The one template whose accent is not black, so this is also the only
      * place that compiles a coloured rule at all — a {@code \color} that did
@@ -263,7 +263,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * <strong>The same CV as a Word document (Bolum 22.6).</strong>
+     * <strong>The same CV as a Word document.</strong>
      *
      * <p>Downloaded from a generation that really ran, so what is checked is
      * the thing a unit test cannot reach: that a document made from a real
@@ -303,9 +303,8 @@ class JobSpecificCvIT extends AbstractLatexTest {
     }
 
     /**
-     * The third format (Bolum 22.6), and the claim is the architecture's: one
-     * {@code RichContent} reaches a third output without knowing about any of
-     * them.
+     * The third format, and the claim is the architecture's: one {@code
+     * RichContent} reaches a third output without knowing about any of them.
      *
      * <p>No page count is asserted and none could be. HTML has no page, so the
      * guarantee does not become approximate here the way it does for Word --

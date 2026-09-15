@@ -35,8 +35,8 @@ import org.springframework.util.StringUtils;
  * cheapest way not to be that document is not to build one.
  *
  * <p>It walks exactly the tree {@code DocxDocumentWriter} walks, and neither
- * knows anything about selection (Bolum 22.2): no atom ids, no scores, no
- * locks reach a renderer.
+ * knows anything about selection: no atom ids, no scores, no locks reach a
+ * renderer.
  */
 @Component
 public class HtmlDocumentWriter {

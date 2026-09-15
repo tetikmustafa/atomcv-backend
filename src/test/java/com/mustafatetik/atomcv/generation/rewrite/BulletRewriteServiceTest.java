@@ -218,10 +218,9 @@ class BulletRewriteServiceTest {
 
     /**
      * <strong>And no note leaves the fenced half byte-identical.</strong>
-     * {@code FixtureStore} keys a recorded answer on a hash of this half
-     * (Bolum 53.1), so a request without a note still finds the recording made
-     * before the field existed. Appending the line only when there is one is
-     * what buys that.
+     * {@code FixtureStore} keys a recorded answer on a hash of this half, so a
+     * request without a note still finds the recording made before the field
+     * existed. Appending the line only when there is one is what buys that.
      */
     @Test
     void norequestWithoutAnoteChangesWhatTheFixtureIsKeyedOn() {

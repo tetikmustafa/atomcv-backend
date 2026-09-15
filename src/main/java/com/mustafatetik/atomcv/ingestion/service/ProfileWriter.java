@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * A normalised CV written into a profile (Bolum 31.1).
+ * A normalised CV written into a profile.
  *
  * <p><strong>Every write goes through a scoped repository</strong>, and the
  * scope comes from {@link ProfileResolver} — the one place a
@@ -108,7 +108,7 @@ public class ProfileWriter {
     }
 
     /**
-     * The same CV, written into an anonymous session's profile (Bolum 9).
+     * The same CV, written into an anonymous session's profile.
      *
      * <p><strong>The same method body, and that is the point of it being
      * here.</strong> This used to be {@code EphemeralProfileWriter}, a second
@@ -197,7 +197,7 @@ public class ProfileWriter {
     }
 
     /**
-     * A summary hangs off its section, not off an entry (Bolum 20.2).
+     * A summary hangs off its section, not off an entry.
      *
      * <p>Extraction has to put every atom somewhere and the shape it is given
      * has only entries, so it invents a title for the one it makes — and a real
@@ -241,7 +241,7 @@ public class ProfileWriter {
     }
 
     /**
-     * How a section is set (Bolum 33.4).
+     * How a section is set.
      *
      * <p>The column has allowed four layouts since the first migration and the
      * importer wrote the default over all of them, so every profile in
@@ -382,9 +382,9 @@ public class ProfileWriter {
      * ProfileNormalizer} canonicalised them, and then nothing wrote a row. The
      * {@code tags} and {@code atom_tags} tables were empty for every profile
      * this product has ever held — so Faz B's tag component, a quarter of the
-     * raw score (Bolum 19.1), was zero for every atom against every posting.
-     * Nothing failed; the scores were simply compressed towards the bottom of
-     * their range together, which is what Bolum 28.4 measured.
+     * raw score, was zero for every atom against every posting. Nothing
+     * failed; the scores were simply compressed towards the bottom of their
+     * range together, which is what Bolum 28.4 measured.
      *
      * <p>{@code AUTO}, because a model guessed them. Bolum 13 keeps the
      * distinction so the editor can show which tags somebody actually decided
@@ -405,7 +405,7 @@ public class ProfileWriter {
     }
 
     /**
-     * Which kind of atom a section's contents are (Bolum 13).
+     * Which kind of atom a section's contents are.
      *
      * <p>The extraction does not report one and should not have to: the
      * section it sits under already says what it is, and a model asked for the
@@ -423,10 +423,10 @@ public class ProfileWriter {
     /**
      * A month becomes the first of that month.
      *
-     * <p>{@code entries.start_date} is a {@code DATE} (Bolum 13) and a CV gives
-     * months. The day is a storage artefact rather than a claim — nothing
-     * renders it, and Bolum 31.5 refuses to invent a month for the same reason
-     * it would refuse to invent a day.
+     * <p>{@code entries.start_date} is a {@code DATE} and a CV gives months.
+     * The day is a storage artefact rather than a claim — nothing renders it,
+     * and Bolum 31.5 refuses to invent a month for the same reason it would
+     * refuse to invent a day.
      */
     static LocalDate firstOfMonth(YearMonth month) {
         return month == null ? null : month.atDay(1);

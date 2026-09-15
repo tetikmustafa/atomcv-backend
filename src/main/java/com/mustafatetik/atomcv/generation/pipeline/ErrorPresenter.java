@@ -12,7 +12,7 @@ import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 /**
- * Every pipeline failure, as something a user can act on (Bolum 25.3).
+ * Every pipeline failure, as something a user can act on.
  *
  * <p>The switch is exhaustive on purpose: a new kind of failure does not
  * compile until someone has decided what the user is told and what they can do
@@ -106,7 +106,7 @@ public class ErrorPresenter {
                     .param("tried", outage.tried())
                     // Every reason a chain runs out is transient by
                     // construction — the failures that are not transient stop
-                    // the walk before it reaches here (Bolum 27.3).
+                    // the walk before it reaches here.
                     .resolution(ResolutionAction.RETRY)
                     .build();
 
@@ -155,7 +155,7 @@ public class ErrorPresenter {
                         // into a message.
                         .param("detail", failed.kind().name().toLowerCase(Locale.ROOT))
                         // Stage 1 keeps no artifacts, so there is no source to
-                        // offer alongside the failure yet (EK D.8.8).
+                        // offer alongside the failure yet.
                         .param("rawSourceAvailable", false);
                 if (retryable(failed)) {
                     presented.resolution(ResolutionAction.RETRY);

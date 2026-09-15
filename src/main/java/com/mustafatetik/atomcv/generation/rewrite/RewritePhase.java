@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Faz D, run (Bolum 21.5).
+ * Faz D, run.
  *
  * <p>Eight bullets at most, each one a call that spends most of its time
  * waiting on somebody else's server. Sequentially that is eight round trips
@@ -152,8 +152,7 @@ public class RewritePhase {
      * <p>Per pass rather than per generation: the compile loop runs Faz D
      * again on a document that came out too long, and the second pass is calls
      * that were really made. The trace accumulates them for one generation's
-     * record (Bolum 14.6); a rate over all generations wants them as they
-     * happen.
+     * record; a rate over all generations wants them as they happen.
      */
     private void record(RewriteTally tally) {
         tally.callsByPrompt().forEach((prompt, calls) ->
