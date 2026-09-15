@@ -1,0 +1,25 @@
+Site Reliability Engineer
+
+A profitable, employee-owned company is looking for a site reliability engineer.
+We are not naming ourselves in this advertisement because our current provider
+does not know we are looking; the recruiter will tell you who we are on the
+first call, and we will tell you our revenue and our runway on the second.
+
+Responsibilities
+- Keep a fleet of about four hundred virtual machines running and observable
+- Own the incident process: page, triage, mitigate, write the review
+- Move the remaining configuration management into Terraform
+- Cut the alert volume, which is currently about sixty pages a week
+
+Requirements
+- Four years or more in an operations or reliability role
+- Linux at a level where strace is a tool you reach for rather than read about
+- Prometheus, Grafana, and an opinion about what belongs in each
+- One scripting language you are fluent in: Python, Go or Bash
+- Willingness to be on call one week in four
+
+Preferred
+- Kubernetes in production, including an upgrade you had to roll back
+- Experience reducing cloud spend without reducing reliability
+
+We interview in three rounds and make a decision within ten working days.

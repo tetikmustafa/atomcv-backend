@@ -1,0 +1,22 @@
+Product Engineer
+
+We are a small team building tools for independent bookshops. Six people, four
+of them engineers, and about nine hundred shops using what we make. The work is
+a mix of things: this month one of us is rewriting the stock import so that a
+shop can upload a supplier spreadsheet without renaming the columns first,
+another is on the till software, and a third is untangling the way we calculate
+returns to publishers.
+
+What you would do here depends on what the shops need, which is why this
+advertisement does not have a list of technologies. We write mostly Ruby and
+some TypeScript, we run on one database we understand well, and we would rather
+you were curious about bookselling than fluent in anything in particular. The
+person we hired last year had never written Ruby and is now the one who knows
+the returns code best.
+
+We work four days a week, the fifth being nobody's. We pay the same band to
+everyone at the same level and we publish it: 62,000 GBP for this position. We
+do not set take-home exercises; we pay for a day of pairing instead.
+
+If any of that appeals, write to us and tell us about a piece of software you
+have used that you wish had been made differently, and why.

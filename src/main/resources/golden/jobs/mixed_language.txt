@@ -1,0 +1,26 @@
+Frontend Developer / Onyuz Gelistirici
+Yildiz Digital, Izmir, remote friendly
+
+We are looking for a frontend developer to join our product team.
+Urun ekibimize katilacak bir onyuz gelistirici ariyoruz.
+
+Responsibilities / Sorumluluklar
+- Build and maintain the customer dashboard in React and TypeScript
+- Musteri panelini React ve TypeScript ile gelistirmek ve surdurmek
+- Work with designers on a component library used by three products
+- Uc urunun kullandigi bilesen kutuphanesini tasarimcilarla gelistirmek
+- Improve accessibility: the dashboard currently fails contrast in two places
+- Erisilebilirligi iyilestirmek ve kontrast hatalarini gidermek
+
+Requirements / Aranan nitelikler
+- Three years of professional experience with React
+- React ile en az uc yil profesyonel deneyim
+- TypeScript, and an understanding of why the strict flags are on
+- CSS that survives a design review, ideally with Tailwind
+- Testing: unit tests you wrote because they helped, not because of a quota
+
+Preferred / Tercihen
+- Next.js, particularly the app router
+- Experience with internationalisation, three languages or more
+
+Apply with a CV. Basvurularinizi ozgecmis ile iletebilirsiniz.

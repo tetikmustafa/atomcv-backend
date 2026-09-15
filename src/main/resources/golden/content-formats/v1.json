@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "Bolum 51.3's content-formats fixture: one stored document per JSONB",
+    "version of atom_variants.content (Bolum 14.1, Bolum 16.2). This is v1,",
+    "which is every version there has ever been -- the directory exists so",
+    "that the day there is a v2, the reader for v1 still has something real",
+    "to read, rather than a document written by whoever wrote the migration.",
+    "",
+    "It carries every mark the model names in Bolum 14.1 and one it does not.",
+    "`experimental` is the forward-compatibility case: Bolum 16.2 says an",
+    "unknown mark is read, kept and rendered as plain text, and the only way",
+    "to hold that promise is a document that has one in it.",
+    "",
+    "Keys beginning with an underscore are not part of the format; the reader",
+    "under test is handed `document` below."
+  ],
+  "document": {
+    "v": 1,
+    "runs": [
+      { "t": "Engineered ", "m": [] },
+      { "t": "ETL", "m": ["technology"] },
+      { "t": " pipelines at ", "m": [] },
+      { "t": "Brisa", "m": ["organization"] },
+      { "t": " processing ", "m": [] },
+      { "t": "300K+ rows", "m": ["metric"] },
+      { "t": " into a secure Lakehouse, ", "m": [] },
+      { "t": "documented here", "m": ["link"], "href": "https://example.com/adr-14" },
+      { "t": ", cutting the nightly batch ", "m": [] },
+      { "t": "from four hours to forty minutes", "m": ["emphasis"] },
+      { "t": " and ", "m": [] },
+      { "t": "freeing a whole shift", "m": ["experimental"] },
+      { "t": ".", "m": [] }
+    ]
+  }
+}

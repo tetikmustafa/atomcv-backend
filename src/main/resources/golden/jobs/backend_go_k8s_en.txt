@@ -1,0 +1,37 @@
+Senior Backend Engineer - Payments Platform
+Northwind Ledger, Berlin (hybrid, two days on site)
+
+About the role
+Our payments platform settles roughly four million transactions a day for
+merchants across fourteen markets. The ledger behind it is written in Go and
+runs on Kubernetes; the team that owns it is six engineers and we are hiring a
+seventh to work on throughput and correctness rather than on new surface area.
+
+Responsibilities
+- Design and scale the services that route, authorise and settle payments
+- Own the correctness of the double-entry ledger, including reconciliation jobs
+- Reduce tail latency on the authorisation path, currently p99 at 340 ms
+- Take part in the on-call rotation, one week in six, with a day back after
+- Review designs from the two teams that build on top of the ledger
+
+Requirements
+- At least five years writing production services, three of them in Go
+- Practical Kubernetes experience: you have debugged a failing rollout, not
+  only applied a manifest somebody else wrote
+- PostgreSQL at a level where you can read a query plan and act on it
+- Distributed systems fundamentals: idempotency, exactly-once as a fiction,
+  retries and the backpressure they need
+- Comfortable writing English for an audience that does not share your timezone
+
+Nice to have
+- gRPC, or another schema-first RPC you have actually run in production
+- Terraform, or any infrastructure-as-code you have maintained rather than
+  written once
+- Experience with financial regulation in the EU: PSD2, SCA, or similar
+
+What we offer
+A salary band of 85,000 to 105,000 EUR depending on experience, a learning
+budget of 2,000 EUR a year, and a team that writes design documents before code.
+
+To apply, send a CV and, if you like, a paragraph about a system you are proud
+of having made smaller.
