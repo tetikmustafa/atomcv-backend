@@ -1,0 +1,17 @@
+-- Umami's database, beside the application's (Bolum 5.7, Bolum 11.1).
+--
+-- The official Postgres entrypoint runs everything in
+-- /docker-entrypoint-initdb.d on first initialisation and never again, which
+-- is the only moment a second database can be created without a person
+-- connecting by hand.
+--
+-- **Its own database rather than a schema in ours.** Umami applies its own
+-- migrations on start-up. Sharing a schema with Flyway would put two
+-- migrators over one set of tables and make an Umami upgrade an event with
+-- consequences for the product -- for an analytics tool that is allowed to be
+-- down.
+--
+-- The owner is the application's role. A second role would need a second
+-- password in .env to protect a database whose contents are page views on a
+-- machine where the application's own data already sits.
+CREATE DATABASE umami OWNER CURRENT_USER;

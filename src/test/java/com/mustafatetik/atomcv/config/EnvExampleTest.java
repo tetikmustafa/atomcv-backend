@@ -7,6 +7,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +55,7 @@ class EnvExampleTest {
     void everyNameInTheExampleIsReadBySomething() {
         Set<String> read = placeholders(false);
         read.addAll(placeholders(true));
+        read.addAll(composePlaceholders());
 
         assertThat(documented())
                 .as("a name here that nothing reads is a knob wired to nothing")
@@ -98,6 +100,34 @@ class EnvExampleTest {
                     });
         } catch (IOException unreadable) {
             throw new UncheckedIOException("Cannot list " + CONFIG, unreadable);
+        }
+        return found;
+    }
+
+    /**
+     * <strong>Compose reads this file too, and it is a reader like any
+     * other.</strong> Not every name in {@code .env} reaches Spring: the
+     * production topology has services of its own, and Umami's
+     * {@code APP_SECRET} is a name whose only consumer is
+     * {@code docker-compose.prod.yml}. Leaving those out would make the rule
+     * above refuse a knob that is wired to something -- just not to us.
+     *
+     * <p>The counterpart test is deliberately <em>not</em> widened. "Every
+     * name the application cannot start without is in the example" is about
+     * the application; a compose variable with no default fails at
+     * {@code up}, loudly, in front of whoever typed it.
+     */
+    private static Set<String> composePlaceholders() {
+        var found = new LinkedHashSet<String>();
+        for (Path file : List.of(Path.of("docker-compose.prod.yml"),
+                Path.of("docker-compose.yml"))) {
+            if (!Files.exists(file)) {
+                continue;
+            }
+            Matcher matcher = PLACEHOLDER.matcher(read(file));
+            while (matcher.find()) {
+                found.add(matcher.group(1));
+            }
         }
         return found;
     }

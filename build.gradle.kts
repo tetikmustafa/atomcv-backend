@@ -227,6 +227,13 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("docker/nginx/nginx.conf"))
         .withPropertyName("nginxConf")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And the production topology, for the same reason again:
+    // ProductionComposeTest is the only thing in any lane that parses it --
+    // `.claude/settings.json` refuses to run compose against this file, so a
+    // mistake in it is otherwise found by the server.
+    inputs.file(rootProject.file("docker-compose.prod.yml"))
+        .withPropertyName("productionCompose")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and
