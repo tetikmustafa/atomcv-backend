@@ -56,6 +56,7 @@ class EnvExampleTest {
         Set<String> read = placeholders(false);
         read.addAll(placeholders(true));
         read.addAll(composePlaceholders());
+        read.addAll(scriptReferences());
 
         assertThat(documented())
                 .as("a name here that nothing reads is a knob wired to nothing")
@@ -128,6 +129,39 @@ class EnvExampleTest {
             while (matcher.find()) {
                 found.add(matcher.group(1));
             }
+        }
+        return found;
+    }
+
+    /**
+     * <strong>The operations scripts source this file, so they read it
+     * too.</strong> Bolum 49's backup and WAL archiving never reach Spring:
+     * {@code backup.sh} and {@code archive-wal.sh} do {@code . ./.env} and
+     * take the age key and the remotes from there. Counting only yaml would
+     * call {@code AGE_PUBLIC_KEY} a dead knob and push somebody to delete the
+     * one name without which no backup runs at all.
+     *
+     * <p>Shell is matched on {@code ${NAME}} and on {@code "${NAME:?...}"} and
+     * {@code ${NAME:-default}} alike, which is the same shape the yaml
+     * placeholder pattern already reads.
+     */
+    private static Set<String> scriptReferences() {
+        var found = new LinkedHashSet<String>();
+        Path scripts = Path.of("scripts");
+        if (!Files.isDirectory(scripts)) {
+            return found;
+        }
+        try (Stream<Path> files = Files.list(scripts)) {
+            files.filter(path -> path.getFileName().toString().endsWith(".sh"))
+                    .map(EnvExampleTest::read)
+                    .forEach(content -> {
+                        Matcher matcher = PLACEHOLDER.matcher(content);
+                        while (matcher.find()) {
+                            found.add(matcher.group(1));
+                        }
+                    });
+        } catch (IOException unreadable) {
+            throw new UncheckedIOException("Cannot list " + scripts, unreadable);
         }
         return found;
     }
