@@ -109,6 +109,47 @@ public class VariantTranslationService {
         };
     }
 
+    /**
+     * Bolum 21.8's second step: a wording in a language this atom has none in,
+     * made from the one it has.
+     *
+     * <p><strong>The difference from {@link #retranslate} is that there is
+     * nothing to overwrite.</strong> That one refreshes a wording that went
+     * stale; this one creates the wording a generation needs and the profile
+     * never had, which is what F-013 was waiting for — until it existed,
+     * {@code auto} could only follow the posting when every atom already had a
+     * wording in its language, and a Turkish profile applying to an English
+     * posting got a Turkish CV.
+     *
+     * <p>Saved rather than used and thrown away (Bolum 21.8's third step), and
+     * the payoff is in the section's own sentence: the second generation in
+     * that language costs nothing. {@code created_by = llm_translate} is what
+     * lets Bolum 32.2's staleness know a person did not write it.
+     *
+     * <p>The same audit as above. A translation that dropped a number is
+     * refused here too, which is what keeps the fallback honest: a missing
+     * wording is better than a wrong one.
+     */
+    @Transactional
+    public Result<AtomVariant> translateInto(ProfileRef profile, Atom atom, AtomVariant source,
+            String language, String bucketKey, UUID userId) {
+
+        var prompt = prompts.load(PROMPT_ID, prompts.selectVersion(PROMPT_ID, bucketKey));
+        var fenced = FencedPrompt.of(prompt, FENCE_TAG);
+        var answer = providers.call(new StructuredRequest<>(
+                PROMPT_ID, prompt.version(),
+                fenced.system().replace(TARGET_LANGUAGE, language),
+                fenced.userPromptFor(source.getPlainText()),
+                prompt.schema(), AtomTranslation.class, ModelTier.CHEAP, TIMEOUT, userId));
+
+        return switch (answer) {
+            case Result.Err<LlmResponse<AtomTranslation>> failed -> Result.err(failed.error());
+            case Result.Ok<LlmResponse<AtomTranslation>> ok -> store(profile,
+                    new AtomVariant(profile.id(), atom.getId(), language, source.getContent()),
+                    source, atom, ok.value().data());
+        };
+    }
+
     private Result<AtomVariant> store(ProfileRef profile, AtomVariant target,
             AtomVariant source, Atom atom, AtomTranslation translated) {
 

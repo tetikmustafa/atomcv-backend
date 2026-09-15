@@ -57,16 +57,17 @@ public record ProfileTree(UUID profileId, List<SectionNode> sections) {
     }
 
     /**
-     * Whether a CV made from this profile could actually be written in
-     * {@code language} (F-013).
+     * Whether a CV made from this profile could be written in {@code language}
+     * out of the wordings it already holds (F-013).
      *
      * <p>Selection asks each atom for its wording in the target language and
      * falls back to the primary one when there is none, so a profile that is
      * missing a few translations does not fail — it comes out in two
-     * languages. Bolum 21.8 says the gap is filled by translating the missing
-     * wordings and saving them; until that phase exists, the honest reading is
-     * that the language is not deliverable and the document should stay in the
-     * one it was written in.
+     * languages. <strong>This is what decides whether Bolum 21.8's second step
+     * has to run</strong>, and no longer what decides the document's language:
+     * false means a generation stops to translate, and only a translation that
+     * could not be made sends the document back to the language the profile
+     * was written in.
      *
      * <p>Only atoms that can reach the page are asked. An atom the user
      * switched off is not a candidate at all, and one with no wording at all

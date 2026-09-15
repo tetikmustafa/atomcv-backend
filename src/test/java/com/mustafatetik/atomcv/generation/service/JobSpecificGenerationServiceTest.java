@@ -81,6 +81,7 @@ class JobSpecificGenerationServiceTest {
     private RenderCostService renderCosts;
     private RewritePhase rewrites;
     private CoverLetterWriter letters;
+    private GenerationTranslation translation;
     private GenerationPipeline pipeline;
     private JobSpecificGenerationService service;
 
@@ -100,6 +101,13 @@ class JobSpecificGenerationServiceTest {
         when(rewrites.rewrite(any(), any(), any(), any()))
                 .thenReturn(RewriteOutcome.of(RewrittenContent.none()));
         letters = mock(CoverLetterWriter.class);
+        translation = mock(GenerationTranslation.class);
+        // The default is the profile that needed no translating, which is what
+        // every case below is: they are about the order of the gates, and a
+        // translation that carried is the case where nothing about that order
+        // changes.
+        when(translation.ensureWordingsIn(any(), any(), anyString(), any(), any(), any()))
+                .thenReturn(true);
         // Answers out of the registry, which is what the built-in templates
         // did before Capacities existed: these cases are about the phases, not
         // about where a capacity is looked up.
@@ -113,7 +121,7 @@ class JobSpecificGenerationServiceTest {
         service = new JobSpecificGenerationService(assembler, tags, analysis,
                 relevance, renderCosts, rewrites,
                 mock(com.mustafatetik.atomcv.rendering.service.CustomizationService.class),
-                letters, pipeline, capacities,
+                translation, letters, pipeline, capacities,
                 mock(com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements.class));
 
         head = new Profile(USER);
@@ -365,6 +373,100 @@ class JobSpecificGenerationServiceTest {
     }
 
     /** Everything up to the pipeline's door, so the letter is the only variable. */
+    // -- Bolum 21.8's second step, and what F-013 asked for ------------------
+
+    /**
+     * <strong>The behaviour F-013 was opened about.</strong> A Turkish profile
+     * applying to an English posting used to come out in Turkish, because the
+     * only thing that could keep a document in one language was refusing to
+     * follow the posting. Now the missing wordings are translated first, and
+     * the document follows the posting.
+     */
+    @Test
+    void aprofileWithNoEnglishWordingIsTranslatedAndFollowsThePosting() {
+        aturkishGenerationThatReachesThePipeline();
+
+        service.generateForJob(subject(), POSTING, false, null, null, false, null,
+                GenerationDirectives.none(), ProgressSink.NONE, null);
+
+        verify(translation).ensureWordingsIn(any(), any(), anyString(), any(), any(), any());
+        assertThat(languageThePipelineWasGiven()).isEqualTo("en");
+    }
+
+    /**
+     * <strong>All or nothing, which is the half of F-013 that is kept.</strong>
+     * A provider that is down does not produce a CV of Turkish bullets under
+     * English dates: every atom goes back to the language the profile was
+     * written in, including the ones that were translated successfully.
+     */
+    @Test
+    void atranslationThatCouldNotBeMadeWritesTheWholeCvInTheProfilesLanguage() {
+        aturkishGenerationThatReachesThePipeline();
+        when(translation.ensureWordingsIn(any(), any(), anyString(), any(), any(), any()))
+                .thenReturn(false);
+
+        service.generateForJob(subject(), POSTING, false, null, null, false, null,
+                GenerationDirectives.none(), ProgressSink.NONE, null);
+
+        assertThat(languageThePipelineWasGiven()).isEqualTo("tr");
+    }
+
+    /**
+     * Bolum 21.8's first step, which is the one that was already written and
+     * is the reason the profile editor's translations are worth having: a
+     * wording that exists costs nothing, and nothing here is a call.
+     */
+    @Test
+    void aprofileThatAlreadyHasTheWordingPaysForNoTranslation() {
+        aGenerationThatReachesThePipeline();
+
+        service.generateForJob(subject(), POSTING, false, null, null, false, null,
+                GenerationDirectives.none(), ProgressSink.NONE, null);
+
+        verify(translation, never())
+                .ensureWordingsIn(any(), any(), anyString(), any(), any(), any());
+    }
+
+    /**
+     * The costs are measured against the language the document is written in,
+     * which is Bolum 32.3's rule and the reason the step sits where it does:
+     * a wording that has just been translated has no measured height, and
+     * selection packing a page with the heights of the sentences it replaced
+     * is the mistake that section names.
+     */
+    @Test
+    void thecostsAreMeasuredAgainAfterTheLanguageSettles() {
+        aturkishGenerationThatReachesThePipeline();
+
+        service.generateForJob(subject(), POSTING, false, null, null, false, null,
+                GenerationDirectives.none(), ProgressSink.NONE, null);
+
+        var language = ArgumentCaptor.forClass(java.util.Locale.class);
+        verify(renderCosts, org.mockito.Mockito.times(2))
+                .measureMissing(any(), any(), any(), language.capture());
+        assertThat(language.getAllValues())
+                .extracting(java.util.Locale::getLanguage)
+                .containsExactly("en", "en");
+    }
+
+    private String languageThePipelineWasGiven() {
+        var locale = ArgumentCaptor.forClass(java.util.Locale.class);
+        verify(pipeline).run(any(), any(), any(), any(), any(), locale.capture());
+        return locale.getValue().getLanguage();
+    }
+
+    /** The same generation, from a profile that has only Turkish wordings. */
+    private void aturkishGenerationThatReachesThePipeline() {
+        head.setSourceLanguage("tr");
+        when(assembler.load(ref)).thenReturn(aprofileWithOneBullet("tr"));
+        when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
+                .thenReturn(Result.ok(posting()));
+        when(relevance.scoreAgainst(any(), any(), any(), any()))
+                .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
+        when(pipeline.run(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Result.ok(aDocument()));
+    }
+
     private void aGenerationThatReachesThePipeline() {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
         when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
@@ -399,6 +501,10 @@ class JobSpecificGenerationServiceTest {
     }
 
     private ProfileTree aprofileWithOneBullet() {
+        return aprofileWithOneBullet("en");
+    }
+
+    private ProfileTree aprofileWithOneBullet(String language) {
         UUID profileId = ref.id();
         List<Section> sections = new ArrayList<>();
         List<Entry> entries = new ArrayList<>();
@@ -413,7 +519,7 @@ class JobSpecificGenerationServiceTest {
         var atom = new Atom(
                 profileId, section.getId(), entry.getId(), AtomKind.BULLET, (short) 0);
         atoms.add(atom);
-        var variant = new AtomVariant(profileId, atom.getId(), "en",
+        var variant = new AtomVariant(profileId, atom.getId(), language,
                 RichContent.plain("Built payment systems in Go"));
         variant.setPrimary(true);
         variants.add(variant);
