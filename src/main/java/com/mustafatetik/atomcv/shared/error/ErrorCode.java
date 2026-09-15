@@ -127,7 +127,6 @@ public enum ErrorCode {
     // ── Anonymous mode (EK D.6) ──
     ANONYMOUS_SESSION_EXPIRED(401),
     ATOM_LIMIT_EXCEEDED(422, param("limit", INTEGER), param("current", INTEGER)),
-    NO_ANONYMOUS_PROFILE(404),
     PROFILE_ALREADY_EXISTS(409),
 
     // ── Artifacts and sessions (EK D.6) ──

@@ -192,6 +192,49 @@ class BulletRewriteServiceTest {
                 .contains("allowedSkills: microsoft-fabric");
     }
 
+    /**
+     * Bolum 18.7's note, and it travels the way the CV's own words do.
+     *
+     * <p>It is the person's sentence about their own CV, so Bolum 43.1 puts it
+     * inside the fence rather than into the instructions — the line is drawn at
+     * where the data starts, not at which field looks structured. The prompt
+     * tells the model what a note may and may not do; the validators of
+     * Bolum 21.6 do not read it at all, which is what makes that a promise.
+     */
+    @Test
+    void thepersonsOwnNoteTravelsInsideTheFenceToo() {
+        answering("Moved 300K rows on the Microsoft Fabric pipeline");
+
+        service.rewrite(candidate(), context.withNote("Lead with the platform work"));
+
+        var request = ArgumentCaptor.forClass(StructuredRequest.class);
+        verify(providers).call(request.capture());
+        assertThat(request.getValue().userPrompt())
+                .contains("note: Lead with the platform work");
+        assertThat(request.getValue().systemPrompt())
+                .as("never in the instructions -- that half carries only our own numbers")
+                .doesNotContain("Lead with the platform work");
+    }
+
+    /**
+     * <strong>And no note leaves the fenced half byte-identical.</strong>
+     * {@code FixtureStore} keys a recorded answer on a hash of this half
+     * (Bolum 53.1), so a request without a note still finds the recording made
+     * before the field existed. Appending the line only when there is one is
+     * what buys that.
+     */
+    @Test
+    void norequestWithoutAnoteChangesWhatTheFixtureIsKeyedOn() {
+        answering("Moved 300K rows on the Microsoft Fabric pipeline");
+        service.rewrite(candidate(), context);
+
+        var request = ArgumentCaptor.forClass(StructuredRequest.class);
+        verify(providers).call(request.capture());
+        assertThat(request.getValue().userPrompt())
+                .doesNotContain("note:")
+                .contains("postingWants: kubernetes, microsoft-fabric");
+    }
+
     /** What is ours rather than theirs does belong in the instructions. */
     @Test
     void thelimitAndTheIntentAreInstructionsAndAreSubstituted() {

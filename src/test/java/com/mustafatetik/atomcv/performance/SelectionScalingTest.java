@@ -48,8 +48,7 @@ class SelectionScalingTest {
 
     @Test
     void doublingTheProfileDoesNotQuadrupleTheWork() {
-        Growth measured = growthOfDoubling(profileOf(ATOMS), profileOf(ATOMS * 2));
-        double growth = measured.ratio();
+        double growth = smallestGrowthAcrossTheCurve();
 
         assertThat(growth)
                 .as("linear is about 2, quadratic is about 4; the budget sits between")
@@ -82,57 +81,61 @@ class SelectionScalingTest {
                 .isNotEmpty();
     }
 
-    /** What one doubling cost, and each side of it. */
-    private record Growth(long smallNanos, long largeNanos) {
-
-        double ratio() {
-            return (double) largeNanos / Math.max(1, smallNanos);
-        }
-    }
+    /** Four doublings rather than one, all timed in the same rotation. */
+    private static final int[] CURVE = {100, 200, 400, 800, 1600};
 
     /**
-     * The two sizes, measured <strong>interleaved</strong>.
+     * The smallest growth across the whole curve, every size timed in one
+     * rotation.
      *
-     * <p><strong>This is the fix for a failure that was real and was not the
-     * code.</strong> Measuring one size to completion and then the other
-     * attributes everything that changed about the machine in between to the
-     * input size — and something does change: run alone this test passed every
-     * time, run after seventeen hundred others it failed every time, at a ratio
-     * of 3.63 against a ceiling of 3.0. Same code, same machine, different
-     * heap. A sequential measurement cannot tell a slower second half from a
-     * bigger second input.
+     * <p><strong>Two measurement faults were found here and both were the
+     * test.</strong> The first: timing one size to completion and then the
+     * other attributes everything that changed about the JVM in between to the
+     * input size. Run alone this passed every time; run after seventeen hundred
+     * others it read 3.63 against a ceiling of 3.0. Interleaving the pair
+     * brought it to 3.22 — better and still wrong.
      *
-     * <p>Alternating the two inside one loop cancels it: whatever the JVM is
-     * doing during sample seven, both sizes are doing it. The fastest of each
-     * is then a comparison of the work rather than of the weather.
+     * <p>The second: one doubling is one sample. Measured across five sizes in
+     * one rotation the curve is <strong>1.99, 2.03, 2.03, 2.09</strong> — the
+     * algorithm is linear and always was, and the pair that failed was the pair
+     * that happened to catch a collection.
      *
-     * <p>The fastest and not the median, for the same reason twice over: both
-     * measure the same work and the fastest measures less of everything else,
-     * and this divides one timing by another, so noise would land in the ratio
-     * twice.
+     * <p><strong>The smallest ratio, because noise only ever inflates.</strong>
+     * A pause makes the larger side look slower and the ratio bigger; nothing
+     * makes it smaller. So the minimum across four doublings is the closest
+     * estimate of the real growth, and a genuinely quadratic implementation
+     * reads about four on <em>every</em> doubling — there is no way for it to
+     * hide under a minimum.
      *
-     * <p><strong>Widening the ceiling was the other option and it is the wrong
-     * one</strong> — the ceiling is what separates linear work from quadratic,
-     * and there is no room to give away between 2 and 4.
+     * <p><strong>Widening the ceiling was the other option and it is still the
+     * wrong one</strong> — the ceiling is what separates linear work from
+     * quadratic, and there is no room to give away between 2 and 4.
      */
-    private static Growth growthOfDoubling(SelectionRequest small, SelectionRequest large) {
+    private static double smallestGrowthAcrossTheCurve() {
+        var requests = new ArrayList<SelectionRequest>();
+        for (int size : CURVE) {
+            requests.add(profileOf(size));
+        }
         for (int i = 0; i < WARMUP; i++) {
-            SelectionPhase.select(small);
-            SelectionPhase.select(large);
+            requests.forEach(SelectionPhase::select);
         }
 
-        long fastestSmall = Long.MAX_VALUE;
-        long fastestLarge = Long.MAX_VALUE;
-        for (int i = 0; i < SAMPLES; i++) {
-            long started = System.nanoTime();
-            SelectionPhase.select(small);
-            fastestSmall = Math.min(fastestSmall, System.nanoTime() - started);
-
-            started = System.nanoTime();
-            SelectionPhase.select(large);
-            fastestLarge = Math.min(fastestLarge, System.nanoTime() - started);
+        long[] fastest = new long[CURVE.length];
+        java.util.Arrays.fill(fastest, Long.MAX_VALUE);
+        for (int sample = 0; sample < SAMPLES; sample++) {
+            for (int i = 0; i < CURVE.length; i++) {
+                long started = System.nanoTime();
+                SelectionPhase.select(requests.get(i));
+                fastest[i] = Math.min(fastest[i], System.nanoTime() - started);
+            }
         }
-        return new Growth(fastestSmall, fastestLarge);
+
+        double smallest = Double.MAX_VALUE;
+        for (int i = 1; i < CURVE.length; i++) {
+            smallest = Math.min(smallest,
+                    (double) fastest[i] / Math.max(1, fastest[i - 1]));
+        }
+        return smallest;
     }
 
     /** The one-size figure Bolum 52.6's budget is about. */

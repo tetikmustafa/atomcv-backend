@@ -130,7 +130,8 @@ public class GenerationJobHandler implements JobHandler {
                         payload.customizationId(),
                         // Bolum 18.7: the directive belongs to this run, never
                         // to the cached analysis the posting hash keys.
-                        GenerationDirectives.emphasising(payload.emphasize()),
+                        GenerationDirectives.steering(
+                                payload.emphasize(), payload.freeformNote()),
                         progress, job.getId());
 
         return switch (result) {

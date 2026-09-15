@@ -77,9 +77,10 @@ class GenerationDirectivesMergeTest {
     @Test
     void theKeysAreTheOnesTheColumnHolds() {
         var stored = new GenerationDirectives(
-                List.of(FIRST), List.of(SECOND), List.of("microservices")).asMap();
+                List.of(FIRST), List.of(SECOND), List.of("microservices"), "keep it short")
+                .asMap();
 
-        assertThat(stored).containsOnlyKeys("includeAtoms", "excludeAtoms", "emphasize");
+        assertThat(stored).containsOnlyKeys("includeAtoms", "excludeAtoms", "emphasize", "freeformNote");
         assertThat(stored.get("includeAtoms")).isEqualTo(List.of(FIRST.toString()));
         assertThat(stored.get("emphasize")).isEqualTo(List.of("microservices"));
     }
@@ -94,8 +95,8 @@ class GenerationDirectivesMergeTest {
      */
     @Test
     void emphasisIsStoredTheWayTheScorerWillReadIt() {
-        var directives = GenerationDirectives.emphasising(
-                List.of("  Microservices ", "MICROSERVICES", "", "Observability"));
+        var directives = GenerationDirectives.steering(
+                List.of("  Microservices ", "MICROSERVICES", "", "Observability"), null);
 
         assertThat(directives.emphasize())
                 .containsExactly("microservices", "observability");
@@ -108,7 +109,7 @@ class GenerationDirectivesMergeTest {
      */
     @Test
     void alaterEditKeepsTheEmphasisTheGenerationWasMadeWith() {
-        var first = GenerationDirectives.emphasising(List.of("microservices"));
+        var first = GenerationDirectives.steering(List.of("microservices"), null);
         var second = new GenerationDirectives(List.of(FIRST), List.of());
 
         assertThat(first.and(second).emphasize()).containsExactly("microservices");

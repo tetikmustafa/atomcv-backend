@@ -3517,7 +3517,7 @@
           "code" : {
             "type" : "string",
             "description" : "Translation key: the client resolves errors.{CODE}",
-            "enum" : [ "INSUFFICIENT_PROFILE", "UNPARSEABLE_JOB_DESCRIPTION", "CONFLICTING_PREFERENCES", "FEATURE_REQUIRES_ACCOUNT", "QUOTA_EXCEEDED", "ALL_PROVIDERS_UNAVAILABLE", "COMPILATION_FAILED", "PAGE_LIMIT_EXCEEDED", "REWRITE_VALIDATION_FAILED", "COVER_LETTER_REJECTED", "EMBEDDING_UNAVAILABLE", "GENERATION_PAUSED", "UNSUPPORTED_DOCUMENT", "DOCUMENT_TOO_LARGE", "PDF_NOT_TEXT_BASED", "PDF_ENCRYPTED", "EXTRACTION_EMPTY", "EXTRACTION_TIMEOUT", "LANGUAGE_UNDETECTED", "TRANSLATION_FAILED", "PROFILE_QUOTA_EXCEEDED", "ANONYMOUS_SESSION_EXPIRED", "ATOM_LIMIT_EXCEEDED", "NO_ANONYMOUS_PROFILE", "PROFILE_ALREADY_EXISTS", "GENERATION_ARTIFACT_EXPIRED", "GENERATION_SUPERSEDED", "EDIT_NOT_UNDERSTOOD", "CSRF_TOKEN_INVALID", "AUTHENTICATION_REQUIRED", "OAUTH_FAILED", "MAGIC_LINK_INVALID", "RATE_LIMITED", "CHALLENGE_FAILED", "RESOURCE_NOT_FOUND", "VERSION_CONFLICT", "PRECONDITION_REQUIRED", "VALIDATION_FAILED", "INTERNAL_ERROR", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "UNSUPPORTED_MEDIA_TYPE" ]
+            "enum" : [ "INSUFFICIENT_PROFILE", "UNPARSEABLE_JOB_DESCRIPTION", "CONFLICTING_PREFERENCES", "FEATURE_REQUIRES_ACCOUNT", "QUOTA_EXCEEDED", "ALL_PROVIDERS_UNAVAILABLE", "COMPILATION_FAILED", "PAGE_LIMIT_EXCEEDED", "REWRITE_VALIDATION_FAILED", "COVER_LETTER_REJECTED", "EMBEDDING_UNAVAILABLE", "GENERATION_PAUSED", "UNSUPPORTED_DOCUMENT", "DOCUMENT_TOO_LARGE", "PDF_NOT_TEXT_BASED", "PDF_ENCRYPTED", "EXTRACTION_EMPTY", "EXTRACTION_TIMEOUT", "LANGUAGE_UNDETECTED", "TRANSLATION_FAILED", "PROFILE_QUOTA_EXCEEDED", "ANONYMOUS_SESSION_EXPIRED", "ATOM_LIMIT_EXCEEDED", "PROFILE_ALREADY_EXISTS", "GENERATION_ARTIFACT_EXPIRED", "GENERATION_SUPERSEDED", "EDIT_NOT_UNDERSTOOD", "CSRF_TOKEN_INVALID", "AUTHENTICATION_REQUIRED", "OAUTH_FAILED", "MAGIC_LINK_INVALID", "RATE_LIMITED", "CHALLENGE_FAILED", "RESOURCE_NOT_FOUND", "VERSION_CONFLICT", "PRECONDITION_REQUIRED", "VALIDATION_FAILED", "INTERNAL_ERROR", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "UNSUPPORTED_MEDIA_TYPE" ]
           },
           "params" : {
             "type" : "object",
@@ -4367,6 +4367,13 @@
             "type" : "string",
             "format" : "uuid",
             "description" : "A set of appearance settings saved under\n`/api/v1/customizations`, to render this one with\n(Bolum 14.4). Absent uses the profile's own working settings,\nwhich is what nearly every request means.\n\nA set belonging to somebody else is not found."
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "A sentence or two about how this CV should read, in the\nperson's own words (Bolum 18.7's `freeformNote`).\n\nIt reaches Faz D and nothing else: Faz B ranks against the\nposting and a sentence is not a term. The prompt tells the\nmodel the note may steer wording and emphasis and may **not**\nlicence a claim, lengthen a line past its maximum, or change\nwhat a sentence says happened — and Bolum 21.6's validators do\nnot care what the note said either way, which is what makes\nthat a promise rather than a hope.\n\nIt travels inside the fence, because it is the person's own\ncontent (Bolum 43.1). At most 500 characters.",
+            "example" : "Lead with the platform work rather than the ML.",
+            "maxLength" : 500,
+            "minLength" : 0
           }
         }
       },

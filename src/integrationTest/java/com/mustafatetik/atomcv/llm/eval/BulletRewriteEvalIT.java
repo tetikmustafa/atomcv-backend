@@ -146,7 +146,7 @@ class BulletRewriteEvalIT extends AbstractIntegrationTest {
                 List.of("Go", "PostgreSQL", "Kubernetes", "Terraform"),
                 List.of("distributed systems", "reliability"),
                 "Backend engineer, payments and ledgers.",
-                "en", "formal", "eval", UUID.randomUUID(), UUID.randomUUID());
+                "en", "formal", "eval", null, UUID.randomUUID(), UUID.randomUUID());
     }
 
     /**

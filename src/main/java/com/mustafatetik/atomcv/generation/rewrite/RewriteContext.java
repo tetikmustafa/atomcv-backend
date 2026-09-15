@@ -47,6 +47,7 @@ public record RewriteContext(
         String language,
         String tone,
         String bucketKey,
+        String note,
         java.util.UUID userId,
         java.util.UUID jobId) {
 
@@ -54,7 +55,13 @@ public record RewriteContext(
     public RewriteContext(List<String> postingSkills, List<String> postingFocus,
             String ownWords, String language, String tone, String bucketKey) {
         this(postingSkills, List.of(), postingFocus, ownWords, language, tone, bucketKey,
-                null, null);
+                null, null, null);
+    }
+
+    /** The same context with Bolum 18.7's note, for a caller that has one. */
+    public RewriteContext withNote(String written) {
+        return new RewriteContext(postingSkills, postingSkillNames, postingFocus, ownWords,
+                language, tone, bucketKey, written, userId, jobId);
     }
 
     public RewriteContext {
@@ -76,7 +83,7 @@ public record RewriteContext(
      */
     public static RewriteContext of(JobAnalysis posting, String ownWords,
             String language, Tone tone, String bucketKey) {
-        return of(posting, ownWords, language, tone, bucketKey, null, null);
+        return of(posting, ownWords, language, tone, bucketKey, null, null, null);
     }
 
     /**
@@ -85,8 +92,8 @@ public record RewriteContext(
      *               a session id for an anonymous caller
      */
     public static RewriteContext of(JobAnalysis posting, String ownWords,
-            String language, Tone tone, String bucketKey, java.util.UUID userId,
-            java.util.UUID jobId) {
+            String language, Tone tone, String bucketKey, String note,
+            java.util.UUID userId, java.util.UUID jobId) {
 
         var skills = new LinkedHashSet<String>();
         posting.requiredSkills().forEach(skill -> skills.add(canonical(skill)));
@@ -113,7 +120,8 @@ public record RewriteContext(
 
         return new RewriteContext(List.copyOf(skills), List.copyOf(written),
                 List.copyOf(focus), ownWords,
-                language, tone == null ? null : tone.wireValue(), bucketKey, userId, jobId);
+                language, tone == null ? null : tone.wireValue(), bucketKey,
+                note, userId, jobId);
     }
 
     private static String canonical(JobAnalysis.Skill skill) {
