@@ -359,7 +359,7 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(6)))
+                        .value(Matchers.aMapWithSize(7)))
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
@@ -368,17 +368,23 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.maxPages").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.language").exists())
-                // Bolum 44.4's token, sent by a caller with no account. Six and
-                // not five since Bolum 9's flow landed -- the count above is what
-                // makes this a guard, so it moves when a property is meant and
-                // fails when one is not.
+                // Bolum 44.4's token, sent by a caller with no account. Seven
+                // and not six since Bolum 18.7's emphasis landed -- the count
+                // above is what makes this a guard, so it moves when a property
+                // is meant and fails when one is not.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.challengeToken").exists())
                 // Bolum 34, opt-in.
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.coverLetter").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
-                        + ".properties.wantsCoverLetter").doesNotExist());
+                        + ".properties.wantsCoverLetter").doesNotExist())
+                // Bolum 18.7's directive, and its own derived getter kept off
+                // the wire by the same two annotations F-009 needed.
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.emphasize").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.emphasizeOrEmpty").doesNotExist());
     }
 
     @Test

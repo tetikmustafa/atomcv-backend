@@ -8,6 +8,7 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.generation.rewrite.AboutSynthesisService;
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.generation.rewrite.BulletRewriteService;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteContext;
 import com.mustafatetik.atomcv.generation.rewrite.RewriteOutcome;
@@ -119,6 +120,7 @@ public class JobSpecificGenerationService {
             Integer maxPages,
             String language,
             boolean coverLetter,
+            GenerationDirectives directives,
             ProgressSink progress,
             java.util.UUID jobId) {
 
@@ -191,8 +193,8 @@ public class JobSpecificGenerationService {
         // Faz B. The fifth query of the generation, and the only one general
         // mode does not make: tags are a scoring input, not part of the tree
         // that gets rendered (Bolum 52.2).
-        RelevanceScores scores =
-                relevance.scoreAgainst(tree, tags.labelsByAtom(profile), posting);
+        RelevanceScores scores = relevance.scoreAgainst(
+                tree, tags.labelsByAtom(profile), posting, directives.emphasize());
 
         var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
                 options.maxPages(), options.language(),

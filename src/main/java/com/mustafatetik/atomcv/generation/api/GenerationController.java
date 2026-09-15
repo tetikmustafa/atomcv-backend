@@ -214,7 +214,7 @@ public class GenerationController {
                 owner, allowanceFor(owner, http), callers.owned(),
                 request.jobDescription(), request.acknowledged(),
                 request.maxPages(), request.language(), request.wantsCoverLetter(),
-                idempotencyKey);
+                request.emphasizeOrEmpty(), idempotencyKey);
 
         Job job = switch (queued) {
             case Result.Ok<Job> ok -> ok.value();

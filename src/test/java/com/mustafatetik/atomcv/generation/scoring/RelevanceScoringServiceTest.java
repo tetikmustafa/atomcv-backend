@@ -37,7 +37,7 @@ class RelevanceScoringServiceTest {
     @Test
     void ahealthyServiceScoresWithTheEmbeddingComponent() {
         var embeddings = new StubProvider();
-        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting());
+        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting(), List.of());
 
         assertThat(scores.weights()).isEqualTo(ScoringWeights.DEFAULT);
         assertThat(embeddings.embedded).hasSize(1);
@@ -49,7 +49,7 @@ class RelevanceScoringServiceTest {
         var embeddings = new StubProvider();
         var posting = posting();
 
-        serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting);
+        serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting, List.of());
 
         assertThat(embeddings.embedded).containsExactly(posting.embeddingTarget());
     }
@@ -62,7 +62,7 @@ class RelevanceScoringServiceTest {
         var embeddings = new StubProvider();
         embeddings.healthy = false;
 
-        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting());
+        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting(), List.of());
 
         assertThat(scores.weights()).isEqualTo(ScoringWeights.WITHOUT_EMBEDDING);
         assertThat(embeddings.embedded).isEmpty();
@@ -79,7 +79,7 @@ class RelevanceScoringServiceTest {
         var embeddings = new StubProvider();
         embeddings.failOnEmbed = true;
 
-        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting());
+        var scores = serviceWith(embeddings).scoreAgainst(tree(), Map.of(), posting(), List.of());
 
         assertThat(scores.weights()).isEqualTo(ScoringWeights.WITHOUT_EMBEDDING);
         assertThat(scores.ranked()).isNotEmpty();
@@ -99,7 +99,7 @@ class RelevanceScoringServiceTest {
         embeddings.healthy = false;
 
         new RelevanceScoringService(embeddings, meters, CLOCK)
-                .scoreAgainst(tree(), Map.of(), posting());
+                .scoreAgainst(tree(), Map.of(), posting(), List.of());
 
         assertThat(meters.counter("generation.scoring.weights", "set", "without_embedding")
                 .count()).isEqualTo(1.0);
@@ -116,7 +116,7 @@ class RelevanceScoringServiceTest {
         inactive.setActive(false);
 
         var scores = serviceWith(new StubProvider())
-                .scoreAgainst(fixture.tree(), Map.of(), posting());
+                .scoreAgainst(fixture.tree(), Map.of(), posting(), List.of());
 
         assertThat(scores.byAtom()).containsKey(scored.getId());
         assertThat(scores.scoreOf(inactive, null)).isZero();
@@ -128,8 +128,60 @@ class RelevanceScoringServiceTest {
         var service = serviceWith(new StubProvider());
         var tree = tree();
 
-        assertThat(service.scoreAgainst(tree, Map.of(), posting()).ranked())
-                .isEqualTo(service.scoreAgainst(tree, Map.of(), posting()).ranked());
+        assertThat(service.scoreAgainst(tree, Map.of(), posting(), List.of()).ranked())
+                .isEqualTo(service.scoreAgainst(tree, Map.of(), posting(), List.of()).ranked());
+    }
+
+    /**
+     * Bolum 18.7's directive, doing something measurable.
+     *
+     * <p>Neither atom says a word the posting uses -- one is about Kafka, the
+     * other about design reviews -- so against the posting alone they score
+     * the same and the tie is broken by id, which is no ranking at all. Naming
+     * "kafka" is a person saying the posting forgot to.
+     *
+     * <p><strong>The formula is untouched.</strong> The term joins the
+     * posting's keywords and tags; the four weights of Bolum 19.1 are the same
+     * four. A directive changes the input to one generation, which is the
+     * whole reason Bolum 18.7 keeps it out of the cached analysis.
+     */
+    @Test
+    void anemphasisedTermLiftsTheAtomThatCarriesIt() {
+        var fixture = new Fixture();
+        var section = fixture.section();
+        var kafka = fixture.atom(section, "Moved the event bus onto Kafka");
+        fixture.atom(section, "Ran the weekly design review");
+        var service = serviceWith(new StubProvider());
+
+        var without = service.scoreAgainst(fixture.tree(), Map.of(), posting(), List.of());
+        var with = service.scoreAgainst(
+                fixture.tree(), Map.of(), posting(), List.of("kafka"));
+
+        assertThat(with.scoreOf(kafka, null))
+                .as("the term the person named is now one the ranking reads")
+                .isGreaterThan(without.scoreOf(kafka, null));
+    }
+
+    /**
+     * <strong>An emphasis nobody carries re-ranks nothing, and it does move
+     * the numbers.</strong> Bolum 19.2's keyword coverage is a fraction of the
+     * terms, so a term no atom carries enlarges the denominator and every
+     * score falls together -- which leaves the order exactly as it was.
+     *
+     * <p>Written because the first version of this test asserted the scores
+     * were unchanged and was wrong about the product rather than about the
+     * code. The claim worth making is the one a user would notice: emphasis
+     * re-orders a CV, it does not invent relevance that is not there.
+     */
+    @Test
+    void anemphasisNoAtomCarriesLeavesTheOrderAlone() {
+        var service = serviceWith(new StubProvider());
+        var tree = tree();
+
+        assertThat(service.scoreAgainst(tree, Map.of(), posting(), List.of("cobol")).ranked())
+                .extracting(ScoredAtom::atomId)
+                .isEqualTo(service.scoreAgainst(tree, Map.of(), posting(), List.of()).ranked()
+                        .stream().map(ScoredAtom::atomId).toList());
     }
 
     private static RelevanceScoringService serviceWith(EmbeddingProvider embeddings) {

@@ -50,8 +50,19 @@ public final class RelevanceScorer {
     public static List<ScoredAtom> rank(
             List<ScorableAtom> atoms, JobAnalysis posting, float[] postingVector,
             ScoringWeights weights) {
+        return rank(atoms, posting, postingVector, weights, List.of());
+    }
 
-        var target = new PostingTarget(posting);
+    /**
+     * @param emphasised what Bolum 18.7's directive asked to bring forward,
+     *                   already canonical. Empty for every generation nobody
+     *                   steered, which is nearly all of them
+     */
+    public static List<ScoredAtom> rank(
+            List<ScorableAtom> atoms, JobAnalysis posting, float[] postingVector,
+            ScoringWeights weights, List<String> emphasised) {
+
+        var target = new PostingTarget(posting, emphasised);
         return atoms.stream()
                 .map(atom -> score(atom, target, postingVector, weights))
                 .sorted(ScoredAtom.MOST_RELEVANT_FIRST)
@@ -233,9 +244,49 @@ public final class RelevanceScorer {
             Set<String> requiredSkills, Set<String> preferredSkills) {
 
         PostingTarget(JobAnalysis posting) {
-            this(tagsOf(posting), canonical(posting.keywords()),
+            this(posting, List.of());
+        }
+
+        /**
+         * <strong>Bolum 18.7's emphasis is a term, not a weight.</strong> What
+         * a person asks to bring forward joins the posting's own keywords and
+         * tags, and the formula of Bolum 19.1 is untouched -- the same four
+         * components with the same four weights, reading one larger set.
+         *
+         * <p>That is the whole of why it is safe. A new weight would change
+         * every score in the product and make {@code engine_version
+         * .scoringWeights} a lie for every generation before it; this changes
+         * the input to one generation, which is what a directive is
+         * (Bolum 18.7: the analysis is cached and shared, the directive is
+         * neither).
+         *
+         * <p>Both sets, because the two components answer different questions:
+         * the tag overlap asks whether this atom is about that, and the keyword
+         * coverage asks whether it says the word. A person naming a term means
+         * both.
+         *
+         * <p><strong>A term nobody carries still moves the numbers, and that
+         * is correct.</strong> Keyword coverage is a fraction of the terms
+         * (Bolum 19.2), so an unmatched one enlarges the denominator and every
+         * score falls together — which leaves the order exactly as it was.
+         * Emphasis re-orders a CV; it does not invent relevance that is not
+         * there.
+         */
+        PostingTarget(JobAnalysis posting, List<String> emphasised) {
+            this(union(tagsOf(posting), emphasised),
+                    union(canonical(posting.keywords()), emphasised),
                     canonicalSkills(posting.requiredSkills()),
                     canonicalSkills(posting.preferredSkills()));
+        }
+
+        /** Already canonical when it arrives: {@code GenerationDirectives} lowercases. */
+        private static Set<String> union(Set<String> posting, List<String> emphasised) {
+            if (emphasised.isEmpty()) {
+                return posting;
+            }
+            var both = new HashSet<>(posting);
+            both.addAll(emphasised);
+            return Set.copyOf(both);
         }
 
         /** Bolum 19.2: the domain, the keywords, and the title's own words. */

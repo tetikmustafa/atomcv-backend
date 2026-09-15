@@ -28,17 +28,30 @@ import java.util.UUID;
  * between two runs of one input would make Faz C look non-deterministic when
  * it is not (CLAUDE.md).
  */
-public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAtoms) {
+public record GenerationDirectives(
+        List<UUID> includeAtoms, List<UUID> excludeAtoms, List<String> emphasize) {
 
     private static final GenerationDirectives NONE =
-            new GenerationDirectives(List.of(), List.of());
+            new GenerationDirectives(List.of(), List.of(), List.of());
 
     private static final String INCLUDE = "includeAtoms";
     private static final String EXCLUDE = "excludeAtoms";
+    private static final String EMPHASIZE = "emphasize";
+
+    /** A term is a word or a short phrase; past that it is a sentence. */
+    private static final int MAX_TERM_LENGTH = 60;
+
+    /**
+     * Enough that a person can name what the posting missed, and few enough
+     * that the keyword component is still the posting's. Fifty terms against
+     * a posting's dozen would make the ranking the user's own list.
+     */
+    private static final int MAX_TERMS = 10;
 
     public GenerationDirectives {
         includeAtoms = distinct(includeAtoms);
         excludeAtoms = distinct(excludeAtoms);
+        emphasize = terms(emphasize);
 
         // An atom cannot be both asked for and refused. The parse in Faz G and
         // the toggle endpoint both have to answer this before it gets here --
@@ -57,8 +70,18 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
         return NONE;
     }
 
+    /** The two-id form, for the callers that only move atoms (Faz G, the toggle). */
+    public GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAtoms) {
+        this(includeAtoms, excludeAtoms, List.of());
+    }
+
+    /** What a person asked to be brought forward (Bolum 18.7). */
+    public static GenerationDirectives emphasising(List<String> terms) {
+        return new GenerationDirectives(List.of(), List.of(), terms);
+    }
+
     public boolean isEmpty() {
-        return includeAtoms.isEmpty() && excludeAtoms.isEmpty();
+        return includeAtoms.isEmpty() && excludeAtoms.isEmpty() && emphasize.isEmpty();
     }
 
     /**
@@ -93,6 +116,7 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
         Map<String, Object> stored = new LinkedHashMap<>();
         stored.put(INCLUDE, includeAtoms.stream().map(UUID::toString).toList());
         stored.put(EXCLUDE, excludeAtoms.stream().map(UUID::toString).toList());
+        stored.put(EMPHASIZE, emphasize);
         return stored;
     }
 
@@ -101,7 +125,8 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
         if (stored == null || stored.isEmpty()) {
             return NONE;
         }
-        return new GenerationDirectives(idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE));
+        return new GenerationDirectives(
+                idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE), termsIn(stored));
     }
 
     /** This, plus one more edit. An edit is the sum of the edits before it. */
@@ -118,7 +143,55 @@ public record GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAt
         excluded.removeAll(later.includeAtoms);
         included.addAll(later.includeAtoms);
         excluded.addAll(later.excludeAtoms);
-        return new GenerationDirectives(List.copyOf(included), List.copyOf(excluded));
+
+        // Emphasis is not a statement about one atom, so it does not cancel
+        // the way an inclusion cancels an exclusion. An edit that names no
+        // terms leaves the ones the generation was made with standing: the
+        // person said "bring microservices forward" once, about this CV.
+        var emphasised = new LinkedHashSet<>(emphasize);
+        emphasised.addAll(later.emphasize);
+        return new GenerationDirectives(
+                List.copyOf(included), List.copyOf(excluded), List.copyOf(emphasised));
+    }
+
+    /**
+     * Canonical, deduplicated and capped, and it happens here so that every
+     * caller gets the same list.
+     *
+     * <p>Lowercased with {@code Locale.ROOT} (absolute rule 7) because Faz B
+     * compares against a canonical set and a Turkish default locale writes
+     * "sqi" for "SQL" -- a term nobody would ever match again.
+     */
+    private static List<String> terms(List<String> requested) {
+        if (requested == null) {
+            return List.of();
+        }
+        var kept = new LinkedHashSet<String>();
+        for (String term : requested) {
+            if (term == null) {
+                continue;
+            }
+            String canonical = term.strip().toLowerCase(java.util.Locale.ROOT);
+            if (!canonical.isEmpty() && canonical.length() <= MAX_TERM_LENGTH) {
+                kept.add(canonical);
+            }
+            if (kept.size() == MAX_TERMS) {
+                break;
+            }
+        }
+        return List.copyOf(kept);
+    }
+
+    private static List<String> termsIn(Map<String, Object> stored) {
+        Object value = stored.get(EMPHASIZE);
+        if (value == null) {
+            return List.of();
+        }
+        if (!(value instanceof List<?> items)) {
+            throw new IllegalArgumentException(
+                    EMPHASIZE + " is a list, got " + value.getClass());
+        }
+        return items.stream().map(String::valueOf).toList();
     }
 
     private static List<UUID> idsIn(Map<String, Object> stored, String key) {

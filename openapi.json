@@ -3963,6 +3963,18 @@
             "type" : "boolean",
             "default" : false,
             "description" : "Write a covering letter alongside the CV (Bolum 34). Off by default: it is a second LLM call, and most generations do not want one. It can be asked for afterwards instead, at POST /generations/{id}/cover-letter/regenerate."
+          },
+          "emphasize" : {
+            "type" : "array",
+            "description" : "Terms to bring forward, as Bolum 18.7's directive. They join\nthe posting's own keywords and tags for this one generation --\nthe formula of Bolum 19.1 is untouched, it reads one larger\nset. Use it when the posting does not say a word you know the\nwork is about.\n\nIts own field and not part of the posting, because the\nanalysis of a posting is cached by its hash and shared between\neveryone who pastes it; a directive belongs to one person and\none run.\n\nStored trimmed and lowercased. At most ten, each at most 60\ncharacters -- past that the ranking would be the reader's list\nrather than the posting's.",
+            "example" : [ "microservices", "observability" ],
+            "items" : {
+              "type" : "string",
+              "maxLength" : 60,
+              "minLength" : 0
+            },
+            "maxItems" : 10,
+            "minItems" : 0
           }
         }
       },
