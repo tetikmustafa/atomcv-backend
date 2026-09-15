@@ -10,56 +10,72 @@ aşağıda.
 
 ---
 
-## Denetim — spec'in tamamı koda karşı (2026-09-15)
+## Denetim — ikinci tur, spec'in tamamı koda karşı (2026-09-16)
 
-Spec baştan sona okundu, kodla karşılaştırıldı, ve **açık kalan maddelerin
-hepsi kapatıldı**. Kalıcı kararlar `spec/`'e işlendi ve buradan silindi
-(§ 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1,
-§ 48.5, § 51.3, § 52.4, § 52.5, § 5.1). Aşağıdakiler kalıcı değil, **canlı**.
+Birincisi (2026-09-15) `archive/denetim-2026-09-15.md`'de. Bu tur aynı işi
+**bağımsız olarak** tekrarladı ve **sekiz madde buldu** — altısı kodda, ikisi
+dokümanda. Hepsi kapandı.
 
-**İnenler — ilk tur:** arşivleme ucu, atom etiketleri, `/api/v1/warmup`,
-commit'li `openapi.json` + iki CI işi, `emphasize`, HTML renderer,
-`format=source`, GitHub içe aktarımı, CDS, Umami, `generation.pages.drift`,
-golden `jobs/` + `content-formats/`.
+**En ağırı, ve ürünün manşet iddialarından biri: İlke 7 telde yoktu.** "Her
+seçimin gerekçesi gösterilir — skor, eşleşen keyword'ler, red nedeni" diyor;
+üçü de hesaplanıyordu, hiçbiri yayımlanmıyordu. `SelectionLine` `atomId`,
+`text`, `onPage` taşıyordu: **gerekçesi bildirilmemiş bir sıralama**, ki İlke 7
+tam olarak o şekli dışlamak için var.
 
-**İnenler — ikinci tur:** § 21.8'in çeviri adımı, § 32.5'in pivotu, § 30.6'nın
-`LISTEN/NOTIFY`'ı, § 48.3'ün beş metrik satırı, § 48.5'in replay'i ve formatı,
-golden set'in etiketleri. Frontend'e `B-100`-`B-107`.
-
-**En pahalı bulgu, ve kapandı:** `tags`/`atom_tags` tablolarına hiçbir şey
-yazmıyordu — Faz B'nin etiket bileşeni ham skorun dörtte biri (§ 19.1) ve her
-atom için yapısal olarak sıfırdı. Hiçbir test düşmez; bütün skorlar birlikte
-düşer. Yazım ilk turda indi; golden fixture'lar ikinci turda etiket kazandı ve
-**`PhaseDReachTest` yeniden ölçüldü: 0.0959 → 0.1259.**
-
-> **Ve bir şey daha öğretti: etiket sözlüğü ilanınkiyle kesişmezse hiçbir şey
-> ölçmez.** İlk deneme atomları yalnız kaba temalarla etiketledi (`backend`,
-> `devops`) ve **hiçbir sayı binde bir oynamadı** — skorlayıcı etiketi ilanın
-> kendi dağarcığına (alan + anahtar kelimeler + başlığın sözcükleri) karşı
-> Jaccard'la ölçüyor, yani bir etiket ancak birebir o dizgelerden biriyse
-> katkı yapıyor. Tire aynı meselenin öbür yüzü: profil `spring-boot` saklıyor,
-> ilan "Spring Boot" yazıyor. Etiketler artık ilanın yazdığı gibi yazılıyor.
+> **`matchedKeywords` yayımlanabilmek için önce hesaplanmak zorundaydı**, ve
+> bu bir kolon değil bir *terim* meselesiydi: Faz B'nin iki karşılaştırması
+> eşleşmeyi zaten buluyor ve yalnız **sayısını** tutuyordu. § 14.5 ve § 20.5
+> alanı ikisi de listeliyor. Sıralı yazılıyor — okunduğu kümeler `Set.copyOf`
+> sonucu, yani sırasız bir liste runner'da düşer ve flake gibi okunurdu.
 >
-> **Terimin tavanı da yazıldı:** Jaccard'ın paydası birleşim, birleşim de
-> ilanın tüm dağarcığı (bu ilanda 26 dizge). Dört etiketin dördü de tutsa
-> 4/26. Terim canlı ama küçük, ve bu ölçünün seçiminin sonucu — fixture'ın
-> değil.
+> **Skor bilerek inmedi.** `SelectionViewResponse`'ın javadoc'u § 23.3'e
+> dayanan gerekçeyi zaten yazmıştı ve gerekçe sağlam; denetimin işi onu ezmek
+> değil, karşı argümanı olmayan öteki ikisini kapatmaktı. Ayrım § 35.3.1'de.
 
-**İkinci en pahalı, ve hiçbir lane'de görünmezdi:** nginx'in CSP'si Turnstile'ı
-blokluyordu. `ContentSecurityPolicyTest` muhafız, ve `nginx.conf` artık bir
-test girdisi — olmadan, ekilen kusur görevi UP-TO-DATE bırakıp testi başarı
-raporlattı. **Aynı tuzağa üçüncü kez düşülmedi:** `docker/latex/Dockerfile` ve
-`CompileServer.java` da girdi olarak ilan edildi (`LatexImageTest`).
+**Yedeklemenin üç bacağı da eksikti, ve üçü tek bir cümleyi yalanlıyordu.**
+§ 49.5 "~5 dakika veri kaybı" yayımlıyor; gerçekte 03:00'a kadardı.
+`wal_level=replica` yerindeydi ve **arşivleme yoktu** — yapılandırılmış
+görünen, açılan, hiçbir şey arşivlemeyen bir veritabanı. İkinci sağlayıcı
+(§ 49.1) yoktu, saklama tek `7d` idi.
 
-**Kendi eklediğim kusur, ve kaydı burada duruyor:** § 21.8'in çeviri adımı
-sanal iplikte altmışa kadar çağrı yapıyor ve `VariantTranslationService`
-`@Transactional` idi — havuz on bağlantı, çağrı otuz saniye, yani elli iplik
-henüz başlamamış bir çağrı için bağlantı bekler, hepsi düşer, ve hep-ya-hiç
-kuralı **her çok dilli üretimi** geri düşürürdü. Yazma `TranslationWriter`'a
-taşındı (**ayrı bean olmak zorunda**: bir sınıfın kendine yaptığı
-`@Transactional` çağrısı proxy'lenmiyor, yani davranış aynı kalır görünüşü
-değişirdi) ve bir ArchUnit kuralı tutuyor: `@Transactional` bir sınıf
-`ProviderChain`'i çağıramaz.
+> **Ve WAL tek başına yetmezdi.** `pg_dump` mantıksal, WAL fiziksel bir temele
+> oynanır: ikisini yan yana koymak hiçbir prosedürün uygulayamayacağı
+> segmentler göndermek olurdu — *logda var olan, gerçekte olmayan* bir
+> kurtarma penceresi. Haftalık `pg_basebackup` eklendi, ve haftalık-yedi-güne
+> bir tesadüf değil kısıt.
+>
+> **`restore.sh` § 49.4'ün anonim satır silmesini hiç yapmıyordu.** Bir restore,
+> iki saat vaat edilmiş CV'leri altı ayla geri getiriyordu — scratch
+> veritabanında da, ki orası kimsenin izlemediği bir yer.
+
+**Circuit breaker yoktu, ve yokluğu bir kesinti değil bir vergiydi.** § 5.1
+Resilience4j'i üç iş için adlandırıyor; kütüphane hiçbir yerde yoktu. Retry ve
+timeout bu arada başka türlü cevaplanmıştı — kesici cevaplanmamıştı, ve
+zincirin başındaki karanlık bir sağlayıcıya **her üretim** 30 saniyenin
+tamamını ödüyordu. Şema uyumsuzluğu devreyi açmıyor: o prompt'un kusuru.
+
+**Beş sağlayıcı adaptöründen ikisi vardı** (§ 27.2 ve dört yer daha). Üçü
+yazıldı. **Dağıtımda hiçbir şey değişmiyor** — anahtarsız adaptör
+`isAvailable()` false ve zincir onu sessizce atlıyor, ki yazmanın bedelsiz
+olmasının sebebi o. § 46.5'in örnek `.env`'i bu arada
+`LLM_CHAIN_MID=openai,anthropic,openrouter` diyordu: kopyalansaydı iki uyarı
+basıp o kademeyi tek çalışan halkaya indirirdi.
+
+**JSON ayrıştırıcı limitleri (§ 42.4) hiç kurulmamıştı** — Jackson'ın kendi
+varsayılanları ~20 kat gevşek. **Ve `.env.example`'da `AGE_PUBLIC_KEY` hiç
+yoktu**, yani `backup.sh` kopyalanan dosyayla hiç çalışmıyordu; `EnvExampleTest`
+artık `scripts/*.sh`'ı da okuyucu sayıyor.
+
+**İki döküman bulgusu:** § 35.2.1 beş ucun "yok ve olmamalı" olduğunu
+savunuyordu, uçlar bir aşamadır varken — blok kendi çıkış koşulunu yazmış,
+koşulu kontrol eden hiçbir şey olmamıştı. Ve **EK D monolitte kalmıştı**: spec
+ona 75 kez atıf yapıyor, `INDEX.md` rotalamıyordu, `sync-spec.sh` yalnız
+`docs/spec/**` kopyaladığı için **frontend'in okuduğu kopyada 75 atfın hepsi
+boşa düşüyordu.** `spec/18-appendix-d.md`'ye taşındı.
+
+**Test:** 1869 birim · 580 entegrasyon · 0 hata. Frontend'e `B-108`.
+
+---
 
 **Tamir etmeye kalkma — bilinçli:**
 
@@ -146,7 +162,12 @@ değişirdi) ve bir ArchUnit kuralı tutuyor: `@Transactional` bir sınıf
 kolon, yazan bir kod demek değil** · **bir fixture eklemek bir terimi ölçülür
 kılmaz — kesiştiğini ölç** · **bir şartname parçacığının çalıştığını varsayma,
 motora sor** · **kendi eklediğin fan-out'un neyi tuttuğuna bak** ·
-**`git checkout --` commit'siz işi de götürür**.
+**`git checkout --` commit'siz işi de götürür** · **bir bloğun kendi çıkış
+koşulunu yazması onu silmiyor — koşulu kontrol eden bir şey yoksa** ·
+**hesaplanıp atılan bir değer, yayımlanmış sayılmaz** · **yarım bir ayar
+(`wal_level` ama `archive_mode` yok) hiç ayar olmamasından daha görünmez** ·
+**bir denetim kapanmış bir denetimi tekrarlamaya değer: ikincisi sekiz madde
+buldu**.
 
 ---
 
@@ -163,9 +184,10 @@ motora sor** · **kendi eklediğin fan-out'un neyi tuttuğuna bak** ·
 | dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
+| denetim · birinci tur | `denetim-2026-09-15.md` | § 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1, § 48.5, § 51.3, § 52.4, § 52.5, § 5.1 |
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2, § 24.2.1 |
 | Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
 | Aşama 4 · e-postalar, açık kaynak | `stage-4-emails.md` | § 57.7 |
 | Aşama 4 · `F-031`-`F-033` | `stage-4-handoff-answers.md` | § 24.2, § 24.2.1, § 35.3, § 35.8.1-2 |
 
-Frontend aksiyonları: `B-055`-`B-107`.
+Frontend aksiyonları: `B-055`-`B-108`.
