@@ -77,7 +77,16 @@ public record GenerationRequest(
                 rather than the posting's.""",
                 example = "[\"microservices\", \"observability\"]")
         @Size(max = 10)
-        List<@Size(max = 60) String> emphasize) {
+        List<@Size(max = 60) String> emphasize,
+
+        @Schema(description = """
+                A set of appearance settings saved under
+                `/api/v1/customizations`, to render this one with
+                (Bolum 14.4). Absent uses the profile's own working settings,
+                which is what nearly every request means.
+
+                A set belonging to somebody else is not found.""")
+        java.util.UUID customizationId) {
 
     /** Never null downstream: absent and empty mean the same thing here. */
     @JsonIgnore

@@ -508,6 +508,61 @@ class JobSpecificCvIT extends AbstractLatexTest {
         }
     }
 
+    /**
+     * Bolum 14.4's {@code options.customizationId}, all the way to the page.
+     *
+     * <p>Without this the five endpoints of Bolum 35.2 would be a knob wired to
+     * nothing: a person could keep a set and never render with it. The check is
+     * the stored snapshot, because Bolum 14.5 writes the settings themselves
+     * rather than an id -- which is also why deleting the set afterwards leaves
+     * the document re-renderable exactly as it was sent.
+     */
+    @Test
+    void agenerationRendersWithTheSetItNamed() throws Exception {
+        seedCareer();
+
+        String customizationId = JsonPath.read(mvc.perform(post("/api/v1/customizations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "name": "Dense", "baseTemplateId": "compact",
+                                  "fontSizePt": 9.5, "marginInches": 0.45 }"""))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString(), "$.id");
+
+        String accepted = mvc.perform(post("/api/v1/generations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"jobDescription\":" + quoted(POSTING)
+                                + ",\"customizationId\":\"" + customizationId + "\"}"))
+                .andExpect(status().isAccepted())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(worker().runOne()).isTrue();
+        String generationId = completedGenerationId(JsonPath.read(accepted, "$.jobId"));
+
+        // Read field by field rather than as text: `jsonb::text` decides its
+        // own spacing, and an assertion about spacing is an assertion about
+        // Postgres.
+        assertThat(jdbc.queryForObject("""
+                SELECT selection_state -> 'customization' ->> 'baseTemplateId'
+                FROM generations WHERE id = ?
+                """, String.class, java.util.UUID.fromString(generationId)))
+                .as("the snapshot carries the template that was asked for")
+                .isEqualTo("compact");
+
+        assertThat(jdbc.queryForObject("""
+                SELECT (selection_state -> 'customization' ->> 'fontSizePt')::float
+                FROM generations WHERE id = ?
+                """, Double.class, java.util.UUID.fromString(generationId)))
+                .as("and the sliders, not the template's defaults")
+                .isEqualTo(9.5);
+
+        assertThat(jdbc.queryForObject("""
+                SELECT (selection_state -> 'customization' ->> 'marginInches')::float
+                FROM generations WHERE id = ?
+                """, Double.class, java.util.UUID.fromString(generationId)))
+                .isEqualTo(0.45);
+    }
+
     private String enqueue() throws Exception {
         String accepted = mvc.perform(post("/api/v1/generations")
                         .contentType(MediaType.APPLICATION_JSON)

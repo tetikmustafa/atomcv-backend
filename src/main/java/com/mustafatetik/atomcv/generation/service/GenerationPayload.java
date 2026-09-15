@@ -25,6 +25,7 @@ public record GenerationPayload(
         String language,
         boolean coverLetter,
         java.util.List<String> emphasize,
+        java.util.UUID customizationId,
         QuotaSubject allowance) {
 
     private static final String JOB_DESCRIPTION = "jobDescription";
@@ -33,6 +34,7 @@ public record GenerationPayload(
     private static final String LANGUAGE = "language";
     private static final String COVER_LETTER = "coverLetter";
     private static final String EMPHASIZE = "emphasize";
+    private static final String CUSTOMIZATION_ID = "customizationId";
     private static final String ALLOWANCE_TYPE = "allowanceType";
     private static final String ALLOWANCE_ID = "allowanceId";
 
@@ -48,6 +50,7 @@ public record GenerationPayload(
         payload.put(LANGUAGE, language);
         payload.put(COVER_LETTER, coverLetter);
         payload.put(EMPHASIZE, emphasize);
+        payload.put(CUSTOMIZATION_ID, customizationId == null ? null : customizationId.toString());
         // Whose ceiling this took, so the worker can give it back -- the shape
         // ProfileExtractionPayload already uses, for the same reason. An account
         // pays by user id and an anonymous caller by address (Bolum 44.1), and
@@ -72,6 +75,10 @@ public record GenerationPayload(
                 // Absent on a job queued by the release before this one, and
                 // absent is the ordinary case anyway: nearly nobody steers.
                 termsIn(payload),
+                // Absent on a job queued before this field, and absent is the
+                // ordinary case: a request that names no set gets the profile's
+                // own working settings (Bolum 33.2).
+                uuidIn(payload, CUSTOMIZATION_ID),
                 allowanceIn(payload));
     }
 
@@ -108,6 +115,18 @@ public record GenerationPayload(
                     EMPHASIZE + " is a list, got " + value.getClass());
         }
         return items.stream().map(String::valueOf).toList();
+    }
+
+    private static java.util.UUID uuidIn(Map<String, Object> payload, String key) {
+        Object value = payload.get(key);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return java.util.UUID.fromString(String.valueOf(value));
+        } catch (IllegalArgumentException notAnId) {
+            throw new IllegalArgumentException(key + " is a uuid, got " + value);
+        }
     }
 
     private static String string(Map<String, Object> payload, String key) {

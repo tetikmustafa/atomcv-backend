@@ -111,7 +111,9 @@ class JobSpecificGenerationServiceTest {
                         .map(capacity -> new com.mustafatetik.atomcv.rendering.measurement
                                 .Capacities.Resolved(capacity, false)));
         service = new JobSpecificGenerationService(assembler, tags, analysis,
-                relevance, renderCosts, rewrites, letters, pipeline, capacities,
+                relevance, renderCosts, rewrites,
+                mock(com.mustafatetik.atomcv.rendering.service.CustomizationService.class),
+                letters, pipeline, capacities,
                 mock(com.mustafatetik.atomcv.rendering.measurement.TemplateMeasurements.class));
 
         head = new Profile(USER);
@@ -129,7 +131,7 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
@@ -149,7 +151,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        var result = service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
@@ -177,7 +179,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
@@ -197,7 +199,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(subject(), POSTING, true, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, true, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, null);
     }
@@ -219,7 +221,7 @@ class JobSpecificGenerationServiceTest {
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
         service.generateForJob(subject(), POSTING, true, null, null, false,
-                GenerationDirectives.none(), ProgressSink.NONE, jobId);
+                null, GenerationDirectives.none(), ProgressSink.NONE, jobId);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, jobId);
     }
@@ -255,7 +257,7 @@ class JobSpecificGenerationServiceTest {
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
         verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
@@ -285,7 +287,7 @@ class JobSpecificGenerationServiceTest {
                 new RewriteTally(Map.of(AboutSynthesisService.PROMPT_ID, 1), Map.of(), 0)));
 
         var made = service.generateForJob(
-                subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(AboutSynthesisService.PROMPT_ID)
@@ -304,7 +306,7 @@ class JobSpecificGenerationServiceTest {
                         Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 2), 0)));
 
         var made = service.generateForJob(
-                subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(BulletRewriteService.PROMPT_ID);
@@ -340,7 +342,7 @@ class JobSpecificGenerationServiceTest {
     void nocoverLetterIsWrittenUnlessItWasAskedFor() {
         aGenerationThatReachesThePipeline();
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
@@ -357,7 +359,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(null);
 
         service.generateForJob(subject(), POSTING, false, null, null, true,
-                GenerationDirectives.none(), ProgressSink.NONE, null);
+                null, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
