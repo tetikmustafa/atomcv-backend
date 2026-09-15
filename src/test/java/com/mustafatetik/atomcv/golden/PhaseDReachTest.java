@@ -86,9 +86,9 @@ class PhaseDReachTest {
     private static final JobAnalysis POSTING = analysis();
 
     /**
-     * The degraded mode of Bolum 28.4, which is the mode every test lane and
-     * every un-embedded atom runs in. Bolum 28.4 calls it a drop in quality;
-     * for Faz D it is not a drop, it is off.
+     * The degraded mode, which is the mode every test lane and every
+     * un-embedded atom runs in. It is called a drop in quality; for Faz D it
+     * is not a drop, it is off.
      */
     @Test
     void withoutEmbeddingsNoAtomInTheBestMatchedPairReachesTheFloor() {

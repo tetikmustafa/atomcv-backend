@@ -50,9 +50,9 @@ class LlmPricingAuditTest {
     }
 
     /**
-     * Bolum 27.3 makes a provider with no model unavailable and never calls
-     * it, so it is not a gap in the table — warning about it would train the
-     * operator to skip the line.
+     * A provider with no model is unavailable and never called, so it is not a
+     * gap in the table — warning about it would train the operator to skip the
+     * line.
      */
     @Test
     void aproviderWithNoModelIsNotAGapInTheTable() {

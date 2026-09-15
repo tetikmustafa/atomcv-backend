@@ -47,7 +47,7 @@ public record VariantPatchRequest(
         // service-layer caller, and this one is for the wire (F-021).
         @AssertFalse
         @Schema(description = "Send `false` to hand a wording back: it stops being "
-                + "yours, and a stale one is queued for regeneration (Bolum 32.2's "
+                + "yours, and a stale one is queued for regeneration (the "
                 + "\"regenerate\" button). `true` is refused — a wording becomes "
                 + "yours by writing words, never by claiming it.")
         Boolean userEdited) {

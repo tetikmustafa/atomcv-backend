@@ -57,8 +57,8 @@ class MagicLinkEmailTest {
 
     /**
      * Both parts carry the link. A text-only message is filtered more often,
-     * and the clients that refuse HTML are the same corporate gateways
-     * Bolum 40.3 warns about.
+     * and the clients that refuse HTML are the same corporate gateways that
+     * prefetch links.
      */
     @Test
     void theLinkIsInBothPartsAndTheLifetimeIsStated() {

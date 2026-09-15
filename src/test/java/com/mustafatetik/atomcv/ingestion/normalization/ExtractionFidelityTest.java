@@ -8,7 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * P3 on the ingestion side, against the two inventions that reached a real CV.
+ * The rule against fabrication on the ingestion side, against the two
+ * inventions that reached a real CV.
  *
  * <p>Both are quoted from the document that produced them, so this cannot pass
  * by agreeing with a paraphrase of itself: the source lines are the ones in the

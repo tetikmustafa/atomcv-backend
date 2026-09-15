@@ -65,7 +65,7 @@ public class GenerationEnqueueService {
     }
 
     /**
-     * @param idempotencyKey the request header, or null. Bolum 30.7: the same
+     * @param idempotencyKey the request header, or null. The same
      *                       key from the same user is the same job, so a
      *                       double click produces one generation rather than
      *                       two identical ones a second apart.

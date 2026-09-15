@@ -31,7 +31,7 @@ public record TemplateMeasurementPayload(TemplateCustomization customization) {
      *
      * <p>The accent colour is not written: it moves no box, so it is not part
      * of what is being measured and not part of the key the answer is filed
-     * under (Bolum 33.1, layer A).
+     * under: colour is layer A.
      */
     public Map<String, Object> toMap() {
         Map<String, Object> payload = new LinkedHashMap<>();

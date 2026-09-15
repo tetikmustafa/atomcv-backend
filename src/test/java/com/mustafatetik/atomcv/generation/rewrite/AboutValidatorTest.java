@@ -38,9 +38,9 @@ class AboutValidatorTest {
     }
 
     /**
-     * <strong>The reason Bolum 21.6.1 gives, applied here.</strong> A skill
-     * the person wrote about themselves and the extraction never listed is
-     * theirs to claim; refusing it would be an outage dressed as a guard.
+     * <strong>The bullet check's reason, applied here.</strong> A skill the
+     * person wrote about themselves and the extraction never listed is theirs
+     * to claim; refusing it would be an outage dressed as a guard.
      */
     @Test
     void atechnologyThePersonWroteAboutThemselvesIsTheirsToClaim() {

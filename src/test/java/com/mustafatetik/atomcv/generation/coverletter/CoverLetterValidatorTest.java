@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 34.4 — the six checks, and why they are stricter than Faz D's.
+ * The six checks, and why they are stricter than Faz D's.
  *
  * <p>A refused rewrite prints the person's own sentence. A refused letter
  * prints nothing, so every check here has to be against a closed set: a false

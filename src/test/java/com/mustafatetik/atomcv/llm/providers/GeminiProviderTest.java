@@ -68,7 +68,7 @@ class GeminiProviderTest {
         server.stop(0);
     }
 
-    // ── Bolum 27.3: no key is a silent skip ───────────────────────────────
+    // ── No key is a silent skip ──────────────────────────────────────────
 
     @Test
     void aProviderWithNoKeyIsUnavailableRatherThanFailing() {

@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
- * One job somebody applied to (Bolum 13, the tracking).
+ * One job somebody applied to.
  *
  * <p>The table is in {@code V1}; this is the mapping, and there is no
  * migration (absolute rule 2). It was written before anything used it, which
@@ -26,11 +26,11 @@ import org.hibernate.annotations.CreationTimestamp;
  * keeping. A row whose generation is gone still says where they applied and
  * what happened.
  *
- * <p><strong>No PDF here, and none needed.</strong> Bolum 55 pairs tracking
- * with archiving and the archive is an R2 question this does not wait on: a
- * generation re-renders from its own {@code content_snapshot}, which
- * EK D.6.3 already describes as always possible. What a person wants back is
- * the document they sent, and that is reachable through the link above.
+ * <p><strong>No PDF here, and none needed.</strong> Tracking is paired with
+ * archiving and the archive is an R2 question this does not wait on: a
+ * generation re-renders from its own {@code content_snapshot}, which is always
+ * possible. What a person wants back is the document they sent, and that is
+ * reachable through the link above.
  *
  * <p>{@code @Version}, because this is the one resource a person edits in
  * place. The {@code If-Match} is enforced at the endpoint and this is the

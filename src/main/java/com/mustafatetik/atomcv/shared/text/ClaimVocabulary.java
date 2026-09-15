@@ -79,13 +79,13 @@ public final class ClaimVocabulary {
      * allowed to draw on, so a name the person actually wrote is always
      * permitted and only an invention is left.
      *
-     * <p>A token counts as a name when its shape says so and a sentence's first
-     * word never does: an internal capital ({@code PyTorch}, {@code MySQL}), a
-     * dot, plus or hash between characters ({@code Node.js}, {@code C++}), a
-     * digit against letters ({@code S3}), or a capital that is not where a
-     * sentence begins. False positives cost a discarded rewrite and the
-     * person's own wording in its place, which is the direction P3 asks to
-     * fail in.
+     * <p>A token counts as a name when its shape says so and a sentence's
+     * first word never does: an internal capital ({@code PyTorch}, {@code
+     * MySQL}), a dot, plus or hash between characters ({@code Node.js}, {@code
+     * C++}), a digit against letters ({@code S3}), or a capital that is not
+     * where a sentence begins. False positives cost a discarded rewrite and
+     * the person's own wording in its place, which is the direction to fail
+     * in.
      */
     public static Set<String> introducedNames(String answer, Collection<String> sources) {
         if (answer == null || answer.isBlank()) {

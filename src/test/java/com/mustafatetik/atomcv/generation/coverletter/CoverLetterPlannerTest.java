@@ -25,7 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 34.2 — the letter is the narrative version of the page.
+ * The letter is the narrative version of the page.
  *
  * <p>Which is a constraint before it is a feature: everything the letter is
  * allowed to say is collected from the atoms selection <em>kept</em>, so a
@@ -52,7 +52,7 @@ class CoverLetterPlannerTest {
                         "Kept the wiki tidy");
     }
 
-    /** Bolum 34.3 asks for two or three, and three is the cap. */
+    /** Two or three are asked for, and three is the cap. */
     @Test
     void atmostThreePiecesOfEvidenceAreCarried() {
         var fixture = new Fixture();

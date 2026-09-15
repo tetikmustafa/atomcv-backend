@@ -90,10 +90,10 @@ public class FeedbackService {
 
     /**
      * @param rating         {@code 1} or {@code -1}
-     * @param category       one of Bolum 13's five, or null
+     * @param category one of the five, or null
      * @param comment        what they wrote, or null. Stored, never logged
      *                       (absolute rule 4)
-     * @param contentGranted Bolum 48.4's box. Ticking it opens forty-eight
+     * @param contentGranted the box. Ticking it opens forty-eight
      *                       hours; unticking it closes them again, which is
      *                       what makes it a consent rather than a switch that
      *                       only goes one way

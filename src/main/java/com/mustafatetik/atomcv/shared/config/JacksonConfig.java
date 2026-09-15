@@ -42,7 +42,7 @@ public class JacksonConfig {
     }
 
     /**
-     * Narrows the parser to the limits of Bolum 42.4.
+     * Narrows the parser to the limits this API actually needs.
      *
      * <p>Jackson ships defaults for both — 1,000 and 20,000,000 — so this is
      * not the difference between a guard and none. It is the difference

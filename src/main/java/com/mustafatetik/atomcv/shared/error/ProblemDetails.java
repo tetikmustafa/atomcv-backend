@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.springframework.http.ProblemDetail;
 
 /**
- * Turns a {@link UserFacingError} into the RFC 7807 body of Bolum 35.4.
+ * Turns a {@link UserFacingError} into an RFC 7807 body.
  *
  * <p>{@code title} and {@code type} are derived from the code rather than
  * listed separately. RFC 7807 wants a title that is stable across occurrences,

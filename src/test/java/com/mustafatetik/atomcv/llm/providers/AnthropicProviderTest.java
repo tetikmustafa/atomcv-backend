@@ -126,8 +126,8 @@ class AnthropicProviderTest {
 
     /**
      * The system prompt is a top-level field, not a message with a role.
-     * Bolum 18.3 separates instructions from data on purpose; here the API does
-     * it structurally, and sending the system half as a message would put the
+     * Instructions and data are separated on purpose; here the API does it
+     * structurally, and sending the system half as a message would put the
      * instructions inside the fence.
      */
     @Test

@@ -73,7 +73,7 @@ public class AccountController {
      * about a CV would refuse a change about email. This one belongs to the
      * account, which is also the only thing that has an address.
      */
-    @Operation(operationId = "updateAccountSettings", summary = "Turn the optional emails on or off (Bolum 57.7)")
+    @Operation(operationId = "updateAccountSettings", summary = "Turn the optional emails on or off")
     @ApiResponse(responseCode = "200", description = "The value as it now stands")
     @PatchMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)

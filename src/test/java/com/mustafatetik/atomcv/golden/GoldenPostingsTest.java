@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * The heuristics, against the postings of Bolum 51.3.
+ * The heuristics, against the golden postings.
  *
  * <p><strong>Why these and not the ones already in
  * {@code JobDescriptionPreflightTest}.</strong> Those inputs were written by
@@ -25,13 +25,13 @@ import org.junit.jupiter.params.provider.MethodSource;
  * of them has found a real customer rather than a bad test.
  *
  * <p><strong>Seven of the nine are accepted, and that is the point.</strong>
- * Bolum 18.1 is a door that is meant to be almost always open — it refuses the
- * two shapes nobody can analyse and asks about everything else. A gate that
- * turned away a Turkish posting, a bilingual one, one with no requirements
- * list, or one carrying an injection attempt would be worse than no gate at
- * all: the injection is caught by the layers reading the model's
- * <em>answer</em>, and refusing the text at the door would refuse real
- * postings that merely quote a system message.
+ * The preflight is a door meant to be almost always open — it refuses the two
+ * shapes nobody can analyse and asks about everything else. A gate that turned
+ * away a Turkish posting, a bilingual one, one with no requirements list, or
+ * one carrying an injection attempt would be worse than no gate at all: the
+ * injection is caught by the layers reading the model's <em>answer</em>, and
+ * refusing the text at the door would refuse real postings that merely quote a
+ * system message.
  *
  * <p>The order of the checks is what {@code very_long_corporate} holds: twelve
  * thousand characters of real prose repeat themselves enough to look

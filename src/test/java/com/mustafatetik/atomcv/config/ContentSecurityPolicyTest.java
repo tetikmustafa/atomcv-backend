@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
  * <p><strong>Why a test over a config file.</strong> This one cannot fail in
  * CI the way a broken query fails — nginx is not started here. What it can do
  * is fail when somebody tightens the policy back to the specification's
- * literal text, which is exactly how the hole was dug: the snippet in
- * Bolum 11.2 predates Turnstile and still reads as the finished answer.
+ * literal text, which is exactly how the hole was dug: the original snippet
+ * predates Turnstile and still reads as the finished answer.
  */
 class ContentSecurityPolicyTest {
 
@@ -80,7 +80,7 @@ class ContentSecurityPolicyTest {
     @Test
     void thewarmUpIsNotReachableThroughNginx() {
         assertThat(read(NGINX))
-                .as("EK D.6.7 keeps /api/v1/warmup off the public route")
+                .as("/api/v1/warmup is kept off the public route")
                 .contains("location = /api/v1/warmup");
     }
 

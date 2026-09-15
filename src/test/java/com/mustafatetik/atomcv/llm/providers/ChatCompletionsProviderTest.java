@@ -24,8 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The two adapters of Bolum 27.2 that speak OpenAI's protocol, against a local
- * server.
+ * The two adapters that speak OpenAI's protocol, against a local server.
  *
  * <p>A real server rather than a mocked client, for the reason the OpenRouter
  * test gives: what is under test is the bytes that go on the wire and how each
@@ -72,7 +71,7 @@ class ChatCompletionsProviderTest {
         server.stop(0);
     }
 
-    // ── Bolum 27.3: no key is a silent skip ───────────────────────────────
+    // ── No key is a silent skip ──────────────────────────────────────────
 
     @Test
     void anadapterWithNoKeyIsUnavailableRatherThanFailing() {
@@ -103,8 +102,8 @@ class ChatCompletionsProviderTest {
 
         JsonNode format = readLastBody().path("response_format");
         assertThat(format.path("type").asText()).isEqualTo("json_schema");
-        // Bolum 53.5 wants 99%+ conformance on Faz A; without strict the
-        // vendor reads the schema as a suggestion.
+        // Faz A is held to 99%+ conformance; without strict the vendor reads
+        // the schema as a suggestion.
         assertThat(format.path("json_schema").path("strict").asBoolean()).isTrue();
         assertThat(format.path("json_schema").path("schema").path("type").asText())
                 .isEqualTo("object");
@@ -184,7 +183,7 @@ class ChatCompletionsProviderTest {
         assertThat(cachedTokensFrom(deepSeek("sk-test", "some-model"))).isEqualTo(640);
     }
 
-    // ── Bolum 27.3: which status sends the chain where ────────────────────
+    // ── Which status sends the chain where ───────────────────────────────
 
     @Test
     void arateLimitAdvancesTheChainAndABadRequestDoesNot() {
@@ -204,8 +203,8 @@ class ChatCompletionsProviderTest {
 
     /**
      * An answer that is valid JSON of the wrong shape is a schema mismatch,
-     * which Bolum 27.3 retries in place rather than walking the chain. This is
-     * the ordinary failure at DeepSeek, where the shape was only asked for.
+     * which is retried in place rather than walking the chain. This is the
+     * ordinary failure at DeepSeek, where the shape was only asked for.
      */
     @Test
     void anansweredCallWithNoContentIsASchemaMismatch() {

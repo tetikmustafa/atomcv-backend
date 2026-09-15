@@ -61,7 +61,7 @@ public record NormalizedProfile(
 
     /**
      * @param displayOrder its place among the sections, assigned here rather
-     *                     than left to insertion order — Bolum 13 stores it,
+     *                     than left to insertion order — the column stores it,
      *                     and a column that is sometimes right is worse than
      *                     one that is always written
      */
@@ -110,7 +110,7 @@ public record NormalizedProfile(
      *
      * @param source  the sentence as the CV wrote it, cut into runs
      * @param english its English rendering, or {@link RichContent#EMPTY} when
-     *                the CV was already English — Bolum 21 reads the absence as
+     *                the CV was already English — the absence reads as
      *                "the source is the English", not as a gap
      * @param tags canonical, and the profile's own vocabulary
      */

@@ -3,11 +3,11 @@ package com.mustafatetik.atomcv.shared.wire;
 /**
  * How well the page answers the posting, as four named steps.
  *
- * <p><strong>Four words and never a percentage.</strong> Bolum 23.3 opens by
- * forbidding one: a number to the decimal place claims a precision that
- * counting skill names cannot support, and it invites the reader to treat a
- * keyword tally as a hiring probability. The counts underneath are the honest
- * part; this is a heading over them.
+ * <p><strong>Four words and never a percentage.</strong> One is forbidden
+ * outright: a number to the decimal place claims a precision that counting
+ * skill names cannot support, and it invites the reader to treat a keyword
+ * tally as a hiring probability. The counts underneath are the honest part;
+ * this is a heading over them.
  *
  * <p>The order is the severity order, so a client may compare with
  * {@link #compareTo} rather than hard-coding a table of its own.

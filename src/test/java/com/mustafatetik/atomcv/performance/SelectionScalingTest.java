@@ -21,12 +21,12 @@ import org.junit.jupiter.api.Test;
  *
  * <p><strong>The ratio is the real assertion and the milliseconds are the
  * loose one.</strong> A CI machine's speed varies by more than any honest
- * budget would measure, so a tight threshold fails for the weather; Bolum 52.6
- * says as much and asks for a figure two or three times the real one. What
- * catches the thing worth catching — somebody adding a loop inside a loop — is
- * comparing one run to another <em>on the same machine</em>: linear work
- * doubles when the input doubles and quadratic work quadruples, so a ceiling
- * between the two says which happened however slow the box is.
+ * budget would measure, so a tight threshold fails for the weather, and the
+ * budget asks for a figure two or three times the real one. What catches the
+ * thing worth catching — somebody adding a loop inside a loop — is comparing
+ * one run to another <em>on the same machine</em>: linear work doubles when
+ * the input doubles and quadratic work quadruples, so a ceiling between the
+ * two says which happened however slow the box is.
  *
  * <p>Faz C is a pure function, which is what makes this measurable at all: no
  * database, no compiler, no clock inside it. The determinism test rests on the
@@ -56,17 +56,17 @@ class SelectionScalingTest {
     }
 
     /**
-     * And the absolute figure, held loosely. It is here because Bolum 52.6
-     * asks for a budget file and a file nothing reads is a file nobody
-     * maintains — not because a millisecond count on this machine means
-     * anything about production.
+     * And the absolute figure, held loosely. It is here because a budget file
+     * is asked for and a file nothing reads is a file nobody maintains — not
+     * because a millisecond count on this machine means anything about
+     * production.
      */
     @Test
     void selectionStaysInsideItsBudget() {
         Duration fastest = fastestOf(profileOf(ATOMS));
 
         assertThat(fastest.toMillis())
-                .as("Bolum 52.6's figure, two to three times Bolum 52.1's")
+                .as("the budget figure, two to three times the measured one")
                 .isLessThanOrEqualTo(PerformanceBudgets.backendP95Millis("phase_selection"));
     }
 

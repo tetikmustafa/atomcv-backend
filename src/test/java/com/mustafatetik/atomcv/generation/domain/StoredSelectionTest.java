@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Test;
  * The snapshot, read back.
  *
  * <p>{@code selection_state} is a JSONB column with rows in it, and the shape
- * that writes it moves while those rows do not. EK D.6.3 promises the PDF can
- * always be made again, which means a row written before a field existed has
- * to keep producing the document it produced then — so the reading side is
- * tested against JSON that is missing things, not against what the writing
- * side happens to emit today.
+ * that writes it moves while those rows do not. The PDF can always be made
+ * again, which means a row written before a field existed has to keep
+ * producing the document it produced then — so the reading side is tested
+ * against JSON that is missing things, not against what the writing side
+ * happens to emit today.
  */
 class StoredSelectionTest {
 

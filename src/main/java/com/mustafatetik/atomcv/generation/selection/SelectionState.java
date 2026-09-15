@@ -47,7 +47,7 @@ public record SelectionState(
 
     /**
      * @param matchedKeywords which of the posting's own terms this line carries
-     *                        (Bolum 14.5, P7). Empty in general mode, and empty
+     *                        as a reason. Empty in general mode, and empty
      *                        on a snapshot written before this field existed --
      *                        which is why the short constructor stays.
      */

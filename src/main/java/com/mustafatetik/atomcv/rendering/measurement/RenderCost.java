@@ -23,7 +23,7 @@ public record RenderCost(double heightPt, double depthPt) {
      * difference is about eight points per bullet, which on a full page of
      * twenty bullets is a third of the page left blank for no reason.
      *
-     * <p>Rounding to whole lines here is not the rounding Bolum 26.3 warns
+     * <p>Rounding to whole lines here is not the rounding that is warned
      * against. That warning is about turning a measurement into lines and
      * losing the remainder; this is TeX's own arithmetic — consecutive
      * baselines are exactly {@code \baselineskip} apart, so the height of n

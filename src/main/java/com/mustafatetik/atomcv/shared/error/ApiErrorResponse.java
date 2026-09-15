@@ -26,11 +26,11 @@ public record ApiErrorResponse(
                 example = "Conflicting preferences")
         String title,
 
-        // Required, both of them: EK D.9 · 12 promises that every error carries
-        // a code, INTERNAL_ERROR included, so that the client's error path
-        // always has something to translate. Published as optional it would be
-        // a guarantee nobody can rely on and one that could be dropped without
-        // a single test going red on either side.
+        // Required, both of them: every error carries a code, INTERNAL_ERROR
+        // included, so that the client's error path always has something to
+        // translate. Published as optional it would be a guarantee nobody can
+        // rely on and one that could be dropped without a single test going
+        // red on either side.
         @Schema(description = "HTTP status", example = "409",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         int status,

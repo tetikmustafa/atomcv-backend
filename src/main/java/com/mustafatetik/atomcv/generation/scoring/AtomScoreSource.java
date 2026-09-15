@@ -66,7 +66,7 @@ public interface AtomScoreSource {
      *
      * @param today a parameter rather than a call to {@code now()}, because a
      *              scorer that reads the clock cannot be tested for the
-     *              same-input-same-output property Bolum 51.2 requires
+     *              same-input-same-output property required of it
      */
     static AtomScoreSource generalMode(LocalDate today) {
         // Not a lambda: general mode answers both questions, and a lambda can

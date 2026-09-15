@@ -54,8 +54,8 @@ class ProductionComposeTest {
     /**
      * <strong>the recovery window is three settings, not one.</strong> {@code
      * wal_level=replica} on its own archives nothing; it was here alone for a
-     * stage, and the number Bolum 49.5 publishes — five minutes of data loss —
-     * was a day, because the only copy was the 03:00 dump.
+     * stage, and the published number — five minutes of data loss — was a day,
+     * because the only copy was the 03:00 dump.
      *
      * <p>The assertion names all three deliberately. Losing any one of them
      * leaves a configuration that still starts, still backs up nightly and

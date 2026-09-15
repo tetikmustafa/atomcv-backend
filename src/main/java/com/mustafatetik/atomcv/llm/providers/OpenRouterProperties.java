@@ -12,13 +12,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @param baseUrl          overridable so a test can point it at a local server
  * @param apiKey           {@code OPENROUTER_API_KEY}; blank means unconfigured
- * @param structuredOutput which of Bolum 27.2's two mechanisms to use
+ * @param structuredOutput which of the two mechanisms to use
  * @param dataCollection   whether a provider that may keep the prompt for
  *                         training is allowed to serve it. **Denied by
  *                         default**: the prompt is somebody's CV, and this is
  *                         the one setting that decides whether it can become
  *                         training data. Relaxing it is a deployment's choice
- *                         and a line in EK C.1's provider list, not a default
+ *                         and a line in the provider list, not a default
  * @param only             the provider slugs allowed to serve a call, empty for
  *                         "whatever the broker routes to". A broker's routing
  *                         is invisible in the answer: the same model is served

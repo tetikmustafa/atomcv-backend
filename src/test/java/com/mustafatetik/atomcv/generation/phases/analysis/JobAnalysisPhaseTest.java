@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 18 end to end, with the provider stubbed: three gates around one call,
+ * Faz A end to end, with the provider stubbed: three gates around one call,
  * and only the middle one costs anything.
  */
 class JobAnalysisPhaseTest {
@@ -91,9 +91,9 @@ class JobAnalysisPhaseTest {
     // ── The request that is built ────────────────────────────────────────
 
     /**
-     * Bolum 27.4 discounts a cached prefix, and a prefix is only constant if
-     * the posting is not in it. The fence is in the user half, where it can
-     * wrap the data it is describing.
+     * A cached prefix is discounted, and a prefix is only constant if the
+     * posting is not in it. The fence is in the user half, where it can wrap
+     * the data it is describing.
      */
     @Test
     void theInstructionsAndThePostingTravelAsSeparateMessages() {
@@ -176,7 +176,7 @@ class JobAnalysisPhaseTest {
                 .isInstanceOf(PipelineError.AllProvidersUnavailable.class);
     }
 
-    // ── Bolum 18.6, the cache ────────────────────────────────────────────
+    // ── The cache ───────────────────────────────────────────────────────
 
     /**
      * The whole point: Faz G's edit loop, another template, another language
@@ -279,7 +279,7 @@ class JobAnalysisPhaseTest {
                 .isEqualTo("Acme Payments");
     }
 
-    // ── Bolum 18.5 ───────────────────────────────────────────────────────
+    // ── The embedding target ─────────────────────────────────────────────
 
     /**
      * A posting is mostly not about the job. Embedding the raw text moves the

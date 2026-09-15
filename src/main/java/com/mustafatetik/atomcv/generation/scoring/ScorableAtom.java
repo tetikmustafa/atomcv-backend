@@ -18,7 +18,7 @@ import java.util.UUID;
  * four.
  *
  * @param embedding     the stored vector, or null for an atom nothing has
- *                      embedded yet. Bolum 28.2 computes these after the fact,
+ *                      embedded yet. These are computed after the fact,
  *                      so a freshly written atom is scoreable before it is
  *                      embedded.
  * @param contentTokens the atom's own words, plus the words of the entry it is
@@ -26,8 +26,8 @@ import java.util.UUID;
  *                      measures the posting's literal phrases against — see
  *                      {@link RelevanceScorer#keywordCoverage}.
  * @param importance     the user's own weighting, 0 to 1, which becomes
- *                       Bolum 19.1's multiplier
- * @param secondaryScore what Bolum 19.4's general-mode formula makes of this
+ *                       The multiplier
+ * @param secondaryScore what the general-mode formula makes of this
  *                       atom: recency, importance, impact, verification. In
  *                       job-specific mode it does not compete with relevance —
  *                       it decides between atoms whose relevance is

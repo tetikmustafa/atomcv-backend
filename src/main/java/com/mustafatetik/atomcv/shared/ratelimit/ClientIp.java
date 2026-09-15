@@ -17,8 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
  * <p><strong>The trap that follows from it:</strong> with the strategy unset
  * behind Nginx, every caller arrives as the proxy's address and the whole
  * deployment shares one bucket. That is a limiter that looks configured,
- * passes its tests, and locks everybody out on the tenth request. Written down
- * in {@code spec/11-operations.md} Bolum 46.
+ * passes its tests, and locks everybody out on the tenth request. It is
+ * written down with the environment variables.
  */
 public final class ClientIp {
 

@@ -23,10 +23,10 @@ public enum ResolutionAction {
      * there is discarded and the CV becomes the new one.
      *
      * <p>Offered with {@link #KEEP_EXISTING_PROFILE} and never with a merge.
-     * Merging is atom-level de-duplication (Bolum 7, Jaro-Winkler plus
-     * embeddings) and belongs to Stage 4; naming it here would either bind the
-     * endpoint to work it cannot do or ship a merge that silently duplicates
-     * content, which design principle 8 forbids.
+     * Merging is atom-level de-duplication — Jaro-Winkler plus embeddings —
+     * and belongs to Stage 4; naming it here would either bind the endpoint to
+     * work it cannot do or ship a merge that silently duplicates content,
+     * which is the user's effort being thrown away.
      */
     REPLACE_PROFILE,
 
@@ -51,11 +51,11 @@ public enum ResolutionAction {
     /**
      * Send the same text again, this time past the preflight.
      *
-     * <p>Bolum 18.1 is explicit that a posting which does not look like one is
-     * a question, not a refusal — the user may know better than the heuristic.
-     * Distinct from {@link #RETRY}, which means a transient failure is worth
-     * repeating unchanged: preflight would refuse the identical text
-     * identically, so the resubmission has to carry an acknowledgement.
+     * <p>A posting that does not look like one is a question, not a refusal —
+     * the user may know better than the heuristic. Distinct from {@link
+     * #RETRY}, which means a transient failure is worth repeating unchanged:
+     * preflight would refuse the identical text identically, so the
+     * resubmission has to carry an acknowledgement.
      */
     CONTINUE_ANYWAY,
 

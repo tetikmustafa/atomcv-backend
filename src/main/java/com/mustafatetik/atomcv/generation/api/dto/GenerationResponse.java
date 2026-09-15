@@ -41,10 +41,10 @@ import java.util.UUID;
  * @param contentLanguage the BCP 47 tag the document was written in
  * @param postingLanguage absent in general mode, and absent when Faz A did not
  *                        name a language for the posting
- * @param coverLetter     Bolum 34's letter when one was written, and absent
+ * @param coverLetter the letter when one was written, and absent
  *                        otherwise — it is opt-in, and a letter that could not
  *                        be written honestly is not written at all. Plain
- *                        text: Bolum 34.7 renders no document, because a
+ *                        text: no document is rendered, because a
  *                        covering letter is pasted into a form or an email
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -80,17 +80,17 @@ public record GenerationResponse(
         @Schema(description = """
                 The generation that replaced this one, present only when
                 `status` is `SUPERSEDED`. An edit writes a new CV and retires
-                the one it edited (Bolum 24.4); the retired one is still
+                the one it edited; the retired one is still
                 readable and still downloadable -- the CV that was sent to an
                 employer does not stop existing -- and this is where the screen
                 showing it finds the newer one to link to.""")
         UUID supersededByGenerationId,
 
         @Schema(description = """
-                Whether this one is marked to keep (Bolum 35.2). A generation
+                Whether this one is marked to keep. A generation
                 is not archived when it is made; `POST /generations/{id}/archive`
                 sets the mark and the same endpoint clears it. What the mark
-                buys is Bolum 13's retention rule -- an archived generation's
+                buys is the retention rule -- an archived generation's
                 artifact never expires -- and until object storage lands there
                 is nothing that expires either way, so today it is a mark the
                 owner sets and reads.""")

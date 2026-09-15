@@ -49,8 +49,8 @@ class GenerationOptionsTest {
     // -- the template the profile asked for ---------------------
 
     /**
-     * <strong>The preference has carried a templateId since Bolum 14.4 and
-     * this ignored it.</strong> Every CV came out classic whatever the profile
+     * <strong>The preference has carried a templateId from the start and this
+     * ignored it.</strong> Every CV came out classic whatever the profile
      * said, and nothing failed, because there was only one template to be
      * wrong about.
      */

@@ -12,11 +12,11 @@ import java.util.Objects;
  * language rather than by discipline.
  *
  * <p>It lives in {@code shared} rather than in {@code generation.pipeline},
- * because Bolum 27.1 has {@code LlmProvider} return a {@code Result} of it and
- * {@code generation} depends on {@code llm} in turn — the two together are a
- * cycle. Bolum 10.1 already places this type here; what kept it out was
- * {@code CompilationFailed} naming a type from the {@code compilation} module,
- * and that is now {@link CompilationFailureKind}.
+ * because {@code LlmProvider} returns a {@code Result} of it and {@code
+ * generation} depends on {@code llm} in turn — the two together are a cycle.
+ * The module map already places this type here; what kept it out was {@code
+ * CompilationFailed} naming a type from the {@code compilation} module, and
+ * that is now {@link CompilationFailureKind}.
  *
  * <p>Only the cases the pipeline can produce today are here. The rest arrive
  * with the phases that raise them; adding one early would mean guessing at its
@@ -71,7 +71,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * Pinned content does not fit the page limit (Bolum 20.3, stage 1).
+     * Pinned content does not fit the page limit.
      *
      * <p>This is a conflict between two things the user asked for, so the
      * answer is not "no" but "here is what would make it fit". The resolutions
@@ -117,7 +117,7 @@ public sealed interface PipelineError {
      * has run out of places to ask.
      *
      * @param tried the providers that were actually called, in order. One that
-     *              was skipped for having no key is not in the list — Bolum
+     *              was skipped for having no key is not in the list — the
      *              27.3 skips it silently, and naming it would report an
      *              outage for a vendor this deployment never configured.
      */
@@ -157,7 +157,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * The caller asked for something § 35.7 gives an account and not a session.
+     * The caller asked for something an account gets and a session does not.
      *
      * <p>A pipeline error rather than an exception thrown at the endpoint,
      * because the refusal belongs where the decision is: the enqueue service
@@ -203,10 +203,10 @@ public sealed interface PipelineError {
     /**
      * A CV whose language could not be settled.
      *
-     * <p>Bolum 31.10 says to ask rather than to guess, and the reason is that
-     * the guess is not recoverable by the user: the language chosen here
-     * decides which variant of every atom is written, so a wrong one produces
-     * a whole profile in the wrong language and no screen that says so.
+     * <p>The rule is to ask rather than to guess, and the reason is that the
+     * guess is not recoverable by the user: the language chosen here decides
+     * which variant of every atom is written, so a wrong one produces a whole
+     * profile in the wrong language and no screen that says so.
      *
      * @param candidates what the model was torn between, as ISO 639-1 codes,
      *                   so the question is a short list and not a language
@@ -223,10 +223,10 @@ public sealed interface PipelineError {
      * A document that produced no usable content.
      *
      * <p>No parameters, and one case covering two causes: a CV the model found
-     * nothing in, and an answer refused by the field-length audit. Bolum 43.2
-     * is why they are one — a message that named the second would tell whoever
-     * wrote the injected text that it was noticed, and the advice is the same
-     * either way.
+     * nothing in, and an answer refused by the field-length audit. They are
+     * one because a message that named the second would tell whoever wrote the
+     * injected text that it was noticed, and the advice is the same either
+     * way.
      */
     record NothingExtracted() implements PipelineError {
     }
@@ -269,7 +269,7 @@ public sealed interface PipelineError {
     }
 
     /**
-     * Bolum 34.4 refused the letter twice, and there is nothing to print
+     * The validator refused the letter twice, and there is nothing to print
      * instead.
      *
      * <p><strong>The only phase in Faz D that reports a failure.</strong> A

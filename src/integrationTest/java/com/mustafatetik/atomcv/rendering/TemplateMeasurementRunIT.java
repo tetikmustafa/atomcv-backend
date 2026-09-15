@@ -50,7 +50,7 @@ class TemplateMeasurementRunIT extends AbstractLatexTest {
                         "The calibration document did not compile for " + asked.costKey()
                         + ". An empty capacity is not a capacity of zero -- a page "
                         + "guarantee made against numbers nobody produced is not a "
-                        + "guarantee (Bolum 26.4)."));
+                        + "guarantee."));
 
         report(asked, measured);
 

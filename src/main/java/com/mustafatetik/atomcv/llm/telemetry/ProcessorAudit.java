@@ -55,7 +55,7 @@ public class ProcessorAudit {
             return;
         }
         log.info("Content may be sent to {} — and onward wherever a broker routes it, "
-                + "which the answer does not say. EK C.1's published list has to name "
+                + "which the answer does not say. The published list has to name "
                 + "the same processors.", processors);
     }
 

@@ -50,7 +50,7 @@ public class LlmPricingAudit {
             return;
         }
         log.warn("No price is configured for {}; every call to {} will be costed at zero, "
-                + "which is not the same as free. Bolum 27.4's table is atomcv.llm.pricing.",
+                + "which is not the same as free. The price table is atomcv.llm.pricing.",
                 unpriced, unpriced.size() == 1 ? "it" : "them");
     }
 

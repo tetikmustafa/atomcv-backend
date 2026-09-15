@@ -46,7 +46,7 @@ public record MeasurementRequest(
      *  — it comes back in the log, so it has to
      *                survive a TeX {@code \typeout} unchanged
      * @param content what will be printed
-     * @param shape where the page sets it. Bolum 22.4's third
+     * @param shape where the page sets it. The third
      *                rule is that a measurement is taken in the environment the
      *                page prints in, and the three shapes are not printed
      *                alike: an inline row carries its label in bold, and bold

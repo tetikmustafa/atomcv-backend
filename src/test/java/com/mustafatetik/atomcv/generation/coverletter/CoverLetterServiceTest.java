@@ -115,10 +115,10 @@ class CoverLetterServiceTest {
     }
 
     /**
-     * <strong>Bolum 43.1.</strong> The sentences, the lists, the years and
-     * what the person knows about the employer are all their content, and a
-     * copy of any of it above the fence is the injection surface the boundary
-     * exists to remove.
+     * <strong>The fence.</strong> The sentences, the lists, the years and what
+     * the person knows about the employer are all their content, and a copy of
+     * any of it above the fence is the injection surface the boundary exists
+     * to remove.
      */
     @Test
     void thewholeOfTheCvTravelsInsideTheFence() {

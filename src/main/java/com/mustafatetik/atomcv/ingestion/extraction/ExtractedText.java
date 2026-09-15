@@ -11,7 +11,7 @@ package com.mustafatetik.atomcv.ingestion.extraction;
  *
  * @param text          the extracted text, never logged (absolute rule 4)
  * @param format        which reader produced it
- * @param looksScrambled Bolum 31.3's heuristic, for the prompt to carry
+ * @param looksScrambled the heuristic, for the prompt to carry
  */
 public record ExtractedText(String text, DocumentFormat format, boolean looksScrambled) {
 

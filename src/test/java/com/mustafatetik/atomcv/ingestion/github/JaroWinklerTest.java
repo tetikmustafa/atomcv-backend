@@ -55,11 +55,11 @@ class JaroWinklerTest {
     }
 
     /**
-     * <strong>And the one this cannot do, written down rather than hidden.</strong>
-     * An abbreviation is a true match and scores below the near miss above it;
-     * no single string distance separates the two, which is why Bolum 31.8
-     * names an embedding as well. It is offered as a new project instead,
-     * which the person can decline -- the safe direction.
+     * <strong>And the one this cannot do, written down rather than
+     * hidden.</strong> An abbreviation is a true match and scores below the
+     * near miss above it; no single string distance separates the two, which
+     * is why an embedding was named as well. It is offered as a new project
+     * instead, which the person can decline -- the safe direction.
      */
     @Test
     void anabbreviationIsMissedAndIsOfferedAsAnewProjectInstead() {

@@ -85,7 +85,7 @@ public class JobAnalysisPhase {
     }
 
     /**
-     * @param userId whose generation this is, for Bolum 27.5's
+     * @param userId whose generation this is, for the
      *               {@code llm_invocations.user_id}. Separate from
      *               {@code bucketKey} on purpose: the two are the same value in
      *               a generation and are <em>not</em> in ingestion, where an
@@ -98,7 +98,7 @@ public class JobAnalysisPhase {
 
         if (jobDescription == null || jobDescription.isBlank()) {
             throw new IllegalArgumentException(
-                    "Faz A is not reached in general CV mode (Bolum 18.1)");
+                    "Faz A is not reached in general CV mode");
         }
 
         if (!preflightAcknowledged) {

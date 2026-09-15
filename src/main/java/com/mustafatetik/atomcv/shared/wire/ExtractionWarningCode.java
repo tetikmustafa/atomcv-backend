@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * What the review screen of Bolum 31.6 opens a section for.
+ * What the review screen opens a section for.
  *
- * <p>Bolum 31.4 shows one code, {@code AMBIGUOUS_DATE}, and does not say
- * whether the vocabulary is closed. It is closed here, for the reason F-016
- * settled elsewhere in this system: the frontend resolves one ICU key with a
- * {@code select}, so a code it has never seen renders through the
+ * <p>One code was written down, {@code AMBIGUOUS_DATE}, with nothing said
+ * about whether the vocabulary is closed. It is closed here, for the reason
+ * F-016 settled elsewhere in this system: the frontend resolves one ICU key
+ * with a {@code select}, so a code it has never seen renders through the
  * {@code other} branch instead of showing a user a raw key — and a server
  * sentence would be untranslatable besides.
  *
@@ -26,11 +26,12 @@ import java.util.Locale;
  * ends the extraction instead.
  *
  * <p><strong>It lives in {@code shared} because two modules touch it</strong>
- * ({@code F-023}). Bolum 31 raises these codes and {@code GET /jobs/&#123;id&#125;}
- * publishes them, and ingestion already depends on jobs to queue its work — so
- * an import in the other direction would close a circle the architecture test
- * refuses. Its sibling {@code UnreadablePostingReason} moved for the same
- * reason. Nothing here depends on anything, which is what makes the move free.
+ * ({@code F-023}). Ingestion raises these codes and {@code GET
+ * /jobs/&#123;id&#125;} publishes them, and ingestion already depends on jobs
+ * to queue its work — so an import in the other direction would close a circle
+ * the architecture test refuses. Its sibling {@code UnreadablePostingReason}
+ * moved for the same reason. Nothing here depends on anything, which is what
+ * makes the move free.
  */
 public enum ExtractionWarningCode {
 
@@ -59,9 +60,9 @@ public enum ExtractionWarningCode {
     /**
      * A bullet could not be rendered into English.
      *
-     * <p>Bolum 21 lets a document fall back to its source language atom by
-     * atom, so this is a gap in coverage rather than a failure — but the user
-     * should know which sentence will not travel.
+     * <p>A document may fall back to its source language atom by atom, so this
+     * is a gap in coverage rather than a failure — but the user should know
+     * which sentence will not travel.
      */
     UNTRANSLATABLE_ATOM(true),
 
@@ -76,14 +77,15 @@ public enum ExtractionWarningCode {
      * upload produced a summary offering "message queues (Redis, Kafka)" from a
      * document containing no Kafka at all.
      *
-     * <p>P3 was enforced only where the model <em>rewrites</em>, and nothing
-     * ever asked whether what it <em>extracted</em> was on the page. This is
-     * that question, asked against the document's own text.
+     * <p>The rule against fabrication was enforced only where the model
+     * <em>rewrites</em>, and nothing ever asked whether what it
+     * <em>extracted</em> was on the page. This is that question, asked against
+     * the document's own text.
      *
      * <p>A warning rather than a refusal, and deliberately. The atom is
-     * otherwise the person's own content, the review screen of Bolum 31.6
-     * exists to correct exactly this, and refusing the import over one invented
-     * word is the failure this codebase has already had once.
+     * otherwise the person's own content, the review screen exists to correct
+     * exactly this, and refusing the import over one invented word is the
+     * failure this codebase has already had once.
      */
     UNSUPPORTED_BY_SOURCE(false);
 

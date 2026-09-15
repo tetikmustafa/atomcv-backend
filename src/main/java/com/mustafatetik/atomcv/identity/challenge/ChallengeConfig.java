@@ -36,7 +36,7 @@ public class ChallengeConfig {
         }
         if (environment.acceptsProfiles(Profiles.of("prod"))) {
             throw new IllegalStateException(
-                    "TURNSTILE_SECRET_KEY is required in production: Bolum 40.4.1 makes "
+                    "TURNSTILE_SECRET_KEY is required in production: this endpoint makes "
                             + "the challenge half of what bounds an endpoint that creates a "
                             + "user row and sends mail for any address anyone types.");
         }

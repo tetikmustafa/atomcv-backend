@@ -15,7 +15,7 @@ import java.util.UUID;
  *
  * <p>No JPA association points at the parent profile or at the child entries.
  * A profile is loaded with four flat queries and assembled in memory
- * (Bolum XI-A.3), which is what keeps the load inside its six-query budget;
+ * which is what keeps the load inside its six-query budget;
  * lazy collections would defeat that silently.
  */
 @Entity

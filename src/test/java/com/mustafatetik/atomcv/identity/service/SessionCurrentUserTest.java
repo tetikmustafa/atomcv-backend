@@ -76,8 +76,8 @@ class SessionCurrentUserTest {
 
     /**
      * The whole reason {@code AUTHENTICATION_REQUIRED} was added to the
-     * catalogue (Adim 3.3, Ekleme): a caller with no session gets a 401 that
-     * says so, and a resolution that offers the only way forward.
+     * catalogue: a caller with no session gets a 401 that says so, and a
+     * resolution that offers the only way forward.
      */
     @Test
     void withoutASessionRequireEndsTheRequestWithTheCatalogueCode() {
@@ -100,8 +100,8 @@ class SessionCurrentUserTest {
     /**
      * A revoked or expired cookie must not fall through to the local stand-in.
      * If it did, signing out in development would silently sign you back in as
-     * the dev user, and the session that Bolum 40.1 promises can be revoked
-     * would look revoked while behaving otherwise.
+     * the dev user, and the session that is promised to be revocable would
+     * look revoked while behaving otherwise.
      */
     @Test
     void aCookieThatNoLongerResolvesIsNobodyEvenWhereTheLocalStandInExists() {
@@ -126,8 +126,8 @@ class SessionCurrentUserTest {
     }
 
     /**
-     * A controller and the service below it both ask, and the sliding TTL of
-     * EK D.6.6 refreshes once per request rather than once per caller.
+     * A controller and the service below it both ask, and the sliding TTL
+     * refreshes once per request rather than once per caller.
      */
     @Test
     void theAnswerIsResolvedOncePerRequest() {

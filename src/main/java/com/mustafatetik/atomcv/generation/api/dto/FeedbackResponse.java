@@ -42,7 +42,7 @@ public record FeedbackResponse(
      *                  it is withdrawn or run out, which are different events
      *                  and the timestamps say which
      * @param accessedAt when somebody first read it, or absent because nobody
-     *                  has. The audit trail Bolum 48.4 promises, and the first
+     *                  has. The audit trail that was promised, and the first
      *                  read is what it holds: the column answers "was this
      *                  looked at, and from when"
      */

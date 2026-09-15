@@ -11,14 +11,14 @@ import org.junit.jupiter.api.Test;
 /**
  * The shipped {@code cover_letter} prompt, against the check that judges it.
  *
- * <p><strong>v1 is active, and v2 is on disk unmeasured.</strong> v2 dropped the
- * "between 250 and 400 words" ask on the argument that the model ignored it —
- * the drafts behind that argument were 106 to 153 words. The recorded letters
- * say otherwise: three of those five ran on synthetic input and the other two
- * are from 2026-08-30, while every real draft since 2026-09-02 has come in at
- * 255 to 290 words. The ask works. So the rollback is a value change, which is
- * what Bolum 53.2 makes it, and v2 stays a variant waiting for a measurement
- * rather than a version in front of users.
+ * <p><strong>v1 is active, and v2 is on disk unmeasured.</strong> v2 dropped
+ * the "between 250 and 400 words" ask on the argument that the model ignored
+ * it — the drafts behind that argument were 106 to 153 words. The recorded
+ * letters say otherwise: three of those five ran on synthetic input and the
+ * other two are from 2026-08-30, while every real draft since 2026-09-02 has
+ * come in at 255 to 290 words. The ask works. So the rollback is a value
+ * change rather than a deploy, and v2 stays a variant waiting for a
+ * measurement rather than a version in front of users.
  *
  * <p>What this file guards is the pair that drifted in the first place: the
  * prompt's numbers and the validator's constants are prose on one side and a

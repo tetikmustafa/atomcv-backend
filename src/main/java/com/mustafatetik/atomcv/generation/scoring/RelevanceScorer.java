@@ -54,7 +54,7 @@ public final class RelevanceScorer {
     }
 
     /**
-     * @param emphasised what Bolum 18.7's directive asked to bring forward,
+     * @param emphasised what the directive asked to bring forward,
      *                   already canonical. Empty for every generation nobody
      *                   steered, which is nearly all of them
      */
@@ -146,7 +146,7 @@ public final class RelevanceScorer {
      * weights were chosen against.
      *
      * @return {@code 0.5}, the neutral value, when either side has no vector.
-     *         Bolum 28.2 embeds on a queue after the fact, so an atom written a
+     *         Embedding happens on a queue after the fact, so an atom written a
      *         moment ago has none — and treating that as "maximally unrelated"
      *         would bury exactly the content the user just decided mattered.
      */

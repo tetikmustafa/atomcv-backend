@@ -21,8 +21,8 @@ class ErrorCatalogueTest {
 
     @Test
     void everyPipelineErrorFromTheDocumentHasACode() {
-        // Bolum 25.2 names ten; a code disappearing here means a pipeline
-        // failure that reaches the user with no message at all.
+        // Ten are named; a code disappearing here means a pipeline failure
+        // that reaches the user with no message at all.
         assertThat(names()).contains(
                 "INSUFFICIENT_PROFILE", "UNPARSEABLE_JOB_DESCRIPTION", "CONFLICTING_PREFERENCES",
                 "FEATURE_REQUIRES_ACCOUNT", "QUOTA_EXCEEDED", "ALL_PROVIDERS_UNAVAILABLE",
@@ -178,13 +178,12 @@ class ErrorCatalogueTest {
                         "increase_page_limit", "review_pins", "keep_top_pinned", "sign_up",
                         "paste_full_posting", "continue_as_general_cv", "switch_to_manual_form",
                         "complete_profile",
-                        // Bolum 18.1 offers three ways past a preflight
-                        // refusal and only two of them had a name (handoff
-                        // B-037).
+                        // A preflight refusal offers three ways past it and
+                        // only two of them had a name (handoff B-037).
                         "continue_anyway",
                         "retry",
-                        // Bolum 08b: a second CV is refused and the answer is
-                        // replace or keep. Never a merge -- that is atom-level
+                        // A second CV is refused and the answer is replace or
+                        // keep. Never a merge -- that is atom-level
                         // de-duplication and Stage 4 work (handoff B-060).
                         "replace_profile", "keep_existing_profile");
     }

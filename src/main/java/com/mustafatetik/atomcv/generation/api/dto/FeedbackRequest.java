@@ -15,9 +15,9 @@ import java.util.Locale;
  * category and the comment are for the people who have something to add.
  *
  * @param rating         {@code 1} or {@code -1}, and nothing else
- * @param category       which part was wrong, from Bolum 13's five
+ * @param category which part was wrong, from the five
  * @param comment        anything they want to say
- * @param contentGranted Bolum 48.4: whether the CV itself may be looked at
+ * @param contentGranted whether the CV itself may be looked at
  *                       for forty-eight hours to work out what went wrong.
  *                       Sending {@code false} later withdraws a grant that is
  *                       still open

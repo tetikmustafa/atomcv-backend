@@ -18,7 +18,7 @@ import jakarta.validation.constraints.Size;
  *
  * @param acknowledgePreflight the user was told the text does not look like a
  *                             posting and asked to go ahead anyway
- *                             ({@code continue_anyway}, EK D.6.1). The
+ *                             ({@code continue_anyway}). The
  *                             heuristics are cheap on purpose and a person may
  *                             know better; the plausibility gate still runs.
  */
@@ -38,7 +38,7 @@ public record GenerationRequest(
 
         @Schema(description = "What the challenge widget produced. Required for a "
                 + "caller with no account and ignored for one with an account "
-                + "(Bolum 44.4): signing in already answered a challenge, and "
+                + ": signing in already answered a challenge, and "
                 + "generating spends real money on a model.")
         String challengeToken,
 
@@ -53,7 +53,7 @@ public record GenerationRequest(
         @Pattern(regexp = "^[a-z]{2}$")
         String language,
 
-        @Schema(description = "Write a covering letter alongside the CV (Bolum 34). "
+        @Schema(description = "Write a covering letter alongside the CV. "
                 + "Off by default: it is a second LLM call, and most generations "
                 + "do not want one. It can be asked for afterwards instead, at "
                 + "POST /generations/{id}/cover-letter/regenerate.",
@@ -61,9 +61,9 @@ public record GenerationRequest(
         Boolean coverLetter,
 
         @Schema(description = """
-                Terms to bring forward, as Bolum 18.7's directive. They join
+                Terms to bring forward, as a directive. They join
                 the posting's own keywords and tags for this one generation --
-                the formula of Bolum 19.1 is untouched, it reads one larger
+                the scoring formula is untouched, it reads one larger
                 set. Use it when the posting does not say a word you know the
                 work is about.
 
@@ -82,7 +82,7 @@ public record GenerationRequest(
         @Schema(description = """
                 A set of appearance settings saved under
                 `/api/v1/customizations`, to render this one with
-                (Bolum 14.4). Absent uses the profile's own working settings,
+                Absent uses the profile's own working settings,
                 which is what nearly every request means.
 
                 A set belonging to somebody else is not found.""")
@@ -90,18 +90,18 @@ public record GenerationRequest(
 
         @Schema(description = """
                 A sentence or two about how this CV should read, in the
-                person's own words (Bolum 18.7's `freeformNote`).
+                person's own words.
 
                 It reaches Faz D and nothing else: Faz B ranks against the
                 posting and a sentence is not a term. The prompt tells the
                 model the note may steer wording and emphasis and may **not**
                 licence a claim, lengthen a line past its maximum, or change
-                what a sentence says happened — and Bolum 21.6's validators do
+                what a sentence says happened — and the validators do
                 not care what the note said either way, which is what makes
                 that a promise rather than a hope.
 
                 It travels inside the fence, because it is the person's own
-                content (Bolum 43.1). At most 500 characters.""",
+                content. At most 500 characters.""",
                 example = "Lead with the platform work rather than the ML.")
         @Size(max = 500)
         String note) {

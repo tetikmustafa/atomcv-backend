@@ -45,8 +45,8 @@ class JobAnalysisCacheTest {
     }
 
     /**
-     * The key never carries the posting itself — only a hash of it
-     * (Bolum 18.6: the raw text is not stored).
+     * The key never carries the posting itself — only a hash of it: the raw
+     * text is not stored.
      */
     @Test
     void theKeyIsAHashAndNotTheTextItself() {
@@ -57,10 +57,10 @@ class JobAnalysisCacheTest {
     }
 
     /**
-     * Bolum 18.6 keys on the posting alone. The version is added because a
-     * prompt change has to invalidate — and because an A/B experiment would
-     * otherwise measure nothing: the bucket sent to v2 would read whatever v1
-     * had already cached for that posting.
+     * The key is the posting alone. The version is added because a prompt
+     * change has to invalidate — and because an A/B experiment would otherwise
+     * measure nothing: the bucket sent to v2 would read whatever v1 had
+     * already cached for that posting.
      */
     @Test
     void twoPromptVersionsDoNotShareAnEntry() {
@@ -101,7 +101,7 @@ class JobAnalysisCacheTest {
         assertThat(JobAnalysisCache.TTL).hasDays(7);
     }
 
-    // ── The rule Bolum 18.6 does not state ───────────────────────────────
+    // ── The rule nothing states ──────────────────────────────────────────
 
     /**
      * A cache is an optimisation, and an optimisation whose outage takes the

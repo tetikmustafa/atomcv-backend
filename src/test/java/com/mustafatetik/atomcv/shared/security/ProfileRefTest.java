@@ -57,7 +57,7 @@ class ProfileRefTest {
 
         assertThat(factories).isNotEmpty();
         // Every way in takes a type that carries the check, and neither of the
-        // two can be conjured from a bare id. Adim 3.6 added the second: an
+        // two can be conjured from a bare id. The second came later: an
         // anonymous scope has no user to compare against, so what stands in
         // for the comparison is AnonymousSessionId — which only the module
         // that can see a session is able to make.

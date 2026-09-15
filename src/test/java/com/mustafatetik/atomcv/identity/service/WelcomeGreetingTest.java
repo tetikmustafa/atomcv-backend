@@ -18,11 +18,10 @@ import org.junit.jupiter.api.Test;
 /**
  * The trigger, which the first draft of that section got wrong.
  *
- * <p>The dangerous reading is "when the account is created". Bolum 40.4 writes
- * a {@code users} row the moment anybody types an address into the sign-in
- * box, so that trigger would have mailed every address anyone cared to enter.
- * The case below that matters most is therefore the one that asserts an
- * absence.
+ * <p>The dangerous reading is "when the account is created". A {@code users}
+ * row is written the moment anybody types an address into the sign-in box, so
+ * that trigger would have mailed every address anyone cared to enter. The case
+ * below that matters most is therefore the one that asserts an absence.
  */
 class WelcomeGreetingTest {
 

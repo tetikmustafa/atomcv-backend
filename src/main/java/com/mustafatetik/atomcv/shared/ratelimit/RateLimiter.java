@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 /**
  * The counters, as a sliding window over Redis.
  *
- * <p><strong>A window and not a bucket.</strong> The table names Bucket4j, but
- * Bolum 40.5 states its limits as "3 requests / 15 minutes", which is a
+ * <p><strong>A window and not a bucket.</strong> The stack table names
+ * Bucket4j, but the limits are stated as "3 requests / 15 minutes", which is a
  * window; a token bucket refilling at a fifth of a request per minute is a
  * different rule that happens to average the same. The deviation is recorded
  * in {@code notes/current.md}.
@@ -108,7 +108,7 @@ public class RateLimiter {
      * either: the session lives in the same Redis, so an instance that cannot
      * reach it cannot sign anybody in regardless.
      *
-     * @param layer  which of Bolum 40.5's three counters this is, for the key
+     * @param layer which of the three counters this is, for the key
      *               and for the log line
      * @param subject what is being counted — an address is hashed by the caller,
      *                never passed in clear

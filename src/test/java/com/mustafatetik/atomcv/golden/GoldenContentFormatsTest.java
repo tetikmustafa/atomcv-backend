@@ -50,7 +50,7 @@ class GoldenContentFormatsTest {
      * A mark this version has never heard of is read, kept and rendered as
      * plain text. Kept is the half that matters: a reader that dropped it
      * would silently delete a newer version's markings the moment somebody
-     * edited that sentence (EK D.9, rule 2).
+     * edited that sentence.
      */
     @Test
     void amarkThisVersionDoesNotKnowSurvivesTheRoundTrip() {

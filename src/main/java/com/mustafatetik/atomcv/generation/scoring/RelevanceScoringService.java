@@ -44,7 +44,7 @@ public class RelevanceScoringService {
      *                   {@code TagRepository.labelsByAtom}
      */
     /**
-     * @param emphasised Bolum 18.7's directive: terms this person asked to be
+     * @param emphasised the directive: terms this person asked to be
      *                   brought forward, joined to the posting's own keywords
      *                   and tags rather than weighted separately
      */
@@ -88,7 +88,7 @@ public class RelevanceScoringService {
      */
     private float[] postingVector(JobAnalysis posting) {
         if (!embeddings.isHealthy()) {
-            log.info("The embedding service is not answering; scoring without it (Bolum 28.4)");
+            log.info("The embedding service is not answering; scoring without it");
             return null;
         }
         try {

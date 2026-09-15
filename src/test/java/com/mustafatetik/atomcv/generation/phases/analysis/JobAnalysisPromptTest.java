@@ -131,7 +131,9 @@ class JobAnalysisPromptTest {
         assertThat(analysis.company().sizeHint()).isNull();
     }
 
-    /** A model that adds a field is not a failure (Bolum 18.4 judges the rest). */
+    /**
+     * A model that adds a field is not a failure; the gate judges the rest.
+     */
     @Test
     void anUnexpectedFieldIsIgnoredRatherThanRefused() throws Exception {
         var analysis = JSON.readValue("""

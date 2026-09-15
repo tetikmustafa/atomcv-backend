@@ -20,7 +20,7 @@ import java.util.UUID;
  *                 pipeline reads the head for its preferences and the ref for
  *                 everything under it
  * @param userId   for attribution, and null for an anonymous session.
- *                 {@code llm_invocations.user_id} is nullable and § 51.6's note
+ *                 {@code llm_invocations.user_id} is nullable and the note
  *                 says a row there from an anonymous generation is expected: the
  *                 cost was real and the person was not an account.
  * @param bucketKey which prompt variant this caller keeps seeing.

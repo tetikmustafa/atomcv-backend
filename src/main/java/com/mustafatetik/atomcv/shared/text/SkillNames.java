@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 public final class SkillNames {
 
     /**
-     * The dictionary Bolum 31.5 asks for, as a resource rather than a constant.
+     * The alias dictionary, as a resource rather than a constant.
      *
      * <p>Adding an alias is then a data change a reviewer can read as a list,
      * and the file can grow to hundreds of lines without the class it lives in

@@ -43,8 +43,8 @@ class ProviderChainTest {
     }
 
     /**
-     * Bolum 27.3: 429/5xx/timeout are reasons to ask someone else, and that is
-     * the whole point of having a chain.
+     * 429/5xx/timeout are reasons to ask someone else, and that is the whole
+     * point of having a chain.
      */
     @Test
     void aRateLimitedProviderHandsOverToTheNext() {
@@ -72,9 +72,9 @@ class ProviderChainTest {
     }
 
     /**
-     * Bolum 27.3 skips a provider with no key silently, and does not count it
-     * as tried: five vendors in a chain on a deployment with one key is the
-     * normal case, and reporting four outages for it would be a lie.
+     * A provider with no key is skipped silently and not counted as tried:
+     * five vendors in a chain on a deployment with one key is the normal case,
+     * and reporting four outages for it would be a lie.
      */
     @Test
     void aProviderWithNoKeyIsSkippedAndNotReportedAsTried() {
@@ -121,7 +121,7 @@ class ProviderChainTest {
         assertThat(always.calls()).isEqualTo(3);
     }
 
-    // ── Bolum 27.5: every call is counted, failures included ──────────────
+    // ── Every call is counted, failures included ─────────────────────────
 
     // -- the provider fallback rate --------------------------------
 
@@ -217,9 +217,9 @@ class ProviderChainTest {
     }
 
     /**
-     * Bolum 54.2. The recorder was written, documented as used by
-     * {@code local-record}, and never called — so {@code make record} paid for
-     * real answers and kept none. This is the test that would have said so.
+     * The recorder was written, documented as used by {@code local-record},
+     * and never called — so {@code make record} paid for real answers and kept
+     * none. This is the test that would have said so.
      */
     @Test
     void aRecordingRunKeepsTheAnswerAProviderGave() {

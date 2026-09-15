@@ -42,7 +42,7 @@ public class CustomizationService {
      *                      name this profile already uses, or one set too many.
      *                      The unique index would refuse the duplicate anyway;
      *                      a constraint violation surfacing as a 500 tells the
-     *                      caller the server broke (EK D.6.8's lesson)
+     *                      caller the server broke (the lesson)
      */
     @Transactional
     public SavedCustomization create(ProfileRef profile, String name,

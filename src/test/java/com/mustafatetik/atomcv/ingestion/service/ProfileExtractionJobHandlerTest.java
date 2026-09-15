@@ -48,13 +48,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
 /**
- * The job behind Bolum 31.4 and 31.5, with the three stages stubbed.
+ * The job behind structuring and normalisation, with the three stages stubbed.
  *
  * <p>What is under test is the orchestration and nothing else: the order of
  * the stages, what the person is told when one of them refuses, whether the
- * allowance comes back, and what the terminal event of Bolum 30.6 carries.
- * Each stage has its own tests, and repeating them here would be asserting the
- * mocks.
+ * allowance comes back, and what the terminal event carries. Each stage has
+ * its own tests, and repeating them here would be asserting the mocks.
  */
 class ProfileExtractionJobHandlerTest {
 
@@ -261,12 +260,12 @@ class ProfileExtractionJobHandlerTest {
     // -- the anonymous half ----------------------------
 
     /**
-     * <strong>The promise of Bolum 9, at the one line that could break it.</strong>
-     * Somebody who has not signed up gets a profile that nobody owns and that
-     * deletes itself, and there is exactly one place that decides which of the
-     * two entry points runs. A branch falling through to the owned one would
-     * keep every visible behaviour and quietly write a stranger's CV in as
-     * somebody's permanent profile.
+     * <strong>The anonymous promise, at the one line that could break
+     * it.</strong> Somebody who has not signed up gets a profile that nobody
+     * owns and that deletes itself, and there is exactly one place that
+     * decides which of the two entry points runs. A branch falling through to
+     * the owned one would keep every visible behaviour and quietly write a
+     * stranger's CV in as somebody's permanent profile.
      *
      * <p>Both writers now go to the same rows, which is what made the anonymous
      * flow worth building — and is exactly why this test matters more than it
@@ -337,9 +336,9 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
-     * The prompt experiment of Bolum 53.3 buckets by caller, and an anonymous
-     * caller's identifier is the session cookie. It is bucketed by the profile
-     * id derived from it instead — equally stable, and not a credential being
+     * The prompt experiment buckets by caller, and an anonymous caller's
+     * identifier is the session cookie. It is bucketed by the profile id
+     * derived from it instead — equally stable, and not a credential being
      * passed around as a name.
      */
     @Test

@@ -46,9 +46,9 @@ class ScrambleHeuristicTest {
     /**
      * A few short lines among long ones are headings, not damage.
      *
-     * <p>Bolum 31.3 puts the orphan threshold at three in ten, and this sits
-     * just under it: two headings in eight lines. A stricter reading would
-     * flag every CV that has section titles, which is every CV.
+     * <p>The orphan threshold is three in ten, and this sits just under it:
+     * two headings in eight lines. A stricter reading would flag every CV that
+     * has section titles, which is every CV.
      */
     @Test
     void headingsAmongProseStayUnderTheThreshold() {

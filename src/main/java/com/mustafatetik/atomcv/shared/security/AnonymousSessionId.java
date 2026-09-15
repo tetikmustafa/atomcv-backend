@@ -5,14 +5,14 @@ import java.util.Objects;
 /**
  * The id of a session nobody has signed in to.
  *
- * <p><strong>A type rather than a String, and that is the whole of it.</strong>
- * § 41.3 asks that the scope carry enough type for "went to the wrong store"
- * to be caught rather than debugged, and {@link ProfileRef#ephemeral} needs one
- * fact before it may mint an ephemeral scope: that the session really is
- * anonymous. {@code shared} may not depend on a business module (Bolum 10.2,
- * rule 4), so it cannot look at a {@code Session} and check — but it can refuse
- * to take anything except a value only the module that <em>can</em> check is
- * able to produce.
+ * <p><strong>A type rather than a String, and that is the whole of
+ * it.</strong> The scope has to carry enough type for "went to the wrong
+ * store" to be caught rather than debugged, and {@link ProfileRef#ephemeral}
+ * needs one fact before it may mint an ephemeral scope: that the session
+ * really is anonymous. {@code shared} may not depend on a business module, so
+ * it cannot look at a {@code Session} and check — but it can refuse to take
+ * anything except a value only the module that <em>can</em> check is able to
+ * produce.
  *
  * <p>Which is why this is not a public constructor. {@code identity} makes one
  * from a session it has already established is anonymous, and nothing else has

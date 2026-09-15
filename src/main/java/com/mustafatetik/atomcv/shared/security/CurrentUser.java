@@ -5,10 +5,10 @@ import java.util.Optional;
 /**
  * Who is acting on this request.
  *
- * <p>One interface, one implementation: the session-backed one that landed with
- * identity in Adim 3.3. Endpoints depend on this rather than on a static
- * "current user" helper, so how a request is authenticated stays a bean
- * definition rather than a search through the codebase.
+ * <p>One interface, one implementation: the session-backed one that landed
+ * with identity. Endpoints depend on this rather than on a static "current
+ * user" helper, so how a request is authenticated stays a bean definition
+ * rather than a search through the codebase.
  *
  * <p>The two methods answer two different questions and both are needed.
  * {@link #require()} is what a user-scoped endpoint calls: there is no useful

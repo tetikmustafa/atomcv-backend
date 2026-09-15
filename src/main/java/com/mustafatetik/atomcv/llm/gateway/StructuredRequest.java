@@ -27,7 +27,7 @@ import java.util.UUID;
  * @param timeout       per provider, not for the chain as a whole
  * @param userId        whose work this call is doing, or {@code null} for an
  *                      anonymous caller and for the calls no user asked for.
- *                      Bolum 27.5's {@code llm_invocations.user_id}: the daily
+ *                      The {@code llm_invocations.user_id}: the daily
  *                      total already answers "what did today cost", and this
  *                      is the column that answers "for whom" — which cannot be
  *                      reconstructed afterwards, so it is written or it is

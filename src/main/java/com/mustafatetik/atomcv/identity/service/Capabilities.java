@@ -65,7 +65,7 @@ public class Capabilities {
 
     /**
      * @param anonymousExpiresAt when the anonymous session runs out, or null
-     *                           for an account — EK D.6.6, and § 35.7 says the
+     *                           for an account, and the
      *                           field is absent rather than null on an account,
      *                           because a countdown to nothing is a wrong
      *                           screen

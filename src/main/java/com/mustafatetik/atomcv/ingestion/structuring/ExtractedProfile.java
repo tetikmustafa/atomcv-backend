@@ -38,10 +38,10 @@ import java.util.List;
  *                           {@link ProfileStructuring} the user is asked rather
  *  than guessed at
  * @param contact            the header block, mapped onto the domain's own
- *                           record by Bolum 31.5
+ *                           record by normalisation
  * @param sections           the document's structure, in the order it was read
  * @param warnings           what the model could not settle, for the review
- *                           screen of Bolum 31.6 to open on
+ *                           review screen to open on
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ExtractedProfile(
@@ -114,7 +114,7 @@ public record ExtractedProfile(
     }
 
     /**
-     * @param kind    which of Bolum 13's kinds this is
+     * @param kind which of the kinds this is
      * @param title   the heading as the CV wrote it, in the source language
      * @param entries the rows under it
      */
@@ -132,7 +132,7 @@ public record ExtractedProfile(
      * One job, degree or project.
      *
      * @param startDate {@code YYYY-MM}, or null. <strong>Never invented</strong> —
-     *                  Bolum 31.5 leaves an unparseable date null and raises a
+     *                  An unparseable date is left null and raises a
      *                  warning, because a plausible wrong date is the kind of
      *                  error nobody proofreads out
      * @param endDate   likewise; null also means the person is still there
@@ -159,12 +159,12 @@ public record ExtractedProfile(
      *
      * @param textSource     the sentence as the CV wrote it
      * @param textEn         its English rendering, or null when the source is
-     *                       already English. Bolum 31.4 does not ask for the
+     *                       already English. Nothing asks for the
      *                       second field in that case; a schema cannot make a
      *                       field conditional, so it is nullable and the prompt
      *                       says when to leave it out
      * @param emphasisSource the substrings worth bolding, quoted from
-     *                       {@code textSource}. Bolum 31.5 turns them into runs
+     *                       {@code textSource}. Normalisation turns them into runs
      *                       by first match, so they have to be exact quotations
      * @param emphasisEn     likewise, against {@code textEn}
      * @param skills         canonical, lowercase, English

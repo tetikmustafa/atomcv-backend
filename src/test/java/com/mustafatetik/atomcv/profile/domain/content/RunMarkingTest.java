@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
  * The run generation, and the invariant everything downstream leans on: the
  * runs concatenate back to the sentence.
  *
- * <p>Bolum 12 chose runs over offsets and markup precisely so that no
- * escaping, no drift and no re-matching is ever needed again — but that only
- * holds if the cut is a partition. A builder that dropped a character, or
- * doubled one, would send a subtly wrong sentence to the renderer and to the
- * embedding, and nothing further down could tell.
+ * <p>Runs were chosen over offsets and markup precisely so that no escaping,
+ * no drift and no re-matching is ever needed again — but that only holds if
+ * the cut is a partition. A builder that dropped a character, or doubled one,
+ * would send a subtly wrong sentence to the renderer and to the embedding, and
+ * nothing further down could tell.
  */
 class RunMarkingTest {
 
@@ -55,8 +55,8 @@ class RunMarkingTest {
     }
 
     /**
-     * Two marks over the same characters would need nested runs, which Bolum
-     * 12 does not have. The earlier start wins, and the sentence still
+     * Two marks over the same characters would need nested runs, which the
+     * model does not have. The earlier start wins, and the sentence still
      * concatenates.
      */
     @Test
@@ -98,7 +98,7 @@ class RunMarkingTest {
         assertThat(RunMarking.mark(null, List.of(), List.of(), List.of()).isEmpty()).isTrue();
     }
 
-    // -- which mark (Bolum 12: semantic, never presentational) --------------
+    // -- which mark: semantic, never presentational ------------------------
 
     @Test
     void aSpanThatIsOneOfTheMetricsIsMarkedAsOne() {
@@ -122,10 +122,10 @@ class RunMarkingTest {
     }
 
     /**
-     * Everything else is emphasis, including a proper noun. Bolum 31.4 collects
-     * products, employers and places into one list, so calling any of them an
-     * organisation would be a claim the data does not support — and an unknown
-     * mark renders as plain text, losing the emphasis entirely.
+     * Everything else is emphasis, including a proper noun. Products,
+     * employers and places are collected into one list, so calling any of them
+     * an organisation would be a claim the data does not support — and an
+     * unknown mark renders as plain text, losing the emphasis entirely.
      */
     @Test
     void anythingElseIsPlainEmphasis() {

@@ -61,11 +61,11 @@ public class MagicLinkController {
             description = """
                     Always 202, and always with no body. Whether the address \
                     has an account is exactly what this must not reveal \
-                    (Bolum 40.4), so the sentence the person reads is the \
+                    , so the sentence the person reads is the \
                     client's to write and is the same either way.
 
                     The two other answers it can give reveal nothing either:
-                    `429 RATE_LIMITED`, where every layer of Bolum 40.5
+                    `429 RATE_LIMITED`, where every rate-limit layer
                     counts what this caller has already done, and
                     `403 CHALLENGE_FAILED`, which is about the token in the
                     request and not about the address in it.""")

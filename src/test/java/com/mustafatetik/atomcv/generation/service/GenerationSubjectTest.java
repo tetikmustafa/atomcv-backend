@@ -15,10 +15,11 @@ import org.junit.jupiter.api.Test;
  * Who a generation is for, and the three things the pipeline used a
  * {@code UserContext} for.
  *
- * <p>The anonymous half has no caller yet — the handler still refuses a job with
- * no owner while the quota subject, the measurement job and the read endpoints
- * catch up. Bolum 51.7 says a component the suite switches off has unverified
- * wiring, so it is verified here directly rather than left until it is reachable.
+ * <p>The anonymous half has no caller yet — the handler still refuses a job
+ * with no owner while the quota subject, the measurement job and the read
+ * endpoints catch up. A component the suite switches off has unverified
+ * wiring, so it is verified here directly rather than left until it is
+ * reachable.
  */
 class GenerationSubjectTest {
 

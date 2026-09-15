@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The list both halves of Faz G read (Bolum 24.2, 24.4, F-031).
+ * The list both halves of Faz G read (F-031).
  *
  * <p>These cases were the sentence endpoint's and had no test of their own:
  * the numbering was checked, the text behind the numbers was not. They are

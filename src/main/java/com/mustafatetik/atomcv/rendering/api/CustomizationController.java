@@ -63,9 +63,9 @@ public class CustomizationController {
             operationId = "listTemplates",
             summary = "The templates a CV can be rendered with",
             description = """
-                    The registry's own list, with the measured capacity of                     each: Bolum 33.5 describes the three by how much they hold,                     and a chooser showing three names and no density asks                     somebody to pick blind.
+                    The registry's own list, with the measured capacity of                     each: the three are described by how much they hold,                     and a chooser showing three names and no density asks                     somebody to pick blind.
 
-                    No display name and no description — those are sentences,                     and Bolum 35.4's rule is that the server sends a key and                     the client writes the sentence. The id is the key.
+                    No display name and no description — those are sentences,                     and the rule is that the server sends a key and                     the client writes the sentence. The id is the key.
 
                     The same list `capabilities.allowedTemplates` publishes,                     which is what a client reads to know which of these it may                     offer. This one says what each of them is.""")
     @ApiResponse(responseCode = "200", description = "Every template in the registry",
@@ -100,13 +100,13 @@ public class CustomizationController {
             operationId = "createCustomization",
             summary = "Keep a set of appearance settings under a name",
             description = """
-                    Bolum 33.2's Layer B, saved. The profile's own
+                    Layer B, saved. The profile's own
                     `preferences.appearance` is still the working set and is
                     what a generation uses when it names nothing; this is for
                     the person who keeps a dense set for a long CV and a
                     roomier one for a short one.
 
-                    Every value is bounded by Bolum 33.2's ranges, and the
+                    Every value is bounded by the published ranges, and the
                     ranges are why a bad page is not reachable from here.
 
                     At most twenty per profile, and names are unique within
@@ -131,7 +131,7 @@ public class CustomizationController {
     }
 
     @Operation(operationId = "patchCustomization", summary = "Rename or re-set one",
-            description = "The settings are replaced whole. Bolum 33.2's parameters are read "
+            description = "The settings are replaced whole. Every parameter is read "
                     + "together by the renderer, and a half-applied geometry is a page nobody "
                     + "asked for. Sending only a name renames it and leaves the settings.")
     @ApiResponse(responseCode = "200", description = "The set as it now stands",
@@ -148,7 +148,7 @@ public class CustomizationController {
     }
 
     @Operation(operationId = "deleteCustomization", summary = "Forget one",
-            description = "A generation already made with it is unaffected: Bolum 14.5 writes "
+            description = "A generation already made with it is unaffected: the snapshot holds "
                     + "the settings themselves into the selection snapshot rather than an id, "
                     + "so a document can always be re-rendered exactly as it was sent.")
     @ApiResponse(responseCode = "204", description = "Deleted")

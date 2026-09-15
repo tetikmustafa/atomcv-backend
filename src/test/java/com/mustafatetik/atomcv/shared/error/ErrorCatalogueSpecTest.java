@@ -22,9 +22,8 @@ import org.junit.jupiter.api.Test;
  * this table and formats every code's ICU message against them. A code with no
  * row is therefore not merely undocumented: it is a code whose message can be
  * written with the wrong arguments and still pass their test. That is the hole
- * B-043 was found in, and {@code COVER_LETTER_REJECTED} fell straight into it —
- * it shipped, it was described in Bolum 34.4.1, and the table never learned
- * about it.
+ * B-043 was found in, and {@code COVER_LETTER_REJECTED} fell straight into it
+ * — it shipped, it was written up, and the table never learned about it.
  *
  * <p>The enum is the authority on both sides of every assertion here. The
  * table is prose and drifts; the enum is compiled and cannot.
@@ -35,8 +34,8 @@ class ErrorCatalogueSpecTest {
      * Relative, because Gradle runs tests from the project directory. A path
      * that stopped resolving would fail {@link #theTableWasActuallyFound}
      * rather than quietly turn every case below into a comparison of two empty
-     * maps — a test file the suite cannot find is the purest form of the
-     * unverified wiring Bolum 51.7 warns about.
+     * maps — a test file the suite cannot find is the purest form of
+     * unverified wiring.
      */
     private static final Path SPEC = Path.of("docs", "spec", "08b-api-contract.md");
 

@@ -18,7 +18,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
  * asymmetry in mind, and a test against the real compiler asserts the estimate
  * is never below what TeX charges.
  *
- * <p>Bolum 26.2 builds this on real font metrics read out of the TTF with
+ * <p>This was to be built on real font metrics read out of the TTF with
  * FontBox. That is a better estimator and it needs a PDF library; this one
  * needs nothing, and where the two differ this one is the more pessimistic.
  */

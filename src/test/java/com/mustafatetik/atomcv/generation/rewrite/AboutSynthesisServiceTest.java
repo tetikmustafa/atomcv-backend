@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * The failure behaviour, which is Bolum 21.6's: two attempts, then the
+ * The failure behaviour, the same as a bullet's: two attempts, then the
  * paragraph the person already had.
  *
  * <p>The summary is the line an employer reads first and quotes back in an
@@ -96,7 +96,7 @@ class AboutSynthesisServiceTest {
     }
 
     /**
-     * <strong>Bolum 43.1.</strong> The skills, the numbers and what the person
+     * <strong>The fence.</strong> The skills, the numbers and what the person
      * wrote about themselves are the CV's content; a copy of any of them in
      * the instruction half is the injection surface the fence exists to
      * remove. The summary carries more of the profile than any other prompt in

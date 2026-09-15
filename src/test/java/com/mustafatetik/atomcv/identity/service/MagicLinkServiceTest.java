@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/** Bolum 40.2 and 40.4: what is issued, and what the answer never says. */
+/** What is issued, and what the answer never says. */
 class MagicLinkServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-08-26T10:00:00Z");
@@ -64,8 +64,9 @@ class MagicLinkServiceTest {
     // ── requesting ────────────────────────────────────────────────────────
 
     /**
-     * Bolum 40.4 in one assertion: an address with an account and one without
-     * do the same work, so there is nothing for a caller to measure or read.
+     * Enumeration protection in one assertion: an address with an account and
+     * one without do the same work, so there is nothing for a caller to
+     * measure or read.
      */
     @Test
     void anUnknownAddressGetsAnAccountAndALinkJustLikeAKnownOne() {
@@ -124,7 +125,7 @@ class MagicLinkServiceTest {
     }
 
     /**
-     * Bolum 40.5 in front of the row, not behind it.
+     * The rate limit in front of the row, not behind it.
      *
      * <p>A refused request must not leave an account, a token or an email
      * behind: the endpoint creates a row for any address anyone types, and the

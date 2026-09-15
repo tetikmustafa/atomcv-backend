@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 /**
  * Forgets the text this product was given, on a timer.
  *
- * <p>The Privacy Policy of Bolum 57 says how long content is kept. Until this
- * class there was no answer: {@code jobs.payload} carries a pasted posting or
- * an uploaded CV's extracted text, {@code generations.job_description} carries
- * the posting again, and nothing anywhere removed either. A retention promise
- * with no sweeper is a sentence, not a property of the system.
+ * <p>The Privacy Policy says how long content is kept. Until this class there
+ * was no answer: {@code jobs.payload} carries a pasted posting or an uploaded
+ * CV's extracted text, {@code generations.job_description} carries the posting
+ * again, and nothing anywhere removed either. A retention promise with no
+ * sweeper is a sentence, not a property of the system.
  *
  * <p><strong>Clearing, not deleting.</strong> The rows stay: a job's history
  * is what the queue's retries and the anomaly detector count, and a generation
@@ -65,10 +65,10 @@ public class RetentionSweeper {
             """;
 
     /**
-     * <strong>Deleting, not clearing, and it is the one place in this class that
-     * does.</strong> Everything above keeps its row because somebody owns it. An
-     * anonymous profile is owned by nobody — the session it belonged to is gone
-     * — and Bolum 9 promises it is not kept. The row is the promise.
+     * <strong>Deleting, not clearing, and it is the one place in this class
+     * that does.</strong> Everything above keeps its row because somebody owns
+     * it. An anonymous profile is owned by nobody — the session it belonged to
+     * is gone — and it was promised not to be kept. The row is the promise.
      *
      * <p>One statement for the whole tree: {@code sections}, {@code entries},
      * {@code atoms}, {@code atom_variants} and {@code tags} all reference

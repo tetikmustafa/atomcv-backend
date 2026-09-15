@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * request pays here are the two I/O paths: a JDBC connection out of a cold
  * pool, and a Redis round trip — the session lookup every authenticated
  * request begins with. Both are paid once and then never again, and paying
- * them on somebody's sign-in is the cold start Bolum 52.5 exists about.
+ * them on somebody's sign-in is the cold start this exists to avoid.
  *
  * <p>The expensive warm-ups are not here on purpose. XeLaTeX compiles a
  * minimal document inside its own container at startup and the embedding

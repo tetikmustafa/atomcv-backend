@@ -53,7 +53,7 @@ public enum ErrorCode {
     REWRITE_VALIDATION_FAILED(500, param("atomId", UUID_VALUE), param("issues", STRING_ARRAY)),
 
     /**
-     * Bolum 34.4 refused a covering letter twice (Adim 3.8, Ekleme).
+     * The validator refused a covering letter twice.
      *
      * <p>Its own code rather than {@code REWRITE_VALIDATION_FAILED}, which is
      * about one atom and reports a server fault. This is neither: the letter
@@ -75,18 +75,18 @@ public enum ErrorCode {
      */
     GENERATION_PAUSED(503),
 
-    // ── Ingestion (Bolum 31.10, coded in EK D.6) ──
+    // ── Ingestion ──
 
     /**
-     * The file is not one of the five Bolum 31.3 can read (Adim 3.4, Ekleme).
+     * The file is not one of the five formats that can be read.
      *
-     * <p>EK D.6 codes the table, which starts after a file has been accepted;
-     * the two rungs before it had no codes. This is the first — raised for an
-     * extension we do not read, for a declared media type that contradicts the
-     * extension, and for bytes that contradict both. One code for all three:
-     * what the user does about it is the same in every case, and a renamed
-     * file and an unsupported one are not worth telling apart in a sentence
-     * that has to end "upload a PDF, DOCX, TEX, TXT or MD".
+     * <p>The error table starts after a file has been accepted; the two rungs
+     * before it had no codes. This is the first — raised for an extension we
+     * do not read, for a declared media type that contradicts the extension,
+     * and for bytes that contradict both. One code for all three: what the
+     * user does about it is the same in every case, and a renamed file and an
+     * unsupported one are not worth telling apart in a sentence that has to
+     * end "upload a PDF, DOCX, TEX, TXT or MD".
      *
      * <p>{@code accepted} is published rather than hardcoded in the client so
      * the list has one owner. A format added here reaches the file picker's
@@ -95,7 +95,7 @@ public enum ErrorCode {
     UNSUPPORTED_DOCUMENT(415, param("accepted", STRING_ARRAY)),
 
     /**
-     * Over the ten megabytes (Adim 3.4, Ekleme).
+     * Over the ten megabytes.
      *
      * <p>Publishes the limit and not the size that was sent. The client knows
      * what it uploaded and the server's own reading of it is unreliable at the
@@ -156,18 +156,18 @@ public enum ErrorCode {
     CSRF_TOKEN_INVALID(403),
 
     /**
-     * No session at all on a request that needs one (Adim 3.3, Ekleme).
+     * No session at all on a request that needs one.
      *
-     * <p>EK D.6 names {@link #ANONYMOUS_SESSION_EXPIRED} for a session that ran
-     * out and {@link #FEATURE_REQUIRES_ACCOUNT} for a feature an anonymous
-     * user cannot reach, but nothing for the plain case of a request arriving
-     * with no {@code sid} cookie. Reusing the expiry code would have the
-     * server claim a session existed and lapsed, which is a sentence the user
-     * reads and a diagnosis the logs cannot correct later.
+     * <p>The catalogue names {@link #ANONYMOUS_SESSION_EXPIRED} for a session
+     * that ran out and {@link #FEATURE_REQUIRES_ACCOUNT} for a feature an
+     * anonymous user cannot reach, but nothing for the plain case of a request
+     * arriving with no {@code sid} cookie. Reusing the expiry code would have
+     * the server claim a session existed and lapsed, which is a sentence the
+     * user reads and a diagnosis the logs cannot correct later.
      *
-     * <p>Adim 3.6 mints an anonymous session for a caller without a cookie, so
-     * this becomes rare rather than wrong: it stays the answer for a request
-     * that reaches a user-scoped endpoint carrying nothing.
+     * <p>An anonymous session is minted for a caller without a cookie, so this
+     * becomes rare rather than wrong: it stays the answer for a request that
+     * reaches a user-scoped endpoint carrying nothing.
      */
     AUTHENTICATION_REQUIRED(401),
 
@@ -234,7 +234,7 @@ public enum ErrorCode {
      */
     CHALLENGE_FAILED(403),
 
-    // ── CRUD and the catch-all, added in Adim 1.2 ──
+    // ── CRUD and the catch-all ──
     RESOURCE_NOT_FOUND(404),
     VERSION_CONFLICT(412),
     PRECONDITION_REQUIRED(428),

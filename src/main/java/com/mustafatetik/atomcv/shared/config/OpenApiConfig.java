@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * The published API document (Bolum XI-B.9.1).
+ * The published API document.
  *
  * <p>This is how the two repositories stay in agreement: the frontend runs
  * {@code npm run gen:api} against it and its TypeScript stops compiling when

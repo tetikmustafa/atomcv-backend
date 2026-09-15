@@ -9,11 +9,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * decision that will move — and because a deployment under attack should be
  * able to tighten them without a release.
  *
- * @param generationsPerUser Bolum 44.1's twenty
+ * @param generationsPerUser the twenty
  * @param profileExtractsPerUser five, and lower than the other on purpose:
  *                               extraction is the most expensive call the
  *                               product makes
- * @param generationsPerIp       Bolum 44.1's anonymous five. Lower than an
+ * @param generationsPerIp the anonymous five. Lower than an
  *                               account's twenty because an address is a
  *                               weaker identity than an account: it is shared
  *                               by everybody behind one office router, and it
@@ -25,7 +25,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *  allowed while the flag lasts. A
  *                               narrowing and not a stop: the daily ceiling
  *                               still applies, this only takes away the burst
- * @param tightenFor             how long the narrowing lasts. Bolum 44.3's
+ * @param tightenFor             how long the narrowing lasts. The
  *                               snippet says six hours
  */
 @ConfigurationProperties(prefix = "atomcv.quota")

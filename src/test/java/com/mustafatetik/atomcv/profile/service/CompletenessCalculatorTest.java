@@ -97,10 +97,10 @@ class CompletenessCalculatorTest {
     }
 
     /**
-     * Bolum 31.9 puts "contact + one education or experience + three skills"
-     * at roughly 45. Which of the two it is decides the exact number: with one
-     * degree it lands at 38, with one position at 48, and the document's
-     * estimate sits between them.
+     * "Contact + one education or experience + three skills" is put at roughly
+     * 45. Which of the two it is decides the exact number: with one degree it
+     * lands at 38, with one position at 48, and the document's estimate sits
+     * between them.
      */
     @Test
     void theDocumentedGenerationThresholdComesOutWhereItSays() {

@@ -10,16 +10,16 @@ package com.mustafatetik.atomcv.shared.error;
  *
  * <p>It lives in {@code shared} rather than beside the exception that raises
  * it because {@link PipelineError.CompilationFailed} carries it, and {@code
- * shared} may not depend on a business module (Bolum 10.2, rule 4). The
- * alternative — the {@code (String detail, boolean rawSourceAvailable)} —
- * drops exactly the distinction the retry decision reads.
+ * shared} may not depend on a business module. The alternative — the {@code
+ * (String detail, boolean rawSourceAvailable)} — drops exactly the distinction
+ * the retry decision reads.
  */
 public enum CompilationFailureKind {
 
     /** The document is wrong: TeX read it and refused. */
     INVALID_DOCUMENT,
 
-    /** Every compilation slot was taken. Bolum 29.5 bounds them on purpose. */
+    /** Every compilation slot was taken. They are bounded on purpose. */
     BUSY,
 
     /** It took too long — a pathological document, or a stuck compiler. */

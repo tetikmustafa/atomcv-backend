@@ -14,7 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @param enabled false in the integration suite, where a sweep firing on a
  *                schedule would clear rows other tests are asserting on
- * @param cron    when the sweep runs. After the nightly backup (Adim V.8), so
+ * @param cron    when the sweep runs. After the nightly backup, so
  *                that the last copy of a cleared row is at most a day old
  * @param jobPayload      how long a terminal job keeps the input it ran on
  * @param jobDescription  how long a generation keeps the posting it was

@@ -102,7 +102,7 @@ class JobDescriptionPreflightTest {
         assertThat(JobDescriptionPreflight.check(essay)).isEqualTo(Verdict.NOT_JOB_LIKE);
     }
 
-    /** Bolum 18.1 asks for at least two, so exactly one is not enough. */
+    /** At least two are asked for, so exactly one is not enough. */
     @Test
     void oneSignalWordIsNotEnough() {
         var almost = "deneyim " + IntStream.range(0, 60)

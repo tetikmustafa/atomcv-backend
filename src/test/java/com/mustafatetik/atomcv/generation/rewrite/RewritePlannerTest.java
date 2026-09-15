@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.1-21.3, which is the whole of Faz D that costs nothing.
+ * The whole of Faz D that costs nothing.
  *
  * <p>Every case here is a promise about what the product will not do to
  * somebody's sentences: not touch the ones with no real connection to the
@@ -32,7 +32,7 @@ class RewritePlannerTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
 
-    // -- Bolum 21.2, the three tiers ---------------------------------------
+    // -- The three tiers ---------------------------------------------------
 
     @Test
     void astrongMatchIsAdapted() {
@@ -45,7 +45,7 @@ class RewritePlannerTest {
     }
 
     /**
-     * The floor, and the sentence Bolum 21.2 gives for it: with no connection,
+     * The floor, and the sentence that goes with it: with no connection,
      * adapting is not adaptation. This is the case where the product's answer
      * to "make my CV fit" is no.
      */
@@ -127,9 +127,9 @@ class RewritePlannerTest {
      * filtering: an item may be dropped, a category dropped when it empties,
      * and nothing added. A prompt asking a model to bring a line closer to a
      * posting is an invitation to do the opposite -- rename the category, or
-     * write in the item the posting asked for. Bolum 21.6 catches a technology
-     * the posting named; a category heading nobody wrote is not a claim about
-     * a technology, so nothing downstream would catch that at all.
+     * write in the item the posting asked for. The validator catches a
+     * technology the posting named; a category heading nobody wrote is not a
+     * claim about a technology, so nothing downstream would catch that at all.
      *
      * <p>The score is deliberately well over the ceiling: a Tech Stack row is
      * exactly the atom that scores best against a posting, because it is a list
@@ -221,7 +221,7 @@ class RewritePlannerTest {
                 .isEqualTo(second.candidates().stream().map(RewriteCandidate::atomId).toList());
     }
 
-    // -- Bolum 21.3 --------------------------------------------------------
+    // -- The length ceiling ------------------------------------------------
 
     /**
      * Faz C chose these atoms by their measured cost. A rewrite that came back
@@ -259,7 +259,7 @@ class RewritePlannerTest {
         });
     }
 
-    // -- Bolum 21.1, from the other side ----------------------------------
+    // -- Alternative wordings, from the other side ------------------------
 
     /**
      * <strong>The sentence rewritten is the sentence selection

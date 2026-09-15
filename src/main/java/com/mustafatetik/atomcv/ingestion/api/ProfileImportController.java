@@ -132,7 +132,7 @@ public class ProfileImportController {
                             type = "string",
                             description = "What the challenge widget produced. "
                                     + "Required for a caller with no account and "
-                                    + "ignored for one with an account (Bolum 44.4): "
+                                    + "ignored for one with an account: "
                                     + "this is the most expensive single call the "
                                     + "product makes. Absent or blank is refused "
                                     + "with `403 CHALLENGE_FAILED`.",

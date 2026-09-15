@@ -35,7 +35,7 @@ public record CustomizationRequest(
         @NotBlank @Size(max = 40)
         String baseTemplateId,
 
-        @Schema(description = "9 to 12 (Bolum 33.2)", example = "10.5")
+        @Schema(description = "9 to 12", example = "10.5")
         @DecimalMin("9.0") @DecimalMax("12.0")
         Double fontSizePt,
 
@@ -47,7 +47,7 @@ public record CustomizationRequest(
         @DecimalMin("0.9") @DecimalMax("1.3")
         Double lineSpacing,
 
-        @Schema(description = "One of the whitelisted families (Bolum 5.5)", example = "sans")
+        @Schema(description = "One of the whitelisted families", example = "sans")
         String fontFamily,
 
         @Schema(description = "Six hex digits, no hash", example = "1D4ED8")

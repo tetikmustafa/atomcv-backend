@@ -31,7 +31,7 @@ class FakeEmbeddingProviderTest {
     }
 
     /**
-     * Bolum 19 computes cosine similarity. A fake returning unnormalised
+     * Scoring computes cosine similarity. A fake returning unnormalised
      * vectors would let a bug in that normalisation pass unnoticed for a whole
      * stage.
      */

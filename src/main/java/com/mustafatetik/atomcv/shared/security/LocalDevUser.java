@@ -13,10 +13,10 @@ import org.springframework.stereotype.Component;
 /**
  * The row every local profile and every generation hangs off, and nothing more.
  *
- * <p>This was {@code LocalDevUser} and it was a {@code CurrentUser}: a
- * fixed acting user, standing in until identity arrived. Identity arrived in
- * Adim 3.3 and took that half — {@code CurrentUser} is now backed by a real
- * session. What is left is the seed.
+ * <p>This was {@code LocalDevUser} and it was a {@code CurrentUser}: a fixed
+ * acting user, standing in until identity arrived. Identity arrived and took
+ * that half — {@code CurrentUser} is now backed by a real session. What is
+ * left is the seed.
  *
  * <p><strong>It was not deleted whole, as its predecessor said it would be.</strong>
  * Sessions landed before any way to start one did: OAuth is the next slice and

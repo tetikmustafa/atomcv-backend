@@ -32,11 +32,11 @@ class AccountFeatureTest {
     }
 
     /**
-     * <strong>And this one does not fail today, which is worth saying.</strong>
-     * None of the five values carries an {@code I}, so a bare
+     * <strong>And this one does not fail today, which is worth
+     * saying.</strong> None of the five values carries an {@code I}, so a bare
      * {@code toLowerCase()} would pass every assertion here on a Turkish
-     * machine as well — § 51.7 asks for a guard that has been seen to fail, and
-     * this is not one yet.
+     * machine as well — a guard should be seen to fail, and this is not one
+     * yet.
      *
      * <p>It is written anyway because of what the next value costs. A feature
      * named {@code IMPORT_HISTORY} or {@code VARIANTS_AI} emits {@code ı}
