@@ -18,8 +18,8 @@ olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç ve �
 şema, ikinci turda `SelectionLine` değişti (`B-108`).
 
 > **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
-> (kanal kuralı): `B-100`-`B-108`'in hiçbiri `ACK` almadı, yani taşınabilecek
-> madde yok. Dokuzu da denetimlerden; okunup ACK'lendiklerinde hepsi birden
+> (kanal kuralı): `B-100`-`B-109`'un hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. Onu da denetimlerden; okunup ACK'lendiklerinde hepsi birden
 > `resolved/`'a iner.
 
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
@@ -141,6 +141,19 @@ madde yanındaki sayı için de geçerli. Sıra zaten sıralamayı söylüyor.
 
 **Eski üretimler `matchedKeywords` taşımıyor** — Faz B onu bu denetimden önce
 kaydetmiyordu. Alan yokluğu normaldir, boş durum ekranı gerektirmez.
+
+### B-109 · Uç açıklamaları yeniden yazıldı — `gen:api` ikinci kez
+**Since:** denetim 2026-09-16 · `openapi.json` 37 satır
+**Neden:** Dökümanlar repodan çıkıyor, bu yüzden koddaki tüm `Bölüm/Adım/EK`
+atıfları temizlendi. Bunların bir kısmı `@Schema`/`@Operation` metinlerinin
+**içindeydi**, yani `openapi.json`'daki açıklamalar değişti.
+**Aksiyon:** `npm run gen:api`. **Hiçbir alan, tip veya enum değişmedi** —
+yalnız `description` metinleri. Üretilen `api.d.ts`'te tip farkı beklenmiyor;
+çıkarsa bu bir kusurdur, haber ver.
+
+Metinlerin anlamı korundu, yalnız işaretçi düştü: "Counts, never a percentage.
+**Bölüm 23.3** forbids one by name" → "**One is forbidden by name**". Ekranda
+bu metinleri gösteren bir yer varsa cümleler biraz kısaldı.
 
 ---
 
