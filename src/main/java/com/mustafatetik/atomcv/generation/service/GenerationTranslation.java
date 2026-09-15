@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 /**
  * The second step, at the moment a generation needs it.
  *
- * <p><strong>What this closes.</strong> Bolum 21.8 lists four steps and only
- * the first was written: use the wording that exists. Without the second —
- * translate the one that does not — {@code cvLanguage: auto} could only follow
- * the posting when the profile already had a wording for every atom in its
- * language, which F-013 records as the reason a Turkish profile applying to an
- * English posting got a Turkish CV. {@link ProfileTree#canBeWrittenIn} was the
- * guard, and the guard existed because the phase did not.
+ * <p><strong>What this closes.</strong> Language handling is four steps and
+ * only the first was written: use the wording that exists. Without the second
+ * — translate the one that does not — {@code cvLanguage: auto} could only
+ * follow the posting when the profile already had a wording for every atom in
+ * its language, which F-013 records as the reason a Turkish profile applying
+ * to an English posting got a Turkish CV. {@link ProfileTree#canBeWrittenIn}
+ * was the guard, and the guard existed because the phase did not.
  *
  * <p><strong>It runs between Faz B and Faz C, and the order is the
  * rule.</strong> That section is explicit: choose the language, then optimise
@@ -38,11 +38,11 @@ import org.springframework.stereotype.Service;
  * vector comes from the English wording and skills are canonical.
  *
  * <p><strong>Bounded, because this is the one place a generation could make a
- * call per atom.</strong> Only the highest-scoring {@value #TRANSLATION_BUDGET}
- * are offered, which is more than a page holds — anything below that is
- * competing for room it will not get, and a wording nobody prints is a wording
- * nobody should pay for. The rest keep the fallback Bolum 20.4 already
- * describes.
+ * call per atom.</strong> Only the highest-scoring {@value
+ * #TRANSLATION_BUDGET} are offered, which is more than a page holds — anything
+ * below that is competing for room it will not get, and a wording nobody
+ * prints is a wording nobody should pay for. The rest keep the estimate
+ * fallback.
  *
  * <p><strong>All or nothing, and that is F-013's rule kept rather than
  * dropped.</strong> A document is written in one language. If any atom in the
@@ -86,9 +86,9 @@ public class GenerationTranslation {
             return true;
         }
 
-        // A virtual thread per task, as Faz D does and for the reason
-        // Bolum 21.5.1 gives: one failure is one failure, not a reason to
-        // cancel the answers already paid for.
+        // A virtual thread per task, as Faz D does and for the same reason:
+        // one failure is one failure, not a reason to cancel the answers
+        // already paid for.
         int translated = 0;
         try (var workers = Executors.newVirtualThreadPerTaskExecutor()) {
             var running = new LinkedHashMap<UUID, Future<Boolean>>();

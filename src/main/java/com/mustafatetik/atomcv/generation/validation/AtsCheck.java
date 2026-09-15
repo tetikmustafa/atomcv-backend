@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Reads our own PDF back and checks the text is still in it.
  *
- * <p>The other half of Bolum 23 was built in Stage 1 and this one was left:
- * {@code FitReport} counts what the <em>selection</em> put on the page, which
- * is a claim about the plan rather than about the artefact. An applicant
+ * <p>The other half of verification was built in Stage 1 and this one was
+ * left: {@code FitReport} counts what the <em>selection</em> put on the page,
+ * which is a claim about the plan rather than about the artefact. An applicant
  * tracking system does not read the plan.
  *
  * <p><strong>Its own PDFBox call rather than {@code PdfTextExtractor}.</strong>

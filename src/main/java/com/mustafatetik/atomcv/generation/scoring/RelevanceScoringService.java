@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
  * service is up.
  *
  * <p>The scorer stays pure. Everything that talks to something — the embedding
- * call, the health check, the meter — is here, so the determinism test of
- * Bolum 51.2 still has a function it can run twice.
+ * call, the health check, the meter — is here, so the determinism test still
+ * has a function it can run twice.
  */
 @Service
 public class RelevanceScoringService {
@@ -64,8 +64,8 @@ public class RelevanceScoringService {
 
         // Counts, never content (absolute rule 4). Which weight set ran is the
         // only way to see from production that a deployment has been scoring
-        // without vectors — the user is not told, Bolum 28.4 calls it an
-        // internal detail.
+        // without vectors — the user is not told, because it is an internal
+        // detail.
         meters.counter("generation.scoring.weights",
                         "set", postingVector == null ? "without_embedding" : "default")
                 .increment();
@@ -79,7 +79,7 @@ public class RelevanceScoringService {
      * The posting as a vector, or null to score without one.
      *
      * <p>Two ways to get null, and they are different failures with the same
-     * answer. The health check is Bolum 28.4's: ask before spending a round
+     * answer. The health check is the cheap half: ask before spending a round
      * trip on a service that is known to be down. The catch is because that
      * check is a signal and not a promise — {@code isHealthy} describes a
      * moment that has already passed, and a call can still fail after it

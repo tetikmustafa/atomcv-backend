@@ -23,16 +23,15 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /**
  * The acting user, read from the {@code sid} cookie.
  *
- * <p><strong>Resolved on demand, not in a filter.</strong> A filter would put a
- * Redis round trip in front of every request, including the ones that never
- * ask who is calling — the health probe, the warm-up of Bolum 52.5, the
- * schema. Endpoints that need a user ask for one, and this answers.
+ * <p><strong>Resolved on demand, not in a filter.</strong> A filter would put
+ * a Redis round trip in front of every request, including the ones that never
+ * ask who is calling — the health probe, the warm-up, the schema. Endpoints
+ * that need a user ask for one, and this answers.
  *
- * <p>The answer is memoised on the request, so an endpoint that calls
- * {@link #find()} and then {@link #require()} — or a controller and the service
- * below it — costs one lookup rather than one each. The attribute is also what
- * makes the sliding TTL of EK D.6.6 refresh once per request instead of once
- * per caller.
+ * <p>The answer is memoised on the request, so an endpoint that calls {@link
+ * #find()} and then {@link #require()} — or a controller and the service below
+ * it — costs one lookup rather than one each. The attribute is also what makes
+ * the sliding TTL refresh once per request instead of once per caller.
  */
 @Component
 public class SessionCurrentUser implements CurrentUser {

@@ -5,13 +5,13 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 /**
  * What a section is worth printing at, and the order it is printed in.
  *
- * <p><strong>Sapma — Bolum 20 selects by budget alone, and that is not a
+ * <p><strong>A deviation — selecting by budget alone does not produce a
  * CV.</strong> The greedy pass ranks every atom against every other, so a
  * profile whose experience scores well spends the whole page on it: a measured
  * run put twenty atoms on the page and all twenty were projects, with no
  * experience, no skills and no summary anywhere. Each of those was a correct
- * answer to "which atoms are worth the most points", and the document was not a
- * CV. A reader expects a shape before they expect relevance.
+ * answer to "which atoms are worth the most points", and the document was not
+ * a CV. A reader expects a shape before they expect relevance.
  *
  * <p>So each kind reserves a floor first, and only what is left competes. The
  * floor is what the section is worth printing <em>at</em> — below it the

@@ -310,8 +310,8 @@ public final class CoverLetterValidator {
     }
 
     /**
-     * <strong>Ekleme — a closed set, not a company detector.</strong> Bolum
-     * 34.4 asks whether the company name is right, and there is no dictionary
+     * <strong>An addition — a closed set, not a company detector.</strong> The
+     * check asks whether the company name is right, and there is no dictionary
      * of employers to answer that with in general. What can be answered is the
      * failure that actually happens: a model that has just read this person's
      * CV addresses the letter to the employer it read there. So the greeting

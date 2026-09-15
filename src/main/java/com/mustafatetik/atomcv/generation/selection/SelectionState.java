@@ -95,7 +95,7 @@ public record SelectionState(
 
     /**
      * Why an atom — or, for {@code BUDGET}, an entry — did not make it. Every
-     * one of these is explainable to a user (P7).
+     * one of these is explainable to a user.
      */
     public enum RejectionReason {
         /** There was no room left. */

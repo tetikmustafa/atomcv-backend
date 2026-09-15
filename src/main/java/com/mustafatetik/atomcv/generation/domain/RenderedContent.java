@@ -16,10 +16,10 @@ import java.util.Locale;
  * different document from the one that was sent to an employer — and Stage 3's
  * application tracking points at exactly this row.
  *
- * <p>So the text is copied at generation time. {@link RenderRequest} is already
- * the right shape for it — Bolum 22.2 built it to carry no ids, no scores and
- * no locks, only what prints — which means storing it is storing the render
- * itself, and a download re-runs the same input through the same renderer.
+ * <p>So the text is copied at generation time. {@link RenderRequest} is
+ * already the right shape for it — it carries no ids, no scores and no locks,
+ * only what prints — which means storing it is storing the render itself, and
+ * a download re-runs the same input through the same renderer.
  *
  * <p>The customization and the language are not repeated here; they live in
  * {@link StoredSelection}, and one copy of a fact is easier to keep true than

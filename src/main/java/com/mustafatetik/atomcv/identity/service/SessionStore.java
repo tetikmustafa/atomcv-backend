@@ -16,7 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Sessions in Redis, which is what Bolum 40.1 bought instead of a JWT.
+ * Sessions in Redis, which is what was bought instead of a JWT.
  *
  * <p>The section's argument is revocation: a signed token cannot be taken
  * back, and a row that can be deleted can. That only holds if deleting is
@@ -157,9 +157,9 @@ public class SessionStore {
     }
 
     /**
-     * Every browser this user is signed in on. What Bolum 40.1 promises over a
-     * JWT, and the operation a password reset, a role change or a stolen
-     * device needs.
+     * Every browser this user is signed in on. What a server-side session
+     * promises over a JWT, and the operation a password reset, a role change
+     * or a stolen device needs.
      *
      * <p><strong>A failure is raised and not logged.</strong> This used to
      * warn and answer zero, which made the ordering

@@ -31,8 +31,8 @@ public class OAuthStateStore {
 
     /**
      * Long enough for a slow consent screen, short enough that an abandoned
-     * one is not a credential lying around. Bolum 40.2 gives the magic link
-     * ten minutes for the same reason.
+     * one is not a credential lying around. The magic link gets ten minutes
+     * for the same reason.
      */
     static final Duration TTL = Duration.ofMinutes(10);
 

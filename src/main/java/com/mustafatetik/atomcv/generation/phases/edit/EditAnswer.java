@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * What the model answers with (Bolum 24.2, {@code selection_edit/schema.json}).
+ * What the model answers with ({@code selection_edit/schema.json}).
  *
  * <p>Numbers, never ids and never text. The schema says so and this says so
  * again: a record that could hold a sentence would eventually be given one.

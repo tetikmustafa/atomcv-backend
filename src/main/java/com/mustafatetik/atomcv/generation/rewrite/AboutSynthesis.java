@@ -17,11 +17,11 @@ import java.util.UUID;
 /**
  * What the About paragraph would be written from, decided without an LLM.
  *
- * <p><strong>Ekleme — the About is synthesised only where one already
- * exists.</strong> Bolum 21.7 says how to write the paragraph and is silent on
- * where it goes. It cannot be invented here: selection costed the atoms it
- * chose and promised a page limit on the strength of that, and a paragraph
- * that no section held is a block the budget never accounted for. A person who
+ * <p><strong>An addition — the About is synthesised only where one already
+ * exists.</strong> How to write the paragraph is settled; where it goes is
+ * not. It cannot be invented here: selection costed the atoms it chose and
+ * promised a page limit on the strength of that, and a paragraph that no
+ * section held is a block the budget never accounted for. A person who
  * switched their About off has also already answered the question.
  *
  * <p>So this looks for an About paragraph that selection kept, and everything
@@ -74,14 +74,14 @@ public final class AboutSynthesis {
                     // print the same paragraph twice.
                     about = about == null ? node : about;
                 }
-                // Every selected atom feeds the union, About included.
-                // Bolum 21.7 says the input is "seçilmiş atomların skills +
-                // metrics birleşimi" and this skipped the About section's own,
-                // so a paragraph reworded from itself could be refused for
-                // keeping a technology it already named. A profile with four
-                // About paragraphs — which is what real ones have, whatever
-                // the comment here used to claim — lost the other three from
-                // the union entirely.
+                // Every selected atom feeds the union, About included. The
+                // input is the union of the selected atoms' skills and
+                // metrics, and this skipped the About section's own, so a
+                // paragraph reworded from itself could be refused for keeping
+                // a technology it already named. A profile with four About
+                // paragraphs — which is what real ones have, whatever the
+                // comment here used to claim — lost the other three from the
+                // union entirely.
                 skills.addAll(node.atom().getSkills());
                 metrics.addAll(node.atom().getMetrics());
             }

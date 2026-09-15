@@ -21,14 +21,14 @@ import org.springframework.stereotype.Component;
  * from the user's own profile.
  *
  * <p><strong>A cache failure is a miss, never a failed generation.</strong>
- * Bolum 18.6 does not say so, and it has to be said: this is an optimisation,
- * and an optimisation whose outage takes the product down is worse than not
- * having it. Every Redis call here is wrapped for that reason.
+ * Nothing says so, and it has to be said: this is an optimisation, and an
+ * optimisation whose outage takes the product down is worse than not having
+ * it. Every Redis call here is wrapped for that reason.
  */
 @Component
 public class JobAnalysisCache {
 
-    /** Bolum 18.6. Long enough to cover a return visit, short enough to age out. */
+    /** Long enough to cover a return visit, short enough to age out. */
     static final Duration TTL = Duration.ofDays(7);
 
     private static final String PREFIX = "jd:";
@@ -72,8 +72,8 @@ public class JobAnalysisCache {
     /**
      * {@code jd:{promptVersion}:{sha256}}.
      *
-     * <p>Bolum 18.6 keys on the posting alone. The version is here because a
-     * prompt change has to invalidate: without it a v2 prompt would serve v1's
+     * <p>The key is the posting alone. The version is here because a prompt
+     * change has to invalidate: without it a v2 prompt would serve v1's
      * answers for a week, and — worse — an A/B experiment would be measuring
      * nothing at all, since the bucket sent to v2 would read whatever v1 had
      * already cached for that posting.

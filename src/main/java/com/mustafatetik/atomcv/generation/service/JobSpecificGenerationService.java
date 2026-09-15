@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * A CV written against one posting: Faz A through Faz F (Bolum 18-23).
+ * A CV written against one posting: Faz A through Faz F.
  *
  * <p>Next to {@link CvGenerationService} rather than inside it. The two share
  * everything from selection onwards and differ in exactly two places — there
@@ -59,9 +59,9 @@ import org.springframework.stereotype.Service;
  * reversing any pair of them still works — it just charges the user for
  * something that was always going to fail.
  *
- * <p>Nothing is persisted yet. {@code generations} rows, the queue and
- * {@code POST /generations} arrive together in Adim 2.6; this returns the
- * document the same way general mode does.
+ * <p>Nothing is persisted yet. {@code generations} rows, the queue and {@code
+ * POST /generations} arrive together later; this returns the document the same
+ * way general mode does.
  */
 @Service
 public class JobSpecificGenerationService {
@@ -198,9 +198,9 @@ public class JobSpecificGenerationService {
         RelevanceScores scores = relevance.scoreAgainst(
                 tree, tags.labelsByAtom(profile), posting, directives.emphasize());
 
-        // The second step, between Faz B and Faz C because Bolum 32.3 is
-        // explicit about the order: choose the language, then optimise against
-        // *that* language's costs. Faz B can run first because scoring is
+        // The second step, between Faz B and Faz C because the order is
+        // explicit: choose the language, then optimise against *that*
+        // language's costs. Faz B can run first because scoring is
         // language-independent -- the vector comes from the English wording
         // and skills are canonical.
         //

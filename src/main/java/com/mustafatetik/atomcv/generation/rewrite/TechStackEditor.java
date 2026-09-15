@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * technologies of which three are relevant reads as a list of things rather
  * than as an answer to the advertisement.
  *
- * <p><strong>It only ever removes.</strong> Bolum 33.4 fixes the shape: filter
+ * <p><strong>It only ever removes.</strong> The layout fixes the shape: filter
  * items within the categories the person wrote, drop a category when nothing
  * of it survives, and never invent a category or move an item between two. So
  * this reads the row, keeps some of its items and writes the rest of the row

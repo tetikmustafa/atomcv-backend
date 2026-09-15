@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
  * The welcome, sent once and from one place.
  *
  * <p><strong>The trigger is the first successful sign-in, not the first
- * row.</strong> Bolum 40.4 writes a {@code users} row the moment anyone types
- * an address into the sign-in box — before that person has proved anything,
- * and whether or not the address is theirs. Greeting on row creation would
- * have sent mail to every address anybody cared to enter, which is the abuse
- * the limits exist to slow down.
+ * row.</strong> A {@code users} row is written the moment anyone types an
+ * address into the sign-in box — before that person has proved anything, and
+ * whether or not the address is theirs. Greeting on row creation would have
+ * sent mail to every address anybody cared to enter, which is the abuse the
+ * limits exist to slow down.
  *
  * <p>So it reads {@code last_seen_at}, which is null exactly until the first
  * session exists. Both routes pass through here for that reason: the magic

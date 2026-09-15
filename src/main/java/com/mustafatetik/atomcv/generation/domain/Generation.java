@@ -20,8 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * One CV that was produced, and the record of why it looks that way
- * (Bolum 14.4-14.7).
+ * One CV that was produced, and the record of why it looks that way.
  *
  * <p>The table is in {@code V1}; this is the mapping, and there is no
  * migration (absolute rule 2).
@@ -35,10 +34,10 @@ import org.hibernate.type.SqlTypes;
  * so.
  *
  * <p><strong>{@code pdfKey} stays null in Stage 2.</strong> Nothing stores the
- * bytes; a download re-renders from {@link #contentSnapshot}, which EK D.6.3
- * already describes as always possible. R2 and the fourteen-day expiry arrive
- * together in Stage 3, and until they do a {@code pdf_expires_at} would be a
- * promise nothing keeps.
+ * bytes; a download re-renders from {@link #contentSnapshot}, which is always
+ * possible by design. R2 and the fourteen-day expiry arrive together in Stage
+ * 3, and until they do a {@code pdf_expires_at} would be a promise nothing
+ * keeps.
  *
  * <p>Three snapshots and they answer different questions. {@code selectionState}
  * says <em>why</em> the page looks like this — scores, rejections, the budget —
@@ -101,11 +100,11 @@ public class Generation implements UserOwned {
      *
      * <p>The third snapshot, and it looks like the second one until you ask it
      * a question the second one cannot answer. {@link #contentSnapshot} is the
-     * render — Bolum 22.2 built it to carry no ids at all — so the sentence it
-     * holds cannot be handed back to the atom it belongs to. Faz G re-runs
-     * selection, and every atom that survives the edit has to keep the wording
-     * it already has: without this column an edit of one bullet returns the
-     * whole CV in its pre-Faz-D voice, and pays a second time to avoid it.
+     * render, built to carry no ids at all, so the sentence it holds cannot be
+     * handed back to the atom it belongs to. Faz G re-runs selection, and
+     * every atom that survives the edit has to keep the wording it already
+     * has: without this column an edit of one bullet returns the whole CV in
+     * its pre-Faz-D voice, and pays a second time to avoid it.
      *
      * <p>Null means a row written before V11 and nothing else. Empty means no
      * atom on this page carries a Faz D wording — general mode, an unreachable
@@ -273,9 +272,9 @@ public class Generation implements UserOwned {
     }
 
     /**
-     * Bolum 34. Written on request and rewritten on request, so unlike the
-     * rest of this row it is not written once — the three buttons of Bolum
-     * 34.6 all land here.
+     * The covering letter. Written on request and rewritten on request, so
+     * unlike the rest of this row it is not written once — all three
+     * regeneration buttons land here.
      */
     public void setCoverLetter(String coverLetter) {
         this.coverLetter = coverLetter;

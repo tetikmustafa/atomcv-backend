@@ -62,8 +62,8 @@ public class UserAccount {
     private Instant lastSeenAt;
 
     /**
-     * Whether the optional emails of Bolum 57.7 may be sent. True until the
-     * person says otherwise; the deletion confirmation does not read it.
+     * Whether the optional lifecycle emails may be sent. True until the person
+     * says otherwise; the deletion confirmation does not read it.
      */
     @Column(name = "lifecycle_emails", nullable = false)
     private boolean lifecycleEmails = true;

@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 /**
  * GitHub's public API, read.
  *
- * <p><strong>Public data only, and that is the whole design.</strong> Bolum
- * 31.8 asks for no private repository permission, and because it asks for none
- * this needs no stored provider token — which matters, because Bolum 40.6.1
- * deliberately leaves {@code oauth_identities.access_token_enc} null and says a
+ * <p><strong>Public data only, and that is the whole design.</strong> No
+ * private repository permission is asked for, and because none is asked for
+ * this needs no stored provider token — which matters, because {@code
+ * oauth_identities.access_token_enc} is deliberately left null and says a
  * token would arrive with key management. It does not have to: these endpoints
  * answer without one.
  *
@@ -45,10 +45,10 @@ public class GitHubClient implements GitHubRepositories {
     private static final Duration TIMEOUT = Duration.ofSeconds(8);
 
     /**
-     * Bolum 31.8 asks for fifteen, sorted by what was touched last. Thirty,
-     * because the filter below throws most of them away and a second page is a
-     * second request: the interesting repositories of somebody with a lot of
-     * forks are not all in the first fifteen.
+     * Fifteen were asked for, sorted by what was touched last. Thirty, because
+     * the filter below throws most of them away and a second page is a second
+     * request: the interesting repositories of somebody with a lot of forks
+     * are not all in the first fifteen.
      */
     private static final int PAGE_SIZE = 30;
 

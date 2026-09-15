@@ -20,9 +20,9 @@ import org.springframework.stereotype.Component;
  * buy a bot a free round trip to Cloudflare on our budget.
  *
  * <p><strong>A refusal is a 429 and says when, and neither leaks anything
- * Bolum 40.4 protects.</strong> The address layer only ever refuses a caller
- * who already spent that window themselves, so the answer tells them what they
- * did, not whether the address has an account.
+ * enumeration protection covers.</strong> The address layer only ever refuses
+ * a caller who already spent that window themselves, so the answer tells them
+ * what they did, not whether the address has an account.
  */
 @Component
 public class SignInRateLimit {

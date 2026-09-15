@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Turning the optional post off from an inbox.
  *
  * <p><strong>A POST, and the link in the email is not this.</strong> The link
- * lands on a page that carries a button, which then calls here. Bolum 40.3 is
+ * lands on a page that carries a button, which then calls here. Prefetching is
  * the reason: corporate gateways fetch every URL in a message before anyone
  * reads it, and an unsubscribe that acted on a fetch would switch off email
  * for people who never clicked.

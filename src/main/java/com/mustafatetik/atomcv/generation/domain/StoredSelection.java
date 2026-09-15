@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * {@code generations.selection_state} as Bolum 14.5 defines it.
+ * {@code generations.selection_state}, as the column is defined.
  *
  * <p>{@link SelectionState} is what the pipeline passes around; this is what
  * the column holds, and it carries two things the pipeline's version does not
@@ -19,13 +19,13 @@ import java.util.UUID;
  * chosen but not how to draw them, and the promise — that the PDF can always
  * be made again — would not hold.
  *
- * <p><strong>Sapma from Bolum 14.5:</strong> the field is the customization
- * itself and not a {@code customizationId}. There is no
- * {@code template_customizations} row to point at yet — Stage 2 renders with a
- * constant — and an id that resolves to nothing would make the snapshot
- * unusable for exactly the thing it exists for. The font, margin and spacing
- * are what a re-render needs; when the table has rows, an id can join to them
- * and this stays as the record of what actually ran.
+ * <p><strong>A deviation:</strong> the field is the customization itself and
+ * not a {@code customizationId}. There is no {@code template_customizations}
+ * row to point at yet — Stage 2 renders with a constant — and an id that
+ * resolves to nothing would make the snapshot unusable for exactly the thing
+ * it exists for. The font, margin and spacing are what a re-render needs; when
+ * the table has rows, an id can join to them and this stays as the record of
+ * what actually ran.
  *
  * <p>That promise is what this column is for. In Stage 2 it is not a fallback
  * for an expired artifact but the only path: nothing stores the bytes, and
@@ -94,7 +94,7 @@ public record StoredSelection(
      * Every candidate this generation weighed, chosen or not, with the score
      * it competed on.
      *
-     * <p>What Faz G re-runs against. Bolum 24.1 restarts the pipeline at Faz C,
+     * <p>What Faz G re-runs against. An edit restarts the pipeline at Faz C,
      * so the scores cannot be recomputed without doing the thing that rule
      * forbids — they are read back out of here instead.
      *
@@ -102,8 +102,8 @@ public record StoredSelection(
      * candidate whose id <em>is</em> the entry's, so it is already in {@code
      * selected} or {@code rejectedEntries} under that id.
      *
-     * <p>Ordered, because it is walked to build a selection request and Bolum
-     * 19.6 wants two runs of one input to produce one request.
+     * <p>Ordered, because it is walked to build a selection request and two
+     * runs of one input have to produce one request.
      */
     public Map<UUID, Double> scoresByCandidate() {
         var scores = new LinkedHashMap<UUID, Double>();

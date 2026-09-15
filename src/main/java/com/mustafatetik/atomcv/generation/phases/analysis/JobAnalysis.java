@@ -19,8 +19,7 @@ import java.util.stream.Stream;
  * anyway, because the cover letter should be offered in the posting's language.
  *
  * <p>Unknown fields are ignored rather than refused: a model that adds one is
- * not a failure, and the plausibility gate in Bolum 18.4 judges the fields
- * that matter.
+ * not a failure, and the plausibility gate judges the fields that matter.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record JobAnalysis(
@@ -96,7 +95,7 @@ public record JobAnalysis(
     public record ExperienceYears(Integer min, Integer max) {
     }
 
-    // ── The closed vocabularies of Bolum 18.2 ────────────────────────────
+    // ── The closed vocabularies ──────────────────────────────────────────
     //
     // Lowercase on the wire, and an unknown value reads as null rather than
     // failing the parse. With `strict: true` the provider enforces the enum,
@@ -160,7 +159,7 @@ public record JobAnalysis(
         }
     }
 
-    /** How much a required skill matters. Bolum 19 weighs the score by it. */
+    /** How much a required skill matters. Scoring weighs by it. */
     public enum Importance {
         CRITICAL, HIGH, MEDIUM;
 

@@ -24,12 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Three things the cascade does not reach, and they are the reason this
  * class exists at all. Redis holds the sessions, so a deleted account whose
- * cookie still worked would be an account that was not deleted.
- * {@code usage_counters} is keyed by a subject rather than by a foreign key
- * — <strong>Düzeltme against Bolum 57.4</strong>, which says Postgres handles
- * everything — so its rows outlive the account unless something removes them.
- * And the deletion itself has to be recorded, because "we deleted it" is a
- * claim somebody may have to answer for later.
+ * cookie still worked would be an account that was not deleted. {@code
+ * usage_counters} is keyed by a subject rather than by a foreign key —
+ * <strong>a correction: the cascade is supposed to handle everything</strong>
+ * — so its rows outlive the account unless something removes them. And the
+ * deletion itself has to be recorded, because "we deleted it" is a claim
+ * somebody may have to answer for later.
  *
  * <p><strong>What survives, on purpose.</strong> {@code llm_invocations} keeps
  * its rows with a null user — the schema says so in its own comment, and the

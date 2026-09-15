@@ -118,8 +118,8 @@ public class GenerationJobHandler implements JobHandler {
         // selection bought.
         //
         // General mode is still account-only. Nothing refuses it here because
-        // nothing offers it: § 35.7 gives an anonymous session one language and
-        // the flow it was built for is "against this posting". It arrives when
+        // nothing offers it: an anonymous session gets one language and the
+        // flow it was built for is "against this posting". It arrives when
         // somebody asks for it, not before.
         Result<GeneratedGeneration> result = isGeneralMode(payload)
                 ? general.generateGeneralCv(UserContext.of(job.getOwnerId()),
@@ -182,9 +182,9 @@ public class GenerationJobHandler implements JobHandler {
         }
         Generation parent = found.get();
 
-        // Bolum 24.2. A sentence has to be read before it can be applied, and
-        // that reading is the only thing an edit ever pays for. A hand toggle
-        // arrives with its ids already decided and skips it entirely.
+        // A sentence has to be read before it can be applied, and that reading
+        // is the only thing an edit ever pays for. A hand toggle arrives with
+        // its ids already decided and skips it entirely.
         GenerationDirectives directives = payload.directives();
         if (payload.isNaturalLanguage()) {
             progress.report(GenerationPhase.ANALYSING.at(15));
@@ -335,7 +335,7 @@ public class GenerationJobHandler implements JobHandler {
         GeneratedDocument document = generated.document();
 
         // Counts, never content (absolute rule 4). What the terminal SSE event
-        // of Bolum 30.6 carries, and what GET /jobs/{id} reads back.
+        // carries, and what GET /jobs/{id} reads back.
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("generationId", record.getId().toString());
         result.put("pageCount", document.pageCount());
@@ -378,13 +378,13 @@ public class GenerationJobHandler implements JobHandler {
         record.setPageCount(document.pageCount());
         record.setFitReport(generated.fitReport());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
-        // V11. The snapshot above cannot stand in for it: it is the render, and
-        // Bolum 22.2 built the render to carry no atom ids. Faz G reads this
-        // one back so an edit keeps the sentences it did not touch.
+        // V11. The snapshot above cannot stand in for it: it is the render,
+        // and the render carries no atom ids. Faz G reads this one back so an
+        // edit keeps the sentences it did not touch.
         record.setRewrittenContent(document.rewritten());
         // Absent when it was not asked for, and absent when it was asked for
-        // and refused — Bolum 34 does not print a letter it could not check,
-        // and the CV is what the person came for.
+        // and refused — a letter that could not be checked is not printed, and
+        // the CV is what the person came for.
         record.setCoverLetter(generated.coverLetter());
         record.setTrace(trace(generated));
 
@@ -426,12 +426,12 @@ public class GenerationJobHandler implements JobHandler {
      * and a trace carrying a zero would read as "instant" instead of as
      * "unmeasured". They arrive when the phases are instrumented.
      *
-     * <p>C carries its budget, which Bolum 14.6 does not ask for. It is here
+     * <p>C carries its budget, which the trace was not asked for. It is here
      * because the abridged version could not answer the one question it gets
      * asked: a page that came out under-filled recorded {@code "rejected": 13}
      * and nothing about how much room those thirteen were turned away from, so
-     * telling a selection bug from a budget bug meant reading
-     * {@code selection_state} out of the database by hand.
+     * telling a selection bug from a budget bug meant reading {@code
+     * selection_state} out of the database by hand.
      */
     private static Map<String, Object> trace(GeneratedGeneration generated) {
         SelectionState selection = generated.document().selection();
@@ -551,9 +551,9 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     /**
-     * Bolum 30.5 decides retryability from the error, and this is the only
-     * place holding it in that form — which is why {@link JobOutcome} carries
-     * the answer rather than the queue working it out.
+     * Retryability is decided from the error, and this is the only place
+     * holding it in that form — which is why {@link JobOutcome} carries the
+     * answer rather than the queue working it out.
      */
     private JobOutcome failed(PipelineError error) {
         return JobOutcome.failed(

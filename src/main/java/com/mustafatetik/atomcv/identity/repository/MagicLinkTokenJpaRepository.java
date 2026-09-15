@@ -32,8 +32,8 @@ interface MagicLinkTokenJpaRepository extends JpaRepository<MagicLinkToken, UUID
     /**
      * Every other outstanding link for this user, spent at once.
      *
-     * <p>Bolum 40.2 does not ask for it. It closes the window anyway: someone
-     * who requested a link to an address they do not own leaves a live token
+     * <p>Nothing asks for it. It closes the window anyway: someone who
+     * requested a link to an address they do not own leaves a live token
      * behind, and signing in is the moment the real owner can be sure nothing
      * of theirs is still redeemable.
      */

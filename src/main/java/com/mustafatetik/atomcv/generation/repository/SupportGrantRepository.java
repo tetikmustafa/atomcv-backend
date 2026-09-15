@@ -35,7 +35,7 @@ public class SupportGrantRepository extends UserScopedRepository<SupportGrant> {
      *
      * <p>Newest rather than open: a revoked or expired grant is what the
      * person is shown when they ask what became of their permission, and an
-     * accessed one is the audit trail Bolum 48.4 promises them.
+     * accessed one is the audit trail they were promised.
      */
     public Optional<SupportGrant> findFor(UserContext user, UUID generationId) {
         return jpa.findFirstByGenerationIdAndUserIdOrderByGrantedAtDesc(

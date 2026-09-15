@@ -16,9 +16,9 @@ import java.util.List;
  * <p><strong>It reports; it never refuses.</strong> A page that has already
  * been paid for and fits its limit is the person's document. Anything here is
  * a defect in <em>our</em> template or fonts, not in their CV, and taking the
- * document away from them would be answering our own bug with their loss.
- * Bolum 23.2 puts this in the report beside the coverage counts, and the
- * counters are what an operator watches.
+ * document away from them would be answering our own bug with their loss. It
+ * sits in the report beside the coverage counts, and the counters are what an
+ * operator watches.
  *
  * @param headingsFound   section headings that came back out of the PDF
  * @param headingsMissing headings the document printed and the text layer does

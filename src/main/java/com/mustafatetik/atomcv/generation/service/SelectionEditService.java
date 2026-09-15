@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
  * but deterministic work — selection, render, compile — so there is nothing
  * for a day's allowance to be spent on. A sentence has to be read first, and
  * that reading is a model call, so it comes off the same ceiling a generation
- * does. § 44 stays where it belongs: on the calls that cost money.
+ * does. The allowance stays where it belongs: on the calls that cost money.
  *
  * <p><strong>Checked against the parent's own snapshot.</strong> An id that was
  * never a candidate for this CV is refused rather than ignored. Ignoring it
@@ -74,9 +74,9 @@ public class SelectionEditService {
      * A sentence: the ids are not decided yet, and reading it costs a call.
      *
      * <p>The ceiling is taken here rather than in the worker, for the reason
-     * Bolum 44.2 takes it at every other queue point: a request that is going
-     * to be refused must not have been accepted first. The worker gives it
-     * back when the sentence named no line, or when the re-run failed.
+     * it is taken at every other queue point: a request that is going to be
+     * refused must not have been accepted first. The worker gives it back when
+     * the sentence named no line, or when the re-run failed.
      *
      * <p>The parent's own directives ride along and the parse merges onto
      * them, so "and take the other one out too" is a second edit of the same

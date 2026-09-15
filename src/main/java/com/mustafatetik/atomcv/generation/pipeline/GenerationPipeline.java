@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Faz C to Faz F: choose, render, compile, and check the result (Bolum 20-23).
+ * Faz C to Faz F: choose, render, compile, and check the result.
  *
  * <p>Faz D sits between the choosing and the rendering, and it is asked once
  * per atom however many times the loop goes round: a document that came out
@@ -135,26 +135,25 @@ public class GenerationPipeline {
      * The calibration signal, in the only resolution production can measure
      * it.
      *
-     * <p><strong>Not the drift percentage Bolum 26.6 writes.</strong> That one
-     * divides a measured content height by the predicted one, and there is no
-     * measured height here: the note records that no {@code pdfAnalyzer}
-     * exists and that the page count arrives as the compiler's {@code
-     * X-Page-Count} header. A height would cost a second compilation of every
-     * document, and the measurement document that can produce one shares a
-     * preamble with the page rather than being it.
+     * <p><strong>Not the drift percentage the calibration loop was written
+     * around.</strong> That one divides a measured content height by the
+     * predicted one, and there is no measured height here: the note records
+     * that no {@code pdfAnalyzer} exists and that the page count arrives as
+     * the compiler's {@code X-Page-Count} header. A height would cost a second
+     * compilation of every document, and the measurement document that can
+     * produce one shares a preamble with the page rather than being it.
      *
      * <p>What can be compared is pages: how many the budget said this would
      * take against how many came back. Zero is the ordinary reading and the
      * distribution is the diagnostic — a template whose mean walks away from
-     * zero has a measurement layer that is wrong, which is exactly what
-     * Bolum 26.6 wants this number for. It is coarse, and it is honest about
-     * being coarse.
+     * zero has a measurement layer that is wrong, which is exactly what this
+     * number is for. It is coarse, and it is honest about being coarse.
      *
-     * <p><strong>Nothing acts on it.</strong> Bolum 26.6 also asks for the
-     * safety margin to widen itself when the drift crosses three percent, and
-     * that is deliberately not here: a guarantee that adjusts itself on a
-     * signal measured in whole pages would move on one bad document and would
-     * have no way to move back. The number goes to an operator.
+     * <p><strong>Nothing acts on it.</strong> The safety margin was also meant
+     * to widen itself when the drift crosses three percent, and that is
+     * deliberately not here: a guarantee that adjusts itself on a signal
+     * measured in whole pages would move on one bad document and would have no
+     * way to move back. The number goes to an operator.
      */
     private void recordDrift(SelectionState state, SelectionRequest request,
             TemplateCustomization customization, int actualPages) {

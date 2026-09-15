@@ -14,10 +14,9 @@ import java.util.regex.Pattern;
  * count and an answer if it reaches the model, and refusing it here costs a
  * string scan.
  *
- * <p><strong>A refusal here is a question, not a wall.</strong> Bolum 18.1
- * offers three ways past it, and one of them is proceeding anyway — the
- * heuristics below are cheap on purpose and the user may know better than
- * they do.
+ * <p><strong>A refusal here is a question, not a wall.</strong> There are
+ * three ways past it, and one of them is proceeding anyway — the heuristics
+ * below are cheap on purpose and the user may know better than they do.
  */
 public final class JobDescriptionPreflight {
 

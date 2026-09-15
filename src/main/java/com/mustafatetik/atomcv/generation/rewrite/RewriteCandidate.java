@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * One bullet Faz D may work on, and everything it is allowed to know
- * (Bolum 21.2-21.4).
+ * One bullet Faz D may work on, and everything it is allowed to know.
  *
  * <p><strong>{@code skills} is the honesty constraint, not a hint.</strong>
- * Bolum 21.4 hands the model the atom's own skills and tells it that anything
+ * The prompt hands the model the atom's own skills and tells it that anything
  * the posting wants which is not on that list must not be mentioned. The
- * validator of Bolum 21.6 then checks the answer against the same list with
- * zero tolerance. A candidate that arrived without its skills would be a
- * request to write whatever sounds good.
+ * validator then checks the answer against the same list with zero tolerance.
+ * A candidate that arrived without its skills would be a request to write
+ * whatever sounds good.
  *
  * @param atomId      what is being rewritten
  * @param variantId the wording chosen for it, which is what the

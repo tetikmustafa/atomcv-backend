@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The reading half of Faz G's hand toggle (Bolum 24.4, F-031).
+ * The reading half of Faz G's hand toggle (F-031).
  *
  * <p><strong>A screen cannot draw a toggle it cannot name.</strong> The edit
  * endpoint refuses an atom this generation never weighed, and refuses it on

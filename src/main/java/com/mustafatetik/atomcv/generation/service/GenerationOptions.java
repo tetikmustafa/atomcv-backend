@@ -10,9 +10,9 @@ import java.util.Locale;
 /**
  * What a generation was asked for.
  *
- * <p>Only the three fields Stage 1 can honour. The stored options of Bolum
- * 14.4 carry more — formats, a cover letter language, whether to file it under
- * tracking — and they arrive with the generation record itself in Stage 2.
+ * <p>Only the three fields Stage 1 can honour. The stored options carry more —
+ * formats, a cover letter language, whether to file it under tracking — and
+ * they arrive with the generation record itself in Stage 2.
  *
  * @param language the wording to render, already resolved: {@code auto} means
  *                 "follow the posting", and in general mode there is no
@@ -37,7 +37,7 @@ public record GenerationOptions(
         return new GenerationOptions(
                 defaults.maxPages(),
                 resolveLanguage(defaults.cvLanguage(), profile.getSourceLanguage()),
-                // The preference has carried a templateId since Bolum 14.4 and
+                // The preference has carried a templateId from the start and
                 // this ignored it, so every CV came out classic whatever the
                 // profile asked for. Reading it is the whole of what makes a
                 // second template selectable.

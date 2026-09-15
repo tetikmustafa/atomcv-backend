@@ -95,10 +95,10 @@ public class DocumentExtraction {
 
         if (text.length() < limits.minExtractedChars()) {
             log.info("Nothing usable came out of an upload: {}", extracted.shape());
-            // Bolum 31.10 tells a PDF apart from the rest here, and only here:
-            // a PDF with no text is almost always a scan, and the sentence
-            // that says so is the one that saves the user from trying the same
-            // file again. A short TXT is just short.
+            // A PDF is told apart from the rest here, and only here: a PDF
+            // with no text is almost always a scan, and the sentence that says
+            // so is the one that saves the user from trying the same file
+            // again. A short TXT is just short.
             throw ApiException.of(format == DocumentFormat.PDF
                     ? ErrorCode.PDF_NOT_TEXT_BASED
                     : ErrorCode.EXTRACTION_EMPTY);

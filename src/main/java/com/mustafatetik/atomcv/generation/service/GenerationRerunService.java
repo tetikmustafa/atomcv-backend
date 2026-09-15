@@ -49,9 +49,9 @@ import org.springframework.stereotype.Service;
  * The scores, the language, the template and the page limit all come off that
  * row rather than off today's profile. An atom written since is unscored and
  * therefore unranked; it can still be asked for by name, because a directive
- * outranks a score. That follows from Bolum 24.1 rather than being chosen
- * here: re-reading the profile would mean re-scoring it, and re-scoring is Faz
- * B.
+ * outranks a score. That follows from re-running at Faz C rather than being
+ * chosen here: re-reading the profile would mean re-scoring it, and re-scoring
+ * is Faz B.
  */
 @Service
 public class GenerationRerunService {

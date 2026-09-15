@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Who a cookieless request is in local development (Sapma, Adim 3.3).
+ * Who a cookieless request is in local development. A deviation, and local
+ * only.
  *
  * <p>Sessions landed before any way to start one: OAuth is the next slice.
  * Without this, {@code make dev} would answer every call with

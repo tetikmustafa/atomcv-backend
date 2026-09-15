@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * A CV with no job description to write it against (XI-A.3 Adim 1.8).
+ * A CV with no job description to write it against.
  *
  * <p>Faz A and Faz B are skipped — there is nothing to analyse and nothing to
  * be relevant to — and the rest of the pipeline is unchanged. That is what

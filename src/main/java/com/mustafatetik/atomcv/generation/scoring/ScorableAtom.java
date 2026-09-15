@@ -9,8 +9,8 @@ import java.util.UUID;
  *
  * <p>A projection rather than the entity, so that the scorer is a pure
  * function of values: it can be called with a hand-written atom in a test, it
- * cannot lazily load anything mid-scoring, and the determinism Bolum 19.6
- * requires is a property of the arguments rather than of the session.
+ * cannot lazily load anything mid-scoring, and the determinism required of it
+ * is a property of the arguments rather than of the session.
  *
  * <p>{@code tags}, {@code skills} and {@code contentTokens} arrive already
  * canonical — lowercase, English. Canonicalising here would mean the scorer

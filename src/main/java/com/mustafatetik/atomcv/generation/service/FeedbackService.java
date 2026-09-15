@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
  * <p><strong>The grant is a separate row on purpose.</strong> The flag on the
  * verdict says what the person agreed to; the grant carries when it runs out,
  * when it was used and when it was taken back — a history the verdict has no
- * business holding, and the only part of Bolum 48.4 that makes the consent
- * checkable rather than decorative.
+ * business holding, and the only part of the arrangement that makes the
+ * consent checkable rather than decorative.
  */
 @Service
 public class FeedbackService {
@@ -63,13 +63,13 @@ public class FeedbackService {
      * What this person already said about this generation (F-019).
      *
      * <p><strong>A verdict that cannot be read back is one the screen
-     * forgets.</strong> Bolum 13 wants a second press to show the standing
-     * selection rather than a thank-you, and nothing published the answer:
-     * a client could honour that only for as long as the tab stayed open, and
-     * a reload offered to collect the same verdict again.
+     * forgets.</strong> A second press has to show the standing selection
+     * rather than a thank-you, and nothing published the answer: a client
+     * could honour that only for as long as the tab stayed open, and a reload
+     * offered to collect the same verdict again.
      *
-     * <p>The grant comes with it and is the half that matters more. Bolum 48.4
-     * promises the person can see when their content was read; the window is
+     * <p>The grant comes with it and is the half that matters more. The person
+     * is promised they can see when their content was read; the window is
      * forty-eight hours, so the one who most needs to look is the one who
      * comes back the next day.
      *
@@ -116,7 +116,7 @@ public class FeedbackService {
         SupportGrant grant = grantFor(user, generationId, contentGranted, now);
 
         // The verdict and whether a door was opened; never the comment
-        // (absolute rule 4). This is the rate Bolum 48.3 watches.
+        // (absolute rule 4). This is the feedback rate.
         log.info("Feedback on generation {}: {}", generationId, verdict);
         return new Recorded(verdict, grant);
     }

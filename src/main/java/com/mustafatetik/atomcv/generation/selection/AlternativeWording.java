@@ -13,10 +13,10 @@ import java.util.Optional;
  *
  * <p><strong>The cheapest rewrite is the one somebody already wrote.</strong>
  * A person who kept two versions of a bullet — one formal, one technical — has
- * made an investment, and Bolum 21.1 is where it pays: if one of them fits
- * this posting, the LLM is never called for that atom at all.
+ * made an investment, and this is where it pays: if one of them fits this
+ * posting, the LLM is never called for that atom at all.
  *
- * <p><strong>Düzeltme — Bolum 21.1 ranks the alternatives by {@code
+ * <p><strong>A correction — the alternatives were to be ranked by {@code
  * similarity(v.embedding(), jdVector)}, and a variant has no
  * embedding.</strong> The vector lives on {@code atoms}, computed from the
  * English wording, because that is what a cross-language comparison needs: two
@@ -26,13 +26,13 @@ import java.util.Optional;
  * filters on, and the rest is a deterministic tie-break. The same generation
  * asked for twice must not come out differently.
  *
- * <p><strong>Sapma — it runs in front of Faz C, not inside Faz D.</strong>
- * Bolum 21.1 puts this after selection, and there it would be a second
- * wording choice: selection charges the budget for the variant it costed, so a
- * Faz D that swapped in another one afterwards would print a line the page
- * guarantee never accounted for. The choice is made once, here, and everything
- * downstream — the cost, the printed line, and the sentence Faz D rewrites —
- * reads the same variant id off {@link SelectionState}.
+ * <p><strong>A deviation — it runs in front of Faz C, not inside Faz
+ * D.</strong> It was meant to run after selection, and there it would be a
+ * second wording choice: selection charges the budget for the variant it
+ * costed, so a Faz D that swapped in another one afterwards would print a line
+ * the page guarantee never accounted for. The choice is made once, here, and
+ * everything downstream — the cost, the printed line, and the sentence Faz D
+ * rewrites — reads the same variant id off {@link SelectionState}.
  */
 public final class AlternativeWording {
 

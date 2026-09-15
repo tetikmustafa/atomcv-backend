@@ -26,17 +26,17 @@ public record ScoredAtom(
      * How close two relevance scores have to be before the secondary criteria
      * are allowed to decide between them.
      *
-     * <p>Bolum 19.4 says "among atoms with close scores" and does not define
+     * <p>The rule is "among atoms with close scores" and does not define
      * close. This does, as a bucket width: scores are rounded to a multiple of
-     * this and the rounded value is the sort key. The weights of Bolum 19.1 are
+     * this and the rounded value is the sort key. The relevance weights are
      * hand-tuned to one decimal place, so two atoms within 0.02 of each other
      * are not meaningfully different.
      */
     public static final double RELEVANCE_BUCKET = 0.02;
 
     /**
-     * Bolum 19.6 and Bolum 19.4 together, and the order of the keys is the
-     * whole design.
+     * Stable ordering and the secondary criteria together, and the order of
+     * the keys is the whole design.
      *
      * <p><strong>The bucket, not an epsilon.</strong> The obvious reading of
      * "close scores" is a comparator that consults the secondary criteria when
@@ -49,8 +49,8 @@ public record ScoredAtom(
      * an ordinary total order.
      *
      * <p>Relevance still dominates: a bucket apart is a bucket apart whatever
-     * the secondary score says. Within one bucket, Bolum 19.4 decides —
-     * recency, importance, impact, verification.
+     * the secondary score says. Within one bucket, the secondary criteria
+     * decide — recency, importance, impact, verification.
      *
      * <p>The id is last and still mandatory. It is also now reached far less
      * often, which matters: ids are regenerated on every import, so an

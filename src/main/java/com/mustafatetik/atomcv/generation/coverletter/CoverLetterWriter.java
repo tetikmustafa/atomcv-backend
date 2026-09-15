@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Bolum 34 as one call: read the page, write the letter.
+ * The covering letter as one call: read the page, write the letter.
  *
  * <p>Two callers with two different answers to the same failure. A generation
  * that was <em>also</em> asked for a letter must not lose its CV because the
  * letter could not be written — the document is what the person came for — so
  * {@link #writeQuietly} swallows the refusal and answers with nothing. The
- * endpoint of Bolum 34.6 asked for the letter and nothing else, so
- * {@link #write} hands the refusal back.
+ * regenerate endpoint asked for the letter and nothing else, so {@link #write}
+ * hands the refusal back.
  *
  * <p>The planning is the same either way, which is the point of it being here
  * rather than duplicated on both sides.

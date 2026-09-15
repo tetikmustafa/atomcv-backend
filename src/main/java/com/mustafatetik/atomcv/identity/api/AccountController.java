@@ -115,8 +115,8 @@ public class AccountController {
     })
     @DeleteMapping
     public ResponseEntity<Void> delete() {
-        // Sent here rather than inside the service, and Bolum 57.7 says why:
-        // the service is the transaction, so a confirmation written after it
+        // Sent here rather than inside the service, and the reason is the
+        // transaction: the service is it, so a confirmation written after it
         // returns is a confirmation of something that actually committed.
         deletion.delete(currentUser.require())
                 .map(gone -> AccountDeletedEmail.to(gone.email(), gone.locale()))
