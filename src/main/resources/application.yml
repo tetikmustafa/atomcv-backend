@@ -260,6 +260,16 @@ atomcv:
       enabled: ${JOBS_WORKER_ENABLED:true}
       concurrency: ${JOBS_WORKER_CONCURRENCY:2}
 
+  # Bolum 31.8 reads only public data, so every request works without this.
+  # It is about the rate limit and nothing else: unauthenticated GitHub allows
+  # sixty an hour *per address*, which one deployment shares among everybody,
+  # and a token raises that to five thousand. No scope is requested and none is
+  # used -- a fine-grained token with read-only public access is the right
+  # thing here, and it belongs to the deployment rather than to a person
+  # (Bolum 40.6.1 keeps the provider token of a sign-in unstored on purpose).
+  github:
+    token: ${GITHUB_API_TOKEN:}
+
   llm:
     # Bolum 27.4, USD per million tokens. Configuration because vendors change
     # prices faster than a release; an unpriced model costs zero and is

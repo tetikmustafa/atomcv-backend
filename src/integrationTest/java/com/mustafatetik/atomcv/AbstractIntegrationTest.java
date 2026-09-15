@@ -46,7 +46,17 @@ import org.testcontainers.utility.DockerImageName;
         // And the retention sweep, for the same reason twice over: it clears
         // the payloads and postings other tests wrote. RetentionSweeperIT
         // calls it directly.
-        "atomcv.retention.enabled=false"})
+        "atomcv.retention.enabled=false",
+        // A pool per cached context, and a test class that overrides a bean is
+        // a context of its own -- so the number of pools grows with the number
+        // of distinct configurations, not with the number of classes. The
+        // container's default `max_connections` is 100, and adding the GitHub
+        // stub's context was what first pushed past it: every class after it
+        // failed to start with "sorry, too many clients already", which reads
+        // as the database being broken rather than as arithmetic.
+        //
+        // Four is more than a single-threaded test ever holds at once.
+        "spring.datasource.hikari.maximum-pool-size=4"})
 @ActiveProfiles("local")
 @Import(AbstractIntegrationTest.CsrfOnEveryRequest.class)
 public abstract class AbstractIntegrationTest {
