@@ -89,7 +89,7 @@ Model adları **env değişkeni**dir, koda gömülmez — model isimlendirmeleri
 | **XeLaTeX** | PDF derleme | Unicode'u doğrudan işler. pdflatex'te Türkçe İ/ı karakterleri `inputenc`/`fontenc` ile sorunlu. Bedeli 2-3× yavaşlık, çok dilli üründe ödemeye değer. |
 | **Tectonic** (alternatif) | PDF derleme | Daha küçük saldırı yüzeyi, daha küçük imaj. İkincil seçenek. |
 | `\savebox` + `\typeout` | Render maliyeti ölçümü | TeX'in kendisine ölçtürüyoruz — hata payı sıfır |
-| **Font whitelist** | Güvenlik + tutarlılık | Latin Modern, TeX Gyre Pagella/Termes/Heros, Fira Sans, Source Sans 3. Hepsi Latin Extended (Türkçe) kapsıyor. |
+| **Font whitelist** | Güvenlik + tutarlılık | **Dördü inen:** Latin Modern (`modern`), TeX Gyre Termes (`serif`), Heros (`sans`), Pagella (`book`). Hepsi Latin Extended (Türkçe) kapsıyor ve hepsi Debian'ın `texlive-fonts-recommended` + `fonts-texgyre` paketlerinde. **Fira Sans ve Source Sans 3 inmedi** (denetim, 2026-09-15): ikisi de Debian'da ayrı bir font paketi olarak yok, ve TeX tarafı `texlive-fonts-extra` — ölçüldü, **kurulu boyutu 1.38 GB**. § 46.3 LaTeX imajına 2.0 GB ayırıyor ve imaj bugün onun altında; iki yazı tipi için onu üçe katlamak, § 29.2'nin "texlive-full yok, her paket saldırı yüzeyi" gerekçesini de çiğner. Yol açık: `docker/latex/fonts/` vendor'lanmış bir TTF'i zaten alıyor (ikisi de SIL OFL) — bir şablon gerçekten isterse öyle iner, ve `scripts/measure-template.sh` yeni geometriyi ölçer |
 
 **Neden self-host, dış API değil:** Önceki nesilde dış derleme API'si (latexonline.cc, ytotech) sürekli sorun çıkardı — timeout, format uyumsuzluğu, tek hata noktası. Self-host tam kontrol veriyor.
 
