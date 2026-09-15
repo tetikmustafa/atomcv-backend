@@ -76,9 +76,42 @@ class GenerationDirectivesMergeTest {
     /** A key the writer spelled and the reader did not is a silent no-op. */
     @Test
     void theKeysAreTheOnesTheColumnHolds() {
-        var stored = new GenerationDirectives(List.of(FIRST), List.of(SECOND)).asMap();
+        var stored = new GenerationDirectives(
+                List.of(FIRST), List.of(SECOND), List.of("microservices")).asMap();
 
-        assertThat(stored).containsOnlyKeys("includeAtoms", "excludeAtoms");
+        assertThat(stored).containsOnlyKeys("includeAtoms", "excludeAtoms", "emphasize");
         assertThat(stored.get("includeAtoms")).isEqualTo(List.of(FIRST.toString()));
+        assertThat(stored.get("emphasize")).isEqualTo(List.of("microservices"));
+    }
+
+    /**
+     * Bolum 18.7's third field, canonicalised once and here (absolute rule 7).
+     *
+     * <p>Faz B compares against a canonical set, so a term that keeps its
+     * capitals matches nothing -- and on a Turkish default locale a bare
+     * {@code toLowerCase} writes "sqi" for "SQL", which matches nothing ever
+     * again.
+     */
+    @Test
+    void emphasisIsStoredTheWayTheScorerWillReadIt() {
+        var directives = GenerationDirectives.emphasising(
+                List.of("  Microservices ", "MICROSERVICES", "", "Observability"));
+
+        assertThat(directives.emphasize())
+                .containsExactly("microservices", "observability");
+    }
+
+    /**
+     * Emphasis does not cancel the way an inclusion cancels an exclusion: it
+     * is a statement about the document rather than about one atom, so an
+     * edit that names no terms leaves the ones already asked for standing.
+     */
+    @Test
+    void alaterEditKeepsTheEmphasisTheGenerationWasMadeWith() {
+        var first = GenerationDirectives.emphasising(List.of("microservices"));
+        var second = new GenerationDirectives(List.of(FIRST), List.of());
+
+        assertThat(first.and(second).emphasize()).containsExactly("microservices");
+        assertThat(first.and(second).includeAtoms()).containsExactly(FIRST);
     }
 }

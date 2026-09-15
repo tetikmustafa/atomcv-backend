@@ -79,6 +79,7 @@ public class GenerationEnqueueService {
             Integer maxPages,
             String language,
             boolean coverLetter,
+            java.util.List<String> emphasize,
             String idempotencyKey) {
 
         Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
@@ -118,7 +119,7 @@ public class GenerationEnqueueService {
 
         var job = new Job(JobType.GENERATION, owner.userId(),
                 new GenerationPayload(jobDescription, preflightAcknowledged, maxPages,
-                        language, coverLetter, allowance).toMap(),
+                        language, coverLetter, emphasize, allowance).toMap(),
                 clock.instant());
         job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);

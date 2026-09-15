@@ -24,6 +24,7 @@ public record GenerationPayload(
         Integer maxPages,
         String language,
         boolean coverLetter,
+        java.util.List<String> emphasize,
         QuotaSubject allowance) {
 
     private static final String JOB_DESCRIPTION = "jobDescription";
@@ -31,6 +32,7 @@ public record GenerationPayload(
     private static final String MAX_PAGES = "maxPages";
     private static final String LANGUAGE = "language";
     private static final String COVER_LETTER = "coverLetter";
+    private static final String EMPHASIZE = "emphasize";
     private static final String ALLOWANCE_TYPE = "allowanceType";
     private static final String ALLOWANCE_ID = "allowanceId";
 
@@ -45,6 +47,7 @@ public record GenerationPayload(
         payload.put(MAX_PAGES, maxPages);
         payload.put(LANGUAGE, language);
         payload.put(COVER_LETTER, coverLetter);
+        payload.put(EMPHASIZE, emphasize);
         // Whose ceiling this took, so the worker can give it back -- the shape
         // ProfileExtractionPayload already uses, for the same reason. An account
         // pays by user id and an anonymous caller by address (Bolum 44.1), and
@@ -66,6 +69,9 @@ public record GenerationPayload(
                 // absent reads as "no letter" — which is what those jobs were
                 // asked for.
                 Boolean.TRUE.equals(payload.get(COVER_LETTER)),
+                // Absent on a job queued by the release before this one, and
+                // absent is the ordinary case anyway: nearly nobody steers.
+                termsIn(payload),
                 allowanceIn(payload));
     }
 
@@ -83,6 +89,25 @@ public record GenerationPayload(
                 QuotaSubject.Type.valueOf(String.valueOf(
                         payload.getOrDefault(ALLOWANCE_TYPE, "user")).toUpperCase(Locale.ROOT)),
                 String.valueOf(payload.getOrDefault(ALLOWANCE_ID, "")));
+    }
+
+    /**
+     * Bolum 18.7's emphasis, as the queue carries it.
+     *
+     * <p>Canonicalising is {@code GenerationDirectives}' job and not repeated
+     * here: two places deciding what a term looks like is two answers on the
+     * day one of them learns something.
+     */
+    private static java.util.List<String> termsIn(Map<String, Object> payload) {
+        Object value = payload.get(EMPHASIZE);
+        if (value == null) {
+            return java.util.List.of();
+        }
+        if (!(value instanceof java.util.List<?> items)) {
+            throw new IllegalArgumentException(
+                    EMPHASIZE + " is a list, got " + value.getClass());
+        }
+        return items.stream().map(String::valueOf).toList();
     }
 
     private static String string(Map<String, Object> payload, String key) {

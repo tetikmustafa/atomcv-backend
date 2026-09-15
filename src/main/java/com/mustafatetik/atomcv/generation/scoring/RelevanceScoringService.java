@@ -43,8 +43,14 @@ public class RelevanceScoringService {
      * @param tagsByAtom the profile's own vocabulary, from
      *                   {@code TagRepository.labelsByAtom}
      */
+    /**
+     * @param emphasised Bolum 18.7's directive: terms this person asked to be
+     *                   brought forward, joined to the posting's own keywords
+     *                   and tags rather than weighted separately
+     */
     public RelevanceScores scoreAgainst(
-            ProfileTree tree, Map<UUID, Set<String>> tagsByAtom, JobAnalysis posting) {
+            ProfileTree tree, Map<UUID, Set<String>> tagsByAtom, JobAnalysis posting,
+            java.util.List<String> emphasised) {
 
         // The date reaches the factory, never the scorer: Bolum 19.4's
         // criteria need one and Bolum 51.2's determinism test needs the
@@ -65,7 +71,8 @@ public class RelevanceScoringService {
                 .increment();
 
         return new RelevanceScores(
-                RelevanceScorer.rank(atoms, posting, postingVector, weights), weights);
+                RelevanceScorer.rank(atoms, posting, postingVector, weights, emphasised),
+                weights);
     }
 
     /**

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysisPhase;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
@@ -128,7 +129,7 @@ class JobSpecificGenerationServiceTest {
     void anemptyProfileCostsNoLlmCall() {
         when(assembler.load(ref)).thenReturn(new ProfileTree(ref.id(), List.of()));
 
-        var result = service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(result).isInstanceOf(Result.Err.class);
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
@@ -148,12 +149,12 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        var result = service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        var result = service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(((Result.Err<GeneratedGeneration>) result).error())
                 .isInstanceOf(PipelineError.UnparseableJobDescription.class);
         verify(renderCosts, never()).measureMissing(any(), any(), any(), any());
-        verify(relevance, never()).scoreAgainst(any(), any(), any());
+        verify(relevance, never()).scoreAgainst(any(), any(), any(), any());
     }
 
     /**
@@ -169,14 +170,14 @@ class JobSpecificGenerationServiceTest {
         when(assembler.load(ref)).thenReturn(tree);
         when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
-        when(relevance.scoreAgainst(any(), any(), any())).thenReturn(new RelevanceScores(
+        when(relevance.scoreAgainst(any(), any(), any(), any())).thenReturn(new RelevanceScores(
                 List.of(new ScoredAtom(atomId, 0.77, 0.5,
                         new ScoredAtom.Components(0.5, 0.5, 0.5, 0.5))),
                 ScoringWeights.DEFAULT));
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         var request = ArgumentCaptor.forClass(SelectionRequest.class);
         verify(pipeline).run(any(), any(), request.capture(), any(), any(), any());
@@ -196,7 +197,7 @@ class JobSpecificGenerationServiceTest {
                 .thenReturn(Result.err(new PipelineError.UnparseableJobDescription(
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
-        service.generateForJob(subject(), POSTING, true, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, true, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, null);
     }
@@ -218,7 +219,7 @@ class JobSpecificGenerationServiceTest {
                         0, 0, UnreadablePostingReason.NOT_JOB_LIKE)));
 
         service.generateForJob(subject(), POSTING, true, null, null, false,
-                ProgressSink.NONE, jobId);
+                GenerationDirectives.none(), ProgressSink.NONE, jobId);
 
         verify(analysis).analyse(POSTING, true, USER.toString(), USER, jobId);
     }
@@ -249,12 +250,12 @@ class JobSpecificGenerationServiceTest {
         when(assembler.load(ref)).thenReturn(tree);
         when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
-        when(relevance.scoreAgainst(any(), any(), any()))
+        when(relevance.scoreAgainst(any(), any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.err(new PipelineError.PageLimitExceeded(3, 1)));
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         var rewriter = ArgumentCaptor.forClass(ContentRewriter.class);
         verify(pipeline).run(any(), any(), any(), rewriter.capture(), any(), any());
@@ -284,7 +285,7 @@ class JobSpecificGenerationServiceTest {
                 new RewriteTally(Map.of(AboutSynthesisService.PROMPT_ID, 1), Map.of(), 0)));
 
         var made = service.generateForJob(
-                subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(AboutSynthesisService.PROMPT_ID)
@@ -303,7 +304,7 @@ class JobSpecificGenerationServiceTest {
                         Map.of(RewriteIssue.UNSUPPORTED_CLAIM, 2), 0)));
 
         var made = service.generateForJob(
-                subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+                subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         assertThat(made.orElseThrow().promptVersions())
                 .containsKey(BulletRewriteService.PROMPT_ID);
@@ -316,7 +317,7 @@ class JobSpecificGenerationServiceTest {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
         when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
-        when(relevance.scoreAgainst(any(), any(), any()))
+        when(relevance.scoreAgainst(any(), any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
         when(rewrites.rewrite(any(), any(), any(), any())).thenReturn(outcome);
         when(rewrites.promptVersionFor(any())).thenReturn("v1");
@@ -339,7 +340,7 @@ class JobSpecificGenerationServiceTest {
     void nocoverLetterIsWrittenUnlessItWasAskedFor() {
         aGenerationThatReachesThePipeline();
 
-        service.generateForJob(subject(), POSTING, false, null, null, false, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, false, GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(letters, never()).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
@@ -355,7 +356,8 @@ class JobSpecificGenerationServiceTest {
         when(letters.writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(null);
 
-        service.generateForJob(subject(), POSTING, false, null, null, true, ProgressSink.NONE, null);
+        service.generateForJob(subject(), POSTING, false, null, null, true,
+                GenerationDirectives.none(), ProgressSink.NONE, null);
 
         verify(letters).writeQuietly(any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
@@ -365,7 +367,7 @@ class JobSpecificGenerationServiceTest {
         when(assembler.load(ref)).thenReturn(aprofileWithOneBullet());
         when(analysis.analyse(anyString(), anyBoolean(), anyString(), any(), any()))
                 .thenReturn(Result.ok(posting()));
-        when(relevance.scoreAgainst(any(), any(), any()))
+        when(relevance.scoreAgainst(any(), any(), any(), any()))
                 .thenReturn(new RelevanceScores(List.of(), ScoringWeights.DEFAULT));
         when(pipeline.run(any(), any(), any(), any(), any(), any()))
                 .thenReturn(Result.ok(aDocument()));

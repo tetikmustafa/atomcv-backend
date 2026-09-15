@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -57,7 +58,33 @@ public record GenerationRequest(
                 + "do not want one. It can be asked for afterwards instead, at "
                 + "POST /generations/{id}/cover-letter/regenerate.",
                 defaultValue = "false")
-        Boolean coverLetter) {
+        Boolean coverLetter,
+
+        @Schema(description = """
+                Terms to bring forward, as Bolum 18.7's directive. They join
+                the posting's own keywords and tags for this one generation --
+                the formula of Bolum 19.1 is untouched, it reads one larger
+                set. Use it when the posting does not say a word you know the
+                work is about.
+
+                Its own field and not part of the posting, because the
+                analysis of a posting is cached by its hash and shared between
+                everyone who pastes it; a directive belongs to one person and
+                one run.
+
+                Stored trimmed and lowercased. At most ten, each at most 60
+                characters -- past that the ranking would be the reader's list
+                rather than the posting's.""",
+                example = "[\"microservices\", \"observability\"]")
+        @Size(max = 10)
+        List<@Size(max = 60) String> emphasize) {
+
+    /** Never null downstream: absent and empty mean the same thing here. */
+    @JsonIgnore
+    @io.swagger.v3.oas.annotations.media.Schema(hidden = true)
+    public List<String> emphasizeOrEmpty() {
+        return emphasize == null ? List.of() : emphasize;
+    }
 
     public boolean acknowledged() {
         return Boolean.TRUE.equals(acknowledgePreflight);
