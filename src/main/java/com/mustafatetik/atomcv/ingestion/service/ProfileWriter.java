@@ -19,6 +19,8 @@ import com.mustafatetik.atomcv.profile.repository.EntryRepository;
 import com.mustafatetik.atomcv.profile.repository.ProfileRepository;
 import com.mustafatetik.atomcv.profile.repository.SectionRepository;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.profile.domain.TagSource;
+import com.mustafatetik.atomcv.profile.repository.TagRepository;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.time.LocalDate;
@@ -57,11 +59,13 @@ public class ProfileWriter {
     private final EntryRepository entries;
     private final AtomRepository atoms;
     private final AtomVariantRepository variants;
+    private final TagRepository tags;
 
     ProfileWriter(ProfileResolver profiles, ProfileRepository profileRows,
             AnonymousProfiles anonymous,
             SectionRepository sections, EntryRepository entries,
-            AtomRepository atoms, AtomVariantRepository variants) {
+            AtomRepository atoms, AtomVariantRepository variants,
+            TagRepository tags) {
         this.anonymous = anonymous;
         this.profiles = profiles;
         this.profileRows = profileRows;
@@ -69,6 +73,7 @@ public class ProfileWriter {
         this.entries = entries;
         this.atoms = atoms;
         this.variants = variants;
+        this.tags = tags;
     }
 
     /**
@@ -227,6 +232,7 @@ public class ProfileWriter {
         Atom atom = atomOf(target.profileId(), section, null, normalized, SectionKind.ABOUT);
         atom.setDisplayOrder(order);
         atoms.save(target.ref(), atom);
+        writeTags(target, atom, normalized);
 
         writeVariant(target, atom, normalized.source(), target.language(), true);
         if (!normalized.english().isEmpty()) {
@@ -355,6 +361,7 @@ public class ProfileWriter {
             NormalizedProfile.NormalizedAtom normalized, SectionKind kind) {
         Atom atom = atomOf(target.profileId(), section, entry, normalized, kind);
         atoms.save(target.ref(), atom);
+        writeTags(target, atom, normalized);
 
         // The source wording is primary: it is what the person wrote and what
         // the review screen shows them.
@@ -364,6 +371,30 @@ public class ProfileWriter {
             // English variant as "the source is the English", so a duplicate
             // row would be a second copy to keep in step for no gain.
             writeVariant(target, atom, normalized.english(), "en", false);
+        }
+    }
+
+    /**
+     * The labels the extraction guessed, kept (Bolum 31.5's seventh step).
+     *
+     * <p><strong>They used to be dropped here</strong>, and that was expensive
+     * in a way nothing pointed at: the model reported them, {@code
+     * ProfileNormalizer} canonicalised them, and then nothing wrote a row. The
+     * {@code tags} and {@code atom_tags} tables were empty for every profile
+     * this product has ever held — so Faz B's tag component, a quarter of the
+     * raw score (Bolum 19.1), was zero for every atom against every posting.
+     * Nothing failed; the scores were simply compressed towards the bottom of
+     * their range together, which is what Bolum 28.4 measured.
+     *
+     * <p>{@code AUTO}, because a model guessed them. Bolum 13 keeps the
+     * distinction so the editor can show which tags somebody actually decided
+     * on, and so a later rule can weigh them differently.
+     */
+    private void writeTags(Target target, Atom atom,
+            NormalizedProfile.NormalizedAtom normalized) {
+
+        for (String label : normalized.tags()) {
+            tags.attach(target.ref(), atom.getId(), label, TagSource.AUTO);
         }
     }
 

@@ -34,9 +34,19 @@ public record AtomResponse(
         AtomSource source,
         @Schema(description = "The user has confirmed the fact") boolean verified,
         @Schema(description = "Every wording, primary first") List<VariantResponse> variants,
+        @Schema(description = "The labels this atom wears. A quarter of Faz B's raw "
+                + "score is the overlap between these and the posting (Bolum 19.1), "
+                + "so they are a scoring control rather than decoration.")
+        List<AtomTagResponse> tags,
         @Schema(description = "Send back as If-Match", example = "0") long version) {
 
     public static AtomResponse of(Atom atom, List<VariantResponse> variants) {
+        return of(atom, variants, List.of());
+    }
+
+    public static AtomResponse of(
+            Atom atom, List<VariantResponse> variants, List<AtomTagResponse> tags) {
+
         return new AtomResponse(
                 atom.getId(),
                 atom.getSectionId(),
@@ -53,6 +63,7 @@ public record AtomResponse(
                 atom.getSource(),
                 atom.isVerified(),
                 variants,
+                tags,
                 atom.getVersion() == null ? 0L : atom.getVersion());
     }
 }
