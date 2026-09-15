@@ -15,11 +15,11 @@ import org.junit.jupiter.api.Test;
  * the wordings it already holds (F-013)?
  *
  * <p>These cases used to live in {@code GenerationOptionsTest}, because the
- * answer was what chose the document's language. It no longer is — Bolum
- * 21.8's second step translates what is missing and only a translation that
- * could not be made falls the document back — so the question belongs to the
- * tree rather than to the options, and it is still asked: a true answer is a
- * generation that makes no calls at all.
+ * answer was what chose the document's language. It no longer is — the second
+ * step translates what is missing and only a translation that could not be
+ * made falls the document back — so the question belongs to the tree rather
+ * than to the options, and it is still asked: a true answer is a generation
+ * that makes no calls at all.
  */
 class ProfileTreeTest {
 

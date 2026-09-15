@@ -6,7 +6,7 @@ import com.mustafatetik.atomcv.identity.domain.OAuthProvider;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** A provider with no credentials is absent, not broken (Bolum 27.3's shape). */
+/** A provider with no credentials is absent, not broken (the shape). */
 class OAuthPropertiesTest {
 
     private static final OAuthProperties.Registration CONFIGURED =

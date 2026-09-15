@@ -17,8 +17,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * One named set of appearance settings, saved (Bolum 13's
- * {@code template_customizations}, Bolum 33.2).
+ * One named set of appearance settings, saved to {@code
+ * template_customizations}.
  *
  * <p><strong>The table has existed since V1 and nothing wrote to it.</strong>
  * Layer B's sliders lived — and still live — in
@@ -30,8 +30,8 @@ import org.hibernate.type.SqlTypes;
  *
  * <p>So the two are not rivals: the preference is the working set, and these
  * are the ones somebody named and kept. A generation may ask for one by id
- * (Bolum 14.4's {@code options.customizationId}); saying nothing still gets
- * the preference.
+ * (the {@code options.customizationId}); saying nothing still gets the
+ * preference.
  *
  * <p><strong>No {@code version} column, and that is deliberate</strong>: ETags
  * cover the six tables V1 gave one to, and this is not among them. A
@@ -63,7 +63,7 @@ public class SavedCustomization implements ProfileOwned {
     @Column(nullable = false)
     private String baseTemplateId;
 
-    /** The renderer version this was saved against (Bolum 16.3). */
+    /** The renderer version this was saved against. */
     @Column(nullable = false)
     private short templateVersion;
 

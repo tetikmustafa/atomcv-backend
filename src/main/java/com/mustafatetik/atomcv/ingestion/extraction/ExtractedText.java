@@ -18,8 +18,8 @@ public record ExtractedText(String text, DocumentFormat format, boolean looksScr
     /**
      * What may be said about the text in a log line.
      *
-     * <p>Bolum 48.2's {@code ContentShape} is the same idea one stage later,
-     * and deliberately not reused: its fields are an atom's — runs, emphasis,
+     * <p>The {@code ContentShape} is the same idea one stage later, and
+     * deliberately not reused: its fields are an atom's — runs, emphasis,
      * render cost — and a record whose useful half is always zero describes
      * nothing. Absolute rule 4 asks for statistics instead of content, not for
      * one particular record.

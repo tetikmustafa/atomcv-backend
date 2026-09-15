@@ -91,10 +91,10 @@ public class CvGenerationService {
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
         if (resolved.estimated()) {
-            // Bolum 33.3's third step, asked for at the moment somebody
-            // actually falls back to a guess. This run still produces a CV --
-            // against the estimate, spending a little less of the page -- and
-            // the next one at these settings is exact.
+            // The third step, asked for at the moment somebody actually falls
+            // back to a guess. This run still produces a CV -- against the
+            // estimate, spending a little less of the page -- and the next one
+            // at these settings is exact.
             measurements.request(options.customization());
         }
 
@@ -138,8 +138,8 @@ public class CvGenerationService {
 
         progress.report(GenerationPhase.RENDERING.at(70));
 
-        // No posting, so no Faz D: Bolum 21.2's tiers are Faz B scores, and
-        // there is nothing here to be relevant to.
+        // No posting, so no Faz D: the tiers are Faz B scores, and there is
+        // nothing here to be relevant to.
         return pipeline.run(head, tree, built.request().withBudgetFactor(resolved.budgetFactor()),
                         ContentRewriter.none(),
                         options.customization(), options.locale())

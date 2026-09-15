@@ -27,12 +27,12 @@ import org.springframework.stereotype.Service;
  * An uploaded CV, read here and finished later.
  *
  * <p><strong>The reading is synchronous and the rest is not</strong>, and the
- * split is Bolum 31.10's first three rows. An encrypted PDF, a scanned one and
- * a file with nothing in it are all things a person acts on immediately — a
- * different file, or the manual form. Discovering any of them from a job that
- * failed eight seconds later would be the same information, delivered where it
- * is least useful. What is left after the read is the expensive half, and that
- * is what the queue is for.
+ * split is the first three rows. An encrypted PDF, a scanned one and a file
+ * with nothing in it are all things a person acts on immediately — a different
+ * file, or the manual form. Discovering any of them from a job that failed
+ * eight seconds later would be the same information, delivered where it is
+ * least useful. What is left after the read is the expensive half, and that is
+ * what the queue is for.
  *
  * <p>The order of the gates is the same as everywhere else in this system:
  * idempotency, then the quota, then the work. The quota after idempotency

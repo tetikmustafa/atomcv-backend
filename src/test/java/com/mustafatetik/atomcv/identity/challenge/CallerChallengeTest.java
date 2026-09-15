@@ -18,12 +18,12 @@ import org.junit.jupiter.api.Test;
  * The challenge in front of the two endpoints that spend money for somebody
  * who has answered nothing.
  *
- * <p><strong>Tested here because the integration lane cannot.</strong>
- * {@code ChallengeConfig} hands out {@code token -> true} where there is no
- * secret, which is every profile but {@code prod} — so an IT of the import or the
+ * <p><strong>Tested here because the integration lane cannot.</strong> {@code
+ * ChallengeConfig} hands out {@code token -> true} where there is no secret,
+ * which is every profile but {@code prod} — so an IT of the import or the
  * generation endpoint passes whatever it sends and proves nothing about the
- * refusal. Bolum 51.7's rule about a component the suite switches off applies
- * exactly, and these cases run against a real refusing implementation.
+ * refusal. The rule about a component the suite switches off applies exactly,
+ * and these cases run against a real refusing implementation.
  */
 class CallerChallengeTest {
 

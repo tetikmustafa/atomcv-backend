@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 40.1's numbers, and the one value the cookie must never take. */
+/** The numbers, and the one value the cookie must never take. */
 class SessionPropertiesTest {
 
     @Test
@@ -38,9 +38,9 @@ class SessionPropertiesTest {
     }
 
     /**
-     * Adim 3.3's warning, enforced rather than written down. A leading dot
-     * widens the cookie to every sibling of the apex — the portfolio site
-     * included — and the mistake is invisible in a browser that keeps working.
+     * The warning, enforced rather than written down. A leading dot widens the
+     * cookie to every sibling of the apex — the portfolio site included — and
+     * the mistake is invisible in a browser that keeps working.
      */
     @Test
     void aDottedDomainIsRefusedAtStartUpAndNotInProduction() {

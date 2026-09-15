@@ -6,8 +6,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.5's run generation, and the invariant everything downstream leans
- * on: the runs concatenate back to the sentence.
+ * The run generation, and the invariant everything downstream leans on: the
+ * runs concatenate back to the sentence.
  *
  * <p>Bolum 12 chose runs over offsets and markup precisely so that no
  * escaping, no drift and no re-matching is ever needed again — but that only
@@ -42,7 +42,7 @@ class RunMarkingTest {
         assertThat(markedTexts(content)).containsExactly("ETL pipelines", "Microsoft Fabric");
     }
 
-    /** Bolum 31.5's rule, in the case that names it. */
+    /** The rule, in the case that names it. */
     @Test
     void anEmphasisTakesItsFirstOccurrence() {
         var content = RunMarking.mark("rows and rows and rows", List.of("rows"),

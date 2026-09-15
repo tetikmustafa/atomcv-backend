@@ -156,8 +156,8 @@ public class JobSpecificGenerationService {
         GenerationOptions options = GenerationOptions.forPosting(head, posting.jdLanguage())
                 .withMaxPages(maxPages)
                 .withLanguage(language)
-                // Bolum 14.4: a saved set, when the request named one. Nothing
-                // named leaves the profile's own working settings.
+                // A saved set, when the request named one. Nothing named
+                // leaves the profile's own working settings.
                 .withCustomization(
                         customizations.settingsOf(profile, customizationId).orElse(null));
 
@@ -169,10 +169,10 @@ public class JobSpecificGenerationService {
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
         if (resolved.estimated()) {
-            // Bolum 33.3's third step, asked for at the moment somebody
-            // actually falls back to a guess. This run still produces a CV --
-            // against the estimate, spending a little less of the page -- and
-            // the next one at these settings is exact.
+            // The third step, asked for at the moment somebody actually falls
+            // back to a guess. This run still produces a CV -- against the
+            // estimate, spending a little less of the page -- and the next one
+            // at these settings is exact.
             measurements.request(options.customization());
         }
 
@@ -198,10 +198,10 @@ public class JobSpecificGenerationService {
         RelevanceScores scores = relevance.scoreAgainst(
                 tree, tags.labelsByAtom(profile), posting, directives.emphasize());
 
-        // Bolum 21.8's second step, between Faz B and Faz C because Bolum 32.3
-        // is explicit about the order: choose the language, then optimise
-        // against *that* language's costs. Faz B can run first because scoring
-        // is language-independent -- the vector comes from the English wording
+        // The second step, between Faz B and Faz C because Bolum 32.3 is
+        // explicit about the order: choose the language, then optimise against
+        // *that* language's costs. Faz B can run first because scoring is
+        // language-independent -- the vector comes from the English wording
         // and skills are canonical.
         //
         // All or nothing (F-013): a document is written in one language, so a
@@ -241,8 +241,8 @@ public class JobSpecificGenerationService {
             // F-013. Not an error and not a refusal: the CV is written, in one
             // language, and the response says which one so the screen can too.
             // Reaching this line now means a translation was needed and could
-            // not be made -- before Bolum 21.8's second step it only meant the
-            // profile had not been translated by hand.
+            // not be made -- before the second step it only meant the profile
+            // had not been translated by hand.
             log.info("Posting is in {} but the CV is written in {}; "
                     + "the profile could not be carried into the posting's language",
                     posting.jdLanguage().strip(), settled.language());
@@ -274,8 +274,8 @@ public class JobSpecificGenerationService {
         // here, and even here there may be nothing worth rewriting.
         var context = RewriteContext.of(posting, head.getSelfDescription(),
                 settled.language(), head.getPreferences().writingStyle().tone(), bucketKey,
-                // Bolum 18.7's fourth field. It reaches Faz D and nothing else:
-                // Faz B ranks against the posting, and a sentence is not a term.
+                // The fourth field. It reaches Faz D and nothing else: Faz B
+                // ranks against the posting, and a sentence is not a term.
                 directives.freeformNote(), subject.userId(), jobId);
         var rewritten = new AtomicReference<>(RewrittenContent.none());
         // Accumulated across the compile loop rather than overwritten. A
@@ -308,17 +308,17 @@ public class JobSpecificGenerationService {
                         promptVersions(bucketKey, tally.get()),
                         tally.get(),
                         document,
-                        // Bolum 23.3, and it is measured on what the page
-                        // prints rather than on what Faz B ranked: selection
-                        // drops most of the profile for budget, and a report
-                        // built from the ranking would credit the user for a
-                        // skill that never made it onto the document.
+                        // And it is measured on what the page prints rather
+                        // than on what Faz B ranked: selection drops most of
+                        // the profile for budget, and a report built from the
+                        // ranking would credit the user for a skill that never
+                        // made it onto the document.
                         FitReport.of(posting,
                                 SelectedSkills.onThePage(rendered, document.selection())),
                         null))
-                // Bolum 34, and it comes last on purpose: the CV is what the
-                // person asked for, and a letter that could not be written
-                // honestly must not take the document down with it.
+                // And it comes last on purpose: the CV is what the person
+                // asked for, and a letter that could not be written honestly
+                // must not take the document down with it.
                 .map(made -> coverLetter
                         ? made.withCoverLetter(letters.writeQuietly(
                                 head, rendered, made.document().selection(), posting,

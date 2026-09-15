@@ -33,12 +33,12 @@ import org.springframework.web.bind.annotation.RestController;
  * The GitHub half of Bolum 31.8, in the two steps that section describes:
  * look, then choose.
  *
- * <p><strong>The path is {@code /profile/github}, not
- * {@code /ingestion/github}.</strong> Bolum 35.2's resource map says the
- * latter and the CV import already moved: F-029 settled that the upload is
- * {@code POST /profile/import}, because what these endpoints do is write to a
- * profile. Two ingestion paths under two prefixes would be worse than one
- * deviation, and this is the one recorded.
+ * <p><strong>The path is {@code /profile/github}, not {@code
+ * /ingestion/github}.</strong> The resource map says the latter and the CV
+ * import already moved: F-029 settled that the upload is {@code POST
+ * /profile/import}, because what these endpoints do is write to a profile. Two
+ * ingestion paths under two prefixes would be worse than one deviation, and
+ * this is the one recorded.
  *
  * <p><strong>No OAuth, no stored token, no new permission.</strong> Bolum 31.8
  * reads public data, so there is nothing to connect and nothing to keep: a
@@ -51,8 +51,8 @@ public class GitHubImportController {
 
     /**
      * Each call spends up to twelve requests against GitHub's hourly budget,
-     * which one deployment shares (Bolum 31.8's client). Five an hour is more
-     * than anyone needs to look at their own repositories twice.
+     * which one deployment shares (the client). Five an hour is more than
+     * anyone needs to look at their own repositories twice.
      */
     private static final int LOOKUPS_PER_HOUR = 5;
 

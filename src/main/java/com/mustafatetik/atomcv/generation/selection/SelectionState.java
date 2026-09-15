@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * What was chosen, what was not, and what it all costs (Bolum 20.5, 14.5).
+ * What was chosen, what was not, and what it all costs.
  *
  * <p>Stored with the generation, because it is the only record of why the CV
  * looks the way it does — and because an edit later applies to this, never to
@@ -75,14 +75,14 @@ public record SelectionState(
 
     /**
      * An entry that was offered the page by its heading alone and did not get
-     * it (Bolum 20.2, 20.5).
+     * it.
      *
      * <p>Its own record rather than a {@link RejectedAtom} with an entry id in
-     * it. The two ids are not interchangeable: Bolum 20.5's list is read atom
-     * by atom, and one that resolved to nothing would be worse than saying
-     * nothing at all — which is what this used to do, and why a degree line
-     * could vanish off a full page without a word. The list it belongs in is
-     * the one where the id means what it says.
+     * it. The two ids are not interchangeable: the list is read atom by atom,
+     * and one that resolved to nothing would be worse than saying nothing at
+     * all — which is what this used to do, and why a degree line could vanish
+     * off a full page without a word. The list it belongs in is the one where
+     * the id means what it says.
      *
      * <p>{@code BUDGET} is the only reason that reaches it, and the other two
      * cannot: an inactive entry is never offered as a candidate, and the

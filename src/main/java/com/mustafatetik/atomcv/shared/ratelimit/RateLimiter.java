@@ -17,13 +17,13 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 /**
- * Bolum 40.5's counters, as a sliding window over Redis.
+ * The counters, as a sliding window over Redis.
  *
- * <p><strong>A window and not a bucket.</strong> Bolum 02's table names
- * Bucket4j, but Bolum 40.5 states its limits as "3 requests / 15 minutes",
- * which is a window; a token bucket refilling at a fifth of a request per
- * minute is a different rule that happens to average the same. The deviation
- * is recorded in {@code notes/current.md}.
+ * <p><strong>A window and not a bucket.</strong> The table names Bucket4j, but
+ * Bolum 40.5 states its limits as "3 requests / 15 minutes", which is a
+ * window; a token bucket refilling at a fifth of a request per minute is a
+ * different rule that happens to average the same. The deviation is recorded
+ * in {@code notes/current.md}.
  *
  * <p><strong>A log and not a counter.</strong> Each admitted request is a
  * member of a sorted set scored by its arrival, so the window really slides:

@@ -21,9 +21,8 @@ import org.junit.jupiter.api.Test;
  * silently. The schema and the records must describe the same document, or the
  * model answers a field nothing reads. The two enumerations in the schema must
  * match the enums they are parsed into, or a value the model was invited to
- * use fails the parse. And the prompt must still carry Bolum 43.1's fence,
- * which is the layer easiest to lose in an edit because nothing stops working
- * when it goes.
+ * use fails the parse. And the prompt must still carry the fence, which is the
+ * layer easiest to lose in an edit because nothing stops working when it goes.
  */
 class ProfileExtractionPromptTest {
 
@@ -44,7 +43,7 @@ class ProfileExtractionPromptTest {
         assertThat(prompt.schema().name()).isEqualTo("profile_extraction");
     }
 
-    // -- Bolum 43.1's second layer -----------------------------------------
+    // -- the second layer -----------------------------------------
 
     /**
      * A CV is the one document in this system an attacker controls end to end,
@@ -62,7 +61,7 @@ class ProfileExtractionPromptTest {
     }
 
     /**
-     * Bolum 31.5's run generation matches emphasis against the sentence, so a
+     * The run generation matches emphasis against the sentence, so a
      * paraphrase produces no bold at all. The instruction that prevents it is
      * in the prompt and nowhere else — no code can check a quotation it was
      * never given.
@@ -74,7 +73,7 @@ class ProfileExtractionPromptTest {
         assertThat(text).containsIgnoringCase("exact quotation");
     }
 
-    /** Bolum 31.4's rule that the whole design rests on: invent nothing. */
+    /** The rule that the whole design rests on: invent nothing. */
     @Test
     void thePromptForbidsInventingAValue() {
         var text = REGISTRY.load("profile_extraction").text();
@@ -185,8 +184,7 @@ class ProfileExtractionPromptTest {
             assertThat(section.kind()).isEqualTo(SectionKind.EXPERIENCE);
             assertThat(section.entries()).singleElement().satisfies(entry -> {
                 assertThat(entry.startDate()).isEqualTo("2025-09");
-                // Bolum 31.4: an absent end date means still there, and is
-                // not a warning.
+                // An absent end date means still there, and is not a warning.
                 assertThat(entry.endDate()).isNull();
                 assertThat(entry.atoms()).singleElement().satisfies(atom -> {
                     assertThat(atom.textEn()).contains("ETL pipelines");
@@ -201,9 +199,9 @@ class ProfileExtractionPromptTest {
     }
 
     /**
-     * Bolum 31.4: an English CV asks for no second field, and a schema cannot
-     * make one conditional. Null is how the prompt says "the source already
-     * is the English".
+     * An English CV asks for no second field, and a schema cannot make one
+     * conditional. Null is how the prompt says "the source already is the
+     * English".
      */
     @Test
     void anEnglishCvLeavesTheEnglishRenderingNull() throws Exception {

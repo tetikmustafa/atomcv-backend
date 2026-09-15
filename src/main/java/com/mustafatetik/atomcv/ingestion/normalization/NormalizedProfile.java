@@ -12,9 +12,9 @@ import java.util.List;
  *
  * <p>Still in memory and still not a profile. Nothing here has an id, and
  * nothing has been written: what this is for is that the review screen of
- * Bolum 31.6 is <em>mandatory</em>, so the shape a person corrects has to exist
- * before any row does. Adim 3.4's fourth slice turns it into
- * {@code Profile}, {@code Section}, {@code Entry} and {@code Atom}.
+ * Bolum 31.6 is <em>mandatory</em>, so the shape a person corrects has to
+ * exist before any row does. The fourth slice turns it into {@code Profile},
+ * {@code Section}, {@code Entry} and {@code Atom}.
  *
  * <p>The types are the domain's from here on — {@link Contact},
  * {@link SectionKind}, {@link RichContent}, {@link YearMonth}. That is the

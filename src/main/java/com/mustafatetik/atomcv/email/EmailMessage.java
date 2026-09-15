@@ -7,8 +7,8 @@ import java.util.Objects;
  *
  * <p>Both bodies, always. A text-only email is filtered more often than one
  * with both parts, and an HTML-only email is unreadable in the clients that
- * refuse HTML — which includes several corporate gateways, the same ones
- * Bolum 40.3 already warns about for a different reason.
+ * refuse HTML — which includes several corporate gateways, the same ones that
+ * prefetch links.
  *
  * @param to      the recipient. User content in the sense that matters:
  *                absolute rule 4 keeps it out of every log line here

@@ -14,8 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The queue as a worker sees it: claim, heartbeat, reclaim, release
- * (Bolum 30.2, 30.4).
+ * The queue as a worker sees it: claim, heartbeat, reclaim, release.
  *
  * <p><strong>Deliberately not user-scoped, and separate from
  * {@code JobRepository} because of it.</strong> Absolute rule 3 exists to stop
@@ -35,7 +34,7 @@ public class JobQueue {
 
     private static final Logger log = LoggerFactory.getLogger(JobQueue.class);
 
-    /** Bolum 30.2, verbatim, minus the columns nothing reads back. */
+    /** Verbatim, minus the columns nothing reads back. */
     private static final String CLAIM = """
             UPDATE jobs SET
                 status = 'running', locked_by = ?,

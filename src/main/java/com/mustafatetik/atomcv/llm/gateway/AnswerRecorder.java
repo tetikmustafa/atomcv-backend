@@ -33,9 +33,9 @@ public interface AnswerRecorder {
      * way on every clone, and looks like a broken pipeline rather than a bad
      * recording.
      *
-     * <p>Only Bolum 18.4's gate calls this, and the scope is deliberate: it is
-     * the one refusal that ends the job. The validators below it (Bolum 21.4,
-     * the About and cover-letter checks) keep the original when they reject, so
+     * <p>Only the gate calls this, and the scope is deliberate: it is the one
+     * refusal that ends the job. The validators below it (Bolum 21.4, the
+     * About and cover-letter checks) keep the original when they reject, so
      * replaying an answer they refuse produces exactly what no fixture at all
      * produces. There is nothing to withdraw.
      */

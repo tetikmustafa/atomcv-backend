@@ -8,7 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.5's date parsing, and the cases where it must refuse.
+ * The date parsing, and the cases where it must refuse.
  *
  * <p>The refusals carry the weight. A wrong date on a CV is the one error
  * nobody proofreads out — a person scanning their own document sees a date
@@ -46,7 +46,7 @@ class PartialDatesTest {
         assertThat(PartialDates.parse("Sept 2025")).contains(YearMonth.of(2025, 9));
     }
 
-    /** Bolum 32: the product reads two languages, so it parses two. */
+    /** The product reads two languages, so it parses two. */
     @Test
     void turkishMonthNamesWithAndWithoutTheirDiacritics() {
         assertThat(PartialDates.parse("Eylül 2025")).contains(YearMonth.of(2025, 9));

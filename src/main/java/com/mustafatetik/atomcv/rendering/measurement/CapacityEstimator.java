@@ -31,8 +31,8 @@ import java.util.Optional;
 public final class CapacityEstimator {
 
     /**
-     * The share of the page an estimated run allows itself (Bolum 33.3's
-     * "estimate plus 8%").
+     * The share of the page an estimated run allows itself: the estimate plus
+     * 8%.
      *
      * <p>Spent through the budget factor the compile loop already uses rather
      * than by shaving the page height here, so an estimated run and a run that

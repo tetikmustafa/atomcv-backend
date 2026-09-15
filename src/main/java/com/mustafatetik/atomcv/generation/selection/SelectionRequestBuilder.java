@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A profile, as numbers selection can work on (Bolum 19.4, 20.2).
+ * A profile, as numbers selection can work on.
  *
  * <p>{@link SelectionPhase} takes scores and costs and knows nothing about
  * profiles; this is the piece that knows both. It reads what the user marked —
@@ -259,8 +259,8 @@ public final class SelectionRequestBuilder {
         List<AtomCandidate> candidates(List<AtomNode> atoms, Entry entry) {
             List<AtomCandidate> candidates = new ArrayList<>();
             for (AtomNode node : atoms) {
-                // Bolum 21.1's choice, made here so that the variant costed is
-                // the variant printed and the variant Faz D rewrites.
+                // The choice, made here so that the variant costed is the
+                // variant printed and the variant Faz D rewrites.
                 Optional<AtomVariant> wording = AlternativeWording.pick(node, language, tone);
                 if (wording.isEmpty()) {
                     // Nothing to render and nothing to measure. Counted rather
@@ -278,11 +278,11 @@ public final class SelectionRequestBuilder {
                         costOf(variant),
                         node.atom().isAlwaysInclude(),
                         node.atom().isActive(),
-                        // Bolum 20.3's tie-break, derived from the wording
-                        // rather than from an id that is minted fresh on every
-                        // import. The column is already there and already a
-                        // digest of exactly this content -- nothing new is
-                        // computed and nothing readable travels.
+                        // The tie-break, derived from the wording rather than
+                        // from an id that is minted fresh on every import. The
+                        // column is already there and already a digest of
+                        // exactly this content -- nothing new is computed and
+                        // nothing readable travels.
                         variant.getContentHash(),
                         // P7: the terms this row carries, so the snapshot can
                         // say why it competed and not only how well. Empty in

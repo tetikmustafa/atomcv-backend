@@ -72,10 +72,10 @@ public class MagicLinkController {
     @PostMapping("/magic-link")
     public ResponseEntity<Void> request(@Valid @RequestBody MagicLinkRequest body,
             HttpServletRequest request) {
-        // The caller's two layers here, the address's layer inside the
-        // service one line after the address is normalised. Bolum 40.5's
-        // three counters are not one call because they do not belong at
-        // one place: the address layer has to run behind the challenge.
+        // The caller's two layers here, the address's layer inside the service
+        // one line after the address is normalised. The three counters are not
+        // one call because they do not belong at one place: the address layer
+        // has to run behind the challenge.
         rateLimit.checkCaller(ClientIp.of(request));
         if (!challenge.passed(body.challengeToken())) {
             throw ApiException.of(ErrorCode.CHALLENGE_FAILED);

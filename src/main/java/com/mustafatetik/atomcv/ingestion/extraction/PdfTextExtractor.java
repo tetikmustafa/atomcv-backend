@@ -41,8 +41,8 @@ class PdfTextExtractor implements TextExtractor {
             stripper.setSortByPosition(true);
             return stripper.getText(document);
         } catch (InvalidPasswordException encrypted) {
-            // Bolum 31.10: refuse and ask for an open copy. There is nothing
-            // to try — we have no password and would not want one.
+            // Refuse and ask for an open copy. There is nothing to try — we
+            // have no password and would not want one.
             throw ApiException.of(ErrorCode.PDF_ENCRYPTED);
         } catch (IOException unreadable) {
             // A file that starts with %PDF- and is not a PDF, or one that is

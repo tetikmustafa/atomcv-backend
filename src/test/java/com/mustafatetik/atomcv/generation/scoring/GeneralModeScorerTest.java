@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** Scoring without a job description (Bolum 19.4). */
+/** Scoring without a job description. */
 class GeneralModeScorerTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
@@ -86,7 +86,7 @@ class GeneralModeScorerTest {
                 .isCloseTo(0.15, within(1e-9));
     }
 
-    /** Bolum 19.6: the same profile on the same day scores the same. */
+    /** The same profile on the same day scores the same. */
     @Test
     void theSameAtomScoresTheSameEveryTime() {
         var atom = atom();

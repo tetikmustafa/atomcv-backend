@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * {@code POST /generations/{id}/selection} — Bolum 24.4's manual toggle.
+ * {@code POST /generations/{id}/selection} — the manual toggle.
  *
  * <p>Ids and nothing else. The natural-language half of Faz G is a separate
  * endpoint with a separate cost, and this one has to stay the cheap one: what

@@ -150,7 +150,7 @@ class SupportReadTest {
      * it, and a mock would assert that they were called rather than that the
      * report can be built from a generation.
      */
-    // -- Bolum 48.5's export ------------------------------------------------
+    // -- the export ------------------------------------------------
 
     /**
      * <strong>Writing the file is a read, and is refused on the same terms.</strong>

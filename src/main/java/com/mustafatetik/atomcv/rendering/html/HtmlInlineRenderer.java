@@ -51,7 +51,7 @@ public final class HtmlInlineRenderer {
                 link = true;
             }
             // ORGANIZATION and anything this version has never heard of fall
-            // through as plain text, which is Bolum 16.2's promise.
+            // through as plain text, which is the promise.
         }
 
         if (bold) {

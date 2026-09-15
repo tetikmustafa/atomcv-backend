@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Bolum 21.6's failure behaviour, which is the whole reason this class returns
- * content rather than a {@code Result}.
+ * The failure behaviour, which is the whole reason this class returns content
+ * rather than a {@code Result}.
  *
  * <p>A generation must not fall over because a model wrote a sentence that did
  * not pass a check. The person asked for a CV; the CV they already had is
@@ -78,7 +78,7 @@ class BulletRewriteServiceTest {
         verify(providers, times(BulletRewriteService.ATTEMPTS)).call(any());
     }
 
-    /** Bolum 21.6: the second attempt is worth making, and only the second. */
+    /** The second attempt is worth making, and only the second. */
     @Test
     void asecondAttemptThatPassesIsUsed() {
         when(providers.call(request()))
@@ -193,7 +193,7 @@ class BulletRewriteServiceTest {
     }
 
     /**
-     * Bolum 18.7's note, and it travels the way the CV's own words do.
+     * The note, and it travels the way the CV's own words do.
      *
      * <p>It is the person's sentence about their own CV, so Bolum 43.1 puts it
      * inside the fence rather than into the instructions — the line is drawn at

@@ -40,9 +40,9 @@ class ProductionComposeTest {
     }
 
     /**
-     * Bolum 52.5's archive lives on a volume. Written into the container's own
-     * layer it would be produced on every start and read on none, because a
-     * deploy recreates the container — a cache that is only ever a cost.
+     * The archive lives on a volume. Written into the container's own layer it
+     * would be produced on every start and read on none, because a deploy
+     * recreates the container — a cache that is only ever a cost.
      */
     @Test
     void theclassDataArchiveOutlivesTheContainer() {
@@ -52,10 +52,10 @@ class ProductionComposeTest {
     }
 
     /**
-     * <strong>Bolum 49.3's recovery window is three settings, not one.</strong>
-     * {@code wal_level=replica} on its own archives nothing; it was here alone
-     * for a stage, and the number Bolum 49.5 publishes — five minutes of data
-     * loss — was a day, because the only copy was the 03:00 dump.
+     * <strong>the recovery window is three settings, not one.</strong> {@code
+     * wal_level=replica} on its own archives nothing; it was here alone for a
+     * stage, and the number Bolum 49.5 publishes — five minutes of data loss —
+     * was a day, because the only copy was the 03:00 dump.
      *
      * <p>The assertion names all three deliberately. Losing any one of them
      * leaves a configuration that still starts, still backs up nightly and

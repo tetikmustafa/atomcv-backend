@@ -68,9 +68,9 @@ public class CallerProfiles {
      * The account behind this request, or empty for an anonymous session.
      *
      * <p>Needed where a <em>user</em> rather than a profile is the subject:
-     * Bolum 32.2's translation jobs are claimed by user id, and an anonymous
-     * session has no id to claim by and one language to want. Callers treat
-     * empty as "nothing to queue" rather than as a failure.
+     * the translation jobs are claimed by user id, and an anonymous session
+     * has no id to claim by and one language to want. Callers treat empty as
+     * "nothing to queue" rather than as a failure.
      */
     public java.util.Optional<com.mustafatetik.atomcv.shared.security.UserContext> user() {
         return caller.find();

@@ -42,7 +42,7 @@ public record FeedbackRequest(
         Boolean contentGranted) {
 
     /**
-     * Bolum 13's two values, and the schema says so in the type they are
+     * The column's two values, and the schema says so in the type they are
      * (F-019).
      *
      * <p><strong>An enum rather than a {@code Short} with an
@@ -91,7 +91,7 @@ public record FeedbackRequest(
         }
     }
 
-    /** Bolum 13's column vocabulary, lowercase on the wire like every other one. */
+    /** The column vocabulary, lowercase on the wire like every other one. */
     public enum Category {
         SELECTION, WRITING, FORMAT, DENSITY, OTHER;
 
@@ -112,7 +112,7 @@ public record FeedbackRequest(
         }
     }
 
-    /** The number Bolum 13's column stores. */
+    /** The number the column stores. */
     public short ratingValue() {
         return rating.wireValue();
     }

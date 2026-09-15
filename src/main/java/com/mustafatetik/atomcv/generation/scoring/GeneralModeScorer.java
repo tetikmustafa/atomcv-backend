@@ -31,10 +31,10 @@ public final class GeneralModeScorer {
      */
     static final double HALF_LIFE_YEARS = 5.0;
 
-    /** Bolum 19.4: a bullet with a number in it says more than one without. */
+    /** A bullet with a number in it says more than one without. */
     static final double IMPACT_WITHOUT_METRICS = 0.3;
 
-    /** Bolum 19.4's four weights. They add up to one. */
+    /** The four weights. They add up to one. */
     static final double RECENCY_WEIGHT = 0.35;
     static final double IMPORTANCE_WEIGHT = 0.30;
     static final double IMPACT_WEIGHT = 0.20;

@@ -26,10 +26,10 @@ import java.util.List;
  *
  * <p>Because it is a rendering decision, the measurement document has to make
  * it too. {@code MeasurableItem} carries the layout for that reason and for no
- * other — Bolum 22.4's rule is that the preamble, the width and the environment
- * all match, and a bold label the measurement never saw breaks the third of
- * them in the one direction that matters: the printed row is wider than the
- * number the page was promised on.
+ * other — the rule is that the preamble, the width and the environment all
+ * match, and a bold label the measurement never saw breaks the third of them
+ * in the one direction that matters: the printed row is wider than the number
+ * the page was promised on.
  */
 final class InlineRow {
 

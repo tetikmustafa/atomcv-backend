@@ -27,13 +27,13 @@ import java.util.UUID;
  *
  * <p>Pure and static, like the other planners: a profile, a selection and an
  * analysis go in, the constraints come out. Everything it collects it collects
- * from the atoms selection <em>kept</em>, for the reason Bolum 34.2 gives —
- * the letter is the narrative version of the CV, and a letter drawn from the
- * profile instead would tell a story about a page the employer is not holding.
+ * from the atoms selection <em>kept</em>, for the reason the letter exists —
+ * it is the narrative version of the CV, and a letter drawn from the profile
+ * instead would tell a story about a page the employer is not holding.
  */
 public final class CoverLetterPlanner {
 
-    /** Bolum 34.3: "the two or three highest-scoring atoms", and this is the three. */
+    /** "The two or three highest-scoring atoms", and this is the three. */
     static final int EVIDENCE_COUNT = 3;
 
     private CoverLetterPlanner() {
@@ -138,8 +138,8 @@ public final class CoverLetterPlanner {
      *
      * <p><strong>The span, not the sum.</strong> Two jobs held at once are two
      * entries and one stretch of a life; adding them would hand the letter a
-     * larger number than the truth, which is the fabrication Bolum 34.4 names.
-     * Undated entries contribute nothing rather than a guess.
+     * larger number than the truth, which is the fabrication the validator is
+     * looking for. Undated entries contribute nothing rather than a guess.
      */
     static int yearsWorking(List<Entry> entries, LocalDate today) {
         LocalDate earliest = null;

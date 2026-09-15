@@ -17,10 +17,10 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The preference reads "follow the posting". General mode has no posting to
  * follow and falls back to the language the profile was written in; job mode
- * follows it, and does so whether or not the profile has been translated —
- * Bolum 21.8's second step is what makes that safe, and
- * {@code ProfileTreeTest} keeps the question it asks. An explicit preference
- * and an explicit request still outrank the posting, in that order.
+ * follows it, and does so whether or not the profile has been translated — the
+ * second step is what makes that safe, and {@code ProfileTreeTest} keeps the
+ * question it asks. An explicit preference and an explicit request still
+ * outrank the posting, in that order.
  */
 class GenerationOptionsTest {
 

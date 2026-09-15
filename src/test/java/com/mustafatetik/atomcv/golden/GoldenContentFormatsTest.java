@@ -46,11 +46,11 @@ class GoldenContentFormatsTest {
     }
 
     /**
-     * <strong>Bolum 16.2's forward compatibility, and the only way to hold
-     * it.</strong> A mark this version has never heard of is read, kept and
-     * rendered as plain text. Kept is the half that matters: a reader that
-     * dropped it would silently delete a newer version's markings the moment
-     * somebody edited that sentence (EK D.9, rule 2).
+     * <strong>the forward compatibility, and the only way to hold it.</strong>
+     * A mark this version has never heard of is read, kept and rendered as
+     * plain text. Kept is the half that matters: a reader that dropped it
+     * would silently delete a newer version's markings the moment somebody
+     * edited that sentence (EK D.9, rule 2).
      */
     @Test
     void amarkThisVersionDoesNotKnowSurvivesTheRoundTrip() {
@@ -65,7 +65,7 @@ class GoldenContentFormatsTest {
                 .contains("experimental");
     }
 
-    /** And the renderer prints it rather than failing on it (Bolum 22.3). */
+    /** And the renderer prints it rather than failing on it. */
     @Test
     void theRendererPrintsAnunknownMarkAsPlainText() {
         String latex = LatexInlineRenderer.render(migrator.read(stored("v1")));

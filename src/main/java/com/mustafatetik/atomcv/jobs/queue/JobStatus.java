@@ -24,7 +24,7 @@ public enum JobStatus {
 
     COMPLETED,
 
-    /** Out of attempts, or the error was never worth retrying (Bolum 30.5). */
+    /** Out of attempts, or the error was never worth retrying. */
     FAILED,
 
     CANCELLED;

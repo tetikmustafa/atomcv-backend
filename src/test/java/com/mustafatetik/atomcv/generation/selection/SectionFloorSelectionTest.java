@@ -246,9 +246,9 @@ class SectionFloorSelectionTest {
 
     /**
      * And a stored entry minimum cannot argue the ceiling away. An About entry
-     * carrying four summaries was written with a minimum of two, so Bolum
-     * 20.3's "prints its minimum or none of itself" put two opening paragraphs
-     * on a page whose section may hold one.
+     * carrying four summaries was written with a minimum of two, so the rule
+     * "prints its minimum or none of itself" put two opening paragraphs on a
+     * page whose section may hold one.
      */
     @Test
     void astoredEntryMinimumDoesNotOverrideTheCeiling() {
@@ -463,7 +463,7 @@ class SectionFloorSelectionTest {
             return add(kind, plans, atoms);
         }
 
-        /** Entries with nothing under them — a degree line (Bolum 20.2). */
+        /** Entries with nothing under them — a degree line. */
         SectionPlan headingSection(SectionKind kind, int entries, double score) {
             var plans = new ArrayList<EntryPlan>();
             for (int index = 0; index < entries; index++) {
@@ -510,12 +510,12 @@ class SectionFloorSelectionTest {
         }
 
         /**
-         * What is on the page, which is not the same list as
-         * {@code selected()}. Bolum 20.2's degree line reaches the page as a
-         * header-only entry and never as an atom, so a section made only of
-         * those — Education, always — is printed and absent from
-         * {@code selected()}. Reading one and not the other is how this test
-         * first reported Education missing from a page it was on.
+         * What is on the page, which is not the same list as {@code
+         * selected()}. The degree line reaches the page as a header-only entry
+         * and never as an atom, so a section made only of those — Education,
+         * always — is printed and absent from {@code selected()}. Reading one
+         * and not the other is how this test first reported Education missing
+         * from a page it was on.
          */
         List<SectionKind> sectionsOn(SelectionState state) {
             return printedIds(state).stream()

@@ -12,9 +12,8 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The split does two jobs at once and the tests are about both. It is a
  * security boundary — the model is told the fenced half is data — and it is
- * what keeps the system half constant so Bolum 27.4's prompt caching can
- * discount it. A prompt that loses the fence keeps working and quietly loses
- * both.
+ * what keeps the system half constant so the prompt caching can discount it. A
+ * prompt that loses the fence keeps working and quietly loses both.
  */
 class FencedPromptTest {
 

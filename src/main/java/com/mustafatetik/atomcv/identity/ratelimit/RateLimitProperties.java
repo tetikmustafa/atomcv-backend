@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Bolum 40.5's three numbers, and the reason each one is the size it is.
+ * The three numbers, and the reason each one is the size it is.
  *
  * <p>Configurable because the right values are the deployment's to know: the
  * global layer is a guess at the sending provider's tolerance, and a guess

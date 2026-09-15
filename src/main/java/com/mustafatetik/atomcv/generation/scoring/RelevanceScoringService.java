@@ -52,9 +52,9 @@ public class RelevanceScoringService {
             ProfileTree tree, Map<UUID, Set<String>> tagsByAtom, JobAnalysis posting,
             java.util.List<String> emphasised) {
 
-        // The date reaches the factory, never the scorer: Bolum 19.4's
-        // criteria need one and Bolum 51.2's determinism test needs the
-        // scoring itself to be a pure function of its arguments.
+        // The date reaches the factory, never the scorer: the criteria need
+        // one and the determinism test needs the scoring itself to be a pure
+        // function of its arguments.
         List<ScorableAtom> atoms = ScorableAtomFactory.from(
                 tree, tagsByAtom, LocalDate.now(clock));
         float[] postingVector = postingVector(posting);
@@ -92,10 +92,9 @@ public class RelevanceScoringService {
             return null;
         }
         try {
-            // Bolum 18.5: the synthesised target, not the raw posting. A
-            // posting is mostly benefits and mission statements, and
-            // embedding all of it points the vector at whatever the company
-            // writes most of.
+            // The synthesised target, not the raw posting. A posting is mostly
+            // benefits and mission statements, and embedding all of it points
+            // the vector at whatever the company writes most of.
             return embeddings.embed(posting.embeddingTarget());
         } catch (EmbeddingException unavailable) {
             // The message, never the posting. Which service failed is worth a

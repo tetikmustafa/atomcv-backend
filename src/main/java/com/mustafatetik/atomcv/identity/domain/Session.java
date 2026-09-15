@@ -84,7 +84,7 @@ public record Session(
         return new Session(id, userId, role, method, createdAt, now);
     }
 
-    /** What every scoped read and write takes (Bolum 41.2). */
+    /** What every scoped read and write takes. */
     public UserContext asUserContext() {
         return new UserContext(userId, role);
     }

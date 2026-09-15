@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * The distance behind Bolum 31.8's matching, and the numbers the threshold was
- * chosen against.
+ * The distance behind the matching, and the numbers the threshold was chosen
+ * against.
  *
  * <p>Written because {@code MERGE_THRESHOLD} is a decision that reads as a
  * magic number otherwise. What it has to do is put the pairs below on the

@@ -6,9 +6,9 @@ package com.mustafatetik.atomcv.llm.gateway;
  * <p>Raw REST underneath, no vendor SDK: Bolum 5.4 keeps the abstraction here
  * rather than taking five dependencies that break on their own schedules.
  *
- * <p>The return type is {@link LlmOutcome} rather than Bolum 27.1's
- * {@code Result}. The difference is the failure type and it is deliberate —
- * see {@link LlmFailure}.
+ * <p>The return type is {@link LlmOutcome} rather than the {@code Result}. The
+ * difference is the failure type and it is deliberate — see {@link
+ * LlmFailure}.
  */
 public interface LlmProvider {
 

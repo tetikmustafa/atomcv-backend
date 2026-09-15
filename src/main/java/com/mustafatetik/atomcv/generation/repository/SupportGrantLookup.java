@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A grant found without an acting user, because finding it is how the acting
- * user is discovered (Bolum 48.4, 41.2).
+ * user is discovered.
  *
  * <p><strong>Deliberately unscoped, and separate from
  * {@link SupportGrantRepository} because of it</strong> — the shape

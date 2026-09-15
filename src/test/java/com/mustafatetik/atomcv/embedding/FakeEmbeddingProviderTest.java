@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 54.2's fake: the properties the layers above it are allowed to rely on. */
+/** The fake: the properties the layers above it are allowed to rely on. */
 class FakeEmbeddingProviderTest {
 
     private final FakeEmbeddingProvider provider = new FakeEmbeddingProvider();
@@ -46,8 +46,8 @@ class FakeEmbeddingProviderTest {
     }
 
     /**
-     * The seed is the text's words as a set, so Bolum 28.2's invalidation can
-     * be exercised on a change that is genuinely a change rather than on a
+     * The seed is the text's words as a set, so the invalidation can be
+     * exercised on a change that is genuinely a change rather than on a
      * reordering.
      */
     @Test

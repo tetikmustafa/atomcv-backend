@@ -115,9 +115,9 @@ class ChallengeTest {
      * A transport failure passes, and that is the deliberate half.
      *
      * <p>Cloudflare being unreachable is not a reason for nobody to be able to
-     * sign in, and Bolum 40.5's per-IP and global counters run in front of
-     * this call — so the most an outage buys is the global window. A refusal
-     * here would turn their outage into ours.
+     * sign in, and the per-IP and global counters run in front of this call —
+     * so the most an outage buys is the global window. A refusal here would
+     * turn their outage into ours.
      */
     @Test
     void anUnreachableVerifierLetsTheRequestThrough() {

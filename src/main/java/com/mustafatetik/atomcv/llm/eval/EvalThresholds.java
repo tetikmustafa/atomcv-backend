@@ -5,7 +5,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Bolum 53.5's table, as code.
+ * The table, as code.
  *
  * <p>Here rather than spelled into each assertion, because a threshold
  * repeated in three suites is three numbers that can disagree — and the one

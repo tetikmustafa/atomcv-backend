@@ -79,15 +79,15 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>One way in for both modes. A request with a posting is scored against it;
  * a request without one is a general CV, which skips Faz A and Faz B and is
- * otherwise the same pipeline. Stage 1's synchronous
- * {@code POST /generations/general} is gone — it existed because there was no
- * queue and no generation record, and both now exist (EK D.8.8, D.9 · 22).
+ * otherwise the same pipeline. Stage 1's synchronous {@code POST
+ * /generations/general} is gone — it existed because there was no queue and no
+ * generation record, and both now exist.
  *
- * <p><strong>Stage 1 only, and synchronous.</strong> Bolum 35.3's {@code POST
- * /generations} answers 202 with a job to follow, because a generation with an
- * LLM in it takes half a minute. General mode has no LLM and no queue yet:
- * this returns the document itself, and nothing is stored. The queued contract
- * arrives with the generation record in Stage 2.
+ * <p><strong>Stage 1 only, and synchronous.</strong> {@code POST /generations}
+ * answers 202 with a job to follow, because a generation with an LLM in it
+ * takes half a minute. General mode has no LLM and no queue yet: this returns
+ * the document itself, and nothing is stored. The queued contract arrives with
+ * the generation record in Stage 2.
  */
 @RestController
 @RequestMapping("/api/v1/generations")
@@ -111,9 +111,9 @@ public class GenerationController {
     private final ErrorPresenter errors;
 
     /**
-     * Bolum 34.6 wants a person to be able to try a few drafts, and an LLM
-     * endpoint with no ceiling at all is a bill somebody else writes. Ten an
-     * hour is several tries per generation and no loop.
+     * A person should be able to try a few drafts, and an LLM endpoint with no
+     * ceiling at all is a bill somebody else writes. Ten an hour is several
+     * tries per generation and no loop.
      */
     private static final int LETTERS_PER_HOUR = 10;
 
@@ -205,8 +205,8 @@ public class GenerationController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             jakarta.servlet.http.HttpServletRequest http) {
 
-        // Bolum 44.4, and first: an anonymous request that cannot show a person
-        // behind it must not reach the quota, let alone a model.
+        // The challenge, and first: an anonymous request that cannot show a
+        // person behind it must not reach the quota, let alone a model.
         challenge.requireOfAnonymous(request.challengeToken());
 
         JobOwner owner = JobOwner.of(currentUser);
@@ -456,11 +456,10 @@ public class GenerationController {
                     MediaType.valueOf("text/html;charset=UTF-8"), "html");
         }
         if ("source".equalsIgnoreCase(format)) {
-            // Bolum 35.2 has listed this since the first resource map and
-            // nothing served it; Bolum 55 calls it "ham kaynak indirme". The
-            // charset matters as much as it does on the Markdown export: a
-            // response without one is read as ISO-8859-1 and a Turkish name
-            // arrives broken.
+            // The resource map has listed this from the start and nothing
+            // served it. The charset matters as much as it does on the
+            // Markdown export: a response without one is read as ISO-8859-1
+            // and a Turkish name arrives broken.
             return attachment(
                     downloads.renderSource(generation).getBytes(StandardCharsets.UTF_8),
                     MediaType.valueOf("application/x-tex;charset=UTF-8"), "tex");
@@ -707,8 +706,8 @@ public class GenerationController {
                 ? new CoverLetterRequest(null, null)
                 : request;
 
-        // Ahead of the lookup: a letter is what § 35.7 gives an account, and
-        // an anonymous session asking for one is a closed control, not a
+        // Ahead of the lookup: a letter is what an account gets, and an
+        // anonymous session asking for one is a closed control, not a
         // generation it cannot find (F-030).
         UserContext user = accountFor(AccountFeature.COVER_LETTER);
 
@@ -850,8 +849,8 @@ public class GenerationController {
     }
 
     /**
-     * The caller, when this endpoint is one § 35.7 gives an account and not a
-     * session (F-030).
+     * The caller, when this endpoint is one an account gets and a session does
+     * not (F-030).
      *
      * <p><strong>Not {@code currentUser.require()}, and the difference is what
      * the user reads.</strong> Both of these endpoints called it, so an
@@ -911,7 +910,7 @@ public class GenerationController {
     }
 
     /**
-     * One generation belonging to whoever is calling (Bolum 9, absolute rule 3).
+     * One generation belonging to whoever is calling (absolute rule 3).
      *
      * <p><strong>Two doors and no third.</strong> An account's generations are
      * user-scoped, and a row with no owner reads as absent there — correctly. An

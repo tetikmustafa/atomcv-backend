@@ -175,8 +175,8 @@ class ErrorPresenterTest {
     }
 
     /**
-     * Bolum 27.3: a chain runs out only for reasons that were transient at
-     * every stop, so the answer is always "ask again".
+     * A chain runs out only for reasons that were transient at every stop, so
+     * the answer is always "ask again".
      */
     @Test
     void anExhaustedProviderChainNamesWhoWasAskedAndOffersARetry() {

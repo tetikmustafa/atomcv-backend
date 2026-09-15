@@ -62,7 +62,7 @@ public class OpenRouterProvider implements LlmProvider {
         return ID;
     }
 
-    /** Bolum 27.3: no key is a silent skip, not a failure. */
+    /** No key is a silent skip, not a failure. */
     @Override
     public boolean isAvailable() {
         return properties.hasKey() && !llm.modelFor(ID).isEmpty();
@@ -122,8 +122,8 @@ public class OpenRouterProvider implements LlmProvider {
         var schema = request.outputSchema();
         var system = request.systemPrompt();
         if (properties.structuredOutput() == OpenRouterProperties.StructuredOutput.JSON_OBJECT) {
-            // Bolum 27.2's weaker mode: the provider only promises valid JSON,
-            // so the shape has to be asked for in words.
+            // The weaker mode: the provider only promises valid JSON, so the
+            // shape has to be asked for in words.
             system = (system.isEmpty() ? "" : system + "\n\n")
                     + "Answer with JSON matching this schema:\n" + schema.node().toString();
         }
@@ -219,11 +219,11 @@ public class OpenRouterProvider implements LlmProvider {
      * What this call actually cost, as the broker's own accounting states it.
      *
      * <p>OpenRouter returns {@code usage.cost} on every response — the amount
-     * taken off the account, after whichever endpoint it routed to and whatever
-     * promotion was running. Bolum 27.4's table cannot know either: the slug
+     * taken off the account, after whichever endpoint it routed to and
+     * whatever promotion was running. The table cannot know either: the slug
      * this deployment runs has seven endpoints between 1 and 5.50 per million
-     * input, and the table holds one figure. So where the number is reported it
-     * is the number, and the table is what answers when nobody reports.
+     * input, and the table holds one figure. So where the number is reported
+     * it is the number, and the table is what answers when nobody reports.
      *
      * @return null when the field is absent or not a number, which is what
      *         "we were not told" has to look like — a zero here would be a
@@ -235,8 +235,8 @@ public class OpenRouterProvider implements LlmProvider {
     }
 
     /**
-     * Bolum 27.3's routing, as HTTP states it. 408 is here because a proxy in
-     * front of the vendor can answer it where the client saw no timeout.
+     * The routing, as HTTP states it. 408 is here because a proxy in front of
+     * the vendor can answer it where the client saw no timeout.
      */
     private static LlmFailure.Kind kindOf(int status) {
         if (status == 429) {

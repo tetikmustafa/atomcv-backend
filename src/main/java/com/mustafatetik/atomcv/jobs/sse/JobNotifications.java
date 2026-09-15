@@ -29,16 +29,16 @@ import org.springframework.stereotype.Component;
  * Bolum 30.6 says so with a date on it: one instance runs the workers and
  * serves the streams, so the moment there are two, a watcher connected to A
  * hears nothing about a job running on B. The section names the way out in one
- * line — {@code NOTIFY job_progress} — and Bolum 50.3's readiness table already
- * claims it. This is that line, with the parts the line does not say.
+ * line — {@code NOTIFY job_progress} — and the readiness table already claims
+ * it. This is that line, with the parts the line does not say.
  *
- * <p><strong>The payload carries an identifier, not an event.</strong> Bolum
- * 30.6's own rule is "the row first, then the announcement", and a notification
- * that carried the event would be a second copy of the truth with its own way
- * of being wrong — and a Postgres payload is capped at 8000 bytes, which a
- * failed generation's error map can reach. So the receiving instance is told
- * which job moved and loads the row, which is the same thing a reconnecting
- * client is caught up from.
+ * <p><strong>The payload carries an identifier, not an event.</strong> The own
+ * rule is "the row first, then the announcement", and a notification that
+ * carried the event would be a second copy of the truth with its own way of
+ * being wrong — and a Postgres payload is capped at 8000 bytes, which a failed
+ * generation's error map can reach. So the receiving instance is told which
+ * job moved and loads the row, which is the same thing a reconnecting client
+ * is caught up from.
  *
  * <p><strong>An instance does not listen to itself.</strong> The notification
  * goes out on a pooled connection and comes back on the listening one, so

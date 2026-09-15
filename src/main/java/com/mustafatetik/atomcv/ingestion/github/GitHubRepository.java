@@ -6,13 +6,13 @@ import java.util.Locale;
 /**
  * One public repository, as the listing endpoint describes it.
  *
- * <p><strong>Only what {@code /users/{login}/repos} carries.</strong> Bolum
- * 31.8's filter also names a commit count and whether there is a README, and
- * neither is in the listing: each costs one request per repository, so a
- * person with thirty repositories would spend sixty calls against an hourly
- * budget of sixty. The signals kept — fork, size, stars, name, description —
- * are the ones the same listing already answered, and they say the same thing
- * the missing two were there to say: has anybody done anything with this.
+ * <p><strong>Only what {@code /users/{login}/repos} carries.</strong> The
+ * filter also names a commit count and whether there is a README, and neither
+ * is in the listing: each costs one request per repository, so a person with
+ * thirty repositories would spend sixty calls against an hourly budget of
+ * sixty. The signals kept — fork, size, stars, name, description — are the
+ * ones the same listing already answered, and they say the same thing the
+ * missing two were there to say: has anybody done anything with this.
  *
  * <p>{@code languages} is filled in afterwards and only for the repositories
  * that survived the filter, because that endpoint is one call each too.
@@ -32,13 +32,13 @@ public record GitHubRepository(
         List<String> topics,
         List<String> languages) {
 
-    /** Names that say the repository is a lesson rather than a project (Bolum 31.8). */
+    /** Names that say the repository is a lesson rather than a project. */
     private static final List<String> LEARNING_NAMES = List.of(
             "hello-world", "helloworld", "test", "tutorial", "learning", "playground",
             "sandbox", "practice", "demo", "example", "bootcamp", "exercise", "scratch",
             "dotfiles", "config", "template");
 
-    /** Bolum 31.8: fifty kilobytes is about where a repository stops being a file. */
+    /** Fifty kilobytes is about where a repository stops being a file. */
     private static final int MIN_SIZE_KB = 50;
 
     public GitHubRepository {
@@ -52,8 +52,8 @@ public record GitHubRepository(
     }
 
     /**
-     * Bolum 31.8's {@code isSignificant}, with the two signals the listing
-     * cannot answer replaced by ones it can.
+     * The {@code isSignificant}, with the two signals the listing cannot
+     * answer replaced by ones it can.
      *
      * <p>A fork is somebody else's work and an archived repository is one the
      * person has closed. Past that the question is whether anyone has done

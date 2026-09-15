@@ -45,7 +45,8 @@ public class LatexCompilerClient {
         if (pages < 1) {
             // Faz F cannot promise a page limit it was unable to read, so a
             // compiler that does not report one is treated as the wrong
-            // compiler rather than as a document with an unknown length (P4).
+            // compiler rather than as a document with an unknown length: a bad
+            // result is never produced quietly.
             throw failure(CompilationFailureKind.UNAVAILABLE,
                     "the compiler reported no page count", "", null);
         }

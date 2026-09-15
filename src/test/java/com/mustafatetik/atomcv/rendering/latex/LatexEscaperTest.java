@@ -72,7 +72,7 @@ class LatexEscaperTest {
                 .isEqualTo("\\href{https://mustafatetik.com}{mustafatetik.com}");
     }
 
-    /** Bolum 16.2: a mark from a newer build must not stop a document. */
+    /** A mark from a newer build must not stop a document. */
     @Test
     void anUnknownMarkRendersAsPlainText() {
         var content = RichContent.of(Run.of("Go", Mark.TECHNOLOGY, new Mark("sarcasm")));

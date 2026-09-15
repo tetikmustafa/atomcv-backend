@@ -62,7 +62,7 @@ class ProfileJsonTest {
 
     @Test
     void theDocumentedShapeIsAccepted() throws Exception {
-        // Bolum 14.3, verbatim.
+        // Verbatim.
         var preferences = mapper.readValue("""
                 {
                   "writingStyle": {
@@ -87,7 +87,7 @@ class ProfileJsonTest {
 
     @Test
     void theDocumentedContactShapeIsAccepted() throws Exception {
-        // Bolum 14.2, verbatim.
+        // Verbatim.
         var contact = mapper.readValue("""
                 {
                   "name": "Mustafa Tetik",

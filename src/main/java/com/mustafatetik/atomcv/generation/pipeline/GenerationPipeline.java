@@ -43,7 +43,7 @@ public class GenerationPipeline {
 
     private static final Logger log = LoggerFactory.getLogger(GenerationPipeline.class);
 
-    /** Bolum 23.1: two goes at shrinking, then the user is told. */
+    /** Two goes at shrinking, then the user is told. */
     static final int MAX_RETRIES = 2;
 
     /** How much of the page is given up per retry. */
@@ -119,8 +119,8 @@ public class GenerationPipeline {
                         attempt, factor, rewritten));
             }
 
-            // Bolum 23.1: a rising rate here means the measurement layer is
-            // wrong, not that users write too much.
+            // A rising rate here means the measurement layer is wrong, not
+            // that users write too much.
             meters.counter("generation.budget.overshoot",
                     "template", customization.baseTemplateId()).increment();
             log.info("Document ran to {} pages against a limit of {}; shrinking the budget",
@@ -132,16 +132,16 @@ public class GenerationPipeline {
     }
 
     /**
-     * Bolum 26.6's calibration signal, in the only resolution production can
-     * measure it.
+     * The calibration signal, in the only resolution production can measure
+     * it.
      *
      * <p><strong>Not the drift percentage Bolum 26.6 writes.</strong> That one
      * divides a measured content height by the predicted one, and there is no
-     * measured height here: Bolum 23's note records that no {@code
-     * pdfAnalyzer} exists and that the page count arrives as the compiler's
-     * {@code X-Page-Count} header. A height would cost a second compilation of
-     * every document, and the measurement document that can produce one shares
-     * a preamble with the page rather than being it.
+     * measured height here: the note records that no {@code pdfAnalyzer}
+     * exists and that the page count arrives as the compiler's {@code
+     * X-Page-Count} header. A height would cost a second compilation of every
+     * document, and the measurement document that can produce one shares a
+     * preamble with the page rather than being it.
      *
      * <p>What can be compared is pages: how many the budget said this would
      * take against how many came back. Zero is the ordinary reading and the
@@ -172,7 +172,7 @@ public class GenerationPipeline {
     }
 
     /**
-     * Bolum 23.2, and it is watched rather than acted on.
+     * And it is watched rather than acted on.
      *
      * <p>The page is already paid for and already fits; anything this finds is
      * a defect in our template or our fonts, and taking the document away from

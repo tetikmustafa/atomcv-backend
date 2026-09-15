@@ -3,12 +3,11 @@ package com.mustafatetik.atomcv.email;
 import java.util.Locale;
 
 /**
- * What is left to say once there is nothing left to say it about
- * (Bolum 57.4, 57.7).
+ * What is left to say once there is nothing left to say it about.
  *
  * <p><strong>Transactional, and the one lifecycle email nobody can switch
- * off.</strong> Bolum 57.4 requires a person to be told their data is gone;
- * a preference that could suppress this would be a way of not telling them.
+ * off.</strong> A person has to be told their data is gone; a preference that
+ * could suppress this would be a way of not telling them.
  *
  * <p>No button and no link. Every other message this product sends ends in
  * somewhere to go, and this one deliberately does not: the account it would

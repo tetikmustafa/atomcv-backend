@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 /**
  * Who is on a shorter leash, and until when.
  *
- * <p>Bolum 44.3's snippet ends its heavy-user branch with
- * {@code rateLimiter.tighten(u.userId(), Duration.ofHours(6))} and the section
- * then records that no such limiter exists — the detector reported and did
- * nothing. This is the missing half. The detector still does not pull the
- * brake, which stops everybody and stays a person's decision; it narrows the
- * one subject the numbers were about.
+ * <p>The heavy-user branch was written as {@code
+ * rateLimiter.tighten(u.userId(), Duration.ofHours(6))} against a limiter that
+ * did not exist — the detector reported and did nothing. This is the missing
+ * half. The detector still does not pull the brake, which stops everybody and
+ * stays a person's decision; it narrows the one subject the numbers were
+ * about.
  *
  * <p><strong>Redis and not a column.</strong> The mark is a six-hour fact and
  * expiry is the whole of its lifecycle — a table would need a sweeper to say

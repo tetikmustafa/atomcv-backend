@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Bolum 18.1's heuristics, against the postings of Bolum 51.3.
+ * The heuristics, against the postings of Bolum 51.3.
  *
  * <p><strong>Why these and not the ones already in
  * {@code JobDescriptionPreflightTest}.</strong> Those inputs were written by
@@ -27,16 +27,16 @@ import org.junit.jupiter.params.provider.MethodSource;
  * <p><strong>Seven of the nine are accepted, and that is the point.</strong>
  * Bolum 18.1 is a door that is meant to be almost always open — it refuses the
  * two shapes nobody can analyse and asks about everything else. A gate that
- * turned away a Turkish posting, a bilingual one, one with no requirements list,
- * or one carrying an injection attempt would be worse than no gate at all: the
- * injection is caught by Bolum 43's layers reading the model's <em>answer</em>,
- * and refusing the text at the door would refuse real postings that merely
- * quote a system message.
+ * turned away a Turkish posting, a bilingual one, one with no requirements
+ * list, or one carrying an injection attempt would be worse than no gate at
+ * all: the injection is caught by the layers reading the model's
+ * <em>answer</em>, and refusing the text at the door would refuse real
+ * postings that merely quote a system message.
  *
- * <p>The order of Bolum 18.1's checks is what {@code very_long_corporate}
- * holds: twelve thousand characters of real prose repeat themselves enough to
- * look low-entropy, and the length check running first is why that file is
- * accepted rather than refused for being repetitive.
+ * <p>The order of the checks is what {@code very_long_corporate} holds: twelve
+ * thousand characters of real prose repeat themselves enough to look
+ * low-entropy, and the length check running first is why that file is accepted
+ * rather than refused for being repetitive.
  */
 class GoldenPostingsTest {
 
@@ -66,13 +66,12 @@ class GoldenPostingsTest {
     }
 
     /**
-     * <strong>A Turkish posting is prose to this gate.</strong> Bolum 18.1's
-     * signal vocabulary is bilingual and the count is of <em>distinct</em>
-     * signals — a posting saying "deneyim" nine times has said one thing, not
-     * nine. Written out because the vocabulary is the only part of the
-     * heuristic that a new language breaks, and because
-     * {@code data_engineer_tr} passing tells you nothing about which of the two
-     * halves did the work.
+     * <strong>A Turkish posting is prose to this gate.</strong> The signal
+     * vocabulary is bilingual and the count is of <em>distinct</em> signals —
+     * a posting saying "deneyim" nine times has said one thing, not nine.
+     * Written out because the vocabulary is the only part of the heuristic
+     * that a new language breaks, and because {@code data_engineer_tr} passing
+     * tells you nothing about which of the two halves did the work.
      */
     @Test
     void theturkishVocabularyIsWhatCarriesTheTurkishPosting() {
@@ -85,9 +84,9 @@ class GoldenPostingsTest {
     /**
      * The injection fixture is data here and nowhere else.
      *
-     * <p>Bolum 43.1's first layer is structural and the third reads the answer;
-     * neither is this door, and this test exists to say so. A preflight that
-     * started refusing postings containing the words "ignore all previous
+     * <p>The first layer is structural and the third reads the answer; neither
+     * is this door, and this test exists to say so. A preflight that started
+     * refusing postings containing the words "ignore all previous
      * instructions" would refuse a posting quoting them, and would still not
      * stop an attempt phrased any other way.
      */
@@ -100,10 +99,10 @@ class GoldenPostingsTest {
     }
 
     /**
-     * Bolum 18.1: length before entropy, "yoksa 40.000 karakterlik tekrarli bir
-     * yapistirma 'tekrarli oldugu icin' reddedilir, gercekte oldugu sey icin
-     * degil". This file is the other side of that ordering — long, repetitive
-     * in the way corporate prose is, and a real posting.
+     * Length before entropy, "yoksa 40.000 karakterlik tekrarli bir yapistirma
+     * 'tekrarli oldugu icin' reddedilir, gercekte oldugu sey icin degil". This
+     * file is the other side of that ordering — long, repetitive in the way
+     * corporate prose is, and a real posting.
      */
     @Test
     void alongRealPostingIsNotRefusedForRepeatingItself() {

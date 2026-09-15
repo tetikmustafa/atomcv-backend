@@ -40,8 +40,8 @@ class EmbeddingProviderWiringTest {
     }
 
     /**
-     * Bolum 54.2's recording and prompt modes call the real thing. A fake
-     * vector recorded as a fixture would be indistinguishable from a real one
+     * The recording and prompt modes call the real thing. A fake vector
+     * recorded as a fixture would be indistinguishable from a real one
      * afterwards — the same reason the LLM fake is off in those profiles.
      */
     @Test

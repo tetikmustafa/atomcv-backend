@@ -58,9 +58,9 @@ public abstract class UserScopedRepository<T extends UserOwned> {
      * not obvious: deleting a row and inserting another that collides with it
      * on a unique constraint, inside one transaction. Hibernate orders inserts
      * before deletes regardless of the order they were called in, so the
-     * insert hits a row the delete was about to remove. Adim 3.6's upgrade
-     * over an empty profile row is exactly that, and this is the flush between
-     * the two halves.
+     * insert hits a row the delete was about to remove. The upgrade over an
+     * empty profile row is exactly that, and this is the flush between the two
+     * halves.
      */
     public void flush() {
         delegate().flush();

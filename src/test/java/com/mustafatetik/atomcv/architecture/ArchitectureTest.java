@@ -41,7 +41,7 @@ class ArchitectureTest {
             .matching("com.mustafatetik.atomcv.(*)..")
             .should().beFreeOfCycles();
 
-    /** Bolum 10.2, rule 4: shared must not depend on any business module. */
+    /** Rule 4: shared must not depend on any business module. */
     @ArchTest
     static final ArchRule sharedIsIndependent = noClasses()
             .that().resideInAPackage("..shared..")
@@ -184,8 +184,7 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage("..llm..");
 
     /**
-     * Bolum 48.1: user content is never logged; log {@code ContentShape}
-     * instead.
+     * User content is never logged; log {@code ContentShape} instead.
      *
      * <p>Scope limit worth knowing: this catches any method named
      * debug/info/warn/error that <em>declares</em> a content parameter, which
@@ -205,8 +204,8 @@ class ArchitectureTest {
                                             "com.mustafatetik.atomcv.profile.domain.content.RichContent")))))));
 
     /**
-     * Bolum 38.4: the Turkish locale turns "TITLE" into "tıtle" and "instagram"
-     * into "İNSTAGRAM", silently breaking skill matching. Case conversion must
+     * The Turkish locale turns "TITLE" into "tıtle" and "instagram" into
+     * "İNSTAGRAM", silently breaking skill matching. Case conversion must
      * always name a locale.
      */
     @ArchTest
@@ -251,11 +250,11 @@ class ArchitectureTest {
      * <p>The pool is ten connections and a provider call takes up to thirty
      * seconds. One call inside a transaction is survivable while the caller is
      * a queue working one job at a time; it stops being survivable the moment
-     * something fans out, and Bolum 21.8's second step asks for sixty wordings
-     * at once. Fifty of those would have waited on a connection for a call
-     * that had not started, failed on the wait, and — because a document is
-     * written in one language or not at all — sent every multilingual
-     * generation back to the profile's own language.
+     * something fans out, and the second step asks for sixty wordings at once.
+     * Fifty of those would have waited on a connection for a call that had not
+     * started, failed on the wait, and — because a document is written in one
+     * language or not at all — sent every multilingual generation back to the
+     * profile's own language.
      *
      * <p>The rule is on the class rather than on the method, which is stricter
      * than the fault requires and is deliberate: {@code @Transactional} on a
@@ -282,9 +281,9 @@ class ArchitectureTest {
     /**
      * <strong>The driver is a driver everywhere but one package.</strong>
      *
-     * <p>{@code org.postgresql} became compilable when Bolum 30.6's
-     * {@code LISTEN/NOTIFY} landed, because {@code PGConnection#getNotifications}
-     * has no vendor-neutral spelling. That is one class's need and it must not
+     * <p>{@code org.postgresql} became compilable when the {@code
+     * LISTEN/NOTIFY} landed, because {@code PGConnection#getNotifications} has
+     * no vendor-neutral spelling. That is one class's need and it must not
      * become everybody's: JPA, Flyway and the pool all speak Postgres through
      * interfaces that survive a driver upgrade, and a service that reached for
      * the vendor type would be the one thing an upgrade breaks.

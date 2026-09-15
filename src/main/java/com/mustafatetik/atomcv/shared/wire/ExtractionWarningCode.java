@@ -16,9 +16,9 @@ import java.util.Locale;
  * {@code other} branch instead of showing a user a raw key — and a server
  * sentence would be untranslatable besides.
  *
- * <p>Only what a model can actually report is here. Bolum 31.5's normalisation
- * raises warnings of its own and will add its codes when it lands; guessing at
- * them now would mean guessing at their {@code path} and their meaning.
+ * <p>Only what a model can actually report is here. The normalisation raises
+ * warnings of its own and will add its codes when it lands; guessing at them
+ * now would mean guessing at their {@code path} and their meaning.
  *
  * <p><strong>A warning is not a refusal.</strong> Every value here describes a
  * field the person can correct on the review screen, which is why that screen
@@ -40,7 +40,7 @@ public enum ExtractionWarningCode {
     /** An entry has bullets but no employer, school or project name attached. */
     MISSING_ORGANIZATION(true),
 
-    /** A heading did not match any of Bolum 13's kinds and was filed as custom. */
+    /** A heading did not match any of the kinds and was filed as custom. */
     UNCLEAR_SECTION(true),
 
     /**
@@ -118,7 +118,7 @@ public enum ExtractionWarningCode {
                 .toList();
     }
 
-    /** Lowercase on the wire, like every other closed vocabulary here (EK D.9). */
+    /** Lowercase on the wire, like every other closed vocabulary here. */
     @JsonValue
     public String wireValue() {
         return name().toLowerCase(Locale.ROOT);

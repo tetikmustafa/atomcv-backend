@@ -49,7 +49,9 @@ class TranslationPromptTest {
         assertThat(fenced.userTemplate()).doesNotContain("{{target_language}}");
     }
 
-    /** Bolum 21.8's fourth step is enforced in code; the prompt has to ask for it too. */
+    /**
+     * The fourth step is enforced in code; the prompt has to ask for it too.
+     */
     @Test
     void thePromptDemandsTheNumbersAndTheNamesSurvive() {
         var text = REGISTRY.load("translation").text();
@@ -59,9 +61,9 @@ class TranslationPromptTest {
     }
 
     /**
-     * Bolum 32.3: Turkish runs longer than English for the same claim, and a
-     * model left to its own devices will compress to fit. Compressing drops
-     * something the person said, which is what the length section forbids.
+     * Turkish runs longer than English for the same claim, and a model left to
+     * its own devices will compress to fit. Compressing drops something the
+     * person said, which is what the length section forbids.
      */
     @Test
     void thePromptForbidsCompressingToSaveSpace() {

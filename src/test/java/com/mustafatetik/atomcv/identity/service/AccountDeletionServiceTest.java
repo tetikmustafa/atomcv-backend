@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 57.4's ordering, as the one thing a unit test can hold it to.
+ * The ordering, as the one thing a unit test can hold it to.
  *
  * <p>The cascade itself is checked against the schema in {@code
  * AccountDeletionIT}, which reads the tables out of {@code information_schema}

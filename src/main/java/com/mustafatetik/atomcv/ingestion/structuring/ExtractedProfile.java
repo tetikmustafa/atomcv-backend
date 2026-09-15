@@ -99,7 +99,7 @@ public record ExtractedProfile(
             String website,
             String location) {
 
-        /** Public since Bolum 31.5's normaliser and its tests both build one. */
+        /** Public since the normaliser and its tests both build one. */
         public static final ExtractedContact EMPTY =
                 new ExtractedContact(null, null, null, null, null, null, null);
 

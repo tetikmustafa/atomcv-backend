@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 27.2's Anthropic row, and the reason that table has a mechanism column.
+ * The Anthropic row, and the reason that table has a mechanism column.
  *
  * <p>Every other adapter asks for JSON and reads a string. This one defines a
  * tool, forces the model to call it, and reads the call's arguments — so the
@@ -193,7 +193,7 @@ class AnthropicProviderTest {
                 .isEqualTo(LlmFailure.Kind.SCHEMA_MISMATCH);
     }
 
-    /** Bolum 27.4: the cached prefix is the read half, and it is discounted. */
+    /** The cached prefix is the read half, and it is discounted. */
     @Test
     void thecachedPrefixIsReadFromTheCacheReadCount() {
         respond(200, """

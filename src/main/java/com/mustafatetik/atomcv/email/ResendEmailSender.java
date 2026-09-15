@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Production's sender (Bolum 2's table).
+ * Production's sender.
  *
  * <p>The HTTP API rather than Resend's SMTP, which it also offers: a refused
  * send comes back as a status and a named error instead of a bounce arriving

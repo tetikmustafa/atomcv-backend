@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.random.RandomGenerator;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 30.5: which failures are worth trying again, and how long to wait. */
+/** Which failures are worth trying again, and how long to wait. */
 class JobRetryPolicyTest {
 
     /** Zero jitter, so the formula is what is being measured. */
@@ -56,7 +56,7 @@ class JobRetryPolicyTest {
                 new PipelineError.PageLimitExceeded(3, 1))).isFalse();
     }
 
-    /** Bolum 30.5's formula, with the jitter held at zero. */
+    /** The formula, with the jitter held at zero. */
     @Test
     void thewaitDoublesWithEachAttempt() {
         assertThat(JobRetryPolicy.backoff(1, NO_JITTER)).isEqualTo(Duration.ofSeconds(2));

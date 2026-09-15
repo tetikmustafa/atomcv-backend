@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * What a generation weighed, in words a person can read (Bolum 24.2, 24.4).
+ * What a generation weighed, in words a person can read.
  *
  * <p>A selection state is ids and scores: it says which atoms competed and
  * which reached the page, and it says nothing anybody could look at. Both
@@ -73,8 +73,8 @@ public final class WeighedLines {
      *
      * <p>Held-back lines are ranked by the score they competed on, ties broken
      * by id, so that two reads of one generation produce one order — an
-     * unstable list would renumber a model's prompt between two runs (Bolum
-     * 19.6, 53.3) and move a toggle under somebody's cursor.
+     * unstable list would renumber a model's prompt between two runs and move
+     * a toggle under somebody's cursor.
      *
      * @param rewritten Faz D's wording, or null when nothing was rewritten
      */

@@ -120,7 +120,7 @@ public class SignInAccounts {
     }
 
     /**
-     * Bolum 57.4: the account, and by cascade everything hanging off it.
+     * The account, and by cascade everything hanging off it.
      *
      * <p>Another id-taking method, and it is safe for a narrower reason than
      * {@link #byId}: the id is the acting user's own, taken from their

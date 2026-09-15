@@ -23,7 +23,7 @@ import java.util.UUID;
 @Table(name = "generation_feedback")
 public class GenerationFeedback implements UserOwned {
 
-    /** Bolum 13's column: the whole vocabulary, and it is a closed one. */
+    /** The column: the whole vocabulary, and it is a closed one. */
     public enum Category {
         SELECTION, WRITING, FORMAT, DENSITY, OTHER
     }
@@ -53,7 +53,7 @@ public class GenerationFeedback implements UserOwned {
     private String comment;
 
     /**
-     * Bolum 48.4: whether they agreed to the content being looked at.
+     * Whether they agreed to the content being looked at.
      *
      * <p>The flag lives here so the verdict and the consent are one row — the
      * grant that carries the expiry and the audit trail is written next to it

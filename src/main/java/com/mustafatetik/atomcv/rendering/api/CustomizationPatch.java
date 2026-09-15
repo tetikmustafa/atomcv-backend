@@ -10,12 +10,11 @@ import jakarta.validation.constraints.Size;
 /**
  * A rename, a re-set, or both.
  *
- * <p><strong>The settings are all-or-nothing.</strong> Sending
- * {@code baseTemplateId} replaces every parameter, with anything omitted
- * taking that template's default; sending none of them leaves the settings
- * alone and renames. Bolum 33.2's parameters are read together by the
- * renderer, so a request that changed one of five would be describing a page
- * nobody chose.
+ * <p><strong>The settings are all-or-nothing.</strong> Sending {@code
+ * baseTemplateId} replaces every parameter, with anything omitted taking that
+ * template's default; sending none of them leaves the settings alone and
+ * renames. The parameters are read together by the renderer, so a request that
+ * changed one of five would be describing a page nobody chose.
  */
 @Schema(description = "What to change about a saved set")
 public record CustomizationPatch(

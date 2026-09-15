@@ -11,7 +11,7 @@ import java.util.UUID;
  * What was recorded, and what the permission is doing.
  *
  * <p><strong>The grant is echoed back because a consent nobody can check is
- * not a consent.</strong> Bolum 48.4 promises the person can see when their
+ * not a consent.</strong> The person is promised they can see when their
  * content was actually read.
  *
  * <p><strong>And it is on the wire again, because something writes it now.</strong>

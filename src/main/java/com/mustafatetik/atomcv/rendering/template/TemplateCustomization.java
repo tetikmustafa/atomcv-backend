@@ -12,8 +12,8 @@ import java.util.Objects;
  * document cannot be made unreadable.
  *
  * <p>Everything here is either an enum, a validated value object or a number
- * inside a range. Nothing a user typed reaches LaTeX through this record, which
- * is what keeps Bolum 29's isolation a second line of defence rather than the
+ * inside a range. Nothing a user typed reaches LaTeX through this record,
+ * which is what keeps the isolation a second line of defence rather than the
  * only one.
  */
 public record TemplateCustomization(
@@ -69,8 +69,7 @@ public record TemplateCustomization(
      *
      * <p>Roomier than classic on both counts a slider can reach -- a 0.6in
      * margin and 1.05 leading -- which with the preamble's halved negative
-     * spacing lands near Bolum 33.5's fifty lines against classic's
-     * fifty-four.
+     * spacing lands near the fifty lines against classic's fifty-four.
      */
     public static final TemplateCustomization MODERN = new TemplateCustomization(
             "modern", FontFamily.MODERN, 11.0, 0.55, 1.0, HexColor.of("1D4ED8"));

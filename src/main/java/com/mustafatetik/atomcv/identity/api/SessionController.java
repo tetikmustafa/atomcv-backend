@@ -57,12 +57,12 @@ public class SessionController {
     @GetMapping("/session")
     public ResponseEntity<SessionResponse> session() {
         Optional<Session> existing = currentUser.session();
-        // Adim 3.6: a caller with no session gets one, and it is anonymous.
-        // Bolum 9 lets somebody build a profile and generate a CV before
-        // deciding whether to sign up, and that needs an identity to scope the
-        // work by — minted here rather than at the first write, because the
-        // client asks this endpoint first and would otherwise have to handle
-        // "not yet" as a state.
+        // A caller with no session gets one, and it is anonymous. Bolum 9 lets
+        // somebody build a profile and generate a CV before deciding whether
+        // to sign up, and that needs an identity to scope the work by — minted
+        // here rather than at the first write, because the client asks this
+        // endpoint first and would otherwise have to handle "not yet" as a
+        // state.
         Session session = existing.orElseGet(sessions::createAnonymous);
 
         var response = ResponseEntity.ok()

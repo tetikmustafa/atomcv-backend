@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 /**
- * The same CV as one self-contained HTML file (Bolum 22.6, Bolum 1.2's fourth
- * claim).
+ * The same CV as one self-contained HTML file (Bolum 22.6, the fourth claim).
  *
  * <p><strong>One file and nothing fetched.</strong> No stylesheet, no font, no
  * script, no image: the document is opened from a downloads folder, pasted
@@ -141,9 +140,9 @@ public class HtmlDocumentWriter {
     }
 
     /**
-     * Bolum 33.4.1's labelled rows: a bold category up to the colon and plain
-     * text after it, which is what the reference template prints and what a
-     * person scans down the page for.
+     * The labelled rows: a bold category up to the colon and plain text after
+     * it, which is what the reference template prints and what a person scans
+     * down the page for.
      */
     private static void inline(StringBuilder html, RenderRequest.RenderableSection section) {
         for (RenderRequest.RenderableEntry entry : section.entries()) {
@@ -245,8 +244,8 @@ public class HtmlDocumentWriter {
 
     /**
      * A stack whose first entry is the family the PDF used and whose last is a
-     * generic the reader certainly has. Bolum 5.5's whitelist is about what
-     * XeLaTeX may load; here it decides only what to ask for first.
+     * generic the reader certainly has. The whitelist is about what XeLaTeX
+     * may load; here it decides only what to ask for first.
      */
     private static String fontStack(FontFamily family) {
         String generic = switch (family) {

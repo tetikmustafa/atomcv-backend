@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
-/** Bolum 27.3: the order, the skips, and the one failure that stops the walk. */
+/** The order, the skips, and the one failure that stops the walk. */
 class ProviderChainTest {
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -27,7 +27,7 @@ class ProviderChainTest {
 
     private final List<LlmInvocationEvent> published = new ArrayList<>();
 
-    /** Bolum 48.3's fallback rate is read off this one. */
+    /** The fallback rate is read off this one. */
     private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meters =
             new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
     private final List<Object> recorded = new ArrayList<>();
@@ -123,7 +123,7 @@ class ProviderChainTest {
 
     // ── Bolum 27.5: every call is counted, failures included ──────────────
 
-    // -- Bolum 48.3's "Saglayici fallback orani" ----------------------------
+    // -- the provider fallback rate --------------------------------
 
     /**
      * An answer from the first provider that was actually tried is not a
@@ -149,12 +149,12 @@ class ProviderChainTest {
     }
 
     /**
-     * <strong>A provider with no key is skipped without counting.</strong>
-     * Bolum 27.3 says so about the {@code tried} list and the rate has to
-     * agree: a deployment running with one key out of three would otherwise
-     * report every single answer as a fallback, and the number that is
-     * supposed to say "a vendor is having a bad day" would instead say
-     * "somebody did not buy three subscriptions".
+     * <strong>A provider with no key is skipped without counting.</strong> The
+     * rule says so about the {@code tried} list and the rate has to agree: a
+     * deployment running with one key out of three would otherwise report
+     * every single answer as a fallback, and the number that is supposed to
+     * say "a vendor is having a bad day" would instead say "somebody did not
+     * buy three subscriptions".
      */
     @Test
     void askippedProviderWithNoKeyDoesNotMakeTheAnswerAfallback() {
@@ -241,9 +241,9 @@ class ProviderChainTest {
     }
 
     /**
-     * The chain only ever records. Withdrawing is Bolum 18.4's gate, which
-     * sits a layer above and has its own tests — so this one fails loudly if
-     * the chain ever starts doing it.
+     * The chain only ever records. Withdrawing is the gate, which sits a layer
+     * above and has its own tests — so this one fails loudly if the chain ever
+     * starts doing it.
      */
     private AnswerRecorder keeping() {
         return new AnswerRecorder() {
@@ -289,7 +289,7 @@ class ProviderChainTest {
                 String.class, ModelTier.CHEAP, Duration.ofSeconds(30));
     }
 
-    // ── Bolum 5.1's circuit breaker ───────────────────────────────────────
+    // ── the circuit breaker ───────────────────────────────────────
 
     /**
      * <strong>The failure this buys.</strong> Without a breaker the chain still

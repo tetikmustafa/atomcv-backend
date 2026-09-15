@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 /**
- * Bolum 48.5's replay, on a developer's own machine and against a file.
+ * The replay, on a developer's own machine and against a file.
  *
  * <pre>
  *   ./scripts/replay.sh export.json            # prints the LaTeX Faz E produces
@@ -26,15 +26,15 @@ import java.util.Locale;
  * {@link GenerationExport} carried.
  *
  * <p><strong>Faz E, and only Faz E, and the reason is the data.</strong>
- * {@code content_snapshot} <em>is</em> Bolum 22.2's {@code RenderRequest}, so
- * replaying the render is exact: the same input produces the same bytes, and
- * comparing them to what shipped is a diff. Faz B needs a scored tree and Faz
- * C needs the selection request built from it with every atom's measured
- * height — and nothing stores either. A task that pretended to replay them
- * would have to rebuild its inputs from today's profile, which is a different
- * profile: the text under an atom keeps changing, which is why the snapshot
- * exists in the first place. Answering a question about last week with this
- * week's data is worse than not answering it.
+ * {@code content_snapshot} <em>is</em> the {@code RenderRequest}, so replaying
+ * the render is exact: the same input produces the same bytes, and comparing
+ * them to what shipped is a diff. Faz B needs a scored tree and Faz C needs
+ * the selection request built from it with every atom's measured height — and
+ * nothing stores either. A task that pretended to replay them would have to
+ * rebuild its inputs from today's profile, which is a different profile: the
+ * text under an atom keeps changing, which is why the snapshot exists in the
+ * first place. Answering a question about last week with this week's data is
+ * worse than not answering it.
  *
  * <p>So this closes the half that the stored columns support, and
  * {@code GenerationExport} names exactly what the other half would need.

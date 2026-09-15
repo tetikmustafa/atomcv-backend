@@ -33,8 +33,8 @@ import java.util.UUID;
 public final class ScorableAtomFactory {
 
     /**
-     * Bolum 28.2: every vector is computed from the English variant, so every
-     * text compared against one is read from the English variant too.
+     * Every vector is computed from the English variant, so every text
+     * compared against one is read from the English variant too.
      */
     private static final String EMBEDDING_LANGUAGE = "en";
 
@@ -81,11 +81,11 @@ public final class ScorableAtomFactory {
                 canonicalSkills(atom),
                 contentTokens(node, entry),
                 atom.getImportance(),
-                // Bolum 19.4, computed here because it needs a date and the
-                // scorer must not have one. Today is a parameter for the same
-                // reason it is in GeneralModeScorer: a factory that read the
-                // clock could not be tested for the same-input-same-output
-                // property Bolum 51.2 requires.
+                // Computed here because it needs a date and the scorer must
+                // not have one. Today is a parameter for the same reason it is
+                // in GeneralModeScorer: a factory that read the clock could
+                // not be tested for the same-input-same-output property Bolum
+                // 51.2 requires.
                 GeneralModeScorer.score(atom, entry, today)));
     }
 

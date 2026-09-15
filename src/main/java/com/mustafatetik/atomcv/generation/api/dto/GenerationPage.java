@@ -6,12 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 /**
- * A page of history, and how much of it there is (EK D.8.7 · Sayfalama).
+ * A page of history, and how much of it there is.
  *
  * <p><strong>{@code items} and {@code nextCursor}</strong>, which is the shape
- * EK D.8.7 named for this list and {@code /applications}. Offset pagination
- * skips rows in a list that grows from the top, and this one grows from the
- * top every time somebody makes a CV.
+ * chosen for this list and {@code /applications}. Offset pagination skips rows
+ * in a list that grows from the top, and this one grows from the top every
+ * time somebody makes a CV.
  *
  * <p><strong>{@code total} is here for the one screen that cannot page.</strong>
  * F-020 asked for a listing or, failing that, a count, because the

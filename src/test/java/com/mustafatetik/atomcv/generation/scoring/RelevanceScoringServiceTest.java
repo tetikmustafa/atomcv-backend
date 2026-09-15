@@ -21,7 +21,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 28.4: the embedding service is down and scoring carries on.
+ * The embedding service is down and scoring carries on.
  *
  * <p>The scorer itself is pure and tested next door. What is tested here is
  * the part that talks to something — which weight set a generation ran with,
@@ -43,7 +43,7 @@ class RelevanceScoringServiceTest {
         assertThat(embeddings.embedded).hasSize(1);
     }
 
-    /** Bolum 18.5: the synthesised target, not the posting as it was pasted. */
+    /** The synthesised target, not the posting as it was pasted. */
     @Test
     void whatIsEmbeddedIsTheSynthesisedTarget() {
         var embeddings = new StubProvider();
@@ -122,7 +122,7 @@ class RelevanceScoringServiceTest {
         assertThat(scores.scoreOf(inactive, null)).isZero();
     }
 
-    /** Bolum 19.6, through the whole service rather than through the scorer. */
+    /** Through the whole service rather than through the scorer. */
     @Test
     void thesameProfileAndPostingScoreTheSameTwice() {
         var service = serviceWith(new StubProvider());
@@ -133,7 +133,7 @@ class RelevanceScoringServiceTest {
     }
 
     /**
-     * Bolum 18.7's directive, doing something measurable.
+     * The directive, doing something measurable.
      *
      * <p>Neither atom says a word the posting uses -- one is about Kafka, the
      * other about design reviews -- so against the posting alone they score
@@ -164,9 +164,9 @@ class RelevanceScoringServiceTest {
 
     /**
      * <strong>An emphasis nobody carries re-ranks nothing, and it does move
-     * the numbers.</strong> Bolum 19.2's keyword coverage is a fraction of the
-     * terms, so a term no atom carries enlarges the denominator and every
-     * score falls together -- which leaves the order exactly as it was.
+     * the numbers.</strong> The keyword coverage is a fraction of the terms,
+     * so a term no atom carries enlarges the denominator and every score falls
+     * together -- which leaves the order exactly as it was.
      *
      * <p>Written because the first version of this test asserted the scores
      * were unchanged and was wrong about the product rather than about the

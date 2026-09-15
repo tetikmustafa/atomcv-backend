@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 /**
  * BGE-M3 behind HuggingFace's text-embeddings-inference.
  *
- * <p>Self-hosted rather than an API: the text is the user's own CV, and
- * Bolum 28.1's first reason for the whole arrangement is that it never leaves.
- * That also means this client is the only thing that talks to the container.
+ * <p>Self-hosted rather than an API: the text is the user's own CV, and the
+ * first reason for the whole arrangement is that it never leaves. That also
+ * means this client is the only thing that talks to the container.
  *
  * <p><strong>Nothing here logs the text.</strong> It is atom content — absolute
  * rule 4. The log lines carry counts and statuses.
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Profile("!local-fake")
 public class TeiEmbeddingProvider implements EmbeddingProvider {
 
-    /** BGE-M3's dense output (Bolum 28.1). */
+    /** BGE-M3's dense output. */
     static final int DIMENSIONS = 1024;
 
     private static final Logger log = LoggerFactory.getLogger(TeiEmbeddingProvider.class);

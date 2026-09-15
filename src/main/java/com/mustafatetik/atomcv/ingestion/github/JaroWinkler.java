@@ -17,7 +17,7 @@ package com.mustafatetik.atomcv.ingestion.github;
  * arithmetic with a published specification, and a library for it is a
  * transitive tree and a version to watch.
  *
- * <p>Pure, so the suggestion list is the same list twice (Bolum 19.6's habit).
+ * <p>Pure, so the suggestion list is the same list twice (the habit).
  */
 final class JaroWinkler {
 

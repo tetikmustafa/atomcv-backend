@@ -57,8 +57,8 @@ public class ErrorPresenter {
                     .resolution(ResolutionAction.SIGN_UP)
                     .build();
 
-            // § 35.7's own answer for a window that closed, and the resolution
-            // is the only one there is: the work is gone and an account is what
+            // The own answer for a window that closed, and the resolution is
+            // the only one there is: the work is gone and an account is what
             // would have kept it.
             case PipelineError.SessionEnded ignored -> UserFacingError.of(
                     ErrorCode.ANONYMOUS_SESSION_EXPIRED,
@@ -133,8 +133,8 @@ public class ErrorPresenter {
                     ErrorCode.TRANSLATION_FAILED, new Resolution(ResolutionAction.RETRY, null));
 
             // Another sentence is a different sentence, and this one cost
-            // almost nothing -- Bolum 24.2's parse is the cheapest call the
-            // product makes.
+            // almost nothing -- the parse is the cheapest call the product
+            // makes.
             case PipelineError.EditNotUnderstood ignored -> UserFacingError.of(
                     ErrorCode.EDIT_NOT_UNDERSTOOD, new Resolution(ResolutionAction.RETRY, null));
 

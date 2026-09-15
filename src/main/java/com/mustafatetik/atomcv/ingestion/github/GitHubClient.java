@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
  * {@code GITHUB_API_TOKEN} set it is five thousand. The requests are the same
  * requests either way, and nothing here asks for a scope.
  *
- * <p>The host is a constant. Bolum 42.2's SSRF surface is the login in the
- * path, and {@link GitHubLogin} refuses anything that is not one.
+ * <p>The host is a constant. The SSRF surface is the login in the path, and
+ * {@link GitHubLogin} refuses anything that is not one.
  */
 @Component
 public class GitHubClient implements GitHubRepositories {

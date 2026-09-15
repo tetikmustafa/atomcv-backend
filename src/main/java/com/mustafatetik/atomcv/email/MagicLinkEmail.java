@@ -13,7 +13,7 @@ import java.util.Locale;
  *
  * <p>Both parts, always. A text-only message is filtered more often, and an
  * HTML-only one is unreadable in the clients that refuse HTML — the same
- * corporate gateways Bolum 40.3 warns about for prefetching.
+ * corporate gateways that prefetch links.
  *
  * <p><strong>The link is a credential.</strong> It is interpolated once, into
  * the body, and appears in no log line anywhere in this package.

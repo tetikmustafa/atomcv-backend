@@ -331,7 +331,7 @@ public class AtomController {
     /**
      * <strong>Account or anonymous session, and this endpoint does not know
      * which.</strong> It asks for the profile of whoever is calling and gets a
-     * scope back; the scope is what says whether § 35.7's limits apply, which is
+     * scope back; the scope is what says whether the limits apply, which is
      * why nothing here has to check.
      */
     private ProfileRef profile() {

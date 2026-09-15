@@ -8,7 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 21.8's fourth step, on both sides of the line.
+ * The fourth step, on both sides of the line.
  *
  * <p>The false positives carry the weight here. A guard that rejects correct
  * translations is a guard somebody switches off, and this one runs on a

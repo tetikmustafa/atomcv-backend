@@ -92,16 +92,17 @@ public class GenerationEnqueueService {
         }
 
         if (!flags.isEnabled(FeatureFlags.NEW_GENERATIONS)) {
-            // Bolum 44.3, and it goes ahead of the quota: a paused deployment
-            // must not spend anyone's allowance on a request it will refuse.
+            // And it goes ahead of the quota: a paused deployment must not
+            // spend anyone's allowance on a request it will refuse.
             return Result.err(new PipelineError.GenerationPaused());
         }
 
         if (coverLetter && owned.ref().scope() == ProfileRef.Scope.EPHEMERAL) {
-            // § 35.7, and ahead of the quota for the same reason the pause is:
-            // a request that will be refused must not spend anybody's day. A
-            // letter is a second model call on top of the CV, and the anonymous
-            // flow is a trial of the product paid for by whoever runs it.
+            // And ahead of the quota for the same reason the pause is: a
+            // request that will be refused must not spend anybody's day. A
+            // letter is a second model call on top of the CV, and the
+            // anonymous flow is a trial of the product paid for by whoever
+            // runs it.
             return Result.err(
                     new PipelineError.FeatureNeedsAnAccount(AccountFeature.COVER_LETTER));
         }
@@ -113,8 +114,8 @@ public class GenerationEnqueueService {
 
         Result<Void> refused = preflight(owned, jobDescription, preflightAcknowledged);
         if (refused.isErr()) {
-            // Bolum 44.2: nothing was generated, so nothing was spent. Without
-            // this a user could burn a day's allowance on typos.
+            // Nothing was generated, so nothing was spent. Without this a user
+            // could burn a day's allowance on typos.
             quotas.refund(allowance, QuotaMetric.GENERATION);
             return refused.map(ignored -> null);
         }
@@ -141,8 +142,8 @@ public class GenerationEnqueueService {
             ProfileResolver.OwnedProfile owned, String jobDescription,
             boolean preflightAcknowledged) {
 
-        // A blank posting is general CV mode, not a bad request: Bolum 18.1's
-        // check accepts it for exactly that reason.
+        // A blank posting is general CV mode, not a bad request: the check
+        // accepts it for exactly that reason.
         if (!preflightAcknowledged) {
             var verdict = JobDescriptionPreflight.check(jobDescription);
             if (!verdict.isAccepted()) {

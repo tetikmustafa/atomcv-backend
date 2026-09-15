@@ -11,24 +11,25 @@ import java.util.UUID;
 /**
  * One generation, in the shape {@code gradlew replay} can read.
  *
- * <p><strong>Bolum 48.5's premise is "without touching production data", and
- * that premise needed a file.</strong> The section describes a task that
- * re-runs a pure phase from a {@code selection_state} on a developer's own
- * machine; nothing could produce that file. {@code GET /generations/{id}} does
- * not publish the selection state, and {@code /selection} publishes the weighed
+ * <p><strong>the premise is "without touching production data", and that
+ * premise needed a file.</strong> The section describes a task that re-runs a
+ * pure phase from a {@code selection_state} on a developer's own machine;
+ * nothing could produce that file. {@code GET /generations/{id}} does not
+ * publish the selection state, and {@code /selection} publishes the weighed
  * rows with their text, which is a different thing. This is the format, and it
  * is deliberately the two columns that already exist rather than a new view of
  * them.
  *
- * <p><strong>What is here, and what is not.</strong> {@link #contentSnapshot()}
- * is Bolum 22.2's {@code RenderRequest} — it is <em>exactly</em> Faz E's input,
- * which is why Faz E replays and the others do not. Faz B needs a scored tree
- * and Faz C needs the {@code SelectionRequest} built from it with every atom's
- * measured height; neither is stored anywhere, and storing them would be a
- * retention decision about a copy of somebody's whole profile rather than a
- * debugging convenience. {@link #selectionState()} is Faz C's <em>output</em>,
- * and travels because it carries the geometry and the language a re-render
- * needs, and because it is what one reads to see what Faz C decided.
+ * <p><strong>What is here, and what is not.</strong> {@link
+ * #contentSnapshot()} is the {@code RenderRequest} — it is <em>exactly</em>
+ * Faz E's input, which is why Faz E replays and the others do not. Faz B needs
+ * a scored tree and Faz C needs the {@code SelectionRequest} built from it
+ * with every atom's measured height; neither is stored anywhere, and storing
+ * them would be a retention decision about a copy of somebody's whole profile
+ * rather than a debugging convenience. {@link #selectionState()} is Faz C's
+ * <em>output</em>, and travels because it carries the geometry and the
+ * language a re-render needs, and because it is what one reads to see what Faz
+ * C decided.
  *
  * <p><strong>This is user content and the grant is what permits it.</strong>
  * The snapshot is the document that was sent to an employer. A file outlives

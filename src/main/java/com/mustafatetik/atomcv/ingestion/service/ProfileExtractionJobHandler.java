@@ -38,11 +38,11 @@ import org.springframework.stereotype.Component;
 /**
  * The three stages of Bolum 31 behind one job.
  *
- * <p>Read (slice one) happened in the request, because Bolum 31.10's first
- * three failures — encrypted, scanned, empty — are things a person acts on at
- * once. What is left is the expensive half: structure the text, normalise what
- * came back, write it. Bolum 31.6 budgets around eight seconds for it and puts
- * a screen in front of the person while it runs, which is why it is a job with
+ * <p>Read (slice one) happened in the request, because the first three
+ * failures — encrypted, scanned, empty — are things a person acts on at once.
+ * What is left is the expensive half: structure the text, normalise what came
+ * back, write it. Bolum 31.6 budgets around eight seconds for it and puts a
+ * screen in front of the person while it runs, which is why it is a job with
  * progress rather than a long request.
  *
  * <p><strong>The quota is refunded on failure</strong>. It was taken when the
@@ -56,7 +56,9 @@ public class ProfileExtractionJobHandler implements JobHandler {
     private static final Logger log =
             LoggerFactory.getLogger(ProfileExtractionJobHandler.class);
 
-    /** Bolum 30.6: a phase name a client can render, not a percentage invented per line. */
+    /**
+     * A phase name a client can render, not a percentage invented per line.
+     */
     private static final JobProgress READING =
             new JobProgress("structuring", "Reading your CV", 20);
 
@@ -111,9 +113,9 @@ public class ProfileExtractionJobHandler implements JobHandler {
 
         return switch (structured) {
             case Result.Err<ExtractedProfile> failed -> {
-                // Bolum 44.2: no profile came out of it, whatever the cause,
-                // and it goes back to whoever paid — which for an anonymous
-                // upload is an address the worker could not otherwise know.
+                // No profile came out of it, whatever the cause, and it goes
+                // back to whoever paid — which for an anonymous upload is an
+                // address the worker could not otherwise know.
                 quotas.refund(payload.allowance(), QuotaMetric.PROFILE_EXTRACT);
                 yield refused(failed.error());
             }
@@ -147,8 +149,8 @@ public class ProfileExtractionJobHandler implements JobHandler {
     }
 
     /**
-     * Bolum 9: an anonymous person's profile is rows like anybody else's, with
-     * an expiry instead of an owner.
+     * An anonymous person's profile is rows like anybody else's, with an
+     * expiry instead of an owner.
      *
      * <p>It was a Redis document, and the sentence that used to be here said so.
      * What changed is what an anonymous person is allowed to do with it — edit
@@ -156,12 +158,12 @@ public class ProfileExtractionJobHandler implements JobHandler {
      * and a second store meant a second implementation of every step of it.
      *
      * <p><strong>No background work is queued yet, and that is now a choice
-     * rather than an impossibility.</strong> Embedding and measurement write to
-     * rows this profile finally has; what they do not yet have is a session to
-     * belong to, because both jobs are owned by a user. Nothing is lost while
-     * there is no anonymous generation to be good: an estimate costs nothing
-     * until something is charged against it. It arrives with the generation
-     * slice, which is the point at which Bolum 20.4's estimate and Bolum 28.4's
+     * rather than an impossibility.</strong> Embedding and measurement write
+     * to rows this profile finally has; what they do not yet have is a session
+     * to belong to, because both jobs are owned by a user. Nothing is lost
+     * while there is no anonymous generation to be good: an estimate costs
+     * nothing until something is charged against it. It arrives with the
+     * generation slice, which is the point at which the estimate and the
      * vectorless scoring stop being free.
      */
     private JobOutcome completedAnonymously(String anonSession, NormalizedProfile normalized) {
@@ -190,7 +192,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
     }
 
     /**
-     * Bolum 31.6's background box, as two jobs rather than two waits.
+     * The background box, as two jobs rather than two waits.
      *
      * <p>The screen opens the moment the profile exists; the vectors and the
      * measured heights arrive underneath it while the person reads their own
@@ -218,8 +220,8 @@ public class ProfileExtractionJobHandler implements JobHandler {
      * What the terminal SSE event of Bolum 30.6 carries.
      *
      * <p>Counts and ids, never content (absolute rule 4). The warning count is
-     * here because Bolum 31.6's screen opens on the sections that have one —
-     * the client needs to know whether to before it has fetched anything.
+     * here because the screen opens on the sections that have one — the client
+     * needs to know whether to before it has fetched anything.
      */
     private static JobOutcome completed(UUID profileId, NormalizedProfile normalized) {
         Map<String, Object> result = new LinkedHashMap<>();

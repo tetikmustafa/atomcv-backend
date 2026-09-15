@@ -42,8 +42,8 @@ import org.springframework.stereotype.Component;
  *
  * <p>Marks are semantic and this decides what they look like, the same way the
  * LaTeX renderer does: technology, metric and emphasis are set bold, a link is
- * left as its text. An unknown mark falls through to plain — Bolum 16.2's rule,
- * and the reason {@link Mark} is not an enum.
+ * left as its text. An unknown mark falls through to plain — the rule, and the
+ * reason {@link Mark} is not an enum.
  */
 @Component
 public class DocxDocumentWriter {
@@ -236,9 +236,9 @@ public class DocxDocumentWriter {
     }
 
     /**
-     * Bolum 22.6's own example: a technology or a metric is set bold. Emphasis
-     * joins them because the rewrite marks what it wants stressed, and an
-     * unknown mark falls through to plain rather than failing.
+     * The own example: a technology or a metric is set bold. Emphasis joins
+     * them because the rewrite marks what it wants stressed, and an unknown
+     * mark falls through to plain rather than failing.
      */
     private static boolean isBold(List<Mark> marks) {
         return marks.contains(Mark.TECHNOLOGY)

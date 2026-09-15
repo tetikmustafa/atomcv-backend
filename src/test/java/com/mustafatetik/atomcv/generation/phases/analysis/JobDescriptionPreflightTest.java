@@ -9,12 +9,12 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 18.1, and design principle 5 with it: everything that can refuse a
- * generation runs before anything is paid for.
+ * And design principle 5 with it: everything that can refuse a generation runs
+ * before anything is paid for.
  */
 class JobDescriptionPreflightTest {
 
-    /** Bolum 18.1: an empty posting is general CV mode, not a bad posting. */
+    /** An empty posting is general CV mode, not a bad posting. */
     @Test
     void anEmptyPostingPassesBecauseThereIsNothingToAnalyse() {
         assertThat(JobDescriptionPreflight.check(null)).isEqualTo(Verdict.ACCEPTED);

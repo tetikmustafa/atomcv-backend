@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Bolum 43.1's third layer, on the answer that came back.
+ * The third layer, on the answer that came back.
  *
  * <p>A CV is the one document in this system an attacker controls end to end,
  * so it is the likeliest carrier of an injected instruction. The first two
@@ -19,19 +19,18 @@ import java.util.Optional;
  * would be the system deciding how they should write. Only a value that could
  * not be a CV field at all trips it.
  *
- * <p><strong>What a refusal is called matters.</strong> Bolum 43.2: a special
- * message tells an attacker their attempt was noticed. The caller answers with
- * the same {@code EXTRACTION_EMPTY} it would give a page of nonsense, and the
- * fact that this is what refused reaches the operator through a log line
- * instead.
+ * <p><strong>What a refusal is called matters.</strong> A special message
+ * tells an attacker their attempt was noticed. The caller answers with the
+ * same {@code EXTRACTION_EMPTY} it would give a page of nonsense, and the fact
+ * that this is what refused reaches the operator through a log line instead.
  */
 final class StructuringAudit {
 
     /**
      * A bullet is a sentence, and a long one is still a sentence. Six hundred
      * characters is about four lines of a rendered CV — past anything that
-     * survives Bolum 20's page budget, and far past anything a person writes
-     * in one bullet.
+     * survives the page budget, and far past anything a person writes in one
+     * bullet.
      *
      * <p>Measured against every recorded extraction: the longest bullet any
      * real CV has produced here is 219 characters, so this keeps most of a

@@ -63,9 +63,9 @@ public class CustomizationService {
     /**
      * Replaces the settings, and the name when one is sent.
      *
-     * <p>Whole-object rather than field-by-field: Bolum 33.2's parameters are
-     * read together by the renderer, and a half-applied geometry is a page
-     * nobody asked for.
+     * <p>Whole-object rather than field-by-field: the parameters are read
+     * together by the renderer, and a half-applied geometry is a page nobody
+     * asked for.
      */
     @Transactional
     public SavedCustomization update(ProfileRef profile, UUID id, String name,
@@ -95,9 +95,9 @@ public class CustomizationService {
     /**
      * What a generation should render with when it named one.
      *
-     * <p>Empty for a null id, which is the ordinary case: Bolum 14.4's
-     * {@code customizationId} is optional and a request that says nothing gets
-     * the profile's own working settings.
+     * <p>Empty for a null id, which is the ordinary case: the {@code
+     * customizationId} is optional and a request that says nothing gets the
+     * profile's own working settings.
      */
     @Transactional(readOnly = true)
     public Optional<TemplateCustomization> settingsOf(ProfileRef profile, UUID id) {

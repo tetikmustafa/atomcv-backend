@@ -135,11 +135,11 @@ class EnvExampleTest {
 
     /**
      * <strong>The operations scripts source this file, so they read it
-     * too.</strong> Bolum 49's backup and WAL archiving never reach Spring:
-     * {@code backup.sh} and {@code archive-wal.sh} do {@code . ./.env} and
-     * take the age key and the remotes from there. Counting only yaml would
-     * call {@code AGE_PUBLIC_KEY} a dead knob and push somebody to delete the
-     * one name without which no backup runs at all.
+     * too.</strong> The backup and WAL archiving never reach Spring: {@code
+     * backup.sh} and {@code archive-wal.sh} do {@code../.env} and take the age
+     * key and the remotes from there. Counting only yaml would call {@code
+     * AGE_PUBLIC_KEY} a dead knob and push somebody to delete the one name
+     * without which no backup runs at all.
      *
      * <p>Shell is matched on {@code ${NAME}} and on {@code "${NAME:?...}"} and
      * {@code ${NAME:-default}} alike, which is the same shape the yaml

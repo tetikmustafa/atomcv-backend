@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Bolum 21.7's check: a summary claims nothing the page does not already say.
+ * The check: a summary claims nothing the page does not already say.
  *
  * <p>Three rules where Bolum 21.6 has five, and the two that are missing are
  * missing on purpose. <strong>Nothing has to survive</strong> — a synthesis is
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  */
 public final class AboutValidator {
 
-    /** A run of digits, whatever surrounds it. Bolum 21.6's rule 1, reversed. */
+    /** A run of digits, whatever surrounds it. The rule 1, reversed. */
     private static final Pattern DIGITS = Pattern.compile("\\d+");
 
     private AboutValidator() {
@@ -65,7 +65,7 @@ public final class AboutValidator {
             return List.copyOf(issues);
         }
 
-        // 1. Bolum 21.7, verbatim: every technology is one the page carries.
+        // 1. Verbatim: every technology is one the page carries.
         if (namesSomethingThePageDoesNot(
                 candidate, answer, folded, postingSkills, postingSpellings)) {
             issues.add(RewriteIssue.UNSUPPORTED_CLAIM);
@@ -76,7 +76,7 @@ public final class AboutValidator {
             issues.add(RewriteIssue.NUMBER_INVENTED);
         }
 
-        // 3. Bolum 21.3's ceiling, narrowed by Bolum 21.7's ~65 words.
+        // 3. The ceiling, narrowed by the ~65 words.
         if (answer.length() > candidate.maxChars()) {
             issues.add(RewriteIssue.TOO_LONG);
         }

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Bolum 21.8's second step: what it spends, and what it answers.
+ * The second step: what it spends, and what it answers.
  *
  * <p>Two things are worth a test here and they pull against each other. It has
  * to be <strong>bounded</strong> — this is the one place in a generation where

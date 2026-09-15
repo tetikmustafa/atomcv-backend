@@ -28,16 +28,16 @@ import org.springframework.stereotype.Service;
  * something the page does not support, which is the one thing this whole
  * subsystem exists to prevent.
  *
- * <p>Two attempts, like Bolum 21.6, and for the same reason: these failures
- * are largely a model being sloppy once. A third would be paying twice for the
- * same answer.
+ * <p>Two attempts, like the bullet rewrite, and for the same reason: these
+ * failures are largely a model being sloppy once. A third would be paying
+ * twice for the same answer.
  */
 @Service
 public class CoverLetterService {
 
     public static final String PROMPT_ID = "cover_letter";
 
-    /** Bolum 43.1's fence: the CV's sentences, the lists, the person's note. */
+    /** The fence: the CV's sentences, the lists, the person's note. */
     private static final String FENCE_TAG = "letter";
 
     /** Ours, not the CV's, so they are substituted into the instructions. */
@@ -59,7 +59,7 @@ public class CoverLetterService {
         this.providers = providers;
     }
 
-    /** Which version of the prompt this bucket is on (Bolum 53.3). */
+    /** Which version of the prompt this bucket is on. */
     public String promptVersionFor(String bucketKey) {
         return prompts.selectVersion(PROMPT_ID, bucketKey);
     }
@@ -126,8 +126,8 @@ public class CoverLetterService {
     }
 
     /**
-     * Bolum 34.6's buttons, as a sentence added to the instructions. They are
-     * ours rather than the user's, so they belong above the fence.
+     * The regeneration buttons, as a sentence added to the instructions. They
+     * are ours rather than the user's, so they belong above the fence.
      */
     private static String instructionFor(CoverLetterStyle style) {
         return switch (style) {
@@ -145,8 +145,8 @@ public class CoverLetterService {
 
     /**
      * Everything the model is given, inside the fence. All of it is the
-     * person's content or the posting's — Bolum 43.1's line is where the data
-     * starts, not which field looks structured.
+     * person's content or the posting's — the line is where the data starts,
+     * not which field looks structured.
      */
     private static String fencedData(CoverLetterInput input) {
         var data = new StringBuilder()

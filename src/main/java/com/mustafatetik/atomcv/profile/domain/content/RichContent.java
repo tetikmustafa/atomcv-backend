@@ -7,8 +7,7 @@ import java.util.HexFormat;
 import java.util.List;
 
 /**
- * The content of a single atom variant: an ordered list of {@link Run}s
- * (Bolum 12, 14.1).
+ * The content of a single atom variant: an ordered list of {@link Run}s.
  *
  * <p>No format-specific markup ever enters this model (design principle 1).
  * LaTeX, HTML and DOCX are produced from the same instance at render time.

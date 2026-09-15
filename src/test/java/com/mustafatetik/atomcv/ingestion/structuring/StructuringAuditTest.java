@@ -10,7 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 43.1's third layer, on both sides of the line it draws.
+ * The third layer, on both sides of the line it draws.
  *
  * <p>The cases that matter are the false positives. This is a tripwire, not a
  * quality filter: a rambling bullet is the user's business, and an audit that

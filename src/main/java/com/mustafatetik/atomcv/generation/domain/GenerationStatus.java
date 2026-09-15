@@ -28,7 +28,7 @@ public enum GenerationStatus {
      */
     FAILED,
 
-    /** A later generation replaced this one — Faz G's edit loop (Bolum 24). */
+    /** A later generation replaced this one — Faz G's edit loop. */
     SUPERSEDED;
 
     @JsonValue

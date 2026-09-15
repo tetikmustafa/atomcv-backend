@@ -113,8 +113,8 @@ public class QuotaService {
     }
 
     /**
-     * Bolum 44.2: a failure the user did not get a document out of is given
-     * back, whatever caused it.
+     * A failure the user did not get a document out of is given back, whatever
+     * caused it.
      *
      * <p>The section splits user errors from system errors and refunds both,
      * which is the same rule stated twice — so this takes no reason. What it

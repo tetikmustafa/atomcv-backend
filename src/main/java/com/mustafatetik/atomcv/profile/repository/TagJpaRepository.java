@@ -15,8 +15,8 @@ interface TagJpaRepository extends JpaRepository<Tag, UUID> {
 
     /**
      * The profile's own vocabulary is keyed on the label, so writing a tag is
-     * find-or-create rather than insert (Bolum 13's
-     * {@code UNIQUE (profile_id, label)}).
+     * find-or-create rather than insert (the {@code UNIQUE (profile_id,
+     * label)}).
      */
     Optional<Tag> findByProfileIdAndLabel(UUID profileId, String label);
 

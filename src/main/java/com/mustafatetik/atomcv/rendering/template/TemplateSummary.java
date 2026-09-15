@@ -13,8 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * the same constants the selection budget is built from.
  *
  * <p><strong>No display name and no description.</strong> Those are sentences,
- * they are read by a person, and Bolum 35.4's rule is that the server sends a
- * key and the client writes the sentence. The id is the key.
+ * they are read by a person, and the rule is that the server sends a key and
+ * the client writes the sentence. The id is the key.
  *
  * @param version the renderer version. It moves when the geometry
  *                does, which is what invalidates a measured cost -- a client

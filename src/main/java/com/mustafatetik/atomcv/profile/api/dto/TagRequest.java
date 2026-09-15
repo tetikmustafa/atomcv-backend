@@ -13,9 +13,9 @@ import jakarta.validation.constraints.Size;
  * implementation of a rule the two halves must agree on exactly, and the
  * response carries the stored form back.
  *
- * <p>The ceiling is EK D.6.2's reasoning about unbounded fields: a tag is a
- * word or two, and a column with no limit is an unbounded row, an unbounded
- * render and an unbounded prompt.
+ * <p>The ceiling is the reasoning about unbounded fields: a tag is a word or
+ * two, and a column with no limit is an unbounded row, an unbounded render and
+ * an unbounded prompt.
  */
 @Schema(description = "A label to put on an atom")
 public record TagRequest(

@@ -66,8 +66,8 @@ abstract class ChatCompletionsProvider implements LlmProvider {
      * <p>Bolum 27.2 answers it per vendor and it is not detected: which
      * mechanism a model supports is a fact about the model, the response does
      * not state it reliably, and guessing from an error message would drop
-     * every failure silently into the weaker mode — where Bolum 53.5's 99%
-     * conformance target for Faz A stops holding.
+     * every failure silently into the weaker mode — where the 99% conformance
+     * target for Faz A stops holding.
      */
     abstract boolean supportsJsonSchema();
 
@@ -119,11 +119,10 @@ abstract class ChatCompletionsProvider implements LlmProvider {
 
         String system = request.systemPrompt();
         if (!supportsJsonSchema()) {
-            // Bolum 27.2's weaker mode: the vendor promises valid JSON and
-            // nothing about its shape, so the shape has to be asked for in
-            // words. Appended to the system half, never inside the fence --
-            // Bolum 43.1's boundary is where the data starts, and a schema is
-            // ours.
+            // The weaker mode: the vendor promises valid JSON and nothing
+            // about its shape, so the shape has to be asked for in words.
+            // Appended to the system half, never inside the fence -- the
+            // boundary is where the data starts, and a schema is ours.
             system = (system.isEmpty() ? "" : system + "\n\n")
                     + "Answer with JSON matching this schema:\n"
                     + request.outputSchema().node().toString();
@@ -168,8 +167,8 @@ abstract class ChatCompletionsProvider implements LlmProvider {
                     cachedTokens(usage),
                     elapsedNanos / 1_000_000,
                     // No usage.cost at a vendor billing its own list price:
-                    // Bolum 27.5's pricing table is what answers here, and a
-                    // zero would be a claim that the call was free.
+                    // the pricing table is what answers here, and a zero would
+                    // be a claim that the call was free.
                     null));
         } catch (Exception malformed) {
             // Never with the body attached: the answer is the user's content
@@ -192,8 +191,8 @@ abstract class ChatCompletionsProvider implements LlmProvider {
     }
 
     /**
-     * Bolum 27.3's routing, as HTTP states it. 408 is here because a proxy in
-     * front of the vendor can answer it where the client saw no timeout.
+     * The routing, as HTTP states it. 408 is here because a proxy in front of
+     * the vendor can answer it where the client saw no timeout.
      */
     static LlmFailure.Kind kindOf(int status) {
         if (status == 429) {

@@ -88,7 +88,7 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
     }
 
     /**
-     * What a person changed about how their CV looks (Bolum 33.1, 33.2).
+     * What a person changed about how their CV looks.
      *
      * <p>Every field is nullable and null means "leave the template's own".
      * A person who moved one slider has one number here, not five, and a

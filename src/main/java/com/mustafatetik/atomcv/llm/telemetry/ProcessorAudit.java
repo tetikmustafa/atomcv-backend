@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component;
 /**
  * Who this deployment may send a person's content to.
  *
- * <p>EK C.1's pre-launch item is "the AI provider list is current and public",
- * and until now the only way to check it was to read three configuration files
- * and remember what a fourth one implied. The list is not a fact about the
+ * <p>The pre-launch item is "the AI provider list is current and public", and
+ * until now the only way to check it was to read three configuration files and
+ * remember what a fourth one implied. The list is not a fact about the
  * product; it is a fact about <em>this deployment's configuration</em> — the
  * chain names providers, each provider has a key and a model, and any of them
  * with both may receive a CV. So the deployment says it, at startup, in the

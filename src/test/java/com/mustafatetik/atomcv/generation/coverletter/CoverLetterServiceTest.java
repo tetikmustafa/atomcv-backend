@@ -97,7 +97,7 @@ class CoverLetterServiceTest {
         verify(providers, times(1)).call(any());
     }
 
-    /** Bolum 34.6's buttons are ours, so they are instructions. */
+    /** The buttons are ours, so they are instructions. */
     @Test
     void thestyleIsAnInstructionAndTheCvIsNot() {
         answering(draft("Dear Acme,", padded("Ran Postgres in production.")));

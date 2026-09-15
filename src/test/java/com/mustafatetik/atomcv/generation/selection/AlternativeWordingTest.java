@@ -41,7 +41,7 @@ class AlternativeWordingTest {
         assertThat(chosen).contains(technical);
     }
 
-    /** No wording in that tone is not a reason to print nothing (Bolum 21.8). */
+    /** No wording in that tone is not a reason to print nothing. */
     @Test
     void anatomWithNoWordingInThatToneKeepsTheOneItHas() {
         Atom row = atomRow();

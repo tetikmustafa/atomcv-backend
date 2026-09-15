@@ -54,10 +54,10 @@ public final class GoldenProfileReader {
      *
      * <p>The five hand-written ones are the shapes of profiles. This one is a
      * shape nobody would have thought to write: every earlier fixture has more
-     * relevant content than fits, and this one has far less, which is what made
-     * it the fixture that first showed a page filling itself with whatever was
-     * left. Every bug the post-closure round found needed real content to
-     * appear at all (EK D.8.9's own warning, met).
+     * relevant content than fits, and this one has far less, which is what
+     * made it the fixture that first showed a page filling itself with
+     * whatever was left. Every bug the post-closure round found needed real
+     * content to appear at all (the own warning, met).
      */
     public static final List<String> NAMES = List.of(
             "senior_backend_tr",

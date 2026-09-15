@@ -42,7 +42,7 @@ public record PreferencesUpdateRequest(
     }
 
     /**
-     * Bolum 33.1's layer A and B, as five nullable knobs.
+     * The layer A and B, as five nullable knobs.
      *
      * <p>Null means "leave the template's own", field by field. Somebody who
      * moves one slider sends one number, and a template whose defaults change

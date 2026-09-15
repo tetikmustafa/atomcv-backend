@@ -24,9 +24,8 @@ import java.util.UUID;
  * is</strong> (F-018). The terminal SSE event carried it and nothing else did,
  * so a client that reloaded the page had no way to learn what the import
  * produced — the same failure {@code F-008} found on the generation side, on
- * the other job type. {@code warnings} carries the positions Bolum 31.6's
- * review screen opens on: a count could say two sections needed attention and
- * not which two.
+ * the other job type. {@code warnings} carries the positions the review screen
+ * opens on: a count could say two sections needed attention and not which two.
  *
  * <p>{@code pageCount} is here because the stream is not the only way to a
  * result (F-008). A client that fell back to polling — the documented answer
@@ -42,9 +41,9 @@ import java.util.UUID;
  * puts in the result is a field here, or the poll fallback loses it.</strong>
  *
  * <p>Polling this is the documented fallback for a progress stream that closed
- * without a terminal event. Without it the failure mode is the one Bolum 4's
- * fourth principle forbids: a spinner turning forever over work that finished
- * a minute ago.
+ * without a terminal event. Without it the failure mode is the one the fourth
+ * principle forbids: a spinner turning forever over work that finished a
+ * minute ago.
  *
  * @param phase the pipeline phase last reported, "A" through "G"
  * @param label a <strong>translation key</strong>, never a sentence — the

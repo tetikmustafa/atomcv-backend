@@ -152,7 +152,7 @@ class GenerationJobHandlerTest {
     }
 
     /**
-     * Bolum 28.4: a week of generations scored without vectors is otherwise
+     * A week of generations scored without vectors is otherwise
      * indistinguishable from a prompt regression, and the prompt version has
      * to be the one that ran rather than the configured default.
      */
@@ -200,11 +200,11 @@ class GenerationJobHandlerTest {
     }
 
     /**
-     * <strong>Bolum 14.6's rejectReasons.</strong> {@code rewritten: 0} has
-     * four causes with four different fixes — nothing was a candidate, nothing
-     * came back, everything came back and was refused, or the phase never ran
-     * — and the page looks the same in all four. This is what separates them,
-     * and it was the block's one missing field.
+     * <strong>the rejectReasons.</strong> {@code rewritten: 0} has four causes
+     * with four different fixes — nothing was a candidate, nothing came back,
+     * everything came back and was refused, or the phase never ran — and the
+     * page looks the same in all four. This is what separates them, and it was
+     * the block's one missing field.
      */
     @Test
     void thetraceSaysWhyFazDChangedNothing() {
@@ -261,7 +261,7 @@ class GenerationJobHandlerTest {
 
     // ── failure ──────────────────────────────────────────────────────────
 
-    /** Bolum 30.5: the world outside may have changed by the next attempt. */
+    /** The world outside may have changed by the next attempt. */
     @Test
     void aprovideroutageComesBackRetryableAndWritesNoRecord() {
         when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
@@ -277,7 +277,7 @@ class GenerationJobHandlerTest {
         });
         // selection_state is what a row is for, and there is none.
         verify(records, never()).save(any(), any());
-        // Bolum 44.2: no document came out, so the unit goes back.
+        // No document came out, so the unit goes back.
         verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
     }
 

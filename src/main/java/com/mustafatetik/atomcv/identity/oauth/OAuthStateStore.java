@@ -13,15 +13,15 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * The {@code state} parameter Bolum 40.6 makes mandatory, kept where the
- * client cannot reach it.
+ * The {@code state} parameter, mandatory and kept where the client cannot
+ * reach it.
  *
- * <p>Bolum 40.6's snippet puts it in a servlet session. There isn't one — the
- * chain is stateless by design — so it lives in Redis under the state value
- * itself, which is strictly better than the cookie alternative:
- * <strong>redemption is a single atomic read-and-delete</strong>, so a
- * callback URL replayed from a history file, a proxy log or a shared screen is
- * refused the second time. A cookie-only double submit cannot do that.
+ * <p>The snippet puts it in a servlet session. There isn't one — the chain is
+ * stateless by design — so it lives in Redis under the state value itself,
+ * which is strictly better than the cookie alternative: <strong>redemption is
+ * a single atomic read-and-delete</strong>, so a callback URL replayed from a
+ * history file, a proxy log or a shared screen is refused the second time. A
+ * cookie-only double submit cannot do that.
  *
  * <p>The provider is stored alongside, so a state minted for one provider
  * cannot be redeemed at another's callback.

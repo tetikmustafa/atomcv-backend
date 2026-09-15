@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Which figure reaches {@code cost_usd} (Bolum 27.4, 44.3).
+ * Which figure reaches {@code cost_usd}.
  *
  * <p>The daily budget brake reads that column, so the question this answers is
  * not "does the arithmetic work" — {@link LlmPricingTest} owns that — but

@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.5's skill dictionary, and the properties it has to keep.
+ * The skill dictionary, and the properties it has to keep.
  *
  * <p>The cases about the dictionary's <em>shape</em> matter more than any
  * individual alias. A dictionary that needed applying twice, or one whose

@@ -9,11 +9,10 @@ package com.mustafatetik.atomcv.shared.error;
  * unreachable compiler is an outage.
  *
  * <p>It lives in {@code shared} rather than beside the exception that raises
- * it because {@link PipelineError.CompilationFailed} carries it, and
- * {@code shared} may not depend on a business module (Bolum 10.2, rule 4).
- * The alternative — Bolum 25.2's {@code (String detail, boolean
- * rawSourceAvailable)} — drops exactly the distinction the retry decision
- * reads.
+ * it because {@link PipelineError.CompilationFailed} carries it, and {@code
+ * shared} may not depend on a business module (Bolum 10.2, rule 4). The
+ * alternative — the {@code (String detail, boolean rawSourceAvailable)} —
+ * drops exactly the distinction the retry decision reads.
  */
 public enum CompilationFailureKind {
 

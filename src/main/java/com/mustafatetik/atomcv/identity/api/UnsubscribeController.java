@@ -50,9 +50,9 @@ public class UnsubscribeController {
             description = "Done, or there was no such token — the answer is the same"))
     @PostMapping("/unsubscribe")
     public ResponseEntity<Void> unsubscribe(@RequestBody UnsubscribeRequest request) {
-        // The same answer either way, for Bolum 40.4's reason in a smaller
-        // place: a different response for an unknown token would turn this
-        // into an oracle for whether a token is live.
+        // The same answer either way, for the reason in a smaller place: a
+        // different response for an unknown token would turn this into an
+        // oracle for whether a token is live.
         preference.stop(request.token());
         return ResponseEntity.noContent().build();
     }

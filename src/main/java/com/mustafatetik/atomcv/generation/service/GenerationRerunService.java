@@ -101,10 +101,10 @@ public class GenerationRerunService {
                         "This template has never been calibrated; measure it first"));
         CapacityModel capacity = resolved.capacity();
         if (resolved.estimated()) {
-            // Bolum 33.3's third step, asked for at the moment somebody
-            // actually falls back to a guess. This run still produces a CV --
-            // against the estimate, spending a little less of the page -- and
-            // the next one at these settings is exact.
+            // The third step, asked for at the moment somebody actually falls
+            // back to a guess. This run still produces a CV -- against the
+            // estimate, spending a little less of the page -- and the next one
+            // at these settings is exact.
             measurements.request(options.customization());
         }
 
@@ -156,11 +156,11 @@ public class GenerationRerunService {
                                 ? null
                                 : FitReport.of(parent.getJdAnalysis(),
                                         SelectedSkills.onThePage(rendered, document.selection())),
-                        // Bolum 34's letter is not re-derived. It was written
-                        // about a selection this edit has just changed, and
-                        // rewriting it is a model call the toggle promised not
-                        // to make -- the letter is carried, and Bolum 34.6's
-                        // own button is how it is refreshed.
+                        // The letter is not re-derived. It was written about a
+                        // selection this edit has just changed, and rewriting
+                        // it is a model call the toggle promised not to make
+                        // -- the letter is carried, and the own button is how
+                        // it is refreshed.
                         parent.getCoverLetter()));
     }
 

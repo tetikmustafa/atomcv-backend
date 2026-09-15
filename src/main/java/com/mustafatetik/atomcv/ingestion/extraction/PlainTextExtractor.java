@@ -28,8 +28,8 @@ class PlainTextExtractor implements TextExtractor {
     @Override
     public String extract(byte[] bytes) {
         // Normalising the line endings here rather than in the caller: it is
-        // the only reader whose output line breaks come straight from the file,
-        // and Bolum 31.3's scramble heuristic counts lines.
+        // the only reader whose output line breaks come straight from the
+        // file, and the scramble heuristic counts lines.
         return new String(bytes, StandardCharsets.UTF_8)
                 .replace("\r\n", "\n")
                 .replace("\r", "\n");

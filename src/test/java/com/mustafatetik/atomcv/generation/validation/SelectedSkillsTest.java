@@ -46,7 +46,7 @@ class SelectedSkillsTest {
         // and "SQL" under a Turkish locale becomes "sqı" — the report would
         // then call a skill missing that Faz B had counted.
         //
-        // Adim 3.4 added Bolum 31.5's alias dictionary to that same rule, so
+        // Adim 3.4 added the alias dictionary to that same rule, so
         // "PostgreSQL" now reduces to "postgres" here as well. That it changed
         // this assertion is the point: a dictionary applied on one side of a
         // comparison and not the other would break exactly the pairs it was

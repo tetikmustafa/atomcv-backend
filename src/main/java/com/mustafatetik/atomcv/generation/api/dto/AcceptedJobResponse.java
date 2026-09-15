@@ -10,9 +10,9 @@ import java.util.UUID;
  *
  * <p>{@code streamUrl} is published rather than left to the client to build:
  * it is the one place the shape of that path is decided, and a client that
- * assembled it itself would break silently the day it moved. Polling
- * {@code GET /jobs/{id}} stays supported — EK D.6.4 names it the fallback for
- * a stream that closed without a terminal event.
+ * assembled it itself would break silently the day it moved. Polling {@code
+ * GET /jobs/{id}} stays supported — it is the fallback for a stream that
+ * closed without a terminal event.
  */
 @Schema(description = "A generation that was accepted and queued")
 public record AcceptedJobResponse(

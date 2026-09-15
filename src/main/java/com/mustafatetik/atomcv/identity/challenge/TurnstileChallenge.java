@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
  *
  * <p><strong>A transport failure passes.</strong> Cloudflare being unreachable
  * is not a reason for nobody to be able to sign in, and what the challenge
- * guards is already bounded without it: Bolum 40.5's per-IP and global
- * counters run in front of this call, so the most an outage buys an attacker
- * is the global window. A definite "not successful" is a different thing and
- * is refused — that is Cloudflare answering, not failing to.
+ * guards is already bounded without it: the per-IP and global counters run in
+ * front of this call, so the most an outage buys an attacker is the global
+ * window. A definite "not successful" is a different thing and is refused —
+ * that is Cloudflare answering, not failing to.
  */
 class TurnstileChallenge implements Challenge {
 

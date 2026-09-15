@@ -108,9 +108,9 @@ class MagicLinkServiceTest {
      * And the limiter is keyed on that same string.
      *
      * <p>Keyed on the raw one, {@code A@x.com} and {@code a@x.com} would be
-     * two windows against one account and Bolum 40.5's three would count as
-     * six. The check is one line below the normalisation for exactly this
-     * reason, and this is the assertion that keeps it there.
+     * two windows against one account and the three would count as six. The
+     * check is one line below the normalisation for exactly this reason, and
+     * this is the assertion that keeps it there.
      */
     @Test
     void theAddressLayerIsCountedUnderTheNormalisedAddress() {
@@ -197,7 +197,7 @@ class MagicLinkServiceTest {
         assertThat(sent.getValue().text()).doesNotContain(stored.getValue().getVerifierHash());
     }
 
-    /** A sender that refused must not change the answer (Bolum 40.4). */
+    /** A sender that refused must not change the answer. */
     @Test
     void aSenderThatRefusesDoesNotFailTheRequest() {
         when(accounts.byEmail(anyString()))

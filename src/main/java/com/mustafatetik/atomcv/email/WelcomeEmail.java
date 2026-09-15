@@ -11,11 +11,10 @@ import java.util.Locale;
  * what makes the setting reachable at all, from the one place they are
  * standing when the question occurs to them.
  *
- * <p>The link is a page, not an action. Bolum 40.3 is about corporate
- * gateways that fetch every URL in a message before a person sees it; an
- * unsubscribe that acted on the fetch would switch off email for people who
- * never clicked. So it lands somewhere with a button, the same shape the magic
- * link uses for the same reason.
+ * <p>The link is a page, not an action. Corporate gateways fetch every URL in
+ * a message before a person sees it; an unsubscribe that acted on the fetch
+ * would switch off email for people who never clicked. So it lands somewhere
+ * with a button, the same shape the magic link uses for the same reason.
  *
  * <p>Absolute rule 4: it says nothing about the profile, because at this
  * moment there is not one.

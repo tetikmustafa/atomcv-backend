@@ -25,9 +25,8 @@ public enum CoverLetterIssue {
     NUMBER_INVENTED,
 
     /**
-     * <strong>Bolum 34.4's "most common fabrication".</strong> A claim about
-     * how long the person has been working that their own dates do not
-     * support.
+     * <strong>The most common fabrication.</strong> A claim about how long the
+     * person has been working that their own dates do not support.
      */
     EXPERIENCE_OVERSTATED,
 
@@ -38,9 +37,9 @@ public enum CoverLetterIssue {
      */
     WRONG_COMPANY,
 
-    /** Outside Bolum 34.4's 250-400 words. */
+    /** Outside the 250-400 word band. */
     LENGTH_OUT_OF_RANGE,
 
-    /** One of Bolum 34.4's banned openings, which say nothing about anybody. */
+    /** One of the banned openings, which say nothing about anybody. */
     CLICHE
 }

@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.coverletter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * What the model answers, in the five parts of Bolum 34.3.
+ * What the model answers, in five parts.
  *
  * <p>Parts rather than one string, and the reason is the greeting. A letter
  * addressed to the wrong company is the one failure a reader notices before
@@ -33,7 +33,7 @@ public record CoverLetterDraft(
         signature = orEmpty(signature);
     }
 
-    /** The letter as it is copied out — Bolum 34.7 renders no document. */
+    /** The letter as it is copied out — no document is rendered. */
     public String plainText() {
         return String.join("\n\n", greeting, opening, body, closing, signature).strip();
     }

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 27.2's OpenRouter adapter, against a local server.
+ * The OpenRouter adapter, against a local server.
  *
  * <p>A real server rather than a mocked client: what is under test is the
  * request that goes on the wire and how each status is read, and a mock would
@@ -145,16 +145,16 @@ class OpenRouterProviderTest {
         provider("sk-test", "some-model").callStructured(request());
 
         var messages = readLastBody().path("messages");
-        // Bolum 27.4: the discount applies to a constant prefix, which it can
-        // only be if it is its own message.
+        // The discount applies to a constant prefix, which it can only be if
+        // it is its own message.
         assertThat(messages.get(0).path("role").asText()).isEqualTo("system");
         assertThat(messages.get(1).path("role").asText()).isEqualTo("user");
         assertThat(messages.get(1).path("content").asText()).isEqualTo("a posting");
     }
 
     /**
-     * Bolum 27.2's weaker mode. The provider promises valid JSON and nothing
-     * about its shape, so the shape has to be asked for in words.
+     * The weaker mode. The provider promises valid JSON and nothing about its
+     * shape, so the shape has to be asked for in words.
      */
     @Test
     void theJsonObjectModeCarriesTheSchemaInTheSystemPromptInstead() {
@@ -219,9 +219,9 @@ class OpenRouterProviderTest {
      * What the broker says it charged, which is the only figure that survives
      * its routing.
      *
-     * <p>Bolum 27.4's table holds one price per model, and this slug is served
-     * by seven endpoints between 1 and 5.50 per million input tokens — so a
-     * modelled cost is a guess about which one answered. OpenRouter reports
+     * <p>The table holds one price per model, and this slug is served by seven
+     * endpoints between 1 and 5.50 per million input tokens — so a modelled
+     * cost is a guess about which one answered. OpenRouter reports
      * `usage.cost` on every response; where it does, it is believed.
      */
     @Test

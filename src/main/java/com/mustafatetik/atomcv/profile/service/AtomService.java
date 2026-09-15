@@ -83,8 +83,8 @@ public class AtomService {
 
     @Transactional
     public Atom create(ProfileRef profile, AtomDraft draft) {
-        // § 35.7, before anything is written. Both are limits an account does
-        // not have, and both are read off the scope rather than off a second
+        // Before anything is written. Both are limits an account does not
+        // have, and both are read off the scope rather than off a second
         // lookup of who is calling.
         AnonymousLimits.requireRoomForAnotherAtom(profile, atoms.findAll(profile).size());
         if (AnonymousLimits.touchesAtomControls(draft)) {
@@ -111,9 +111,9 @@ public class AtomService {
         atom.setImportance(draft.importance());
         atom.setAlwaysInclude(draft.alwaysInclude());
         atom.setVerbatim(draft.verbatim());
-        // Bolum 31.5's rule on the way in, the same one ingestion applies:
-        // this column is read as a key, by Faz B's scoring and by RunMarking
-        // when it decides whether an emphasis is a technology.
+        // The rule on the way in, the same one ingestion applies: this column
+        // is read as a key, by Faz B's scoring and by RunMarking when it
+        // decides whether an emphasis is a technology.
         atom.setSkills(SkillNames.canonicalAll(draft.skills()));
         atom.setMetrics(draft.metrics());
         atom.setProperNouns(draft.properNouns());
@@ -201,7 +201,7 @@ public class AtomService {
     }
 
     /**
-     * Puts a label on an atom (Bolum 35.2, Bolum 13's {@code source = 'user'}).
+     * Puts a label on an atom ({@code source = 'user'}).
      *
      * <p><strong>No {@code If-Match}.</strong> A tag is a row of its own and
      * the atom is untouched, so there is no version of the atom for a
@@ -219,9 +219,9 @@ public class AtomService {
         try {
             return tags.attach(profile, atomId, label, TagSource.USER);
         } catch (IllegalArgumentException blank) {
-            // Tag.canonical refuses a label that is nothing but whitespace, and
-            // a request body is the client's mistake rather than the server's
-            // (EK D.6.8's rule about content rules).
+            // Tag.canonical refuses a label that is nothing but whitespace,
+            // and a request body is the client's mistake rather than the
+            // server's (the rule about content rules).
             throw invalid("label");
         }
     }
@@ -248,7 +248,7 @@ public class AtomService {
 
     @Transactional
     public AtomVariant addVariant(ProfileRef profile, UUID atomId, VariantDraft draft) {
-        // § 35.7's `canAddAlternatives: false`. Editing the wording an import
+        // The `canAddAlternatives: false`. Editing the wording an import
         // produced stays open -- correcting your own sentence is not an
         // alternative, it is the sentence -- and this is the second one.
         AnonymousLimits.requireAccountFor(profile, AccountFeature.ALTERNATIVES);
@@ -307,23 +307,23 @@ public class AtomService {
             variant.setPrimary(true);
         }
         if (Boolean.FALSE.equals(patch.userEdited())) {
-            // Bolum 32.2's "regenerate the English": the person is handing the
-            // wording back. Queued here rather than left for the next edit of
-            // the source, because the source may not be edited again for
-            // months and the wording is stale now.
+            // The "regenerate the English": the person is handing the wording
+            // back. Queued here rather than left for the next edit of the
+            // source, because the source may not be edited again for months
+            // and the wording is stale now.
             variant.setUserEdited(false);
         }
         AtomVariant saved = variants.save(profile, variant);
-        // Bolum 32.2's translation work is queued per user, and an anonymous
-        // session has neither a user to claim the job nor a second language to
+        // The translation work is queued per user, and an anonymous session
+        // has neither a user to claim the job nor a second language to
         // translate into: § 35.7 gives it `["en"]` alone. So the wording is
         // saved and nothing is queued -- not a degraded path, a shorter one.
         if (Boolean.FALSE.equals(patch.userEdited()) && saved.isStale()) {
             user.ifPresent(owner -> synchronization.regenerate(profile, owner, saved));
         }
         if (patch.content() != null) {
-            // Bolum 32.2, and only when the words moved. A promote or a tone
-            // change leaves every translation of this wording still accurate.
+            // And only when the words moved. A promote or a tone change leaves
+            // every translation of this wording still accurate.
             user.ifPresent(owner -> synchronization.afterEdit(profile, owner, saved));
         }
         return saved;

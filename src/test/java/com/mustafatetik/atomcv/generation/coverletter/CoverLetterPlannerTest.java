@@ -88,7 +88,7 @@ class CoverLetterPlannerTest {
     /**
      * <strong>The span, not the sum.</strong> Two jobs held at once are two
      * entries and one stretch of a life; adding them would hand the letter a
-     * larger number than the truth, which is exactly Bolum 34.4's most common
+     * larger number than the truth, which is exactly the most common
      * fabrication.
      */
     @Test
@@ -129,7 +129,7 @@ class CoverLetterPlannerTest {
         assertThat(input.applicantName()).isEqualTo("Ada Lovelace");
     }
 
-    /** Bolum 34.5: what the person knows about the employer travels as given. */
+    /** What the person knows about the employer travels as given. */
     @Test
     void whatThePersonKnowsAboutTheCompanyIsCarriedThrough() {
         var fixture = new Fixture();

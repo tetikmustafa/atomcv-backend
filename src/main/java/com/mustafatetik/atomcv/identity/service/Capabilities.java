@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 public class Capabilities {
 
     /**
-     * § 35.7's five, and it is true again.
+     * The five, and it is true again.
      *
      * <p>It was zero for a day: the block was advertising a generation {@code
      * POST /generations} refused, because the anonymous flow had a profile and
@@ -47,7 +47,7 @@ public class Capabilities {
      * Three, and unlike the line above this one is real: {@code JobOwner.of}
      * falls back to the anonymous session on {@code POST /profiles/import},
      * and {@code ProfileExtractionJobHandler} writes the ephemeral profile
-     * that signing in later adopts. § 35.7's number stands.
+     * that signing in later adopts. The number stands.
      */
     private static final int ANONYMOUS_PROFILES = 3;
 
@@ -111,8 +111,8 @@ public class Capabilities {
                 false,
                 false,
                 false,
-                // § 35.7.3: refused ahead of the quota, so the control is
-                // closed here rather than met as a 403.
+                // Refused ahead of the quota, so the control is closed here
+                // rather than met as a 403.
                 false,
                 false,
                 ANONYMOUS_GENERATIONS,

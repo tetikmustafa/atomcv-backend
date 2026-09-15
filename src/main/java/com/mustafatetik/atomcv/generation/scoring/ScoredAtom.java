@@ -23,8 +23,8 @@ public record ScoredAtom(
     }
 
     /**
-     * How close two relevance scores have to be before Bolum 19.4's secondary
-     * criteria are allowed to decide between them.
+     * How close two relevance scores have to be before the secondary criteria
+     * are allowed to decide between them.
      *
      * <p>Bolum 19.4 says "among atoms with close scores" and does not define
      * close. This does, as a bucket width: scores are rounded to a multiple of
@@ -77,7 +77,7 @@ public record ScoredAtom(
         }
     }
 
-    /** What each of Bolum 19.1's four terms contributed, before weighting. */
+    /** What each of the four terms contributed, before weighting. */
     public record Components(double embedding, double tag, double skill, double keyword) {
     }
 }

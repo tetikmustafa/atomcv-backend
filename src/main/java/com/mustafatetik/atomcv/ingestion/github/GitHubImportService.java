@@ -142,7 +142,7 @@ public class GitHubImportService {
      * Writes the ones a person picked.
      *
      * <p>One transaction: half an import is not a smaller import, it is a
-     * profile somebody has to work out the state of (Bolum 31.6.1's reasoning).
+     * profile somebody has to work out the state of.
      *
      * @param chosen repository names from a suggestion list. One this account
      *               does not have is skipped rather than refused — the list is
@@ -220,8 +220,8 @@ public class GitHubImportService {
             var claimed = new LinkedHashSet<>(atom.getSkills());
             if (claimed.addAll(suggestion.skills())) {
                 atom.setSkills(List.copyOf(claimed));
-                // Bolum 31.8: a language GitHub reports is a fact about the
-                // repository rather than a claim somebody typed.
+                // A language GitHub reports is a fact about the repository
+                // rather than a claim somebody typed.
                 atom.setVerified(true);
                 atomRows.save(profile, atom);
             }
@@ -266,7 +266,7 @@ public class GitHubImportService {
                 .toList();
     }
 
-    /** Canonical, so that Faz B compares them against a posting's (Bolum 19.2). */
+    /** Canonical, so that Faz B compares them against a posting's. */
     private static List<String> skillsOf(GitHubRepository repository) {
         var names = new LinkedHashSet<>(repository.languages());
         if (names.isEmpty() && repository.primaryLanguage() != null) {

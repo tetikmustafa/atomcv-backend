@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * {@code POST /generations/{id}/edits} — Bolum 24.2's natural-language edit.
+ * {@code POST /generations/{id}/edits} — the natural-language edit.
  *
  * @param instruction what should change, in the person's own words
  */

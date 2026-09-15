@@ -19,8 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 48.3's three missing rows, measured against a clock that does not move
- * on its own.
+ * The three missing rows, measured against a clock that does not move on its
+ * own.
  *
  * <p>A real clock would make every one of these an assertion about how fast
  * this machine is, which is the shape of test that passes locally and fails on

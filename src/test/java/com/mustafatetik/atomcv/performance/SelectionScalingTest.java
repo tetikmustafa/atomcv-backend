@@ -17,7 +17,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Faz C against Bolum 52.6's budget, and against itself.
+ * Faz C against the budget, and against itself.
  *
  * <p><strong>The ratio is the real assertion and the milliseconds are the
  * loose one.</strong> A CI machine's speed varies by more than any honest
@@ -138,7 +138,7 @@ class SelectionScalingTest {
         return smallest;
     }
 
-    /** The one-size figure Bolum 52.6's budget is about. */
+    /** The one-size figure the budget is about. */
     private static Duration fastestOf(SelectionRequest request) {
         for (int i = 0; i < WARMUP; i++) {
             SelectionPhase.select(request);

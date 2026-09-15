@@ -50,9 +50,9 @@ public class LocalDevUser implements ApplicationRunner {
 
     /**
      * The row has to exist: every profile is a foreign key away from it.
-     * Written with JDBC because identity has no entity yet — Adim 3.3's first
-     * slice needs no read of {@code users}, and inventing one to seed a row
-     * would be the tail wagging the dog.
+     * Written with JDBC because identity has no entity yet — the first slice
+     * needs no read of {@code users}, and inventing one to seed a row would be
+     * the tail wagging the dog.
      *
      * <p>Runs as an {@link ApplicationRunner} so it happens after Flyway rather
      * than racing it.

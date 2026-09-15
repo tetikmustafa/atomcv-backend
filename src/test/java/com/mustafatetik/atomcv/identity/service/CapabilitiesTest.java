@@ -18,7 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** § 35.7's block, for the caller who has an account and the caller who does not. */
+/**
+ * The block, for the caller who has an account and the caller who does not.
+ */
 class CapabilitiesTest {
 
     private static final Instant MIDNIGHT = Instant.parse("2026-08-27T00:00:00Z");
@@ -29,8 +31,8 @@ class CapabilitiesTest {
     private final QuotaService quotas = mock(QuotaService.class);
 
     /**
-     * The numbers in § 35.7's example body, which is the only place the
-     * anonymous set was ever written down — with one taken out of it.
+     * The numbers in the example body, which is the only place the anonymous
+     * set was ever written down — with one taken out of it.
      */
     @Test
     void withoutASessionTheCallerIsToldExactlyWhatTheSectionWroteDown() {
@@ -153,9 +155,9 @@ class CapabilitiesTest {
     }
 
     /**
-     * Only the templates that exist. § 35.7's example names three and the
-     * registry holds one; publishing a template the renderer cannot produce is
-     * a selectable option that fails at generation time.
+     * Only the templates that exist. The example names three and the registry
+     * holds one; publishing a template the renderer cannot produce is a
+     * selectable option that fails at generation time.
      *
      * <p>Sorted, and that is not cosmetic: the registry is backed by an
      * immutable map whose iteration order is salted per JVM run, so an

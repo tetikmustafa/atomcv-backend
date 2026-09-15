@@ -130,8 +130,7 @@ public class SelectionEditService {
     }
 
     /**
-     * Bolum 24.5, and it is a gauge on the selection algorithm rather than a
-     * feature.
+     * And it is a gauge on the selection algorithm rather than a feature.
      *
      * <p>A person including something by hand means Faz B ranked it too low,
      * and excluding something means it ranked it too high. The score it

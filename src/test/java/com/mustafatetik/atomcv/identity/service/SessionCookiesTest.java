@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-/** Bolum 40.1's cookie, written once so it cannot drift between the two calls. */
+/** The cookie, written once so it cannot drift between the two calls. */
 class SessionCookiesTest {
 
     private static final SessionProperties PRODUCTION =

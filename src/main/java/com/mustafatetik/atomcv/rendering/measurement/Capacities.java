@@ -26,9 +26,9 @@ import org.springframework.stereotype.Component;
  *
  * <p>Empty still means "nobody has measured this". It is not a capacity of
  * zero and must never be treated as one: a page guarantee made against numbers
- * nobody produced is not a guarantee. What turns empty into a document is
- * Bolum 33.3's estimate, and that is a decision for the caller rather than a
- * default hidden here.
+ * nobody produced is not a guarantee. What turns empty into a document is the
+ * estimate, and that is a decision for the caller rather than a default hidden
+ * here.
  */
 @Component
 public class Capacities {

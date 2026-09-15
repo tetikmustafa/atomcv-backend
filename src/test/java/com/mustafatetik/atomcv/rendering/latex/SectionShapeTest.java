@@ -164,7 +164,7 @@ class SectionShapeTest {
     // ── and the measurement sees the same row ─────────────────────────────
 
     /**
-     * Bolum 22.4's third rule, for the shape this file added.
+     * The third rule, for the shape this file added.
      *
      * <p>A bold label is wider than a plain one. Measured without it, every
      * skills matrix reports a row narrower than the one that reaches the page —

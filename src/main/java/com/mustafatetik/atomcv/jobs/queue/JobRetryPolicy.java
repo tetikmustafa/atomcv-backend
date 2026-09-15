@@ -22,14 +22,14 @@ import java.util.random.RandomGenerator;
  */
 public final class JobRetryPolicy {
 
-    /** Bolum 30.5: exponential, and jittered so a shared outage does not synchronise. */
+    /** Exponential, and jittered so a shared outage does not synchronise. */
     private static final long BASE_MS = 1000;
     private static final long JITTER_MS = 1000;
 
     /**
      * Long enough that a provider outage is not hammered, short enough that a
-     * user watching the screen is not abandoned. Bolum 30.5's formula reaches
-     * it at eight attempts; the retry budget is three.
+     * user watching the screen is not abandoned. The formula reaches it at
+     * eight attempts; the retry budget is three.
      */
     private static final Duration MAX_BACKOFF = Duration.ofMinutes(5);
 

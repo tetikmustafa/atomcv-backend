@@ -12,8 +12,7 @@ import java.util.function.UnaryOperator;
 import org.springframework.stereotype.Component;
 
 /**
- * Reads and writes the {@code atom_variants.content} JSONB structure
- * (Bolum 14.1, 16.2).
+ * Reads and writes the {@code atom_variants.content} JSONB structure.
  *
  * <p>Flyway cannot see inside a JSONB column, so the structure carries its own
  * version stamp and is upgraded lazily on read. Rows are rewritten in the

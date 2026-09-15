@@ -10,10 +10,10 @@ import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
  * that was not a posting is paid for once instead of through the whole
  * pipeline.
  *
- * <p>The length audit is the other half of Bolum 18.3's injection defence. The
- * fence tells the model the region is data; this notices when it stopped
- * believing that. A prompt injected into a posting does not produce a shorter
- * answer — it produces a skill named with a paragraph, or a title carrying an
+ * <p>The length audit is the other half of the injection defence. The fence
+ * tells the model the region is data; this notices when it stopped believing
+ * that. A prompt injected into a posting does not produce a shorter answer —
+ * it produces a skill named with a paragraph, or a title carrying an
  * instruction, and those have shapes.
  */
 final class PlausibilityGate {
@@ -35,14 +35,14 @@ final class PlausibilityGate {
     // `confidence` measures, and it is measured here already; a second check on
     // the same fact refused the same posting twice.
 
-    /** Bolum 18.4, verbatim. Below this the model is guessing. */
+    /** Verbatim. Below this the model is guessing. */
     static final double MIN_CONFIDENCE = 0.55;
 
     /** One skill is a mention; two is a requirement list. */
     static final int MIN_REQUIRED_SKILLS = 2;
 
-    // Bolum 18.4's field-length ceilings. Each is far above anything a real
-    // posting produces and far below what an injected instruction needs.
+    // The field-length ceilings. Each is far above anything a real posting
+    // produces and far below what an injected instruction needs.
     static final int MAX_SKILL_NAME = 60;
     static final int MAX_KEYWORD = 100;
     static final int MAX_TITLE = 120;

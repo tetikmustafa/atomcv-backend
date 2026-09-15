@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * P3, against the shape that got past it (Bolum 21.6, 21.7).
+ * P3, against the shape that got past it.
  *
  * <p>A generated CV reached a real person's hands saying they were "eager to
  * explore modern caching and message queues (Redis, Kafka)". Redis was on the
@@ -111,12 +111,12 @@ class FabricatedTechnologyTest {
      *
      * <p>A CV tailored by hand for a posting that asks for "Spring Core"
      * changed one bullet's <em>Spring Cloud</em> to <em>Spring Core</em>. Two
-     * different things: one is a service-discovery and gateway stack, the other
-     * is the container at the bottom of the framework, and the person who wrote
-     * the bullet built the first. Whatever was meant by it, a product that did
-     * the same would be putting a claim on a page that no atom supports — and
-     * this is exactly the shape Bolum 21.6's third check exists for, because
-     * the posting is where the temptation comes from.
+     * different things: one is a service-discovery and gateway stack, the
+     * other is the container at the bottom of the framework, and the person
+     * who wrote the bullet built the first. Whatever was meant by it, a
+     * product that did the same would be putting a claim on a page that no
+     * atom supports — and this is exactly the shape the third check exists
+     * for, because the posting is where the temptation comes from.
      *
      * <p>Note what carries it: not the alias file, which knows neither name,
      * but the posting's own skills. That is the vocabulary a stuffed answer

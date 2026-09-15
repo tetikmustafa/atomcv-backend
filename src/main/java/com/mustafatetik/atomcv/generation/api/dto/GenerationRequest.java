@@ -118,17 +118,17 @@ public record GenerationRequest(
     }
 
     /**
-     * <strong>Opt-in, and design principle 5 is the reason.</strong> A letter
-     * is a call this product would otherwise make for everybody who only
-     * wanted a CV. General mode ignores it: Bolum 34.2 writes the letter
-     * against a posting, and there is none.
+     * <strong>Opt-in, and cost is the reason.</strong> A letter is a call this
+     * product would otherwise make for everybody who only wanted a CV. General
+     * mode ignores it: the letter is written against a posting, and there is
+     * none.
      */
     public boolean wantsCoverLetter() {
         return Boolean.TRUE.equals(coverLetter);
     }
 
     /**
-     * Bolum 19.4: no posting to be relevant to.
+     * No posting to be relevant to.
      *
      * <p><strong>Not a field, and the annotations are what say so (F-009).</strong>
      * An {@code isX()} on a record is a getter as far as Jackson and springdoc

@@ -43,10 +43,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class EditPhase {
 
-    /** Public so a generation record can name the prompt it ran (Bolum 14.7). */
+    /** Public so a generation record can name the prompt it ran. */
     public static final String PROMPT_ID = "selection_edit";
 
-    /** Bolum 43.1's fence: everything inside it is data, not instructions. */
+    /** The fence: everything inside it is data, not instructions. */
     private static final String FENCE_TAG = "edit";
 
     private static final Logger log = LoggerFactory.getLogger(EditPhase.class);

@@ -25,14 +25,14 @@ import org.springframework.stereotype.Component;
  *
  * <p>One concession to usefulness: the seed is built from the text's words as
  * a set rather than from the string, so reordering a sentence keeps its vector
- * and Bolum 28.2's {@code content_hash} invalidation can be exercised on a
- * change that is genuinely a change.
+ * and {@code content_hash} invalidation can be exercised on a change that is
+ * genuinely a change.
  */
 @Component
 @Profile("local-fake")
 public class FakeEmbeddingProvider implements EmbeddingProvider {
 
-    /** BGE-M3's dense output, so the fake fits the same column (Bolum 28.1). */
+    /** BGE-M3's dense output, so the fake fits the same column. */
     static final int DIMENSIONS = 1024;
 
     private static final Pattern WORDS = Pattern.compile("[^\\p{L}\\p{N}]+");
@@ -57,7 +57,7 @@ public class FakeEmbeddingProvider implements EmbeddingProvider {
             vector[index] = (float) random.nextGaussian();
             sumOfSquares += (double) vector[index] * vector[index];
         }
-        // Unit length, because cosine similarity is what Bolum 19 computes and
+        // Unit length, because cosine similarity is what scoring computes and
         // a fake that returned unnormalised vectors would let a bug in that
         // normalisation pass unnoticed.
         var norm = (float) Math.sqrt(sumOfSquares);

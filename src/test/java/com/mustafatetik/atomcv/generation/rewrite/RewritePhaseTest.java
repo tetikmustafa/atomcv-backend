@@ -36,7 +36,7 @@ class RewritePhaseTest {
 
     private static final UUID PROFILE = UUID.randomUUID();
 
-    /** Bolum 48.3's rejection rate and reason distribution are read off this. */
+    /** The rejection rate and reason distribution are read off this. */
     private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meters =
             new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
 
@@ -74,9 +74,9 @@ class RewritePhaseTest {
     }
 
     /**
-     * One bullet failing costs that bullet its rewrite and nothing else.
-     * Bolum 21.5's scope in the spec cancels its siblings on a failure, which
-     * would throw away seven answers that were already paid for.
+     * One bullet failing costs that bullet its rewrite and nothing else. The
+     * scope in the spec cancels its siblings on a failure, which would throw
+     * away seven answers that were already paid for.
      */
     @Test
     void abulletThatThrowsDoesNotTakeTheOthersWithIt() {
@@ -97,9 +97,9 @@ class RewritePhaseTest {
     }
 
     /**
-     * <strong>Bolum 21.6's answer, seen from the phase.</strong> A rewrite
-     * that was refused comes back as the original, and an atom printed from
-     * the profile does not need an entry saying so.
+     * <strong>the answer, seen from the phase.</strong> A rewrite that was
+     * refused comes back as the original, and an atom printed from the profile
+     * does not need an entry saying so.
      */
     @Test
     void abulletThatKeptItsOriginalIsNotRecordedAsRewritten() {
@@ -133,8 +133,8 @@ class RewritePhaseTest {
 
     /**
      * <strong>A posting that named no skills does not get a rewrite.</strong>
-     * Not for cost: Bolum 21.6's unsupported-claim check is measured against
-     * the posting's vocabulary, so with an empty one a rewrite could name any
+     * Not for cost: the unsupported-claim check is measured against the
+     * posting's vocabulary, so with an empty one a rewrite could name any
      * technology at all and pass every check. The guard is an honesty guard.
      */
     @Test
@@ -360,12 +360,12 @@ class RewritePhaseTest {
                 "en", Tone.FORMAL.wireValue(), "bucket");
     }
 
-    /** Atoms that score well above Bolum 21.2's ceiling, so all are candidates. */
+    /** Atoms that score well above the ceiling, so all are candidates. */
     private static Fixture strongMatches(int count) {
         return fixtureOf(count, 0.90);
     }
 
-    /** Atoms below Bolum 21.2's floor: printed, never sent. */
+    /** Atoms below the floor: printed, never sent. */
     private static Fixture weakMatches(int count) {
         return fixtureOf(count, 0.10);
     }

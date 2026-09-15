@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public final class JobDescriptionPreflight {
 
-    /** Below this, there is not enough text to analyse (Bolum 18.1). */
+    /** Below this, there is not enough text to analyse. */
     static final int MIN_CHARACTERS = 150;
 
     /** Above it, the paste is a page rather than a posting. */
@@ -39,7 +39,7 @@ public final class JobDescriptionPreflight {
     static final int MIN_SIGNAL_WORDS = 2;
 
     /**
-     * Bolum 18.1's dictionary, in both languages the product writes.
+     * The dictionary, in both languages the product writes.
      *
      * <p>Matched against lowercased words with {@code Locale.ROOT} (absolute
      * rule 7): under a Turkish locale "TERCIHEN" lowercases to "tercihen" but

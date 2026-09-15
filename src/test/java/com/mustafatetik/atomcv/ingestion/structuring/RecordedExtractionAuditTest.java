@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 /**
- * A whole four-page CV, replayed against Bolum 43.1's third layer.
+ * A whole four-page CV, replayed against the third layer.
  *
  * <p>This is the extraction that was thrown away: 85 atoms, seven sections, and
  * one About paragraph of 607 characters against a ceiling of 600 that had been

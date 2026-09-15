@@ -63,11 +63,11 @@ public record ProfileTree(UUID profileId, List<SectionNode> sections) {
      * <p>Selection asks each atom for its wording in the target language and
      * falls back to the primary one when there is none, so a profile that is
      * missing a few translations does not fail — it comes out in two
-     * languages. <strong>This is what decides whether Bolum 21.8's second step
-     * has to run</strong>, and no longer what decides the document's language:
-     * false means a generation stops to translate, and only a translation that
-     * could not be made sends the document back to the language the profile
-     * was written in.
+     * languages. <strong>This is what decides whether the second step has to
+     * run</strong>, and no longer what decides the document's language: false
+     * means a generation stops to translate, and only a translation that could
+     * not be made sends the document back to the language the profile was
+     * written in.
      *
      * <p>Only atoms that can reach the page are asked. An atom the user
      * switched off is not a candidate at all, and one with no wording at all

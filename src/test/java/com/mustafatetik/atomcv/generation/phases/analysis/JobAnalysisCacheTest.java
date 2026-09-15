@@ -12,7 +12,7 @@ import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-/** Bolum 18.6: the key, the normalisation, and what happens when Redis is not there. */
+/** The key, the normalisation, and what happens when Redis is not there. */
 class JobAnalysisCacheTest {
 
     private static final ObjectMapper JSON = new ObjectMapper();

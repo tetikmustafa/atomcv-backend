@@ -103,7 +103,7 @@ public record GenerationPayload(
     }
 
     /**
-     * Bolum 18.7's emphasis, as the queue carries it.
+     * The emphasis, as the queue carries it.
      *
      * <p>Canonicalising is {@code GenerationDirectives}' job and not repeated
      * here: two places deciding what a term looks like is two answers on the

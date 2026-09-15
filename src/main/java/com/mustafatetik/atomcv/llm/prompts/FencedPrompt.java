@@ -5,9 +5,9 @@ package com.mustafatetik.atomcv.llm.prompts;
  *
  * <p>Two reasons for the split rather than sending one interpolated document.
  * Bolum 27.4 discounts a cached prefix, and a prefix is only constant if the
- * user's text is not in it. And Bolum 43's second layer is that the model is
- * told the fenced region is data — a distinction that reads better when the
- * fence is literally the boundary between the two messages.
+ * user's text is not in it. And the second layer is that the model is told the
+ * fenced region is data — a distinction that reads better when the fence is
+ * literally the boundary between the two messages.
  *
  * <p>The boundary is the opening tag <strong>on its own line</strong>. The tag
  * name also appears inside the instructions above it, telling the model what
@@ -52,8 +52,8 @@ public record FencedPrompt(String system, String userTemplate, String placeholde
      * <p><strong>No escaping.</strong> Text containing the closing tag would
      * close the fence early, and the answer to that is not a quoting scheme
      * the model may or may not respect. It is that the answer has to fit a
-     * schema (Bolum 43.1's first and strongest layer) and pass an audit of its
-     * field lengths (the third) — which is what catches an answer that started
+     * schema (the first and strongest layer) and pass an audit of its field
+     * lengths (the third) — which is what catches an answer that started
      * following the text instead of describing it.
      */
     public String userPromptFor(String data) {

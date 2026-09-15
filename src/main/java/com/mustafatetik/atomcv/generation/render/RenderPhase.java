@@ -42,8 +42,7 @@ import java.util.UUID;
  * <p>Faz D reaches it as a map of replacements rather than as an edit to the
  * profile: what the person wrote is theirs, and a rewrite is true of one
  * generation. An atom missing from that map is printed as written, which is
- * how Bolum 21.6's "then use the original" becomes something the renderer
- * cannot get wrong.
+ * how "then use the original" becomes something the renderer cannot get wrong.
  */
 public final class RenderPhase {
 

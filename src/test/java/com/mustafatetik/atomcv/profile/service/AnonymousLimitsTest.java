@@ -18,7 +18,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * § 35.7's anonymous set, and the sentence it ends with: <em>"Sunucu yine de
+ * The anonymous set, and the sentence it ends with: <em>"Sunucu yine de
  * doğrular — istemci kontrolü sadece UX."</em>
  *
  * <p>Until an anonymous person could edit anything, that sentence had nothing to

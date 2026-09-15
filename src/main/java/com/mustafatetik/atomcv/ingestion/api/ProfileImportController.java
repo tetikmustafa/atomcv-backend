@@ -153,8 +153,8 @@ public class ProfileImportController {
             @RequestParam(value = "challengeToken", required = false) String challengeToken,
             HttpServletRequest request) {
 
-        // Bolum 44.4, ahead of the quota and the file: a request that cannot show
-        // a person behind it must not reach a model.
+        // Ahead of the quota and the file: a request that cannot show a person
+        // behind it must not reach a model.
         challenge.requireOfAnonymous(challengeToken);
 
         JobOwner owner = JobOwner.of(currentUser);

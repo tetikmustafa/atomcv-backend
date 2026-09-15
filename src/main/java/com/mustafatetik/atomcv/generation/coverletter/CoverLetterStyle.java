@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /**
- * The three buttons of Bolum 34.6, as one parameter.
+ * The three regeneration buttons, as one parameter.
  *
  * <p>A letter is cheap to write again and a person's judgement about their own
  * covering letter is better than ours, so the product's answer to "not quite"
@@ -17,12 +17,12 @@ public enum CoverLetterStyle {
     DEFAULT,
 
     /**
-     * <strong>Ekleme.</strong> Shorter, within Bolum 34.4's band rather than
-     * below it. The floor of 250 words is a rule about what a covering letter
-     * has to do — greet, say what the job is, give two or three pieces of
-     * evidence, close — and a draft that dropped under it would have stopped
-     * doing one of them. So "shorter" aims at the bottom of the band and the
-     * check that follows is unchanged.
+     * <strong>An addition.</strong> Shorter, within the band rather than below
+     * it. The floor of 250 words is a rule about what a covering letter has to
+     * do — greet, say what the job is, give two or three pieces of evidence,
+     * close — and a draft that dropped under it would have stopped doing one
+     * of them. So "shorter" aims at the bottom of the band and the check that
+     * follows is unchanged.
      */
     SHORTER,
 

@@ -62,7 +62,7 @@ class SelectionPhaseTest {
         assertThat(two.budget().totalPt()).isEqualTo(2 * CAPACITY.pageTextHeightPt());
     }
 
-    /** Bolum 51.2, and the reason Faz C is code rather than a prompt. */
+    /** And the reason Faz C is code rather than a prompt. */
     @Test
     void theSameInputGivesTheSameAnswerFiftyTimes() {
         var request = profileOf(5, 6, 0.5);
@@ -238,7 +238,7 @@ class SelectionPhaseTest {
      *
      * <p>It used to say nothing at all, and the reason was sound as far as it
      * went: {@code RejectedAtom} names an atom, so an entry id in that list is
-     * an id Bolum 20.5's screen cannot resolve to anything, which is worse than
+     * an id the screen cannot resolve to anything, which is worse than
      * silence. But silence is what a person sees when their degree line
      * disappears off a full page, and "the page ran out" is exactly the answer
      * P7 says every drop owes them. So the id goes where it is what it claims
@@ -315,7 +315,7 @@ class SelectionPhaseTest {
                 List.of(AtomCandidate.forEntryHeader(entryId, 0.7, "degree"), bullet)));
     }
 
-    /** Bolum 20.3: without decay one strong entry can take the whole page. */
+    /** Without decay one strong entry can take the whole page. */
     @Test
     void oneEntryDoesNotTakeTheWholePage() {
         var crowded = entry(1, 30, 0.80);

@@ -59,7 +59,7 @@ public class JobRepository extends UserScopedRepository<Job> {
         return delegate().findById(jobId).filter(job -> belongsTo(job, owner));
     }
 
-    /** Bolum 30.7: the same key from the same caller is the same job. */
+    /** The same key from the same caller is the same job. */
     public Optional<Job> findByIdempotencyKey(JobOwner owner, String key) {
         if (key == null || key.isBlank()) {
             return Optional.empty();

@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bolum 31.4's one call, with the provider stubbed.
+ * The one call, with the provider stubbed.
  *
  * <p>Two groups of cases. What is <em>sent</em> — the fence, the tier, where
  * the scramble note goes — because those are decided once and never observed
@@ -49,10 +49,10 @@ class ProfileStructuringTest {
     // -- what is sent ------------------------------------------------------
 
     /**
-     * Bolum 43.1's fence, and the CV on the correct side of it.
+     * The fence, and the CV on the correct side of it.
      *
-     * <p>The system half has to stay constant for Bolum 27.4's prompt caching
-     * to discount it, and it has to be the half that says the fenced region is
+     * <p>The system half has to stay constant for the prompt caching to
+     * discount it, and it has to be the half that says the fenced region is
      * data. A document that leaked into it would break both at once.
      */
     @Test
@@ -80,7 +80,7 @@ class ProfileStructuringTest {
     }
 
     /**
-     * Bolum 31.3's note travels, and it travels inside the fence.
+     * The note travels, and it travels inside the fence.
      *
      * <p>In the system half it would be a standing instruction on every call
      * and would break the constant prefix; it is a remark about one document.
@@ -116,10 +116,10 @@ class ProfileStructuringTest {
     }
 
     /**
-     * Bolum 31.10: a language that cannot be settled is asked about, not
-     * guessed at. The guess decides which variant of every atom is written, so
-     * a wrong one produces a whole profile in the wrong language with no screen
-     * that says so.
+     * A language that cannot be settled is asked about, not guessed at. The
+     * guess decides which variant of every atom is written, so a wrong one
+     * produces a whole profile in the wrong language with no screen that says
+     * so.
      */
     @Test
     void aLanguageTheModelIsUnsureOfBecomesAQuestionCarryingItsGuess() {

@@ -40,16 +40,16 @@ import java.util.UUID;
 public final class SelectionPhase {
 
     /**
-     * Bolum 20.3: the fifth bullet from one entry is worth 52% of its score.
-     * Without it a strong project can take the whole page, and a CV that says
-     * one thing well says nothing else at all.
+     * The fifth bullet from one entry is worth 52% of its score. Without it a
+     * strong project can take the whole page, and a CV that says one thing
+     * well says nothing else at all.
      */
     private static final double DIVERSITY_DECAY = 0.85;
 
     /** Below this there is no atom worth trying to fit. */
     private static final double MIN_USEFUL_PT = 1.0;
 
-    /** Bolum 20.3: the swap pass looks at the best twenty that missed out. */
+    /** The swap pass looks at the best twenty that missed out. */
     private static final int SWAP_CANDIDATES = 20;
 
     private SelectionPhase() {
@@ -424,13 +424,13 @@ public final class SelectionPhase {
         /**
          * One entry, opened whole or not at all.
          *
-         * <p><strong>Bolum 20.3, and the golden set is what said so.</strong>
-         * Taking bullets one at a time while the budget lasted opened an entry
-         * with two of the three it is worth printing at, and then the floor
-         * held it there — {@link #dropEntry} will not take an entry the floor
-         * put on the page. "Reaches its minimum or is dropped whole" is the
-         * rule, and a stage that can leave an entry short has to check before
-         * it starts rather than repair afterwards.
+         * <p><strong>And the golden set is what said so.</strong> Taking
+         * bullets one at a time while the budget lasted opened an entry with
+         * two of the three it is worth printing at, and then the floor held it
+         * there — {@link #dropEntry} will not take an entry the floor put on
+         * the page. "Reaches its minimum or is dropped whole" is the rule, and
+         * a stage that can leave an entry short has to check before it starts
+         * rather than repair afterwards.
          *
          * @return whether the entry was opened
          */
@@ -474,8 +474,8 @@ public final class SelectionPhase {
          * An entry's minimum, never above what its section may print.
          *
          * <p>The two can disagree, and one stored row is why this exists: an
-         * About entry carrying four summaries had a minimum of two, so Bolum
-         * 20.3's "prints its minimum or none of itself" put two opening
+         * About entry carrying four summaries had a minimum of two, so the
+         * rule "prints its minimum or none of itself" put two opening
          * paragraphs on a page whose section may hold one. {@code V7} repairs
          * the rows; this stops any that are left — or any a client sends later
          * — from reintroducing it. The ceiling is about what the document is;
@@ -772,9 +772,9 @@ public final class SelectionPhase {
             for (AtomCandidate atom : pool.values()) {
                 if (atom.headerOnly()) {
                     // Not a RejectedAtom: every one of those names an atom and
-                    // this names an entry, and Bolum 20.5's list is read atom
-                    // by atom. It goes in the list where the id means what it
-                    // says instead of going nowhere — the heading carries the
+                    // this names an entry, and the list is read atom by atom.
+                    // It goes in the list where the id means what it says
+                    // instead of going nowhere — the heading carries the
                     // entry's own id, which is what RejectedEntry wants.
                     rejectedEntries.add(new RejectedEntry(
                             atom.entryId(), atom.score(), RejectionReason.BUDGET));

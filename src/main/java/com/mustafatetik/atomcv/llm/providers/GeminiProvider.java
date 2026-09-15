@@ -29,9 +29,9 @@ import org.springframework.stereotype.Component;
  * had nothing to reach for. The audit of 2026-08-28 found this by reading
  * {@code llm/providers} rather than the tests.
  *
- * <p>A different vendor and not a second key at the same one: Bolum 27.3's
- * point is that the two do not fail together. OpenRouter is itself a broker,
- * so a second model behind it shares the broker's outage.
+ * <p>A different vendor and not a second key at the same one: the point is
+ * that the two do not fail together. OpenRouter is itself a broker, so a
+ * second model behind it shares the broker's outage.
  *
  * <p><strong>Nothing here logs a prompt or an answer</strong> (absolute rule 4);
  * the status and the failure kind are what reach a log line.
@@ -62,7 +62,7 @@ public class GeminiProvider implements LlmProvider {
         return ID;
     }
 
-    /** Bolum 27.3: no key is a silent skip, not a failure. */
+    /** No key is a silent skip, not a failure. */
     @Override
     public boolean isAvailable() {
         return properties.hasKey() && !llm.modelFor(ID).isEmpty();
@@ -165,7 +165,7 @@ public class GeminiProvider implements LlmProvider {
         }
     }
 
-    /** Bolum 27.3's routing, as this vendor states it. */
+    /** The routing, as this vendor states it. */
     private static LlmFailure.Kind kindOf(int status) {
         if (status == 429) {
             return LlmFailure.Kind.RATE_LIMITED;

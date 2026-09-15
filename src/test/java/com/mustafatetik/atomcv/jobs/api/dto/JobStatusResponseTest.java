@@ -24,9 +24,9 @@ class JobStatusResponseTest {
     private static final Instant NOW = Instant.parse("2026-08-29T12:00:00Z");
 
     /**
-     * The whole of what Bolum 31.6's screen opens on. A count could say two
-     * sections needed attention; it could not say which two, and both of that
-     * section's design rules need to know which.
+     * The whole of what the screen opens on. A count could say two sections
+     * needed attention; it could not say which two, and both of that section's
+     * design rules need to know which.
      */
     @Test
     void acompletedImportPublishesItsResultAndWhereTheWarningsAre() {

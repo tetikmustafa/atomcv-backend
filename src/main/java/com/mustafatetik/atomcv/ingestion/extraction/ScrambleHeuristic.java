@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 import java.util.List;
 
 /**
- * Bolum 31.3's test for text that came out in the wrong order.
+ * The test for text that came out in the wrong order.
  *
  * <p>The section gives it as {@code avgLineLength < 20 || orphanWordRatio >
  * 0.3} and defines neither term. An orphan is a typesetter's word for a line
@@ -18,10 +18,10 @@ import java.util.List;
  */
 final class ScrambleHeuristic {
 
-    /** Bolum 31.3, verbatim. */
+    /** Verbatim. */
     private static final int MIN_AVERAGE_LINE_LENGTH = 20;
 
-    /** Bolum 31.3, verbatim. */
+    /** Verbatim. */
     private static final double MAX_ORPHAN_RATIO = 0.3;
 
     private ScrambleHeuristic() {
@@ -33,8 +33,8 @@ final class ScrambleHeuristic {
                 .filter(line -> !line.isEmpty())
                 .toList();
         if (lines.isEmpty()) {
-            // Nothing to be out of order. The empty case is Bolum 31.2's last
-            // rung to answer, not this one's.
+            // Nothing to be out of order. The empty case is the last rung to
+            // answer, not this one's.
             return false;
         }
         double averageLength = lines.stream().mapToInt(String::length).average().orElse(0);

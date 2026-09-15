@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Whether Bolum 57.7's optional emails may be sent to an account.
+ * Whether the optional emails may be sent to an account.
  *
  * <p>Two ways in and they are not the same: a signed-in person changes it
  * through their preferences, and somebody holding a link changes it with the
@@ -56,8 +56,8 @@ public class LifecyclePreference {
         accounts.byUnsubscribeToken(token).ifPresent(account -> {
             account.setLifecycleEmails(false);
             accounts.save(account);
-            // No address and no id: Bolum 44.1's rule, and this line would
-            // otherwise say who stopped reading us.
+            // No address and no id: the rule, and this line would otherwise
+            // say who stopped reading us.
             log.info("An account turned its lifecycle emails off");
         });
     }

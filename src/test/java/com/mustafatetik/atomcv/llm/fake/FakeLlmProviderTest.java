@@ -16,7 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Bolum 54.2: the provider the rest of Stage 2 is built against. */
+/** The provider the rest of Stage 2 is built against. */
 class FakeLlmProviderTest {
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -127,8 +127,8 @@ class FakeLlmProviderTest {
     // ── Recording mode ────────────────────────────────────────────────────
 
     /**
-     * Bolum 54.2: a miss under {@code local-record} has to become a real call,
-     * so a placeholder must never be recorded as though a model had said it.
+     * A miss under {@code local-record} has to become a real call, so a
+     * placeholder must never be recorded as though a model had said it.
      */
     @Test
     void withSynthesisOffAMissIsAFailureRatherThanAPlaceholder() {

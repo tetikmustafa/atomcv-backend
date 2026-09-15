@@ -13,7 +13,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
 /**
- * The third renderer (Bolum 22.6, Bolum 1.2's fourth claim).
+ * The third renderer (Bolum 22.6, the fourth claim).
  *
  * <p>The claim under test is not that the file is pretty. It is that the same
  * {@link RichContent} reaches a third output format without the content
@@ -34,8 +34,8 @@ class HtmlDocumentWriterTest {
     }
 
     /**
-     * Bolum 16.2: a mark this version has never heard of renders as plain
-     * text rather than failing or disappearing.
+     * A mark this version has never heard of renders as plain text rather than
+     * failing or disappearing.
      */
     @Test
     void anunknownMarkIsPrintedPlainly() {
@@ -50,10 +50,10 @@ class HtmlDocumentWriterTest {
     }
 
     /**
-     * <strong>Bolum 42.3, in one assertion.</strong> "LaTeX'te guvenliydi"
-     * varsayimi digerlerine tasinmaz: a CV is user content, and what is inert
-     * in LaTeX is a script tag here. The escaping is central and this is the
-     * proof it runs.
+     * <strong>In one assertion.</strong> "LaTeX'te guvenliydi" varsayimi
+     * digerlerine tasinmaz: a CV is user content, and what is inert in LaTeX
+     * is a script tag here. The escaping is central and this is the proof it
+     * runs.
      */
     @Test
     void auserWhoWritesMarkupGetsTextBack() {
@@ -113,7 +113,7 @@ class HtmlDocumentWriterTest {
                 .doesNotContain("<table");
     }
 
-    /** Bolum 33.4.1: an inline row is a bold label and plain text after it. */
+    /** An inline row is a bold label and plain text after it. */
     @Test
     void aninlineRowSetsItsLabelInBoldAndNothingElse() {
         var section = new RenderRequest.RenderableSection("Tech Stack",

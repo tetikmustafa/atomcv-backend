@@ -88,9 +88,9 @@ public class AccountDeletionService {
             return Optional.empty();
         }
 
-        // Bolum 57.4's record: that it happened and when, never what was in
-        // it. The id outlives nothing — it references a row that is gone —
-        // which is exactly what makes it safe to keep in a log.
+        // The record: that it happened and when, never what was in it. The id
+        // outlives nothing — it references a row that is gone — which is
+        // exactly what makes it safe to keep in a log.
         log.info("Deleted account {}: {} sessions revoked, {} usage rows removed",
                 userId, revoked, forgotten);
         return told;

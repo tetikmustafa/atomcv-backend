@@ -11,6 +11,6 @@ interface SavedCustomizationJpaRepository extends JpaRepository<SavedCustomizati
 
     List<SavedCustomization> findByProfileIdOrderByCreatedAtAsc(UUID profileId);
 
-    /** Bolum 13's {@code UNIQUE (profile_id, name)}, asked before it is enforced. */
+    /** The {@code UNIQUE (profile_id, name)}, asked before it is enforced. */
     Optional<SavedCustomization> findByProfileIdAndName(UUID profileId, String name);
 }

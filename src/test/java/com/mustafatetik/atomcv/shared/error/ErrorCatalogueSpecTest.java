@@ -14,8 +14,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 /**
- * EK D.6's table and {@link ErrorCode} are one contract kept in two places,
- * and this is the only thing that notices when they stop agreeing (F-017).
+ * The table and {@link ErrorCode} are one contract kept in two places, and
+ * this is the only thing that notices when they stop agreeing (F-017).
  *
  * <p><strong>Why the table is load-bearing and not documentation.</strong> The
  * frontend's own catalogue test reads the parameter names and types out of
@@ -126,7 +126,7 @@ class ErrorCatalogueSpecTest {
     }
 
     /**
-     * Every row under EK D.6's header, up to the blank line that ends it.
+     * Every row under the header, up to the blank line that ends it.
      *
      * <p>LinkedHashMap: the order rows appear in is the order a reader meets
      * them, and a failure message that lists them in a different order every

@@ -33,7 +33,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * One instance working the queue (Bolum 30.2, 30.4).
+ * One instance working the queue.
  *
  * <p>Everything the scheduler calls is also callable directly, and the
  * integration tests call it directly with the scheduler off. A queue tested
@@ -286,7 +286,7 @@ public class JobWorker {
     }
 
     /**
-     * Bolum 30.4: jobs whose worker stopped answering go back to the queue.
+     * Jobs whose worker stopped answering go back to the queue.
      *
      * <p>Every instance runs this, including against its own jobs. That is
      * safe and deliberate — the condition is the heartbeat, not the owner, so
@@ -301,7 +301,7 @@ public class JobWorker {
     }
 
     /**
-     * Bolum 30.4: stop taking work, finish what is in hand, hand back the rest.
+     * Stop taking work, finish what is in hand, hand back the rest.
      *
      * <p>Without this a rolling deploy leaves every in-flight job locked until
      * the collector notices — {@code staleAfter} of a spinner on a screen

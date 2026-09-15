@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * One row of the history (F-020, Bolum 41.2).
+ * One row of the history (F-020).
  *
  * <p><strong>Deliberately not {@link GenerationResponse}.</strong> A list of
  * twenty full generations would carry twenty fit reports and twenty covering
@@ -18,13 +18,12 @@ import java.util.UUID;
  * the row holds. What is here is what a row of a list is read for: when it was
  * made, whether it worked, how long it came out, and how well it matched.
  *
- * <p><strong>Nothing the user pasted, and the two labels are not an
- * exception to that.</strong> The posting stays on the row (absolute rule 4),
- * which is the rule {@link GenerationResponse} keeps too. What travels is the
- * role and the company Faz A read out of it — enough to tell one row from
- * another, and not the posting. Bolum 57 draws that line explicitly, because
- * an exception with no stated end invites the next field in on the same
- * argument.
+ * <p><strong>Nothing the user pasted, and the two labels are not an exception
+ * to that.</strong> The posting stays on the row (absolute rule 4), which is
+ * the rule {@link GenerationResponse} keeps too. What travels is the role and
+ * the company Faz A read out of it — enough to tell one row from another, and
+ * not the posting. That line is drawn explicitly, because an exception with no
+ * stated end invites the next field in on the same argument.
  *
  * <p>The row needed them. Without a label it says "one page · a date · strong"
  * and nothing else, which answers no question somebody with ten generations

@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>{@code ProviderChain} has published these events since Adim 2.2 and
  * nothing listened, so {@code llm_invocations} was empty and every cost figure
- * in the system was zero — including the one Bolum 44.3's budget brake reads,
- * which meant the brake could never fire. This is the listener.
+ * in the system was zero — including the one the budget brake reads, which
+ * meant the brake could never fire. This is the listener.
  *
  * <p><strong>Failures are recorded too.</strong> Bolum 27.5 counts every call,
  * and a provider that answers with a schema error still bills for the tokens
@@ -52,10 +52,10 @@ public class LlmInvocationRecorder {
     @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(LlmInvocationEvent event) {
-        // What the provider says it charged, where it says anything. Bolum
-        // 27.4's table models one endpoint's list price and a broker routes:
-        // this slug is served by seven endpoints between 1 and 5.50 per million
-        // input tokens, so a modelled figure is a guess wherever a reported one
+        // What the provider says it charged, where it says anything. The table
+        // models one endpoint's list price and a broker routes: this slug is
+        // served by seven endpoints between 1 and 5.50 per million input
+        // tokens, so a modelled figure is a guess wherever a reported one
         // exists.
         BigDecimal cost = event.reportedCostUsd() != null
                 ? event.reportedCostUsd().setScale(6, java.math.RoundingMode.HALF_UP)

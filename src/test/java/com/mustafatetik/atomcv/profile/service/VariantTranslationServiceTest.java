@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Bolum 32.5's pivot: which language a translation is made <em>from</em>.
+ * The pivot: which language a translation is made <em>from</em>.
  *
  * <p>The section's claim is about quality, not about correctness — a model's
  * alignment is strongest in English, so {@code TR → EN → DE} reads better than

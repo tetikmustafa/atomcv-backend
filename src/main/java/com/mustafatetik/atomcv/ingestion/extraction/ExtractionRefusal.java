@@ -7,9 +7,9 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 /**
  * The two refusals that carry a parameter, built in one place.
  *
- * <p>{@code UNSUPPORTED_DOCUMENT} is raised from four rungs of Bolum 31.2's
- * ladder and every one of them has to publish the same accepted list. Built at
- * each site, the day a format is added is the day three of the four go stale.
+ * <p>{@code UNSUPPORTED_DOCUMENT} is raised from four rungs of the ladder and
+ * every one of them has to publish the same accepted list. Built at each site,
+ * the day a format is added is the day three of the four go stale.
  */
 final class ExtractionRefusal {
 

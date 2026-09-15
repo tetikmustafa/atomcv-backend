@@ -82,7 +82,7 @@ public class ProblemDetailAdvice {
         return respond(UserFacingError.of(ErrorCode.INTERNAL_ERROR));
     }
 
-    /** A stale {@code If-Match}: someone else saved first (Bolum 35.6). */
+    /** A stale {@code If-Match}: someone else saved first. */
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<ProblemDetail> handle(ObjectOptimisticLockingFailureException exception) {
         return respond(UserFacingError.of(ErrorCode.VERSION_CONFLICT,
@@ -247,7 +247,7 @@ public class ProblemDetailAdvice {
     }
 
     /**
-     * EK D.6.5: a 429 carries {@code Retry-After} as well as {@code resetsAt}.
+     * A 429 carries {@code Retry-After} as well as {@code resetsAt}.
      *
      * <p>Both, and they are not redundant. {@code resetsAt} is an absolute
      * instant the client renders in the user's own locale; {@code Retry-After}

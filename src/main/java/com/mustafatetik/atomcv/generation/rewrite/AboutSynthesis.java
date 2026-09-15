@@ -33,7 +33,7 @@ import java.util.UUID;
 public final class AboutSynthesis {
 
     /**
-     * Bolum 21.7's "~65 words", as characters. Six characters a word plus the
+     * About sixty-five words, as characters. Six characters a word plus the
      * space is the usual English average and Turkish runs longer, so this is
      * generous rather than exact — the number that actually binds is the
      * measured one below.
