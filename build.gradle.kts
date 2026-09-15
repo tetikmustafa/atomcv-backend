@@ -180,7 +180,7 @@ dependencies {
     // family of series would arrive undocumented and leave the same way. The
     // one number worth watching is published by hand instead, where the
     // catalogue can hold it.
-    implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.3.0")
+    implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.4.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     // Compiled against as well as shipped, for one class: LISTEN/NOTIFY is
