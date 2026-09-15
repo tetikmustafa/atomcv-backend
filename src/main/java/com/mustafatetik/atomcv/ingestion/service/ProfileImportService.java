@@ -99,8 +99,8 @@ public class ProfileImportService {
 
         // Throws rather than returning: every refusal below is one the user
         // acts on, and none of them is a PipelineError. The unit is given back
-        // first, because nothing was extracted and Bolum 44.2 refunds a
-        // failure whatever caused it.
+        // first, because nothing was extracted and a failure is refunded
+        // whatever caused it.
         ExtractedText document;
         try {
             document = extraction.extract(filename, contentType, bytes);
@@ -127,10 +127,10 @@ public class ProfileImportService {
      * followed by a failed job is a worse answer than a 409, and the caller
      * still has the file in hand.
      *
-     * <p>Two resolutions and no third, as Bolum 08b's table says: replace or
-     * keep. A merge would be atom-level de-duplication and is Stage 4 work;
-     * offering it now would either name an action the server cannot perform or
-     * ship the silent duplication this refusal exists to stop.
+     * <p>Two resolutions and no third: replace or keep. A merge would be
+     * atom-level de-duplication and is Stage 4 work; offering it now would
+     * either name an action the server cannot perform or ship the silent
+     * duplication this refusal exists to stop.
      *
      * <p><strong>Accounts only.</strong> An anonymous upload writes the whole
      * ephemeral document at once, so a second one replaces rather than doubles
@@ -148,8 +148,8 @@ public class ProfileImportService {
     }
 
     /**
-     * Bolum 44.1 gives profile extraction its own, smaller counter, and the
-     * code says which of the two ran out.
+     * Profile extraction has its own, smaller counter, and the code says which
+     * of the two ran out.
      *
      * <p>The limit is read back rather than passed in: the catalogue declares
      * it, a client renders it, and a number invented at the point of failure

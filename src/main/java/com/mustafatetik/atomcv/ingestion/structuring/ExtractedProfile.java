@@ -9,25 +9,25 @@ import java.util.List;
 /**
  * What one call reads out of a CV.
  *
- * <p><strong>One call, both languages.</strong> Bolum 31.4 is explicit that the
- * English rendering is produced here and not by a second translation step: the
- * model has the whole document in front of it, and a later pass would be
- * translating a sentence stripped of the context that made it mean something.
+ * <p><strong>One call, both languages.</strong> The English rendering is
+ * produced here and not by a second translation step: the model has the whole
+ * document in front of it, and a later pass would be translating a sentence
+ * stripped of the context that made it mean something.
  *
  * <p><strong>{@code SectionKind} is the domain's own; the contact block is
  * not.</strong> A parallel vocabulary for the section kinds would be two lists
- * to keep in step, and a schema test holds them together. The domain's
- * {@code Contact} looked like the same kind of reuse and is not: it is a JSONB
+ * to keep in step, and a schema test holds them together. The domain's {@code
+ * Contact} looked like the same kind of reuse and is not: it is a JSONB
  * column, so it refuses an unknown key on purpose — reading a row back with a
  * field silently dropped is how a rename loses data. Here the opposite rule
  * applies, and the contact block is where a model is most likely to invent a
  * field (a portfolio, an address, a second handle). The two records have the
  * same shape and answer to different rules, so they are two records, and
- * Bolum 31.5 maps one to the other.
+ * normalisation maps one to the other.
  *
- * <p>Everything below stays ingestion's for a plainer reason: an extracted atom
- * is not yet an {@code Atom}. It has no id, no runs and no embedding until
- * Bolum 31.5 gives it them.
+ * <p>Everything below stays ingestion's for a plainer reason: an extracted
+ * atom is not yet an {@code Atom}. It has no id, no runs and no embedding
+ * until normalisation gives it them.
  *
  * <p>Unknown fields are ignored rather than refused. A model that adds one has
  * not failed, and what matters is judged by the schema and by
@@ -58,7 +58,9 @@ public record ExtractedProfile(
         warnings = warnings == null ? List.of() : List.copyOf(warnings);
     }
 
-    /** Every atom in the document, which is what Bolum 31.10 counts. */
+    /**
+     * Every atom in the document, which is what the zero-atom refusal counts.
+     */
     public List<ExtractedAtom> atoms() {
         return sections.stream()
                 .flatMap(section -> section.entries().stream())
@@ -87,7 +89,7 @@ public record ExtractedProfile(
      *
      * <p>Tolerant of fields nobody asked for, which is the whole reason it is
      * not the domain's own record: a model offering a portfolio link has not
-     * failed, and Bolum 31.5 drops what it cannot map.
+     * failed, and normalisation drops what it cannot map.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ExtractedContact(

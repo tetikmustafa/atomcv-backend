@@ -20,17 +20,16 @@ import org.springframework.stereotype.Component;
  * is rate limited or down, so an outage was never a failed generation — it was
  * a slow one. Every request paid the full timeout at the dead vendor before
  * asking the next, and with a 30s call timeout a single dark provider at the
- * head of the chain put half a minute on every generation in the product.
- * Bolum 5.1 names a circuit breaker for exactly this and it had never been
- * wired.
+ * head of the chain put half a minute on every generation in the product. A
+ * circuit breaker was named for exactly this and had never been wired.
  *
  * <p><strong>Only transport failures open it.</strong> A schema mismatch is a
- * property of the prompt, not of the vendor — Bolum 27.3 says so, which is why
- * it retries in place rather than moving on. Counting one as a vendor failure
- * would take a healthy provider out of the chain over a bad prompt version,
- * and take it out for every prompt rather than the one that was wrong. The
- * split is {@link LlmFailure.Kind#tryNextProvider()}, the same predicate the
- * walk already turns on.
+ * property of the prompt, not of the vendor, which is why it retries in place
+ * rather than moving on. Counting one as a vendor failure would take a healthy
+ * provider out of the chain over a bad prompt version, and take it out for
+ * every prompt rather than the one that was wrong. The split is {@link
+ * LlmFailure.Kind#tryNextProvider()}, the same predicate the walk already
+ * turns on.
  *
  * <p><strong>Half-open is the reason this is a breaker and not a flag.</strong>
  * After the wait the next call is let through; if it answers, the vendor is
@@ -86,11 +85,11 @@ public class ProviderBreakers {
      * <p>False means the breaker is open — the vendor is known down and the
      * walk should move on without paying the timeout. It is deliberately NOT
      * folded into {@link LlmProvider#isAvailable()}: that method answers "is
-     * there a key", which is a fact about configuration, and Bolum 27.3 skips
-     * a keyless provider <em>without counting it as tried</em>. A vendor whose
-     * breaker is open was configured and is failing, and belongs in {@code
-     * tried} — otherwise {@code AllProvidersUnavailable} names an empty list
-     * during precisely the outage it exists to describe.
+     * there a key", which is a fact about configuration, and a keyless
+     * provider is skipped <em>without counting it as tried</em>. A vendor
+     * whose breaker is open was configured and is failing, and belongs in
+     * {@code tried} — otherwise {@code AllProvidersUnavailable} names an empty
+     * list during precisely the outage it exists to describe.
      */
     public boolean isWorthAsking(String providerId) {
         return breaker(providerId).tryAcquirePermission();

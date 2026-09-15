@@ -88,8 +88,8 @@ public class Atom implements ProfileOwned {
      * BGE-M3's dense vector for the English variant.
      *
      * <p>Null until something has embedded it, which is not the same as an
-     * atom with no content: Bolum 28.2 computes these on a queue after the
-     * fact, so a freshly written atom is scoreable before it is embeddable.
+     * atom with no content: these are computed on a queue after the fact, so a
+     * freshly written atom is scoreable before it is embeddable.
      *
      * <p>{@code SqlTypes.VECTOR} comes from {@code hibernate-vector}.
      * {@code @Array(length)} feeds DDL generation only — schema validation

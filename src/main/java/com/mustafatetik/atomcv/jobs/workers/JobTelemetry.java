@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobTelemetry {
 
-    /** Bolum 48.3, "Faz bazinda p50/p95 gecikme". */
+    /** Per-phase p50/p95 latency. */
     static final String PHASE = "job.phase";
 
     /** The same row's "basari orani": the outcome tag is the rate. */

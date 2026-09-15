@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
  * call that tool, and the answer is read out of the {@code tool_use} block's
  * {@code input}. The effect is the same guarantee by a different route — the
  * API validates the tool input against the schema — and it is a separate code
- * path rather than a flag, which is what Bolum 27.2 means by "ayri kod yolu".
+ * path rather than a flag, which is what this vendor requires.
  *
  * <p>Not extending {@link ChatCompletionsProvider}: it shares the transport and
  * nothing above it. The request body, the message shape, the way the system
@@ -123,8 +123,8 @@ public class AnthropicProvider implements LlmProvider {
         body.put("max_tokens", properties.maxTokens());
 
         // The system prompt is a top-level field, not a message with a role.
-        // Bolum 18.3 sends two messages precisely so the instructions and the
-        // data are separable; here the separation is structural and stronger.
+        // Two messages are sent precisely so the instructions and the data are
+        // separable; here the separation is structural and stronger.
         if (!request.systemPrompt().isEmpty()) {
             body.put("system", request.systemPrompt());
         }
@@ -152,9 +152,9 @@ public class AnthropicProvider implements LlmProvider {
             JsonNode envelope = json.readTree(body);
             JsonNode input = toolInput(envelope);
             if (input == null) {
-                // The model answered in prose instead of calling the tool.
-                // A schema mismatch, and Bolum 27.3 retries it here rather
-                // than walking to a vendor that would do the same thing.
+                // The model answered in prose instead of calling the tool. A
+                // schema mismatch, retried here rather than walking to a
+                // vendor that would do the same thing.
                 return failed(request, LlmFailure.Kind.SCHEMA_MISMATCH, "no tool_use block");
             }
             T value = json.treeToValue(input, request.resultType());

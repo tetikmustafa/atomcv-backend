@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 /**
- * The same CV as one self-contained HTML file (Bolum 22.6, the fourth claim).
+ * The same CV as one self-contained HTML file.
  *
  * <p><strong>One file and nothing fetched.</strong> No stylesheet, no font, no
  * script, no image: the document is opened from a downloads folder, pasted
@@ -22,16 +22,15 @@ import org.springframework.util.StringUtils;
  *
  * <p><strong>The page guarantee does not travel with it, and here it does not
  * even apply.</strong> The atoms are the ones that fit a LaTeX page; HTML has
- * no page at all. That is a weaker claim than the DOCX one of Bolum 22.6,
- * which is approximate — this one is simply about a different kind of
- * document, and the honest thing is to say so rather than to set a width and
- * call it a page.
+ * no page at all. That is a weaker claim than the DOCX one, which is
+ * approximate — this one is simply about a different kind of document, and the
+ * honest thing is to say so rather than to set a width and call it a page.
  *
  * <p><strong>Structure over appearance, because the reader may be a
- * machine.</strong> Headings are {@code <h1>}/{@code <h2>}, bullets are
- * {@code <ul><li>}, and the contact line is one paragraph of text. Bolum 2.1
- * is about what an ATS does to a two-column layout with a table in it; the
- * cheapest way not to be that document is not to build one.
+ * machine.</strong> Headings are {@code <h1>}/{@code <h2>}, bullets are {@code
+ * <ul><li>}, and the contact line is one paragraph of text. An ATS mangles a
+ * two-column layout with a table in it; the cheapest way not to be that
+ * document is not to build one.
  *
  * <p>It walks exactly the tree {@code DocxDocumentWriter} walks, and neither
  * knows anything about selection: no atom ids, no scores, no locks reach a
@@ -179,10 +178,10 @@ public class HtmlDocumentWriter {
     }
 
     /**
-     * Bolum 33.4.1 again: nothing else on an inline row is set in bold, because
-     * seventy percent of a skill matrix emphasised is a matrix that emphasises
-     * nothing. The marks are still in the content and still mean what they
-     * mean; this layout prints them plainly.
+     * The inline-row rule again: nothing else on the row is set in bold,
+     * because seventy percent of a skill matrix emphasised is a matrix that
+     * emphasises nothing. The marks are still in the content and still mean
+     * what they mean; this layout prints them plainly.
      */
     private static String plain(RichContent atom) {
         return HtmlInlineRenderer.escape(atom.plainText());

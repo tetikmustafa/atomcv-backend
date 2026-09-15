@@ -12,13 +12,13 @@ import java.util.random.RandomGenerator;
  * possibly help. That is the same reason {@code PipelineError} is sealed at
  * all, applied to the second question every error raises.
  *
- * <p>Bolum 30.5 lists ten cases and seven exist. {@code QuotaExceeded} arrived
- * with Adim 2.7 and did exactly what this design is for: adding it failed both
- * this switch and {@code ErrorPresenter} to compile, so nobody could add a
- * failure without deciding what the user is told and whether repeating it
- * could help. The remaining three — {@code EmbeddingUnavailable},
- * {@code FeatureRequiresAccount}, {@code RewriteValidationFailed} — arrive the
- * same way.
+ * <p>Ten cases were listed and seven exist. {@code QuotaExceeded} arrived
+ * later and did exactly what this design is for: adding it failed both this
+ * switch and {@code ErrorPresenter} to compile, so nobody could add a failure
+ * without deciding what the user is told and whether repeating it could help.
+ * The remaining three — {@code EmbeddingUnavailable}, {@code
+ * FeatureRequiresAccount}, {@code RewriteValidationFailed} — arrive the same
+ * way.
  */
 public final class JobRetryPolicy {
 
@@ -61,11 +61,11 @@ public final class JobRetryPolicy {
             // against a limit is three failures instead of one.
             case PipelineError.QuotaExceeded ignored -> false;
 
-            // Bolum 24.2. The same sentence goes back to the same model
-            // against the same numbered list, and a retry that happened to
-            // land differently would be worse than one that did not: the
-            // person would have got an answer the first reading said it could
-            // not give. Another sentence is theirs to write.
+            // The same sentence goes back to the same model against the same
+            // numbered list, and a retry that happened to land differently
+            // would be worse than one that did not: the person would have got
+            // an answer the first reading said it could not give. Another
+            // sentence is theirs to write.
             case PipelineError.EditNotUnderstood ignored -> false;
 
             // Never queued in the first place: the brake is checked before
@@ -81,22 +81,22 @@ public final class JobRetryPolicy {
             // and the retry budget would turn one honest refusal into three.
             case PipelineError.SessionEnded ignored -> false;
 
-            // Adim 3.4. The same document goes back to the same model, and the
-            // answer that could not settle a language or found nothing in it
-            // will not settle or find anything on the second reading. Both
-            // ways out are the user's — answer the language question, or use
-            // the manual form.
+            // The same document goes back to the same model, and the answer
+            // that could not settle a language or found nothing in it will not
+            // settle or find anything on the second reading. Both ways out are
+            // the user's — answer the language question, or use the manual
+            // form.
             case PipelineError.LanguageUndetected ignored -> false;
             case PipelineError.NothingExtracted ignored -> false;
 
-            // Adim 3.5. Unlike the two above, this one is worth repeating: a
-            // model that dropped a number on one call may keep it on the next,
-            // and Bolum 27.3 already treats a schema failure the same way.
+            // Unlike the two above, this one is worth repeating: a model that
+            // dropped a number on one call may keep it on the next, and a
+            // schema failure is already treated the same way.
             case PipelineError.TranslationRejected ignored -> true;
 
-            // Adim 3.8. Same reasoning, and the letter is the cheaper call of
-            // the two: a draft that named something the page does not carry is
-            // a model being sloppy once, and the next draft is a new one.
+            // Same reasoning, and the letter is the cheaper call of the two: a
+            // draft that named something the page does not carry is a model
+            // being sloppy once, and the next draft is a new one.
             case PipelineError.CoverLetterRejected ignored -> true;
         };
     }

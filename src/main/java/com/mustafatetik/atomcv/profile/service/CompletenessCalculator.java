@@ -13,8 +13,8 @@ import java.util.Set;
  * generation below a threshold, and the figure the user sees has to be the
  * figure that gate uses.
  *
- * <p>Bolum 31.9 gives the weights but leaves the predicates to be read off
- * method names. What each one counts is settled here and recorded in EK D.6.2.
+ * <p>The weights are given; the predicates were left to be read off method
+ * names. What each one counts is settled here.
  */
 public final class CompletenessCalculator {
 
@@ -61,7 +61,7 @@ public final class CompletenessCalculator {
         return atoms(tree).filter(atom -> atom.getKind() == AtomKind.SKILL).count();
     }
 
-    /** The quality signal of Bolum 31.9: atoms that claim a number. */
+    /** The quality signal: atoms that claim a number. */
     private static long atomsWithMetrics(ProfileTree tree) {
         return atoms(tree).filter(atom -> !atom.getMetrics().isEmpty()).count();
     }

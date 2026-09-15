@@ -5,11 +5,11 @@ package com.mustafatetik.atomcv.llm.gateway;
  *
  * <p>This is deliberately <em>not</em> a {@code PipelineError}. The snippet
  * returns a failed provider call straight to the caller, which would make it a
- * user-facing error — but the catalogue in EK D.6 publishes only two LLM
- * codes, {@code ALL_PROVIDERS_UNAVAILABLE} and {@code EMBEDDING_UNAVAILABLE},
- * and neither describes one provider's 429. A single provider's failure is a
- * fact about the chain's walk, not a message to a user, so it stays inside
- * this module and only {@code AllProvidersUnavailable} escapes.
+ * user-facing error — but the catalogue publishes only two LLM codes, {@code
+ * ALL_PROVIDERS_UNAVAILABLE} and {@code EMBEDDING_UNAVAILABLE}, and neither
+ * describes one provider's 429. A single provider's failure is a fact about
+ * the chain's walk, not a message to a user, so it stays inside this module
+ * and only {@code AllProvidersUnavailable} escapes.
  *
  * <p>No provider text is carried: {@code detail} is for a developer's log and
  * is written by the adapter, never taken from the model's output (absolute
@@ -63,7 +63,7 @@ public record LlmFailure(Kind kind, String provider, String detail) {
             this.tryNextProvider = tryNextProvider;
         }
 
-        /** Bolum 27.3: 429/5xx/timeout advance the chain, a schema error does not. */
+        /** 429/5xx/timeout advance the chain; a schema error does not. */
         public boolean tryNextProvider() {
             return tryNextProvider;
         }

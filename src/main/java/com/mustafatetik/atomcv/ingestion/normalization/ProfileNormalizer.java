@@ -43,7 +43,7 @@ public class ProfileNormalizer {
     private static final Logger log = LoggerFactory.getLogger(ProfileNormalizer.class);
 
     /**
-     * The kinds a CV lists newest first (Bolum 31.5, step 6).
+     * The kinds a CV lists newest first.
      *
      * <p>Education is deliberately not among them. A CV lists degrees newest
      * first too, but a reader scanning one expects the highest qualification
@@ -200,9 +200,9 @@ public class ProfileNormalizer {
 
         RichContent source = RunMarking.mark(
                 atom.textSource(), atom.emphasisSource(), skills, metrics);
-        // Empty and not a copy of the source: Bolum 21 reads an absent English
-        // variant as "the source is the English", and a duplicate would be a
-        // second row to keep in step for no gain.
+        // Empty and not a copy of the source: an absent English variant reads
+        // as "the source is the English", and a duplicate would be a second
+        // row to keep in step for no gain.
         RichContent english = atom.textEn() == null || atom.textEn().isBlank()
                 ? RichContent.EMPTY
                 : RunMarking.mark(atom.textEn(), atom.emphasisEn(), skills, metrics);

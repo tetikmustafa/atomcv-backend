@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * The whole profile in one document (Bolum 13.1: leaving has to be possible).
+ * The whole profile in one document: leaving has to be possible.
  *
  * <p>Nested rather than flat, unlike the editing endpoints: an export is read
  * by a person or fed back in whole, and both want the structure visible. The

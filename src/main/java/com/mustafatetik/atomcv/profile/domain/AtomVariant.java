@@ -83,7 +83,7 @@ public class AtomVariant implements ProfileOwned {
     @Column(nullable = false)
     private boolean isStale;
 
-    /** The user edited this wording. Nothing regenerates it silently (P8). */
+    /** The user edited this wording. Nothing regenerates it silently. */
     @Column(nullable = false)
     private boolean isUserEdited;
 

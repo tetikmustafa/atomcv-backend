@@ -36,8 +36,8 @@ import java.util.UUID;
 public final class GoldenProfileReader {
 
     /**
-     * The five profiles of Bolum 51.3, in the order they are listed there, and
-     * a sixth that was not written but <em>read</em>.
+     * The five golden profiles, in the order they are listed, and a sixth that
+     * was not written but <em>read</em>.
      *
      * <p>{@code master_cv_en} is a real four-page master CV, imported from the
      * LaTeX source in {@code cv/master_cv.tex} through the real pipeline and

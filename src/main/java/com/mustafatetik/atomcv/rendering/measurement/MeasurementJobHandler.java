@@ -20,11 +20,11 @@ import org.springframework.stereotype.Component;
 /**
  * The measurement half of the background box.
  *
- * <p>What it buys is the guarantee in Bolum 20: a page limit that holds
- * because every wording's height was measured rather than estimated. Doing it
- * lazily at generation time would put fifteen seconds of XeLaTeX in front of
- * the person who asked for a CV; doing it here puts it behind the person
- * reading their own profile.
+ * <p>What it buys is the page guarantee: a limit that holds because every
+ * wording's height was measured rather than estimated. Doing it lazily at
+ * generation time would put fifteen seconds of XeLaTeX in front of the person
+ * who asked for a CV; doing it here puts it behind the person reading their
+ * own profile.
  *
  * <p><strong>One customization, not every one.</strong>
  * {@link TemplateCustomization#CLASSIC} is what a profile with untouched

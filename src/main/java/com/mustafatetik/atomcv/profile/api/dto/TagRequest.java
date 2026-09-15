@@ -8,10 +8,10 @@ import jakarta.validation.constraints.Size;
  * A label to put on an atom.
  *
  * <p>The label travels as the person typed it and is canonicalised on the
- * server — trimmed and lowercased with {@code Locale.ROOT} (Bolum 19.2,
- * absolute rule 7). A client that canonicalised it too would be a second
- * implementation of a rule the two halves must agree on exactly, and the
- * response carries the stored form back.
+ * server — trimmed and lowercased with {@code Locale.ROOT} (absolute rule 7).
+ * A client that canonicalised it too would be a second implementation of a
+ * rule the two halves must agree on exactly, and the response carries the
+ * stored form back.
  *
  * <p>The ceiling is the reasoning about unbounded fields: a tag is a word or
  * two, and a column with no limit is an unbounded row, an unbounded render and

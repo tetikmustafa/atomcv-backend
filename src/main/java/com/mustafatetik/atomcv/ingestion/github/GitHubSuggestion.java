@@ -8,15 +8,15 @@ import java.util.UUID;
 /**
  * One repository, offered.
  *
- * <p><strong>Offered and never applied.</strong> Bolum 31.8 ends on that
- * sentence and it is the whole shape of this feature: GitHub knows what was
- * built and the person knows what it was for, so the machine proposes and the
- * person decides. Nothing here is written until a second request names it.
+ * <p><strong>Offered and never applied.</strong> That is the whole shape of
+ * this feature: GitHub knows what was built and the person knows what it was
+ * for, so the machine proposes and the person decides. Nothing here is written
+ * until a second request names it.
  *
  * <p><strong>What the merge does, and what it does not.</strong> The narrative
  * stays the person's — for a repository that matches something they have
- * already written about, what travels is the skills and the link. Bolum 31.8
- * is explicit that the description in a CV comes from the CV.
+ * already written about, what travels is the skills and the link. The
+ * description in a CV comes from the CV.
  *
  * @param matchedEntryId the project this already looks like, or absent. Absent
  *                       means applying it writes a new project rather than

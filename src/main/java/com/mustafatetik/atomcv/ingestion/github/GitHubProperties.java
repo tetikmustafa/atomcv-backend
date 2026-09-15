@@ -13,9 +13,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *              so a fine-grained token with read-only public access is the
  *              right thing to put here.
  *
- *              <p>Deliberately not the provider token of Bolum 40.6.1: that one
- *              belongs to a person and is not stored, and this one belongs to
- *              the deployment.
+ * <p>Deliberately not a person's provider token: that one belongs to them and
+ * is not stored, and this one belongs to the deployment.
  */
 @ConfigurationProperties(prefix = "atomcv.github")
 public record GitHubProperties(String token) {

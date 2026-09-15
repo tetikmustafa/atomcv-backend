@@ -36,20 +36,19 @@ import org.springframework.transaction.annotation.Transactional;
  * What GitHub knows about somebody's projects, offered to their profile.
  *
  * <p><strong>Public data, no stored token, no LLM.</strong> Three things this
- * is not, and each is why it can exist at all: Bolum 40.6.1 deliberately does
- * not store a provider token and says one would arrive with key management;
- * Bolum 31.8 asks for no private repository scope; and nothing here writes
- * prose, so there is no fabrication surface and no bill.
+ * is not, and each is why it can exist at all: no provider token is stored,
+ * and one would arrive with key management; no private repository scope is
+ * asked for; and nothing here writes prose, so there is no fabrication surface
+ * and no bill.
  *
  * <p><strong>The narrative stays the person's.</strong> For a repository that
  * matches a project they have already written about, what travels is the
- * skills and the link — Bolum 31.8 is explicit that the description in a CV
- * comes from the CV. For one that matches nothing, the atom written is
- * GitHub's own description, which they also wrote. Nothing in this class
- * composes a sentence.
+ * skills and the link, because the description in a CV comes from the CV. For
+ * one that matches nothing, the atom written is GitHub's own description,
+ * which they also wrote. Nothing in this class composes a sentence.
  *
  * <p><strong>Suggested, never applied.</strong> The two steps are two requests
- * because Bolum 31.8 ends on that sentence.
+ * for exactly that reason.
  */
 @Service
 public class GitHubImportService {
@@ -72,9 +71,9 @@ public class GitHubImportService {
      * <p><strong>What this cannot separate, and does not pretend to.</strong>
      * {@code order-mgmt-system} against "Order Management System" is a true
      * match and scores 0.90, under the line and under the near miss above it.
-     * No single string distance splits those two, which is why Bolum 31.8
-     * names an embedding as well -- and one round trip per repository is a
-     * cost this screen does not carry, on a service Bolum 28.4 lets be down.
+     * No single string distance splits those two, which is why an embedding
+     * was named as well -- and one round trip per repository is a cost this
+     * screen does not carry, on a service that is allowed to be down.
      *
      * <p>So the line sits where a merge is nearly certain and everything else
      * is offered as a new project, which the person can decline. That
@@ -198,10 +197,10 @@ public class GitHubImportService {
     }
 
     /**
-     * <strong>The merge of Bolum 31.8, and nothing more.</strong> The skills
-     * join what the atoms already claim and the link goes on the entry; the
-     * sentences are untouched, because the person wrote them about what the
-     * work was for and GitHub knows only what it was written in.
+     * <strong>The merge, and nothing more.</strong> The skills join what the
+     * atoms already claim and the link goes on the entry; the sentences are
+     * untouched, because the person wrote them about what the work was for and
+     * GitHub knows only what it was written in.
      */
     private void merge(ProfileRef profile, GitHubSuggestion suggestion) {
         Optional<Entry> found = entries.findById(profile, suggestion.matchedEntryId());
@@ -238,8 +237,8 @@ public class GitHubImportService {
 
         if (suggestion.description() != null && !suggestion.description().isBlank()) {
             // The only text this class writes, and GitHub's description is the
-            // person's own sentence about their own repository (Bolum 31.8:
-            // the narrative comes from what they wrote).
+            // person's own sentence about their own repository: the narrative
+            // comes from what they wrote.
             atoms.create(profile, new AtomDraft(
                     projects.getId(), entry.getId(), AtomKind.BULLET,
                     RichContent.plain(suggestion.description()),

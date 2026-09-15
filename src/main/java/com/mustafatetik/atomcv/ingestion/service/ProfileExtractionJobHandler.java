@@ -36,14 +36,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The three stages of Bolum 31 behind one job.
+ * The three stages of ingestion behind one job.
  *
  * <p>Read (slice one) happened in the request, because the first three
  * failures — encrypted, scanned, empty — are things a person acts on at once.
  * What is left is the expensive half: structure the text, normalise what came
- * back, write it. Bolum 31.6 budgets around eight seconds for it and puts a
- * screen in front of the person while it runs, which is why it is a job with
- * progress rather than a long request.
+ * back, write it. That is about eight seconds, with a screen in front of the
+ * person while it runs, which is why it is a job with progress rather than a
+ * long request.
  *
  * <p><strong>The quota is refunded on failure</strong>. It was taken when the
  * upload was accepted, and a person who got no profile out of it should not
@@ -122,7 +122,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
             case Result.Ok<ExtractedProfile> ok -> {
                 progress.report(ORGANISING);
                 // The document itself, so normalization can ask whether the
-                // answer stayed on it (P3, ExtractionFidelity).
+                // answer stayed on it (ExtractionFidelity).
                 NormalizedProfile normalized =
                         normalizer.normalize(ok.value(), payload.asExtractedText().text());
                 progress.report(SAVING);
@@ -175,10 +175,10 @@ public class ProfileExtractionJobHandler implements JobHandler {
     /**
      * Two hours from now, which is the same rule the session itself keeps.
      *
-     * <p>{@code SessionProperties.anonymousTtl} rather than a second duration of
-     * this module's own: an anonymous session's TTL slides with activity (§ 9 --
-     * "two hours after their last activity"), and writing a profile is activity.
-     * Two knobs that had to agree would eventually not.
+     * <p>{@code SessionProperties.anonymousTtl} rather than a second duration
+     * of this module's own: an anonymous session's TTL slides with activity --
+     * two hours after the last of it, and writing a profile is activity. Two
+     * knobs that had to agree would eventually not.
      */
     private java.time.Instant expiryFor() {
         return clock.instant().plus(sessions.anonymousTtl());
@@ -217,7 +217,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
     }
 
     /**
-     * What the terminal SSE event of Bolum 30.6 carries.
+     * What the terminal SSE event carries.
      *
      * <p>Counts and ids, never content (absolute rule 4). The warning count is
      * here because the screen opens on the sections that have one — the client
@@ -237,9 +237,9 @@ public class ProfileExtractionJobHandler implements JobHandler {
     /**
      * The warnings, each saying which row it is about (F-018).
      *
-     * <p>Bolum 31.6 opens the sections that have one, and a count cannot say
-     * which those are. What travels is the code and the position -- the
-     * section's and the entry's {@code display_order}, which is what
+     * <p>The review screen opens the sections that have one, and a count
+     * cannot say which those are. What travels is the code and the position --
+     * the section's and the entry's {@code display_order}, which is what
      * {@code GET /profile} publishes for both, so the client resolves a
      * warning to a row it is already holding.
      *

@@ -25,17 +25,16 @@ public interface AnswerRecorder {
      *
      * <p>The chain records on its way out, which is the only place the answer
      * and the request that earned it are both in scope — but it is upstream of
-     * every gate, so a refused answer was being kept and replayed. Bolum 18.4
-     * already reasons this out for the cache it sits beside: <em>caching a
-     * refusal would freeze it for a week, and a model that wandered once
-     * should be asked again</em>. A recorded refusal is worse than a frozen
-     * one, because it never expires — it becomes a fixture that fails the same
-     * way on every clone, and looks like a broken pipeline rather than a bad
-     * recording.
+     * every gate, so a refused answer was being kept and replayed. The cache
+     * it sits beside already reasons this out: <em>caching a refusal would
+     * freeze it for a week, and a model that wandered once should be asked
+     * again</em>. A recorded refusal is worse than a frozen one, because it
+     * never expires — it becomes a fixture that fails the same way on every
+     * clone, and looks like a broken pipeline rather than a bad recording.
      *
      * <p>Only the gate calls this, and the scope is deliberate: it is the one
-     * refusal that ends the job. The validators below it (Bolum 21.4, the
-     * About and cover-letter checks) keep the original when they reject, so
+     * refusal that ends the job. The validators below it — the bullet, About
+     * and cover-letter checks — keep the original when they reject, so
      * replaying an answer they refuse produces exactly what no fixture at all
      * produces. There is nothing to withdraw.
      */

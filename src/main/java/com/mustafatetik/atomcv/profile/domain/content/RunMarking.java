@@ -9,20 +9,21 @@ import java.util.Locale;
  * An emphasis list turned into runs, by first match.
  *
  * <p>A model returns the sentence and, beside it, the substrings worth
- * marking. Bolum 12 stores marked text as runs rather than as offsets or
- * markup, so this is where the two meet: each emphasis is located in the
- * sentence and the sentence is cut around what was found.
+ * marking. Marked text is stored as runs rather than as offsets or markup, so
+ * this is where the two meet: each emphasis is located in the sentence and the
+ * sentence is cut around what was found.
  *
  * <p><strong>In {@code profile.domain.content} because two stages produce
- * marked text this way</strong> — the import of Bolum 31.5 and the translation
- * of Bolum 21.8, with Faz D's rewrite to come. A second copy of the first-match
- * rule would be two definitions of what a bold word is, and they would drift on
- * the day one of them learned to handle a case the other did not.
+ * marked text this way</strong> — the import and the translation, with Faz D's
+ * rewrite to come. A second copy of the first-match rule would be two
+ * definitions of what a bold word is, and they would drift on the day one of
+ * them learned to handle a case the other did not.
  *
- * <p><strong>First match, and overlaps go to whichever starts earlier.</strong>
- * Bolum 31.5 names the rule; the tie-break is the addition, and it is the only
- * one that keeps the output a partition of the input. Two marks over the same
- * characters would need nested runs, which Bolum 12 does not have.
+ * <p><strong>First match, and overlaps go to whichever starts
+ * earlier.</strong> The first-match rule is given; the tie-break is the
+ * addition, and it is the only one that keeps the output a partition of the
+ * input. Two marks over the same characters would need nested runs, which the
+ * run model does not have.
  *
  * <p><strong>An emphasis that is not in the sentence is dropped.</strong> The
  * prompt asks for exact quotations for exactly this reason. A fuzzy match would
@@ -105,12 +106,11 @@ public final class RunMarking {
      * technology is bold, and a different template may decide otherwise.
      *
      * <p><strong>{@code properNouns} does not become {@code
-     * ORGANIZATION}.</strong> Bolum 31.4 collects products, employers,
-     * institutions and places into one list, so marking any of them as an
-     * organisation would be a claim the data does not support — and an unknown
-     * mark would render as plain text, losing the emphasis the model asked
-     * for. They fall to {@code EMPHASIS}, which is exactly what is known about
-     * them.
+     * ORGANIZATION}.</strong> Products, employers, institutions and places are
+     * collected into one list, so marking any of them as an organisation would
+     * be a claim the data does not support — and an unknown mark would render
+     * as plain text, losing the emphasis the model asked for. They fall to
+     * {@code EMPHASIS}, which is exactly what is known about them.
      */
     private static Mark markFor(String span, List<String> skills, List<String> metrics) {
         String folded = span.strip().toLowerCase(Locale.ROOT);

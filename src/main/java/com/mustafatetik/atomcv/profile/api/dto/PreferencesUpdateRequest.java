@@ -54,9 +54,9 @@ public record PreferencesUpdateRequest(
      * request that asked for it, while the person is still looking at the
      * slider.
      *
-     * <p>The ranges are narrow because Bolum 33.2 wants a bad-looking result
-     * to be physically impossible. 9pt is legal and worth a word about ATS
-     * readability; it is not refused.
+     * <p>The ranges are narrow so that a bad-looking result is physically
+     * impossible. 9pt is legal and worth a word about ATS readability; it is
+     * not refused.
      */
     @Schema(name = "AppearanceUpdate", description = """
             How the CV looks. Every field is optional and omitting one leaves             the template's own setting.

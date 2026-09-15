@@ -18,22 +18,21 @@ import org.springframework.stereotype.Component;
 /**
  * A CV, read as structure.
  *
- * <p><strong>One call, and Bolum 31.4 insists on it.</strong> The English
- * rendering of every bullet is produced in the same request as the parse:
- * a second translation pass would work on a sentence already stripped of the
+ * <p><strong>One call, and that is not negotiable.</strong> The English
+ * rendering of every bullet is produced in the same request as the parse: a
+ * second translation pass would work on a sentence already stripped of the
  * document that gave it meaning, and would double the cost of the most
  * expensive call the product makes.
  *
- * <p>The tier is {@link ModelTier#MID}, which is what Bolum 5.4 assigns to
- * reading a whole CV. It is the one place the product pays for a long input,
- * and Bolum 44.1 gives profile creation its own daily counter for exactly that
- * reason.
+ * <p>The tier is {@link ModelTier#MID}, which is what reading a whole CV is
+ * worth. It is the one place the product pays for a long input, and profile
+ * creation has its own daily counter for exactly that reason.
  *
  * <p>Three refusals, and none of them says which one it was to anybody but the
  * operator. A language that could not be settled is asked about rather than
  * guessed at; a document that yielded no atoms and one whose answer failed the
- * field-length audit are the same answer, because Bolum 43.2 will not let a
- * message tell an attacker their injection was noticed.
+ * field-length audit are the same answer, because no message may tell an
+ * attacker their injection was noticed.
  */
 @Component
 public class ProfileStructuring {
@@ -45,10 +44,9 @@ public class ProfileStructuring {
     private static final String FENCE_TAG = "cv_text";
 
     /**
-     * A whole CV in and a whole structured profile out, at MID tier. Bolum
-     * 31.6 budgets around eight seconds for this; the timeout is what stops a
-     * stalled provider holding a worker rather than what the call is expected
-     * to take.
+     * A whole CV in and a whole structured profile out, at MID tier. About
+     * eight seconds is the budget; the timeout is what stops a stalled
+     * provider holding a worker rather than what the call is expected to take.
      */
     private static final Duration TIMEOUT = Duration.ofSeconds(120);
 

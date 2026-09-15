@@ -17,18 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * What happens to the other languages when one of them is edited.
  *
- * <p><strong>Everything derived goes stale; only some of it is regenerated.</strong>
- * The two are different questions and Bolum 32.2 answers them differently. A
- * wording whose source has moved on is out of step whoever wrote it, and the
- * person is entitled to know that — so the flag is set either way. But a
- * wording the person wrote themselves is theirs, and replacing it with a
- * machine translation because they fixed a typo in the Turkish would be the
- * product overruling them silently. That one is marked and left alone, and the
- * screen offers the choice.
+ * <p><strong>Everything derived goes stale; only some of it is
+ * regenerated.</strong> The two are different questions and they are answered
+ * differently. A wording whose source has moved on is out of step whoever
+ * wrote it, and the person is entitled to know that — so the flag is set
+ * either way. But a wording the person wrote themselves is theirs, and
+ * replacing it with a machine translation because they fixed a typo in the
+ * Turkish would be the product overruling them silently. That one is marked
+ * and left alone, and the screen offers the choice.
  *
- * <p>Bolum 32.2 writes this as an event listener. It is a direct call instead:
- * there is one publisher and one subscriber, and an event between them would
- * buy indirection at the cost of the one thing that matters here — that the
+ * <p>This was written as an event listener. It is a direct call instead: there
+ * is one publisher and one subscriber, and an event between them would buy
+ * indirection at the cost of the one thing that matters here — that the
  * marking happens inside the same transaction as the edit. A listener firing
  * after commit can be missed; a wording that stayed fresh after its source
  * changed is a wrong translation nobody is told about.

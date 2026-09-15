@@ -21,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
  * signed up, so the four profile controllers ask one thing and neither of them
  * has to know which kind of caller it is serving.
  *
- * <p><strong>The scope travels with the answer, and that is what enforces
- * § 35.7.</strong> A {@code ProfileRef} says whether it is {@code EPHEMERAL},
+ * <p><strong>The scope travels with the answer, and that is what enforces the
+ * limits.</strong> A {@code ProfileRef} says whether it is {@code EPHEMERAL},
  * so a service holding one already knows whether the person on the other end
  * has an account — no second lookup, and no way for an endpoint to forget to
  * ask. That is where the capability limits bite: {@code AtomService} refuses

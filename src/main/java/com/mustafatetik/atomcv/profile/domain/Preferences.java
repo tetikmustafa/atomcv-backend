@@ -59,8 +59,7 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
             String cvLanguage,
             String coverLetterLanguage,
             /**
-             * The sliders of Bolum 33.1, or null for the template's own
-             * settings.
+             * The layer-B sliders, or null for the template's own settings.
              *
              * <p>Nullable rather than defaulted, and that is what makes every
              * row written before it existed still correct: absent means "what

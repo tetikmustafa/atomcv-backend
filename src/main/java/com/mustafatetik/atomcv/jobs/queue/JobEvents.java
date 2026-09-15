@@ -26,8 +26,8 @@ public interface JobEvents {
      * The job reached a state it will not leave.
      *
      * <p>The last thing a stream carries. A stream that closed without one is
-     * the failure EK D.6.4 exists to prevent — a spinner over work that
-     * finished — and the status endpoint is the way back from it.
+     * the failure the terminal event exists to prevent — a spinner over work
+     * that finished — and the status endpoint is the way back from it.
      */
     default void terminal(Job job) {
     }

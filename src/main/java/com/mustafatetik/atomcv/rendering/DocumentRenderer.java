@@ -34,10 +34,11 @@ public interface DocumentRenderer {
     /**
      * What a page of this customization holds, if it has been measured.
      *
-     * <p>Bolum 22.2 returns a model unconditionally; this returns an empty
-     * optional for a customization nobody has calibrated. A capacity that was
-     * guessed rather than measured breaks the page guarantee without saying
-     * so, and that is the one failure the product cannot afford.
+     * <p>The interface was written to return a model unconditionally; this
+     * returns an empty optional for a customization nobody has calibrated. A
+     * capacity that was guessed rather than measured breaks the page guarantee
+     * without saying so, and that is the one failure the product cannot
+     * afford.
      */
     java.util.Optional<CapacityModel> capacity(TemplateCustomization customization);
 

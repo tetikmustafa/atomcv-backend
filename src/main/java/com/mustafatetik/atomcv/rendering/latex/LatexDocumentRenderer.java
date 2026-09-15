@@ -97,10 +97,10 @@ public class LatexDocumentRenderer implements DocumentRenderer {
         }
 
         for (MeasurementRequest.MeasurableItem item : request.items()) {
-            // An \item, and the box set at \linewidth. Bolum 22.4 opens an
-            // itemize with neither: LaTeX stops at "perhaps a missing \item",
-            // and \textwidth would measure content at a width no bullet ever
-            // gets.
+            // An \item, and the box set at \linewidth. The original snippet
+            // opens an itemize with neither: LaTeX stops at "perhaps a missing
+            // \item", and \textwidth would measure content at a width no
+            // bullet ever gets.
             //
             // The environment and the width are the same question: \linewidth
             // is whatever the enclosing lists have left of \textwidth. A bullet
@@ -316,10 +316,10 @@ public class LatexDocumentRenderer implements DocumentRenderer {
      * at all.
      *
      * <p>{@code TWO_COLUMN} is deliberately absent and falls through to the
-     * entry list. Bolum 33.5 makes Classic single-column on purpose: "an ATS
-     * extracts text, and a layout that reads well to a person but scrambles
-     * under extraction is a CV that never reaches one." Honouring it here would
-     * be this file overruling that decision quietly.
+     * entry list. Classic is single-column on purpose: "an ATS extracts text,
+     * and a layout that reads well to a person but scrambles under extraction
+     * is a CV that never reaches one." Honouring it here would be this file
+     * overruling that decision quietly.
      */
     private static void section(StringBuilder out, RenderRequest.RenderableSection section) {
         if (section.layout() == SectionLayout.INLINE_LIST) {

@@ -12,8 +12,7 @@ import java.util.zip.CRC32;
 import org.springframework.stereotype.Component;
 
 /**
- * The prompts on disk, at the version configuration says to use
- * (Bolum 53.1-53.3).
+ * The prompts on disk, at the version configuration says to use.
  *
  * <p>Files, not rows: a prompt and the code that consumes its answer — the
  * schema, the parse, the validator — change in the same commit. Stored in the
@@ -118,10 +117,10 @@ public class PromptRegistry {
     /**
      * A stable 0-99 bucket.
      *
-     * <p>Bolum 53.3 uses Guava's murmur3_32. CRC32 is in the JDK, is specified
-     * rather than implementation-defined, and is spread well enough to split
-     * traffic into a hundred buckets — a dependency the size of Guava for one
-     * hash is not worth it. It also avoids the trap in the snippet:
+     * <p>Guava's murmur3_32 was the original choice. CRC32 is in the JDK, is
+     * specified rather than implementation-defined, and is spread well enough
+     * to split traffic into a hundred buckets — a dependency the size of Guava
+     * for one hash is not worth it. It also avoids the trap in the snippet:
      * {@code Math.abs} on {@code Integer.MIN_VALUE} is still negative, and the
      * modulo of a negative int is negative. CRC32 returns an unsigned long.
      */

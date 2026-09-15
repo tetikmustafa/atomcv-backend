@@ -9,12 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Whether extraction extracted, or wrote (P3, Bolum 31.4).
+ * Whether extraction extracted, or wrote.
  *
- * <p>P3 was enforced in one place — Faz D, where the model is asked to
- * <em>rewrite</em> a bullet — and nowhere at all where it is asked to read one.
- * That left the whole ingestion path outside the guarantee, and it did not stay
- * hypothetical. A real CV said:
+ * <p>The rule against fabrication was enforced in one place — Faz D, where the
+ * model is asked to <em>rewrite</em> a bullet — and nowhere at all where it is
+ * asked to read one. That left the whole ingestion path outside the guarantee,
+ * and it did not stay hypothetical. A real CV said:
  *
  * <pre>utilizing \textbf{SQL} queries to model complex business reporting logic</pre>
  *

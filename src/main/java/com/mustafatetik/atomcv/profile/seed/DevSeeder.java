@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Something to look at after {@code make dev} (XI-A.3 Adim 1.9).
+ * Something to look at after {@code make dev}.
  *
  * <p>Seeds the golden fixture the tests use, so what a developer sees locally
  * is the same profile the guards are written against — a seed that drifted
@@ -74,10 +74,10 @@ public class DevSeeder implements ApplicationRunner {
     /**
      * The tags, as the two rows production stores them in.
      *
-     * <p><strong>Not a detail of the fixture.</strong> Bolum 19.1 gives the tag
-     * term a quarter of the raw score, and a seeded profile with no tag rows
-     * makes that quarter structurally zero for every generation run locally —
-     * which is a scorer behaving differently on a developer's machine than in
+     * <p><strong>Not a detail of the fixture.</strong> The tag term is a
+     * quarter of the raw score, and a seeded profile with no tag rows makes
+     * that quarter structurally zero for every generation run locally — which
+     * is a scorer behaving differently on a developer's machine than in
      * production, and the hardest kind of difference to notice.
      *
      * <p>One {@code tags} row per distinct label and one {@code atom_tags} row

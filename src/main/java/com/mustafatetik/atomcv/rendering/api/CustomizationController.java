@@ -33,9 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p><strong>Five endpoints the resource map has always listed and nothing
  * served.</strong> {@code template_customizations} has existed since V1 with
- * no writer; Layer B's sliders live in {@code profiles.preferences.appearance},
- * which is right for the one set a person is working with and cannot be
- * several. Bolum 33.2 is about several.
+ * no writer; Layer B's sliders live in {@code
+ * profiles.preferences.appearance}, which is right for the one set a person is
+ * working with and cannot be several. These endpoints are about several.
  *
  * <p><strong>No ETag on either</strong>. Templates are the registry's own
  * constants and change with a release, not with a request; a customization has

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Repository;
  * <p>This is the half absolute rule 3 governs. Every read here takes the
  * acting user, so the progress stream and the status endpoint cannot be
  * pointed at a job id belonging to somebody else — which is the IDOR the SSE
- * endpoint of Bolum 30.6 would otherwise open, and the one place a job id is
- * handed to a browser.
+ * endpoint would otherwise open, and the one place a job id is handed to a
+ * browser.
  *
  * <p>{@link JobQueue} is the other half and is deliberately not scoped: a
  * worker has no acting user. The two are separate types so that neither can
@@ -73,7 +73,7 @@ public class JobRepository extends UserScopedRepository<Job> {
      * <p>V3 is what makes the anonymous half of this actually hold. V1's
      * unique index was {@code (user_id, idempotency_key)}, and an anonymous
      * row has a null owner — which Postgres counts as distinct from every
-     * other null, so the double click Bolum 30.7 absorbs went through twice.
+     * other null, so the double click idempotency absorbs went through twice.
      */
     private static boolean belongsTo(Job job, JobOwner owner) {
         return owner.isAnonymous()

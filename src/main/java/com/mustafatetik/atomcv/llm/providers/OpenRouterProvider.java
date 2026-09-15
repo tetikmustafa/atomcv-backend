@@ -27,9 +27,9 @@ import org.springframework.stereotype.Component;
 /**
  * The first adapter: one key, many models.
  *
- * <p>Raw REST rather than a vendor SDK, as Bolum 5.4 decides — the abstraction
- * that an SDK would provide is {@link LlmProvider}, and taking the dependency
- * would buy a second one that breaks on its own schedule.
+ * <p>Raw REST rather than a vendor SDK — the abstraction that an SDK would
+ * provide is {@link LlmProvider}, and taking the dependency would buy a second
+ * one that breaks on its own schedule.
  *
  * <p><strong>Nothing here logs a prompt or an answer.</strong> Both are built
  * from the user's own content (absolute rule 4). What is logged is the status
@@ -183,8 +183,8 @@ public class OpenRouterProvider implements LlmProvider {
         format.put("type", "json_schema");
         format.putObject("json_schema")
                 .put("name", name)
-                // Bolum 53.5 wants 99%+ schema conformance on Faz A; strict is
-                // what makes the provider enforce it rather than suggest it.
+                // Faz A is held to 99%+ schema conformance; strict is what
+                // makes the provider enforce it rather than suggest it.
                 .put("strict", true)
                 .set("schema", schema);
         return format;
@@ -264,9 +264,9 @@ public class OpenRouterProvider implements LlmProvider {
      * shown ALL_PROVIDERS_UNAVAILABLE against an empty log. The diagnosis had
      * to be reconstructed from how many attempts the chain had made.
      *
-     * <p><strong>The kind and the detail, never a body and never a prompt</strong>
-     * (absolute rule 4, Bolum 27.2). {@code detail} was already being built
-     * for every one of these and nothing read it.
+     * <p><strong>The kind and the detail, never a body and never a
+     * prompt</strong> (absolute rule 4). {@code detail} was already being
+     * built for every one of these and nothing read it.
      */
     private static <T> LlmOutcome<T> failed(
             StructuredRequest<?> request, LlmFailure.Kind kind, String detail) {

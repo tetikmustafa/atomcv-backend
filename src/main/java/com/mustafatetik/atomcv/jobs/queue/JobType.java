@@ -42,7 +42,7 @@ public enum JobType {
         this.priority = (short) priority;
     }
 
-    /** Bolum 30.3. Lower is taken first. */
+    /** Lower is taken first. */
     public short priority() {
         return priority;
     }

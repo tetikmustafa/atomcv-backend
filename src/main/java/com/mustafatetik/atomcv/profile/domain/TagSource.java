@@ -10,9 +10,9 @@ import java.util.Locale;
  * Who attached a tag to an atom. Stored in {@code atom_tags.source}.
  *
  * <p>The column carries a {@code CHECK} constraint over exactly these two
- * values, which is why this is an enum and not a string: Bolum 13 puts the
- * constraint in the schema, and a third value would be refused by Postgres at
- * insert time rather than by the type system at compile time.
+ * values, which is why this is an enum and not a string: the constraint lives
+ * in the schema, and a third value would be refused by Postgres at insert time
+ * rather than by the type system at compile time.
  */
 public enum TagSource {
 

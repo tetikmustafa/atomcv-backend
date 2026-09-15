@@ -71,8 +71,8 @@ public class Capacities {
      *
      * <p>This is where empty stops being an answer. A person who has just
      * moved a slider is waiting, the measurement is a compilation away, and
-     * Bolum 33.3 chooses to print them a CV rather than a spinner — on an
-     * estimate, spending less of the page.
+     * the choice is to print them a CV rather than a spinner — on an estimate,
+     * spending less of the page.
      *
      * <p>Still empty for a template with no measured default of its own, which
      * would mean estimating from nothing.

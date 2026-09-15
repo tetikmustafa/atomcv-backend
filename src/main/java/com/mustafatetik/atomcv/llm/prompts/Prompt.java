@@ -6,9 +6,9 @@ import com.mustafatetik.atomcv.llm.gateway.JsonSchema;
  * One prompt at one version, with the schema its answer must match.
  *
  * <p>The text and the schema travel together because they change together:
- * Bolum 53.1 keeps prompts in files rather than in the database for exactly
- * that reason — a prompt and the code that parses its answer drift apart the
- * moment they are stored apart.
+ * prompts live in files rather than in the database for exactly that reason —
+ * a prompt and the code that parses its answer drift apart the moment they are
+ * stored apart.
  *
  * @param id      the directory name under {@code resources/prompts}
  * @param version e.g. {@code v1}; the file is {@code {version}.md}

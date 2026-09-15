@@ -21,12 +21,11 @@ import org.hibernate.type.SqlTypes;
  * template_customizations}.
  *
  * <p><strong>The table has existed since V1 and nothing wrote to it.</strong>
- * Layer B's sliders lived — and still live — in
- * {@code profiles.preferences.appearance}, which is right for the one set a
- * person is working with: it is a settings form, one per profile, and it needs
- * no id. What it cannot be is <em>several</em>, and Bolum 33.2 is about a
- * person who keeps a compact set for a dense CV and a roomier one for a short
- * one.
+ * Layer B's sliders lived — and still live — in {@code
+ * profiles.preferences.appearance}, which is right for the one set a person is
+ * working with: it is a settings form, one per profile, and it needs no id.
+ * What it cannot be is <em>several</em>, and this is about a person who keeps
+ * a compact set for a dense CV and a roomier one for a short one.
  *
  * <p>So the two are not rivals: the preference is the working set, and these
  * are the ones somebody named and kept. A generation may ask for one by id
@@ -38,13 +37,13 @@ import org.hibernate.type.SqlTypes;
  * customization is a small whole object a person replaces rather than a row
  * two tabs edit a field of at once.
  *
- * <p><strong>{@code fixed_costs}, {@code page_text_height_pt} and
- * {@code measured_at} stay null.</strong> V12's {@code template_capacities} is
- * where a measured capacity lives now, keyed by the geometry rather than by
- * the row that asked for it — which is the better key, because two people who
- * pick the same font and margin have the same page and should not pay for two
+ * <p><strong>{@code fixed_costs}, {@code page_text_height_pt} and {@code
+ * measured_at} stay null.</strong> V12's {@code template_capacities} is where
+ * a measured capacity lives now, keyed by the geometry rather than by the row
+ * that asked for it — which is the better key, because two people who pick the
+ * same font and margin have the same page and should not pay for two
  * compilations. The three columns are kept rather than dropped: a migration
- * that removes them buys nothing and Bolum 13 is not rewritten for it.
+ * that removes them buys nothing.
  */
 @Entity
 @Table(name = "template_customizations")
@@ -69,7 +68,7 @@ public class SavedCustomization implements ProfileOwned {
 
     /**
      * The half of {@link TemplateCustomization} that is not the template id,
-     * in the shape Bolum 13 names: {@code fontFamily}, {@code fontSizePt},
+     * in the shape the column names: {@code fontFamily}, {@code fontSizePt},
      * {@code marginInches}, {@code lineSpacing}, {@code accentColor}.
      *
      * <p>A {@code Map} rather than a typed record, for the reason the column
