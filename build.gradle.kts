@@ -219,6 +219,14 @@ tasks.withType<Test> {
     inputs.file(rootProject.file(".env.example"))
         .withPropertyName("envExample")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And again for the deployed policy. ContentSecurityPolicyTest is the only
+    // thing in either repository that reads nginx.conf, and the header it
+    // guards is one nobody can test by running the product locally -- nginx is
+    // not in the dev compose at all. A tightened policy that left this task
+    // UP-TO-DATE would ship a silently blocked Turnstile.
+    inputs.file(rootProject.file("docker/nginx/nginx.conf"))
+        .withPropertyName("nginxConf")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and
