@@ -131,10 +131,9 @@ class SelectionEditCvIT extends AbstractLatexTest {
      * <p>Faz D's wording is planted rather than produced, and that is
      * deliberate: this lane's fake provider answers {@code bullet_rewrite}
      * with a synthetic sentence that the validator refuses, so a real run here
-     * prints the original and leaves {@code rewritten_content} empty
-     * (docs/notes). Waiting for a fixture would mean this path is exercised by
-     * unit tests and nothing else — the shape that counts as unverified
-     * wiring.
+     * prints the original and leaves {@code rewritten_content} empty. Waiting
+     * for a fixture would mean this path is exercised by unit tests and
+     * nothing else — the shape that counts as unverified wiring.
      *
      * <p>What is being checked is therefore the carry itself, through the real
      * worker, the real renderer and a real compiler: a sentence that was on the

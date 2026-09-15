@@ -20,7 +20,7 @@ endif
 # fails. Naming sh keeps one spelling that works on Windows and on Linux.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int golden-costs openapi measure-template
+.PHONY: dev dev-full db-reset record test test-int golden-costs openapi catalogue measure-template
 
 ## core services (postgres, redis, mailpit) + backend with the fake LLM
 dev:
@@ -63,6 +63,12 @@ golden-costs:
 ## fails when it has drifted from what the endpoints publish.
 openapi:
 	$(GRADLE) integrationTest --tests '*OpenApiDocumentIT' -Dopenapi.record=true
+
+## rewrite the committed error catalogue from the ErrorCode enum. No Docker:
+## the enum is the only input. Run it after adding, removing or re-typing a
+## code, and commit the result -- the unit suite fails on the drift otherwise.
+catalogue:
+	$(GRADLE) test --tests '*ErrorCatalogueDocumentTest' -Dcatalogue.record=true
 
 ## measure one template's page capacity and fixed costs against the real
 ## compiler (needs Docker; builds the LaTeX image). The two "measured"

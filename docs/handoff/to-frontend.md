@@ -18,8 +18,8 @@ olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç ve �
 şema, ikinci turda `SelectionLine` değişti (`B-108`).
 
 > **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
-> (kanal kuralı): `B-100`-`B-109`'un hiçbiri `ACK` almadı, yani taşınabilecek
-> madde yok. Onu da denetimlerden; okunup ACK'lendiklerinde hepsi birden
+> (kanal kuralı): `B-100`-`B-110`'un hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. On biri de denetimlerden; okunup ACK'lendiklerinde hepsi birden
 > `resolved/`'a iner.
 
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
@@ -154,6 +154,32 @@ yalnız `description` metinleri. Üretilen `api.d.ts`'te tip farkı beklenmiyor;
 Metinlerin anlamı korundu, yalnız işaretçi düştü: "Counts, never a percentage.
 **Bölüm 23.3** forbids one by name" → "**One is forbidden by name**". Ekranda
 bu metinleri gösteren bir yer varsa cümleler biraz kısaldı.
+
+### B-110 · Hata kataloğu artık üretiliyor — ve sizin kopyanız ona bağlanabilir
+**Since:** denetim 2026-09-16 · `error-catalogue.md`, § 08b
+**Neden:** Katalog tablosu `08b-api-contract.md`'de elle yazılıyordu. Artık
+**`ErrorCode` enum'undan üretiliyor** ve repo kökünde `error-catalogue.md`
+olarak duruyor — `openapi.json`'ın yanında, `docs/` ağacının dışında.
+`ErrorCatalogueDocumentTest` commit'li dosyayla enum ayrıştığı an düşüyor, ve
+spec senkronu dosyayı `docs/error-catalogue.md` olarak size de bırakıyor.
+
+**Düzeltme — burada sizin hakkınızda yanlış bir kayıt vardı.** Spec,
+*"frontend'in katalog testi `params`'ı bu tablodan okuyor"* diyordu. Okumuyor:
+`tests/unit/i18n/errorCatalogue.test.ts` kendi `PARAMS` sabitini elle tutuyor
+ve tabloyu yalnızca yorumda kaynak olarak anıyor. Yani 41 kodun parametre
+adları ve tipleri iki yerde elle yazılıydı ve **hiçbir şey ikisini
+karşılaştırmıyordu**.
+
+**Aksiyon — karar sizin, bugün kod işi yok:**
+1. **Hiçbir şey kırılmıyor.** `PARAMS` bugün doğru; bu bir fırsat maddesi.
+2. `error-catalogue.md` artık üretilen ve biçimi sabit bir dosya, yani
+   `errorCatalogue.test.ts` onu ayrıştırıp kendi `PARAMS`'ıyla
+   karşılaştırabilir. O zaman zincirin ikinci halkası da bağlanır: backend'e
+   bir kod eklendiğinde **sizin** testiniz de düşer, mesaj yazılmadan önce.
+   Biçimi sabit tutmayı üstleniyoruz; değişirse `B-nnn` ile haber veririz.
+3. İstemezseniz de olur — `openapi.json` tipleri zaten tutuyor. Bu yalnız
+   `params` adlarını ve ICU tiplerini kapsardı, ki `openapi.json` onları
+   taşımıyor.
 
 ---
 

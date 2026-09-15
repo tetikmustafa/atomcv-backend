@@ -17,7 +17,13 @@ rm -rf "$FRONTEND/docs/spec"
 cp -r docs/spec "$FRONTEND/docs/spec"
 cp docs/INDEX.md "$FRONTEND/docs/INDEX.md"
 
-echo "✓ spec + INDEX senkronlandı → $FRONTEND"
+# Üretilmiş dosya, docs/ ağacının dışında (repo kökünde, openapi.json'ın
+# yanında) ve yine de frontend'in okuması gereken şey: hata mesajlarının
+# `params`'ı buradan yazılıyor. Prose taşınsa da bu yolun taşınması gerekmez,
+# taşımanın bütün amacı da oydu.
+cp error-catalogue.md "$FRONTEND/docs/error-catalogue.md"
+
+echo "✓ spec + INDEX + error-catalogue senkronlandı → $FRONTEND"
 echo
 echo "Sıradaki adımlar (frontend reposunda):"
 echo "  git add docs/ && git commit -m 'docs: sync spec from backend'"
