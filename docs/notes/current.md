@@ -12,110 +12,141 @@ aşağıda.
 
 ## Denetim — spec'in tamamı koda karşı (2026-09-15)
 
-Spec baştan sona okundu ve kodla karşılaştırıldı. **Kalıcı kararların hepsi
-`spec/`'e işlendi ve buradan silindi** (§ 18.7.1, § 22.6.1, § 26.6'nın sapması,
-§ 31.8.1, § 35.2.1, § 41.4'ün sapması, § 47.1, § 48.5'in sapması, § 51.3,
-§ 52.5, § 5.1). Aşağıdakiler kalıcı değil, **canlı**.
+Spec baştan sona okundu, kodla karşılaştırıldı, ve **açık kalan maddelerin
+hepsi kapatıldı**. Kalıcı kararlar `spec/`'e işlendi ve buradan silindi
+(§ 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1,
+§ 48.5, § 51.3, § 52.4, § 52.5, § 5.1). Aşağıdakiler kalıcı değil, **canlı**.
 
-**İnenler:** arşivleme ucu, atom etiketleri (uç **ve** içe aktarım),
-`/api/v1/warmup`, commit'li `openapi.json` + iki CI işi, `emphasize`,
-HTML renderer, `format=source`, GitHub içe aktarımı, CDS, Umami,
-`generation.pages.drift`, golden `jobs/` + `content-formats/`.
-Frontend'e `B-100`-`B-106`.
+**İnenler — ilk tur:** arşivleme ucu, atom etiketleri, `/api/v1/warmup`,
+commit'li `openapi.json` + iki CI işi, `emphasize`, HTML renderer,
+`format=source`, GitHub içe aktarımı, CDS, Umami, `generation.pages.drift`,
+golden `jobs/` + `content-formats/`.
 
-**En pahalı bulgu, ve testi olmayan türden:** `tags`/`atom_tags` tablolarına
-**hiçbir şey yazmıyordu** — içe aktarım modelin bulduğu etiketleri normalize
-edip düşürüyordu. Faz B'nin etiket bileşeni ham skorun dörtte biri (§ 19.1) ve
-her atom için her ilana karşı yapısal olarak sıfırdı. Hiçbir test düşmez; bütün
-skorlar birlikte düşer. **§ 28.4'ün "en yüksek atom skoru 0.0959, sebep
-aritmetik" ölçümü bu dosyada duruyor ve aritmetiğin bir parçası buydu** —
-etiketler artık yazılıyor, yani **o ölçüm bayat**. Yeniden ölçülmeden Faz D
-eşikleri hakkında bir şey söylenmemeli (`PhaseDReachTest` hâlâ eski sayıları
-tutuyor ve golden profillerde etiket yok, yani test düşmedi).
+**İnenler — ikinci tur:** § 21.8'in çeviri adımı, § 32.5'in pivotu, § 30.6'nın
+`LISTEN/NOTIFY`'ı, § 48.3'ün beş metrik satırı, § 48.5'in replay'i ve formatı,
+golden set'in etiketleri. Frontend'e `B-100`-`B-107`.
+
+**En pahalı bulgu, ve kapandı:** `tags`/`atom_tags` tablolarına hiçbir şey
+yazmıyordu — Faz B'nin etiket bileşeni ham skorun dörtte biri (§ 19.1) ve her
+atom için yapısal olarak sıfırdı. Hiçbir test düşmez; bütün skorlar birlikte
+düşer. Yazım ilk turda indi; golden fixture'lar ikinci turda etiket kazandı ve
+**`PhaseDReachTest` yeniden ölçüldü: 0.0959 → 0.1259.**
+
+> **Ve bir şey daha öğretti: etiket sözlüğü ilanınkiyle kesişmezse hiçbir şey
+> ölçmez.** İlk deneme atomları yalnız kaba temalarla etiketledi (`backend`,
+> `devops`) ve **hiçbir sayı binde bir oynamadı** — skorlayıcı etiketi ilanın
+> kendi dağarcığına (alan + anahtar kelimeler + başlığın sözcükleri) karşı
+> Jaccard'la ölçüyor, yani bir etiket ancak birebir o dizgelerden biriyse
+> katkı yapıyor. Tire aynı meselenin öbür yüzü: profil `spring-boot` saklıyor,
+> ilan "Spring Boot" yazıyor. Etiketler artık ilanın yazdığı gibi yazılıyor.
+>
+> **Terimin tavanı da yazıldı:** Jaccard'ın paydası birleşim, birleşim de
+> ilanın tüm dağarcığı (bu ilanda 26 dizge). Dört etiketin dördü de tutsa
+> 4/26. Terim canlı ama küçük, ve bu ölçünün seçiminin sonucu — fixture'ın
+> değil.
 
 **İkinci en pahalı, ve hiçbir lane'de görünmezdi:** nginx'in CSP'si Turnstile'ı
-blokluyordu. Üretimde giriş, anonim içe aktarım ve anonim üretimin üçü de
-`CHALLENGE_FAILED` olurdu. `ContentSecurityPolicyTest` muhafız, ve
-`nginx.conf` artık bir test girdisi — olmadan ekilen kusur görevi UP-TO-DATE
-bırakıp testi başarı raporlattı.
+blokluyordu. `ContentSecurityPolicyTest` muhafız, ve `nginx.conf` artık bir
+test girdisi — olmadan, ekilen kusur görevi UP-TO-DATE bırakıp testi başarı
+raporlattı. **Aynı tuzağa üçüncü kez düşülmedi:** `docker/latex/Dockerfile` ve
+`CompileServer.java` da girdi olarak ilan edildi (`LatexImageTest`).
+
+**Kendi eklediğim kusur, ve kaydı burada duruyor:** § 21.8'in çeviri adımı
+sanal iplikte altmışa kadar çağrı yapıyor ve `VariantTranslationService`
+`@Transactional` idi — havuz on bağlantı, çağrı otuz saniye, yani elli iplik
+henüz başlamamış bir çağrı için bağlantı bekler, hepsi düşer, ve hep-ya-hiç
+kuralı **her çok dilli üretimi** geri düşürürdü. Yazma `TranslationWriter`'a
+taşındı (**ayrı bean olmak zorunda**: bir sınıfın kendine yaptığı
+`@Transactional` çağrısı proxy'lenmiyor, yani davranış aynı kalır görünüşü
+değişirdi) ve bir ArchUnit kuralı tutuyor: `@Transactional` bir sınıf
+`ProviderChain`'i çağıramaz.
 
 **Tamir etmeye kalkma — bilinçli:**
-- **`freeformNote` yok** (§ 18.7.1). Alanı adlandıran bölüm onu kimin
-  okuduğunu söylemiyor; tek makul okuyucu Faz D'nin prompt'u, o da yeni bir
-  sürüm ve EK C.3'ün eval koşusu.
-- **`gradlew replay` yok** (§ 48.5'in sapması) — okuyacağı dışa aktarma
-  formatı hiç tanımlanmadı.
-- **`/customizations` ve `GET /templates` yok** (§ 35.2.1) — Katman B
-  `preferences.appearance`'ta.
-- **Admin teşhis ucu yok** (§ 41.4'ün sapması) — çevrimdışı okuyucu var.
-- **LaTeX preamble format dump'ı yok** (§ 29.2, § 52.4): dump edilen bir
-  format `\documentclass[..pt]`'i donduruyor ve § 33.2'nin Katman B slider'ı
-  yazı boyutunu 9-12 arasında oynatıyor. Boyut başına bir format mümkün, ve
-  bu üründe sessizce yanlış olmaması gereken tek şeye dokunuyor — ölçülmeden
-  yapılmamalı.
+
+- **Admin teşhis ucu yok** (§ 41.4) — çevrimdışı okuyucu var, ve 2026-09-15'te
+  bir kez daha soruldu, bir kez daha hayır denildi. Lehindeki tek gerçek
+  argüman kayda değer: okuyucu **sunucu erişimi** istiyor, bir uç yalnız bir
+  oturum isterdi. Karşısındaki ağır bastı: kapsamsız okumayı bir path
+  değişkenine bağlamak mutlak kural 3'ün yasakladığı şeklin ta kendisi, üç yeni
+  kontrol sonsuza kadar doğru kalmalı, ve rol kontrolündeki bir hata
+  **herkesin** CV'sini HTTP'ye açar. Sunucuya erişmemesi gereken bir destek
+  ekibi olduğu gün yeniden açılır.
+- **Faz B ve Faz C replay edilemiyor** (§ 48.5). Faz E ediyor, çünkü
+  `content_snapshot` zaten onun girdisi. Ötekilerin girdileri — puanlanmış
+  ağaç, ölçülmüş yükseklikli `SelectionRequest` — hiçbir yerde saklanmıyor;
+  saklamak bir hata ayıklama kolaylığı değil, birinin profilinin kopyası
+  hakkında bir saklama kararı olurdu. `GenerationExport`'un javadoc'u gereken
+  alanları adıyla yazıyor.
 - **`generation.pages.drift` kaba, ve hiçbir şey ona göre davranmıyor**
-  (§ 26.6'nın sapması).
-- **GitHub eşleştirmesi kısaltmayı ıskalıyor** (§ 31.8.1) ve eşik bilerek
+  (§ 26.6).
+- **GitHub eşleştirmesi kısaltmayı ıskalıyor** (§ 31.8.1), eşik bilerek
   yüksek: yanlış birleştirme yanlış paragrafa bağlantı koyar.
+- **R2 yok** (§ 57.4, karar: 2026-08-28) — silinecek PDF de yok. Depolama
+  indiği gün silme yolunun oradan geçmesi gerekiyor, ve **bunu hatırlatan şey
+  artık bir paragraf değil bir test**: `ObjectStorageDeletionTripwireTest` bir
+  `pdfKey` yazıcısı ya da bir S3 istemcisi belirdiği gün düşüyor, ve mesajı
+  talimatın kendisi.
 
 **Test yazarken (denetimde öğrenilenler):**
-- **Bir dosyayı çalışma anında okuyan test, o dosyayı Gradle girdisi olarak
-  ilan etmezse koşmaz.** `performance-budgets.yaml` ve `.env.example` zaten
-  öyleydi; `nginx.conf`, `docker-compose.prod.yml` ve `openapi.json` eklendi.
-- **Bean'i override eden her test sınıfı kendi context'i ve kendi havuzu
-  demek.** GitHub stub'ının context'i container'ın 100 bağlantısını aştı ve
-  **sonraki her sınıf** "sorry, too many clients already" ile açılamadı — okuyan
-  kişiye veritabanı bozulmuş gibi görünen bir aritmetik. Havuz context başına
-  dörde çekildi.
-- **`SelectionScalingTest` tam lane koşusunda düşüyor, tek başına geçiyor.**
-  Oran 3.63'e karşı tavan 3.0. **Bu denetimden önce de böyleydi**: `c717413`
-  worktree'sinde de düşüyor. Ölçüm en hızlı on beş örneği alıyor, yani
-  makinenin meşguliyeti tek başına açıklamıyor — bakılması gereken bir şey.
 
-**Ölçümler (değişmedi, ama biri bayatladı):**
-- **Faz D eşikleri: `PhaseDReachTest` eski sayıları tutuyor** ve yukarıdaki
-  etiket bulgusundan sonra **yeniden ölçülmesi gerekiyor**. Golden profillerde
-  etiket olmadığı için test düşmedi — düşmeyen bir test doğru olduğunu
-  söylemiyor.
+- **Bir dosyayı çalışma anında okuyan test, o dosyayı Gradle girdisi olarak
+  ilan etmezse koşmaz.** Listede artık `performance-budgets.yaml`,
+  `.env.example`, `nginx.conf`, `docker-compose.prod.yml`, `openapi.json` ve
+  `docker/latex/*` var.
+- **Bean'i override eden her test sınıfı kendi context'i ve kendi havuzu
+  demek.** Havuz context başına dörde çekildi.
+- **Bir metriği kaybetmek hiçbir şeyi kırmaz.** Yeniden adlandırmak build'i
+  bozmuyor, silmek testi düşürmüyor, ve kayıp aylar sonra düz duran bir panel
+  olarak ortaya çıkıyor. `MetricCatalogueTest` adları kaynaktan okuyup her
+  birini § 48.3'ün cevapladığı satırla eşleştiriyor: eklemek de silmek de
+  düşürüyor.
+- **`@ServiceConnection` `spring.datasource`'u doldurmuyor.** `LISTEN`
+  bağlantısı ayarlarını havuz yerine property'lerden okuyunca var olmayan bir
+  veritabanını arayıp iki saniyede bir yeniden bağlandı — teslimat hatası gibi
+  görünen bir adres hatası.
+
+**Ölçümler:**
+
+- **Faz D eşikleri yeniden ölçüldü** — gömme olmadan en güçlü atom **0.1259**,
+  varsayılan ağırlıklarla **0.2756**, taban 0.40. Faz D hâlâ hiçbir şey
+  planlamıyor: sonuç değişmedi, sebebi artık tam.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
+- **XeTeX format dökümü imkânsız** (§ 29.2): motor `Can't \dump a format with
+  native fonts or font-mappings` diyor. Asgari bir belgenin **tam** derlemesi
+  620-925 ms, yani vaat edilen "1-2 saniye" belgenin tamamından uzun.
 - **`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan
   sayfayı sayıyor** — iki sayfalık belgede sapması anlamsız, bilerek bırakıldı.
 
 **Aşama 1-3'ten taşınan, hâlâ canlı:**
+
 - Geçmişin `total`'ı satır değil **CV** sayıyor (`F-020`); yeniden koşu Faz
   C'den başlıyor, skorlar snapshot'tan.
-- `SectionFloor` bir tavandır talep değil; `reservedByFloor` `forcedByLock`'tan
-  ayrı; `PARAGRAPH` `INLINE_LIST`'e katlanmadı; `suspicious_output` telde hiç
-  görülmedi.
+- `SectionFloor` bir tavandır talep değil; `PARAGRAPH` `INLINE_LIST`'e
+  katlanmadı; `suspicious_output` telde hiç görülmedi.
 - **"Kritik uyarı" diye bir şey yok.** `ImportWarning.code` `String`, şeması
   enum; `OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.
 - **Hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor** —
   `ErrorCatalogueSpecTest` birebir ayrıştırıyor.
-- **`MagicLinkApiIT` her testten önce `ratelimit:*`'ı siliyor.**
 - **`local` profilinde LLM sağlayıcısı yok**; `AccountDeletionIT` tablo
-  listesini `information_schema`'dan okuyor.
+  listesini `information_schema`'dan okuyor — **ve bir nesne deposunu göremez**
+  (yukarıdaki tuzak tel tam bunun için var).
 - **Dev stub ölçümü yiyor:** çerezsiz istekle yazılmış hiçbir test kimlik
   davranışını ölçmüyor. Doğru kurgu **çözülmeyen bir çerez**.
-- **Kalibrasyon belgesi ~0.6 inç'ten ferah bir geometriye sığmıyor**;
-  `CalibrationService` geriye giden okumayı reddediyor.
 - **`UserScopedRepository`'de `findAll` yok.** **Faz D sekize kadar eşzamanlı
   çağrı yapıyor**, havuz 10, işçi eşzamanlılığı 2 → havuz büyütülmeden işçi
-  eşzamanlılığı artırılmamalı.
-- **R2 yok** (`pdf_key` her satırda NULL) — § 57.4'ün açık paragrafı, ve
-  arşivleme işaretinin bir gün okuyacağı kural.
+  eşzamanlılığı artırılmamalı. Çeviri adımı altmışa kadar çıkıyor ama
+  **işlem dışında** (yukarıya bak).
 - **`accessedAt` (`B-078`):** tek kapsanmamış adım `SupportGrantLookup`.
-- **springdoc çok parçalı bir uçta `@RequestParam`'ı query parametresi diye
-  yayımlıyor.**
-- **Geliştiricide kalan:** VPS ve restore testi (§ 49.4), OAuth/Turnstile/
-  challenge'ın gerçek uca karşı denenmesi (`B-100` önlerindeki kapıyı açtı).
+- **Geliştiricide kalan:** VPS ve restore testi (§ 49.4); OAuth, Turnstile ve
+  `B-083`'ün challenge'ı gerçek uca karşı denenmedi.
 
 **Dersler:** *bir javadoc ne zaman çalıştığını söylüyorsa çağıranı da ara* ·
-*doğru davranan kod, korunan değildir* · *golden fixture yazılmaz, okunur* ·
-*flake demeden önce dalına bak* · **§ 51.7: bir muhafızın düştüğünü görmeden
-yazıldı sayma** · **yazılı bir kolon, yazan bir kod demek değil** (etiketler) ·
-**bir testin iddiası üründen önce doğrulanmalı** (vurgu testi ilk hâlinde
-kod hakkında değil ürün hakkında yanılıyordu) · **`git checkout --` commit'siz
-işi de götürür** (bu oturumda bir kez oldu).
+*doğru davranan kod, korunan değildir* · *flake demeden önce dalına bak* ·
+**§ 51.7: bir muhafızın düştüğünü görmeden yazıldı sayma** · **yazılı bir
+kolon, yazan bir kod demek değil** · **bir fixture eklemek bir terimi ölçülür
+kılmaz — kesiştiğini ölç** · **bir şartname parçacığının çalıştığını varsayma,
+motora sor** · **kendi eklediğin fan-out'un neyi tuttuğuna bak** ·
+**`git checkout --` commit'siz işi de götürür**.
 
 ---
 
@@ -137,4 +168,4 @@ işi de götürür** (bu oturumda bir kez oldu).
 | Aşama 4 · e-postalar, açık kaynak | `stage-4-emails.md` | § 57.7 |
 | Aşama 4 · `F-031`-`F-033` | `stage-4-handoff-answers.md` | § 24.2, § 24.2.1, § 35.3, § 35.8.1-2 |
 
-Frontend aksiyonları: `B-055`-`B-106`.
+Frontend aksiyonları: `B-055`-`B-107`.
