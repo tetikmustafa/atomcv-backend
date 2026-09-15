@@ -5,7 +5,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import java.util.Locale;
 
 /**
- * The preamble both documents share (Bolum 22.5).
+ * The preamble both documents share.
  *
  * <p>One method, called from both render paths. That is the whole design: a
  * measurement is only true if it was taken under the geometry the final
@@ -14,7 +14,7 @@ import java.util.Locale;
  *
  * <p>No user string appears here. The font comes from an enum, the colour from
  * a validated value object, the numbers from range-checked fields and the
- * template body from a registry (Bolum 22.5).
+ * template body from a registry.
  */
 public final class PreambleBuilder {
 

@@ -29,7 +29,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Faz E — the bridge from a decision to a document (Bolum 22).
+ * Faz E — the bridge from a decision to a document.
  *
  * <p>The interesting property is what does <em>not</em> cross it: an atom that
  * selection rejected, a heading with nothing under it, and any order other
@@ -105,8 +105,8 @@ class RenderPhaseTest {
     }
 
     /**
-     * The other half of the same rule (Bolum 20.2): an entry selection opened
-     * without atoms <em>is</em> printed, because it paid for its heading.
+     * The other half of the same rule: an entry selection opened without atoms
+     * <em>is</em> printed, because it paid for its heading.
      */
     @Test
     void anEntryOpenedWithoutAtomsIsPrintedAsItsHeadingAlone() {

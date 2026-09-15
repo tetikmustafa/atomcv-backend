@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * A user's own verdicts (Bolum 13).
+ * A user's own verdicts.
  *
  * <p>Scoped like everything else (absolute rule 3). The finder takes a
  * generation id, which reaches a browser — so it takes the acting user with

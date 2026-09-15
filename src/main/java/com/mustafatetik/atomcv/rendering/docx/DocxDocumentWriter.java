@@ -20,7 +20,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
 import org.springframework.stereotype.Component;
 
 /**
- * The same CV as a Word document (Bolum 22.6).
+ * The same CV as a Word document.
  *
  * <p><strong>Not a {@code DocumentRenderer}, and that is not an oversight.</strong>
  * That interface returns a {@code RenderedSource} — a string a compiler turns
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * <p>Read straight off {@code content_snapshot}, like the PDF download. Not
  * from today's profile: the person may have edited a bullet since, and a
  * document that came back different from the one they sent an employer would
- * be worse than no document at all (EK D.6.3).
+ * be worse than no document at all.
  *
  * <p>Marks are semantic and this decides what they look like, the same way the
  * LaTeX renderer does: technology, metric and emphasis are set bold, a link is
@@ -210,7 +210,7 @@ public class DocxDocumentWriter {
             // definition. Word's list machinery is a separate part inside the
             // package, and an ATS reading the text layer sees the same
             // character either way -- which is the only reader that matters
-            // here (Bolum 22.6).
+            // here.
             paragraph.setIndentationLeft(360);
             paragraph.setIndentationHanging(180);
             XWPFRun marker = paragraph.createRun();
@@ -238,7 +238,7 @@ public class DocxDocumentWriter {
     /**
      * Bolum 22.6's own example: a technology or a metric is set bold. Emphasis
      * joins them because the rewrite marks what it wants stressed, and an
-     * unknown mark falls through to plain rather than failing (Bolum 16.2).
+     * unknown mark falls through to plain rather than failing.
      */
     private static boolean isBold(List<Mark> marks) {
         return marks.contains(Mark.TECHNOLOGY)

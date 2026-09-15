@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * The writing half of {@link FixtureStore} (Bolum 54.2).
+ * The writing half of {@link FixtureStore}.
  *
  * <p>It was missing. {@code FixtureStore.save} was written with a javadoc
  * saying {@code local-record} used it and nothing ever called it, so

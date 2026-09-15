@@ -12,7 +12,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Component;
 
 /**
- * What the person was carrying when they signed in (Adim 3.6).
+ * What the person was carrying when they signed in.
  *
  * <p>Both ways in — a provider and a link in an email — end at the same two
  * lines: a new session, and a cookie replacing whatever the browser held. The

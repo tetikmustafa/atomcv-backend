@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * One skill name reduced to the key everything matches on (Bolum 31.5).
+ * One skill name reduced to the key everything matches on.
  *
  * <p><strong>In {@code shared} because both sides of a comparison have to
  * apply the same rule.</strong> Faz B scores an atom's skills against a

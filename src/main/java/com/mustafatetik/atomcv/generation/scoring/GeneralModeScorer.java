@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Scoring with no job description to score against (Bolum 19.4).
+ * Scoring with no job description to score against.
  *
  * <p>The general CV mode skips Faz A and Faz B's relevance components — there
  * is nothing to be relevant to — and ranks on what the profile says about
@@ -27,7 +27,7 @@ public final class GeneralModeScorer {
      * years puts a job from a decade ago at a quarter of a current one, which
      * matches the advice CVs are actually written by; it does not put it at
      * zero, because a decade-old bullet with a metric in it can still be the
-     * best thing on the page (EK D.8.7).
+     * best thing on the page.
      */
     static final double HALF_LIFE_YEARS = 5.0;
 
@@ -59,7 +59,7 @@ public final class GeneralModeScorer {
     }
 
     /**
-     * An entry with no atoms under it, on the same scale (Bolum 20.2).
+     * An entry with no atoms under it, on the same scale.
      *
      * <p>Two of the four components above are properties of a sentence: a
      * heading carries no metric and is not verified. Dropping them and leaving

@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * What a prompt did, counted rather than read (Bolum 53.4).
+ * What a prompt did, counted rather than read.
  *
  * <p><strong>Properties, never text.</strong> A model picks different words
  * every time, so comparing an answer to a stored one measures the weather. What
@@ -71,7 +71,7 @@ public final class EvalReport {
     }
 
     /**
-     * One run's numbers, as a table (Bolum 53.6).
+     * One run's numbers, as a table.
      *
      * <p>The verdict column is the point of reading it: a rate on its own says
      * nothing without the threshold it is being held to, and the one thing a

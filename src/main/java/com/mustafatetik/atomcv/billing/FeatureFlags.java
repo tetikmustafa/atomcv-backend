@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The emergency brake (Bolum 44.3).
+ * The emergency brake.
  *
  * <p>{@code feature_flags} has been in {@code V1} from the start; this reads
  * and writes it. A flag that has never been set is <strong>on</strong>: the

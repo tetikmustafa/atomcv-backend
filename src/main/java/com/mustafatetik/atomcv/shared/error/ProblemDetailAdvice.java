@@ -31,8 +31,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Every failure leaves the API as the same shape (Bolum 35.4): a code the
- * frontend can translate, the parameters its message needs, and the ways out.
+ * Every failure leaves the API as the same shape: a code the frontend can
+ * translate, the parameters its message needs, and the ways out.
  *
  * <p>Nothing here writes a sentence for the user. A handler that returned
  * English prose would be invisible until a Turkish user hit that path.
@@ -175,11 +175,11 @@ public class ProblemDetailAdvice {
     }
 
     /**
-     * A body sent as a media type no handler consumes. RFC 9110 calls this 415,
-     * and it mattered in practice: Bolum 35.6 documented
-     * {@code application/merge-patch+json} for the profile patches, which no
-     * controller declares, so every client following the specification was told
-     * the server had failed (EK D.6.8).
+     * A body sent as a media type no handler consumes. RFC 9110 calls this
+     * 415, and it mattered in practice: Bolum 35.6 documented {@code
+     * application/merge-patch+json} for the profile patches, which no
+     * controller declares, so every client following the specification was
+     * told the server had failed.
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ProblemDetail> handle(HttpMediaTypeNotSupportedException exception) {
@@ -209,7 +209,7 @@ public class ProblemDetailAdvice {
     }
 
     /**
-     * A multipart the container refused before any handler saw it (Adim 3.4).
+     * A multipart the container refused before any handler saw it.
      *
      * <p>Left alone it reaches the catch-all and leaves as a 500, which tells
      * the user their upload broke the server rather than that it was too

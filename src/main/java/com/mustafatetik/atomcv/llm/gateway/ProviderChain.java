@@ -15,7 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 /**
- * The fallback chain (Bolum 27.3).
+ * The fallback chain.
  *
  * <p>Walks the tier's providers in order and returns the first answer. What
  * separates it from a retry loop is the two ways a call can fail: a vendor

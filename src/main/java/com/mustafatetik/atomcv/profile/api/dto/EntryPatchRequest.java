@@ -37,10 +37,10 @@ public record EntryPatchRequest(
         // filling in a { present, value } wrapper.
         //
         // `types` rather than `nullable`: this document is OpenAPI 3.1, where
-        // null is a type and not a flag. `nullable = true` was silently dropped
-        // on the way out, so the schema published `"type": "string"` for a
-        // field whose whole purpose is to accept null — a generated client
-        // rejected the exact body that clears an end date (EK D.6.8).
+        // null is a type and not a flag. `nullable = true` was silently
+        // dropped on the way out, so the schema published `"type": "string"`
+        // for a field whose whole purpose is to accept null — a generated
+        // client rejected the exact body that clears an end date.
         @Schema(implementation = String.class, types = {"string", "null"},
                 description = "Send null to clear")
         JsonNullable<@Size(max = 200) String> organization,

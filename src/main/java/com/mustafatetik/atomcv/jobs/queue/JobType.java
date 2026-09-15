@@ -7,7 +7,7 @@ import jakarta.persistence.Converter;
 import java.util.Locale;
 
 /**
- * What a job is, and how urgently it is taken (Bolum 30.3).
+ * What a job is, and how urgently it is taken.
  *
  * <p>The priority travels with the type rather than with the caller, because
  * "how long may this wait" is a property of the work and not of whoever
@@ -17,7 +17,7 @@ import java.util.Locale;
  * <p>The whole vocabulary of {@code jobs.type} is here, including the kinds
  * nothing enqueues yet. A queue that could not name a type would take a row it
  * has no handler for and fail it as unknown; naming them costs nothing and the
- * column already lists all six (Bolum 13).
+ * column already lists all six.
  */
 public enum JobType {
 

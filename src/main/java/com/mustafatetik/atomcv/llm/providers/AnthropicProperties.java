@@ -3,10 +3,10 @@ package com.mustafatetik.atomcv.llm.providers;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Anthropic's endpoint (Bolum 27.2).
+ * Anthropic's endpoint.
  *
  * @param apiKey     {@code ANTHROPIC_API_KEY}; blank means the provider is
- *                   skipped silently (Bolum 27.3)
+ *  skipped silently
  * @param baseUrl    overridable so a test can point it at a socket it owns
  * @param version    the {@code anthropic-version} header, which this API
  *                   requires on every request and which pins the response

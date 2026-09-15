@@ -21,8 +21,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Loads a profile with four flat queries and joins them in memory
- * (Bolum 52.2).
+ * Loads a profile with four flat queries and joins them in memory.
  *
  * <p>The obvious alternative — associations and a {@code JOIN FETCH} chain —
  * produces a cartesian product across sections, entries, atoms and variants

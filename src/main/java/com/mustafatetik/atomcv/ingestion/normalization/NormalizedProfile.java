@@ -109,7 +109,7 @@ public record NormalizedProfile(
      * @param english its English rendering, or {@link RichContent#EMPTY} when
      *                the CV was already English — Bolum 21 reads the absence as
      *                "the source is the English", not as a gap
-     * @param tags    canonical, and the profile's own vocabulary (Bolum 19.2)
+     * @param tags canonical, and the profile's own vocabulary
      */
     public record NormalizedAtom(
             RichContent source,

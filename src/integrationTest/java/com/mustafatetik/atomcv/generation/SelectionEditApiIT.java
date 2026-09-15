@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * {@code POST /generations/{id}/selection}: the 202 and the four ways in front
- * of it (Bolum 24.4).
+ * of it.
  *
  * <p>The worker is off for the whole suite, so what is proved here is what the
  * request did — which edits are answerable, which are refused before a
@@ -161,7 +161,7 @@ class SelectionEditApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.code").value("GENERATION_SUPERSEDED"));
     }
 
-    // ── the natural-language half (Bolum 24.2) ───────────────────────────
+    // ── the natural-language half ───────────────────────────
 
     @Test
     void asentenceIsAcceptedAndQueuedWithTheSentenceOnIt() throws Exception {

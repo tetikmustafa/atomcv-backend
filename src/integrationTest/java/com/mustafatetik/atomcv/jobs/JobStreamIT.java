@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * The progress stream (Bolum 30.6, EK D.6.4).
+ * The progress stream.
  *
  * <p>What is worth proving is not that events can be sent — it is the two
  * cases where a naive implementation goes quiet. A job that finished before

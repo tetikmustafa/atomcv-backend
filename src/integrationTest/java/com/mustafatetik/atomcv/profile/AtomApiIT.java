@@ -177,7 +177,7 @@ class AtomApiIT extends AbstractIntegrationTest {
     }
 
     /**
-     * The skills column is read as a key, so it is written as one (Bolum 31.5).
+     * The skills column is read as a key, so it is written as one.
      *
      * <p>Ingestion canonicalised what it stored and this endpoint stored what a
      * client typed, so one row's skills were keys and the next row's were prose.
@@ -327,7 +327,7 @@ class AtomApiIT extends AbstractIntegrationTest {
                   "content": { "runs": [ { "t": "Veri hatları" } ] } }""");
 
         // No content, no language, no tone: this write is about one boolean,
-        // and it used to demand the whole sentence back (EK D.6.8).
+        // and it used to demand the whole sentence back.
         mvc.perform(patch("/api/v1/profile/atoms/" + atomId + "/variants/"
                         + turkish.get("id").asText())
                         .header(HttpHeaders.IF_MATCH, "\"0\"")

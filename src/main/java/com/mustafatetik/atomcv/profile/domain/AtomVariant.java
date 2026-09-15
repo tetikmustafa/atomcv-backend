@@ -62,8 +62,8 @@ public class AtomVariant implements ProfileOwned {
     private String contentHash;
 
     /**
-     * Measured height in points, keyed by {@code template:version}
-     * (Bolum 26). Cleared whenever the content changes.
+     * Measured height in points, keyed by {@code template:version}. Cleared
+     * whenever the content changes.
      */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
@@ -71,7 +71,7 @@ public class AtomVariant implements ProfileOwned {
 
     private Instant costMeasuredAt;
 
-    // ─── derived variant tracking (Bolum 32) ───
+    // ─── derived variant tracking ───
 
     /** The variant this one was translated or rewritten from. */
     private UUID derivedFromVariantId;
@@ -157,7 +157,7 @@ public class AtomVariant implements ProfileOwned {
     /**
      * Replaces the wording and re-derives everything that depends on it. A
      * changed hash invalidates the measured costs: the same words in the same
-     * template occupy the same height, different words do not (Bolum 16.3).
+     * template occupy the same height, different words do not.
      */
     public void setContent(RichContent content) {
         applyContent(Objects.requireNonNull(content, "content"));

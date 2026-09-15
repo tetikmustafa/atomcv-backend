@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
  * <p><strong>What it buys.</strong> The chain already moves on when a provider
  * is rate limited or down, so an outage was never a failed generation — it was
  * a slow one. Every request paid the full timeout at the dead vendor before
- * asking the next, and with a 30s call timeout (Bolum 27.1) a single dark
- * provider at the head of the chain put half a minute on every generation in
- * the product. Bolum 5.1 names a circuit breaker for exactly this and it had
- * never been wired.
+ * asking the next, and with a 30s call timeout a single dark provider at the
+ * head of the chain put half a minute on every generation in the product.
+ * Bolum 5.1 names a circuit breaker for exactly this and it had never been
+ * wired.
  *
  * <p><strong>Only transport failures open it.</strong> A schema mismatch is a
  * property of the prompt, not of the vendor — Bolum 27.3 says so, which is why

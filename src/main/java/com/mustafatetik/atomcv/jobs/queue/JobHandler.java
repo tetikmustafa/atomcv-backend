@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.jobs.queue;
 
 /**
- * What actually does the work of one job type (Bolum 30).
+ * What actually does the work of one job type.
  *
  * <p>One handler per {@link JobType}, found by the worker at startup. A type
  * with no handler is a job that fails rather than one that sits in the queue

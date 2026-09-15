@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.billing;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * What counts as unusual (Bolum 44.3).
+ * What counts as unusual.
  *
  * @param enabled        false in the integration suite, where a scheduler
  *                       firing over shared tables would report on other tests'

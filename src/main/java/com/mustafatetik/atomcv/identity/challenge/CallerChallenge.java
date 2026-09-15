@@ -6,8 +6,7 @@ import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import org.springframework.stereotype.Component;
 
 /**
- * The challenge, asked of the callers who have not answered one yet
- * (Bolum 44.4, Bolum 9).
+ * The challenge, asked of the callers who have not answered one yet.
  *
  * <p><strong>Why the anonymous flow needs this and an account does not.</strong>
  * Signing in already passed a challenge — that is what {@code POST /auth/magic-link}
@@ -23,10 +22,10 @@ import org.springframework.stereotype.Component;
  * tightening is a detector that runs after the spending. The challenge is the only
  * thing in front of it that asks whether there is a person there at all.
  *
- * <p><strong>Absent locally and in the test suite</strong>, where
- * {@link ChallengeConfig} warns and waves the request through — so nothing here
- * proves itself in the integration lane, and {@code CallerChallengeTest} exercises
- * it against both implementations directly (Bolum 51.7).
+ * <p><strong>Absent locally and in the test suite</strong>, where {@link
+ * ChallengeConfig} warns and waves the request through — so nothing here
+ * proves itself in the integration lane, and {@code CallerChallengeTest}
+ * exercises it against both implementations directly.
  */
 @Component
 public class CallerChallenge {

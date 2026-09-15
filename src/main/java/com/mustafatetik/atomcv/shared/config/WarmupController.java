@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * What {@code deploy.sh} calls after health and before traffic (Bolum 52.5).
+ * What {@code deploy.sh} calls after health and before traffic.
  *
  * <p><strong>Not a public endpoint, and three separate things keep it that
- * way</strong> (EK D.6.7): {@link Hidden} keeps it out of the OpenAPI document
- * so no generated client ever sees it, nginx denies the exact path, and it
- * takes no input and answers nothing. It is an operational lever with a URL,
- * not part of the API.
+ * way</strong>: {@link Hidden} keeps it out of the OpenAPI document so no
+ * generated client ever sees it, nginx denies the exact path, and it takes no
+ * input and answers nothing. It is an operational lever with a URL, not part
+ * of the API.
  *
  * <p><strong>What it warms, and what warms itself.</strong> The costs a first
  * request pays here are the two I/O paths: a JDBC connection out of a cold
@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
  * them on somebody's sign-in is the cold start Bolum 52.5 exists about.
  *
  * <p>The expensive warm-ups are not here on purpose. XeLaTeX compiles a
- * minimal document inside its own container at startup (Bolum 29.6) and the
- * embedding server loads its weights before answering {@code /health}
- * (Bolum 28.4) — neither is reachable from a request thread, and a warm-up
- * that pretended to cover them would report success for work it never did.
+ * minimal document inside its own container at startup and the embedding
+ * server loads its weights before answering {@code /health} — neither is
+ * reachable from a request thread, and a warm-up that pretended to cover them
+ * would report success for work it never did.
  *
  * <p><strong>It cannot fail the deploy.</strong> A cold pool is slower, not
  * broken, and {@code deploy.sh} already decided the release was good when

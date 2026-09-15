@@ -5,7 +5,7 @@ import java.time.Duration;
 import java.util.random.RandomGenerator;
 
 /**
- * Which failures are worth trying again, and how long to wait (Bolum 30.5).
+ * Which failures are worth trying again, and how long to wait.
  *
  * <p>The switch is exhaustive over a sealed interface, so a new kind of
  * failure does not compile until someone has decided whether retrying it could
@@ -74,18 +74,18 @@ public final class JobRetryPolicy {
 
             // Nor this one, and for a stronger reason: the answer is about who
             // the caller is rather than about the world. A retry would ask the
-            // same session for an account it still does not have (§ 35.7).
+            // same session for an account it still does not have.
             case PipelineError.FeatureNeedsAnAccount ignored -> false;
 
             // The profile it needed is deleted. A retry reads the same absence,
             // and the retry budget would turn one honest refusal into three.
             case PipelineError.SessionEnded ignored -> false;
 
-            // Adim 3.4. The same document goes back to the same model, and
-            // the answer that could not settle a language or found nothing in
-            // it will not settle or find anything on the second reading. Both
+            // Adim 3.4. The same document goes back to the same model, and the
+            // answer that could not settle a language or found nothing in it
+            // will not settle or find anything on the second reading. Both
             // ways out are the user's — answer the language question, or use
-            // the manual form (Bolum 31.10).
+            // the manual form.
             case PipelineError.LanguageUndetected ignored -> false;
             case PipelineError.NothingExtracted ignored -> false;
 
@@ -102,7 +102,7 @@ public final class JobRetryPolicy {
     }
 
     /**
-     * How long before the next attempt (Bolum 30.5).
+     * How long before the next attempt.
      *
      * @param attempts how many have been made, which the claim has already
      *                 incremented — so the wait after the first failure is

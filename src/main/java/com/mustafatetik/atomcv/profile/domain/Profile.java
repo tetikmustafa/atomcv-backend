@@ -32,8 +32,8 @@ public class Profile implements UserOwned {
     private UUID id = UUID.randomUUID();
 
     /**
-     * Null for an anonymous session's profile (Bolum 9), which is the one kind
-     * of profile nobody owns.
+     * Null for an anonymous session's profile, which is the one kind of
+     * profile nobody owns.
      *
      * <p><strong>Updatable, and only for one statement.</strong> It was
      * {@code updatable = false} while every profile had an owner from the
@@ -47,8 +47,7 @@ public class Profile implements UserOwned {
     private UUID userId;
 
     /**
-     * When this profile stops existing, or null for one that is kept
-     * (Bolum 9, Bolum 57.4).
+     * When this profile stops existing, or null for one that is kept.
      *
      * <p>Exactly one of this and {@link #userId} is set, enforced by
      * {@code profiles_owner_xor_expiry}: a row with neither could not be
@@ -66,8 +65,7 @@ public class Profile implements UserOwned {
     private Contact contact = Contact.EMPTY;
 
     /**
-     * What this profile's header block measured, by geometry and language
-     * (Bolum 26.4).
+     * What this profile's header block measured, by geometry and language.
      *
      * <p>The header is text and text wraps, so how tall it is depends on the
      * words in it, on the width they are set at, and on the language its
@@ -123,7 +121,7 @@ public class Profile implements UserOwned {
     }
 
     /**
-     * A profile that already has an id (Adim 3.6).
+     * A profile that already has an id.
      *
      * <p>The one caller is the upgrade from an anonymous session: the rows
      * below it were built while the profile lived in Redis and each carries
@@ -139,7 +137,7 @@ public class Profile implements UserOwned {
 
     /**
      * An anonymous session's profile: no owner, and an id derived from the
-     * session rather than drawn at random (Bolum 9, Adim 3.6).
+     * session rather than drawn at random.
      *
      * <p>The id <em>is</em> {@code ProfileRef.ephemeral(session).id()}, which is
      * what makes this row reachable without an owner to scope by: holding the
@@ -159,7 +157,7 @@ public class Profile implements UserOwned {
 
     /**
      * The one statement the XOR constraint is written for: this profile stops
-     * expiring and starts belonging to somebody (Adim 3.6).
+     * expiring and starts belonging to somebody.
      *
      * @throws IllegalStateException if it already has an owner. Signing in
      *         twice from one session is not a second upgrade, and quietly

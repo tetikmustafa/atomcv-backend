@@ -7,8 +7,7 @@ import jakarta.persistence.Converter;
 import java.util.Locale;
 
 /**
- * What became of a generation. Stored in {@code generations.status}
- * (Bolum 13).
+ * What became of a generation. Stored in {@code generations.status}.
  *
  * <p>There is no {@code queued} or {@code running} here, and that is the
  * design: a generation row is written when there is a document to describe.

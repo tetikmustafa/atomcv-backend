@@ -47,8 +47,8 @@ public final class CoverLetterValidator {
      *
      * <p>The prompt still asks for 250-400 and deliberately so: asking for
      * more than the floor is not a contradiction, and changing what is asked
-     * is a new prompt version (Bolum 53.2) — worth doing when the model is
-     * chosen and the ask can be measured against it.
+     * is a new prompt version — worth doing when the model is chosen and the
+     * ask can be measured against it.
      */
     static final int MIN_WORDS = 120;
     static final int MAX_WORDS = 400;
@@ -73,8 +73,8 @@ public final class CoverLetterValidator {
     private static final Pattern SEPARATORS = Pattern.compile("[.,\\u00A0\\u202F ]");
 
     /**
-     * <strong>Ekleme — numbers said in words, which nothing used to read
-     * (Bolum 34.4.2).</strong>
+     * <strong>Ekleme — numbers said in words, which nothing used to
+     * read.</strong>
      *
      * <p>Measured on the twelve recorded drafts: four of them spell a number
      * out, and one is a claim the page does not support — the page says a
@@ -249,9 +249,9 @@ public final class CoverLetterValidator {
     /**
      * The vocabulary is the one Faz D checks a rewrite against; the permitted
      * half is the page's skills, plus what the person told us about the
-     * employer (Bolum 34.5) and the sentences the letter is drawing from. A
-     * technology inside the evidence is already on the page — refusing the
-     * letter for repeating it would be refusing it for doing its job.
+     * employer and the sentences the letter is drawing from. A technology
+     * inside the evidence is already on the page — refusing the letter for
+     * repeating it would be refusing it for doing its job.
      */
     private static boolean namesSomethingThePageDoesNot(
             CoverLetterInput input, String foldedLetter) {

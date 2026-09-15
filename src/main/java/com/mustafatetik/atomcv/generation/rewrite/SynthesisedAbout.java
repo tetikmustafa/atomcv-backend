@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.rewrite;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * What the model answers for the About paragraph (Bolum 21.7).
+ * What the model answers for the About paragraph.
  *
  * <p>One field, where a rewritten bullet has two. A summary's emphasis is the
  * order of its clauses, not bold type: four bolded technologies in sixty-five

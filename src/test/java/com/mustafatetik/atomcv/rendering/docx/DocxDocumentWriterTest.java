@@ -18,7 +18,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.jupiter.api.Test;
 
 /**
- * The CV as a Word document (Bolum 22.6).
+ * The CV as a Word document.
  *
  * <p><strong>Every case here reads the bytes back rather than inspecting what
  * was written.</strong> A DOCX is a zip of XML parts, and one that a library

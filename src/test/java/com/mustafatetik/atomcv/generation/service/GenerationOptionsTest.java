@@ -13,8 +13,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * What {@code auto} means, which is not the same thing in the two modes
- * (Bolum 14.4).
+ * What {@code auto} means, which is not the same thing in the two modes.
  *
  * <p>The preference reads "follow the posting". General mode has no posting to
  * follow and falls back to the language the profile was written in; job mode
@@ -47,7 +46,7 @@ class GenerationOptionsTest {
         assertThat(GenerationOptions.forPosting(profile, null).language()).isEqualTo("tr");
     }
 
-    // -- the template the profile asked for (Bolum 33.5) ---------------------
+    // -- the template the profile asked for ---------------------
 
     /**
      * <strong>The preference has carried a templateId since Bolum 14.4 and
@@ -92,7 +91,7 @@ class GenerationOptionsTest {
                 .isEqualTo(TemplateCustomization.CLASSIC);
     }
 
-    // -- the sliders the profile moved (Bolum 33.1) --------------------------
+    // -- the sliders the profile moved --------------------------
 
     @Test
     void themovedSlidersReachTheDocument() {

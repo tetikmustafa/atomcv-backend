@@ -48,7 +48,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Atoms and their wordings (Bolum 35.2).
+ * Atoms and their wordings.
  *
  * <p>The atom endpoints carry the controls; the variant endpoints carry the
  * text. They are separate because they are separate rows with separate

@@ -26,7 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * The profile editor, driven by somebody who has not signed up (Bolum 9).
+ * The profile editor, driven by somebody who has not signed up.
  *
  * <p><strong>Through HTTP on purpose.</strong> The services underneath were
  * already caller-agnostic — they take a {@code ProfileRef} — so what this slice

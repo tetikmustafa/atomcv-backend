@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The account, and ending it (Bolum 57.4).
+ * The account, and ending it.
  *
  * <p><strong>No confirmation field, and that is a decision rather than an
  * omission.</strong> This is a {@code DELETE} behind a session cookie and a

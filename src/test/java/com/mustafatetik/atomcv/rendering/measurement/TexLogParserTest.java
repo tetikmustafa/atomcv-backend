@@ -36,7 +36,7 @@ class TexLogParserTest {
     @Test
     void aCostIsTheLinesItTakesPlusWhatTheListAddsBetweenItems() {
         // 13.75pt of box is two lines at a twelve point baseline, and the list
-        // adds one point between items: 24 + 1 (EK D.8.10).
+        // adds one point between items: 24 + 1.
         assertThat(new RenderCost(10.5, 3.25).totalPt(12.0, 1.0)).isEqualTo(25.0);
         assertThat(new RenderCost(10.5, 3.25).lines(12.0)).isEqualTo(2);
     }

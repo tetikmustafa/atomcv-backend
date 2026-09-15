@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.identity.challenge;
 
 /**
- * Whether the thing on the other end is a person (Bolum 44.4).
+ * Whether the thing on the other end is a person.
  *
  * <p>Named for what it does and not for who provides it, the same reasoning
  * that made the observability variables {@code OTLP_*} rather than

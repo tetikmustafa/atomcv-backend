@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Where the recorded answers live (Bolum 54.2).
+ * Where the recorded answers live.
  *
  * <p>A filesystem directory rather than a classpath resource, because
  * {@code local-record} <em>writes</em> here while the application is running

@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Every call, written down with what it cost (Bolum 27.5, Bolum 44.3).
+ * Every call, written down with what it cost.
  *
  * <p>{@code ProviderChain} has published these events since Adim 2.2 and
  * nothing listened, so {@code llm_invocations} was empty and every cost figure

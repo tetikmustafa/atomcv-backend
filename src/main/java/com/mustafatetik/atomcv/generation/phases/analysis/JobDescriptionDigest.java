@@ -7,7 +7,7 @@ import java.util.HexFormat;
 import java.util.regex.Pattern;
 
 /**
- * A posting reduced to a hash (Bolum 18.6, Bolum 13).
+ * A posting reduced to a hash.
  *
  * <p>Two callers need exactly the same answer and it matters that they agree:
  * the analysis cache keys on it, and {@code generations.jd_hash} records it. A

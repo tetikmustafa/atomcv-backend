@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * {@code /templates} and {@code /customizations} (Bolum 35.2, Bolum 33.2).
+ * {@code /templates} and {@code /customizations}.
  *
  * <p><strong>Five endpoints the resource map has always listed, against a
  * table that has existed since V1 with no writer.</strong> The settings a

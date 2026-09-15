@@ -8,7 +8,7 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 
 /**
- * § 35.7's anonymous set, enforced (Bolum 9).
+ * § 35.7's anonymous set, enforced.
  *
  * <p><strong>"Sunucu yine de doğrular — istemci kontrolü sadece UX."</strong>
  * That sentence is § 35.7's own, and until an anonymous person could edit

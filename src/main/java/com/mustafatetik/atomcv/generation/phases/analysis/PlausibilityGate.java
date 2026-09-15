@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.phases.analysis;
 import com.mustafatetik.atomcv.shared.error.UnreadablePostingReason;
 
 /**
- * What the model said, judged before anything is built on it (Bolum 18.4).
+ * What the model said, judged before anything is built on it.
  *
  * <p>A gate on the answer rather than on the input, and the reason it earns its
  * place is cost: an analysis that fails here never reaches Faz B, so a posting

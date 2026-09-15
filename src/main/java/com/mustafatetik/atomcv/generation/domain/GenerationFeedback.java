@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * What somebody thought of one generation (Bolum 13, Adim 3.9).
+ * What somebody thought of one generation.
  *
  * <p>A thumb, and everything after it is optional. The pair of buttons is the
  * only part most people will touch, and a form that demanded a category before

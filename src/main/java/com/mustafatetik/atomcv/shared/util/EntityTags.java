@@ -6,8 +6,7 @@ import com.mustafatetik.atomcv.shared.error.Resolution;
 import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 
 /**
- * The {@code ETag} / {@code If-Match} pair over a JPA version column
- * (Bolum 35.6).
+ * The {@code ETag} / {@code If-Match} pair over a JPA version column.
  *
  * <p>Writes require {@code If-Match}. The eighth design principle is that a
  * user's own work is never silently overwritten, and a write with no

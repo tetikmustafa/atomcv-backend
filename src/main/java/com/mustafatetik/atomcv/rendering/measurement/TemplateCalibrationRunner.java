@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Turns an estimate into a measurement (Bolum 33.3).
+ * Turns an estimate into a measurement.
  *
  * <p>The third step of Bolum 33.3's flow. A slider moves, this is queued, and
  * until it lands a generation runs against {@link CapacityEstimator}'s scaled

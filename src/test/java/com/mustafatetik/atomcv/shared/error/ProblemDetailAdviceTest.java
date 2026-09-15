@@ -138,7 +138,7 @@ class ProblemDetailAdviceTest {
     }
 
     // ── Protocol-level rejections. Every one of these answered 500 before,
-    // and told the user the server had broken (EK D.6.8). ──────────────────
+    // and told the user the server had broken. ──────────────────
 
     @Test
     void aMediaTypeNothingConsumesIsTheClientsMistake() throws Exception {

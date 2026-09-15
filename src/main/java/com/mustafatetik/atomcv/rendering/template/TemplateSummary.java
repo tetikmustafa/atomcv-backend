@@ -3,21 +3,20 @@ package com.mustafatetik.atomcv.rendering.template;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * One template, as {@code GET /templates} publishes it (Bolum 35.2,
- * Bolum 33.5).
+ * One template, as {@code GET /templates} publishes it.
  *
  * <p><strong>The capacity travels, and it is the point.</strong> Bolum 33.5
  * describes the three by how much they hold — about fifty-four lines a page,
  * fifty, sixty-four — and a chooser that showed three names and no density
  * would be asking somebody to pick blind. The figure published is the measured
  * one: the page's text height in points and the height of one line, both from
- * the same constants the selection budget is built from (Bolum 26.4).
+ * the same constants the selection budget is built from.
  *
  * <p><strong>No display name and no description.</strong> Those are sentences,
  * they are read by a person, and Bolum 35.4's rule is that the server sends a
  * key and the client writes the sentence. The id is the key.
  *
- * @param version the renderer version (Bolum 16.3). It moves when the geometry
+ * @param version the renderer version. It moves when the geometry
  *                does, which is what invalidates a measured cost -- a client
  *                that caches anything derived from a template should key it on
  *                this

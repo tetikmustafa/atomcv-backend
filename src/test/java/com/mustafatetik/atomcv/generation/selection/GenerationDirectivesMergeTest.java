@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * An edit is the sum of the edits before it (Bolum 24.4).
+ * An edit is the sum of the edits before it.
  *
  * <p>The merge is the part of Faz G that is easy to get subtly wrong: a person
  * pressing the same switch twice expects to be back where they started, and a

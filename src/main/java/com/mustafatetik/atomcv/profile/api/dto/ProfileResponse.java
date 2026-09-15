@@ -10,9 +10,9 @@ import java.util.List;
  * The profile head as the API publishes it.
  *
  * <p>No identifier: no endpoint accepts a profile id, because ownership comes
- * from the session and never from a path (Bolum 35.1). No version field
- * either — a single resource carries its version in the {@code ETag}, and the
- * two could disagree.
+ * from the session and never from a path. No version field either — a single
+ * resource carries its version in the {@code ETag}, and the two could
+ * disagree.
  */
 @Schema(name = "Profile", description = "The head of the Master Profile")
 public record ProfileResponse(

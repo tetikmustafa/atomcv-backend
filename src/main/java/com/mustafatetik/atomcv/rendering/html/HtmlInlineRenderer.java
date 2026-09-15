@@ -5,7 +5,7 @@ import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
 
 /**
- * One {@link RichContent} as inline HTML (Bolum 22.6).
+ * One {@link RichContent} as inline HTML.
  *
  * <p><strong>The same marks, a different alphabet.</strong> Bolum 12.3 is the
  * reason this class is three lines of decision and no interpretation: a mark
@@ -19,8 +19,8 @@ import com.mustafatetik.atomcv.profile.domain.content.Run;
  * something to a parser is encoded here and nowhere else — the same shape as
  * {@code LatexEscaper}, against a different grammar.
  *
- * <p>An unknown mark renders as plain text (Bolum 16.2). A newer version's
- * markings must not make an older renderer fail.
+ * <p>An unknown mark renders as plain text. A newer version's markings must
+ * not make an older renderer fail.
  */
 public final class HtmlInlineRenderer {
 

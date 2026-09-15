@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * One repository, offered (Bolum 31.8).
+ * One repository, offered.
  *
  * <p><strong>Offered and never applied.</strong> Bolum 31.8 ends on that
  * sentence and it is the whole shape of this feature: GitHub knows what was

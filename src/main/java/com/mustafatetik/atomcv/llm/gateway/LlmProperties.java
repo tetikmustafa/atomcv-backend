@@ -6,12 +6,12 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Which providers serve which tier, and in what order (Bolum 27.3).
+ * Which providers serve which tier, and in what order.
  *
  * <p>Order is the whole configuration: a chain is walked front to back and the
  * first provider with a key that answers wins. Model ids are environment
  * variables rather than literals because vendors rename models faster than a
- * release cycle (Bolum 5.4).
+ * release cycle.
  *
  * @param chain       tier to the provider ids that serve it, in order
  * @param models      provider id to the model it should ask for

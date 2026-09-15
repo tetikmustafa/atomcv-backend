@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * An accent colour, as six hex digits (Bolum 33.2).
+ * An accent colour, as six hex digits.
  *
  * <p>The value reaches {@code \definecolor} directly, so the pattern is the
  * whole of the defence: anything that is not six hex digits is refused here

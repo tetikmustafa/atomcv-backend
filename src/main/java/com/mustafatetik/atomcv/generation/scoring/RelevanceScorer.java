@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Faz B: how well each atom answers this posting (Bolum 19).
+ * Faz B: how well each atom answers this posting.
  *
  * <p><strong>There is no threshold.</strong> Bolum 19.3 is emphatic and it is
  * the reason the product never says "nothing relevant found": someone applying
@@ -39,7 +39,7 @@ public final class RelevanceScorer {
     }
 
     /**
-     * Every atom, ranked (Bolum 19.6).
+     * Every atom, ranked.
      *
      * <p>Ordering is Bolum 19.6 and Bolum 19.4 together, and lives on
      * {@link ScoredAtom#MOST_RELEVANT_FIRST}: relevance in buckets, then the
@@ -251,11 +251,11 @@ public final class RelevanceScorer {
      * into "sqı", and no atom would ever match it.
      */
     public static String canonicalSkill(String canonical) {
-        // Delegated, not reimplemented (Adim 3.4). Bolum 31.5 adds an alias
-        // dictionary, and a dictionary applied on one side of a comparison is
-        // worse than none: a posting saying "React.js" would stop matching an
-        // atom normalised to "react", and the pairs that broke would be the
-        // ones the dictionary was added to fix. The rule now lives in `shared`
+        // Delegated, not reimplemented. Bolum 31.5 adds an alias dictionary,
+        // and a dictionary applied on one side of a comparison is worse than
+        // none: a posting saying "React.js" would stop matching an atom
+        // normalised to "react", and the pairs that broke would be the ones
+        // the dictionary was added to fix. The rule now lives in `shared`
         // where ingestion reaches it too, which is what the paragraph above
         // has always required.
         return SkillNames.canonical(canonical);
@@ -310,11 +310,10 @@ public final class RelevanceScorer {
          * both.
          *
          * <p><strong>A term nobody carries still moves the numbers, and that
-         * is correct.</strong> Keyword coverage is a fraction of the terms
-         * (Bolum 19.2), so an unmatched one enlarges the denominator and every
-         * score falls together — which leaves the order exactly as it was.
-         * Emphasis re-orders a CV; it does not invent relevance that is not
-         * there.
+         * is correct.</strong> Keyword coverage is a fraction of the terms, so
+         * an unmatched one enlarges the denominator and every score falls
+         * together — which leaves the order exactly as it was. Emphasis
+         * re-orders a CV; it does not invent relevance that is not there.
          */
         PostingTarget(JobAnalysis posting, List<String> emphasised) {
             this(union(tagsOf(posting), emphasised),

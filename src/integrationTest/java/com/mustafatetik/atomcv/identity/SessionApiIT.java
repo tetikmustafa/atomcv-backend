@@ -20,7 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * The session endpoints against a real Redis (Bolum 40.1, § 35.7).
+ * The session endpoints against a real Redis.
  *
  * <p>This is also where {@code SessionStore}'s wiring is proved. The local
  * stand-in of {@code LocalDevSessions} answers a cookieless request without

@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Golden fixtures, as rows in memory (Bolum 51.3).
+ * Golden fixtures, as rows in memory.
  *
  * <p>Read by both consumers of the fixtures: the tests that guard the page
  * limit without a database, and the local seeder that puts something in one.
@@ -30,8 +30,8 @@ import java.util.UUID;
  * from drifting into different fixture formats.
  *
  * <p>Costs are applied by content hash rather than by variant id, because the
- * ids are minted here and differ every run while the hash is the content's own
- * (EK D.8.9).
+ * ids are minted here and differ every run while the hash is the content's
+ * own.
  */
 public final class GoldenProfileReader {
 

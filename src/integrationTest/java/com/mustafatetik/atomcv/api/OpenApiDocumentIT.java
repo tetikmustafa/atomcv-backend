@@ -15,8 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * The schema in git, against the schema the application publishes
- * (Bolum 35.8, Bolum 47.1).
+ * The schema in git, against the schema the application publishes.
  *
  * <p><strong>Why a committed file at all.</strong> Bolum 47.1 gives the
  * frontend a {@code contract-check} job that fetches

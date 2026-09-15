@@ -126,10 +126,10 @@ class GenerationTranslationTest {
     /**
      * <strong>An atom nobody ever wrote is not bought, and does not fail the
      * document either.</strong> There is nothing to translate from, so a call
-     * would be a call that cannot succeed; and it is the same atom
-     * {@code canBeWrittenIn} declines to ask, for the same reason — selection
-     * already counts an atom with no wording (Bolum 20.4), and a defect
-     * upstream should not decide what language a CV comes out in.
+     * would be a call that cannot succeed; and it is the same atom {@code
+     * canBeWrittenIn} declines to ask, for the same reason — selection already
+     * counts an atom with no wording, and a defect upstream should not decide
+     * what language a CV comes out in.
      */
     @Test
     void anatomWithNoWordingAtAllIsNotBoughtAndDoesNotFailTheDocument() {

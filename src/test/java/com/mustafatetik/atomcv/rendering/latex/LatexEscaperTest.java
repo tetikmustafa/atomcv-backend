@@ -8,9 +8,9 @@ import com.mustafatetik.atomcv.profile.domain.content.Run;
 import org.junit.jupiter.api.Test;
 
 /**
- * Escaping used to be a rule in a prompt (Bolum 22.3). These tests are why it
- * is code: every one of them is a document that would otherwise fail to
- * compile, or compile into something the user did not write.
+ * Escaping used to be a rule in a prompt. These tests are why it is code:
+ * every one of them is a document that would otherwise fail to compile, or
+ * compile into something the user did not write.
  */
 class LatexEscaperTest {
 
@@ -57,9 +57,9 @@ class LatexEscaperTest {
 
         // All three marks the page shows are bold since 2026-09-09. The
         // reference document sets its technologies bold, and extraction marks
-        // almost everything EMPHASIS (§ 31.5.1) rather than TECHNOLOGY — so
-        // italic was the page disagreeing with the document it copies.
-        // ORGANIZATION and any unknown mark still render as plain text.
+        // almost everything EMPHASIS rather than TECHNOLOGY — so italic was
+        // the page disagreeing with the document it copies. ORGANIZATION and
+        // any unknown mark still render as plain text.
         assertThat(LatexInlineRenderer.render(content))
                 .isEqualTo("Built \\textbf{ETL} for \\textbf{300K+ rows} — \\textbf{carefully}");
     }

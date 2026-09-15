@@ -54,8 +54,8 @@ public class QuotaService {
      * the ceiling. It is capped by the increment itself, not by the caller.
      */
     /**
-     * <p><strong>The subject and not a user</strong> (Adim 3.6). An account and
-     * an anonymous address are both things an allowance belongs to, and an
+     * <p><strong>The subject and not a user</strong>. An account and an
+     * anonymous address are both things an allowance belongs to, and an
      * overload for each read well until a test tried to stub one: with two
      * signatures, {@code any()} resolves to neither. One method that takes the
      * thing that actually varies is both clearer and testable.

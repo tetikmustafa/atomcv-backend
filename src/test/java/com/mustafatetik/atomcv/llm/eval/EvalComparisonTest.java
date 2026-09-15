@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * Two prompt versions, and what the difference is allowed to be (Bolum 53.6).
+ * Two prompt versions, and what the difference is allowed to be.
  *
  * <p>The distinction under test is the one a table cannot make on its own: a
  * blocker refuses whatever the predecessor did, and a regression is a

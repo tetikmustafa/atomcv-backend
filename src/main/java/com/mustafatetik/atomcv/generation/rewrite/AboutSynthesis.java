@@ -15,8 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * What the About paragraph would be written from (Bolum 21.7), decided without
- * an LLM.
+ * What the About paragraph would be written from, decided without an LLM.
  *
  * <p><strong>Ekleme — the About is synthesised only where one already
  * exists.</strong> Bolum 21.7 says how to write the paragraph and is silent on

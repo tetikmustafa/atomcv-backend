@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Whether the estimate is safe, measured rather than assumed (Bolum 33.3).
+ * Whether the estimate is safe, measured rather than assumed.
  *
  * <p>Bolum 33.3 says "estimate plus 8%" and this is the only thing that can
  * say whether eight is the right number. Without it {@code SAFE_BUDGET} would

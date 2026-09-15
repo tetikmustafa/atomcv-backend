@@ -34,7 +34,7 @@ public class AtomVariantRepository extends ProfileScopedRepository<AtomVariant> 
     }
 
     /**
-     * One atom's wording in one language, if it has one (Bolum 32.5).
+     * One atom's wording in one language, if it has one.
      *
      * <p>What the pivot asks before it pays for a leg: an atom that already
      * has an English wording is translated from it, and nobody is charged for

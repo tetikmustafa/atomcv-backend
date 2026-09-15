@@ -27,7 +27,7 @@ class RichContentTest {
         assertThat(RichContent.plain("").isEmpty()).isTrue();
     }
 
-    // ─── contentHash: only plainText may move it (Bolum 16.2) ───
+    // ─── contentHash: only plainText may move it ───
 
     @Test
     void hashIgnoresMarks() {

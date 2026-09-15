@@ -9,7 +9,7 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * What a call costs (Bolum 27.4).
+ * What a call costs.
  *
  * <p>Configuration and not code, for the same reason the model names are:
  * vendors change prices faster than a release cycle, and a deployment should

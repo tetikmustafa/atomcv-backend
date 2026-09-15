@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Faz E — from what was chosen to what is printed (Bolum 22).
+ * Faz E — from what was chosen to what is printed.
  *
  * <p>Pure and static: a profile, a selection and a template go in, a
  * {@link RenderRequest} comes out. It is the last place that knows an atom has
@@ -50,7 +50,7 @@ public final class RenderPhase {
     /**
      * Bolum 32 gives multilingual rendering its own vocabulary; until then the
      * two languages the product ships in are spelled out here, and anything
-     * else falls back to English (EK D.8.6).
+     * else falls back to English.
      */
     private static final Map<String, String> ONGOING = Map.of(
             "en", "Present",
@@ -92,7 +92,7 @@ public final class RenderPhase {
                 // so and paid for it; one it never opened would spend points
                 // the budget never accounted for. A degree line is the case
                 // this exists for — no bullets, and nothing dishonest about
-                // that (Bolum 20.2).
+                // that.
                 if (!bullets.isEmpty() || openedWithoutAtoms.contains(entry.entry().getId())) {
                     entries.add(renderable(entry.entry(), bullets, language));
                 }

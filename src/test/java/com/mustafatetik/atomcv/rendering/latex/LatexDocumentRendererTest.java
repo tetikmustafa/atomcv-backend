@@ -103,7 +103,7 @@ class LatexDocumentRendererTest {
                         + "processing \\textbf{300K+ rows}}")
                 .contains("\\section*{Experience}")
                 // The title, the dates on the right of the first line, and the
-                // employer with its place underneath (Bolum 22).
+                // employer with its place underneath.
                 .contains("\\resumeSubheading{Backend Engineer}{2023-03 – present}"
                         + "{Acme}{İstanbul}");
     }

@@ -19,8 +19,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Reading one generation's content under the permission its owner gave
- * (Bolum 48.4).
+ * Reading one generation's content under the permission its owner gave.
  *
  * <p><strong>A command, not an endpoint, and that is the whole design.</strong>
  * Absolute rule 3 leaves no way for one user's request to read another's rows,

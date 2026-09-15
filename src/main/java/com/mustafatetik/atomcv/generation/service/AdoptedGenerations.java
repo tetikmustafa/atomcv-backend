@@ -8,7 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
- * The CVs a session made follow it into the account (Adim 3.6, Bolum 9).
+ * The CVs a session made follow it into the account.
  *
  * <p><strong>Why this listens instead of being called.</strong> The profile
  * module publishes {@link AnonymousProfileAdopted} and knows nothing about

@@ -11,8 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * Vectors from a hash, so the pipeline runs without the 2.5 GB container
- * (Bolum 54.2).
+ * Vectors from a hash, so the pipeline runs without the 2.5 GB container.
  *
  * <p>Deterministic, which is the point: the same text is the same vector every
  * run, so a selection test that failed did so for a reason rather than by

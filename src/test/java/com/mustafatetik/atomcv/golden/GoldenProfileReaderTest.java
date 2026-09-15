@@ -11,7 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * The fixtures themselves (Bolum 51.3).
+ * The fixtures themselves.
  *
  * <p>Everything else in the golden set asserts on what the algorithms do with
  * these profiles. This asserts that the profiles are what they claim to be —
@@ -58,7 +58,7 @@ class GoldenProfileReaderTest {
     void oneAtomCarriesASecondWordingSoTheEditorHasSomethingToShow() {
         // Until this existed, no atom anywhere had more than one wording, so
         // the tabs, the promotion and the staleness badge had no data on
-        // either side of the contract — only mocks (EK D.6.8).
+        // either side of the contract — only mocks.
         var senior = GoldenProfileReader.read("senior_backend_tr", OWNER);
 
         assertThat(senior.profile().getEnabledLanguages()).contains("tr", "en");

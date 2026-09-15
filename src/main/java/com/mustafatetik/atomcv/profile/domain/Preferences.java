@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * How the user wants their CVs written and rendered, stored in
- * {@code profiles.preferences} (Bolum 14.3).
+ * How the user wants their CVs written and rendered, stored in {@code
+ * profiles.preferences}.
  *
  * @param writingStyle what the rewriting phase is told
  * @param defaults     what a generation assumes when the request says nothing
@@ -50,7 +50,7 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
     /**
      * @param cvLanguage {@code auto} means "follow the posting", resolved
      *                   before selection because length differs by language
-     *                   (Bolum 6.3)
+     *
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Defaults(

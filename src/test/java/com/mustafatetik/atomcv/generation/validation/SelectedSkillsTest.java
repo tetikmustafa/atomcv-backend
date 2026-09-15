@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * What the page claims, as opposed to what was considered (Bolum 23.3).
+ * What the page claims, as opposed to what was considered.
  *
  * <p>This is the difference between an honest report and a flattering one: Faz
  * B ranks the whole profile and Faz C prints a fraction of it, so a report

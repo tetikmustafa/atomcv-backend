@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The first adapter (Bolum 27.2): one key, many models.
+ * The first adapter: one key, many models.
  *
  * <p>Raw REST rather than a vendor SDK, as Bolum 5.4 decides — the abstraction
  * that an SDK would provide is {@link LlmProvider}, and taking the dependency
@@ -139,7 +139,7 @@ public class OpenRouterProvider implements LlmProvider {
 
     /**
      * Who may serve this call, which is a privacy statement before it is a
-     * routing one (EK C.1, Bolum 57).
+     * routing one.
      *
      * <p>The prompt is somebody's CV. OpenRouter's `data_collection` decides
      * whether a provider that keeps prompts for training may answer it, and the
@@ -204,7 +204,7 @@ public class OpenRouterProvider implements LlmProvider {
                     usage.path("prompt_tokens").asInt(),
                     usage.path("completion_tokens").asInt(),
                     // Reported only when the provider discounted a cached
-                    // prefix; absent is zero, not unknown (Bolum 27.4).
+                    // prefix; absent is zero, not unknown.
                     usage.path("prompt_tokens_details").path("cached_tokens").asInt(),
                     elapsedNanos / 1_000_000,
                     chargedBy(usage)));

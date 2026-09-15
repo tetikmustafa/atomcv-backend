@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.UUID;
 
 /**
- * Faz D, as the pipeline sees it (Bolum 21).
+ * Faz D, as the pipeline sees it.
  *
  * <p>A parameter rather than a dependency, for two reasons. General mode has
  * no posting, so it has nothing to adapt a sentence towards and passes
@@ -31,8 +31,7 @@ public interface ContentRewriter {
     }
 
     /**
-     * A re-run that keeps what Faz D already wrote and asks it nothing new
-     * (Bolum 24.1).
+     * A re-run that keeps what Faz D already wrote and asks it nothing new.
      *
      * <p>This is what makes a hand edit free. Switching one bullet off changes
      * neither the posting nor what the model would say about the bullets that

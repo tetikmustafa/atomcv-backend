@@ -53,7 +53,7 @@ class TemplateCustomizationCostKeyTest {
     }
 
     /**
-     * <strong>Colour is layer A: "no re-measurement" (Bolum 33.1).</strong>
+     * <strong>Colour is layer A: "no re-measurement".</strong>
      *
      * <p>It moves no box on the page. A key that included the accent would
      * throw away every measurement a person owns the first time they changed a

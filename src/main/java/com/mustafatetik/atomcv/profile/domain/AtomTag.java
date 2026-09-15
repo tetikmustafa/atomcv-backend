@@ -11,14 +11,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * One atom wearing one tag (Bolum 13).
+ * One atom wearing one tag.
  *
- * <p>An entity rather than an {@code @ElementCollection} on {@link Atom},
- * for the same reason the rest of the profile has none: a collection is loaded
+ * <p>An entity rather than an {@code @ElementCollection} on {@link Atom}, for
+ * the same reason the rest of the profile has none: a collection is loaded
  * lazily per atom, and Faz B reads the tags of every atom in a profile at
- * once. As a row it is one query for the whole profile
- * ({@code TagRepository.labelsByAtom}); as a collection it is one per atom,
- * and nothing about the code that does that looks wrong (Bolum 52.2).
+ * once. As a row it is one query for the whole profile ({@code
+ * TagRepository.labelsByAtom}); as a collection it is one per atom, and
+ * nothing about the code that does that looks wrong.
  *
  * <p><strong>It carries no {@code profile_id}.</strong> The table is keyed on
  * the two ids alone, so this is the one profile-owned thing that cannot

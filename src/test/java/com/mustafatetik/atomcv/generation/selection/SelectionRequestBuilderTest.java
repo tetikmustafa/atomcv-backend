@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The piece that reads a profile the way its owner marked it (Bolum 20.2).
+ * The piece that reads a profile the way its owner marked it.
  *
  * <p>Most of these are about a control the user set: an inactive row, a lock,
  * a minimum. Getting one of them wrong does not break a build — it quietly
@@ -420,7 +420,7 @@ class SelectionRequestBuilderTest {
     @Test
     void everyBulletCarriesItsEntry() {
         // The invariant SelectionRequest enforces: an atom under an entry has
-        // to name it, or the entry heading is never charged (EK D.8.5).
+        // to name it, or the entry heading is never charged.
         var profile = new Fixture();
         var section = profile.section(SectionKind.EXPERIENCE, 0);
         var entry = profile.entry(section, 0);
@@ -493,8 +493,7 @@ class SelectionRequestBuilderTest {
     @Test
     void twoReadsOfOneProfileBreakAHeadingTieTheSameWay() {
         // Entry ids are minted per import, so a tie-break that used one would
-        // reorder two identical degree lines between two reads of one CV
-        // (Bolum 20.3).
+        // reorder two identical degree lines between two reads of one CV.
         var first = withOneDegree();
         var second = withOneDegree();
 
@@ -589,8 +588,8 @@ class SelectionRequestBuilderTest {
         var section = fixture.section(SectionKind.EXPERIENCE, 0);
         var entry = fixture.entry(section, 0);
         entry.setAlwaysInclude(true);
-        // One bullet is enough to be worth printing, so only one is pinned
-        // and the source is what decides which (EK D.8.7).
+        // One bullet is enough to be worth printing, so only one is pinned and
+        // the source is what decides which.
         entry.setMinAtoms((short) 1);
         var ignored = fixture.bullet(section, entry, "Built ETL pipelines");
         var wanted = fixture.bullet(section, entry, "Ran the on-call rota");

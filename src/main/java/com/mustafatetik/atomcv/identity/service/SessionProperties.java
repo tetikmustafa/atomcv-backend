@@ -4,8 +4,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * How the {@code sid} cookie is written and how long a session lives
- * (Bolum 40.1, EK D.6.6).
+ * How the {@code sid} cookie is written and how long a session lives.
  *
  * @param ttl           Bolum 40.1's thirty days. Redis holds the authority; the
  *                      cookie's {@code Max-Age} only mirrors it, so a session

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Where somebody applied, and what happened (Bolum 55).
+ * Where somebody applied, and what happened.
  *
  * <p>A small resource, and deliberately so. It records what a person tells it
  * and argues with them about almost nothing: a company that reopens a closed
@@ -63,7 +63,7 @@ public class ApplicationService {
     }
 
     /**
-     * A partial update, guarded by {@code If-Match} (Bolum 35.6).
+     * A partial update, guarded by {@code If-Match}.
      *
      * <p>Null means "leave it", which is what makes this a PATCH rather than a
      * replacement: a screen that let somebody move one row from applied to

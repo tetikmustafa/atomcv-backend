@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 
 /**
- * Which GitHub account to read (Bolum 31.8).
+ * Which GitHub account to read.
  *
  * <p>Optional, and absent is the ordinary case: the profile's contact block
  * already carries the account a CV shows an employer, and asking again for

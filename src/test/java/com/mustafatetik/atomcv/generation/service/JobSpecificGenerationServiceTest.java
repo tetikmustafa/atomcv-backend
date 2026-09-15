@@ -171,7 +171,7 @@ class JobSpecificGenerationServiceTest {
      * The happy path, as far as the pipeline's door. What comes out the other
      * side is GenerationPipeline's own test; what matters here is that the
      * numbers selection works on are Faz B's and not the general-mode
-     * scorer's (Bolum 19.4).
+     * scorer's.
      */
     @Test
     void theselectionRequestCarriesFazBsScores() {
@@ -198,7 +198,7 @@ class JobSpecificGenerationServiceTest {
 
     /**
      * The bucket key is the user id, so an A/B experiment keeps one person on
-     * one prompt version across their generations (Bolum 53.3).
+     * one prompt version across their generations.
      */
     @Test
     void thepromptBucketIsTheUser() {
@@ -281,13 +281,13 @@ class JobSpecificGenerationServiceTest {
     }
 
     /**
-     * <strong>Duzeltme (Bolum 53.3).</strong> A prompt version belongs in the
-     * record when a request went out under it, and the record used to be keyed
-     * off whether Faz D had <em>changed</em> anything: a generation whose only
-     * accepted answer was the About paragraph recorded {@code bullet_rewrite}
-     * as having run, and a pass where both prompts ran and every answer was
-     * refused recorded neither. Both readings send whoever is chasing a
-     * regression to the wrong prompt.
+     * <strong>Duzeltme.</strong> A prompt version belongs in the record when a
+     * request went out under it, and the record used to be keyed off whether
+     * Faz D had <em>changed</em> anything: a generation whose only accepted
+     * answer was the About paragraph recorded {@code bullet_rewrite} as having
+     * run, and a pass where both prompts ran and every answer was refused
+     * recorded neither. Both readings send whoever is chasing a regression to
+     * the wrong prompt.
      */
     @Test
     void onlyThePromptsThatActuallyMadeACallAreRecorded() {

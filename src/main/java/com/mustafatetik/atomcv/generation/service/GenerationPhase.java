@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.service;
 import com.mustafatetik.atomcv.jobs.queue.JobProgress;
 
 /**
- * The phases a queued generation reports as it passes them (Bolum 30.6).
+ * The phases a queued generation reports as it passes them.
  *
  * <p><strong>The label is a translation key, not a sentence.</strong>
  * Bolum 30.6's example carries prose, and that is the one place it disagrees

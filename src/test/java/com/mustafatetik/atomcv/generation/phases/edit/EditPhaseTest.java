@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * What the phase does with what comes back (Bolum 24.2).
+ * What the phase does with what comes back.
  *
  * <p>The model is not the thing under test here — the answer-handling is.
  * Every case below is an answer a model can and will produce, and what matters

@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
- * What a page of this shape holds, from wherever it is known (Bolum 33.1).
+ * What a page of this shape holds, from wherever it is known.
  *
  * <p>{@link TemplateRegistry#capacityOf} answered this for the two templates
  * at their own settings and returned empty for everything else, which was the
@@ -67,8 +67,7 @@ public class Capacities {
     }
 
     /**
-     * A capacity to select against, measured if anybody has, estimated if not
-     * (Bolum 33.3).
+     * A capacity to select against, measured if anybody has, estimated if not.
      *
      * <p>This is where empty stops being an answer. A person who has just
      * moved a slider is waiting, the measurement is a compilation away, and

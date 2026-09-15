@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * The price table as the application actually reads it (Bolum 27.4).
+ * The price table as the application actually reads it.
  *
  * <p>{@link LlmPricingTest} checks the arithmetic against a table written for
  * the purpose. This checks the table in {@code application.yml}, because the
@@ -90,9 +90,9 @@ class PricingConfigurationTest {
 
     /**
      * The shipped routing policy, which is a privacy default before it is a
-     * cost one (EK C.1): the prompt is somebody's CV, and `deny` is what keeps
-     * it away from a provider that would keep it for training. Pinned here
-     * because it is the kind of default that changes by accident.
+     * cost one: the prompt is somebody's CV, and `deny` is what keeps it away
+     * from a provider that would keep it for training. Pinned here because it
+     * is the kind of default that changes by accident.
      */
     @Test
     void theshippedConfigurationDeniesTrainingAndPinsNothing() {

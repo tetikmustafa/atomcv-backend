@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * How far along a job is, as {@code jobs.progress} holds it and as the
- * {@code phase} SSE event carries it (Bolum 30.6).
+ * How far along a job is, as {@code jobs.progress} holds it and as the {@code
+ * phase} SSE event carries it.
  *
  * <p>One shape for the column and the event, because they are the same fact:
  * the row is what a reconnecting client is caught up from, and a second shape

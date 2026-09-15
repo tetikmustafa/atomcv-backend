@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The reason a model cannot invent an atom (Bolum 24.2).
+ * The reason a model cannot invent an atom.
  *
  * <p>The ids never leave this object. What the model is shown is numbers, what
  * it answers with is numbers, and a number out of range is obviously out of

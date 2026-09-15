@@ -7,7 +7,7 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import java.util.List;
 
 /**
- * What one call reads out of a CV (Bolum 31.4).
+ * What one call reads out of a CV.
  *
  * <p><strong>One call, both languages.</strong> Bolum 31.4 is explicit that the
  * English rendering is produced here and not by a second translation step: the
@@ -36,7 +36,7 @@ import java.util.List;
  * @param detectedLanguage   ISO 639-1, the language the CV is written in
  * @param languageConfidence how sure the model is; below the floor in
  *                           {@link ProfileStructuring} the user is asked rather
- *                           than guessed at (Bolum 31.10)
+ *  than guessed at
  * @param contact            the header block, mapped onto the domain's own
  *                           record by Bolum 31.5
  * @param sections           the document's structure, in the order it was read
@@ -193,7 +193,7 @@ public record ExtractedProfile(
     }
 
     /**
-     * Something the model could not settle (Bolum 31.4, Bolum 31.6).
+     * Something the model could not settle.
      *
      * @param code   a closed vocabulary, so the frontend resolves one ICU key
      *               with a {@code select} rather than printing a server

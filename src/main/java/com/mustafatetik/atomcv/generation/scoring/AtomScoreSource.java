@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Where selection gets its scores (Bolum 19.4).
+ * Where selection gets its scores.
  *
  * <p>The one thing that differs between a CV written against a posting and a
  * general one. Faz B and Faz C were separated exactly so that this could be a
@@ -25,7 +25,7 @@ public interface AtomScoreSource {
     double scoreOf(Atom atom, Entry entry);
 
     /**
-     * What an entry with no atoms at all is worth (Bolum 20.2).
+     * What an entry with no atoms at all is worth.
      *
      * <p>A degree line competes for the page against bullets, so it needs a
      * number on the same scale. There is no atom to ask, and against a posting
@@ -61,8 +61,8 @@ public interface AtomScoreSource {
     }
 
     /**
-     * No posting to be relevant to: rank on what the profile says about itself
-     * (Bolum 19.4).
+     * No posting to be relevant to: rank on what the profile says about
+     * itself.
      *
      * @param today a parameter rather than a call to {@code now()}, because a
      *              scorer that reads the clock cannot be tested for the
@@ -86,7 +86,7 @@ public interface AtomScoreSource {
     }
 
     /**
-     * The scores a finished generation already paid for (Bolum 24.1).
+     * The scores a finished generation already paid for.
      *
      * <p>Faz G re-runs the pipeline <em>from Faz C</em>, which is the whole
      * reason an edit is cheap: Faz A read the posting once and Faz B ranked
@@ -96,8 +96,8 @@ public interface AtomScoreSource {
      * chosen or rejected — with the score it competed on.
      *
      * <p>Entry headings are in the same map and need no special case: a
-     * heading competes as a candidate whose id <em>is</em> the entry's
-     * (Bolum 20.2), so it is stored under that id and looked up under it.
+     * heading competes as a candidate whose id <em>is</em> the entry's, so it
+     * is stored under that id and looked up under it.
      *
      * <p><strong>Zero for anything the snapshot never scored.</strong> An atom
      * written after the generation was made was not part of this CV's world

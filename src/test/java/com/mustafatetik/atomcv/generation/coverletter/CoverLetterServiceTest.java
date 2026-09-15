@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * The one phase in Faz D that can answer with a failure (Bolum 34).
+ * The one phase in Faz D that can answer with a failure.
  *
  * <p>Everywhere else there is an original to fall back on. Here there is not,
  * so the two outcomes are an honest letter and a refusal — and the refusal is

@@ -25,7 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * An anonymous session's profile, as rows (Bolum 9).
+ * An anonymous session's profile, as rows.
  *
  * <p><strong>Sapma, and the deleted test said so first.</strong> Bolum 14's step
  * 9 carries a privacy test — "DB'ye hiçbir satır yazmamalı" — and this file
@@ -183,9 +183,9 @@ class AnonymousProfileIT extends AbstractIntegrationTest {
     }
 
     /**
-     * A second upload replaces the first rather than being added to it
-     * (§ 31.6.3): a session has one document, and the person who uploads twice
-     * changed their mind two minutes ago.
+     * A second upload replaces the first rather than being added to it: a
+     * session has one document, and the person who uploads twice changed their
+     * mind two minutes ago.
      */
     @Test
     void asecondUploadReplacesTheFirst() {

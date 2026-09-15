@@ -3,10 +3,10 @@ package com.mustafatetik.atomcv.llm.providers;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * OpenAI's own endpoint, not the broker's (Bolum 27.2).
+ * OpenAI's own endpoint, not the broker's.
  *
  * @param apiKey  {@code OPENAI_API_KEY}; blank means the provider is skipped
- *                silently (Bolum 27.3), which is the normal state of a
+ *  silently, which is the normal state of a
  *                deployment that has configured two vendors out of five
  * @param baseUrl overridable so a test can point it at a socket it owns
  */

@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * How this instance works the queue (Bolum 30.4).
+ * How this instance works the queue.
  *
  * @param enabled        false leaves the queue alone. Integration tests drive
  *                       the worker by hand, and a scheduler firing underneath

@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * One label in a profile's own vocabulary (Bolum 13, Bolum 19.2).
+ * One label in a profile's own vocabulary.
  *
  * <p>Tags belong to a profile rather than to the installation: two users may
  * both write "payments" and mean different things, and a shared dictionary

@@ -180,8 +180,8 @@ class AnthropicProviderTest {
 
     /**
      * A model that answered in prose rather than calling the tool is a schema
-     * mismatch — retried in place (Bolum 27.3), not walked past to a vendor
-     * that would do the same thing.
+     * mismatch — retried in place, not walked past to a vendor that would do
+     * the same thing.
      */
     @Test
     void ananswerWithNoToolCallIsASchemaMismatch() {

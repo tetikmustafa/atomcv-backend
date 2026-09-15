@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Keeps a profile's measured render costs current (Bolum 26.5).
+ * Keeps a profile's measured render costs current.
  *
  * <p>Lives in {@code rendering} rather than in {@code profile} on purpose:
  * rendering already knows about content, and having profile reach back into

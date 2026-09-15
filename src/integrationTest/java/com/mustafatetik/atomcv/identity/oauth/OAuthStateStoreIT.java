@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * The {@code state} parameter against a real Redis (Bolum 40.6).
+ * The {@code state} parameter against a real Redis.
  *
  * <p>In {@code identity.oauth} so the store can be built with a fixed clock,
  * and because {@code redeem} is the package's own contract.

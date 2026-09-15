@@ -28,8 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * The whole round trip, against a provider that answers on a real socket
- * (Bolum 40.6).
+ * The whole round trip, against a provider that answers on a real socket.
  *
  * <p>The endpoint overrides on {@code OAuthProperties.Registration} exist for
  * this: with them the adapters talk to a stub, so the flow the user actually

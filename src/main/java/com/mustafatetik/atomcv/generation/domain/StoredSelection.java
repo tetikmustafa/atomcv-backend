@@ -91,16 +91,16 @@ public record StoredSelection(
     }
 
     /**
-     * Every candidate this generation weighed, chosen or not, with the score it
-     * competed on (Bolum 20.5).
+     * Every candidate this generation weighed, chosen or not, with the score
+     * it competed on.
      *
      * <p>What Faz G re-runs against. Bolum 24.1 restarts the pipeline at Faz C,
      * so the scores cannot be recomputed without doing the thing that rule
      * forbids — they are read back out of here instead.
      *
-     * <p>Entry headings need no special case: a heading competes as a candidate
-     * whose id <em>is</em> the entry's (Bolum 20.2), so it is already in
-     * {@code selected} or {@code rejectedEntries} under that id.
+     * <p>Entry headings need no special case: a heading competes as a
+     * candidate whose id <em>is</em> the entry's, so it is already in {@code
+     * selected} or {@code rejectedEntries} under that id.
      *
      * <p>Ordered, because it is walked to build a selection request and Bolum
      * 19.6 wants two runs of one input to produce one request.

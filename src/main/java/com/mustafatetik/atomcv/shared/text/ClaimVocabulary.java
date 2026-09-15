@@ -65,13 +65,13 @@ public final class ClaimVocabulary {
      * Names the answer introduced that none of its sources account for.
      *
      * <p>{@link #of} can only refuse a claim it recognises, and what it
-     * recognises is a 74-line alias file plus the posting. A technology outside
-     * both is invisible to it, and that is not a hypothetical: a summary
-     * reached a real CV saying "modern caching and message queues (Redis,
-     * Kafka)" where Redis was on the page and Kafka was nowhere in the profile.
-     * Redis was checked and allowed; Kafka was never checked at all. Every
-     * {@code UNSUPPORTED_CLAIM} test in the suite used Kubernetes, which is in
-     * the file — so the hole had never been seen (§ 51.7).
+     * recognises is a 74-line alias file plus the posting. A technology
+     * outside both is invisible to it, and that is not a hypothetical: a
+     * summary reached a real CV saying "modern caching and message queues
+     * (Redis, Kafka)" where Redis was on the page and Kafka was nowhere in the
+     * profile. Redis was checked and allowed; Kafka was never checked at all.
+     * Every {@code UNSUPPORTED_CLAIM} test in the suite used Kubernetes, which
+     * is in the file — so the hole had never been seen.
      *
      * <p>This asks the question from the other side, where it is closed: not
      * "does the answer mention something I know?" but "does it name something

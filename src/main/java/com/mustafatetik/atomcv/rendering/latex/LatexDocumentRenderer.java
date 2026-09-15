@@ -15,7 +15,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 /**
- * The LaTeX renderer (Bolum 22).
+ * The LaTeX renderer.
  *
  * <p>Both documents begin with the same call to {@link PreambleBuilder}, and a
  * test asserts they still do. Everything that follows is deterministic: the
@@ -28,7 +28,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     /**
      * The measurement box. Not {@code \mbox}: that is already a LaTeX command
      * and {@code \newsavebox{\mbox}} stops the run with "already defined" —
-     * which is what Bolum 22.4's snippet does (EK D.8.1).
+     * which is what Bolum 22.4's snippet does.
      */
     private static final String BOX = "\\measurebox";
 
@@ -64,7 +64,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     }
 
     /**
-     * A document that prints nothing and reports heights (Bolum 22.4).
+     * A document that prints nothing and reports heights.
      *
      * <p>Three things have to match the final document or the numbers are
      * fiction: the preamble, the width the content is set at, and the
@@ -100,7 +100,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             // An \item, and the box set at \linewidth. Bolum 22.4 opens an
             // itemize with neither: LaTeX stops at "perhaps a missing \item",
             // and \textwidth would measure content at a width no bullet ever
-            // gets (EK D.8.3).
+            // gets.
             //
             // The environment and the width are the same question: \linewidth
             // is whatever the enclosing lists have left of \textwidth. A bullet
@@ -114,15 +114,16 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             // both set their contents that way and a measurement taken at the
             // document's size describes lines a page a fifth taller would hold.
             //
-            // \raggedright inside the box, because \parbox does not inherit the
-            // paragraph shape it is written in: LaTeX runs \@parboxrestore on
-            // the way in, which sets \rightskip to zero and hands the box back
-            // justified. The page is \raggedright and cannot compress a line;
-            // a justified box can squeeze eighteen interword spaces by a third
-            // each, so a bullet a few points too long measured as one line and
-            // set as two. Forty of them made a one-page promise a two-page PDF
-            // (EK D.8.9) — and it took bold text to show, because only marked
-            // runs pushed the line far enough past \linewidth to matter.
+            // \raggedright inside the box, because \parbox does not inherit
+            // the paragraph shape it is written in: LaTeX runs \@parboxrestore
+            // on the way in, which sets \rightskip to zero and hands the box
+            // back justified. The page is \raggedright and cannot compress a
+            // line; a justified box can squeeze eighteen interword spaces by a
+            // third each, so a bullet a few points too long measured as one
+            // line and set as two. Forty of them made a one-page promise a
+            // two-page PDF — and it took bold text to show, because only
+            // marked runs pushed the line far enough past \linewidth to
+            // matter.
             boolean nested = item.shape() == CapacityModel.RowShape.ENTRY_BULLET;
             if (nested) {
                 // The bare \item is not decoration. LaTeX refuses a list opened
@@ -153,7 +154,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     }
 
     /**
-     * A document that reports the template's own geometry (Bolum 26.4).
+     * A document that reports the template's own geometry.
      *
      * <p>It prints probes and asks TeX where it is on the page after each one:
      * the difference between two positions is what that piece of furniture
@@ -365,7 +366,7 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     }
 
     /**
-     * Prose under a heading, with no marker in front of it (Bolum 33.4).
+     * Prose under a heading, with no marker in front of it.
      *
      * <p>One {@code \resumeItem} per paragraph, however long the paragraph is
      * and however many sentences it holds — a summary is a block, and nothing
@@ -403,8 +404,8 @@ public class LatexDocumentRenderer implements DocumentRenderer {
             all.addAll(entry.atoms());
         }
         // A row with nothing left in it is a category the Tech Stack editor
-        // emptied (Bolum 33.4). Printing it would be a bold label, a colon and
-        // a blank, and it would still cost a line.
+        // emptied. Printing it would be a bold label, a colon and a blank, and
+        // it would still cost a line.
         all.removeIf(RichContent::isEmpty);
         if (all.isEmpty()) {
             return;

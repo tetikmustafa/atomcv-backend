@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * Following a queued piece of work (EK D.6.4).
+ * Following a queued piece of work.
  *
  * <p>Every read is scoped to the acting user. The job id is one of the two
  * identifiers this system hands to a browser, and a status endpoint that did
@@ -103,8 +103,8 @@ public class JobController {
     @GetMapping(path = "/{jobId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@PathVariable UUID jobId) {
         // The ownership check comes first and it is the whole IDOR defense on
-        // this endpoint (Bolum 30.6): a stream carries the job's error, which
-        // names what a profile is missing.
+        // this endpoint: a stream carries the job's error, which names what a
+        // profile is missing.
         Job job = jobs.findById(JobOwner.of(currentUser), jobId)
                 .orElseThrow(() -> ApiException.of(ErrorCode.RESOURCE_NOT_FOUND));
 

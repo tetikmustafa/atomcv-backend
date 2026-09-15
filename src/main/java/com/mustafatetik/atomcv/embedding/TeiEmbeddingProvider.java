@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * BGE-M3 behind HuggingFace's text-embeddings-inference (Bolum 28.1).
+ * BGE-M3 behind HuggingFace's text-embeddings-inference.
  *
  * <p>Self-hosted rather than an API: the text is the user's own CV, and
  * Bolum 28.1's first reason for the whole arrangement is that it never leaves.

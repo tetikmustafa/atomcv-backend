@@ -52,7 +52,7 @@ public record RichContent(List<Run> runs) {
      * <p>Deliberately computed over the plain text and not over the run
      * structure: re-marking a sentence leaves its meaning and its rendered
      * width untouched, so it must not invalidate the stored embedding or the
-     * measured render costs (Bolum 16.2).
+     * measured render costs.
      */
     @com.fasterxml.jackson.annotation.JsonIgnore
     public String contentHash() {

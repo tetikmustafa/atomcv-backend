@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Named appearance settings, kept (Bolum 33.2, Bolum 35.2).
+ * Named appearance settings, kept.
  *
  * <p><strong>A ceiling, because this is a list somebody scrolls.</strong>
  * Twenty is far more sets than anyone keeps and it is the difference between a

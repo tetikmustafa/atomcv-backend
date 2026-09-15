@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @param baseUrl        the container's address. In development the port is
  *                       published; in production it is a name on the isolated
- *                       network (Bolum 29.3).
+ *  network.
  * @param requestTimeout longer than the container's own compile timeout, so a
  *                       document that runs long comes back as TeX's answer
  *                       rather than as a dropped connection

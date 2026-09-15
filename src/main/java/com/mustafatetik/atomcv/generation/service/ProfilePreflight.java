@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Is there a profile here at all (Bolum 25.2)?
+ * Is there a profile here at all?
  *
  * <p>The first and cheapest of the gates design principle 5 asks for, and the
  * only one both generation modes share. In job-specific mode it runs

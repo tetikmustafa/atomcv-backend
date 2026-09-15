@@ -62,7 +62,7 @@ class RetentionSweeperIT extends AbstractIntegrationTest {
                 UUID.class, LocalDevUser.DEV_USER_ID);
     }
 
-    // -- the anonymous pass (Bolum 9) --------------------------------------
+    // -- the anonymous pass --------------------------------------
 
     /**
      * <strong>The sapma's other half.</strong> An anonymous profile is a row

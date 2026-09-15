@@ -30,7 +30,7 @@ public interface CurrentUser {
     Optional<UserContext> find();
 
     /**
-     * The anonymous session behind this request, when there is one (Adim 3.6).
+     * The anonymous session behind this request, when there is one.
      *
      * <p>A third question, and it is not the negation of {@link #find()}:
      * "nobody is signed in" and "somebody is here without an account" are
@@ -47,14 +47,14 @@ public interface CurrentUser {
     }
 
     /**
-     * When the anonymous session behind this request ends (Bolum 9, EK D.6.6).
+     * When the anonymous session behind this request ends.
      *
      * <p><strong>Part of "who is calling", which is why it is here.</strong>
      * Anything an anonymous session owns has to stop existing when the session
-     * does — its profile above all (§ 51.6.1) — so whatever writes that has to
-     * know the moment. Deriving it instead, from a TTL plus a clock, would make
-     * every writer a second place the window is decided: two hours from *when*
-     * is the session's own answer, it slides with activity, and a copy of the
+     * does — its profile above all — so whatever writes that has to know the
+     * moment. Deriving it instead, from a TTL plus a clock, would make every
+     * writer a second place the window is decided: two hours from *when* is
+     * the session's own answer, it slides with activity, and a copy of the
      * rule would eventually slide differently.
      *
      * <p>It also keeps the module graph honest. The profile module needs this

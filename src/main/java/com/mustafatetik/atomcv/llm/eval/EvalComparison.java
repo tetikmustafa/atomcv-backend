@@ -5,7 +5,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Two prompt versions, side by side (Bolum 53.6).
+ * Two prompt versions, side by side.
  *
  * <p><strong>The delta is what decides, not the rate.</strong> A version
  * holding numbers at 99.2% is neither good nor bad on its own; the same

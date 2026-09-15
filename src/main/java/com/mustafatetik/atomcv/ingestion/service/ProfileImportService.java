@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 /**
- * An uploaded CV, read here and finished later (Bolum 31.1, Bolum 31.2).
+ * An uploaded CV, read here and finished later.
  *
  * <p><strong>The reading is synchronous and the rest is not</strong>, and the
  * split is Bolum 31.10's first three rows. An encrypted PDF, a scanned one and
@@ -61,15 +61,15 @@ public class ProfileImportService {
 
     /**
      * @param owner          who is asking — an account or an anonymous session
-     *                       (Adim 3.6). Both may upload a CV; where the result
+     * . Both may upload a CV; where the result
      *                       is kept is the only difference, and the job carries
      *                       the answer.
      * @param allowance      whose daily ceiling this spends. An account's is
      *                       its own; an anonymous caller's is their address,
      *                       because a session is a cookie and a cookie is
      *                       something anybody can throw away and ask for
-     *                       another (Bolum 44.1).
-     * @param idempotencyKey the request header, or null (Bolum 30.7). An upload
+     *  another.
+     * @param idempotencyKey the request header, or null. An upload
      *                       is the one request a flaky connection makes twice
      *                       most easily, and the second one would spend a
      *                       second unit of the smallest allowance in the
@@ -118,8 +118,7 @@ public class ProfileImportService {
     }
 
     /**
-     * The sixth synchronous refusal (Bolum 31.6.2), and the one that had been
-     * missing.
+     * The sixth synchronous refusal, and the one that had been missing.
      *
      * <p>{@code PROFILE_ALREADY_EXISTS} was in the catalogue and nothing
      * produced it: a second CV was <em>added</em> to the profile that was
@@ -134,8 +133,8 @@ public class ProfileImportService {
      * ship the silent duplication this refusal exists to stop.
      *
      * <p><strong>Accounts only.</strong> An anonymous upload writes the whole
-     * ephemeral document at once (§ 31.6.3), so a second one replaces rather
-     * than doubles and there is nothing to warn about.
+     * ephemeral document at once, so a second one replaces rather than doubles
+     * and there is nothing to warn about.
      */
     private void refuseASecondProfile(JobOwner owner, boolean replace) {
         if (replace || owner.isAnonymous()) {

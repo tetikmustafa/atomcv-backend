@@ -71,8 +71,8 @@ class WeighedLinesTest {
 
     /**
      * Two reads of one generation produce one order. A list that moved between
-     * them would renumber a model's prompt (Bolum 53.3) and slide a toggle
-     * under somebody's cursor.
+     * them would renumber a model's prompt and slide a toggle under somebody's
+     * cursor.
      */
     @Test
     void tiedScoresAreBrokenTheSameWayEveryTime() {
@@ -92,7 +92,7 @@ class WeighedLinesTest {
 
     /**
      * What the CV printed, not what the profile says today: Faz D rewrote this
-     * line, and the person is looking at the rewrite (EK D.6.3).
+     * line, and the person is looking at the rewrite.
      */
     @Test
     void apageLineCarriesTheWordingFazDWroteForIt() {

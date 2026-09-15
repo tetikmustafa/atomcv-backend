@@ -168,7 +168,7 @@ class ChatCompletionsProviderTest {
      * the cached prefix under {@code prompt_tokens_details.cached_tokens} and
      * DeepSeek reports it as {@code prompt_cache_hit_tokens}. An adapter
      * reading one would price a cached call at the other vendor as fresh —
-     * quietly, and always in the expensive direction (Bolum 27.4).
+     * quietly, and always in the expensive direction.
      */
     @Test
     void thecachedPrefixIsReadUnderEitherVendorsName() {

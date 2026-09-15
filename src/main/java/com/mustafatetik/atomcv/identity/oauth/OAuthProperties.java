@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Client credentials per provider, and the address the provider sends the
- * browser back to (Bolum 40.6).
+ * browser back to.
  *
  * <p><strong>A provider with no credentials is absent, not broken.</strong>
  * Bolum 27.3 already established this shape for LLM vendors and it holds here

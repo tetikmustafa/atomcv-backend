@@ -14,8 +14,8 @@ import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.stereotype.Component;
 
 /**
- * A refused CSRF token leaves the API in the same shape as every other failure
- * (EK D.6.6, Bolum 35.4).
+ * A refused CSRF token leaves the API in the same shape as every other
+ * failure.
  *
  * <p>It needs its own handler because the rejection happens in a servlet
  * filter, below the dispatcher: {@code ProblemDetailAdvice} never sees it, and

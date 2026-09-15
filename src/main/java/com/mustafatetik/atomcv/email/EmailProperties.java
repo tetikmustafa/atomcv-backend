@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Who the mail comes from, and the key that decides how it goes.
  *
  * @param from      the envelope sender. It has to live under the verified
- *                  subdomain (Adim 3.2) — SPF and DKIM are published there and
+ *  subdomain — SPF and DKIM are published there and
  *                  nowhere else, so a From on the apex fails both
  * @param fromName  what an inbox shows instead of the address
  * @param replyTo   optional; absent means replies go to {@code from}
@@ -29,7 +29,7 @@ public record EmailProperties(
     }
 
     /**
-     * Where a person lands to turn the optional post off (Bolum 57.7).
+     * Where a person lands to turn the optional post off.
      *
      * <p>A page on the frontend rather than an endpoint here, and Bolum 40.3
      * is the reason: a gateway that fetches every link in a message would

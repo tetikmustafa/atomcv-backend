@@ -16,9 +16,9 @@ public enum Tone {
     TECHNICAL;
 
     /**
-     * Lowercase in JSON too: the tone also appears inside
-     * {@code profiles.preferences} (Bolum 14.3), which Jackson writes, not the
-     * JPA converter below.
+     * Lowercase in JSON too: the tone also appears inside {@code
+     * profiles.preferences}, which Jackson writes, not the JPA converter
+     * below.
      */
     @JsonValue
     public String wireValue() {

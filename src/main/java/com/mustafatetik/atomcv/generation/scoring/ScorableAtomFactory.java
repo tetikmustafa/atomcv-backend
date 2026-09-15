@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * A profile tree, as the values Faz B scores (Bolum 19.2).
+ * A profile tree, as the values Faz B scores.
  *
  * <p>{@link RelevanceScorer} is a pure function of {@link ScorableAtom}s and
  * this is the piece that knows where those come from — the tree for the atoms
@@ -26,10 +26,9 @@ import java.util.UUID;
  * a scorer.
  *
  * <p>Pure and deterministic: no clock, no session, and the tree's own order is
- * preserved (Bolum 19.6). It also computes each atom's general-mode score
- * (Bolum 19.4) — the thing that decides between two atoms whose relevance is
- * indistinguishable — because that needs a date and the scorer must not have
- * one.
+ * preserved. It also computes each atom's general-mode score — the thing that
+ * decides between two atoms whose relevance is indistinguishable — because
+ * that needs a date and the scorer must not have one.
  */
 public final class ScorableAtomFactory {
 
@@ -101,11 +100,11 @@ public final class ScorableAtomFactory {
      * unrelated role that happens to use the same verb.
      *
      * <p>Read from the English wording when there is one, because the
-     * posting's keywords are always English (Bolum 18.2) and a Turkish
-     * sentence would match none of them. When there is not, the primary
-     * wording is used anyway rather than nothing: technology names and proper
-     * nouns are spelled the same in both languages, and they are most of what
-     * a keyword list contains.
+     * posting's keywords are always English and a Turkish sentence would match
+     * none of them. When there is not, the primary wording is used anyway
+     * rather than nothing: technology names and proper nouns are spelled the
+     * same in both languages, and they are most of what a keyword list
+     * contains.
      */
     private static List<String> contentTokens(AtomNode node, Entry entry) {
         Optional<AtomVariant> wording = node.variantIn(EMBEDDING_LANGUAGE)

@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 
 /**
- * A partial update: a field left out is left alone (Bolum 35.6).
+ * A partial update: a field left out is left alone.
  *
  * <p>Every column behind these is {@code NOT NULL}, so "absent" and "set to
  * null" never have to be told apart here. Entries, where a date or an

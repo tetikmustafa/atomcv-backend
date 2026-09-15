@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
- * One sign-in link, split in two (Bolum 40.2).
+ * One sign-in link, split in two.
  *
  * <p><strong>The split is a timing defence.</strong> Looking a token up by the
  * whole secret means comparing it against every row until one matches, and how

@@ -8,12 +8,12 @@ import java.util.Locale;
 
 /**
  * Where a job is. Stored in {@code jobs.status}, which carries a {@code CHECK}
- * over exactly these five values (Bolum 13).
+ * over exactly these five values.
  *
  * <p>{@link #COMPLETED}, {@link #FAILED} and {@link #CANCELLED} are terminal.
  * The progress stream ends on one of them, and a stream that closes without
  * one leaves the user's screen spinning — which is why the status endpoint
- * exists as a fallback (EK D.6.4).
+ * exists as a fallback.
  */
 public enum JobStatus {
 

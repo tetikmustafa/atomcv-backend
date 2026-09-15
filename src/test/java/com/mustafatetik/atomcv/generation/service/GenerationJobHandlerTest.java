@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Where the queue meets the pipeline (Bolum 30, Bolum 14).
+ * Where the queue meets the pipeline.
  *
  * <p>Two things are worth proving here and nowhere else: that a generation
  * record describes the run that actually happened rather than a re-derived
@@ -115,8 +115,8 @@ class GenerationJobHandlerTest {
 
     /**
      * The snapshot is what a download re-renders from, so it has to carry how
-     * to draw as well as what to draw (EK D.6.3). An id pointing at a
-     * customization row would resolve to nothing — there are no rows yet.
+     * to draw as well as what to draw. An id pointing at a customization row
+     * would resolve to nothing — there are no rows yet.
      */
     @Test
     void thesnapshotCarriesEnoughToDrawThePageAgain() {
@@ -154,7 +154,7 @@ class GenerationJobHandlerTest {
     /**
      * Bolum 28.4: a week of generations scored without vectors is otherwise
      * indistinguishable from a prompt regression, and the prompt version has
-     * to be the one that ran rather than the configured default (Bolum 53.3).
+     * to be the one that ran rather than the configured default.
      */
     @Test
     void theengineVersionNamesWhatActuallyRan() {

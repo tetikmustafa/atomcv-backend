@@ -163,8 +163,8 @@ public class AnthropicProvider implements LlmProvider {
                     usage.path("input_tokens").asInt(),
                     usage.path("output_tokens").asInt(),
                     // Prompt caching is reported in two halves here; the read
-                    // is the discounted one (Bolum 27.4). The write is charged
-                    // above list and is already inside input_tokens.
+                    // is the discounted one. The write is charged above list
+                    // and is already inside input_tokens.
                     usage.path("cache_read_input_tokens").asInt(),
                     elapsedNanos / 1_000_000,
                     null));

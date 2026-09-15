@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
- * Faz G's edit loop, from Faz C onwards (Bolum 24.1).
+ * Faz G's edit loop, from Faz C onwards.
  *
  * <p>The rule the whole design rests on: <strong>an edit applies to the
  * selection state, never to the rendered output.</strong> Twenty edits and the
@@ -93,9 +93,9 @@ public class GenerationRerunService {
         GenerationOptions options = new GenerationOptions(
                 maxPagesOf(parent), snapshot.language(), snapshot.customization());
 
-        // Measured if anybody has compiled this geometry, estimated if not
-        // (Bolum 33.3). Empty now means only that the template itself has no
-        // measured default, which would be estimating from nothing.
+        // Measured if anybody has compiled this geometry, estimated if not.
+        // Empty now means only that the template itself has no measured
+        // default, which would be estimating from nothing.
         Capacities.Resolved resolved = capacities.resolve(options.customization())
                 .orElseThrow(() -> new IllegalStateException(
                         "This template has never been calibrated; measure it first"));
@@ -111,12 +111,12 @@ public class GenerationRerunService {
         // No measurement pass. Every atom the snapshot knows about was costed
         // when the parent was made, and the cost lives on the variant rather
         // than on the row -- measuring again would buy one compilation to
-        // learn what is already in the table (Bolum 26.2).
+        // learn what is already in the table.
         ProfileTree tree = assembler.load(profile);
 
         // One phase, because from here it is one piece of work: Faz C, the
         // render and the compile loop. RENDERING is the phase that carries
-        // "C" (Bolum 30.6), and an edit never reaches the three before it.
+        // "C", and an edit never reaches the three before it.
         progress.report(GenerationPhase.RENDERING.at(40));
 
         var built = SelectionRequestBuilder.build(tree, options.customization(), capacity,
@@ -151,7 +151,7 @@ public class GenerationRerunService {
                         // Recomputed rather than copied: the edit changed what
                         // is on the page, and a report carried over from the
                         // parent would credit the user for a skill they just
-                        // removed (Bolum 23.3).
+                        // removed.
                         parent.getJdAnalysis() == null
                                 ? null
                                 : FitReport.of(parent.getJdAnalysis(),

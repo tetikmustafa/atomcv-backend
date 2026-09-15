@@ -9,7 +9,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import org.junit.jupiter.api.Test;
 
 /**
- * The stand-in for a measurement (Bolum 26.5).
+ * The stand-in for a measurement.
  *
  * <p>Its accuracy is checked against the real compiler in
  * {@code RenderCostMeasurementIT}; what is checked here is the shape it has to
@@ -38,9 +38,9 @@ class RenderCostEstimatorTest {
 
     @Test
     void theCostGrowsInWholeLines() {
-        // Points, not lines, is how the budget is summed (Bolum 26.3) — but a
-        // line break is a step, and an estimate that pretended otherwise would
-        // be claiming a precision it does not have.
+        // Points, not lines, is how the budget is summed — but a line break is
+        // a step, and an estimate that pretended otherwise would be claiming a
+        // precision it does not have.
         double step = CAPACITY.baselineSkipPt() * RenderCostEstimator.SAFETY_MARGIN;
 
         assertThat(estimate("x".repeat(400)) - estimate("x".repeat(200)))

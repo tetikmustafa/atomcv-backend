@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.generation.coverletter;
 import java.util.List;
 
 /**
- * Everything a covering letter may be written from (Bolum 34.2).
+ * Everything a covering letter may be written from.
  *
  * <p><strong>The CV's protection was selection; this has none.</strong> A CV
  * is assembled from atoms a person wrote, so there is nothing in it to
@@ -29,7 +29,7 @@ import java.util.List;
  *                       computed from the entries' dates. Bolum 34.4 calls a
  *                       claim about this the most common fabrication
  * @param companyNote    what the person themselves knows about this employer
- *                       (Bolum 34.5). User content, and the only source of
+ * . User content, and the only source of
  *                       personalisation — the alternative is a model inventing
  *                       admiration for a company it has never heard of
  * @param language       the language to write in

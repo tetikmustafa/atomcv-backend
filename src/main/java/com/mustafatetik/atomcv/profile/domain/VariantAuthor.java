@@ -7,9 +7,9 @@ import jakarta.persistence.Converter;
 import java.util.Locale;
 
 /**
- * Who produced a variant. Stored in {@code atom_variants.created_by}
- * (Bolum 13). The distinction drives design principle 8: work the user wrote
- * is never silently overwritten by work a model wrote.
+ * Who produced a variant. Stored in {@code atom_variants.created_by}. The
+ * distinction drives design principle 8: work the user wrote is never silently
+ * overwritten by work a model wrote.
  */
 public enum VariantAuthor {
     USER,

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A batch of content to measure (Bolum 22.4).
+ * A batch of content to measure.
  *
  * <p>The same customization as the final document, because that is the whole
  * point: a measurement taken under a different preamble measures a document
@@ -43,10 +43,10 @@ public record MeasurementRequest(
      * One thing to measure.
      *
      * @param key     {@code {variantId}:{customizationId}:{templateVersion}}
-     *                (Bolum 22.4) — it comes back in the log, so it has to
+     *  — it comes back in the log, so it has to
      *                survive a TeX {@code \typeout} unchanged
      * @param content what will be printed
-     * @param shape   where the page sets it (Bolum 33.4). Bolum 22.4's third
+     * @param shape where the page sets it. Bolum 22.4's third
      *                rule is that a measurement is taken in the environment the
      *                page prints in, and the three shapes are not printed
      *                alike: an inline row carries its label in bold, and bold

@@ -16,13 +16,12 @@ public record RenderCost(double heightPt, double depthPt) {
     }
 
     /**
-     * The vertical space the piece occupies inside a bullet list (Bolum 26.2).
+     * The vertical space the piece occupies inside a bullet list.
      *
      * <p>A box of n lines advances the page by n baselines and the list's own
      * item separation — not by the box's own height plus a baseline. The
      * difference is about eight points per bullet, which on a full page of
-     * twenty bullets is a third of the page left blank for no reason
-     * (EK D.8.10).
+     * twenty bullets is a third of the page left blank for no reason.
      *
      * <p>Rounding to whole lines here is not the rounding Bolum 26.3 warns
      * against. That warning is about turning a measurement into lines and

@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Who is acting. Every scoped read and write takes one of these, so that
  * "whose data is this" is a parameter the compiler insists on rather than a
- * {@code WHERE} clause someone has to remember (Bolum 41.2).
+ * {@code WHERE} clause someone has to remember.
  */
 public record UserContext(UUID userId, UserRole role) {
 

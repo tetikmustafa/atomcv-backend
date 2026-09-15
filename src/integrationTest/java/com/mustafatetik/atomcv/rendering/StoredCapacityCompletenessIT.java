@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * A stored capacity outlives the model that wrote it (Bolum 33.1).
+ * A stored capacity outlives the model that wrote it.
  *
  * <p>Layer B writes a row per geometry and reads it back for months. When the
  * capacity model grows a piece of furniture — as it did on 2026-09-10, when a

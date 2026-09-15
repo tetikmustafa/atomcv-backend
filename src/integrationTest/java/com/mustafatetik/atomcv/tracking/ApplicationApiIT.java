@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Keeping track of where a CV went (Bolum 55, Bolum 35.3).
+ * Keeping track of where a CV went.
  *
  * <p>The endpoint is deliberately dull, so what is worth testing is not the
  * four verbs but the two things that are easy to get wrong on a resource a
@@ -159,7 +159,7 @@ class ApplicationApiIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.notes").doesNotExist());
     }
 
-    // ── two tabs (Bolum 35.6) ─────────────────────────────────────────────
+    // ── two tabs ─────────────────────────────────────────────
 
     @Test
     void aneditWithoutAnIfMatchIsRefused() throws Exception {

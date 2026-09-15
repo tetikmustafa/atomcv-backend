@@ -15,8 +15,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
- * Faz G's natural-language half: a sentence, turned into a directive
- * (Bolum 24.2).
+ * Faz G's natural-language half: a sentence, turned into a directive.
  *
  * <p>Everything expensive about it is one cheap call. The lines are read out
  * of the generation being edited rather than out of today's profile, numbered,

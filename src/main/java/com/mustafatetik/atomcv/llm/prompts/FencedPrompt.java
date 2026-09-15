@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.llm.prompts;
 
 /**
- * A prompt split where the instructions end and the data begins (Bolum 43.1).
+ * A prompt split where the instructions end and the data begins.
  *
  * <p>Two reasons for the split rather than sending one interpolated document.
  * Bolum 27.4 discounts a cached prefix, and a prefix is only constant if the

@@ -5,8 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * A profile identifier that is known to belong to the acting user
- * (Bolum 41.3).
+ * A profile identifier that is known to belong to the acting user.
  *
  * <p>The point of the type is that it cannot be made up. The only way to hold
  * one is to call {@link #persistent} with the acting user and the owner the
@@ -30,7 +29,7 @@ public final class ProfileRef {
 
         /**
          * A profile that lives only in Redis, for the length of an anonymous
-         * session (Bolum 9, Adim 3.6).
+         * session.
          *
          * <p>Absent until Adim 3.6 for the reason § 41.3 gives: the constant
          * is worthless without a checked way to produce one, and a scope
@@ -68,7 +67,7 @@ public final class ProfileRef {
     }
 
     /**
-     * The scope of an anonymous session's own profile (Adim 3.6).
+     * The scope of an anonymous session's own profile.
      *
      * <p><strong>The id is derived from the session id, not stored beside
      * it.</strong> An anonymous session has exactly one profile and the

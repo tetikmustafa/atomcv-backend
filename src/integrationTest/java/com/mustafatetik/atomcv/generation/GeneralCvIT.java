@@ -96,8 +96,7 @@ class GeneralCvIT extends AbstractLatexTest {
 
     /**
      * Nothing was measured before the request, so the generation had to do it
-     * — and the numbers have to end up in the database, not only in memory
-     * (Bolum 26.5).
+     * — and the numbers have to end up in the database, not only in memory.
      */
     @Test
     void theContentIsMeasuredOnTheWayThroughAndTheCostsAreKept() throws Exception {
@@ -118,7 +117,7 @@ class GeneralCvIT extends AbstractLatexTest {
     }
 
     /**
-     * A degree line, all the way through to the paper (Bolum 20.2).
+     * A degree line, all the way through to the paper.
      *
      * <p>Nobody writes a bullet under a diploma, and until selection could open
      * an entry without one this line could not reach the page by any route.

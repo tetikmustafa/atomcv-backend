@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A semantic label applied to a {@link Run} (Bolum 12).
+ * A semantic label applied to a {@link Run}.
  *
  * <p>Marks are semantic, never presentational: a renderer decides that
  * {@code technology} becomes bold, and a different template may decide
@@ -14,8 +14,7 @@ import java.util.Set;
  *
  * <p>This is deliberately not an enum. Stored content may carry a mark written
  * by a newer build; parsing must not fail and a round-trip must not drop it.
- * Renderers fall through to plain text for anything they do not know
- * (Bolum 16.2).
+ * Renderers fall through to plain text for anything they do not know.
  */
 @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public record Mark(String value) {

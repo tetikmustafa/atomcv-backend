@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The capacities somebody has already paid a compilation for (Bolum 33.1).
+ * The capacities somebody has already paid a compilation for.
  *
  * <p><strong>Unscoped, and it is not an exception to absolute rule 3.</strong>
  * That rule is about user data, and there is none here: a row says what a page

@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * A set of appearance settings to keep under a name (Bolum 33.2).
+ * A set of appearance settings to keep under a name.
  *
  * <p><strong>Bolum 33.2's ranges, and they are the safety.</strong> Font size
  * 9 to 12, margin 0.4 to 1.0 inches, line spacing 0.9 to 1.3. The section's
@@ -58,7 +58,7 @@ public record CustomizationRequest(
      * @throws IllegalArgumentException for a font family or template the
      *         registry does not know. {@code ProblemDetailAdvice} turns that
      *         into a 400 naming the field, which is what a request-body
-     *         violation is (EK D.6.8)
+     *  violation is
      */
     public TemplateCustomization toSettings() {
         TemplateCustomization base = TemplateRegistry.ids().contains(baseTemplateId)

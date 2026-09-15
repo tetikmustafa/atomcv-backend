@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Who a generation is for — an account, or an anonymous session (Bolum 9).
+ * Who a generation is for — an account, or an anonymous session.
  *
  * <p><strong>Six uses of {@code UserContext}, three different reasons.</strong>
  * The pipeline took a user and did three unrelated things with it: resolved the
@@ -23,7 +23,7 @@ import java.util.UUID;
  *                 {@code llm_invocations.user_id} is nullable and § 51.6's note
  *                 says a row there from an anonymous generation is expected: the
  *                 cost was real and the person was not an account.
- * @param bucketKey which prompt variant this caller keeps seeing (Bolum 53.3).
+ * @param bucketKey which prompt variant this caller keeps seeing.
  *                 The profile id for an anonymous session, following the
  *                 convention {@code ProfileExtractionJobHandler} set — both it
  *                 and the session id are stable for the session, and one of them

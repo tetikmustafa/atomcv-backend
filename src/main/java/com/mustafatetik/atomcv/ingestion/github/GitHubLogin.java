@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 /**
  * A GitHub account name, checked before it becomes part of a URL.
  *
- * <p><strong>This is the SSRF boundary of this module</strong> (Bolum 42.2).
- * The host is a constant and nothing a person types decides where a request
- * goes — but a login is interpolated into a path, and a path is where
- * {@code ../} lives. A value that reaches {@code api.github.com/users/..%2f..}
- * is a request to somewhere nobody chose.
+ * <p><strong>This is the SSRF boundary of this module</strong>. The host is a
+ * constant and nothing a person types decides where a request goes — but a
+ * login is interpolated into a path, and a path is where {@code../} lives. A
+ * value that reaches {@code api.github.com/users/..%2f..} is a request to
+ * somewhere nobody chose.
  *
  * <p>The rule is GitHub's own and is narrow enough to be worth stating rather
  * than escaping: alphanumerics and single hyphens, never leading or trailing,

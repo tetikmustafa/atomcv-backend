@@ -54,13 +54,12 @@ class ProfileWriterIT extends AbstractIntegrationTest {
      * decides now, and this is the half of it that happens after the door.
      */
     /**
-     * <strong>The labels the model found used to be dropped here.</strong>
-     * The extraction reported them, {@code ProfileNormalizer} canonicalised
-     * them, and the writer never wrote a row — so {@code tags} and
-     * {@code atom_tags} were empty for every profile, and Faz B's tag overlap,
-     * a quarter of the raw score (Bolum 19.1), was zero for every atom against
-     * every posting. Nothing failed: every score was simply lower than it
-     * should have been, together.
+     * <strong>The labels the model found used to be dropped here.</strong> The
+     * extraction reported them, {@code ProfileNormalizer} canonicalised them,
+     * and the writer never wrote a row — so {@code tags} and {@code atom_tags}
+     * were empty for every profile, and Faz B's tag overlap, a quarter of the
+     * raw score, was zero for every atom against every posting. Nothing
+     * failed: every score was simply lower than it should have been, together.
      *
      * <p>{@code AUTO}, because a model guessed them. Bolum 13 keeps the
      * distinction and the editor draws the two differently.

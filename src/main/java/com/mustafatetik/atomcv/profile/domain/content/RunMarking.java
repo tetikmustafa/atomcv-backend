@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * An emphasis list turned into runs, by first match (Bolum 31.5).
+ * An emphasis list turned into runs, by first match.
  *
  * <p>A model returns the sentence and, beside it, the substrings worth
  * marking. Bolum 12 stores marked text as runs rather than as offsets or
@@ -104,12 +104,13 @@ public final class RunMarking {
      * <p>Semantic and never presentational: a renderer decides that a
      * technology is bold, and a different template may decide otherwise.
      *
-     * <p><strong>{@code properNouns} does not become {@code ORGANIZATION}.</strong>
-     * Bolum 31.4 collects products, employers, institutions and places into one
-     * list, so marking any of them as an organisation would be a claim the data
-     * does not support — and an unknown mark would render as plain text
-     * (Bolum 16.2), losing the emphasis the model asked for. They fall to
-     * {@code EMPHASIS}, which is exactly what is known about them.
+     * <p><strong>{@code properNouns} does not become {@code
+     * ORGANIZATION}.</strong> Bolum 31.4 collects products, employers,
+     * institutions and places into one list, so marking any of them as an
+     * organisation would be a claim the data does not support — and an unknown
+     * mark would render as plain text, losing the emphasis the model asked
+     * for. They fall to {@code EMPHASIS}, which is exactly what is known about
+     * them.
      */
     private static Mark markFor(String span, List<String> skills, List<String> metrics) {
         String folded = span.strip().toLowerCase(Locale.ROOT);

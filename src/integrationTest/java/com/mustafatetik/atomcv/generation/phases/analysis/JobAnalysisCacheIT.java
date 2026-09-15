@@ -13,7 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.testcontainers.containers.GenericContainer;
 
 /**
- * The cache against a real Redis (Bolum 18.6).
+ * The cache against a real Redis.
  *
  * <p>No Spring context: what a context would add here is wiring, and what
  * needs proving is that an analysis survives the round trip through a real

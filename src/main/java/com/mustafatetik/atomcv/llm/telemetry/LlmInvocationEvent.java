@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * One provider call, as something to count (Bolum 27.5).
+ * One provider call, as something to count.
  *
  * <p>Published by the chain whether the call succeeded or not, because the
  * failures are the half that says whether a provider is worth its place in the
@@ -20,7 +20,7 @@ import java.util.UUID;
  *
  * @param promptId      the prompt's directory name
  * @param promptVersion the version that ran, which an experiment can vary per
- *                      user (Bolum 53.3)
+ *  user
  * @param provider      the adapter that answered, or the one that failed
  * @param model         the model id asked for
  * @param outcome       one of the four values the column allows

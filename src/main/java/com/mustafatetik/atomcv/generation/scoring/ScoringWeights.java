@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.generation.scoring;
 
 /**
- * How much each component of relevance counts (Bolum 19.1).
+ * How much each component of relevance counts.
  *
  * <p>They sum to one, and that is checked: a set that did not would still
  * produce a ranking, just one whose scores could not be compared against

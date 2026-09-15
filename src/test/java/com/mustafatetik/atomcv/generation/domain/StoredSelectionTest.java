@@ -10,7 +10,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * The snapshot, read back (Bolum 14.5).
+ * The snapshot, read back.
  *
  * <p>{@code selection_state} is a JSONB column with rows in it, and the shape
  * that writes it moves while those rows do not. EK D.6.3 promises the PDF can

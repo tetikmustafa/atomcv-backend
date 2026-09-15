@@ -99,24 +99,21 @@ public record SectionFloor(int entries, int atomsPerEntry, int atoms, int maxAto
      * The floor for a kind, in the shape that kind is printed in.
      *
      * <ul>
-     *   <li>{@code ABOUT} — one paragraph, and never more than one. It is the
-     *       only kind with a ceiling as well as a floor: a profile carrying
-     *       four summaries written towards four different jobs must print the
-     *       one, not whichever two fit.</li>
-     *   <li>{@code EDUCATION} — one entry, and no bullets: a degree line is a
-     *       heading, and asking for an achievement under it is asking to pad
-     *       (Bolum 20.2).</li>
-     *   <li>{@code EXPERIENCE} — two roles at two bullets. One role reads as a
-     *       first job whatever the person has done, and one bullet under a role
-     *       reads as a role that went nowhere.</li>
-     *   <li>{@code PROJECTS} — two projects at three bullets. Three because a
-     *       project is judged on what was built, and two lines cannot carry
-     *       what a role's two lines carry: the role has an employer and a date
-     *       range doing that work.</li>
-     *   <li>{@code SKILLS} — three lines. Fewer reads as a fragment of a list
-     *       rather than as a stack.</li>
-     *   <li>{@code LANGUAGES} — two. One language is a fact about a person who
-     *       filled in half a form.</li>
+     * <li>{@code ABOUT} — one paragraph, and never more than one. It is the
+     * only kind with a ceiling as well as a floor: a profile carrying four
+     * summaries written towards four different jobs must print the one, not
+     * whichever two fit.</li> <li>{@code EDUCATION} — one entry, and no
+     * bullets: a degree line is a heading, and asking for an achievement under
+     * it is asking to pad.</li> <li>{@code EXPERIENCE} — two roles at two
+     * bullets. One role reads as a first job whatever the person has done, and
+     * one bullet under a role reads as a role that went nowhere.</li>
+     * <li>{@code PROJECTS} — two projects at three bullets. Three because a
+     * project is judged on what was built, and two lines cannot carry what a
+     * role's two lines carry: the role has an employer and a date range doing
+     * that work.</li> <li>{@code SKILLS} — three lines. Fewer reads as a
+     * fragment of a list rather than as a stack.</li> <li>{@code LANGUAGES} —
+     * two. One language is a fact about a person who filled in half a
+     * form.</li>
      * </ul>
      */
     public static SectionFloor forKind(SectionKind kind) {

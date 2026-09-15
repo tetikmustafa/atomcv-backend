@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The head row of an anonymous session's profile, reached without a user
- * because there is not one (Bolum 9, Adim 3.6).
+ * because there is not one.
  *
  * <p><strong>Why this cannot go through {@link ProfileRepository}.</strong> That
  * one is user-scoped and correct as it stands: it compares
@@ -93,7 +93,7 @@ public class AnonymousProfiles {
     }
 
     /**
-     * The profile stops expiring and starts belonging to somebody (Adim 3.6).
+     * The profile stops expiring and starts belonging to somebody.
      *
      * <p><strong>One statement, and the whole of what signing up does to a
      * profile.</strong> It used to be a copy: a new head row, then every

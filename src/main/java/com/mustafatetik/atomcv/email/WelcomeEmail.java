@@ -3,8 +3,7 @@ package com.mustafatetik.atomcv.email;
 import java.util.Locale;
 
 /**
- * The first thing this product says to somebody who has just arrived
- * (Bolum 57.7).
+ * The first thing this product says to somebody who has just arrived.
  *
  * <p><strong>It carries the way to stop it, and that is not decoration.</strong>
  * The preference it is subject to lives on an account nobody has visited yet,

@@ -66,7 +66,7 @@ class SectionFloorSelectionTest {
     }
 
     /**
-     * And each of them at the depth its floor asks for (Bolum 20.3).
+     * And each of them at the depth its floor asks for.
      *
      * <p>Two pages, and the reason is worth stating rather than hiding in a
      * parameter. This profile's six full floors come to more than one page of

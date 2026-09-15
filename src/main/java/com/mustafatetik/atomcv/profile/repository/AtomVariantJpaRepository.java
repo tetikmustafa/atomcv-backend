@@ -11,8 +11,7 @@ import org.springframework.data.jpa.repository.Query;
  * Package-private; reached through {@link AtomVariantRepository}.
  *
  * <p>Loading by {@code profile_id} rather than by atom is the whole point of
- * that denormalized column (Bolum 52.2): one flat query instead of one per
- * atom.
+ * that denormalized column: one flat query instead of one per atom.
  */
 interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
 
@@ -47,7 +46,7 @@ interface AtomVariantJpaRepository extends JpaRepository<AtomVariant, UUID> {
     int clearPrimary(UUID profileId, UUID atomId);
 
     /**
-     * Every wording derived from one that has just changed (Bolum 32.2).
+     * Every wording derived from one that has just changed.
      *
      * <p>Loaded rather than bulk-updated, and that is the difference between
      * this and {@link #clearPrimary}. Bolum 32.2 does two things with these

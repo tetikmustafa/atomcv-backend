@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A capacity for a geometry nobody has compiled yet (Bolum 33.3).
+ * A capacity for a geometry nobody has compiled yet.
  *
  * <p>Bolum 33.3 does not make a person wait for a compilation: a slider moves,
  * a measurement is queued, and a generation asked for before it lands runs on

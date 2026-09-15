@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The two shapes the canonical template gives a section that is not a list of
- * bullets (Bolum 33.4).
+ * bullets.
  *
  * <p>Both were wrong on a real CV and neither was covered. A summary came out
  * as a bulleted item — a marker in front of a paragraph — and a Tech Stack came

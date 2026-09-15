@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * A rename, a re-set, or both (Bolum 33.2).
+ * A rename, a re-set, or both.
  *
  * <p><strong>The settings are all-or-nothing.</strong> Sending
  * {@code baseTemplateId} replaces every parameter, with anything omitted

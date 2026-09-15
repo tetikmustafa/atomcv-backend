@@ -21,8 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The second adapter, and the first thing the chain can actually fall back to
- * (Bolum 27.3).
+ * The second adapter, and the first thing the chain can actually fall back to.
  *
  * <p>Until it existed the fallback chain had one link. {@code ProviderChainTest}
  * proved the walk works, the configuration named an order, and a single
@@ -121,9 +120,9 @@ public class GeminiProvider implements LlmProvider {
         var body = json.createObjectNode();
 
         if (!request.systemPrompt().isEmpty()) {
-            // Its own field rather than a first turn: the system instruction is
-            // held constant across calls, which is what a provider's prompt
-            // cache discounts (Bolum 27.4).
+            // Its own field rather than a first turn: the system instruction
+            // is held constant across calls, which is what a provider's prompt
+            // cache discounts.
             body.putObject("systemInstruction").putArray("parts")
                     .addObject().put("text", request.systemPrompt());
         }
@@ -157,8 +156,8 @@ public class GeminiProvider implements LlmProvider {
             return LlmOutcome.answered(new LlmResponse<>(value, ID, llm.modelFor(ID),
                     usage.path("promptTokenCount").asInt(),
                     usage.path("candidatesTokenCount").asInt(),
-                    // Absent is zero rather than unknown (Bolum 27.4), and it
-                    // is a subset of the prompt count rather than an addition.
+                    // Absent is zero rather than unknown, and it is a subset
+                    // of the prompt count rather than an addition.
                     usage.path("cachedContentTokenCount").asInt(),
                     elapsedNanos / 1_000_000));
         } catch (Exception malformed) {

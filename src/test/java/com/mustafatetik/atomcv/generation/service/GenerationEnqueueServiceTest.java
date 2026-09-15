@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * The order of the free gates, and what none of them cost (Bolum 35.3).
+ * The order of the free gates, and what none of them cost.
  *
  * <p>Everything here is about work that is <em>not</em> done. The integration
  * test proves the status codes; this proves that a posting nobody could read

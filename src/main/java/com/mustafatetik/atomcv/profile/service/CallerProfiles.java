@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The profile of whoever is calling, account or anonymous session (Bolum 9).
+ * The profile of whoever is calling, account or anonymous session.
  *
  * <p><strong>One line per endpoint became one line per module.</strong>
  * {@link ProfileResolver} answers this for an account and is unchanged — it is
@@ -69,8 +69,8 @@ public class CallerProfiles {
      *
      * <p>Needed where a <em>user</em> rather than a profile is the subject:
      * Bolum 32.2's translation jobs are claimed by user id, and an anonymous
-     * session has no id to claim by and one language to want (§ 35.7). Callers
-     * treat empty as "nothing to queue" rather than as a failure.
+     * session has no id to claim by and one language to want. Callers treat
+     * empty as "nothing to queue" rather than as a failure.
      */
     public java.util.Optional<com.mustafatetik.atomcv.shared.security.UserContext> user() {
         return caller.find();
@@ -89,9 +89,9 @@ public class CallerProfiles {
      * has done.
      *
      * <p>The expiry is the session's own, asked of the session rather than
-     * recomputed: it slides with activity (EK D.6.6), so a caller reading their
-     * profile has just moved it, and a writer deriving "two hours from now" for
-     * itself would be a second place the window is decided.
+     * recomputed: it slides with activity, so a caller reading their profile
+     * has just moved it, and a writer deriving "two hours from now" for itself
+     * would be a second place the window is decided.
      */
     private ProfileResolver.OwnedProfile anonymousProfile() {
         ProfileRef ref = ProfileRef.ephemeral(caller.anonymousSession()

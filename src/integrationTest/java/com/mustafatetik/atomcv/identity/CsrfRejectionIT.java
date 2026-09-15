@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * The other half of the CSRF guard (EK D.6.6).
+ * The other half of the CSRF guard.
  *
  * <p>{@code AbstractIntegrationTest} puts a valid token on every request in
  * the suite, which is what keeps the filter on everywhere without editing a

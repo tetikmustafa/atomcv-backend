@@ -154,7 +154,7 @@ class AnonymousCvIT extends AbstractLatexTest {
     /**
      * And the row it leaves behind belongs to nobody, which is what makes the
      * sweep able to take it: {@code generations.profile_id} cascades from a
-     * profile that expires (§ 51.6.1).
+     * profile that expires.
      */
     @Test
     void therecordBelongsToNobodyAndToThatSessionsProfile() throws Exception {

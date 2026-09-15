@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
- * A provider that costs nothing (Bolum 54.2).
+ * A provider that costs nothing.
  *
  * <p>Written before any real adapter on purpose: with it in place the rest of
  * Stage 2 — the phases, the queue, the error paths, the frontend's screens —

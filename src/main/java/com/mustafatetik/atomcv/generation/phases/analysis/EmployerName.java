@@ -30,10 +30,10 @@ import java.util.regex.Pattern;
  * lie the reader has no way to spot.
  *
  * <p>The prompt should say this too, and it does not yet. Saying it means a
- * new prompt version (Bolum 53.2), which invalidates every recorded fixture
- * and a week of cache — worth doing when {@code job_analysis} is next
- * versioned for the model that is still being chosen, and not worth doing for
- * a defect that can be closed here deterministically.
+ * new prompt version, which invalidates every recorded fixture and a week of
+ * cache — worth doing when {@code job_analysis} is next versioned for the
+ * model that is still being chosen, and not worth doing for a defect that can
+ * be closed here deterministically.
  */
 final class EmployerName {
 

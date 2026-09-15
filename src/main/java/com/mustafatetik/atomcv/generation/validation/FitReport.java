@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Faz F's honest answer to "how well does this CV fit that posting?"
- * (Bolum 23.3).
+ * Faz F's honest answer to "how well does this CV fit that posting?".
  *
  * <p><strong>Countable facts, never a percentage.</strong> Bolum 23.3 forbids
  * one by name, and the reason is that the underlying measurement cannot carry

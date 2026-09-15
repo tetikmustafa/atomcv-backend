@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
- * Who is watching which job (Bolum 30.6).
+ * Who is watching which job.
  *
  * <p><strong>In-process, and that is a decision with a date on it.</strong>
  * One instance runs the workers and serves the streams, so a publish reaches

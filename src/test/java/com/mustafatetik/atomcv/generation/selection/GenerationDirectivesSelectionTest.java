@@ -18,7 +18,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * What a hand edit does to Faz C (Bolum 24.4).
+ * What a hand edit does to Faz C.
  *
  * <p>Every directive here is asserted twice: once with it and once without.
  * A selection that would have come out the same either way proves nothing

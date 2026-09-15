@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Whose job it is (Bolum 30, Adim 3.6).
+ * Whose job it is.
  *
  * <p>Two kinds, and the queue has always had columns for both: {@code user_id}
  * for an account and {@code anon_session_id} for somebody who has not signed
@@ -27,9 +27,9 @@ import java.util.UUID;
  * variable.
  *
  * <p>An anonymous owner is exactly as strong as the cookie, which is the same
- * strength the anonymous profile has (§ 41.3). It is weaker than an account
- * and it is meant to be: what it protects is two hours of work, and the person
- * chose not to sign up.
+ * strength the anonymous profile has. It is weaker than an account and it is
+ * meant to be: what it protects is two hours of work, and the person chose not
+ * to sign up.
  */
 public record JobOwner(UUID userId, String anonSessionId) {
 

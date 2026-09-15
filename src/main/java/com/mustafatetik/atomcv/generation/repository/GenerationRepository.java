@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * A user's own generations (Bolum 41.2).
+ * A user's own generations.
  *
  * <p>The generation id reaches a browser twice — in the job's terminal event
  * and in the download link — so every read here is scoped. Absolute rule 3.
@@ -79,12 +79,12 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
      * irreversible place would be worse than no number (F-020).
      *
      * <p><strong>It stopped counting every row when Faz G arrived.</strong> An
-     * edit writes a new generation and retires the one it replaced (Bolum
-     * 24.4), and those retired rows are not listed -- a total that counted them
-     * would print "23 generations" over eleven of them. The deletion screen
-     * therefore names CVs rather than rows, and deleting the account still
-     * takes the retired drafts with it: they are intermediate steps of the CVs
-     * being counted, not CVs somebody would miss going unmentioned.
+     * edit writes a new generation and retires the one it replaced, and those
+     * retired rows are not listed -- a total that counted them would print "23
+     * generations" over eleven of them. The deletion screen therefore names
+     * CVs rather than rows, and deleting the account still takes the retired
+     * drafts with it: they are intermediate steps of the CVs being counted,
+     * not CVs somebody would miss going unmentioned.
      */
     public long countFor(UserContext user) {
         return jpa.countByUserIdAndStatusNot(user.userId(), GenerationStatus.SUPERSEDED);

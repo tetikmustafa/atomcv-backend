@@ -209,7 +209,7 @@ class ProfileExtractionJobHandlerTest {
 
         assertThat(failed.error().code()).isEqualTo(ErrorCode.EXTRACTION_EMPTY);
         // The same document goes back to the same model; three failures
-        // instead of one buys nothing (Bolum 30.5).
+        // instead of one buys nothing.
         assertThat(failed.retryable()).isFalse();
     }
 
@@ -259,7 +259,7 @@ class ProfileExtractionJobHandlerTest {
         verify(writer, never()).writeAnonymously(any(), any(), any());
     }
 
-    // -- the anonymous half (Bolum 9, Adim 3.6) ----------------------------
+    // -- the anonymous half ----------------------------
 
     /**
      * <strong>The promise of Bolum 9, at the one line that could break it.</strong>

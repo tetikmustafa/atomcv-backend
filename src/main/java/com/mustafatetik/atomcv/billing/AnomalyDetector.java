@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Looking for the shapes that cost money (Bolum 44.3).
+ * Looking for the shapes that cost money.
  *
  * <p>Two signals, and a third that is deliberately absent.
  *
@@ -84,8 +84,8 @@ public class AnomalyDetector {
     }
 
     /**
-     * What today's calls have cost, failures included (Bolum 27.5): a provider
-     * that answers with a schema error still bills for the tokens.
+     * What today's calls have cost, failures included: a provider that answers
+     * with a schema error still bills for the tokens.
      */
     BigDecimal costToday() {
         LocalDate today = LocalDate.ofInstant(clock.instant(), java.time.ZoneOffset.UTC);

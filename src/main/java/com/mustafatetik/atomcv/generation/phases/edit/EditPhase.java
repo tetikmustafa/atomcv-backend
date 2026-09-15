@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Faz G: one sentence, read as two lists of line numbers (Bolum 24).
+ * Faz G: one sentence, read as two lists of line numbers.
  *
  * <p><strong>The model never sees an atom id and never writes one.</strong>
  * Bolum 24.2 sketches a change set carrying ids, and this does not: an id is

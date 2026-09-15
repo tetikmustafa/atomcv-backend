@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * An error on its way to a user: a code, its published parameters, and the ways
- * out (Bolum 35.4).
+ * An error on its way to a user: a code, its published parameters, and the
+ * ways out.
  *
  * <p>The parameters are checked against {@link ErrorCode}'s declaration as the
  * object is built. A missing parameter is not a small thing — the frontend's

@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * {@code atoms.embedding} against a real pgvector column (Bolum 28).
+ * {@code atoms.embedding} against a real pgvector column.
  *
  * <p>This exists because schema validation does not cover it. Setting
  * {@code @Array(length)} to 512 and running the suite passes — the annotation

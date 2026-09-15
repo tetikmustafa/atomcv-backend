@@ -86,8 +86,8 @@ public class JobWorker {
      * <p>Nothing upstream could have said so. The tests run on a JDK, and the
      * failure appears at construction — so it needed an image to exist and be
      * run before anything noticed. What this random does is jitter a retry
-     * backoff (Bolum 30.5); any sound generator will do, and one from
-     * {@code java.base} cannot go missing.
+     * backoff; any sound generator will do, and one from {@code java.base}
+     * cannot go missing.
      */
     @org.springframework.beans.factory.annotation.Autowired
     public JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
@@ -203,13 +203,12 @@ public class JobWorker {
      *
      * <p>The row rather than only an event, because a client that reconnects
      * has to be caught up from somewhere and an event that was sent to nobody
-     * is gone (EK D.6.4). One update per phase, which is a handful per
-     * generation.
+     * is gone. One update per phase, which is a handful per generation.
      */
     private ProgressSink sinkFor(Job job, JobTelemetry.Run measured) {
         return progress -> {
             // Before the write, so that a phase's measurement does not carry
-            // the cost of announcing it (Bolum 48.3).
+            // the cost of announcing it.
             measured.reported(progress);
             job.setProgress(progress);
             queue.save(job);

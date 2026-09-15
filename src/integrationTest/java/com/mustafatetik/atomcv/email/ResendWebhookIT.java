@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * The suppression list gets its writer (Bolum 40.2, § 55).
+ * The suppression list gets its writer.
  *
  * <p>{@code EmailSuppressions} could read the table and its own javadoc said
  * the rows would arrive from webhooks that were "not in this slice". This is

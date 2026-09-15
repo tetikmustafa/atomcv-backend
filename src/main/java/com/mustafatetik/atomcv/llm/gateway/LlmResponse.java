@@ -3,17 +3,17 @@ package com.mustafatetik.atomcv.llm.gateway;
 import java.math.BigDecimal;
 
 /**
- * A structured answer, with what it cost to get (Bolum 27.1).
+ * A structured answer, with what it cost to get.
  *
  * <p>The token counts are here rather than looked up later because only the
  * adapter sees them: each provider reports usage in its own envelope, and by
  * the time the parsed value reaches a phase the envelope is gone. Telemetry
- * (Bolum 27.5) and the cost counter both read them from here.
+ * and the cost counter both read them from here.
  *
  * <p>{@code cachedTokens} is reported separately because it is priced
- * separately — a cached input token costs a fraction of a fresh one
- * (Bolum 27.4), and a cost computed without it overstates every call that a
- * constant system prompt made cheap.
+ * separately — a cached input token costs a fraction of a fresh one, and a
+ * cost computed without it overstates every call that a constant system prompt
+ * made cheap.
  *
  * @param data         the parsed answer
  * @param provider     which adapter answered, for telemetry and for the

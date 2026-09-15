@@ -18,8 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * A thumb on one generation, and the permission that may come with it
- * (Bolum 13, Bolum 48.4).
+ * A thumb on one generation, and the permission that may come with it.
  *
  * <p><strong>One verdict per person per generation.</strong> Pressing the
  * other thumb changes the answer rather than adding a second one, so this

@@ -324,8 +324,8 @@ class ProviderChainTest {
 
     /**
      * <strong>A schema mismatch must not open anything.</strong> It is a fact
-     * about the prompt (Bolum 27.3), and a breaker that counted it would pull a
-     * healthy vendor out of every chain over one bad prompt version.
+     * about the prompt, and a breaker that counted it would pull a healthy
+     * vendor out of every chain over one bad prompt version.
      */
     @Test
     void aschemaMismatchNeverOpensTheCircuit() {

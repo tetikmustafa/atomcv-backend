@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * GitHub's public API, read (Bolum 31.8).
+ * GitHub's public API, read.
  *
  * <p><strong>Public data only, and that is the whole design.</strong> Bolum
  * 31.8 asks for no private repository permission, and because it asks for none

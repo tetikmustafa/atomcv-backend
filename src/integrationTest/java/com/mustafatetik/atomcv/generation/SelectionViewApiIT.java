@@ -110,7 +110,7 @@ class SelectionViewApiIT extends AbstractIntegrationTest {
     /**
      * An atom this generation weighed and the profile no longer has is left
      * out, and the list is shorter than the snapshot by exactly it — the guard
-     * is not known to work until it has been seen to drop something (§ 51.7).
+     * is not known to work until it has been seen to drop something.
      *
      * <p>The edit endpoint still accepts the id, and the two are not in
      * disagreement: it was weighed, so it is answerable, and the answer is a

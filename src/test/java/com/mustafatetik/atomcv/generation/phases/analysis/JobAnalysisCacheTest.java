@@ -22,7 +22,7 @@ class JobAnalysisCacheTest {
     private final StringRedisTemplate redis = mock(StringRedisTemplate.class);
     private final JobAnalysisCache cache = new JobAnalysisCache(redis, JSON);
 
-    // ── Normalisation (Bolum 18.6) ───────────────────────────────────────
+    // ── Normalisation ───────────────────────────────────────
 
     /**
      * The same posting pasted from a PDF and from a browser differs in exactly
@@ -58,9 +58,9 @@ class JobAnalysisCacheTest {
 
     /**
      * Bolum 18.6 keys on the posting alone. The version is added because a
-     * prompt change has to invalidate — and because an A/B experiment
-     * (Bolum 53.3) would otherwise measure nothing: the bucket sent to v2
-     * would read whatever v1 had already cached for that posting.
+     * prompt change has to invalidate — and because an A/B experiment would
+     * otherwise measure nothing: the bucket sent to v2 would read whatever v1
+     * had already cached for that posting.
      */
     @Test
     void twoPromptVersionsDoNotShareAnEntry() {

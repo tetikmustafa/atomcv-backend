@@ -5,8 +5,7 @@ import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 
 /**
- * What a piece of content probably costs, when nobody has measured it
- * (Bolum 26.5).
+ * What a piece of content probably costs, when nobody has measured it.
  *
  * <p>Selection needs a number for every atom. A measurement is one compilation
  * away and normally already stored, but a wording written a second ago has
@@ -21,8 +20,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
  *
  * <p>Bolum 26.2 builds this on real font metrics read out of the TTF with
  * FontBox. That is a better estimator and it needs a PDF library; this one
- * needs nothing, and where the two differ this one is the more pessimistic
- * (EK D.8.7).
+ * needs nothing, and where the two differ this one is the more pessimistic.
  */
 public final class RenderCostEstimator {
 

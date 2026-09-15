@@ -21,8 +21,7 @@ public record SelectionState(
         selected = List.copyOf(selected);
         rejected = List.copyOf(rejected);
         // Null rather than empty is what a snapshot written before this field
-        // existed deserialises to, and those rows still have to be renderable
-        // (EK D.6.3).
+        // existed deserialises to, and those rows still have to be renderable.
         headerOnlyEntries = headerOnlyEntries == null
                 ? List.of()
                 : List.copyOf(headerOnlyEntries);
@@ -106,7 +105,7 @@ public record SelectionState(
         INACTIVE,
 
         /**
-         * The user took it off <em>this</em> CV (Bolum 24.4).
+         * The user took it off <em>this</em> CV.
          *
          * <p>Its own reason and not {@link #INACTIVE}. The two look identical
          * to the algorithm and are opposites to the person: one is a standing
@@ -121,7 +120,7 @@ public record SelectionState(
     }
 
     /**
-     * Where the page went (Bolum 26.3).
+     * Where the page went.
      *
      * @param totalPt     the page limit in points
      * @param fixedPt     what the furniture costs: headings, entry headers, lists

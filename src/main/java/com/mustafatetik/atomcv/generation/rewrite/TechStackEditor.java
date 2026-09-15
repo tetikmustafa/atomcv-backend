@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A Tech Stack cut down to the posting, without an LLM (Bolum 33.4).
+ * A Tech Stack cut down to the posting, without an LLM.
  *
  * <p>A master profile's Tech Stack is everything the person has ever used. A
  * generated CV's is what this posting is about — and a row of twenty

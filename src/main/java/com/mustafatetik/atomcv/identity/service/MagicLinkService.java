@@ -165,7 +165,7 @@ public class MagicLinkService {
             return Optional.empty();
         }
         UserAccount user = account.get();
-        // Asked before seen(...) fills in the field it reads (Bolum 57.7).
+        // Asked before seen(...) fills in the field it reads.
         welcome.greetIfFirstSignIn(user);
         // Opening the email is the proof, and this is the moment it lands.
         user.markEmailVerified();

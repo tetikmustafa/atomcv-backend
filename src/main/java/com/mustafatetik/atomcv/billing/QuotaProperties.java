@@ -22,7 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param profileExtractsPerIp   three, and the same reasoning again against
  *                               the most expensive call in the product
  * @param tightenedPerHour       what a subject the anomaly detector flagged is
- *                               allowed while the flag lasts (Bolum 44.3). A
+ *  allowed while the flag lasts. A
  *                               narrowing and not a stop: the daily ceiling
  *                               still applies, this only takes away the burst
  * @param tightenFor             how long the narrowing lasts. Bolum 44.3's
@@ -49,7 +49,7 @@ public record QuotaProperties(
     }
 
     /**
-     * The ceiling for one metric and one kind of subject (Bolum 44.1).
+     * The ceiling for one metric and one kind of subject.
      *
      * <p>Two tables of numbers rather than one, because an account and an
      * address are not the same claim about who is asking. A single ceiling
@@ -75,7 +75,7 @@ public record QuotaProperties(
             case GENERATION -> generationsPerUser;
             case PROFILE_EXTRACT -> profileExtractsPerUser;
             // Not a count, and nothing consumes it through the quota gate: the
-            // anomaly detector reads the sum instead (Bolum 44.3).
+            // anomaly detector reads the sum instead.
             case LLM_COST -> Integer.MAX_VALUE;
         };
     }

@@ -43,8 +43,8 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      *
      * <p>One query for the whole profile rather than one per atom, and the
      * fifth query a generation makes — {@link
-     * com.mustafatetik.atomcv.profile.service.ProfileAssembler} still loads the
-     * tree in four (Bolum 52.2). Tags are a scoring input, not part of what is
+     * com.mustafatetik.atomcv.profile.service.ProfileAssembler} still loads
+     * the tree in four. Tags are a scoring input, not part of what is
      * rendered, so general mode never pays for this one.
      *
      * <p>The query's order is kept all the way out. {@code Set.copyOf} and
@@ -98,9 +98,9 @@ public class TagRepository extends ProfileScopedRepository<Tag> {
      * first atom to wear it.
      *
      * <p><strong>The label is canonicalised here and nowhere else.</strong>
-     * {@code Tag.canonical} is the column's own rule (Bolum 19.2), so a tag
-     * the extraction wrote and a tag typed into the editor are one row rather
-     * than two that never match each other.
+     * {@code Tag.canonical} is the column's own rule, so a tag the extraction
+     * wrote and a tag typed into the editor are one row rather than two that
+     * never match each other.
      *
      * <p>Idempotent in both halves: a label the profile already knows reuses
      * its row, and an atom that already wears it keeps the link it has. The

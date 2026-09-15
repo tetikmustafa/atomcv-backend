@@ -17,7 +17,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * Faz C against Bolum 52.6's budget, and against itself (Bolum 52.1).
+ * Faz C against Bolum 52.6's budget, and against itself.
  *
  * <p><strong>The ratio is the real assertion and the milliseconds are the
  * loose one.</strong> A CI machine's speed varies by more than any honest
@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test;
  * doubles when the input doubles and quadratic work quadruples, so a ceiling
  * between the two says which happened however slow the box is.
  *
- * <p>Faz C is a pure function (Bolum 17.2), which is what makes this
- * measurable at all: no database, no compiler, no clock inside it. The
- * determinism test rests on the same property.
+ * <p>Faz C is a pure function, which is what makes this measurable at all: no
+ * database, no compiler, no clock inside it. The determinism test rests on the
+ * same property.
  */
 class SelectionScalingTest {
 

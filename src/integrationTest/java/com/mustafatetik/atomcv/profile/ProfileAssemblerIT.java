@@ -33,9 +33,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * invisible until production, because the code that causes it looks ordinary.
  *
  * <p>The ceiling comes from {@code performance-budgets.yaml} rather than from
- * a number here (Bolum 52.6). It is the sharpest figure in that file and the
- * only one that means the same thing on every machine: a count does not care
- * how fast the box is.
+ * a number here. It is the sharpest figure in that file and the only one that
+ * means the same thing on every machine: a count does not care how fast the
+ * box is.
  */
 class ProfileAssemblerIT extends AbstractIntegrationTest {
 

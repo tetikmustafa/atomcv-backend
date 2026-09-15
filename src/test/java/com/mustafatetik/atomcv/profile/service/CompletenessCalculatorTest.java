@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Bolum 31.9's weights, and the threshold the preflight gate leans on.
  *
- * <p>The figure is user-visible and it decides whether a generation may start
- * (Bolum 25.5), so the arithmetic is pinned rather than assumed.
+ * <p>The figure is user-visible and it decides whether a generation may start,
+ * so the arithmetic is pinned rather than assumed.
  */
 class CompletenessCalculatorTest {
 

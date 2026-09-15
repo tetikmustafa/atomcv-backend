@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Signing in without a provider (Bolum 40.2).
+ * Signing in without a provider.
  *
  * <p><strong>Two POSTs, and the second one being a POST is the point.</strong>
  * The address in the email is a {@code GET} that renders a page on the
@@ -100,7 +100,7 @@ public class MagicLinkController {
             throw ApiException.of(ErrorCode.MAGIC_LINK_INVALID);
         }
         // Before the cookie is replaced: the anonymous session id is readable
-        // up to this line and never afterwards (Adim 3.6).
+        // up to this line and never afterwards.
         ProfileUpgrade upgrade = handover.follow(session.get());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookies.issue(session.get().id()).toString())

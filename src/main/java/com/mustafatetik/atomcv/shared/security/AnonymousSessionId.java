@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.shared.security;
 import java.util.Objects;
 
 /**
- * The id of a session nobody has signed in to (Adim 3.6).
+ * The id of a session nobody has signed in to.
  *
  * <p><strong>A type rather than a String, and that is the whole of it.</strong>
  * § 41.3 asks that the scope carry enough type for "went to the wrong store"

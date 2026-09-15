@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Reads what TeX said about the sizes it produced (Bolum 26.2).
+ * Reads what TeX said about the sizes it produced.
  *
  * <p>TeX is the only thing that knows how wide a word is in a given font at a
  * given size, once hyphenation and justification have had their say. So it

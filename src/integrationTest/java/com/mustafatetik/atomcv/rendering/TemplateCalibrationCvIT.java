@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Layer B's loop, closed (Bolum 33.3).
+ * Layer B's loop, closed.
  *
  * <p>A geometry nobody has compiled is estimated, a measurement is asked for,
  * a worker runs it against a real compiler, and the same geometry is exact

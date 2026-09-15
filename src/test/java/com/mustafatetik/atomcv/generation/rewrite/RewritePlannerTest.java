@@ -154,10 +154,10 @@ class RewritePlannerTest {
     }
 
     /**
-     * The summary has its own prompt, its own ceiling and its own validator
-     * (Bolum 21.7), and {@code RewritePhase} plans it in the same fan-out.
-     * Leaving it here as well meant one paragraph asked for twice, two invoices,
-     * and the second answer overwriting the first by arriving later.
+     * The summary has its own prompt, its own ceiling and its own validator,
+     * and {@code RewritePhase} plans it in the same fan-out. Leaving it here
+     * as well meant one paragraph asked for twice, two invoices, and the
+     * second answer overwriting the first by arriving later.
      */
     @Test
     void thesummaryIsLeftToItsOwnPrompt() {

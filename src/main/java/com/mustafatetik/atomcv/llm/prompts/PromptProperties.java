@@ -4,8 +4,7 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Which version of each prompt is live, and what is being tried alongside it
- * (Bolum 53.2).
+ * Which version of each prompt is live, and what is being tried alongside it.
  *
  * <p>In configuration rather than in code so that a bad prompt is rolled back
  * by changing a value, not by cutting a release.
@@ -24,7 +23,7 @@ public record PromptProperties(
     }
 
     /**
-     * A share of traffic sent to another version (Bolum 53.2).
+     * A share of traffic sent to another version.
      *
      * @param enabled    off by default, so an experiment left in configuration
      *                   after it ended does not keep running

@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.shared.error;
 import java.util.function.Function;
 
 /**
- * Either a value or a reason there is none (Bolum 25.1).
+ * Either a value or a reason there is none.
  *
  * <p>The pipeline's expected failures are not exceptional: a profile too thin
  * to generate from, pinned content that cannot fit, a provider that is down.

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * What {@code scripts/measure-template.sh} runs (Bolum 26.4, EK C.2).
+ * What {@code scripts/measure-template.sh} runs.
  *
  * <p><strong>A tool with a test's shape, and it is not pretending.</strong>
  * EK C.2's checklist for adding a template has two boxes that say "measured" —

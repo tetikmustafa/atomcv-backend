@@ -38,10 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Entries of the Master Profile (Bolum 35.2).
+ * Entries of the Master Profile.
  *
  * <p>The resource map lists no {@code GET} for entries; without one the editor
- * cannot render an experience list at all, so one is added here (EK D.6.2).
+ * cannot render an experience list at all, so one is added here.
  */
 @RestController
 @RequestMapping("/api/v1/profile/entries")

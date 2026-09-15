@@ -51,8 +51,7 @@ interface TagJpaRepository extends JpaRepository<Tag, UUID> {
      * (absolute rule 3).
      *
      * <p>Ordered, because Faz B's determinism is a property of its inputs and
-     * an unordered result set is a different input on a different day
-     * (Bolum 19.6).
+     * an unordered result set is a different input on a different day.
      */
     @Query("""
             select new com.mustafatetik.atomcv.profile.repository.AtomTagLabel(

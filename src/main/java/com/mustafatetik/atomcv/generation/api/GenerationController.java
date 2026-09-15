@@ -75,7 +75,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Asking for a CV, and getting one back (Bolum 35.3, Bolum 19.4).
+ * Asking for a CV, and getting one back.
  *
  * <p>One way in for both modes. A request with a posting is scored against it;
  * a request without one is a general CV, which skips Faz A and Faz B and is
@@ -83,12 +83,11 @@ import org.springframework.web.bind.annotation.RestController;
  * {@code POST /generations/general} is gone — it existed because there was no
  * queue and no generation record, and both now exist (EK D.8.8, D.9 · 22).
  *
- * <p><strong>Stage 1 only, and synchronous.</strong> Bolum 35.3's
- * {@code POST /generations} answers 202 with a job to follow, because a
- * generation with an LLM in it takes half a minute. General mode has no LLM
- * and no queue yet: this returns the document itself, and nothing is stored.
- * The queued contract arrives with the generation record in Stage 2
- * (EK D.8.8).
+ * <p><strong>Stage 1 only, and synchronous.</strong> Bolum 35.3's {@code POST
+ * /generations} answers 202 with a job to follow, because a generation with an
+ * LLM in it takes half a minute. General mode has no LLM and no queue yet:
+ * this returns the document itself, and nothing is stored. The queued contract
+ * arrives with the generation record in Stage 2.
  */
 @RestController
 @RequestMapping("/api/v1/generations")
@@ -319,8 +318,8 @@ public class GenerationController {
         // F-019: the verdict and its grant ride along, so a reload shows the
         // thumb that was pressed instead of asking for it again -- and so the
         // person can still see, the day after granting it, whether it is open,
-        // when it runs out and whether anybody has read it (Bolum 48.4) — the
-        // last of those since the offline reader stamps it (B-078).
+        // when it runs out and whether anybody has read it — the last of those
+        // since the offline reader stamps it (B-078).
         //
         // Absent for an anonymous session, and absent rather than refused: a
         // verdict is a row keyed by user and a support grant is consent an
@@ -437,7 +436,7 @@ public class GenerationController {
         if (generation.getContentSnapshot() == null) {
             // The selection is still there, so "make it again" is the honest
             // answer — rendering today's profile would hand back a document
-            // that was never sent to anyone (EK D.6.3).
+            // that was never sent to anyone.
             throw ApiException.of(ErrorCode.GENERATION_ARTIFACT_EXPIRED,
                     new Resolution(ResolutionAction.RETRY, null));
         }
@@ -445,14 +444,14 @@ public class GenerationController {
         if ("docx".equalsIgnoreCase(format)) {
             // No compilation and so no failure to present: POI writes the
             // package itself. The page guarantee does not travel with it
-            // either (Bolum 22.6) -- the atoms are the ones that fit a LaTeX
-            // page, and Word may set them in a little more or less room.
+            // either -- the atoms are the ones that fit a LaTeX page, and Word
+            // may set them in a little more or less room.
             return attachment(downloads.renderDocx(generation), DOCX_MEDIA_TYPE, "docx");
         }
         if ("html".equalsIgnoreCase(format)) {
             // No compiler and no page: HTML does not have one, so the
             // guarantee does not become approximate here the way it does for
-            // Word -- it does not apply (Bolum 22.6).
+            // Word -- it does not apply.
             return attachment(downloads.renderHtml(generation).getBytes(StandardCharsets.UTF_8),
                     MediaType.valueOf("text/html;charset=UTF-8"), "html");
         }
@@ -461,7 +460,7 @@ public class GenerationController {
             // nothing served it; Bolum 55 calls it "ham kaynak indirme". The
             // charset matters as much as it does on the Markdown export: a
             // response without one is read as ISO-8859-1 and a Turkish name
-            // arrives broken (EK D.6.3).
+            // arrives broken.
             return attachment(
                     downloads.renderSource(generation).getBytes(StandardCharsets.UTF_8),
                     MediaType.valueOf("application/x-tex;charset=UTF-8"), "tex");
@@ -895,7 +894,7 @@ public class GenerationController {
                 .orElseThrow().pageTextHeightPt();
     }
     /**
-     * Whose ceiling this generation takes (Bolum 44.1).
+     * Whose ceiling this generation takes.
      *
      * <p>An account pays by its own id; a caller with no account pays by
      * address, because a session is a cookie and counting by one would give an

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
 /**
- * The fonts a document may ask for (Bolum 33.2, Bolum 22.5).
+ * The fonts a document may ask for.
  *
  * <p>The enum <em>is</em> the whitelist. No user string reaches
  * {@code \setmainfont}: a family that is not one of these constants cannot be

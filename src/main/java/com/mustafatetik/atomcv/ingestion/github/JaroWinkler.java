@@ -2,7 +2,7 @@ package com.mustafatetik.atomcv.ingestion.github;
 
 /**
  * Jaro-Winkler, for matching a repository name to a project somebody already
- * wrote about (Bolum 7, Bolum 31.8).
+ * wrote about.
  *
  * <p><strong>Why this and not an embedding.</strong> Bolum 31.8 names both,
  * and the pairs this has to catch are spelling rather than meaning:

@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The application's only way to reach the compiler (Bolum 29).
+ * The application's only way to reach the compiler.
  *
  * <p>It sends LaTeX and gets back either a document or the log that explains
  * why not. Nothing else in the codebase talks to that container, which is what
@@ -53,8 +53,8 @@ public class LatexCompilerClient {
     }
 
     /**
-     * The TeX log for a measurement run (Bolum 26.2). No document is produced
-     * and none is wanted: what matters is what TeX said about the sizes.
+     * The TeX log for a measurement run. No document is produced and none is
+     * wanted: what matters is what TeX said about the sizes.
      */
     public String measure(String source) {
         return new String(send("/measure", source).body(), StandardCharsets.UTF_8);

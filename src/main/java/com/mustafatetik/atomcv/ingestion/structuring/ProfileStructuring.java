@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * A CV, read as structure (Bolum 31.4).
+ * A CV, read as structure.
  *
  * <p><strong>One call, and Bolum 31.4 insists on it.</strong> The English
  * rendering of every bullet is produced in the same request as the parse:
@@ -53,7 +53,7 @@ public class ProfileStructuring {
     private static final Duration TIMEOUT = Duration.ofSeconds(120);
 
     /**
-     * Below this the language is asked about instead of assumed (Bolum 31.10).
+     * Below this the language is asked about instead of assumed.
      *
      * <p>Half. The number is not fine-tuning: the model is told to score a
      * document it cannot place below 0.5, so the floor is where the prompt
@@ -81,14 +81,14 @@ public class ProfileStructuring {
      * @param document  what came out of the file. Its
      *                  {@link ExtractedText#looksScrambled()} flag becomes a
      *                  sentence in front of the CV rather than a refusal
-     *                  (Bolum 31.3)
+     *
      * @param bucketKey the user id, so an A/B experiment keeps one person on
-     *                  one prompt version (Bolum 53.3)
+     *  one prompt version
      */
     /**
      * @param userId whose upload this is, or {@code null} — and null is the
      *               ordinary case here rather than an omission. An anonymous
-     *               import (§ 31.6.3) has no account to bill, which is exactly
+     *  import has no account to bill, which is exactly
      *               why {@code bucketKey} is a session id for it and why the
      *               two are separate arguments
      */

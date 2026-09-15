@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * What gets asked for, and what the payload survives (Bolum 33.3).
+ * What gets asked for, and what the payload survives.
  *
  * <p>The compilation itself is {@code TemplateMeasurementJobIT}'s business in
  * the latex lane; this is about the two things that decide whether it is ever

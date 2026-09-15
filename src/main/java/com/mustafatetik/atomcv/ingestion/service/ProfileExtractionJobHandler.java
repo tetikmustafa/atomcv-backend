@@ -45,10 +45,10 @@ import org.springframework.stereotype.Component;
  * a screen in front of the person while it runs, which is why it is a job with
  * progress rather than a long request.
  *
- * <p><strong>The quota is refunded on failure</strong> (Bolum 44.2). It was
- * taken when the upload was accepted, and a person who got no profile out of
- * it should not have paid for the attempt — the same rule the generation
- * handler follows, and for the same reason.
+ * <p><strong>The quota is refunded on failure</strong>. It was taken when the
+ * upload was accepted, and a person who got no profile out of it should not
+ * have paid for the attempt — the same rule the generation handler follows,
+ * and for the same reason.
  */
 @Component
 public class ProfileExtractionJobHandler implements JobHandler {
@@ -133,7 +133,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
     }
 
     /**
-     * Which prompt variant this caller keeps seeing (Bolum 53.3).
+     * Which prompt variant this caller keeps seeing.
      *
      * <p>An anonymous caller is bucketed by their profile id and not by the
      * session id it is derived from. Both are stable for the length of the
@@ -206,9 +206,8 @@ public class ProfileExtractionJobHandler implements JobHandler {
      * because {@code ProfileWriter} owns its own transaction and this method
      * has none.
      *
-     * <p>Both are low priority (Bolum 30.3) and both are separately
-     * retryable, because they fail for different reasons and neither failure
-     * is the import's.
+     * <p>Both are low priority and both are separately retryable, because they
+     * fail for different reasons and neither failure is the import's.
      */
     private void queueBackgroundWork(UUID userId) {
         queue.enqueue(new Job(JobType.EMBEDDING, userId, Map.of(), clock.instant()));
@@ -267,7 +266,7 @@ public class ProfileExtractionJobHandler implements JobHandler {
 
     /**
      * A refusal the user is told about, with the retryability the error itself
-     * decides (Bolum 30.5).
+     * decides.
      *
      * <p>Presented here rather than by {@code ErrorPresenter}: that class takes
      * a page height it would have nothing to do with, and the three failures

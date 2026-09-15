@@ -65,8 +65,8 @@ public class WelcomeGreeting {
         }
         if (suppressions.isSuppressed(account.getEmail())) {
             // A hard bounce is a standing instruction and outranks the
-            // preference (Bolum 57.7): sending anyway spends the domain's
-            // reputation, which breaks sign-in for everybody else.
+            // preference: sending anyway spends the domain's reputation, which
+            // breaks sign-in for everybody else.
             log.info("Skipped a welcome to a suppressed address");
             return;
         }

@@ -37,7 +37,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * The measured costs of the golden set, kept honest (Bolum 51.3).
+ * The measured costs of the golden set, kept honest.
  *
  * <p>The golden tests run without Docker, which is only possible because the
  * costs are committed next to the fixtures. A committed number is a claim
@@ -47,7 +47,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  *
  * <p>Run with {@code -Dgolden.record=true} to write the files instead of
  * checking them — after changing a fixture's text, or after the template's
- * geometry moves (EK D.8.9).
+ * geometry moves.
  */
 @Tag("latex")
 @Testcontainers
@@ -140,7 +140,7 @@ class GoldenCostsIT {
         // The layout each wording is printed in, for the same reason
         // RenderCostService carries it: an INLINE_LIST row reaches the page
         // with its label in bold, and a measurement taken on the unbolded text
-        // reports a row narrower than the one that is printed (Bolum 22.4).
+        // reports a row narrower than the one that is printed.
         Map<UUID, RowShape> shapeOfAtom = shapes(golden);
         var items = golden.variants().stream()
                 .map(variant -> new MeasurementRequest.MeasurableItem(

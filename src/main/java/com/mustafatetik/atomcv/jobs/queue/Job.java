@@ -16,7 +16,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * One unit of asynchronous work (Bolum 30).
+ * One unit of asynchronous work.
  *
  * <p>The table is in {@code V1}; this is the mapping. There is no migration
  * and there must not be one (absolute rule 2).
@@ -251,7 +251,7 @@ public class Job implements UserOwned {
     }
 
     /**
-     * Back to the queue, not before {@code runAfter} (Bolum 30.5).
+     * Back to the queue, not before {@code runAfter}.
      *
      * <p>The lock is released with it. A retried job that kept its
      * {@code locked_by} would be reclaimed by the zombie collector as well as

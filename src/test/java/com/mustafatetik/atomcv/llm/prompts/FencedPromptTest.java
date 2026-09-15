@@ -8,7 +8,7 @@ import com.mustafatetik.atomcv.llm.gateway.JsonSchema;
 import org.junit.jupiter.api.Test;
 
 /**
- * Where the instructions end and the data begins (Bolum 43.1).
+ * Where the instructions end and the data begins.
  *
  * <p>The split does two jobs at once and the tests are about both. It is a
  * security boundary — the model is told the fenced half is data — and it is

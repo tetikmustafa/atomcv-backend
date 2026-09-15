@@ -166,7 +166,7 @@ class ErrorCatalogueTest {
         assertThat(error.resolutions()).isUnmodifiable();
     }
 
-    // ─── the action vocabulary (EK D.6) ───
+    // ─── the action vocabulary ───
 
     @Test
     void theActionVocabularyIsTheAgreedTwelve() {
@@ -209,7 +209,7 @@ class ErrorCatalogueTest {
         }
     }
 
-    // ─── the wire shape is the contract (Bolum 35.4) ───
+    // ─── the wire shape is the contract ───
 
     @Test
     void theBodySerialisesTheWayTheDocumentShowsIt() throws Exception {

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The anonymous profile becomes the account's (Bolum 9, Adim 3.6).
+ * The anonymous profile becomes the account's.
  *
  * <p><strong>It runs inside signing in, and it has to.</strong> Signing in
  * issues a new session and a new cookie; the anonymous session id is known
@@ -105,7 +105,7 @@ public class ProfileUpgradeService {
     }
 
     /**
-     * The two jobs the anonymous import skipped (§ 31.6.3).
+     * The two jobs the anonymous import skipped.
      *
      * <p>They were skipped because they write to rows an anonymous profile does
      * not have. It has them now, so this is the moment they become possible —

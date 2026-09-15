@@ -36,8 +36,7 @@ import org.springframework.stereotype.Service;
  * font's metrics are exact but a paragraph's line breaks are the compiler's
  * decision. So the compiled document is counted, and a document that came out
  * too long sends the budget back to selection reduced rather than sending the
- * text to an LLM to be shortened — Faz F never asks for new words
- * (Bolum 23.1).
+ * text to an LLM to be shortened — Faz F never asks for new words.
  */
 @Service
 public class GenerationPipeline {
@@ -79,9 +78,9 @@ public class GenerationPipeline {
 
         int maxPages = request.maxPages();
         // The request's own, not 1.0. A run against an estimated capacity
-        // arrives asking for less of the page than there is (Bolum 33.3), and
-        // starting the loop at one would have thrown that away on the first
-        // attempt -- the one attempt most documents ever take.
+        // arrives asking for less of the page than there is, and starting the
+        // loop at one would have thrown that away on the first attempt -- the
+        // one attempt most documents ever take.
         double factor = request.budgetFactor();
         int lastPageCount = 0;
         RewrittenContent rewritten = RewrittenContent.none();
@@ -95,7 +94,7 @@ public class GenerationPipeline {
             SelectionState state = selection.orElseThrow();
 
             // Faz D. It answers with a CV whatever happens to it, so there is
-            // no branch here for a rewrite that failed (Bolum 21.5).
+            // no branch here for a rewrite that failed.
             rewritten = rewriter.rewrite(state, rewritten);
 
             RenderRequest renderRequest = RenderPhase.build(
@@ -138,11 +137,11 @@ public class GenerationPipeline {
      *
      * <p><strong>Not the drift percentage Bolum 26.6 writes.</strong> That one
      * divides a measured content height by the predicted one, and there is no
-     * measured height here: Bolum 23's note records that no {@code pdfAnalyzer}
-     * exists and that the page count arrives as the compiler's
+     * measured height here: Bolum 23's note records that no {@code
+     * pdfAnalyzer} exists and that the page count arrives as the compiler's
      * {@code X-Page-Count} header. A height would cost a second compilation of
      * every document, and the measurement document that can produce one shares
-     * a preamble with the page rather than being it (Bolum 22.4).
+     * a preamble with the page rather than being it.
      *
      * <p>What can be compared is pages: how many the budget said this would
      * take against how many came back. Zero is the ordinary reading and the

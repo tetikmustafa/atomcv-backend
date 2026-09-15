@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Where a job has got to (EK D.6.4).
+ * Where a job has got to.
  *
  * <p>Fields are present only in their own terminal state:
  * {@code generationId} and {@code pageCount} when a generation completed,
@@ -48,7 +48,7 @@ import java.util.UUID;
  *
  * @param phase the pipeline phase last reported, "A" through "G"
  * @param label a <strong>translation key</strong>, never a sentence — the
- *              frontend owns the words (Bolum 35.4)
+ *  frontend owns the words
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "A job's progress or its outcome")

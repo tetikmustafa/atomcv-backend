@@ -3,7 +3,7 @@ package com.mustafatetik.atomcv.llm.providers;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Where OpenRouter is and what it is asked for (Bolum 27.2).
+ * Where OpenRouter is and what it is asked for.
  *
  * <p>The key comes from the environment and has no default (absolute rule 5).
  * An empty one is not an error: Bolum 27.3 skips a provider without a key

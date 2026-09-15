@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 
 /**
- * Asking for a covering letter, or for another one (Bolum 34.6).
+ * Asking for a covering letter, or for another one.
  *
  * <p>Both fields are optional and an empty body is a valid request: write the
  * letter, the ordinary way, with nothing extra known about the employer.

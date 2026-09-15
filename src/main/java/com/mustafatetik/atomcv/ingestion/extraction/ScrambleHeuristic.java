@@ -12,9 +12,9 @@ import java.util.List;
  * a stack of fragments, many of them one word long.
  *
  * <p><strong>It answers about the shape of the text and never about its
- * quality.</strong> A true answer becomes a sentence in the structuring prompt
- * (Bolum 31.3), not a refusal — a model told the order may be wrong can still
- * read the CV, and a wall here would reject documents that work.
+ * quality.</strong> A true answer becomes a sentence in the structuring
+ * prompt, not a refusal — a model told the order may be wrong can still read
+ * the CV, and a wall here would reject documents that work.
  */
 final class ScrambleHeuristic {
 

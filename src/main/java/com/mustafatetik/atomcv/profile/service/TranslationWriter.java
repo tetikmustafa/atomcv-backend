@@ -75,7 +75,7 @@ public class TranslationWriter {
         // Derived-from records what it was made from, and clears the flag. For
         // a pivot translation that is the English wording rather than the
         // original, which is exactly right: the German went stale when the
-        // English it was made from did (Bolum 32.5).
+        // English it was made from did.
         target.markDerivedFrom(source);
         return Result.ok(variants.save(profile, target));
     }

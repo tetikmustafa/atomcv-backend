@@ -28,7 +28,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * The LaTeX container, exercised for real (Bolum 29).
+ * The LaTeX container, exercised for real.
  *
  * <p>Tagged and excluded from {@code integrationTest}: the image is a couple of
  * gigabytes and takes minutes to build. Run it with {@code gradlew latexTest}
@@ -100,7 +100,7 @@ class LatexContainerIT {
     @Test
     void returnsTheLogForMeasurement() throws Exception {
         // Bolum 22.4's shape, with one correction: \mbox is already a LaTeX
-        // command, so the box needs another name (EK D.7).
+        // command, so the box needs another name.
         String log = text(post("/measure", """
                 \\documentclass{article}
                 \\begin{document}
@@ -180,7 +180,7 @@ class LatexContainerIT {
         assertThat(log).containsPattern("ATOMCOST\\|var-1\\|[0-9]+\\.[0-9]+pt\\|[0-9]+\\.[0-9]+pt");
         // And the document has to be valid, not merely produce a line before
         // failing: an earlier version of this test passed while TeX was
-        // stopping at "perhaps a missing \item" (EK D.8.3).
+        // stopping at "perhaps a missing \item".
         assertThat(log).doesNotContain("! LaTeX Error").doesNotContain("! Undefined");
     }
 
@@ -199,13 +199,13 @@ class LatexContainerIT {
                 renderer.renderMeasurement(new MeasurementRequest(
                         items, TemplateCustomization.CLASSIC)).value()));
 
-        // One compilation, every atom (Bolum 26.2) — and none of them lost.
+        // One compilation, every atom — and none of them lost.
         assertThat(TexLogParser.parseCosts(log)).hasSize(12);
     }
 
     /**
      * Faz F counts pages it did not compile, so the count has to come back
-     * with the document and it has to be right (Bolum 23.1, EK D.8.6).
+     * with the document and it has to be right.
      */
     @Test
     void reportsHowManyPagesItProduced() throws Exception {

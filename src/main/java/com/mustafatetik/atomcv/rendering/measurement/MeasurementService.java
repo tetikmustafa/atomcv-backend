@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 /**
- * One compilation, every atom (Bolum 26.2).
+ * One compilation, every atom.
  *
  * <p>Compiling each atom on its own would mean two hundred runs for one
  * profile. Instead the whole batch goes into a single document that prints

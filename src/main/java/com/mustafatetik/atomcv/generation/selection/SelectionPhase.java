@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Faz C: what fits on the page (Bolum 20).
+ * Faz C: what fits on the page.
  *
  * <p>This is where the product's promise is kept. It is pure code — the same
  * request produces the same answer, every time — because a page limit that
@@ -202,9 +202,8 @@ public final class SelectionPhase {
         }
 
         /**
-         * An atom the user switched off is not a candidate at all
-         * (constraint 3), and neither is one they took off this CV
-         * (Bolum 24.4).
+         * An atom the user switched off is not a candidate at all (constraint
+         * 3), and neither is one they took off this CV.
          *
          * <p>The profile's switch is asked first. An atom that is both off and
          * excluded is reported as {@code INACTIVE}, because that is the older
@@ -232,10 +231,9 @@ public final class SelectionPhase {
          * reach the minimum worth printing.
          *
          * <p>Bolum 20.3 forces the minimum for every visible entry. That would
-         * make a long profile fail rather than drop its weakest entries, so the
-         * minimum is forced only where a lock already commits the entry;
-         * everywhere else it is enforced after the fact, all or nothing
-         * (EK D.8.5).
+         * make a long profile fail rather than drop its weakest entries, so
+         * the minimum is forced only where a lock already commits the entry;
+         * everywhere else it is enforced after the fact, all or nothing.
          *
          * <p>An atom the user asked for by hand is placed here too, and is
          * recorded as {@code forcedByLock}. The flag's name is narrower than
@@ -343,12 +341,13 @@ public final class SelectionPhase {
                     (EntryPlan entry) -> bestScoreIn(entry)).reversed()
                     // The wording decides a tie, not the id — the same rule
                     // sortedByScore follows, and for the same reason. Ids are
-                    // minted fresh on every import, and a profile whose entries
-                    // score alike is not a corner case: fourteen projects with
-                    // no dates all score the same in general mode, so the two
-                    // this floor reserves were being chosen by a random UUID.
-                    // Reading the same CV twice then produced two different
-                    // pages, which is Principle 2 broken (Bolum 20.3).
+                    // minted fresh on every import, and a profile whose
+                    // entries score alike is not a corner case: fourteen
+                    // projects with no dates all score the same in general
+                    // mode, so the two this floor reserves were being chosen
+                    // by a random UUID. Reading the same CV twice then
+                    // produced two different pages, which is Principle 2
+                    // broken.
                     .thenComparing(Run::wordingOf)
                     .thenComparing(entry -> entry.entryId().toString()));
 
@@ -390,10 +389,9 @@ public final class SelectionPhase {
          *
          * <p>At least one, whatever the floor says. {@code EDUCATION}'s floor
          * is "one entry and no bullets" — a degree line is a heading, and
-         * asking for an achievement under it is asking to pad (Bolum 20.2) —
-         * and a bound of zero took nothing at all, so the one section whose
-         * floor is only an entry was the one section the floors could not put
-         * on the page.
+         * asking for an achievement under it is asking to pad — and a bound of
+         * zero took nothing at all, so the one section whose floor is only an
+         * entry was the one section the floors could not put on the page.
          */
         private int wantedFor(EntryPlan entry, SectionFloor floor) {
             return Math.max(1, Math.max(floor.atomsPerEntry(), minAtomsFor(entry)));
@@ -493,7 +491,7 @@ public final class SelectionPhase {
         }
 
         /**
-         * Whether this atom's section may take another (Bolum 33.4).
+         * Whether this atom's section may take another.
          *
          * <p>Only {@code ABOUT} has a ceiling, and it is not a budget rule. A
          * real profile keeps four summaries — one written towards backend work,
@@ -665,8 +663,8 @@ public final class SelectionPhase {
                     double efficiency = adjustedScoreOf(atom) / cost;
                     if (best == null || efficiency > bestEfficiency
                             // Determinism: the wording decides a tie, never
-                            // insertion order (Bolum 20.3). The id is only the
-                            // last resort, and it is not stable across imports.
+                            // insertion order. The id is only the last resort,
+                            // and it is not stable across imports.
                             || (efficiency == bestEfficiency
                                 && atom.tieBreak().compareTo(best.tieBreak()) < 0)) {
                         best = atom;
@@ -838,8 +836,8 @@ public final class SelectionPhase {
         }
 
         /**
-         * An entry heading costs more when a list came before it (EK D.8.10),
-         * and less when the entry is a project.
+         * An entry heading costs more when a list came before it, and less
+         * when the entry is a project.
          *
          * <p>The first entry of a section follows its heading and pays the
          * cheaper of the pair; every later one follows the bullets of the entry
@@ -960,7 +958,7 @@ public final class SelectionPhase {
                 if (left == 0) {
                     openEntries.remove(original.entryId());
                     // Exactly what it was charged, which is not always the
-                    // same number (EK D.8.10).
+                    // same number.
                     structurePt -= entryFurniturePt.remove(original.entryId());
                     headerOnly.remove(original.entryId());
                 }
@@ -1145,7 +1143,7 @@ public final class SelectionPhase {
             sorted.sort(Comparator.comparingDouble(AtomCandidate::score).reversed()
                     // The wording decides a tie, not the id: ids are minted
                     // fresh on every import and the same CV would otherwise
-                    // order two equal atoms differently each time (Bolum 20.3).
+                    // order two equal atoms differently each time.
                     .thenComparing(AtomCandidate::tieBreak)
                     .thenComparing(atom -> atom.atomId().toString()));
             return sorted;

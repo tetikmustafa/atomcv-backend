@@ -110,10 +110,9 @@ class JobAnalysisPromptTest {
     }
 
     /**
-     * With {@code strict: true} the provider enforces the vocabulary
-     * (Bolum 27.2), so this only happens in the weaker json_object mode.
-     * Failing the whole parse there would buy a full retry for a field
-     * Bolum 18.4's gate never reads.
+     * With {@code strict: true} the provider enforces the vocabulary, so this
+     * only happens in the weaker json_object mode. Failing the whole parse
+     * there would buy a full retry for a field Bolum 18.4's gate never reads.
      */
     @Test
     void aValueOutsideAClosedVocabularyReadsAsAbsentRatherThanFailing() throws Exception {

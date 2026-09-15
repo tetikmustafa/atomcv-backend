@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * The contact block of a profile, stored in {@code profiles.contact}
- * (Bolum 14.2).
+ * The contact block of a profile, stored in {@code profiles.contact}.
  *
  * <p>A typed record rather than a map: every field here is rendered into a CV
  * header, and a map would push "which keys exist" into the renderer and the
