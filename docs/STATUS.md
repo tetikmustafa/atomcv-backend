@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-15** · **frontend'e sekiz madde açık** — `B-100`…`B-107`, hepsi tek denetimden, hiçbiri henüz ACK'lenmedi
+**2026-09-16** · **frontend'e dokuz madde açık** — `B-100`…`B-108`, iki denetimden, hiçbiri henüz ACK'lenmedi
 
 ## Backend — `atomcv-backend`
 
@@ -12,19 +12,19 @@
 | Aşama 0-3 — hesap, MVP, anonim akış (kapanış denetimi 08-28) | ✅ |
 | Aşama 4 — buradan yapılabilecek maddelerin hepsi | ✅ |
 
-**Aşama 4 + denetim.** **Faz G** düzenleme döngüsü (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** slider'ları (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`, § 57.7). Sonra **spec baştan sona koda karşı okundu** ve "dokümanda var, kodda yok" olan her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi.
+**Aşama 4 + iki denetim.** **Faz G** (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`). Sonra spec **iki kez** baştan sona koda karşı okundu (09-15, 09-16); ikisinin de bulduğu her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi. Anlatı `notes/`'ta.
 
-**Denetimde inenler.** Arşivleme ucu, atom etiketleri, `/api/v1/warmup`, commit'li `openapi.json` + iki CI işi, `emphasize` + `note`, HTML renderer, `format=source`, GitHub içe aktarımı, `/customizations` + `GET /templates`, CDS, Umami — sonra **§ 21.8'in çeviri adımı** (`F-013` kapandı: `auto` artık ilanı gerçekten takip ediyor, eksik sözcüklemeler Faz B ile C arasında çevrilip **kaydediliyor**), **§ 32.5'in pivotu** (TR→EN→DE), **§ 30.6'nın `LISTEN/NOTIFY`'ı** (§ 50.3'ün hazırlık tablosu artık doğru), **§ 48.3'ün beş metrik satırı** ve **§ 48.5'in replay'i**.
+**Birinci turda inenler (09-15).** Arşivleme ucu, atom etiketleri, `/api/v1/warmup`, commit'li `openapi.json`, `emphasize` + `note`, HTML renderer, `format=source`, GitHub içe aktarımı, `/customizations` + `GET /templates`, CDS, Umami, § 21.8'in çeviri adımı (`F-013`), § 32.5'in pivotu, § 30.6'nın `LISTEN/NOTIFY`'ı, § 48.3'ün metrikleri, § 48.5'in replay'i. **Üç sessiz bulgu:** nginx CSP'si Turnstile'ı blokluyordu (`B-100`), `tags`/`atom_tags`'e hiçbir şey yazmıyordu (`B-103`), çeviri fan-out'u model çağrısını `@Transactional` içinde tutuyordu.
 
-**Üç bulgu, üçü de sessizdi.** **(1)** nginx'in CSP'si Turnstile'ı blokluyordu — üretimde giriş ve anonim akışın üç ucu `CHALLENGE_FAILED` olurdu, iki reponun testi yeşilken (`B-100`). **(2)** `tags`/`atom_tags`'e hiçbir şey yazmıyordu: Faz B'nin etiket bileşeni ham skorun dörtte biri (§ 19.1) ve yapısal olarak sıfırdı — hiçbir test düşmez, bütün skorlar birlikte düşer (`B-103`). **(3)** çeviri adımının kendi fan-out'u model çağrısını `@Transactional` içinde tutuyordu: on bağlantılı havuz, altmış iplik. Yazma ayrı bean'e taşındı, bir ArchUnit kuralı tutuyor.
+**İkinci tur sekiz madde daha buldu (09-16), altısı kodda.** **(1)** **İlke 7 telde yoktu** — skor, eşleşen keyword ve red nedeni hesaplanıyor, hiçbiri yayımlanmıyordu; `matchedKeywords` + `heldBackReason` indi, skor § 23.3 gerekçesiyle bilerek inmedi (`B-108`, § 35.3.1). **(2)** **WAL arşivleme hiç kurulmamıştı** — § 49.5'in "~5 dakika"sı gerçekte 03:00'a kadardı; `archive_mode` + haftalık `pg_basebackup` indi, çünkü WAL `pg_dump`'a değil fiziksel bir temele oynanır. **(3)** **3-2-1'in ikinci sağlayıcısı yoktu**, saklama tek `7d` idi. **(4)** `restore.sh` § 49.4'ün anonim satır silmesini hiç yapmıyordu. **(5)** **circuit breaker yoktu** — karanlık sağlayıcıya her üretim 30 sn ödüyordu. **(6)** § 42.4'ün JSON limitleri kurulmamıştı; `.env.example`'da `AGE_PUBLIC_KEY` hiç yoktu. Ayrıca § 27.2'nin **üç eksik adaptörü** yazıldı (dağıtım değişmiyor: anahtarsız adaptör atıl).
 
-**İki şartname parçası düzeltildi, ikisi de ölçümle.** **§ 29.2'nin LaTeX format dökümü XeTeX'te çalışmıyor** — motor "Can't \dump a format with native fonts" diyor, ve yine de bozuk bir `.fmt` yazıyor; vaat edilen "1-2 saniye" de asgari bir belgenin **tamamından** (620-925 ms) uzun. **§ 48.5'in replay'i** artık var ama yalnız **Faz E**: Faz B ve C'nin girdileri hiçbir yerde saklanmıyor ve saklamak bir saklama kararı olurdu.
+**İki döküman bulgusu.** § 35.2.1 beş ucun "yok" olduğunu savunuyordu, bir aşamadır varken. **EK D monolitte kalmıştı** — spec ona 75 kez atıf yapıyor ve `sync-spec.sh` onu kopyalamıyordu, yani frontend'in kopyasında 75 atfın hepsi boşa düşüyordu; `spec/18-appendix-d.md`'ye taşındı.
 
-**Ölçümler.** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor — etiketler indikten **sonra yeniden ölçüldü**: 0.0959 → **0.1259** (taban 0.40), sonuç değişmedi. `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde.
+**Ölçümler.** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (0.1259 / taban 0.40). `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde. **§ 29.2'nin format dökümü XeTeX'te imkânsız** (motor sınırı, ölçüldü).
 
-**Geliştiricide:** VPS/restore (**restore sonrası anonim satırları silmek**, § 49.4); OAuth, Turnstile ve `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu bilerek yok** (§ 41.4) ve **R2 bilerek yok** (§ 57.4) — ikincisini hatırlatan artık bir paragraf değil bir tuzak tel.
+**Geliştiricide:** VPS ve restore testi (§ 49.4); OAuth, Turnstile, `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu** (§ 41.4) ve **R2** (§ 57.4) bilerek yok; ikincisini bir tuzak tel tutuyor.
 
-**Test:** 1836 birim · 580 entegrasyon · latex 145 — 0 hata
+**Test:** 1869 birim · 580 entegrasyon · latex 145 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +55,6 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Sırada `B-100`…`B-107` var (2026-09-15).** Sekizi de tek denetimden ve hiçbiri ACK'lenmedi, yani `to-frontend.md` 100 satırı geçti — bu bir arşivleme değil koordinasyon meselesi. **Önce `npm run gen:api`**: altı uç ve üç şema değişti. Başlıcanlar: `B-100` (CSP — kod işi yok ama dağıtımda görülmeli), `B-101` (`contract-check`'in URL'i), `B-103` (etiketler), `B-107` (`auto` artık ilanı takip ediyor: üretim yavaşlayabilir, ve profil editöründe `createdBy: llm_translate` sözcüklemeler belirecek).
+**Sırada `B-100`…`B-108` var (2026-09-16).** Dokuzu da iki denetimden ve hiçbiri ACK'lenmedi, yani `to-frontend.md` 100 satırı geçti — bu bir arşivleme değil koordinasyon meselesi. **Önce `npm run gen:api`**: birinci turda altı uç ve üç şema, ikincide `SelectionLine`. Başlıcanlar: `B-100` (CSP — kod işi yok ama dağıtımda görülmeli), `B-101` (`contract-check`'in URL'i), `B-103` (etiketler), `B-107` (`auto` ilanı takip ediyor: üretim yavaşlayabilir), `B-108` (`heldBackReason` dört ayrı cümle istiyor — `INACTIVE` profil ayarı, `EXCLUDED_BY_DIRECTIVE` bu CV'nin düzenlemesi; karıştıran bir ekran kalıcı kararı geri aldırır).
 
 **Frontend'de kalanlar karar, kod değil:** analitik (ölçümü alacak bir dağıtım istiyor), bölüm düzeni ve dil ekseni kontrolleri, diğer diller, `docs/spec/`'in İngilizceye çevrilmesi.
