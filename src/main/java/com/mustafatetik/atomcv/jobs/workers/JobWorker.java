@@ -51,6 +51,7 @@ public class JobWorker {
 
     private final JobQueue queue;
     private final JobEvents events;
+    private final JobTelemetry telemetry;
     private final Map<JobType, JobHandler> handlers;
     private final JobWorkerProperties properties;
     private final Clock clock;
@@ -90,13 +91,14 @@ public class JobWorker {
      */
     @org.springframework.beans.factory.annotation.Autowired
     public JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
-            JobWorkerProperties properties, Clock clock) {
+            JobWorkerProperties properties, Clock clock, JobTelemetry telemetry) {
         this(queue, events, handlers, properties, clock,
-                java.util.concurrent.ThreadLocalRandom.current());
+                java.util.concurrent.ThreadLocalRandom.current(), telemetry);
     }
 
     JobWorker(JobQueue queue, JobEvents events, List<JobHandler> handlers,
-            JobWorkerProperties properties, Clock clock, RandomGenerator random) {
+            JobWorkerProperties properties, Clock clock, RandomGenerator random,
+            JobTelemetry telemetry) {
 
         this.queue = queue;
         this.events = events;
@@ -105,6 +107,7 @@ public class JobWorker {
         this.properties = properties;
         this.clock = clock;
         this.random = random;
+        this.telemetry = telemetry;
         this.workerId = newWorkerId();
         this.executor = Executors.newFixedThreadPool(properties.concurrency());
         log.info("Worker {} handling {} with concurrency {}",
@@ -160,7 +163,11 @@ public class JobWorker {
         try {
             Job job = queue.find(jobId).orElseThrow(() -> new IllegalStateException(
                     "The job just claimed is gone: " + jobId));
-            settle(job, outcomeOf(job));
+            // Bolum 48.3. Started here rather than at the claim so that the
+            // wait it records is the wait of a job that actually ran.
+            JobTelemetry.Run measured = telemetry.started(job);
+            settle(job, outcomeOf(job, measured));
+            measured.finished(job.getStatus());
         } catch (RuntimeException unexpected) {
             // The row could not even be read, or settling it threw. Nothing
             // left to write to; the zombie collector takes it from here.
@@ -170,7 +177,7 @@ public class JobWorker {
         }
     }
 
-    private JobOutcome outcomeOf(Job job) {
+    private JobOutcome outcomeOf(Job job, JobTelemetry.Run measured) {
         JobHandler handler = handlers.get(job.getType());
         if (handler == null) {
             // A queued row with nobody to run it is a deployment mistake. It
@@ -180,7 +187,7 @@ public class JobWorker {
             return JobOutcome.failed(UserFacingError.of(ErrorCode.INTERNAL_ERROR), false);
         }
         try {
-            return handler.handle(job, sinkFor(job));
+            return handler.handle(job, sinkFor(job, measured));
         } catch (RuntimeException thrown) {
             // Unreasoned-about failures are retried while attempts remain: an
             // exception is by definition something nobody decided was final.
@@ -199,8 +206,11 @@ public class JobWorker {
      * is gone (EK D.6.4). One update per phase, which is a handful per
      * generation.
      */
-    private ProgressSink sinkFor(Job job) {
+    private ProgressSink sinkFor(Job job, JobTelemetry.Run measured) {
         return progress -> {
+            // Before the write, so that a phase's measurement does not carry
+            // the cost of announcing it (Bolum 48.3).
+            measured.reported(progress);
             job.setProgress(progress);
             queue.save(job);
             // The row first, then the announcement. An event published before

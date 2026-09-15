@@ -187,7 +187,8 @@ class ProfileStructuringTest {
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.MID, List.of(provider.id())),
                         Map.of(), Duration.ofSeconds(30), 0),
-                event -> { }, CLOCK, Optional.empty());
+                event -> { }, CLOCK, Optional.empty(),
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
         return new ProfileStructuring(
                 new PromptRegistry(
                         new PromptProperties(Map.of("profile_extraction", "v1"), Map.of()), JSON),

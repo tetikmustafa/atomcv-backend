@@ -26,6 +26,10 @@ class ProviderChainTest {
             Clock.fixed(Instant.parse("2026-08-21T09:00:00Z"), ZoneOffset.UTC);
 
     private final List<LlmInvocationEvent> published = new ArrayList<>();
+
+    /** Bolum 48.3's fallback rate is read off this one. */
+    private final io.micrometer.core.instrument.simple.SimpleMeterRegistry meters =
+            new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
     private final List<Object> recorded = new ArrayList<>();
 
     /** Absent unless a test asks for it, as it is absent outside local-record. */
@@ -119,6 +123,62 @@ class ProviderChainTest {
 
     // ── Bolum 27.5: every call is counted, failures included ──────────────
 
+    // -- Bolum 48.3's "Saglayici fallback orani" ----------------------------
+
+    /**
+     * An answer from the first provider that was actually tried is not a
+     * fallback, and that is the denominator half of the rate.
+     */
+    @Test
+    void ananswerFromTheFirstProviderCountsAsPrimary() {
+        chain(List.of(answering("gemini"), answering("deepseek"))).call(request());
+
+        assertThat(answersAt("primary")).isEqualTo(1);
+        assertThat(meters.find("llm.chain.answers").tag("position", "fallback").counter())
+                .isNull();
+    }
+
+    /** And an answer bought after a failure is the numerator. */
+    @Test
+    void ananswerAfterAfailureCountsAsAfallback() {
+        chain(List.of(
+                failing("gemini", LlmFailure.Kind.RATE_LIMITED),
+                answering("deepseek"))).call(request());
+
+        assertThat(answersAt("fallback")).isEqualTo(1);
+    }
+
+    /**
+     * <strong>A provider with no key is skipped without counting.</strong>
+     * Bolum 27.3 says so about the {@code tried} list and the rate has to
+     * agree: a deployment running with one key out of three would otherwise
+     * report every single answer as a fallback, and the number that is
+     * supposed to say "a vendor is having a bad day" would instead say
+     * "somebody did not buy three subscriptions".
+     */
+    @Test
+    void askippedProviderWithNoKeyDoesNotMakeTheAnswerAfallback() {
+        chain(List.of(unavailable("openai"), answering("gemini")),
+                List.of("openai", "gemini"), 0).call(request());
+
+        assertThat(answersAt("primary")).isEqualTo(1);
+    }
+
+    /** The walk that ran out is counted at its own name, not as an answer. */
+    @Test
+    void anexhaustedChainIsCountedSeparately() {
+        chain(List.of(unavailable("openai"), unavailable("gemini"))).call(request());
+
+        assertThat(meters.get("llm.chain.exhausted").tag("tier", "cheap").counter().count())
+                .isEqualTo(1);
+        assertThat(meters.find("llm.chain.answers").counters()).isEmpty();
+    }
+
+    private double answersAt(String position) {
+        return meters.get("llm.chain.answers")
+                .tag("tier", "cheap").tag("position", position).counter().count();
+    }
+
     @Test
     void aSuccessfulCallIsRecorded() {
         chain(List.of(answering("gemini"))).call(request());
@@ -211,7 +271,7 @@ class ProviderChainTest {
                 Duration.ofSeconds(30), retries);
         return new ProviderChain(providers, properties,
                 event -> published.add((LlmInvocationEvent) event), CLOCK,
-                Optional.ofNullable(recorder));
+                Optional.ofNullable(recorder), meters);
     }
 
     private static LlmResponse<String> ok(Result<LlmResponse<String>> result) {

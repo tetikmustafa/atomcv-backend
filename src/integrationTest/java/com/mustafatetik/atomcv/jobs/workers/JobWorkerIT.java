@@ -103,7 +103,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
         var release = new CountDownLatch(1);
         var worker = new JobWorker(queue, JobEvents.NONE,
                 List.of(reporting(reported, release)),
-                properties(Duration.ofSeconds(30)), clock, NO_JITTER);
+                properties(Duration.ofSeconds(30)), clock, NO_JITTER, telemetry);
 
         var thread = new Thread(worker::runOne);
         thread.start();
@@ -230,7 +230,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
     void ajobWithNoHandlerFailsRatherThanSittingInTheQueue() {
         Job queued = enqueue();
         var worker = new JobWorker(queue, JobEvents.NONE, List.of(), properties(Duration.ofSeconds(30)),
-                clock, NO_JITTER);
+                clock, NO_JITTER, telemetry);
 
         worker.runOne();
 
@@ -287,7 +287,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
                     await(release);
                     return JobOutcome.completed(Map.of());
                 })),
-                properties(Duration.ofSeconds(1)), clock, NO_JITTER);
+                properties(Duration.ofSeconds(1)), clock, NO_JITTER, telemetry);
 
         worker.poll();
         assertThat(started.await(10, TimeUnit.SECONDS)).isTrue();
@@ -313,7 +313,7 @@ class JobWorkerIT extends AbstractIntegrationTest {
                     await(release);
                     return JobOutcome.completed(Map.of());
                 })),
-                properties(Duration.ofSeconds(1)), clock, NO_JITTER);
+                properties(Duration.ofSeconds(1)), clock, NO_JITTER, telemetry);
 
         worker.poll();
 
@@ -334,9 +334,12 @@ class JobWorkerIT extends AbstractIntegrationTest {
                 Map.of("jobDescription", "irrelevant"), clock.instant()));
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private JobTelemetry telemetry;
+
     private JobWorker workerRunning(Function<Job, JobOutcome> body) {
         return new JobWorker(queue, JobEvents.NONE, List.of(handler(body)),
-                properties(Duration.ofSeconds(30)), clock, NO_JITTER);
+                properties(Duration.ofSeconds(30)), clock, NO_JITTER, telemetry);
     }
 
     private static JobHandler handler(Function<Job, JobOutcome> body) {

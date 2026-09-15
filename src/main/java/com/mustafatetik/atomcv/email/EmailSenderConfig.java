@@ -16,14 +16,48 @@ import org.springframework.mail.javamail.JavaMailSender;
  * using. One bean method rather than two conditional ones, so the choice is a
  * branch that can be read and tested instead of an ordering between
  * annotations.
+ *
+ * <p><strong>Whichever it is, it is counted</strong> (Bolum 48.3's e-posta
+ * row). The counter goes around the chosen sender rather than inside the two
+ * implementations, so a third one is counted the day it is written and the
+ * deployment with no sender at all -- which is the case worth noticing -- is
+ * counted too.
  */
 @Configuration
 public class EmailSenderConfig {
 
     private static final Logger log = LoggerFactory.getLogger(EmailSenderConfig.class);
 
+    /**
+     * Bolum 48.3's "Teslimat orani", as far as this side of the wire can see
+     * it: whether the provider took the message. Whether it arrived is the
+     * webhook's half, and {@code ResendWebhookController} counts that under
+     * {@code email.events}.
+     */
+    static final String SENT = "email.sent";
+
     @Bean
     EmailSender emailSender(EmailProperties properties, ObjectMapper json,
+            ObjectProvider<JavaMailSender> mail,
+            io.micrometer.core.instrument.MeterRegistry meters) {
+        return counted(chosen(properties, json, mail), meters);
+    }
+
+    /**
+     * @return the same sender, counting what it answered. No tag for the
+     *         recipient or the subject: absolute rule 4 covers an address, and
+     *         a per-address time series would be a second mailing list
+     */
+    private static EmailSender counted(EmailSender sender,
+            io.micrometer.core.instrument.MeterRegistry meters) {
+        return message -> {
+            boolean accepted = sender.send(message);
+            meters.counter(SENT, "outcome", accepted ? "accepted" : "refused").increment();
+            return accepted;
+        };
+    }
+
+    private static EmailSender chosen(EmailProperties properties, ObjectMapper json,
             ObjectProvider<JavaMailSender> mail) {
         if (properties.hasResendKey()) {
             log.info("Sending email through Resend");

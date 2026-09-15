@@ -601,10 +601,13 @@ class JobSpecificCvIT extends AbstractLatexTest {
                 .andReturn().getResponse().getContentAsByteArray();
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.mustafatetik.atomcv.jobs.workers.JobTelemetry telemetry;
+
     private JobWorker worker() {
         return new JobWorker(queue, JobEvents.NONE, handlers,
                 new JobWorkerProperties(true, 1, null, null, null, Duration.ofSeconds(5)),
-                clock);
+                clock, telemetry);
     }
 
     private static String quoted(String value) {

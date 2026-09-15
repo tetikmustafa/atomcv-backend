@@ -47,17 +47,27 @@ public class ResendWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(ResendWebhookController.class);
 
+    /**
+     * Bolum 48.3's "Teslimat orani" and "Bounce orani", and the only place
+     * either is knowable: the send call says a provider accepted the message,
+     * not that it arrived. {@code email.sent} is the other half.
+     */
+    static final String EVENTS = "email.events";
+
     private final EmailWebhooks properties;
     private final EmailSuppressions suppressions;
     private final ObjectMapper json;
     private final Clock clock;
+    private final io.micrometer.core.instrument.MeterRegistry meters;
 
     ResendWebhookController(EmailWebhooks properties, EmailSuppressions suppressions,
-            ObjectMapper json, Clock clock) {
+            ObjectMapper json, Clock clock,
+            io.micrometer.core.instrument.MeterRegistry meters) {
         this.properties = properties;
         this.suppressions = suppressions;
         this.json = json;
         this.clock = clock;
+        this.meters = meters;
     }
 
     /**
@@ -92,6 +102,15 @@ public class ResendWebhookController {
 
     private void handle(JsonNode event) {
         String type = event.path("type").asText("");
+        // Bolum 48.3's delivery and bounce rates, and this is the only place
+        // either is knowable: the send call says the provider accepted the
+        // message, not that anybody got it. Counted before the recipient is
+        // read, so an event with no recipient is still counted rather than
+        // quietly leaving a gap in the denominator. The type and nothing else
+        // -- an address is user content (absolute rule 4) and would be a time
+        // series per person besides.
+        meters.counter(EVENTS, "type", type.isBlank() ? "unknown" : type).increment();
+
         String email = firstRecipient(event);
         if (email.isBlank()) {
             return;

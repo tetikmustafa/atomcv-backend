@@ -59,6 +59,17 @@ management:
           Authorization: ${OTLP_AUTHORIZATION:}
           X-Axiom-Dataset: ${OTLP_DATASET:}
   metrics:
+    distribution:
+      # Bolum 48.3 asks for p50 and p95 by phase, and a Timer publishes neither
+      # unless it is told to: without this the export carries count, sum and
+      # max, and "max" is one bad afternoon rather than a latency.
+      #
+      # By prefix, so a phase added later is covered without a second edit.
+      # Only the job timers -- percentiles are per-series state, and asking for
+      # them on every JVM meter would pay for the whole registry to answer a
+      # question about three of its meters.
+      percentiles:
+        job: 0.5, 0.95
     tags:
       # Without these every deployment's numbers arrive in one undifferentiated
       # stream and "is this staging?" becomes unanswerable.
