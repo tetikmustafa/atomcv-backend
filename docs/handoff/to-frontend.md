@@ -12,13 +12,14 @@
 
 ## OPEN
 
-**Hepsi tek denetimden (2026-09-15):** spec baştan sona kodla karşılaştırıldı;
-"dokümanda var, kodda yok" olan her şey ya yazıldı ya sapma olarak kaydedildi.
-**Önce `npm run gen:api` koş** — altı uç ve üç şema değişti.
+**Hepsi iki denetimden (2026-09-15 ve 2026-09-16):** spec baştan sona kodla
+karşılaştırıldı; "dokümanda var, kodda yok" olan her şey ya yazıldı ya sapma
+olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç ve üç
+şema, ikinci turda `SelectionLine` değişti (`B-108`).
 
 > **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
-> (kanal kuralı): `B-100`-`B-107`'nin hiçbiri `ACK` almadı, yani taşınabilecek
-> madde yok. Sekizi de tek denetimden; okunup ACK'lendiklerinde hepsi birden
+> (kanal kuralı): `B-100`-`B-108`'in hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. Dokuzu da denetimlerden; okunup ACK'lendiklerinde hepsi birden
 > `resolved/`'a iner.
 
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
@@ -110,6 +111,36 @@ kaydediliyor. **Üçüncü diller İngilizce üzerinden** (§ 32.5).
    llm_translate`, `userEdited: false`. Kullanıcının yazmadığı bu satırların
    gözden geçirilmesi öneriliyor (§ 32.5) — rozet için gereken alan zaten
    `Variant` şemasında.
+
+### B-108 · `GET /generations/{id}/selection` artık gerekçe de taşıyor (İlke 7)
+**Since:** § 35.3.1, § 1.2 · denetim 2026-09-16
+**Neden:** İlke 7 her seçimin gerekçesinin gösterilmesini istiyor ve üç şey
+adlandırıyor — skor, eşleşen keyword'ler, red nedeni. Üçü de hesaplanıyordu,
+hiçbiri telde yoktu: `SelectionLine` yalnız `atomId`, `text`, `onPage`
+taşıyordu, yani gerekçesi bildirilmemiş bir sıralama.
+**Aksiyon — önce `npm run gen:api`**, `SelectionLine` iki alan kazandı:
+
+1. **`matchedKeywords?: string[]`** — bu satırın taşıdığı ilan terimleri,
+   alfabetik. **Yokken alan hiç gelmiyor**, boş dizi olarak değil: seçilmiş bir
+   satırın yanındaki boş dizi "hiçbir şey eşleşmedi" diye okunur, ve genel CV
+   modunda — ortada ilan yokken — bu içerik hakkında bir iddia olurdu. Çip
+   olarak çizilmeye uygun; sayfaya girmeyen satırlarda **hiç gelmez** (anlık
+   görüntüye yalnız seçilenler yazılıyor).
+2. **`heldBackReason?: "BUDGET" | "INACTIVE" | "EXCLUDED_BY_DIRECTIVE" |
+   "ENTRY_BELOW_MINIMUM"`** — sayfaya girmeyen satırlarda dolu, girenlerde
+   **hiç gelmiyor**. Şemada kapalı enum, yani ICU `select`'i dördünü de
+   yazabilir. **Dördü dört ayrı cümle istiyor**, ve bu maddenin asıl işi o:
+   `BUDGET` sayfa sınırını uzatmaya davet eder, `INACTIVE` profil editörüne
+   gönderir (atom kapalı), `EXCLUDED_BY_DIRECTIVE` *bu CV'de* yapılan
+   düzenlemeyi geri almaya (profil ayarı değil — ikisini karıştıran bir ekran
+   kişiye kalıcı bir kararı geri aldırır), `ENTRY_BELOW_MINIMUM` entry'nin
+   bütün olarak düştüğünü söyler.
+
+**Skor bilerek yayımlanmıyor** ve istenmesin: § 23.3'ün yüzdeye itirazı bir
+madde yanındaki sayı için de geçerli. Sıra zaten sıralamayı söylüyor.
+
+**Eski üretimler `matchedKeywords` taşımıyor** — Faz B onu bu denetimden önce
+kaydetmiyordu. Alan yokluğu normaldir, boş durum ekranı gerektirmez.
 
 ---
 

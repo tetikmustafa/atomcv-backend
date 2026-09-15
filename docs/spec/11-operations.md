@@ -560,6 +560,19 @@ Faz B, C, E saf fonksiyon → `selection_state` ile kendi makinende yeniden çal
 
 **Aynı diskteki yedek, yedek sayılmaz** — disk arızası, ransomware, hesap kilitlenmesi senaryolarında işe yaramaz.
 
+> **Üçüncü bacak indi (denetim, 2026-09-16).** `backup.sh` bir aşama boyunca
+> yalnız günlük R2 yazıyordu ve saklaması tek bir `7d` idi: ne ikinci
+> sağlayıcı vardı ne § 49.4'ün "7 gün + 4 hafta + 6 ay"ı. **Aynı sağlayıcıda
+> yedeklilik 3-2-1 değil** — bir hesap askıya alınması ya da konsolda bir
+> yanlış tık, tek yerdeki bütün kopyaları aynı anda götürür, ki ikinci kopya
+> tam olarak onun için var.
+>
+> Haftalık ve aylık kopyalar artık `BACKUP_ARCHIVE_REMOTE`'a gidiyor.
+> **İkinci remote yapılandırılmamışsa günlük yedek yine alınıyor** ve log bir
+> `WARNING` basıyor: var olan bir günlük yedek, ikinci kopya yüzünden düşmüş
+> bir cron'dan değerlidir — ama tek sağlayıcıyla koşan bir dağıtım 3-2-1
+> koşmuyordur, ve bunu söyleyebilecek tek yer o log.
+
 ### 49.2 Yedek script'i
 
 ```bash
@@ -591,6 +604,42 @@ archive_command = 'rclone copy %p r2:atomcv-wal/'
 ```
 
 Veri kaybı penceresi: gecelik snapshot yerine ~5 dakika.
+
+#### 49.3.1 İnen hâli (denetim, 2026-09-16)
+
+**Bu bölüm yazılıydı ve kurulmamıştı.** `docker-compose.prod.yml` yalnız
+`wal_level=replica` taşıyordu — arşivleme olmadan hiçbir segment hiçbir yere
+gitmiyor, yani § 49.5'in yayımladığı "~5 dakika" gerçekte **03:00'a kadar**
+demekti. Ayarın yarısının orada durması bunu daha da görünmez yapıyordu:
+yapılandırılmış görünen, açılan, ve hiçbir şey arşivlemeyen bir veritabanı.
+
+**Sapma — `archive_command` rclone çağırmıyor, bir volume'e kopyalıyor.**
+Yukarıdaki komut `pgvector/pgvector:pg17` imajında olmayan bir ikili istiyor;
+eklemek tek bir binary için imajın türevini bakmak demekti. Postgres
+`walarchive` volume'üne kopyalıyor, `scripts/archive-wal.sh` host'tan okuyup
+şifreliyor ve gönderiyor — **şifreleme host'ta kalıyor**, age anahtarının
+zaten yaşadığı yerde (§ 49.2: bir segment, dump'ın taşıdığı CV'lerin aynısını
+taşır). Komut `test ! -f` ile başlıyor: Postgres arşivlediği bir segmenti
+yeniden deneyebilir ve üzerine yazan bir komut sağlam dosyayı yarım dosyayla
+kesebilir.
+
+**Ekleme — `archive_timeout=300`.** Sessiz bir veritabanı segmenti
+kapatmıyor, yani onsuz pencere "beş dakika" değil "bir sonraki yazmaya kadar".
+
+**Ekleme — haftalık `pg_basebackup`, ve o olmadan arşiv işe yaramaz.** WAL bir
+**fiziksel** temele oynanır; § 49.2'nin `pg_dump`'ı **mantıksal** bir yedek.
+İkisini yan yana koymak, hiçbir prosedürün uygulayamayacağı segmentler
+göndermek olurdu — logda var olan, gerçekte olmayan bir kurtarma penceresi.
+`backup.sh` pazar günü bir temel alıyor, ve **haftalık-yedi-güne-karşı bir
+tesadüf değil kısıt**: pazarın temeli artı o günden beri saklanan segmentler
+herhangi bir cumartesiyi kapsıyor, ve temel aralığını WAL saklamasının ötesine
+uzatmak öbür uçta sessiz bir delik açıyor.
+
+**Uyarı — arşivi boşaltan bir şey yoksa Postgres yazmayı durdurur.** Bu
+`archive_mode`'un tasarımı, kusuru değil: arşivlemesi söylenen ve
+yapamayan bir veritabanı aksi hâlde kurtarma penceresini sessizce kaybederdi.
+`scripts/archive-wal.sh` beş dakikada bir koşmak zorunda; koşmazsa arıza
+gürültülüdür ve çözümü onu koşturmaktır.
 
 ### 49.4 ⚠️ Restore testi
 

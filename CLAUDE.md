@@ -55,7 +55,7 @@ Run freely, without asking: local build, test, lint, typecheck, and any
 
 ### Read on demand — never in full
 
-`docs/spec/**` is 18 files, ~8,500 lines. **Never read one end to end.** Route
+`docs/spec/**` is 19 files, ~9,400 lines. **Never read one end to end.** Route
 with `docs/INDEX.md`, `rg -n "<term>" docs/spec/<file>.md`, read the matching
 range: a file is 200-1,100 lines, so reading it whole costs 15-40x the tokens
 and buries the part you needed. **Never routinely:** `docs/notes/archive/**`
