@@ -12,18 +12,18 @@ import java.util.regex.Pattern;
 /**
  * The check: a summary claims nothing the page does not already say.
  *
- * <p>Three rules where Bolum 21.6 has five, and the two that are missing are
- * missing on purpose. <strong>Nothing has to survive</strong> — a synthesis is
- * not a rewrite of one sentence, so there is no number or name it was asked to
- * keep. And <strong>there is no drift check</strong>: the paragraph is
- * deliberately not what it was, and measuring it against the old one would be
- * a rule that fails exactly when the phase worked.
+ * <p>Three rules where a bullet rewrite has five, and the two that are missing
+ * are missing on purpose. <strong>Nothing has to survive</strong> — a
+ * synthesis is not a rewrite of one sentence, so there is no number or name it
+ * was asked to keep. And <strong>there is no drift check</strong>: the
+ * paragraph is deliberately not what it was, and measuring it against the old
+ * one would be a rule that fails exactly when the phase worked.
  *
- * <p>What is left is stricter than Bolum 21.6 in the way that matters. A
- * rewritten bullet is checked against its own atom's skills; this is checked
- * against the skills of the whole page, and a summary is where a model most
- * wants to round up — three years here and four there into "a decade", two
- * databases into "extensive data infrastructure experience".
+ * <p>What is left is stricter in the way that matters. A rewritten bullet is
+ * checked against its own atom's skills; this is checked against the skills of
+ * the whole page, and a summary is where a model most wants to round up —
+ * three years here and four there into "a decade", two databases into
+ * "extensive data infrastructure experience".
  */
 public final class AboutValidator {
 
@@ -84,14 +84,14 @@ public final class AboutValidator {
     }
 
     /**
-     * The vocabulary is the same one Bolum 21.6 checks a bullet against — the
-     * alias dictionary is the only list of technology names this codebase has
-     * — but the permitted half is the page's skills rather than one atom's.
+     * The vocabulary is the same one a bullet is checked against — the alias
+     * dictionary is the only list of technology names this codebase has — but
+     * the permitted half is the page's skills rather than one atom's.
      *
      * <p>The person's own paragraph is a second source of permission, for the
-     * reason Bolum 21.6.1 gives: a skill they wrote about themselves and the
-     * extraction never listed is theirs to claim, and refusing it would be an
-     * outage rather than a guard.
+     * reason the bullet check gives: a skill they wrote about themselves and
+     * the extraction never listed is theirs to claim, and refusing it would be
+     * an outage rather than a guard.
      */
     private static boolean namesSomethingThePageDoesNot(
             AboutCandidate candidate, String answer, String foldedAnswer,

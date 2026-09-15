@@ -47,7 +47,7 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
 
     /**
      * One page of history, resuming after {@code cursor} when there is one
-     * (F-020, EK D.8.7).
+     * (F-020).
      *
      * <p>Asks for one row more than it will hand back, and that extra row is
      * the whole of "is there a next page". Counting instead would be a second

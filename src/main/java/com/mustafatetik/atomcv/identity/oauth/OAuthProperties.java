@@ -11,10 +11,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * browser back to.
  *
  * <p><strong>A provider with no credentials is absent, not broken.</strong>
- * Bolum 27.3 already established this shape for LLM vendors and it holds here
- * for the same reason: one configuration serves a deployment that has
- * registered one provider and a deployment that has registered both, without
- * either having to list what it is missing.
+ * The LLM vendors already established this shape and it holds here for the
+ * same reason: one configuration serves a deployment that has registered one
+ * provider and a deployment that has registered both, without either having to
+ * list what it is missing.
  *
  * @param redirectBaseUrl the origin the provider redirects to, without a
  *                        trailing slash. It has to be one the frontend serves

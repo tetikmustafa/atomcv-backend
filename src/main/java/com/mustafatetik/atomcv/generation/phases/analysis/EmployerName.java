@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * it — {@code "Unknown"}, the empty string, and a real name — and the frontend
  * measured a fourth, {@code "not specified"}. The empty one is already handled
  * on the wire; the others reach a history row as a label that looks like a
- * fact, which is the thing Bolum 57.6 lets the field exist to avoid.
+ * fact, which is the thing the field is allowed to exist in order to avoid.
  *
  * <p><strong>Not a list of placeholder phrases.</strong> That was the obvious
  * fix and it is the wrong one: it would be a guess about which sentences this

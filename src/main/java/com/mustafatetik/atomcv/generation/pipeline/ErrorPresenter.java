@@ -36,12 +36,12 @@ public class ErrorPresenter {
                     .build();
 
             /*
-             * No resolution, deliberately. The closed vocabulary of EK D.6.1
-             * has no "wait until tomorrow", and `retry` means the opposite —
-             * a transient failure worth repeating unchanged, now. Adding an
-             * eleventh value would buy a button that does nothing the params
-             * do not already say: `resetsAt` is an absolute instant and the
-             * client writes the sentence in the user's own locale (F-007).
+             * No resolution, deliberately. The closed vocabulary has no "wait
+             * until tomorrow", and `retry` means the opposite — a transient
+             * failure worth repeating unchanged, now. Adding an eleventh value
+             * would buy a button that does nothing the params do not already
+             * say: `resetsAt` is an absolute instant and the client writes the
+             * sentence in the user's own locale (F-007).
              */
             /*
              * `retry` and nothing else: the brake is lifted by an operator,
@@ -100,8 +100,8 @@ public class ErrorPresenter {
 
             case PipelineError.AllProvidersUnavailable outage -> UserFacingError
                     .with(ErrorCode.ALL_PROVIDERS_UNAVAILABLE)
-                    // Vendor ids, not content: EK D.6 publishes the list, and
-                    // it is what makes the message say "we could not reach the
+                    // Vendor ids, not content: the list is published, and it
+                    // is what makes the message say "we could not reach the
                     // model" rather than "something went wrong".
                     .param("tried", outage.tried())
                     // Every reason a chain runs out is transient by
@@ -111,11 +111,11 @@ public class ErrorPresenter {
                     .build();
 
             /*
-             * Adim 3.4. Neither of these can arise from a generation — they
-             * come from profile extraction — but the presenter is where the
-             * decision "what is the user told" lives for every pipeline
-             * failure, and a second presenter for two cases would be a second
-             * place for the catalogue to drift from.
+             * Neither of these can arise from a generation — they come from
+             * profile extraction — but the presenter is where the decision
+             * "what is the user told" lives for every pipeline failure, and a
+             * second presenter for two cases would be a second place for the
+             * catalogue to drift from.
              */
             case PipelineError.LanguageUndetected torn -> UserFacingError
                     .with(ErrorCode.LANGUAGE_UNDETECTED)
@@ -123,7 +123,7 @@ public class ErrorPresenter {
                     // them as names in the user's own locale.
                     .param("detectedCandidates", torn.candidates())
                     // Nothing to retry and nothing to fix; the way out is the
-                    // manual form, which EK D.6.1 has no action for.
+                    // manual form, which the vocabulary has no action for.
                     .build();
 
             case PipelineError.NothingExtracted ignored -> UserFacingError.of(
@@ -168,10 +168,10 @@ public class ErrorPresenter {
     /**
      * What the user can do about a posting that could not be read (F-016).
      *
-     * <p>Bolum 18.1 names three ways out and they are the right three — for
-     * the refusal Bolum 18.1 is about. A preflight refusal is a question:
-     * the heuristics are cheap on purpose and the user may know better, so
-     * {@code continue_anyway} leads somewhere.
+     * <p>The preflight names three ways out and they are the right three — for
+     * the refusal it is about. A preflight refusal is a question: the
+     * heuristics are cheap on purpose and the user may know better, so {@code
+     * continue_anyway} leads somewhere.
      *
      * <p>It leads nowhere after the gate. Acknowledging the preflight skips
      * only the preflight, and the preflight had already passed — so the
@@ -179,11 +179,11 @@ public class ErrorPresenter {
      * {@code continue_anyway} and {@code retry} were the same button under two
      * names, and the one that told the truth was not the one being offered.
      *
-     * <p>Bolum 18.4 says nothing about resolutions; this is the addition, and
-     * it splits where Bolum 18.4 itself splits. The first three gate verdicts
-     * say the posting was thin, so the way out is a fuller posting or no
-     * posting. {@code SUSPICIOUS_OUTPUT} says the answer was not shaped like
-     * an analysis — nothing about the text is wrong, and a refused analysis is
+     * <p>The gate says nothing about resolutions; this is the addition, and it
+     * splits where the gate itself splits. The first three gate verdicts say
+     * the posting was thin, so the way out is a fuller posting or no posting.
+     * {@code SUSPICIOUS_OUTPUT} says the answer was not shaped like an
+     * analysis — nothing about the text is wrong, and a refused analysis is
      * deliberately not cached, so asking again is the advice that fits.
      */
     private static List<ResolutionAction> waysOut(UnreadablePostingReason reason) {

@@ -12,8 +12,8 @@ import java.util.UUID;
  * <p>No text: what a bullet says does not change what it costs or what it
  * scores, and both of those are already here. Selection works on numbers,
  * which is what makes it deterministic and testable without a database. The
- * directives are ids for the same reason — the two fields of Bolum 18.7 that
- * are prose are read by Faz B and Faz D, and do not come in here.
+ * directives are ids for the same reason — the two directive fields that are
+ * prose are read by Faz B and Faz D, and do not come in here.
  *
  * @param directives what the user asked for by hand on this one document
  * . Carried here rather than applied by the
@@ -227,7 +227,7 @@ public record SelectionRequest(
                     contentKey, false, List.of());
         }
 
-        /** With P7's reasons attached: what of the posting this row carries. */
+        /** With the reasons attached: what of the posting this row carries. */
         public AtomCandidate(UUID atomId, UUID variantId, UUID entryId, double score,
                 double renderCostPt, boolean alwaysInclude, boolean active, String contentKey,
                 List<String> matchedTerms) {
@@ -248,7 +248,7 @@ public record SelectionRequest(
          * <p>It carries the entry's own id as its atom id: there is no atom to
          * name it by, and the entry is exactly what would be printed. Its cost
          * is zero because everything it occupies is furniture — the entry
-         * heading, and no list at all (Bolum 20.2, constraint 5).
+         * heading, and no list at all.
          */
         public static AtomCandidate forEntryHeader(
                 UUID entryId, double score, String contentKey) {
@@ -282,13 +282,13 @@ public record SelectionRequest(
         /**
          * What separates two candidates that tie on everything measurable.
          *
-         * <p>Bolum 20.3 wants selection to be deterministic, and it was — for
-         * one profile. Across imports it was not: the tie-break was the atom
-         * id, ids are minted fresh on every import, and two atoms with the
-         * same score <em>and</em> the same cost swapped places. The same CV
-         * uploaded twice produced two different pages, which is exactly the
-         * property the determinism test exists to hold and could not see,
-         * because it re-ran one profile rather than re-importing one.
+         * <p>Selection has to be deterministic, and it was — for one profile.
+         * Across imports it was not: the tie-break was the atom id, ids are
+         * minted fresh on every import, and two atoms with the same score
+         * <em>and</em> the same cost swapped places. The same CV uploaded
+         * twice produced two different pages, which is exactly the property
+         * the determinism test exists to hold and could not see, because it
+         * re-ran one profile rather than re-importing one.
          *
          * <p>A digest and not the text. This record travels through logs and
          * {@code toString()}, and absolute rule 4 does not make an exception

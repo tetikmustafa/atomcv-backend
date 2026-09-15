@@ -14,11 +14,11 @@ import java.util.Set;
 /**
  * Faz F's honest answer to "how well does this CV fit that posting?".
  *
- * <p><strong>Countable facts, never a percentage.</strong> Bolum 23.3 forbids
- * one by name, and the reason is that the underlying measurement cannot carry
- * it: this compares the skill names the posting listed against the skill names
- * on the atoms that reached the page. "Four of four required" is a claim a
- * user can check and act on; "87% match" is a number that reads as a hiring
+ * <p><strong>Countable facts, never a percentage.</strong> One is forbidden by
+ * name, and the reason is that the underlying measurement cannot carry it:
+ * this compares the skill names the posting listed against the skill names on
+ * the atoms that reached the page. "Four of four required" is a claim a user
+ * can check and act on; "87% match" is a number that reads as a hiring
  * probability and is not one.
  *
  * <p><strong>Measured on what was printed, not on what was ranked.</strong>

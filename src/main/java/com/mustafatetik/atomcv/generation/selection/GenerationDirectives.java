@@ -15,9 +15,9 @@ import java.util.UUID;
  * opposite — it belongs to a person and to a single run, and folding it into
  * the cached half would serve one caller's edits to the next.
  *
- * <p><strong>Ids only.</strong> Bolum 18.7 gives the record two more fields,
- * {@code emphasize} and {@code freeformNote}, and neither is here yet: they are
- * text, they are read by Faz B and Faz D, and {@link SelectionRequest} is
+ * <p><strong>Ids only.</strong> The record has two more fields, {@code
+ * emphasize} and {@code freeformNote}, and neither is here yet: they are text,
+ * they are read by Faz B and Faz D, and {@link SelectionRequest} is
  * deliberately textless. A directive that reached selection and did nothing
  * would be worse than one that was never accepted, so each field arrives with
  * the phase that honours it.

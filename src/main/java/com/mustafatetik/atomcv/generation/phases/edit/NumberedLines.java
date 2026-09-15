@@ -83,9 +83,9 @@ public final class NumberedLines {
      * Everything that goes inside the fence, as one block of text.
      *
      * <p>The person's sentence goes in with the lines rather than in the
-     * system half, and that is Bolum 43.1: it is their writing, so it is data.
-     * A prompt that put it outside the fence would be one instruction away
-     * from being rewritten by whoever typed it.
+     * system half, and the fence is why: it is their writing, so it is data. A
+     * prompt that put it outside the fence would be one instruction away from
+     * being rewritten by whoever typed it.
      */
     public String asPromptData(String instruction) {
         var block = new StringBuilder();

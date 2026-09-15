@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 /**
  * POI's text extractor, which is the whole of what we ask of a DOCX.
  *
- * <p>Bolum 42.1 lists a malicious macro as the risk and the text API as the
- * answer: {@code XWPFWordExtractor} reads document parts and has no path to
- * running one. What it does have a path to is a zip bomb, since a DOCX is a
- * zip — {@link ZipSecureFile}'s inflate ratio is POI's own guard for that, and
- * it is the expanded-size check that belongs beside the byte limit.
+ * <p>A malicious macro is the risk and the text API is the answer: {@code
+ * XWPFWordExtractor} reads document parts and has no path to running one. What
+ * it does have a path to is a zip bomb, since a DOCX is a zip — {@link
+ * ZipSecureFile}'s inflate ratio is POI's own guard for that, and it is the
+ * expanded-size check that belongs beside the byte limit.
  */
 @Component
 class DocxTextExtractor implements TextExtractor {

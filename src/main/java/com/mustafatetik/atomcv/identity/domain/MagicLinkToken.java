@@ -21,8 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
  *
  * <p>{@code created_ip} is deliberately not mapped. It is an {@code INET}, and
  * Hibernate would need a type contribution to validate it; nothing reads the
- * column yet, and the rate limiting of Bolum 40.5 counts in Redis rather than
- * here.
+ * column yet, and the rate limiting counts in Redis rather than here.
  */
 @Entity
 @Table(name = "magic_link_tokens")

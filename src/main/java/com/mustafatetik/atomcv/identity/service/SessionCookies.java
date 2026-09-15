@@ -14,11 +14,10 @@ import org.springframework.stereotype.Component;
  * sets {@code SameSite=Strict} and a sign-out that clears without it leaves
  * the cookie standing in exactly the cross-site case it was meant to block.
  *
- * <p><strong>{@code domain} carries no leading dot.</strong> Adim 3.3 spells
- * this out and {@link SessionProperties} refuses the dotted form: a cookie
- * scoped to {@code .mustafatetik.com} would be sent to the portfolio site on
- * the same apex, which has no use for a session and every opportunity to leak
- * one.
+ * <p><strong>{@code domain} carries no leading dot.</strong> {@link
+ * SessionProperties} refuses the dotted form: a cookie scoped to {@code
+ * .mustafatetik.com} would be sent to the portfolio site on the same apex,
+ * which has no use for a session and every opportunity to leak one.
  */
 @Component
 public class SessionCookies {

@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * What an account may do, as far as the client needs to know.
  *
- * <p><strong>§ 35.7 only ever wrote down the anonymous set.</strong> Its
- * example is an {@code "authenticated": false} body, and no section states the
+ * <p><strong>Only the anonymous set was ever written down.</strong> The
+ * example is an {@code "authenticated": false} body, and nothing states the
  * other half — so the account side is decided here and published to the
  * frontend as {@code B-044} rather than guessed silently in a controller.
  *

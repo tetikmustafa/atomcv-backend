@@ -3,11 +3,11 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 /**
  * What came out of the file, and what the next stage needs to know about it.
  *
- * <p><strong>{@code looksScrambled} is a note, not a refusal.</strong> Bolum
- * 31.3 has it reach the structuring prompt as "this text may be out of order,
- * try to put it right" — a multi-column layout that PDFBox interleaved is
- * still a readable CV to a model that has been warned. Refusing it here would
- * turn a hint into a wall.
+ * <p><strong>{@code looksScrambled} is a note, not a refusal.</strong> It
+ * reaches the structuring prompt as "this text may be out of order, try to put
+ * it right" — a multi-column layout that PDFBox interleaved is still a
+ * readable CV to a model that has been warned. Refusing it here would turn a
+ * hint into a wall.
  *
  * @param text          the extracted text, never logged (absolute rule 4)
  * @param format        which reader produced it

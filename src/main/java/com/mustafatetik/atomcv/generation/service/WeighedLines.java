@@ -49,7 +49,7 @@ public final class WeighedLines {
 
     /**
      * One candidate, with the text it competed as and why it stands where it
-     * stands (P7).
+     * stands.
      *
      * @param onPage          whether it reached the page of this generation
      * @param matchedKeywords which of the posting's terms this line carries.
@@ -103,7 +103,7 @@ public final class WeighedLines {
                         // A held-back line has no matched terms recorded: only
                         // the chosen ones are written to the snapshot, and
                         // inventing them here would mean re-running Faz B --
-                        // the one thing Bolum 24.1 says not to do.
+                        // the one thing an edit must not do.
                         .map(text -> new Line(atom.atomId(), text, false,
                                 List.of(), atom.reason()))
                         .ifPresent(lines::add));

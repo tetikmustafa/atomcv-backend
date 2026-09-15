@@ -47,12 +47,13 @@ public record RelevanceScores(
     }
 
     /**
-     * P7's other half: not how well this atom scored, but what it matched.
+     * The other half of the reason: not how well this atom scored, but what it
+     * matched.
      *
      * <p>Faz C copies it onto every selected line so that the answer survives
      * into {@code selection_state} -- a generation read back next week has no
-     * posting analysis in scope and cannot recompute it (Bolum 24.1 is the
-     * same argument for the score).
+     * posting analysis in scope and cannot recompute it — the same argument
+     * that keeps the score here.
      */
     @Override
     public List<String> matchedTermsOf(Atom atom) {

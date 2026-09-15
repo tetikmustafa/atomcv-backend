@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * The selector/verifier link, issued and redeemed.
  *
- * <p><strong>Requesting one always looks the same.</strong> Bolum 40.4 is the
+ * <p><strong>Requesting one always looks the same.</strong> Enumeration is the
  * whole reason: an address that already has an account and one that does not
  * must be indistinguishable from outside, so both walk the same path — find or
  * create the account, mint a token, hand it to the sender — and the caller
@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MagicLinkService {
 
-    /** Bolum 40.2. Long enough to walk to another device, short enough to matter. */
+    /** Long enough to walk to another device, short enough to matter. */
     static final int VALID_FOR_MINUTES = 10;
 
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -80,7 +80,7 @@ public class MagicLinkService {
      *
      * <p>Returns nothing on purpose. There is no outcome a caller could act on
      * without also being able to report it, and reporting it is exactly what
-     * Bolum 40.4 forbids.
+     * must not happen.
      *
      * <p><strong>the address layer is checked here and not at the
      * controller</strong>, one line after the address is normalised. Keyed on
@@ -118,7 +118,8 @@ public class MagicLinkService {
                 address, user.getLocale(), linkFor(selector, verifier), VALID_FOR_MINUTES));
         if (!accepted) {
             // Said, but not to the caller: a failure that reached the response
-            // would answer the question Bolum 40.4 exists to leave unanswered.
+            // would answer the question the silence exists to leave
+            // unanswered.
             log.warn("A sign-in email was not accepted by the sender");
         }
     }

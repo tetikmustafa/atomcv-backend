@@ -27,9 +27,9 @@ import org.springframework.stereotype.Service;
 /**
  * Everything that happens before a generation is queued.
  *
- * <p><strong>The preflights are synchronous and that is the whole point.</strong>
- * Bolum 35.3 says so and the reason is what a user sees: a request that was
- * never going to work should be a 4xx on the spot, not a job that is accepted,
+ * <p><strong>The preflights are synchronous and that is the whole
+ * point.</strong> The reason is what a user sees: a request that was never
+ * going to work should be a 4xx on the spot, not a job that is accepted,
  * watched for half a minute and then fails. Both checks here are free — one
  * reads the profile, the other counts characters — so refusing costs nothing
  * and accepting costs a worker.

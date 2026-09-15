@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Bolum 21.6 — nothing is printed that has not been checked.
+ * Nothing is printed that has not been checked.
  *
  * <p>Five checks, and they are not equally important. Four of them catch a
  * model doing its job badly; the third catches it doing the thing this product
@@ -119,14 +119,14 @@ public final class RewriteValidator {
      * from: what the posting asked for, plus the names the alias dictionary
      * knows.
      *
-     * <p><strong>Ekleme — a technology already in the original does not count
-     * against the rewrite.</strong> Bolum 21.6 compares what the answer
-     * mentions against {@code atom.skills} and nothing else, which fails every
-     * rewrite of an atom whose skills were extracted incompletely: the person
-     * wrote "Postgres" in their own bullet, the extraction did not list it,
-     * and the model is now rejected for keeping the word it was told to keep.
-     * The check is about claims the rewrite <em>introduced</em>, and that is
-     * the difference between a guard and an outage.
+     * <p><strong>An addition — a technology already in the original does not
+     * count against the rewrite.</strong> The rule as written compares what
+     * the answer mentions against {@code atom.skills} and nothing else, which
+     * fails every rewrite of an atom whose skills were extracted incompletely:
+     * the person wrote "Postgres" in their own bullet, the extraction did not
+     * list it, and the model is now rejected for keeping the word it was told
+     * to keep. The check is about claims the rewrite <em>introduced</em>, and
+     * that is the difference between a guard and an outage.
      */
     private static boolean claimsSomethingItCannot(
             RewriteCandidate candidate, String answer, String foldedAnswer,

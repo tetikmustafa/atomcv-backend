@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  * Faz G: one sentence, read as two lists of line numbers.
  *
  * <p><strong>The model never sees an atom id and never writes one.</strong>
- * Bolum 24.2 sketches a change set carrying ids, and this does not: an id is
+ * The change set was sketched carrying ids, and this does not: an id is
  * exactly the kind of token a model invents or mistypes, and an invented id is
  * indistinguishable from a real one until it is looked up. The lines are
  * numbered before they are shown and the answer is an index, so the only
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  * would be shown another.
  *
  * <p>{@link ModelTier#CHEAP}. It is one short sentence against a numbered
- * list, which is the easy end of Bolum 5.4, and it is the call this feature
+ * list, which is the easy end of the tiering, and it is the call this feature
  * makes every time.
  */
 @Component

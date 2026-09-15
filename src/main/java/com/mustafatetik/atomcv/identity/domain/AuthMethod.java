@@ -7,8 +7,8 @@ package com.mustafatetik.atomcv.identity.domain;
  * #LOCAL_DEV}: a session lives in Redis for as long as its TTL, so a value
  * added later would be read back by a running deployment holding sessions
  * written before the deployment. Widening a closed vocabulary after the fact
- * is the cheap half; the values themselves are already fixed by Bolum 40.2 and
- * 40.6.
+ * is the cheap half; the values themselves are already fixed by the magic link
+ * and OAuth.
  */
 public enum AuthMethod {
 

@@ -7,15 +7,15 @@ import java.util.Optional;
 /**
  * The five things a CV may arrive as.
  *
- * <p>Each one carries the three facts the validation ladder of Bolum 31.2
- * needs: the extensions a user's file may end in, the media types a client may
- * honestly declare, and the bytes the file actually starts with.
+ * <p>Each one carries the three facts the validation ladder needs: the
+ * extensions a user's file may end in, the media types a client may honestly
+ * declare, and the bytes the file actually starts with.
  *
  * <p><strong>The bytes are the only one of the three that is ours.</strong>
  * The extension is the user's word and the declared type is the client's, and
- * Bolum 42.1 lists "wrong type" among the risks precisely because both can be
- * made to say anything. So the extension chooses which format to try and the
- * magic bytes decide whether it was true.
+ * "wrong type" is a listed risk precisely because both can be made to say
+ * anything. So the extension chooses which format to try and the magic bytes
+ * decide whether it was true.
  */
 public enum DocumentFormat {
 

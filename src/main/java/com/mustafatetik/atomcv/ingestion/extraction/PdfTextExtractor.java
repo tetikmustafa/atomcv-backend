@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * PDFBox, with the one setting Bolum 31.3 singles out.
+ * PDFBox, with the one setting that matters.
  *
  * <p><strong>{@code setSortByPosition(true)}.</strong> Without it the stripper
  * emits text in the order the file happens to store it, which for the

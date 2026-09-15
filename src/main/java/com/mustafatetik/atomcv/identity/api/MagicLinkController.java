@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p><strong>Two POSTs, and the second one being a POST is the point.</strong>
  * The address in the email is a {@code GET} that renders a page on the
- * frontend; Bolum 40.3 explains why. Corporate mail scanners follow links
+ * frontend, and prefetching is why. Corporate mail scanners follow links
  * before a person ever sees them, and a one-shot token spent by a scanner is a
  * sign-in the user never got and cannot ask for again. A scanner does not
  * submit forms.

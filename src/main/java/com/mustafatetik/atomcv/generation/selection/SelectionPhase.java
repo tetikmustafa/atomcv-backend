@@ -230,7 +230,7 @@ public final class SelectionPhase {
          * Stage 1: what the user pinned, and enough of each pinned entry to
          * reach the minimum worth printing.
          *
-         * <p>Bolum 20.3 forces the minimum for every visible entry. That would
+         * <p>The minimum was to be forced for every visible entry. That would
          * make a long profile fail rather than drop its weakest entries, so
          * the minimum is forced only where a lock already commits the entry;
          * everywhere else it is enforced after the fact, all or nothing.
@@ -547,7 +547,7 @@ public final class SelectionPhase {
 
         /**
          * And what those lists leave behind them, which only the section below
-         * them spends (EK D.8.10, {@code CapacityModel.SECTION_LIST_CLOSE}).
+         * them spends ({@code CapacityModel.SECTION_LIST_CLOSE}).
          *
          * <p>Recomputed rather than charged and refunded piecemeal, because it
          * is not a property of any one section: opening the last section on the
@@ -730,9 +730,9 @@ public final class SelectionPhase {
          * Stage 3: the swap the greedy pass could not see — a strong atom that
          * did not fit, in place of a weaker one that did.
          *
-         * <p>One for one, where Bolum 20.3 allows a set. A set swap needs a
-         * subset search for a gain that is small at this size, and every extra
-         * degree of freedom is another way for two runs to disagree.
+         * <p>One for one, where a set swap would be allowed. A set swap needs
+         * a subset search for a gain that is small at this size, and every
+         * extra degree of freedom is another way for two runs to disagree.
          */
         private void improveBySwapping() {
             List<AtomCandidate> wanted = sortedByScore(pool.values()).stream()
@@ -825,7 +825,7 @@ public final class SelectionPhase {
         /**
          * What opening this atom's entry costs: the heading, and the list the
          * atom is the first bullet of. A heading candidate pays the first and
-         * not the second (Bolum 20.2, constraint 5).
+         * not the second.
          */
         private double entryFurnitureCost(AtomCandidate atom, UUID sectionId) {
             double furniture = entryHeaderCost(atom.entryId(), sectionId);

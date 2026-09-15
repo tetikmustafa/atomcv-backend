@@ -40,8 +40,8 @@ import org.springframework.web.multipart.MultipartFile;
  * point.</strong> A file this deployment cannot read is refused here and now,
  * with a code that says which of the five things went wrong. A file it can
  * read is answered {@code 202} with a job to follow, because what remains is
- * an LLM call over a whole document — Bolum 31.6 budgets eight seconds and
- * puts a screen in front of the person while it runs.
+ * an LLM call over a whole document — about eight seconds, with a screen in
+ * front of the person while it runs.
  *
  * <p>The bytes are not stored. They are read into text inside this request and
  * dropped; nothing about the upload reaches a disk.
@@ -111,14 +111,14 @@ public class ProfileImportController {
                     schema = @Schema(implementation = ApiErrorResponse.class)))
     /*
      * Written out by hand, and F-029 is why. springdoc builds this body from
-     * the `@RequestPart`s alone and publishes every `@RequestParam` beside them
-     * as a *query* parameter — which is what `mode` is, correctly, and what
-     * `challengeToken` became by accident. § 35.7.4 calls it a form field, and
-     * the difference is not cosmetic: a challenge token in a URL is written to
-     * access logs, proxy logs and browser history, which is most of what the
-     * token exists to make hard. Binding stays on `@RequestParam` — it reads a
-     * multipart form field and a query string both, so a client that already
-     * sends it the published way keeps working.
+     * the `@RequestPart`s alone and publishes every `@RequestParam` beside
+     * them as a *query* parameter — which is what `mode` is, correctly, and
+     * what `challengeToken` became by accident. It is meant to be a form
+     * field, and the difference is not cosmetic: a challenge token in a URL is
+     * written to access logs, proxy logs and browser history, which is most of
+     * what the token exists to make hard. Binding stays on `@RequestParam` —
+     * it reads a multipart form field and a query string both, so a client
+     * that already sends it the published way keeps working.
      */
     @RequestBody(required = true, content = @Content(
             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -170,10 +170,9 @@ public class ProfileImportController {
     /**
      * Whose daily ceiling this upload spends.
      *
-     * <p>An account spends its own; an anonymous caller spends their address's.
-     * Not their session's, and Bolum 44.1 decides it: a session is a cookie,
-     * and counting by one would hand an unlimited allowance to whoever clears
-     * theirs.
+     * <p>An account spends its own; an anonymous caller spends their
+     * address's. Not their session's: a session is a cookie, and counting by
+     * one would hand an unlimited allowance to whoever clears theirs.
      */
     private static QuotaSubject allowanceFor(JobOwner owner, HttpServletRequest request) {
         return owner.isAnonymous()

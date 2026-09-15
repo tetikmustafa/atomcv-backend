@@ -4,9 +4,9 @@ package com.mustafatetik.atomcv.generation.rewrite;
  * What Faz D is allowed to do to one bullet.
  *
  * <p>Three tiers, and the third is not in this enum: an atom below the floor
- * is not a candidate at all. That is the point of Bolum 21.2 — where there is
- * no real connection between the sentence and the posting, adapting it is not
- * adaptation, it is invention.
+ * is not a candidate at all. That is the point of the third tier — where there
+ * is no real connection between the sentence and the posting, adapting it is
+ * not adaptation, it is invention.
  */
 public enum RewriteIntent {
 

@@ -32,7 +32,10 @@ public enum RewriteIssue {
      */
     UNSUPPORTED_CLAIM,
 
-    /** Longer than Bolum 21.3 allows, which would spend a page already promised. */
+    /**
+     * Longer than the ceiling allows, which would spend a page already
+     * promised.
+     */
     TOO_LONG,
 
     /** It no longer says what it used to say. */

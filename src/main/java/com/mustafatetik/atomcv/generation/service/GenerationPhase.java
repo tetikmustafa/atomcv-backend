@@ -6,10 +6,10 @@ import com.mustafatetik.atomcv.jobs.queue.JobProgress;
  * The phases a queued generation reports as it passes them.
  *
  * <p><strong>The label is a translation key, not a sentence.</strong> The
- * example carries prose, and that is the one place it disagrees with Bolum
- * 35.4: the server sends keys and the frontend owns the words. A sentence here
- * would be shipped in one language and re-shipped for every new one, and the
- * progress line is the most-seen text in the product.
+ * example carries prose, and that is the one place it disagrees with the
+ * contract: the server sends keys and the frontend owns the words. A sentence
+ * here would be shipped in one language and re-shipped for every new one, and
+ * the progress line is the most-seen text in the product.
  *
  * <p>Only the phases this pipeline can honestly say it reached. Faz D is
  * reported when it actually runs and not before: general mode has no posting

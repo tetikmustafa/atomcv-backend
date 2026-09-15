@@ -16,14 +16,14 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
  *
  * <p><strong>It does not own authentication.</strong> Who is acting comes from
  * the {@code sid} cookie and Redis — see {@code identity.service} — and
- * authorisation is resource ownership, which Bolum 41.4 puts in the scoped
- * repositories and not in a URL pattern. So every request is permitted here
- * and refused, if at all, by the endpoint asking for a user it does not get.
- * A second list of protected paths would be a list that drifts from the first.
+ * authorisation is resource ownership, which lives in the scoped repositories
+ * and not in a URL pattern. So every request is permitted here and refused, if
+ * at all, by the endpoint asking for a user it does not get. A second list of
+ * protected paths would be a list that drifts from the first.
  *
  * <p>What is left is two things Spring Security does better than we would: the
- * double-submit CSRF filter of EK D.6.6, and the response headers EK C.1 asks
- * to see verified.
+ * double-submit CSRF filter, and the response headers the release checklist
+ * asks to see verified.
  */
 @Configuration
 public class SecurityConfig {
@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
                 // No servlet session, ever: ours lives in Redis, and a
                 // JSESSIONID appearing beside sid would be a second identity
-                // with none of the revocation Bolum 40.1 chose Redis for.
+                // with none of the revocation Redis was chosen for.
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Neither exists, and a default login page answering an API

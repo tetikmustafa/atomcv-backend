@@ -10,9 +10,9 @@ import java.util.UUID;
  * One signed-in browser, as the server remembers it.
  *
  * <p>The record is what lives in Redis. It carries the role rather than
- * looking it up per request, which is the trade Bolum 40.1 already made when
- * it chose a server-side session over a JWT: a role change has to revoke the
- * session to take effect, and revocation here is a {@code DEL} rather than the
+ * looking it up per request, which is the trade already made in choosing a
+ * server-side session over a JWT: a role change has to revoke the session to
+ * take effect, and revocation here is a {@code DEL} rather than the
  * impossibility it is with a signed token.
  *
  * <p>It carries no email and no display name. Those are user content that a
@@ -61,10 +61,10 @@ public record Session(
     /**
      * A session for somebody who has not signed in.
      *
-     * <p>The same cookie as an account's, deliberately: § 35.7 makes
-     * authentication a question the client asks {@code capabilities} rather
-     * than a second credential to carry. What differs is the TTL — two hours
-     * that slide, against thirty days.
+     * <p>The same cookie as an account's, deliberately: authentication is a
+     * question the client asks {@code capabilities} rather than a second
+     * credential to carry. What differs is the TTL — two hours that slide,
+     * against thirty days.
      */
     public static Session anonymous(String id, Instant now) {
         return new Session(id, null, null, null, now, now);

@@ -125,8 +125,7 @@ public final class SelectionRequestBuilder {
 
         for (SectionNode section : tree.sections()) {
             // A section the user switched off contributes nothing, not even a
-            // rejection: it is not part of this CV at all (Bolum 20.2,
-            // constraint 3).
+            // rejection: it is not part of this CV at all.
             if (!section.section().isActive()) {
                 continue;
             }
@@ -284,8 +283,8 @@ public final class SelectionRequestBuilder {
                         // exactly this content -- nothing new is computed and
                         // nothing readable travels.
                         variant.getContentHash(),
-                        // P7: the terms this row carries, so the snapshot can
-                        // say why it competed and not only how well. Empty in
+                        // The terms this row carries, so the snapshot can say
+                        // why it competed and not only how well. Empty in
                         // general mode -- there is no posting to have matched.
                         scores.matchedTermsOf(node.atom())));
             }

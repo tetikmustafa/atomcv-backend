@@ -4,8 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * What Faz D is going to do, decided before a single call is made
- * (Bolum 21.2-21.3).
+ * What Faz D is going to do, decided before a single call is made.
  *
  * <p>A plan rather than a loop because the decisions are worth looking at on
  * their own: the cap, the floor and the ceiling are each a promise to the

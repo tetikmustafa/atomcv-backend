@@ -139,8 +139,8 @@ public class BulletRewriteService {
      * Everything the model is given, inside the fence.
      *
      * <p>The lists go in here rather than into the instructions above because
-     * they are the person's own content and the posting's — Bolum 43.1 draws
-     * the line at where the data starts, not at which field looks structured.
+     * they are the person's own content and the posting's — the line is drawn
+     * at where the data starts, not at which field looks structured.
      */
     private static String fencedData(RewriteCandidate candidate, RewriteContext context) {
         String fenced = "line: " + candidate.originalText()
@@ -153,9 +153,9 @@ public class BulletRewriteService {
         // byte-identical fenced body, so the recorded answers still key to it
         // -- FixtureStore hashes this half, not the instructions.
         //
-        // Inside the fence because it is the person's own sentence (Bolum 43.1
-        // draws the line at where the data starts, not at which field looks
-        // structured). The prompt tells the model the note may steer wording
+        // Inside the fence because it is the person's own sentence: the line
+        // is drawn at where the data starts, not at which field looks
+        // structured. The prompt tells the model the note may steer wording
         // and may not licence a claim; the validators do not care what it said
         // either way, which is what makes that safe to promise.
         return context.note() == null || context.note().isBlank()

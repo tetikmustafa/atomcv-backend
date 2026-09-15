@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Faz D's decisions, all of them made without an LLM (Bolum 21.2-21.3).
+ * Faz D's decisions, all of them made without an LLM.
  *
  * <p>Pure and static, like {@code RenderPhase}: a tree and a selection go in,
  * a plan comes out. Everything here is a promise the product makes about what
@@ -36,7 +36,7 @@ public final class RewritePlanner {
     static final double FLOOR_SCORE = 0.40;
 
     /**
-     * Bolum 21.2 asks for "the top 6-8", and this is the eight.
+     * What is asked for is "the top 6-8", and this is the eight.
      *
      * <p>The cap is there for two things: cost, and the CV where every
      * sentence has been stuffed with the posting's words. The second is the
@@ -51,12 +51,12 @@ public final class RewritePlanner {
     static final double LENGTH_TOLERANCE = 1.05;
 
     /**
-     * <strong>Ekleme.</strong> Bolum 21.2 says a mid-scoring atom is
-     * compressed "if it is long" and does not say what long is. Two printed
-     * lines is the answer here: below that, compressing buys a few points of
-     * page and risks the meaning of a sentence that was not the problem. The
-     * number is characters rather than points because the decision is about
-     * the sentence, and a font size cannot make a short bullet worth cutting.
+     * <strong>An addition.</strong> A mid-scoring atom is compressed "if it is
+     * long" and nothing says what long is. Two printed lines is the answer
+     * here: below that, compressing buys a few points of page and risks the
+     * meaning of a sentence that was not the problem. The number is characters
+     * rather than points because the decision is about the sentence, and a
+     * font size cannot make a short bullet worth cutting.
      */
     static final int COMPRESSIBLE_CHARS = 160;
 
@@ -151,16 +151,16 @@ public final class RewritePlanner {
      * category and a category dropped when it empties, and nothing may be
      * added. A prompt that asks a model to bring a line closer to a posting is
      * an invitation to do the opposite — rename the category, or write in the
-     * item the posting asked for. Bolum 21.6 would catch a technology the
+     * item the posting asked for. The validator would catch a technology the
      * posting named; it cannot catch a category heading nobody wrote, because
      * a heading is not a claim about a technology.</li> <li>{@code LANGUAGE} —
      * "Turkish: Native" is a fact with no phrasing to improve, and the
      * posting's vocabulary has nothing to offer it.</li> <li>{@code
-     * ABOUT_PARAGRAPH} — Bolum 21.7 has its own prompt, its own ceiling and
-     * its own validator for the summary, and {@code RewritePhase} plans it in
-     * the same fan-out. Leaving it here too meant one paragraph asked for
-     * twice, two invoices, and the second answer overwriting the first by
-     * arriving later.</li>
+     * ABOUT_PARAGRAPH} — the summary has its own prompt, its own ceiling and
+     * its own validator, and {@code RewritePhase} plans it in the same
+     * fan-out. Leaving it here too meant one paragraph asked for twice, two
+     * invoices, and the second answer overwriting the first by arriving
+     * later.</li>
      * </ul>
      */
     private static boolean isABullet(Atom atom) {
@@ -171,9 +171,9 @@ public final class RewritePlanner {
     }
 
     /**
-     * Bolum 21.3. Faz C chose these atoms by their <em>measured</em> cost, so
-     * a Faz D that made them longer would spend a page the selection had
-     * already promised away.
+     * Faz C chose these atoms by their <em>measured</em> cost, so a Faz D that
+     * made them longer would spend a page the selection had already promised
+     * away.
      */
     static int maxCharsFor(String original) {
         return (int) (original.length() * LENGTH_TOLERANCE);

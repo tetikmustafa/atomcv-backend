@@ -30,8 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * The GitHub half of Bolum 31.8, in the two steps that section describes:
- * look, then choose.
+ * The GitHub half of ingestion, in two steps: look, then choose.
  *
  * <p><strong>The path is {@code /profile/github}, not {@code
  * /ingestion/github}.</strong> The resource map says the latter and the CV
@@ -40,8 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
  * ingestion paths under two prefixes would be worse than one deviation, and
  * this is the one recorded.
  *
- * <p><strong>No OAuth, no stored token, no new permission.</strong> Bolum 31.8
- * reads public data, so there is nothing to connect and nothing to keep: a
+ * <p><strong>No OAuth, no stored token, no new permission.</strong> Only
+ * public data is read, so there is nothing to connect and nothing to keep: a
  * login is enough, and the profile usually already carries one.
  */
 @RestController

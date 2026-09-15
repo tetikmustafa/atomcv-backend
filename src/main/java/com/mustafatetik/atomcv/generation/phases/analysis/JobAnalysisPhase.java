@@ -24,9 +24,8 @@ import org.springframework.stereotype.Component;
  * refuses what came back anyway. Only the middle one costs money, which is the
  * whole shape of design principle 5.
  *
- * <p>The tier is {@link ModelTier#CHEAP}: Bolum 5.4 classes structured
- * extraction from a posting as an easy task, and it is the call the product
- * makes most often.
+ * <p>The tier is {@link ModelTier#CHEAP}: structured extraction from a posting
+ * is an easy task, and it is the call the product makes most often.
  */
 @Component
 public class JobAnalysisPhase {
@@ -146,7 +145,10 @@ public class JobAnalysisPhase {
         };
     }
 
-    /** Bolum 18.4. A refusal here means Faz B is never entered, so no more is spent. */
+    /**
+     * The plausibility gate. A refusal here means Faz B is never entered, so
+     * no more is spent.
+     */
     private Result<JobAnalysis> gate(JobAnalysis analysis, StructuredRequest<JobAnalysis> request,
             String jobDescription, String version) {
         var verdict = PlausibilityGate.check(analysis);

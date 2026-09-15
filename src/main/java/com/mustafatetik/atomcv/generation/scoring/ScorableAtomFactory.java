@@ -84,8 +84,8 @@ public final class ScorableAtomFactory {
                 // Computed here because it needs a date and the scorer must
                 // not have one. Today is a parameter for the same reason it is
                 // in GeneralModeScorer: a factory that read the clock could
-                // not be tested for the same-input-same-output property Bolum
-                // 51.2 requires.
+                // not be tested for the same-input-same-output property the
+                // determinism test requires.
                 GeneralModeScorer.score(atom, entry, today)));
     }
 

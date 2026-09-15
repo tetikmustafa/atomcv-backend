@@ -47,9 +47,9 @@ import java.util.UUID;
 public final class RenderPhase {
 
     /**
-     * Bolum 32 gives multilingual rendering its own vocabulary; until then the
-     * two languages the product ships in are spelled out here, and anything
-     * else falls back to English.
+     * Multilingual rendering will get its own vocabulary; until then the two
+     * languages the product ships in are spelled out here, and anything else
+     * falls back to English.
      */
     private static final Map<String, String> ONGOING = Map.of(
             "en", "Present",

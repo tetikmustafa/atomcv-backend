@@ -25,14 +25,14 @@ import org.springframework.stereotype.Service;
  * added to a generation the user is watching a progress bar for; on virtual
  * threads it is one.
  *
- * <p><strong>Sapma — the {@code StructuredTaskScope} is not used, and not only
- * because it is a preview API in Java 21.</strong> The scope in the spec is a
- * {@code ShutdownOnFailure}, which cancels the siblings when one task fails.
- * That is the wrong rule for this phase: Bolum 21.6 already says what a failed
- * rewrite means — the original sentence stands — so one bullet going wrong is
- * not a reason to abandon the seven that went right. A virtual-thread-per-task
- * executor gives the same fan-out and the same join, and the failure of one
- * task stays the failure of one task.
+ * <p><strong>A deviation — the {@code StructuredTaskScope} is not used, and
+ * not only because it is a preview API in Java 21.</strong> The scope
+ * originally called for is a {@code ShutdownOnFailure}, which cancels the
+ * siblings when one task fails. That is the wrong rule for this phase: what a
+ * failed rewrite means is already settled — the original sentence stands — so
+ * one bullet going wrong is not a reason to abandon the seven that went right.
+ * A virtual-thread-per-task executor gives the same fan-out and the same join,
+ * and the failure of one task stays the failure of one task.
  *
  * <p><strong>This never fails.</strong> Everything it can answer with is a
  * CV: the rewrites that passed, and the person's own words everywhere else.

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
  * Handing back a document that was already made.
  *
  * <p>Stage 2 stores no bytes — {@code pdf_key} is for R2 and R2 arrives in
- * Stage 3 — so a download is a re-render. That is not a workaround: EK D.6.3
- * already says the PDF is always reproducible, and here it is the whole
- * mechanism rather than the fallback for an expired one.
+ * Stage 3 — so a download is a re-render. That is not a workaround: the PDF is
+ * always reproducible by design, and here it is the whole mechanism rather
+ * than the fallback for an expired one.
  *
  * <p><strong>It re-renders the snapshot, never the profile.</strong> The
  * selection names atoms by id and the text under those ids goes on being
@@ -84,8 +84,8 @@ public class GenerationDownloadService {
      *
      * <p><strong>The page guarantee does not travel with it.</strong> The
      * atoms are the ones that fit a LaTeX page, and Word may set them in a
-     * little more or less room -- Bolum 22.6 calls the guarantee approximate
-     * here and the frontend is told to say so (B-094).
+     * little more or less room -- the guarantee is approximate here and the
+     * frontend is told to say so (B-094).
      */
     public byte[] renderDocx(Generation generation) {
         return docx.write(requestFor(generation));

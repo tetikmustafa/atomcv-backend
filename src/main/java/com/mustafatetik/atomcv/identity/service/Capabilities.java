@@ -13,12 +13,12 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 /**
- * The capability block of § 35.7, for whoever is calling.
+ * The capability block, for whoever is calling.
  *
- * <p>Two sets, and only one of them is specified. § 35.7 wrote down the
- * anonymous body — the constants below are its numbers, not invented ones —
- * and never wrote the account body; that half is {@link CapabilityProperties}
- * and reaches the frontend as {@code B-044}.
+ * <p>Two sets, and only one of them is specified. The anonymous body was
+ * written down — the constants below are its numbers, not invented ones — and
+ * never wrote the account body; that half is {@link CapabilityProperties} and
+ * reaches the frontend as {@code B-044}.
  *
  * <p>The account's quota numbers come from {@link QuotaService} rather than
  * from configuration read a second time. A capability screen that disagrees
@@ -37,8 +37,8 @@ public class Capabilities {
      * subject rather than a user, and the finished generation is readable and
      * downloadable by the session that owns it.
      *
-     * <p>What the number does <em>not</em> cover is the cover letter: § 35.7 gives
-     * that to an account, and asking for one is refused before the quota is
+     * <p>What the number does <em>not</em> cover is the cover letter: that
+     * goes to an account, and asking for one is refused before the quota is
      * touched.
      */
     private static final int ANONYMOUS_GENERATIONS = 5;
@@ -100,9 +100,9 @@ public class Capabilities {
     }
 
     /**
-     * Adim 3.6 mints the session this describes. Until then it is what a
-     * caller with no session is told, which is the same answer: these are the
-     * limits an account would lift.
+     * The session this describes is minted on first contact. Until then it is
+     * what a caller with no session is told, which is the same answer: these
+     * are the limits an account would lift.
      */
     private CapabilitiesResponse forAnonymous(Instant anonymousExpiresAt) {
         return new CapabilitiesResponse(
