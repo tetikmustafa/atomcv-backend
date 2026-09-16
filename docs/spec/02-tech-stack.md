@@ -157,7 +157,7 @@ Model adları **env değişkeni**dir, koda gömülmez — model isimlendirmeleri
 | **Strategy** | LLM sağlayıcıları, Renderer'lar, Seçim algoritması | Yeni sağlayıcı/şablon = yeni sınıf; mevcut kod değişmez |
 | **Ports & Adapters (Hexagonal)** | Tüm dış servisler, anonim/kalıcı store | Dış servisler arayüz arkasında; testte mock'lanabilir; anonim mod pipeline'a dokunmadan çalışır |
 | **Repository (user-scoped)** | Tüm veri erişimi | IDOR'u **yapısal olarak** engeller — kritik güvenlik kararı |
-| **Pipeline / Chain of Responsibility** | Faz A→G | Her faz bağımsız, test edilebilir, sıra konfigüre edilebilir |
+| **Pipeline** | Faz A→G | Her faz bağımsız ve tek başına test edilebilir. **"Sıra konfigüre edilebilir" iddiası kaldırıldı** (denetim, 2026-09-16): sıra bir konfigürasyon değil bir veri bağımlılığı — Faz C'nin bütçesi Faz B'nin skorlarını, Faz F'nin sayfa sayısı Faz E'nin kaynağını istiyor. Chain of Responsibility de değil: halkalar isteği birbirine devretmiyor, `GenerationPipeline` onları adıyla çağırıyor (§ 17.1) |
 | **Factory** | Yazıcı seçimi (`DocumentWriters`) | Format adı → `DocumentWriter`. **Satır "şablon adı → renderer örneği" diyordu ve öyle bir şey hiç yazılmadı** (denetim, 2026-09-16): şablonu `TemplateRegistry` çözüyor, seçilecek renderer ise tekti. Gerçekten eksik olan fabrika formatınkiydi, ve yokluğunda listeyi `generation` tutuyordu (§ 10.2, kural 3) |
 | **Result / Either** | Pipeline hata yönetimi | Exception yerine tipli hata; "kullanıcıya ne söyleyeceğiz" kararı akışta kalır |
 | **Value Object** | Atom, Score, RenderCost, ProfileRef | Primitive obsession'dan kaçınma; `ProfileRef` tipi yanlış store'a gitmeyi derleme zamanında yakalar |
@@ -190,7 +190,7 @@ userScopedAtomRepository.findById(currentUser, atomId);
 | **Jaro-Winkler + embedding** | Ingestion — kaynak birleştirme/deduplication | O(n·m) |
 | **Exponential backoff + jitter** | Kuyruk retry | O(1) |
 | **Sliding window** | Rate limiting | O(1) |
-| **Murmur3 hash bucketing** | Prompt A/B testi | O(1) |
+| **CRC32 hash bucketing** | Prompt A/B testi | O(1). **Satır Murmur3 diyordu**; karar ve gerekçesi § 53.2'de (tek bir hash için Guava bağımlılığı alınmadı, CRC32 JDK'da ve `Math.abs(Integer.MIN_VALUE)` tuzağından da kaçınıyor). Tablo satırı güncellenmemişti — denetim, 2026-09-16 |
 | **HNSW** | pgvector indeksi (10k+ satırda) | O(log n) |
 
 ### 7.1 Neden greedy, DP değil

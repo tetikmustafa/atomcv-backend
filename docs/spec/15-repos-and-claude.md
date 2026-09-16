@@ -143,7 +143,7 @@ atomcv-backend/
 │   │   │   │   ├── measurement/             #   MeasurementDocumentBuilder, TexLogParser,
 │   │   │   │   │                            #   FontMetricEstimator, CalibrationService
 │   │   │   │   └── template/                #   TemplateRegistry, CapacityModel,
-│   │   │   │                                #   TemplateCustomization, FontRegistry
+│   │   │   │                                #   TemplateCustomization, FontFamily
 │   │   │   │
 │   │   │   ├── llm/
 │   │   │   │   ├── gateway/                 #   LlmProvider, ProviderChain, StructuredRequest
@@ -182,10 +182,10 @@ atomcv-backend/
 │   │       ├── prompts/                     #   versiyonlu prompt dosyaları
 │   │       │   ├── job_analysis/{v1.md, schema.json}
 │   │       │   ├── profile_extraction/{v1.md, schema.json}
-│   │       │   ├── atom_rewrite/v1.md
+│   │       │   ├── bullet_rewrite/v1.md
 │   │       │   ├── about_synthesis/v1.md
 │   │       │   ├── cover_letter/v1.md
-│   │       │   ├── edit_intent/v1.md
+│   │       │   ├── selection_edit/v1.md
 │   │       │   └── translation/v1.md
 │   │       ├── templates/                   #   şablon config + preamble parçaları
 │   │       │   ├── templates.yaml           #   kapasite + sabit maliyetler

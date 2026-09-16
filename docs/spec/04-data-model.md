@@ -548,7 +548,27 @@ isteğin kendi `language` alanı ikisini de yener.
 }
 ```
 
-`rejected.reason` değerleri: `BUDGET` | `LOW_SCORE` | `INACTIVE` | `DIVERSITY_CAP` | `USER_EXCLUDED`
+`rejected.reason` değerleri: `BUDGET` | `INACTIVE` | `EXCLUDED_BY_DIRECTIVE` | `ENTRY_BELOW_MINIMUM`
+
+> **Sözlük üç yerden ayrılmıştı** (düzeltme, denetim 2026-09-16). Satır
+> `BUDGET | LOW_SCORE | INACTIVE | DIVERSITY_CAP | USER_EXCLUDED` diyordu:
+>
+> - **`LOW_SCORE` ve `DIVERSITY_CAP` üretilemez.** § 19.3 mutlak eşiği
+>   reddediyor — sistem elemiyor değil sıralıyor — yani düşük skor tek başına
+>   hiçbir atomu düşürmüyor; ve § 20.3'ün çeşitlilik kısıtı bir **tavan**
+>   değil bir **azalan getiri**: skoru düşürüyor, atomu reddetmiyor. İkisi de
+>   sözlükte olup kodda olmaması bir isim meselesi değil, iki tane olmayan
+>   davranışın belgelenmesiydi.
+> - **`USER_EXCLUDED` → `EXCLUDED_BY_DIRECTIVE`.** Ad § 08b ile § 35.3.1'de
+>   zaten yeniydi; burası geride kalmıştı. Ayrım ürünün kendisi: `INACTIVE`
+>   profil hakkında duran bir karar, bu ise **bu CV'nin** düzenlemesi, ve
+>   ikisini karıştıran bir ekran kalıcı kararı geri alır (`B-108`).
+> - **`ENTRY_BELOW_MINIMUM` eksikti** — § 20.2'nin minimumuna ulaşamayıp
+>   bütün olarak düşen entry.
+>
+> `selection_state` kalıcı bir JSONB anlık görüntüsü: belgelenen sözlüğe göre
+> yazılmış bir okuyucu hiç gelmeyecek iki nedeni bekler ve gelen birini
+> kaçırırdı.
 
 **Sapma — `customizationId` yerine özelleştirmenin kendisi yazılır.** İşaret
 edilecek bir `template_customizations` satırı yok (A şama 2 sabit bir
@@ -566,7 +586,7 @@ onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
   "B": { "durationMs": 47, "atomsScored": 63,
          "scoreDistribution": { "p10": 0.11, "p50": 0.44, "p90": 0.87 } },
   "C": { "durationMs": 12, "selected": 16, "rejected": 47,
-         "rejectionReasons": { "BUDGET": 31, "DIVERSITY_CAP": 9, "INACTIVE": 7 },
+         "rejectionReasons": { "BUDGET": 31, "EXCLUDED_BY_DIRECTIVE": 9, "INACTIVE": 7 },
          "pinnedCostPt": 84.2, "estimatedAtoms": 2 },
   "D": { "durationMs": 3120, "attempts": 6, "accepted": 5, "rejected": 1,
          "rejectReasons": ["NUMBER_LOST"], "translationsUsed": 4, "translationsGenerated": 2 },
@@ -582,7 +602,7 @@ onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
   "pipeline": "1.4.0",
   "scoringWeights": "v3",
   "template": "modern:v2",
-  "promptVersions": { "job_analysis": "v2", "atom_rewrite": "v1", "about_synthesis": "v1" }
+  "promptVersions": { "job_analysis": "v2", "bullet_rewrite": "v2", "about_synthesis": "v1" }
 }
 ```
 

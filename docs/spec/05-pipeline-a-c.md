@@ -21,41 +21,56 @@ flowchart LR
     G --> C
 ```
 
-### 17.1 Faz arayüzü
+### 17.1 Faz arayüzü — yok, ve olmaması bir karar
 
-```java
-public interface PipelinePhase<I, O> {
-    String name();
-    Result<O> execute(I input, PipelineContext ctx);
-}
-
-public record PipelineContext(
-    UUID userId,
-    ProfileRef profileRef,
-    String correlationId,
-    UUID generationId,
-    GenerationOptions options,
-    ProfilePreferences preferences,
-    GenerationDirectives directives,
-    CapacityModel capacity,
-    SessionCapabilities capabilities,
-    Telemetry telemetry
-) {}
-```
+> **Sapma (denetim, 2026-09-16).** Bu bölüm bir `PipelinePhase<I, O>`
+> arayüzü ve on alanlı bir `PipelineContext` kaydı tanımlıyordu. **İkisi de
+> hiç yazılmadı**, ve § 17.2'nin adlandırdığı yedi girdi/çıktı tipinden
+> (`ScoringInput`, `ScoredAtoms`, `SelectionInput`, `RenderInput`,
+> `RenderedDocument`, `VerificationReport`, `EditRequest`) hiçbiri de yok.
+> Sapma iki denetim turunu geçti ve hiçbir yerde kayıtlı değildi.
+>
+> **Ortak arayüz yazılmadı, çünkü fazlar gerçekten heterojen.** `I` ile `O`
+> her fazda başka bir şey, ve aralarındaki tek ortak şey `Result` — yani
+> arayüz `execute`'un adını birleştirir, imzasını değil. Somut kazancı
+> "sırayı konfigüre etmek" olurdu (§ 6 bunu iddia ediyordu) ve bu boru
+> hattında sıra konfigüre edilebilir bir şey değil: Faz C'nin bütçesi Faz
+> B'nin skorlarını, Faz F'nin sayfa sayısı Faz E'nin kaynağını istiyor.
+> Sırası değiştirilemeyen bir zinciri konfigüre edilebilir kılmak, yalnız
+> yanlış konfigüre edilebilir kılar.
+>
+> **`PipelineContext` de yazılmadı**, ve sebebi daha dar: her fazın ihtiyacı
+> olan alanları taşıyan tek bir kayıt, hiçbir fazın ihtiyacı olmayan alanları
+> da her faza taşır. Mutlak kural 4 açısından bu bedava değil — bağlam
+> nesnesi büyüdükçe bir loglama noktasına kullanıcı içeriğinin ulaşması
+> kolaylaşır. Fazlar istediklerini parametre olarak alıyor.
+>
+> Boru hattını `GenerationPipeline` yürütüyor ve fazları adıyla çağırıyor;
+> ilerleme bildirimi ayrı bir sözlükte (`GenerationPhase` enum'u, § 30.6).
 
 ### 17.2 Faz sözleşmeleri
 
-| Faz | Girdi | Çıktı | LLM | Saf fonksiyon |
-|---|---|---|---|---|
-| A | `String jd` | `JobAnalysis` | ✅ | ❌ |
-| B | `ScoringInput` | `ScoredAtoms` | ❌ | ✅ |
-| C | `SelectionInput` | `SelectionState` | ❌ | ✅ |
-| D | `SelectionState` | `RewrittenContent` | ✅ | ❌ |
-| E | `RenderInput` | `RenderedSource` | ❌ | ✅ |
-| F | `RenderedDocument` | `VerificationReport` | ❌ | ❌ (derleme) |
-| G | `EditRequest` | `SelectionState` | ✅ | ❌ |
+Uygulanan imzalar. Faz F'nin kendi sınıfı yok: derleme döngüsü, `AtsCheck`
+ve `FitReport` `GenerationPipeline`'ın içinde, çünkü üçü tek bir "belge
+sığdı mı" sorusunun parçaları ve döngü bütçeyi kısıp Faz C'ye dönüyor.
+
+| Faz | Giriş noktası | LLM | Saf fonksiyon |
+|---|---|---|---|
+| A | `JobAnalysisPhase.analyse(String, boolean, …) → Result<JobAnalysis>` | ✅ | ❌ |
+| B | `RelevanceScoringService.scoreAgainst(…) → RelevanceScores` | ❌ | ✅ |
+| C | `SelectionPhase.select(SelectionRequest) → Result<SelectionState>` | ❌ | ✅ (`static`) |
+| D | `RewritePhase.rewrite(ProfileTree, SelectionState, RewriteContext, RewrittenContent) → RewriteOutcome` | ✅ | ❌ |
+| E | `RenderPhase.build(…) → RenderRequest` | ❌ | ✅ (`static`) |
+| F | `GenerationPipeline` içinde: derle → `X-Page-Count` → `AtsCheck` → `FitReport` | ❌ | ❌ (derleme) |
+| G | `EditPhase.parse(…) → Result<EditPlan>` | ✅ | ❌ |
 
 **B, C, E'nin saf fonksiyon olması kritik** — determinizm testinin temeli.
+C ile E'nin `static` olması o testin bedava gelen hâli: bir alanı olmayan
+fonksiyon, iki koşu arasında taşıyacak durumu da bulamaz.
+
+**Faz D bir `Result` döndürmüyor, ve bu § 21.6.1'in kararı:** bu katmanın
+çağırana bildirebileceği bir başarısızlık yok — reddedilen bir yeniden yazım
+kişinin kendi cümlesini bastırıyor.
 
 ---
 
@@ -603,19 +618,35 @@ public record SelectionState(
     List<SelectedAtom> selected,
     List<RejectedAtom> rejected,
     BudgetBreakdown budget,
-    String language,
-    UUID customizationId
+    List<UUID> headerOnlyEntries,      // § 20.2: maddesiz açılan entry
+    List<RejectedEntry> rejectedEntries
 ) {}
 
 public record SelectedAtom(
     UUID atomId, UUID variantId,
     double score, double renderCostPt,
-    List<String> matchedKeywords,
-    boolean forcedByLock
+    boolean forcedByLock,
+    List<String> matchedKeywords       // § 35.3.1, sıralı
 ) {}
 
 public record RejectedAtom(UUID atomId, double score, RejectionReason reason) {}
+public record RejectedEntry(UUID entryId, double score, RejectionReason reason) {}
 ```
+
+> **Kayıt dört yerde ayrılmıştı** (düzeltme, denetim 2026-09-16).
+> `language` ile `customizationId` **alan değil**: § 14.5 ikincisinin neden
+> id olarak yazılamadığını zaten kaydediyor (yeniden render fontu, kenar
+> boşluğunu ve satır aralığını istiyor, hiçbir şeye çözülen bir id değil) ve
+> ikisi de anlık görüntünün kendi kabuğunda duruyor. Buna karşılık
+> `headerOnlyEntries` ile `rejectedEntries` **var** — birincisini § 20.2 kendi
+> düzyazısında anıyor ama kayıt satırına hiç işlenmemişti, ikincisi ise hiçbir
+> yerde yazılı değildi.
+>
+> **`RejectedEntry` ayrı bir kayıt, ve bu bilerek:** iki id birbirinin yerine
+> geçmiyor. `rejected` listesi kullanıcıya atom atom gösteriliyor; içine
+> konan, hiçbir atoma çözülmeyen bir entry id'si sessizlikten kötü olurdu —
+> ki bir diploma satırının dolu bir sayfadan tek kelime etmeden kaybolmasının
+> sebebi tam olarak buydu.
 
 **Performans:** 200 atom için ~10ms toplam.
 

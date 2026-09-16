@@ -70,7 +70,11 @@ POST   /api/v1/profile/github/suggestions   önerir, yazmaz
 POST   /api/v1/profile/github/apply         seçilenleri yazar
 
 ── Şablon ──────────────────────────────────────────
-                                            (uç yok — § 35.2.1)
+GET    /api/v1/templates                    şablon kataloğu
+GET    /api/v1/customizations
+POST   /api/v1/customizations
+PATCH  /api/v1/customizations/{id}
+DELETE /api/v1/customizations/{id}
 
 ── Üretim ──────────────────────────────────────────
 POST   /api/v1/generations                  → 202 + job
@@ -129,6 +133,13 @@ Bugünkü hâli: `SavedCustomization` `template_customizations`'a yazıyor,
 `CustomizationController` `GET`/`POST /customizations` ve
 `PATCH`/`DELETE /customizations/{id}` yayımlıyor, ve `GET /templates` katalogu
 veriyor. Beşi de `openapi.json`'da.
+
+> **Ve haritanın kendisi bir tur daha "(uç yok)" dedi** (denetim,
+> 2026-09-16). 09-15 turu bu tabloyu düzeltti, § 35.2'nin Şablon bölümü ise
+> olduğu gibi kaldı — yani aynı dosya seksen satır arayla iki şey söylüyordu,
+> ve okuyanın önce gördüğü yanlış olanıydı. Harita artık beş ucu da sayıyor.
+> Aşağıdaki ders bu yüzden iki kez kazanıldı: **bir bloğu düzeltmek, onu
+> gösteren satırı düzeltmiyor.**
 
 **`capabilities.allowedTemplates` kalktığı yerde durmuyor** (§ 35.7). İkisi
 farklı soruya cevap veriyor: yetenek listesi *bu oturumun neyi
@@ -366,11 +377,20 @@ seçilenler yazılıyor, ve burada uydurmak Faz B'yi yeniden koşturmak olurdu �
 
 **Sunucu çeviri anahtarı gönderir, metin değil.** Frontend `errors.CONFLICTING_PREFERENCES` anahtarını kendi dilinde çözer. `resolutions` dizisinden butonlar otomatik üretilir.
 
-> **Frontend (EK D.9 · 7, 10-11).** Tam katalog **EK D.6.1'de**: 27 kod, HTTP
-> durumları ve her kodun `params` anahtarları **tipleriyle**. `en.json` ve
-> `tr.json` artık buradan yazılabilir. Üç kod dokümanın gövdesinde yoktur ve
-> Adım 1.2'de eklendi: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`,
-> `VALIDATION_FAILED`.
+> **Frontend (EK D.9 · 7, 10-11).** Tam katalog **repo kökündeki
+> `error-catalogue.md`'de**: kod, HTTP durumu, `params` anahtarları ve
+> **tipleri**. `en.json` ve `tr.json` buradan yazılır.
+>
+> **Bu satır EK D.6.1'i gösteriyordu ve oraya bakmak artık yanlış cevap
+> veriyordu** (denetim, 2026-09-16). Tablo `ErrorCode` enum'undan
+> **üretilen** bir dosyaya taşındı (§ 08b) ve `ErrorCatalogueDocumentTest`
+> ikisi ayrıştığı an düşüyor; EK D'deki elle yazılmış kopya ise olduğu yerde
+> kaldı ve bayatladı. Ayrılık ölçüldü: o kopya **27 kod** sayıyor, enum
+> **41**; üretemediğimiz bir kod listeliyor (`NO_ANONYMOUS_PROFILE`, 09-15
+> denetiminde kaldırıldı) ve `UNPARSEABLE_JOB_DESCRIPTION`'ın
+> `params.reason`'ını hiç taşımıyor — kullanıcıyı dört ayrı ekrana gönderen
+> alan o. Oradan yazılan bir `en.json`, hiç görünmeyecek bir cümle yazıp
+> gereken dördünü yazmazdı.
 >
 > Sunucu **bildirilmemiş bir `params` alanı göndermez** — gövde kurulurken
 > katalog doğrulanıyor, eksik ya da fazla anahtar orada patlıyor. Bir alan
