@@ -519,7 +519,7 @@ kararları **EK D.10**'da.
 | Soru | Neden bekliyor |
 |---|---|
 | ~~İlk `UserContext` nereden gelir?~~ | **Karara bağlandı (EK D.8):** yalnız `local` profilinde var olan sabit bir kullanıcı; üretimde yedek bean yok, endpoint kullanıcı istediği anda uygulama açılışta düşer. |
-| Üretimde migration nasıl çalışır? | Bölüm 47'nin önerdiği özellik yok (EK D.1). Şu an Flyway üretimde de açılışta çalışıyor. |
+| ~~Üretimde migration nasıl çalışır?~~ | **Karara bağlandı (2026-09-16):** açılışta, **tek örnekle**. Bölüm 47'nin önerdiği `--spring.flyway.migrate-only` diye bir özellik yok (EK D.1) ve ayrı bir Flyway CLI adımının getirdiği parça, tek sunucuda tek backend örneği koşarken karşılığını vermiyor. **Koşulu yazılı:** iki örnek aynı migration'ı yarışır, yani ölçeklenme günü yeniden açılır. Rollback **kodu** geri alır şemayı değil — her migration geriye dönük uyumlu olmalı. Ayrıntı `docs/vps-dagitim-plani.md` § 0 ve § 6. |
 | Kota gününün zaman dilimi | `usage_counters.period` bir `DATE`; `resetsAt` gönderilmeden önce cevaplanmalı (EK D.6.5). |
 | Anonim akış kuyruğu kullanacak mı? | `jobs` tekil indeksindeki NULL kusuru ve Bölüm 51.6'nın gizlilik testi buna bağlı. |
 | CI imaj taraması | Trivy şu an yalnız yapılandırmayı tarıyor; üretilen imajı taramak CI'da bir build (birkaç GB) gerektiriyor ve registry push'uyla birlikte gelmeli (Bölüm 47). |
