@@ -57,7 +57,7 @@ $COMPOSE pull "$COMPONENT"
 # Migrations run at start-up, inside the application, and this is the decision
 # that makes that safe: one instance at a time. The snippet reached for
 # `--spring.flyway.migrate-only=true`, which is not a Spring Boot property at
-# all -- it was decided against § 47. Flyway takes its own
+# all, so a separate migration step was decided against. Flyway takes its own
 # lock, so the risk is not two migrators but two application versions against
 # one schema, and a single replica is what rules that out.
 $COMPOSE up -d --no-deps "$COMPONENT"

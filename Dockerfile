@@ -1,4 +1,4 @@
-# The image Adim V.7's workflow builds and Bolum 11.1 runs.
+# The image CI builds and the production compose file runs.
 #
 # It did not exist. The deploy pipeline in the build guide ends with
 # `docker build -t ghcr.io/.../atomcv-backend:$SHA .` and there was nothing at
@@ -32,8 +32,8 @@ RUN sh ./gradlew --no-daemon bootJar -x test
 # and locale handling are glibc's, and PDFBox reads text out of PDFs here.
 FROM eclipse-temurin:21-jre-jammy
 
-# curl is the health check. Bolum 11's compose asks the container whether it is
-# well, and a health check that cannot run reports unhealthy forever.
+# curl is the health check. Compose asks the container whether it is well,
+# and a health check that cannot run reports unhealthy forever.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
@@ -48,8 +48,8 @@ COPY --from=build --chown=atomcv:atomcv /src/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-# Bolum 52.5's cold start. A class-data archive maps the loaded classes instead
-# of parsing and verifying them again, and Spring loads a great many.
+# The cold start. A class-data archive maps the loaded classes instead of
+# parsing and verifying them again, and Spring loads a great many.
 #
 # `AutoCreateSharedArchive` rather than a training run at build time: the
 # documented Spring CDS recipe starts the application to record what it loaded,
@@ -64,8 +64,8 @@ EXPOSE 8080
 # inside the container's own layer would be written on every start and read on
 # none. Losing it costs one slow start, never a wrong one.
 
-# Compose overrides this with the memory percentage and the locale (Bolum
-# 11.1); repeated here so the image is correct when run on its own.
+# Compose overrides this with the memory percentage and the locale; repeated
+# here so the image is correct when run on its own.
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=70 -Duser.language=en -Duser.country=US"
 ENV JAVA_CDS_OPTS="-XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=/var/cache/atomcv/atomcv.jsa"
 
@@ -73,6 +73,6 @@ HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:8080/actuator/health || exit 1
 
 # Shell form so that JAVA_CDS_OPTS expands. The archive flags are deliberately
-# not in JAVA_TOOL_OPTIONS: compose overrides that variable wholesale
-# (Bolum 11.1), and a deployment that set it would silently drop the archive.
+# not in JAVA_TOOL_OPTIONS: compose overrides that variable wholesale, and a
+# deployment that set it would silently drop the archive.
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_CDS_OPTS -jar app.jar"]

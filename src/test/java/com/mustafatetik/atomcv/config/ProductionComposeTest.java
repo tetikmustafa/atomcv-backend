@@ -31,7 +31,7 @@ class ProductionComposeTest {
     private static final Path NGINX = Path.of("docker/nginx/nginx.conf");
 
     @Test
-    void thefileParsesAndDescribesTheServicesBolum11Names() {
+    void thefileParsesAndDescribesEveryServiceTheDeploymentNeeds() {
         Map<String, Object> services = services();
 
         assertThat(services).containsKeys(

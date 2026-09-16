@@ -42,8 +42,8 @@ public final class RewritePlanner {
      * sentence has been stuffed with the posting's words. The second is the
      * one that matters, and the floor above already handles it — an atom with
      * no real connection is not a candidate whatever the cap is. Within the
-     * range the spec gives, the larger number leaves less of a genuinely
-     * matching CV untouched.
+     * designed range of six to eight, the larger number leaves less of a
+     * genuinely matching CV untouched.
      */
     static final int MAX_CANDIDATES = 8;
 

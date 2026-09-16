@@ -32,8 +32,9 @@ import org.junit.jupiter.api.Test;
  * that tries to read the file fails with
  * {@code Could not undump 512303 8-byte item(s)}.
  *
- * <p><strong>Why a test rather than only a correction in the spec.</strong> The
- * snippet is still there to be read and it is two lines to paste. A build that
+ * <p><strong>Why a test rather than only a written-down correction.</strong>
+ * The snippet is a well-known pdfLaTeX recipe and it is two lines to paste,
+ * so it will be suggested again. A build that
  * quietly produces an unusable format costs an afternoon to trace, and the
  * failure appears in the compiler rather than in the build. This is the cheaper
  * end of that.
@@ -57,7 +58,7 @@ class LatexImageTest {
             the xelatex format has already loaded native fonts through TU. The \
             dump writes a .fmt anyway and the first compile that reads it fails \
             with "Could not undump". Measured against this image on 2026-09-15; \
-            the spec carries the correction beside the snippet.""";
+            The fontconfig cache on the line above is real and stays.""";
 
     @Test
     void theimageDoesNotTryToDumpApreambleFormat() {

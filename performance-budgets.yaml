@@ -22,8 +22,9 @@ backend:
   profile_load: { p50_ms: 240, p95_ms: 600 }
 
 # The real budget: flat queries and an in-memory join, never a walk
-# that asks per row. Six is the specification's own ceiling and it is a count
-# rather than a duration, so it means the same thing on every machine.
+# that asks per row. Six is the ceiling a profile load is designed around --
+# four flat queries and room for two -- and it is a count rather than a
+# duration, so it means the same thing on every machine.
 queries:
   profile_load_max: 6
 
