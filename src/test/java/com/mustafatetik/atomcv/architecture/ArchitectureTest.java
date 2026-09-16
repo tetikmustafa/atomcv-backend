@@ -4,6 +4,7 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.data.repository.Repository;
@@ -276,7 +277,27 @@ class ArchitectureTest {
                     + "developer's machine");
 
     /**
-     * <strong>A model call must not hold a database connection.</strong>
+     * Everything a transaction must not wait on: the four clients in this
+     * system that talk to something over a network, and the one façade whose
+     * entire job is to make a model call.
+     *
+     * <p>{@code CoverLetterWriter} is in the list because the fault does not
+     * need the chain to be in sight. A class holding the writer holds the
+     * forty-five second call behind it just as surely, and naming the façade
+     * is the only way a rule about direct calls can say so — which is also
+     * the limit of this rule, written down rather than hidden: a model call
+     * two hops away is still invisible to it.
+     */
+    private static final List<String> NETWORK_CLIENTS = List.of(
+            "com.mustafatetik.atomcv.llm.gateway.ProviderChain",
+            "com.mustafatetik.atomcv.embedding.EmbeddingProvider",
+            "com.mustafatetik.atomcv.email.EmailSender",
+            "com.mustafatetik.atomcv.compilation.LatexCompiler",
+            "com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter",
+            "com.mustafatetik.atomcv.identity.service.WelcomeGreeting");
+
+    /**
+     * <strong>A call over a network must not hold a database connection.</strong>
      *
      * <p>The pool is ten connections and a provider call takes up to thirty
      * seconds. One call inside a transaction is survivable while the caller is
@@ -287,27 +308,36 @@ class ArchitectureTest {
      * language or not at all — sent every multilingual generation back to the
      * profile's own language.
      *
+     * <p><strong>It named the provider chain alone for a stage, and three
+     * classes walked through the gap</strong> (denetim, beşinci tur): the
+     * embedding batch over a whole profile, the sign-in email on the request
+     * thread, and the covering letter's forty-five second rewrite — also on
+     * the request thread, and reaching the model through a façade rather than
+     * through the chain. One fault, fixed once, left standing in three places
+     * because the guard was written against the instance rather than the
+     * class of fault. The list above is that class.
+     *
      * <p>The rule is on the class rather than on the method, which is stricter
      * than the fault requires and is deliberate: {@code @Transactional} on a
      * class covers every method, a reader checking one method has to check the
      * class too, and the separation that fixes this is a separate bean anyway
-     * (see {@code TranslationWriter}). A class that both calls a model and
-     * writes rows should be two classes.
+     * (see {@code TranslationWriter}, {@code AtomEmbeddingWriter},
+     * {@code MagicLinkIssuer}). A class that both calls out and writes rows
+     * should be two classes.
      *
-     * <p>Verified against a planted violation by annotating
-     * {@code VariantTranslationService} with {@code @Transactional}: the rule
-     * failed, naming the class.
+     * <p>Verified against a planted violation by putting {@code @Transactional}
+     * back on {@code AtomEmbeddingService.embedMissing}: the rule failed,
+     * naming that method and its call to {@code EmbeddingProvider.embedBatch}.
      */
     @ArchTest
-    static final ArchRule noModelCallInsideATransaction = noClasses()
+    static final ArchRule noNetworkCallInsideATransaction = noClasses()
             .that().areAnnotatedWith(Transactional.class)
             .or().containAnyMethodsThat(describe("transactional",
                     method -> method.isAnnotatedWith(Transactional.class)))
-            .should().callMethodWhere(target(owner(assignableTo(
-                    "com.mustafatetik.atomcv.llm.gateway.ProviderChain"))))
-            .because("a provider call takes up to thirty seconds and the pool "
-                    + "is ten connections; a fan-out of these would starve it "
-                    + "(the translation fan-out and the provider chain)");
+            .should().callMethodWhere(target(owner(describe("a network client",
+                    owner -> NETWORK_CLIENTS.stream().anyMatch(owner::isAssignableTo)))))
+            .because("a call over a network takes seconds and the pool is ten "
+                    + "connections; a fan-out of these would starve it");
 
     /**
      * <strong>The driver is a driver everywhere but one package.</strong>

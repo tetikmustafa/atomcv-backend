@@ -1,8 +1,5 @@
 package com.mustafatetik.atomcv.identity.service;
 
-import com.mustafatetik.atomcv.email.EmailSender;
-import com.mustafatetik.atomcv.email.EmailSuppressions;
-import com.mustafatetik.atomcv.email.MagicLinkEmail;
 import com.mustafatetik.atomcv.identity.domain.AuthMethod;
 import com.mustafatetik.atomcv.identity.domain.MagicLinkToken;
 import com.mustafatetik.atomcv.identity.domain.Session;
@@ -19,8 +16,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,29 +45,28 @@ public class MagicLinkService {
 
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
 
-    private static final Logger log = LoggerFactory.getLogger(MagicLinkService.class);
-
     private final SignInAccounts accounts;
     private final MagicLinkTokens tokens;
+    private final MagicLinkIssuer issuer;
     private final SessionStore sessions;
     private final SignInRateLimit rateLimit;
-    private final EmailSender email;
-    private final WelcomeGreeting welcome;
-    private final EmailSuppressions suppressions;
+    private final MagicLinkMailer mailer;
+    private final ApplicationEventPublisher events;
     private final MagicLinkProperties properties;
     private final Clock clock;
 
-    MagicLinkService(SignInAccounts accounts, MagicLinkTokens tokens, SessionStore sessions,
-            SignInRateLimit rateLimit, EmailSender email, EmailSuppressions suppressions,
-            MagicLinkProperties properties, WelcomeGreeting welcome, Clock clock) {
+    MagicLinkService(SignInAccounts accounts, MagicLinkTokens tokens, MagicLinkIssuer issuer,
+            SessionStore sessions, SignInRateLimit rateLimit, MagicLinkMailer mailer,
+            MagicLinkProperties properties,
+            ApplicationEventPublisher events, Clock clock) {
         this.accounts = accounts;
         this.tokens = tokens;
+        this.issuer = issuer;
         this.sessions = sessions;
         this.rateLimit = rateLimit;
-        this.email = email;
-        this.suppressions = suppressions;
+        this.mailer = mailer;
         this.properties = properties;
-        this.welcome = welcome;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -93,35 +88,22 @@ public class MagicLinkService {
      *         window. Thrown before the account row is touched, so a refused
      *         request creates nothing.
      */
-    @Transactional
     public void request(String rawEmail) {
         String address = normalise(rawEmail);
         rateLimit.checkAddress(address);
-        UserAccount user = accounts.byEmail(address)
-                .orElseGet(() -> accounts.createAwaitingVerification(address));
 
         String selector = randomToken(16);
         String verifier = randomToken(32);
         Instant now = clock.instant();
-        tokens.save(MagicLinkToken.issued(selector, sha256(verifier), user.getId(),
-                now.plusSeconds(VALID_FOR_MINUTES * 60L)));
+        // The writes are the issuer's, and its own note says why they are not
+        // this method's: the send below must not happen inside a transaction.
+        MagicLinkIssuer.Issued issued = issuer.issue(address, selector, sha256(verifier),
+                now.plusSeconds(VALID_FOR_MINUTES * 60L));
 
-        if (suppressions.isSuppressed(address)) {
-            // A hard bounce or a complaint is a standing instruction, and
-            // sending anyway costs the domain's reputation — which would break
-            // sign-in for everyone, not for this address. The token is still
-            // written so the work, and so the timing, stays the same.
-            log.info("Skipped a sign-in email to a suppressed address");
-            return;
-        }
-        boolean accepted = email.send(MagicLinkEmail.to(
-                address, user.getLocale(), linkFor(selector, verifier), VALID_FOR_MINUTES));
-        if (!accepted) {
-            // Said, but not to the caller: a failure that reached the response
-            // would answer the question the silence exists to leave
-            // unanswered.
-            log.warn("A sign-in email was not accepted by the sender");
-        }
+        // The token is written above whatever the address turns out to be, so
+        // the work — and so the timing — stays the same for a suppressed one.
+        mailer.sendLink(address, issued.locale(), linkFor(selector, verifier),
+                VALID_FOR_MINUTES);
     }
 
     /**
@@ -165,8 +147,13 @@ public class MagicLinkService {
             return Optional.empty();
         }
         UserAccount user = account.get();
-        // Asked before seen(...) fills in the field it reads.
-        welcome.greetIfFirstSignIn(user);
+        // Asked before seen(...) fills in the field it reads, and answered
+        // here rather than by the greeting: the send itself waits for the
+        // commit, because a network call must not hold this transaction's
+        // connection.
+        if (user.hasNeverSignedIn()) {
+            events.publishEvent(new FirstSignIn(user));
+        }
         // Opening the email is the proof, and this is the moment it lands.
         user.markEmailVerified();
         accounts.seen(user, now);

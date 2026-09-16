@@ -8,6 +8,8 @@ import com.mustafatetik.atomcv.identity.domain.UserAccount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * The welcome, sent once and from one place.
@@ -19,16 +21,23 @@ import org.springframework.stereotype.Service;
  * sent mail to every address anybody cared to enter, which is the abuse the
  * limits exist to slow down.
  *
- * <p>So it reads {@code last_seen_at}, which is null exactly until the first
- * session exists. Both routes pass through here for that reason: the magic
- * link's verification and OAuth both call {@code seen(...)} immediately before
- * creating a session, and this has to be asked <em>before</em> they do.
+ * <p>So the question is {@code last_seen_at}, which is null exactly until the
+ * first session exists — and it is asked by the two routes rather than here,
+ * because both call {@code seen(...)} immediately before creating a session
+ * and it stops being answerable the moment they do.
  *
- * <p><strong>Not transactional, deliberately, and the asymmetry with the
- * deletion confirmation is the point.</strong> A rolled-back deletion that
- * had already told somebody their data was gone would be a lie; a welcome for
- * a sign-in that then failed is one extra email. The first is worth carrying
- * an address out of a transaction for, the second is not.
+ * <p><strong>Reached by an event after the commit, and it used to be reached
+ * by a call inside one</strong> (denetim, beşinci tur). The note here said
+ * "not transactional, deliberately" and was describing its own annotation
+ * rather than the transaction it actually ran in: both callers are
+ * {@code @Transactional}, so a Resend round trip happened holding a connection
+ * from a pool of ten — on the one request every user makes before they can
+ * make any other. <strong>A class that opens no transaction is not a class
+ * that runs outside one.</strong>
+ *
+ * <p>Which also fixed the asymmetry the old note claimed as deliberate: the
+ * trigger is now the commit rather than the attempt, so a sign-in that rolled
+ * back no longer sends a welcome for a session nobody got.
  */
 @Service
 public class WelcomeGreeting {
@@ -48,14 +57,24 @@ public class WelcomeGreeting {
     }
 
     /**
-     * @param account read before {@code seen(...)} has touched it, or this
-     *                greets nobody: the field it asks about is the one that
-     *                call is about to fill in
+     * The welcome itself, once somebody else has decided it is the first time.
+     *
+     * <p><strong>"Is this a first sign-in" is no longer asked here</strong>,
+     * and it cannot be: by the time this runs the transaction has committed
+     * and {@code seen(...)} has filled in the very field that answer reads.
+     * The two routes ask it in the one moment it is answerable and publish
+     * {@link FirstSignIn} only then — so what is left here is the other
+     * question, whether this address may be written to at all.
      */
-    public void greetIfFirstSignIn(UserAccount account) {
-        if (!account.hasNeverSignedIn()) {
-            return;
-        }
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onFirstSignIn(FirstSignIn event) {
+        greet(event.account());
+    }
+
+    /**
+     * @param account the person who has just arrived for the first time
+     */
+    public void greet(UserAccount account) {
         if (!account.wantsLifecycleEmails()) {
             // Reachable: somebody can unsubscribe from the welcome they were
             // sent, and then sign in for the first time on another device

@@ -14,7 +14,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Every atom's vector, brought up to date.
@@ -45,18 +44,25 @@ public class AtomEmbeddingService {
     private final AtomRepository atoms;
     private final AtomVariantRepository variants;
     private final EmbeddingProvider embeddings;
+    private final AtomEmbeddingWriter writer;
 
     AtomEmbeddingService(AtomRepository atoms, AtomVariantRepository variants,
-            EmbeddingProvider embeddings) {
+            EmbeddingProvider embeddings, AtomEmbeddingWriter writer) {
         this.atoms = atoms;
         this.variants = variants;
         this.embeddings = embeddings;
+        this.writer = writer;
     }
 
     /**
+     * <p><strong>Nothing here is transactional, on purpose.</strong> The
+     * writes are {@link AtomEmbeddingWriter}'s, and that class carries the
+     * reason: the batch call below is a network round trip for every atom of a
+     * profile, and a transaction around it would hold a connection for all of
+     * it.
+     *
      * @return how many atoms were given a vector
      */
-    @Transactional
     public int embedMissing(ProfileRef profile) {
         Map<UUID, AtomVariant> englishByAtom = new HashMap<>();
         for (AtomVariant variant : variants.findAll(profile)) {
@@ -90,14 +96,13 @@ public class AtomEmbeddingService {
                     + vectors.size() + " vectors for " + pending.size() + " atoms");
         }
 
-        for (int i = 0; i < pending.size(); i++) {
-            Atom atom = pending.get(i);
-            atom.setEmbedding(vectors.get(i),
-                    englishByAtom.get(atom.getId()).getContentHash());
-            atoms.save(profile, atom);
+        Map<UUID, String> hashes = new HashMap<>();
+        for (Atom atom : pending) {
+            hashes.put(atom.getId(), englishByAtom.get(atom.getId()).getContentHash());
         }
+        int written = writer.store(profile, pending, vectors, hashes);
         // A count, never a sentence (absolute rule 4).
-        log.info("Embedded {} atoms", pending.size());
-        return pending.size();
+        log.info("Embedded {} atoms", written);
+        return written;
     }
 }

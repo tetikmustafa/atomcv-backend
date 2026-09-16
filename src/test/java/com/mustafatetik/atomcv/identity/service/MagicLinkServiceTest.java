@@ -27,6 +27,8 @@ import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,14 +46,25 @@ class MagicLinkServiceTest {
     private final EmailSender email = mock(EmailSender.class);
     private final EmailSuppressions suppressions = mock(EmailSuppressions.class);
 
+    /** What the sign-in published, which is how the welcome is reached now. */
+    private final List<Object> published = new ArrayList<>();
+
     private MagicLinkService service;
 
     @BeforeEach
     void setUp() {
-        service = new MagicLinkService(accounts, tokens, sessions, rateLimit, email,
-                suppressions,
+        // The real issuer over the same mocks, not a mock of its own: the two
+        // writes it owns are exactly what this class's assertions are about,
+        // and its @Transactional is inert without a proxy anyway.
+        service = new MagicLinkService(accounts, tokens,
+                new MagicLinkIssuer(accounts, tokens),
+                sessions, rateLimit,
+                // The real mailer over the same mocks, for the reason the
+                // issuer above is real: the suppression branch and the sent
+                // message are what these assertions are about.
+                new MagicLinkMailer(email, suppressions),
                 new MagicLinkProperties("https://app.test", "/verify"),
-                mock(WelcomeGreeting.class),
+                published::add,
                 Clock.fixed(NOW, ZoneOffset.UTC));
         when(email.send(any())).thenReturn(true);
         when(suppressions.isSuppressed(anyString())).thenReturn(false);
@@ -268,6 +281,44 @@ class MagicLinkServiceTest {
         assertThat(user.isEmailVerified()).isTrue();
         verify(accounts).seen(eq(user), eq(NOW));
         verify(tokens).spendOutstandingFor(eq(user.getId()), eq(NOW));
+    }
+
+    /**
+     * <strong>The welcome is decided here and sent after the commit.</strong>
+     * Moved from {@code WelcomeGreetingTest}, and it had to move: the question
+     * is {@code last_seen_at}, {@code seen(...)} below fills it in, and the
+     * greeting now runs after this transaction has ended -- by which time the
+     * honest answer is no longer available to it.
+     */
+    @Test
+    void afirstSignInAnnouncesItselfForTheWelcome() {
+        String verifier = issueAndCaptureVerifier(NOW.plusSeconds(600));
+        UserAccount arriving = UserAccount.awaitingVerification("ada@example.com");
+        when(tokens.redeem(any(), eq(NOW))).thenReturn(true);
+        when(accounts.byId(any())).thenReturn(Optional.of(arriving));
+
+        service.verify("a-selector", verifier);
+
+        assertThat(published).containsExactly(new FirstSignIn(arriving));
+    }
+
+    /**
+     * <strong>The case the first spec draft would have failed.</strong> An
+     * account that exists because somebody typed the address has never signed
+     * in -- and this asks about signing in, not about existing, so the
+     * distinction has to come from somewhere other than the row's presence.
+     */
+    @Test
+    void anaccountThatHasSignedInBeforeAnnouncesNothing() {
+        String verifier = issueAndCaptureVerifier(NOW.plusSeconds(600));
+        UserAccount returning = UserAccount.signingUp("ada@example.com", "Ada");
+        returning.seenAt(NOW.minusSeconds(86_400));
+        when(tokens.redeem(any(), eq(NOW))).thenReturn(true);
+        when(accounts.byId(any())).thenReturn(Optional.of(returning));
+
+        service.verify("a-selector", verifier);
+
+        assertThat(published).isEmpty();
     }
 
     /**

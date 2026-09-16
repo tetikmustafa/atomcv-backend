@@ -8,6 +8,7 @@ import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,14 +39,14 @@ public class OAuthLoginService {
 
     private final SignInAccounts accounts;
     private final SessionStore sessions;
-    private final WelcomeGreeting welcome;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
 
     OAuthLoginService(SignInAccounts accounts, SessionStore sessions,
-            WelcomeGreeting welcome, Clock clock) {
+            ApplicationEventPublisher events, Clock clock) {
         this.accounts = accounts;
         this.sessions = sessions;
-        this.welcome = welcome;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -67,8 +68,12 @@ public class OAuthLoginService {
         if (user.isDeleted()) {
             return new SignInOutcome.Refused(OAuthFailure.ACCOUNT_DISABLED);
         }
-        // Before seen(...), which is what makes "has never signed in" answerable.
-        welcome.greetIfFirstSignIn(user);
+        // Before seen(...), which is what makes "has never signed in"
+        // answerable. The welcome itself waits for the commit: it is a network
+        // call, and this method holds a transaction.
+        if (user.hasNeverSignedIn()) {
+            events.publishEvent(new FirstSignIn(user));
+        }
         accounts.seen(user, clock.instant());
         return new SignInOutcome.SignedIn(sessions.create(
                 user.getId(), user.getRole(), account.provider().authMethod()));
