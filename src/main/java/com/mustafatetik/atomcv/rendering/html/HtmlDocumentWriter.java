@@ -2,9 +2,13 @@ package com.mustafatetik.atomcv.rendering.html;
 
 import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
+import com.mustafatetik.atomcv.rendering.DocumentWriter;
+import com.mustafatetik.atomcv.rendering.OutputFormat;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.shared.error.Result;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -35,9 +39,31 @@ import org.springframework.util.StringUtils;
  * <p>It walks exactly the tree {@code DocxDocumentWriter} walks, and neither
  * knows anything about selection: no atom ids, no scores, no locks reach a
  * renderer.
+ *
+ * <p><strong>A {@link DocumentWriter} and not a {@code DocumentRenderer}.</strong>
+ * The download contract asks for a format and bytes, which this can answer;
+ * the renderer contract asks for source and a measured capacity, which it
+ * cannot — there is no page here to measure.
  */
 @Component
-public class HtmlDocumentWriter {
+public class HtmlDocumentWriter implements DocumentWriter {
+
+    @Override
+    public OutputFormat format() {
+        return OutputFormat.HTML;
+    }
+
+    /**
+     * The same document as bytes, for the download path.
+     *
+     * <p>UTF-8 explicitly, matching the charset {@link OutputFormat#HTML}
+     * publishes: a response whose bytes and whose declared charset disagree is
+     * how a Turkish name arrives broken.
+     */
+    @Override
+    public Result<byte[]> bytesFor(RenderRequest request) {
+        return Result.ok(write(request).getBytes(StandardCharsets.UTF_8));
+    }
 
     /** Roughly what {@code \Huge} sets a name at, as the DOCX writer also reads it. */
     private static final double NAME_SIZE_FACTOR = 2.0;

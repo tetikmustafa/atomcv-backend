@@ -33,16 +33,6 @@ public class LatexDocumentRenderer implements DocumentRenderer {
     private static final String BOX = "\\measurebox";
 
     @Override
-    public String formatId() {
-        return "latex";
-    }
-
-    @Override
-    public java.util.Set<String> supportedTemplates() {
-        return TemplateRegistry.ids();
-    }
-
-    @Override
     public Optional<CapacityModel> capacity(TemplateCustomization customization) {
         return TemplateRegistry.capacityOf(customization);
     }
