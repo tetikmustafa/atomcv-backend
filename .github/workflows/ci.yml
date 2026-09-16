@@ -129,15 +129,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Did a prompt change?
+      # Which prompt changed, not merely whether one did. The lane used to ask
+      # only the second question and then run every suite there was -- so a
+      # change to job_analysis scored the Faz D prompt instead and went green.
+      # A suite is named after its prompt (PromptEvalCoverageTest keeps that
+      # true), so the name can be derived here rather than listed twice.
+      - name: Which prompts changed?
         id: changed
         run: |
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -q '^src/main/resources/prompts/'; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
+          ids=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
+                | sed -n 's#^src/main/resources/prompts/\([^/]*\)/.*#\1#p' \
+                | sort -u)
+          if [ -z "$ids" ]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "No prompt changed; the scores would be yesterday's." >&2
+            exit 0
           fi
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "Changed prompts: $(echo "$ids" | tr '\n' ' ')" >> "$GITHUB_STEP_SUMMARY"
+          for id in $ids; do
+            suite=$(echo "$id" | sed -e 's/_\([a-z]\)/\u\1/g' -e 's/^\([a-z]\)/\u\1/')EvalIT.java
+            if [ ! -f "src/integrationTest/java/com/mustafatetik/atomcv/llm/eval/$suite" ]; then
+              echo "::warning::$id has no eval suite ($suite), so this run says nothing about the prompt you changed. Why it has none is written in PromptEvalCoverageTest."
+            fi
+          done
 
       - uses: actions/setup-java@v6
         if: steps.changed.outputs.run == 'true'

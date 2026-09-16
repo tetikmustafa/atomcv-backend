@@ -40,6 +40,17 @@ public final class EvalThresholds {
     /** Faz A: the skills the posting insisted on were found. */
     public static final String REQUIRED_SKILLS_FOUND = "required_skills_found";
 
+    /**
+     * Faz A: a posting that says nothing was refused rather than analysed.
+     *
+     * <p>Measured against the model's own plausibility gate and not against
+     * {@code JobDescriptionPreflight}: the free heuristic in front of it
+     * catches the empty and the obviously short, and a suite that let it
+     * answer would be scoring a regular expression while reporting on a
+     * prompt.
+     */
+    public static final String NONSENSE_REFUSED = "nonsense_refused";
+
     private static final Map<String, Double> FLOORS = floors();
 
     private EvalThresholds() {
@@ -49,6 +60,7 @@ public final class EvalThresholds {
         var floors = new LinkedHashMap<String, Double>();
         floors.put(SCHEMA_CONFORMS, 0.99);
         floors.put(REQUIRED_SKILLS_FOUND, 0.90);
+        floors.put(NONSENSE_REFUSED, 0.95);
         floors.put(NUMBERS_PRESERVED, 0.98);
         floors.put(ENTITIES_PRESERVED, 0.98);
         // Zero invented technologies means a rate of exactly one.
