@@ -13,14 +13,12 @@ aşağıda.
 ## Denetim turları — hepsi kapalı
 
 Beş tur, anlatıları `archive/denetim-2026-09-1*.md`'de; kalıcı kararlar
-`spec/`'te. Dördüncüsü **mekanikti** — düzyazı okumak yerine spec'in andığı
-her somut adı çıkarıp repoda aradı — ve bulduğu üç boşluğun ikisi
-**kümelerdeydi**: bir adın repoda geçmesi kümenin tam olduğunu göstermiyor.
+`spec/`'te.
 
-**Beşinci tur (2026-09-16) ekseni yine değiştirdi: canlılık.** Dört tur adların
-*varlığını* sordu; bu tur telde bir *ucu* olup olmadığını sordu — yazılmayan
-kolon, üretilemeyen enum değeri, okunmayan ayar, tutulmayan bütçe. Sekiz madde
-çıktı, hepsi düzeltildi (dal: `fix/besinci-denetim`).
+**Beşinci tur (2026-09-16) ekseni değiştirdi: canlılık.** Dört tur adların
+*varlığını* sordu; bu tur telde bir *ucu* olup olmadığını — yazılmayan kolon,
+üretilemeyen enum değeri, okunmayan ayar, tutulmayan bütçe. Sekiz madde, hepsi
+düzeltildi (`fix/besinci-denetim`).
 
 **Sapma — `@Transactional` içinde ağ çağrısı, beş yerde.** Birinci tur bunu
 çeviri fan-out'unda bulup `TranslationWriter`'ı ayırmıştı; aynı şekil beş yerde
@@ -98,14 +96,6 @@ ayrımı bilen tek yer orası.
 
 **Ölçümler:**
 
-- **Ölçek muhafızı kareselliği eşikten değil sıçramadan yakalıyor.**
-  `ScoringScalingTest`: 3 ms / 180 ms bütçe, büyüme **1.34** / tavan 3.0.
-  Ekilen `n²/25` iş büyümeyi **2.94**'e çıkardı — yani **tavanı geçmedi.**
-  Sinyal büyük ve tartışmasız, ama hafif karesel bir değişiklik tavanın altında
-  oturabilir. Aynı özellik kardeş `SelectionScalingTest`'te de var. **Tavanı
-  değiştirmek bir bütçe kararı** ve kendi PR'ını hak ediyor — testin yanında
-  sessizce düzeltilecek bir sayı değil.
-
 - **Faz D eşikleri gerçek vektörlerle ölçüldü ve kademeler değişti** (§ 21.2).
   Gömme açıkken kosinüs **0.63-0.84** arası dar bir bant, yani neredeyse sabit:
   en iyi eşleşen çiftin en iyi atomu 0.2756'dan **0.4133**'e çıkıyor — ama aynı
@@ -116,8 +106,8 @@ ayrımı bilen tek yer orası.
   eşleşen profilde **2 aday**, ötekilerin altısında **0**. Ölçümün kendisi
   `ScoreReachIT`, kendi hattında: `gradlew embeddingTest` (gerçek TEI ister —
   `docker compose --profile full up -d embeddings`).
-  **Açık kalan:** `ADAPT` bu fixture'da hâlâ ateşlenmiyor — barajı geçen tek
-  atom About paragrafı ve o zaten Faz D'ye gelmiyor.
+  **Baraj 2026-09-16'da bütün korpusa karşı ölçüldü ve 4'te kaldı; kayıt
+  § 21.2'de**, muhafızı `AdaptBarReachTest`.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
 - **XeTeX format dökümü imkânsız** (§ 29.2): motor `Can't \dump a format with
   native fonts or font-mappings` diyor. Asgari bir belgenin **tam** derlemesi

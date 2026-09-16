@@ -80,6 +80,20 @@ talebi değil.
 >
 > **Tek bir fixture tek bir fixture:** gerçek üretimler biriktiğinde ilk
 > gözden geçirilecek sayı budur.
+>
+> **Bütün korpusa karşı ölçüldü ve baraj korundu** (denetim, beşinci tur;
+> 2026-09-16). Yukarıdaki dağılım tek profilin *seçilmiş* on dokuz atomunun;
+> yedi golden profilin **218 atomunun tamamında** dağılım
+> `{0→206, 1→4, 2→2, 3→5, 5→1}`. Üç şey söylüyor: **(1)** baraj gerçekten
+> ulaşılabilir — bir atom beş terimle geçiyor, yani 0.65'in aritmetik kapalılığı
+> burada yok; **(2)** **tam 4'te hiçbir şey yok**, yani 3'e indirmek uygun kümeyi
+> birden altıya çıkarır ve 5'e çıkarmak hiçbir şeyi değiştirmez — ayar yapacak
+> kişi bu uçurumu bilsin; **(3)** yedi profilin yalnız ikisi bu ilanla herhangi
+> bir örtüşme taşıyor, ki bir Java ilanına karşı akademik bir CV için doğru olan
+> da bu. **Sayı değişmedi**, çünkü tek analiz edilmiş ilan bir ürün eşiğini
+> yeniden ayarlamak için yeterli değil — ama artık kör nokta değil:
+> `AdaptBarReachTest` barajı ulaşılamaz hale getiren her değişiklikte düşüyor,
+> ve gömme servisi istemediği için sıradan suite'te koşuyor.
 
 **Ek bütçe kısıtı:** en yüksek skorlu ilk **6-8 atom** uyarlanır. Bu hem maliyeti sınırlar hem "her cümlesi keyword dolu" yapay CV'yi önler.
 
