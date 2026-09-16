@@ -28,11 +28,58 @@ okuyor.
 
 ### 21.2 Adım 2 — Üç kademeli müdahale eşiği
 
-| Skor | Müdahale | Gerekçe |
+**Kademeyi belirleyen şey skor değil, maddenin ilandan adlandırdığı terim
+sayısı** — skor yalnız bir alt sınır. `matchedTerms` — ilanın aradığı ve
+tercih ettiği becerilerden bu atomun taşıdıkları, artı ilanın bu atomda geçen
+kelimeleri. Etiketler sayılmaz: etiket profilin kendi söz dağarcığı, ilanın
+talebi değil.
+
+| Kanıt (adlandırılan terim) | Müdahale | Gerekçe |
 |---|---|---|
-| **≥ 0.65** | Tam uyarlama: keyword entegrasyonu + terminoloji hizalama | Gerçek bağlantı var, vurgulamak dürüst |
-| **0.40 – 0.65** | Sadece sıkıştırma (uzunsa) | Alakalı ama zorlamaya değmez |
-| **< 0.40** | **Hiç dokunma** | Bağlantı yok; uyarlama = uydurma |
+| **≥ 4**, ve skor ≥ 0.35 | Tam uyarlama: keyword entegrasyonu + terminoloji hizalama | Bağ gösterilmiş, vurgulamak dürüst |
+| **1-3**, skor ≥ 0.35, **ve metin uzunsa** | Sadece sıkıştırma | Alakalı ama zorlamaya değmez |
+| **0** — ya da skor < 0.35 | **Hiç dokunma** | Gösterilmiş bağ yok; uyarlama = uydurma |
+
+> **Kademeler skordan kanıta taşındı** (düzeltme, ölçüm 2026-09-16,
+> `ScoreReachIT`). Eskisi `≥ 0.65 / 0.40-0.65 / < 0.40` idi ve **iki ayrı
+> şekilde yanlıştı.**
+>
+> **Üst kademe ulaşılamazdı.** Gerçek BGE-M3 vektörleriyle, golden setin en iyi
+> eşleşen çiftinde — tam o ilana göre yazılmış CV — en yüksek ham skor
+> **0.4133**; importance çarpanının tavanı 1.5, yani ölçeğin tavanı ~0.62.
+> 0.65 hiçbir zaman geçilemezdi, her yeniden yazım sonsuza kadar `COMPRESS`
+> olurdu.
+>
+> **Ve taban, kendisine verilen işi yapamıyordu.** Aynı ilana karşı bir
+> **akademik CV**'nin en iyi maddesi **0.3870** aldı — hiçbir terim
+> adlandırmadan. Eşleşen CV'nin en iyisi 0.4133. Arada 0.026 var, yani hangi
+> mutlak değer seçilirse seçilsin "alakalı" ile "alakasız" ayrılmıyordu.
+> Sebebi skorun iki farklı şeyi toplaması: **benzerlik** (kosinüs, her fixture'da
+> 0.63-0.84 arası dar ve yüksek bir bant — yani neredeyse sabit) ve **kanıt**
+> (beceri/keyword, yalnız gerçek eşleşmede sıfırdan farklı), sonra sonucun
+> **importance** ile çarpılması — ki o kişinin kendi CV'si hakkındaki yargısı,
+> bu ilan hakkında hiçbir şey söylemiyor. Bir cümle, önemli işaretlenmiş ve
+> belirsizce teknik olduğu için iyi skor alabiliyordu.
+>
+> **Kanıt kapısı ayrımı yapıyor, skor yapmıyor:** aynı ölçümde eşleşen profil
+> dört aday veriyor, ona göre yazılmamış **altı profilin hepsi sıfır**.
+> Riskli olan kademenin daha çok **kanıt** istemesi de aynı sebeple: `ADAPT`
+> ilanın terminolojisini kişinin cümlesine işliyor, yani bu ürünün önlemek için
+> var olduğu şeye en yakın işlem.
+>
+> **Sayılar ve sınırları.** Taban 0.35: kapıyla birlikte 0.40 en iyi çiftte tek
+> aday bırakıyordu (bir kez ateşlenen özellik hâlâ kapalıdır), 0.35 dört veriyor
+> — ve **0.30 da aynı dördü veriyor**, yani sayı bir veri noktasının üstünde
+> değil boşlukta duruyor. Dört terim: seçilmiş on dokuz atomun kanıt dağılımı
+> `{0→11, 1→2, 2→1, 3→4, 5→1}`, yani kümenin üstündeki ilk değer.
+> **Ve o fixture'da `ADAPT` yine hiç ateşlenmiyor**, ama artık başka bir
+> sebeple: barajı geçen tek atom **About paragrafı**, ve o § 21.7'nin kendi
+> prompt'una ait olduğu için buraya hiç gelmiyor. Yani kademe *ilkesel olarak*
+> ulaşılabilir hâle geldi — 0.65 hiç değildi — ve golden setin hiçbir
+> **maddesi** bu ilanın dört talebini birden adlandırmıyor.
+>
+> **Tek bir fixture tek bir fixture:** gerçek üretimler biriktiğinde ilk
+> gözden geçirilecek sayı budur.
 
 **Ek bütçe kısıtı:** en yüksek skorlu ilk **6-8 atom** uyarlanır. Bu hem maliyeti sınırlar hem "her cümlesi keyword dolu" yapay CV'yi önler.
 

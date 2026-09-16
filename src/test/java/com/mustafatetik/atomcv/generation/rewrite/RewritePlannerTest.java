@@ -53,7 +53,7 @@ class RewritePlannerTest {
     void anatomWithNoConnectionToThePostingIsLeftAlone() {
         var atom = bullet("Ran the office football team", List.of());
 
-        var plan = planFor(List.of(scored(atom, 0.39)), atom);
+        var plan = planFor(List.of(scored(atom, 0.30)), atom);
 
         // Still printed, though — not being rewritten is not being dropped.
         // Which wording is printed was settled before Faz D ran, in selection.
@@ -75,7 +75,7 @@ class RewritePlannerTest {
                 + "and washing the kit when nobody else volunteered to do it",
                 List.of());
 
-        var plan = planFor(List.of(scored(atom, 0.39)), atom);
+        var plan = planFor(List.of(scored(atom, 0.30)), atom);
 
         assertThat(plan.candidates()).isEmpty();
     }
@@ -93,7 +93,7 @@ class RewritePlannerTest {
                 + "hours to forty minutes and stopped the morning reports arriving late",
                 List.of("etl"));
 
-        var plan = planFor(List.of(scored(shortOne, 0.50), scored(longOne, 0.50)),
+        var plan = planFor(List.of(scored(shortOne, 0.50, 1), scored(longOne, 0.50, 1)),
                 shortOne, longOne);
 
         assertThat(plan.candidates()).singleElement()
@@ -101,6 +101,64 @@ class RewritePlannerTest {
                     assertThat(candidate.atomId()).isEqualTo(longOne.atom().getId());
                     assertThat(candidate.intent()).isEqualTo(RewriteIntent.COMPRESS);
                 });
+    }
+
+    // -- evidence, which is what the tiers are decided on ------------------
+
+    /**
+     * <strong>The gate, and the measurement that put it there.</strong> A
+     * sentence that names nothing the posting asked for is not rewritten
+     * however well it scores — because the score cannot tell relevance from
+     * resemblance. Measured against a real BGE-M3 ({@code ScoreReachIT}): the
+     * best bullet of an academic CV scored 0.387 against a senior Java posting
+     * with no matched terms at all, one hundredth below the best bullet of the
+     * CV written for that posting. Two thirds of a score is cosine, which sits
+     * between 0.63 and 0.84 for everything, multiplied by the person's own
+     * importance flag.
+     */
+    @Test
+    void asentenceThatNamesNothingThePostingAskedForIsNotRewritten() {
+        var atom = bullet("Led the quarterly planning workshop for the whole department, "
+                + "gathering input from four teams and turning it into a roadmap everybody "
+                + "had actually agreed to before the quarter started",
+                List.of("planning"));
+
+        var plan = planFor(List.of(scored(atom, 0.95, 0)), atom);
+
+        assertThat(plan.candidates()).isEmpty();
+    }
+
+    /**
+     * Three is the cluster in the measured distribution and it means
+     * "related": the sentence may be said in fewer words and in no other way.
+     * The score is deliberately high — it does not buy the top tier.
+     */
+    @Test
+    void relatedButNotDemonstratedIsCompressedHoweverWellItScores() {
+        var atom = bullet("Rebuilt the nightly batch pipeline end to end, moving it off the "
+                + "shared scheduler and onto its own queue, which cut the run from four "
+                + "hours to forty minutes and stopped the morning reports arriving late",
+                List.of("etl"));
+
+        var plan = planFor(List.of(scored(atom, 0.95, 3)), atom);
+
+        assertThat(plan.candidates()).singleElement()
+                .extracting(RewriteCandidate::intent).isEqualTo(RewriteIntent.COMPRESS);
+    }
+
+    /**
+     * And the top tier asks for evidence rather than for length: adapting a
+     * short sentence is ordinary, while compressing one risks the meaning of
+     * something that was not the problem.
+     */
+    @Test
+    void ademonstratedMatchIsAdaptedEvenWhenItIsShort() {
+        var atom = bullet("Shipped the Kafka migration", List.of("kafka"));
+
+        var plan = planFor(List.of(scored(atom, 0.36, 4)), atom);
+
+        assertThat(plan.candidates()).singleElement()
+                .extracting(RewriteCandidate::intent).isEqualTo(RewriteIntent.ADAPT);
     }
 
     // -- the two exclusions before the tiers -------------------------------
@@ -279,7 +337,8 @@ class RewritePlannerTest {
 
         var plan = RewritePlanner.plan(tree(atom), selection(List.of(
                 new SelectionState.SelectedAtom(
-                        row.getId(), other.getId(), 0.90, 12.0, false))));
+                        row.getId(), other.getId(), 0.90, 12.0, false,
+                        List.of("java", "kafka", "postgres", "spring")))));
 
         assertThat(plan.candidates()).singleElement()
                 .extracting(RewriteCandidate::originalText)
@@ -297,7 +356,8 @@ class RewritePlannerTest {
 
         var plan = RewritePlanner.plan(tree(atom), selection(List.of(
                 new SelectionState.SelectedAtom(
-                        atom.atom().getId(), UUID.randomUUID(), 0.90, 12.0, false))));
+                        atom.atom().getId(), UUID.randomUUID(), 0.90, 12.0, false,
+                        List.of("java", "kafka", "postgres", "spring")))));
 
         assertThat(plan.candidates()).singleElement()
                 .extracting(RewriteCandidate::originalText).isEqualTo("Led the migration");
@@ -315,11 +375,25 @@ class RewritePlannerTest {
                 new SelectionState.BudgetBreakdown(600, 100, 500, 300));
     }
 
+    /**
+     * A strong match: the score, and enough of the posting's own terms named
+     * to earn the top tier. Evidence is part of what a candidate is now, so a
+     * helper that left it out would write a selection Faz C never produces.
+     */
     private static SelectionState.SelectedAtom scored(AtomNode atom, double score) {
+        return scored(atom, score, RewritePlanner.FULL_ADAPTATION_TERMS);
+    }
+
+    /** @param terms how many of the posting's asks this sentence names */
+    private static SelectionState.SelectedAtom scored(AtomNode atom, double score, int terms) {
         UUID variantId = atom.variants().isEmpty()
                 ? UUID.randomUUID() : atom.variants().get(0).getId();
+        List<String> matched = new ArrayList<>();
+        for (int i = 0; i < terms; i++) {
+            matched.add("term-" + i);
+        }
         return new SelectionState.SelectedAtom(
-                atom.atom().getId(), variantId, score, 12.0, false);
+                atom.atom().getId(), variantId, score, 12.0, false, matched);
     }
 
     private static ProfileTree tree(AtomNode... atoms) {
