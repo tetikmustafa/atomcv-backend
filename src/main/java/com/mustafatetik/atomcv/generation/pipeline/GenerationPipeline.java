@@ -2,7 +2,7 @@ package com.mustafatetik.atomcv.generation.pipeline;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
 import com.mustafatetik.atomcv.compilation.CompiledDocument;
-import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
+import com.mustafatetik.atomcv.compilation.LatexCompiler;
 import com.mustafatetik.atomcv.generation.render.RenderPhase;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionPhase;
@@ -50,11 +50,11 @@ public class GenerationPipeline {
     static final double BUDGET_STEP = 0.95;
 
     private final DocumentRenderer renderer;
-    private final LatexCompilerClient compiler;
+    private final LatexCompiler compiler;
     private final MeterRegistry meters;
 
     GenerationPipeline(
-            DocumentRenderer renderer, LatexCompilerClient compiler, MeterRegistry meters) {
+            DocumentRenderer renderer, LatexCompiler compiler, MeterRegistry meters) {
         this.renderer = renderer;
         this.compiler = compiler;
         this.meters = meters;

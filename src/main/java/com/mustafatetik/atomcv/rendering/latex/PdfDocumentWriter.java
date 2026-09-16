@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.rendering.latex;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
-import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
+import com.mustafatetik.atomcv.compilation.LatexCompiler;
 import com.mustafatetik.atomcv.rendering.DocumentWriter;
 import com.mustafatetik.atomcv.rendering.OutputFormat;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
@@ -25,9 +25,9 @@ import org.springframework.stereotype.Component;
 public class PdfDocumentWriter implements DocumentWriter {
 
     private final LatexDocumentRenderer renderer;
-    private final LatexCompilerClient compiler;
+    private final LatexCompiler compiler;
 
-    PdfDocumentWriter(LatexDocumentRenderer renderer, LatexCompilerClient compiler) {
+    PdfDocumentWriter(LatexDocumentRenderer renderer, LatexCompiler compiler) {
         this.renderer = renderer;
         this.compiler = compiler;
     }

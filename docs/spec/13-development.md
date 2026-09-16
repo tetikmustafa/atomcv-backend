@@ -65,6 +65,43 @@ Diğer sahte sağlayıcılar:
 Sahte ve gerçek sağlayıcı **profil ile ayrılır** (`local-fake` / `!local-fake`), ve bu testlidir: iki bean olursa context hiçbir profili adlandırmayan bir belirsizlik mesajıyla açılmaz, sıfır olursa eksik sınıf gibi görünür — iki başarısızlık da sessizdir.
 - `FakeLatexCompiler` — sabit PDF döner (`--profile full` gerekmez)
 
+> **Bu satır bir aşama boyunca yalnız burada vardı** (düzeltme, denetim
+> 2026-09-16): `FakeLatexCompiler` diye bir sınıf yoktu, tek yol
+> `LatexCompilerClient`'tı, ve `make dev` LaTeX konteynerini kaldırmıyor —
+> yani sahte LLM'le çalışan bir klon Faz E'de dinleyen kimsenin olmadığı bir
+> adrese gidiyordu. "Bedava ve çevrimdışı çalışır", zincir override'ının bir
+> faz ötesinde kopuyordu. Sınıf yazıldı; ayrım öteki sahtelerle aynı
+> (`LatexCompiler` arayüzü, `local-fake` / `!local-fake`, `LatexCompilerWiringTest`).
+>
+> **Ne döndürdüğü, ve neyi bilerek döndürmediği:**
+>
+> - **Sayfa sayısı her zaman 1.** Hareket eden bir sayı inandırıcı olurdu ve
+>   uydurma olurdu — kimsenin ölçmediği ikinci bir sayfa modeli. Gerçek bir
+>   sayfa sayısı `make dev-full` ya da `latexTest` hattı demek.
+> - **Ölçüm probu başına bir cevap**, kutudaki karakterlerden aritmetikle
+>   (`\textbf{Go}` iki karakter basar, dokuz değil). Bu bir ölçüm değildir; Faz
+>   C'nin harcayacak sayısı olsun diye vardır, yani seçim, bütçe ve sayfa
+>   aritmetiği Docker'sız koşuyor ve hataları orada görülebiliyor.
+> - **Kalibrasyon cevapsız.** `CALIB` satırı üretmiyor, `CalibrationService`
+>   prob bulamayıp kapasite türetmeyi reddediyor — derlenmeyen bir belge için
+>   zaten yaptığı şey. Reddin kendisi amaç: uydurulmuş bir kalibrasyon
+>   `template_capacities`'e yazılır ve onu uyduran oturumdan sonra da yaşardı.
+>
+> Cevapladığı maliyetler yerel veritabanına ötekiler gibi yazılıyor, yani bir
+> geliştirici makinesi sunucunun ölçüm tuttuğu yerde aritmetik biriktiriyor.
+> `make db-reset` bunun içindir; bu profilden gerçek bir veritabanına ulaşan
+> hiçbir şey yok.
+>
+> **Ve ayrımı profil değil bir anahtar yapıyor: `atomcv.latex.fake`.** İlk
+> hâli `@Profile("!local-fake")` idi ve **latex test hattını kırdı** — dört IT
+> `local,local-fake` altında koşuyor, çünkü **sahte modeli** istiyorlar
+> (bedava, fixture'lardan) ve **gerçek derleyiciyi** istiyorlar, ki asıl
+> ölçtükleri o. Profil ikisini ayırt edemez: "gerçek bir tek sayfalık PDF iki
+> bin bayttan büyüktür" diyen beş iddia 669 baytlık yer tutucuyla karşılaştı.
+> Anahtar `application-local-fake.yml`'de açık, `AbstractLatexTest` onu
+> kapatıyor — tek yerde, ki beşinci bir sınıf onsuz yazılamasın. Ders tanıdık:
+> **bir profil bir niyetin adıdır, iki niyetin değil.**
+
 ### 54.3 Seed data
 
 ```java

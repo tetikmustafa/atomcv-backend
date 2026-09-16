@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,9 +21,19 @@ import org.springframework.stereotype.Component;
  * why not. Nothing else in the codebase talks to that container, which is what
  * keeps "user content is compiled somewhere isolated" a property of the system
  * rather than a habit.
+ *
+ * <p><strong>Unless {@code atomcv.latex.fake} says otherwise.</strong> Missing
+ * means this one, which is what every deployment gets; {@code
+ * application-local-fake.yml} sets it true and {@link FakeLatexCompiler} takes
+ * over there. The switch is a property rather than the {@code local-fake}
+ * profile itself because the latex test lane runs under that profile on
+ * purpose -- a fake model and a real compiler -- and a profile could not tell
+ * the two halves apart.
  */
 @Component
-public class LatexCompilerClient {
+@ConditionalOnProperty(prefix = "atomcv.latex", name = "fake",
+        havingValue = "false", matchIfMissing = true)
+public class LatexCompilerClient implements LatexCompiler {
 
     private static final Logger log = LoggerFactory.getLogger(LatexCompilerClient.class);
 
@@ -36,7 +47,7 @@ public class LatexCompilerClient {
                 .build();
     }
 
-    /** The PDF, or an exception carrying the log that explains its absence. */
+    @Override
     public CompiledDocument compile(String source) {
         HttpResponse<byte[]> response = send("/compile", source);
         int pages = response.headers().firstValue("X-Page-Count")
@@ -57,6 +68,7 @@ public class LatexCompilerClient {
      * The TeX log for a measurement run. No document is produced and none is
      * wanted: what matters is what TeX said about the sizes.
      */
+    @Override
     public String measure(String source) {
         return new String(send("/measure", source).body(), StandardCharsets.UTF_8);
     }

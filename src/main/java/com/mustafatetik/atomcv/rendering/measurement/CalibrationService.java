@@ -1,7 +1,7 @@
 package com.mustafatetik.atomcv.rendering.measurement;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
-import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
+import com.mustafatetik.atomcv.compilation.LatexCompiler;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
@@ -40,9 +40,9 @@ public class CalibrationService {
     private static final Logger log = LoggerFactory.getLogger(CalibrationService.class);
 
     private final LatexDocumentRenderer renderer;
-    private final LatexCompilerClient compiler;
+    private final LatexCompiler compiler;
 
-    CalibrationService(LatexDocumentRenderer renderer, LatexCompilerClient compiler) {
+    CalibrationService(LatexDocumentRenderer renderer, LatexCompiler compiler) {
         this.renderer = renderer;
         this.compiler = compiler;
     }

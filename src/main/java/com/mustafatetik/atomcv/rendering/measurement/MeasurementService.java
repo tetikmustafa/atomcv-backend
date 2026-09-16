@@ -1,6 +1,6 @@
 package com.mustafatetik.atomcv.rendering.measurement;
 
-import com.mustafatetik.atomcv.compilation.LatexCompilerClient;
+import com.mustafatetik.atomcv.compilation.LatexCompiler;
 import com.mustafatetik.atomcv.rendering.latex.LatexDocumentRenderer;
 import com.mustafatetik.atomcv.rendering.model.MeasurementRequest;
 import java.util.Map;
@@ -19,9 +19,9 @@ import org.springframework.stereotype.Service;
 public class MeasurementService {
 
     private final LatexDocumentRenderer renderer;
-    private final LatexCompilerClient compiler;
+    private final LatexCompiler compiler;
 
-    public MeasurementService(LatexDocumentRenderer renderer, LatexCompilerClient compiler) {
+    public MeasurementService(LatexDocumentRenderer renderer, LatexCompiler compiler) {
         this.renderer = renderer;
         this.compiler = compiler;
     }
