@@ -4,9 +4,12 @@ import com.mustafatetik.atomcv.profile.domain.SectionLayout;
 import com.mustafatetik.atomcv.profile.domain.content.Mark;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.profile.domain.content.Run;
+import com.mustafatetik.atomcv.rendering.DocumentWriter;
+import com.mustafatetik.atomcv.rendering.OutputFormat;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
+import com.mustafatetik.atomcv.shared.error.Result;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -22,11 +25,14 @@ import org.springframework.stereotype.Component;
 /**
  * The same CV as a Word document.
  *
- * <p><strong>Not a {@code DocumentRenderer}, and that is not an oversight.</strong>
- * That interface returns a {@code RenderedSource} — a string a compiler turns
- * into a document — and it carries a {@code capacity} because the string has
- * to be measured before selection can promise a page. Neither applies here:
- * POI <em>is</em> the document, and nothing measures it.
+ * <p><strong>A {@link DocumentWriter}, and still not a {@code
+ * DocumentRenderer}.</strong> That second interface returns a {@code
+ * RenderedSource} — a string a compiler turns into a document — and it carries
+ * a {@code capacity} because the string has to be measured before selection
+ * can promise a page. Neither applies here: POI <em>is</em> the document, and
+ * nothing measures it. The download contract asks only which format this is
+ * and for the bytes, and both of those this can answer — which is what let the
+ * generation module stop naming this class.
  *
  * <p><strong>Which is why the page guarantee is approximate here and exact in
  * the PDF.</strong> This does not pretend otherwise. A DOCX is a second
@@ -46,7 +52,23 @@ import org.springframework.stereotype.Component;
  * reason {@link Mark} is not an enum.
  */
 @Component
-public class DocxDocumentWriter {
+public class DocxDocumentWriter implements DocumentWriter {
+
+    @Override
+    public OutputFormat format() {
+        return OutputFormat.DOCX;
+    }
+
+    /**
+     * The same document, for the download path.
+     *
+     * <p>Never an error: POI writes the package itself, so unlike the PDF
+     * there is no compiler here to fail.
+     */
+    @Override
+    public Result<byte[]> bytesFor(RenderRequest request) {
+        return Result.ok(write(request));
+    }
 
     /**
      * Twips: 1440 to the inch, which is how Word states a margin.
