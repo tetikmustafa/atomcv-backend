@@ -75,6 +75,14 @@ public class ProviderChain {
 
     public <T> Result<LlmResponse<T>> call(StructuredRequest<T> request) {
         var tried = new ArrayList<String>();
+        // Whether the walk ran out of providers because they were slow rather
+        // than because they were down. Only here can that be told apart: the
+        // kinds are gone by the time the error reaches a handler, and the
+        // difference is what lets ingestion answer "try again" instead of
+        // "the model vendors are unreachable". A vendor skipped for a missing
+        // key or an open breaker never answers the question either way.
+        boolean sawFailure = false;
+        boolean everyFailureTimedOut = true;
 
         for (String providerId : properties.chainFor(request.preferredTier())) {
             var provider = providers.get(providerId);
@@ -115,6 +123,8 @@ public class ProviderChain {
             }
 
             var failure = ((LlmOutcome.Failed<T>) outcome).failure();
+            sawFailure = true;
+            everyFailureTimedOut &= failure.kind() == LlmFailure.Kind.TIMEOUT;
             if (!failure.kind().tryNextProvider()) {
                 // Asking the next vendor would buy the same answer at another
                 // price. Stop the walk.
@@ -127,7 +137,8 @@ public class ProviderChain {
         meters.counter(CHAIN_EXHAUSTED,
                 "tier", request.preferredTier().name().toLowerCase(java.util.Locale.ROOT))
                 .increment();
-        return Result.err(new PipelineError.AllProvidersUnavailable(tried));
+        return Result.err(new PipelineError.AllProvidersUnavailable(
+                tried, sawFailure && everyFailureTimedOut));
     }
 
     /**

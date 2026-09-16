@@ -22,11 +22,15 @@ class ErrorCatalogueTest {
     @Test
     void everyPipelineErrorFromTheDocumentHasACode() {
         // Ten are named; a code disappearing here means a pipeline failure
-        // that reaches the user with no message at all.
+        // that reaches the user with no message at all. REWRITE_VALIDATION_FAILED
+        // was one of these and is not any more: nothing could raise it, because
+        // a refused rewrite falls back to the person's own sentence instead of
+        // failing. EXTRACTION_TIMEOUT took its place in the list, and unlike it
+        // the ingestion path now actually produces it.
         assertThat(names()).contains(
                 "INSUFFICIENT_PROFILE", "UNPARSEABLE_JOB_DESCRIPTION", "CONFLICTING_PREFERENCES",
                 "FEATURE_REQUIRES_ACCOUNT", "QUOTA_EXCEEDED", "ALL_PROVIDERS_UNAVAILABLE",
-                "COMPILATION_FAILED", "PAGE_LIMIT_EXCEEDED", "REWRITE_VALIDATION_FAILED",
+                "COMPILATION_FAILED", "PAGE_LIMIT_EXCEEDED", "EXTRACTION_TIMEOUT",
                 "EMBEDDING_UNAVAILABLE");
     }
 
@@ -42,7 +46,7 @@ class ErrorCatalogueTest {
         assertThat(ErrorCode.COMPILATION_FAILED.httpStatus()).isEqualTo(502);
         assertThat(ErrorCode.EMBEDDING_UNAVAILABLE.httpStatus()).isEqualTo(503);
         assertThat(ErrorCode.PAGE_LIMIT_EXCEEDED.httpStatus()).isEqualTo(422);
-        assertThat(ErrorCode.REWRITE_VALIDATION_FAILED.httpStatus()).isEqualTo(500);
+        assertThat(ErrorCode.EXTRACTION_TIMEOUT.httpStatus()).isEqualTo(504);
     }
 
     @Test

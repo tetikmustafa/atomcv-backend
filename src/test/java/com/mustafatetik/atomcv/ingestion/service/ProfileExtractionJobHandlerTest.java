@@ -239,6 +239,28 @@ class ProfileExtractionJobHandlerTest {
     }
 
     /**
+     * <strong>Slow is not down, and for the whole life of the product it was
+     * told to the user as down.</strong> {@code EXTRACTION_TIMEOUT} had a
+     * status chosen for it in § 08b and no code path could raise it, so a long
+     * CV that simply took too long produced "the model vendors are
+     * unreachable" — and the two want opposite things from the reader, since
+     * one is worth trying again with the same file and the other is not.
+     */
+    @Test
+    void awalkThatOnlyRanOutOfTimeSaysSoInsteadOfClaimingAnOutage() {
+        when(structuring.structure(any(), any(), any(), any())).thenReturn(
+                Result.err(new PipelineError.AllProvidersUnavailable(
+                        List.of("openrouter", "gemini"), true)));
+
+        var failed = (JobOutcome.Failed) handler.handle(job(), reported::add);
+
+        assertThat(failed.error().code()).isEqualTo(ErrorCode.EXTRACTION_TIMEOUT);
+        // Still worth repeating: a slower moment is the most retryable failure
+        // there is.
+        assertThat(failed.retryable()).isTrue();
+    }
+
+    /**
      * A job belonging to neither an account nor a session. {@code JobOwner}
      * makes that unconstructable, so a row like this was written before the
      * type existed or by hand — and a profile written for nobody would be

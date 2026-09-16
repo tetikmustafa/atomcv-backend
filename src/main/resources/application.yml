@@ -342,7 +342,6 @@ atomcv:
       openai: ${OPENAI_MODEL:}
       anthropic: ${ANTHROPIC_MODEL:}
       deepseek: ${DEEPSEEK_MODEL:}
-    call-timeout: 30s
     # A schema mismatch is retried on the same provider. One catches a
     # model that wandered; more pays repeatedly for a prompt that is wrong.
     schema-retries: 1

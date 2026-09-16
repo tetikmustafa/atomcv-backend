@@ -488,7 +488,7 @@ class OpenRouterProviderTest {
     private OpenRouterProvider provider(OpenRouterProperties properties, String model) {
         return new OpenRouterProvider(properties,
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of("openrouter")),
-                        Map.of("openrouter", model), Duration.ofSeconds(30), 0),
+                        Map.of("openrouter", model), 0),
                 JSON);
     }
 

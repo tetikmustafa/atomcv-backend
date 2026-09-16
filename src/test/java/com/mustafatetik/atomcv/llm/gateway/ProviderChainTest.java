@@ -92,6 +92,43 @@ class ProviderChainTest {
         assertThat(err(chain.call(request())).tried()).isEmpty();
     }
 
+    /**
+     * <strong>Slow and down are told apart here or nowhere.</strong> By the
+     * time the error reaches a handler the failure kinds are gone, and the
+     * ingestion path needs the difference to say "try again" rather than "the
+     * vendors are unreachable".
+     */
+    @Test
+    void awalkThatOnlyTimedOutSaysSo() {
+        var chain = chain(List.of(
+                failing("gemini", LlmFailure.Kind.TIMEOUT),
+                failing("deepseek", LlmFailure.Kind.TIMEOUT)));
+
+        assertThat(err(chain.call(request())).everyFailureTimedOut()).isTrue();
+    }
+
+    /** One vendor that was down is enough to make the walk an outage. */
+    @Test
+    void amixedWalkIsanoutageAndNotAtimeout() {
+        var chain = chain(List.of(
+                failing("gemini", LlmFailure.Kind.TIMEOUT),
+                failing("deepseek", LlmFailure.Kind.SERVER_ERROR)));
+
+        assertThat(err(chain.call(request())).everyFailureTimedOut()).isFalse();
+    }
+
+    /**
+     * And a walk that asked nobody is not a timeout either -- an empty
+     * conjunction is true, which would have made the least informative outage
+     * there is answer the most specific sentence.
+     */
+    @Test
+    void achainWithNothingConfiguredIsNotAtimeout() {
+        var chain = chain(List.of(unavailable("openai"), unavailable("gemini")));
+
+        assertThat(err(chain.call(request())).everyFailureTimedOut()).isFalse();
+    }
+
     /** A chain naming an adapter that is not built yet must not stop the walk. */
     @Test
     void anUnknownProviderIdIsSteppedOverRatherThanThrowing() {
@@ -268,7 +305,7 @@ class ProviderChainTest {
     private ProviderChain chain(List<LlmProvider> providers, List<String> order, int retries) {
         var properties = new LlmProperties(
                 Map.of(ModelTier.CHEAP, order), Map.of("gemini", "some-model"),
-                Duration.ofSeconds(30), retries);
+                retries);
         return new ProviderChain(providers, properties,
                 event -> published.add((LlmInvocationEvent) event), CLOCK,
                 Optional.ofNullable(recorder), meters, new ProviderBreakers(meters));

@@ -239,7 +239,7 @@ class ChatCompletionsProviderTest {
 
     private static LlmProperties llm(String id, String model) {
         return new LlmProperties(Map.of(ModelTier.CHEAP, List.of(id)),
-                Map.of(id, model), Duration.ofSeconds(5), 0);
+                Map.of(id, model), 0);
     }
 
     private static StructuredRequest<Analysis> request() {

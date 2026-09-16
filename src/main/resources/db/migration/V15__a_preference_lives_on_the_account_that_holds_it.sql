@@ -1,0 +1,23 @@
+-- email_preferences was the first design and V14 was the second, and the
+-- first was never removed.
+--
+-- V1 gave it three columns: onboarding, product_updates and unsubscribed_at.
+-- Nothing ever wrote one. When the preference actually landed it landed on
+-- users -- lifecycle_emails for the answer and unsubscribe_token for the way
+-- back to it -- because an inbox has no session and the link has to be
+-- reachable without one, and because two booleans nobody had a screen for are
+-- not a preference, they are a guess about what people would want to switch
+-- off separately.
+--
+-- So this table has sat in the schema for the whole life of the product with
+-- no reader and no writer in src/. Two integration tests touched it, which is
+-- how it looked alive: one asserted it exists and one inserted a row to prove
+-- the cascade deletes it. A table kept alive only by the tests that check it
+-- is the clearest case there is for dropping it -- and while it stands, the
+-- next person to implement an email preference has two plausible places to
+-- write it and one of them is wrong.
+--
+-- Nothing is migrated across. There is nothing to migrate: every row this
+-- table could hold was written by a test, and the defaults it would have
+-- carried (opted in) are the defaults users.lifecycle_emails already has.
+DROP TABLE IF EXISTS email_preferences;

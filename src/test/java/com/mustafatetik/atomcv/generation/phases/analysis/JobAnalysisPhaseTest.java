@@ -18,7 +18,6 @@ import com.mustafatetik.atomcv.llm.prompts.PromptRegistry;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -337,7 +336,7 @@ class JobAnalysisPhaseTest {
         var meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
         var chain = new ProviderChain(List.of(provider),
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of(provider.id())),
-                        Map.of(), Duration.ofSeconds(30), 0),
+                        Map.of(), 0),
                 event -> { }, CLOCK, Optional.ofNullable(recorder),
                 meters, new com.mustafatetik.atomcv.llm.gateway.ProviderBreakers(meters));
         return new JobAnalysisPhase(

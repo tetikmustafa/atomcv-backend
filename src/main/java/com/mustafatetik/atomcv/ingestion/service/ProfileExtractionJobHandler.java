@@ -284,10 +284,19 @@ public class ProfileExtractionJobHandler implements JobHandler {
                     .build();
             case PipelineError.NothingExtracted ignored ->
                     UserFacingError.of(ErrorCode.EXTRACTION_EMPTY);
-            case PipelineError.AllProvidersUnavailable outage -> UserFacingError
-                    .with(ErrorCode.ALL_PROVIDERS_UNAVAILABLE)
-                    .param("tried", outage.tried())
-                    .build();
+            // Slow and down are two different sentences, and until this line
+            // they were one. EXTRACTION_TIMEOUT was in the catalogue with a
+            // status chosen for it (§ 08b) and nothing could produce it, so a
+            // person whose long CV simply took too long was told the model
+            // vendors were unreachable — and "try again" is the right advice
+            // for one and not the other (denetim, beşinci tur).
+            case PipelineError.AllProvidersUnavailable outage ->
+                    outage.everyFailureTimedOut()
+                            ? UserFacingError.of(ErrorCode.EXTRACTION_TIMEOUT)
+                            : UserFacingError
+                                    .with(ErrorCode.ALL_PROVIDERS_UNAVAILABLE)
+                                    .param("tried", outage.tried())
+                                    .build();
             default -> {
                 // Nothing else can reach here: ProfileStructuring returns
                 // three kinds and the chain returns the third. Said out loud

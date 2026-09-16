@@ -41,10 +41,19 @@ class SchemaMigrationIT extends AbstractIntegrationTest {
 
         assertThat(tables).contains(
                 "users", "oauth_identities", "magic_link_tokens", "email_suppressions",
-                "email_preferences", "profiles", "sections", "entries", "atoms",
+                "profiles", "sections", "entries", "atoms",
                 "atom_variants", "tags", "atom_tags", "template_customizations",
                 "generations", "generation_feedback", "support_grants", "applications",
                 "jobs", "llm_invocations", "usage_counters", "feature_flags");
+
+        // And the one V15 took away. Asserted rather than merely deleted from
+        // the list above: `contains` would pass just as happily if the table
+        // came back, and the reason it went is that a second plausible place
+        // to write an email preference is how somebody writes it in the wrong
+        // one.
+        assertThat(tables)
+                .as("email_preferences was superseded by users.lifecycle_emails in V14")
+                .doesNotContain("email_preferences");
     }
 
     /**

@@ -237,7 +237,7 @@ class GeminiProviderTest {
         return new GeminiProvider(
                 new GeminiProperties(key, baseUrl),
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of("gemini")),
-                        Map.of("gemini", model), Duration.ofSeconds(5), 0),
+                        Map.of("gemini", model), 0),
                 JSON);
     }
 

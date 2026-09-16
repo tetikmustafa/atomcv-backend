@@ -1,6 +1,5 @@
 package com.mustafatetik.atomcv.llm.gateway;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -13,11 +12,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * variables rather than literals because vendors rename models faster than a
  * release cycle.
  *
+ * <p><strong>There is no timeout here and there used to be one that did
+ * nothing</strong> (denetim, beşinci tur). {@code atomcv.llm.call-timeout} was
+ * bound, defaulted and documented, and no line read it: every caller carries
+ * its own ceiling, because they are not comparable — an extraction reads a
+ * whole CV and is given two minutes, an edit returns line numbers and is given
+ * twenty seconds. One number for both would have to be the larger, which is
+ * not a timeout for the second. A knob an operator can turn without anything
+ * changing is worse than no knob.
+ *
  * @param chain       tier to the provider ids that serve it, in order
  * @param models      provider id to the model it should ask for
- * @param callTimeout per provider, not for the walk: a chain of three with a
- *                    30s timeout each is a 90s worst case, and that is the
- *                    intended trade against failing on one slow vendor
  * @param schemaRetries how many times a schema mismatch is retried on the same
  *                    provider before the walk stops. The rule is to retry
  *                    there rather than move on but does not say how often; one
@@ -28,13 +33,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record LlmProperties(
         Map<ModelTier, List<String>> chain,
         Map<String, String> models,
-        Duration callTimeout,
         int schemaRetries) {
 
     public LlmProperties {
         chain = chain == null ? Map.of() : Map.copyOf(chain);
         models = models == null ? Map.of() : Map.copyOf(models);
-        callTimeout = callTimeout == null ? Duration.ofSeconds(30) : callTimeout;
         if (schemaRetries < 0) {
             throw new IllegalArgumentException("schemaRetries cannot be negative");
         }
