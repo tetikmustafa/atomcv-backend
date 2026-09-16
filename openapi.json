@@ -4888,10 +4888,14 @@
           },
           "organization" : {
             "type" : [ "string", "null" ],
-            "description" : "Send null to clear"
+            "description" : "Send null to clear",
+            "maxLength" : 200,
+            "minLength" : 0
           },
           "location" : {
-            "type" : [ "string", "null" ]
+            "type" : [ "string", "null" ],
+            "maxLength" : 120,
+            "minLength" : 0
           },
           "startDate" : {
             "type" : [ "string", "null" ],
@@ -4903,7 +4907,9 @@
             "description" : "Send null when the job becomes ongoing again"
           },
           "url" : {
-            "type" : [ "string", "null" ]
+            "type" : [ "string", "null" ],
+            "maxLength" : 300,
+            "minLength" : 0
           },
           "importance" : {
             "type" : "number",
