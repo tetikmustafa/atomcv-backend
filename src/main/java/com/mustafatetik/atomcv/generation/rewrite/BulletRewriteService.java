@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.generation.rewrite;
 
+import com.mustafatetik.atomcv.profile.domain.content.ContentShape;
 import com.mustafatetik.atomcv.embedding.EmbeddingProvider;
 import com.mustafatetik.atomcv.llm.gateway.LlmResponse;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
@@ -127,7 +128,16 @@ public class BulletRewriteService {
                 context.postingSkillNames(),
                 vectorOf(rewritten.text()), candidate.originalVector());
         if (!issues.isEmpty()) {
-            log.info("A rewrite of atom {} was refused: {}", candidate.atomId(), issues);
+            // The shape of what the model was working from, because the rule
+            // name on its own is not actionable: TOO_LONG against a ceiling of
+            // 190 means one thing when the original was 186 characters and
+            // another when it was 60. Statistics, never the sentence
+            // (absolute rule 4).
+            log.info("A rewrite of atom {} was refused: {} [original {} maxChars={}]",
+                    candidate.atomId(), issues,
+                    ContentShape.unmeasured(candidate.original(),
+                            candidate.properNouns(), context.language()),
+                    candidate.maxChars());
             tally.refused(issues);
             return null;
         }

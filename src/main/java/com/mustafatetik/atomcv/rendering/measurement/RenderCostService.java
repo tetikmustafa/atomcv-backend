@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.rendering.measurement;
 
+import com.mustafatetik.atomcv.profile.domain.content.ContentShape;
 import com.mustafatetik.atomcv.profile.domain.Atom;
 import com.mustafatetik.atomcv.profile.domain.AtomVariant;
 import com.mustafatetik.atomcv.profile.domain.Profile;
@@ -136,16 +137,37 @@ public class RenderCostService {
                 // One missing measurement is not a reason to throw away the
                 // rest: selection falls back to an estimate for this one and
                 // says so, rather than the whole profile going unmeasured.
+                //
+                // But it was silent, and a wording the compiler skipped is the
+                // one thing here worth a line. The shape says what kind of
+                // wording it was -- a backslash or a character outside ASCII
+                // is the first thing to suspect -- without carrying a word of
+                // it (absolute rule 4). No names: this is below the atom and
+                // does not know what it claims.
+                log.info("No measurement came back for a wording of atom {} [{}]",
+                        variant.getAtomId(),
+                        ContentShape.unmeasured(
+                                variant.getContent(), List.of(), language.toLanguageTag()));
                 continue;
             }
             // A bullet pays the separation an itemize puts between two items;
             // an inline row shares a single item with its neighbours and pays
             // none. Five points a row, and a skills matrix is several rows.
-            variant.recordRenderCost(costKey,
-                    cost.totalPt(capacity.itemBaselineSkipPt(), capacity.rowSpacingPt(shape)),
-                    measuredAt);
+            double totalPt = cost.totalPt(
+                    capacity.itemBaselineSkipPt(), capacity.rowSpacingPt(shape));
+            variant.recordRenderCost(costKey, totalPt, measuredAt);
             variants.save(profile, variant);
             stored++;
+            // Debug rather than info: one line per wording is a page of log for
+            // a profile, and it is only wanted when a number is being argued
+            // with. This is the one place that knows a wording's shape and its
+            // measured height at the same time, which is what makes "why is
+            // this bullet 41 points" answerable at all.
+            if (log.isDebugEnabled()) {
+                log.debug("Measured a wording of atom {} [{}]", variant.getAtomId(),
+                        ContentShape.of(variant.getContent(), List.of(),
+                                language.toLanguageTag(), totalPt));
+            }
         }
 
         // Counts, never content.
