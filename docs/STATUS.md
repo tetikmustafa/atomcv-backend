@@ -20,11 +20,11 @@
 
 **Dördüncü tur (09-16) düzyazı okumadı — mekanikti**, ve bulduğu şey **kümelerdeydi**: spec'in andığı 1659 ad, 61 ucun tamamı, 35 enum'un kapalı sözlüğü, 14 migration'a karşı veri modeli, 91 sayısal sabit. **(1)** **`§ 13` "Tam Veritabanı Şeması" on üç migration geriden geliyordu** — `profiles.user_id` nullable, iki kolon, `template_capacities` (bütün `docs/`'ta hiç geçmiyordu), `sections.layout`'un beşinci değeri, iki indeks; `§ 13.2` deltası yazıldı ve **`SchemaDocumentationTest` artık tutuyor**. **(2)** **`no_responsibilities`** telde üretilemiyor ama spec altı yerde yayımlıyordu; **`B-nnn` açılmadı**, çünkü frontend dalı `B-072`'de zaten silmiş — geride kalan tek kopya spec'ti (açık `B-111`'in sayımı düzeltildi). **(3)** **`FakeLatexCompiler` yazıldı**: `make dev` artık LaTeX imajı olmadan PDF üretiyor (sayfa sayısı **her zaman 1**, kalibrasyon bilerek cevapsız). İlk hâli `latexTest` hattını kırdı — dört IT `local-fake`'i sahte **model** için kullanıp gerçek derleyiciyi ölçüyor; ayrım `atomcv.latex.fake` anahtarına taşındı.
 
-**Ölçümler.** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (0.1259 / taban 0.40). `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde. **§ 29.2'nin format dökümü XeTeX'te imkânsız** (motor sınırı, ölçüldü).
+**Ölçümler.** **Faz D artık çalışıyor** — eşikler gerçek BGE-M3 vektörleriyle ölçülüp skordan **kanıta** taşındı (§ 21.2): kosinüs her profilde 0.63-0.84 arası dar bir bant, yani alakasız bir akademik CV hiçbir terim adlandırmadan 0.3870 alırken eşleşen CV 0.4133 alıyordu — hiçbir mutlak taban ikisini ayıramaz. Kapı `matchedTerms`, taban 0.35, `ADAPT` 4 terim; eşleşen profilde 2 aday, ötekilerin altısında 0. Ölçüm `ScoreReachIT`, `gradlew embeddingTest` (gerçek TEI ister). `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde. **§ 29.2'nin format dökümü XeTeX'te imkânsız** (motor sınırı, ölçüldü).
 
 **Geliştiricide:** VPS ve restore testi (§ 49.4); OAuth, Turnstile, `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu** (§ 41.4) ve **R2** (§ 57.4) bilerek yok; ikincisini bir tuzak tel tutuyor. **Yerelde `make db-reset` bekliyor:** migration yorumları düzenlendi (bilinçli istisna, `notes/`), checksum'lar değişti.
 
-**Test:** 1887 birim · 580 entegrasyon · latex 145 — 0 hata (dördüncü turda +12)
+**Test:** 1890 birim · 580 entegrasyon · latex 145 — 0 hata; artı elle koşulan `embeddingTest`
 
 ## Frontend — `atomcv-frontend`
 
@@ -49,7 +49,7 @@
 
 | Soru | Bekleyen taraf |
 |---|---|
-| Faz D eşiklerinin normalizasyonu | **veri** · `default` setli üretim biriktiğinde |
+| Faz D'nin `ADAPT` barajı (4 terim) | **veri** · golden sette hiçbir madde geçmiyor; gerçek üretim biriktiğinde |
 
 _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; anonim çalışma **profiliyle üretimleriyle** taşınıyor (hesabın profili varsa `kept_existing`, ikisi de sönüyor)._
 
