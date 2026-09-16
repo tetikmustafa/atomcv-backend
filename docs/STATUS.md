@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-16** · **frontend'e dokuz madde açık** — `B-100`…`B-108`, iki denetimden, hiçbiri henüz ACK'lenmedi
+**2026-09-16** · **frontend'e on iki madde açık** — `B-100`…`B-111`, üç denetimden, hiçbiri henüz ACK'lenmedi
 
 ## Backend — `atomcv-backend`
 
@@ -12,19 +12,17 @@
 | Aşama 0-3 — hesap, MVP, anonim akış (kapanış denetimi 08-28) | ✅ |
 | Aşama 4 — buradan yapılabilecek maddelerin hepsi | ✅ |
 
-**Aşama 4 + iki denetim.** **Faz G** (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`). Sonra spec **iki kez** baştan sona koda karşı okundu (09-15, 09-16); ikisinin de bulduğu her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi. Anlatı `notes/`'ta.
+**Aşama 4 + üç denetim.** **Faz G** (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`). Sonra spec **üç kez** baştan sona koda karşı okundu (09-15, 09-16 ×2); üçünün de bulduğu her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi. Anlatı `notes/`'ta ve `notes/archive/denetim-*.md`'de.
 
-**Birinci turda inenler (09-15).** Arşivleme ucu, atom etiketleri, `/api/v1/warmup`, commit'li `openapi.json`, `emphasize` + `note`, HTML renderer, `format=source`, GitHub içe aktarımı, `/customizations` + `GET /templates`, CDS, Umami, § 21.8'in çeviri adımı (`F-013`), § 32.5'in pivotu, § 30.6'nın `LISTEN/NOTIFY`'ı, § 48.3'ün metrikleri, § 48.5'in replay'i. **Üç sessiz bulgu:** nginx CSP'si Turnstile'ı blokluyordu (`B-100`), `tags`/`atom_tags`'e hiçbir şey yazmıyordu (`B-103`), çeviri fan-out'u model çağrısını `@Transactional` içinde tutuyordu.
+**Birinci tur (09-15)** on altı eksik indirdi (arşivleme ucu, atom etiketleri, `/warmup`, HTML renderer, `format=source`, GitHub içe aktarımı, `/customizations`, CDS, Umami, çeviri adımı, `LISTEN/NOTIFY`, replay) ve **üç sessiz kusur** buldu: nginx CSP'si Turnstile'ı blokluyordu (`B-100`), `tags`/`atom_tags`'e hiçbir şey yazmıyordu (`B-103`), çeviri fan-out'u model çağrısını `@Transactional` içinde tutuyordu. **İkinci tur (09-16) sekiz madde buldu, altısı kodda:** İlke 7 telde yoktu (`B-108`); WAL arşivleme, ikinci yedek sağlayıcısı, `restore.sh`'ın anonim silmesi, circuit breaker ve § 42.4'ün JSON limitleri hiç kurulmamıştı. Detay `notes/archive/denetim-*.md`'de.
 
-**İkinci tur sekiz madde daha buldu (09-16), altısı kodda.** **(1)** **İlke 7 telde yoktu** — skor, eşleşen keyword ve red nedeni hesaplanıyor, hiçbiri yayımlanmıyordu; `matchedKeywords` + `heldBackReason` indi, skor § 23.3 gerekçesiyle bilerek inmedi (`B-108`, § 35.3.1). **(2)** **WAL arşivleme hiç kurulmamıştı** — § 49.5'in "~5 dakika"sı gerçekte 03:00'a kadardı; `archive_mode` + haftalık `pg_basebackup` indi, çünkü WAL `pg_dump`'a değil fiziksel bir temele oynanır. **(3)** **3-2-1'in ikinci sağlayıcısı yoktu**, saklama tek `7d` idi. **(4)** `restore.sh` § 49.4'ün anonim satır silmesini hiç yapmıyordu. **(5)** **circuit breaker yoktu** — karanlık sağlayıcıya her üretim 30 sn ödüyordu. **(6)** § 42.4'ün JSON limitleri kurulmamıştı; `.env.example`'da `AGE_PUBLIC_KEY` hiç yoktu. Ayrıca § 27.2'nin **üç eksik adaptörü** yazıldı (dağıtım değişmiyor: anahtarsız adaptör atıl).
-
-**İki döküman bulgusu.** § 35.2.1 beş ucun "yok" olduğunu savunuyordu, bir aşamadır varken. **EK D monolitte kalmıştı** — spec ona 75 kez atıf yapıyor ve `sync-spec.sh` onu kopyalamıyordu, yani frontend'in kopyasında 75 atfın hepsi boşa düşüyordu; `spec/18-appendix-d.md`'ye taşındı.
+**Üçüncü tur (09-16) üç gerçek boşluk buldu, ve şekli farklıydı: yazılmamış olduğu hâlde yazılmış sayılan tasarım.** **(1)** **`ContentShape` hiç yazılmamıştı** — § 48.2 tanımlıyor, EK A sözlükte listeliyor, `CLAUDE.md`'nin mutlak kural 4'ü ve `noContentInLogs`'un javadoc'u adını veriyor, `src/`'de yoktu. Yazıldı ve üç log satırına bağlandı. **(2)** **§ 17'nin faz sözleşmesi** (`PipelinePhase`, `PipelineContext`, yedi tip) hiç kurulmamıştı ve kayıtlı değildi; spec gerçeğe göre düzeltildi. **(3)** **Format bağımsızlığı sınırın yanlış tarafındaydı** — `DocumentRenderer`'ın iki metodunun tek çağıranı yoktu, `generation` DOCX/HTML'e somut uzanıyordu; `DocumentWriter` + `DocumentWriters` indi, **ArchUnit kuralı** tutuyor. Ayrıca **gitleaks bir süredir koşmuyordu** (`core.hooksPath` `.git/hooks`'u iptal ediyor) ve on iki doküman sapması kapandı — en önemlisi **iki otoriteli hata kataloğu** (`B-111`).
 
 **Ölçümler.** Faz D eşiklerine hiçbir gerçek skor ulaşmıyor (0.1259 / taban 0.40). `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde. **§ 29.2'nin format dökümü XeTeX'te imkânsız** (motor sınırı, ölçüldü).
 
-**Geliştiricide:** VPS ve restore testi (§ 49.4); OAuth, Turnstile, `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu** (§ 41.4) ve **R2** (§ 57.4) bilerek yok; ikincisini bir tuzak tel tutuyor.
+**Geliştiricide:** VPS ve restore testi (§ 49.4); OAuth, Turnstile, `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu** (§ 41.4) ve **R2** (§ 57.4) bilerek yok; ikincisini bir tuzak tel tutuyor. **Yerelde `make db-reset` bekliyor:** migration yorumları düzenlendi (bilinçli istisna, `notes/`), checksum'lar değişti.
 
-**Test:** 1869 birim · 580 entegrasyon · latex 145 — 0 hata
+**Test:** 1875 birim · 580 entegrasyon · latex 145 — 0 hata
 
 ## Frontend — `atomcv-frontend`
 
@@ -55,6 +53,6 @@ _Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; 
 
 ## Sonraki senkronizasyon noktası
 
-**Sırada `B-100`…`B-108` var (2026-09-16).** Dokuzu da iki denetimden ve hiçbiri ACK'lenmedi, yani `to-frontend.md` 100 satırı geçti — bu bir arşivleme değil koordinasyon meselesi. **Önce `npm run gen:api`**: birinci turda altı uç ve üç şema, ikincide `SelectionLine`. Başlıcanlar: `B-100` (CSP — kod işi yok ama dağıtımda görülmeli), `B-101` (`contract-check`'in URL'i), `B-103` (etiketler), `B-107` (`auto` ilanı takip ediyor: üretim yavaşlayabilir), `B-108` (`heldBackReason` dört ayrı cümle istiyor — `INACTIVE` profil ayarı, `EXCLUDED_BY_DIRECTIVE` bu CV'nin düzenlemesi; karıştıran bir ekran kalıcı kararı geri aldırır).
+**Sırada `B-100`…`B-111` var (2026-09-16).** On ikisi de üç denetimden ve hiçbiri ACK'lenmedi, yani `to-frontend.md` 100 satırı geçti — bu bir arşivleme değil koordinasyon meselesi. **Önce `npm run gen:api`**: birinci turda altı uç ve üç şema, ikincide `SelectionLine`. Başlıcanlar: `B-100` (CSP — kod işi yok ama dağıtımda görülmeli), `B-101` (`contract-check`'in URL'i), `B-103` (etiketler), `B-107` (`auto` ilanı takip ediyor: üretim yavaşlayabilir), `B-108` (`heldBackReason` dört ayrı cümle istiyor — `INACTIVE` profil ayarı, `EXCLUDED_BY_DIRECTIVE` bu CV'nin düzenlemesi), **`B-111`** (çeviri dosyalarınız yanlış tablodan yazılmış olabilir: 27 koda karşı 41).
 
 **Frontend'de kalanlar karar, kod değil:** analitik (ölçümü alacak bir dağıtım istiyor), bölüm düzeni ve dil ekseni kontrolleri, diğer diller, `docs/spec/`'in İngilizceye çevrilmesi.
