@@ -165,7 +165,13 @@ geliyor — `OTLP_AUTHORIZATION` `Bearer ` önekini de taşır, ve
 
 > **Kritik:** Bunlar **iki ayrı dosyadır, iki ayrı repoda.** Tek bir workflow'da `needs: [backend, frontend]` yazılamaz — repolar arası job bağımlılığı GitHub Actions'ta mümkün değildir. Her repo kendi testini çalıştırır, kendi imajını üretir, kendi bileşenini deploy eder.
 
-#### `atomcv-backend/.github/workflows/ci-cd.yml`
+#### `atomcv-backend/.github/workflows/` — aşağıdaki taslak, inen dördü değil
+
+> **Başlık `ci-cd.yml` diyordu ve öyle bir dosya yok** (düzeltme, denetim
+> 2026-09-16). Düzeltmenin kendisi seksen satır aşağıda duruyordu, yani bölüm
+> doğruyu söylerken başlığı yanlış söylüyordu — ve okuyanın önce gördüğü
+> başlıktı. İnen dört dosya ve ne yaptıkları: aşağıdaki taslaktan sonraki
+> nottadır.
 
 ```yaml
 name: CI/CD
