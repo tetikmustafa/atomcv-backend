@@ -12,14 +12,47 @@ aşağıda.
 
 ## Denetim turları — hepsi kapalı
 
-Dört tur, anlatıları `archive/denetim-2026-09-1*.md`'de; kalıcı kararlar
-`spec/`'te. Sonuncusu **mekanikti** — düzyazı okumak yerine spec'in andığı
+Beş tur, anlatıları `archive/denetim-2026-09-1*.md`'de; kalıcı kararlar
+`spec/`'te. Dördüncüsü **mekanikti** — düzyazı okumak yerine spec'in andığı
 her somut adı çıkarıp repoda aradı — ve bulduğu üç boşluğun ikisi
 **kümelerdeydi**: bir adın repoda geçmesi kümenin tam olduğunu göstermiyor.
+
+**Beşinci tur (2026-09-16) ekseni yine değiştirdi: canlılık.** Dört tur adların
+*varlığını* sordu; bu tur telde bir *ucu* olup olmadığını sordu — yazılmayan
+kolon, üretilemeyen enum değeri, okunmayan ayar, tutulmayan bütçe. Sekiz madde
+çıktı, hepsi düzeltildi (dal: `fix/besinci-denetim`).
+
+**Sapma — `@Transactional` içinde ağ çağrısı, beş yerde.** Birinci tur bunu
+çeviri fan-out'unda bulup `TranslationWriter`'ı ayırmıştı; aynı şekil beş yerde
+duruyordu. Cover letter yeniden yazımı (45 sn, istek ipliğinde), gömme toplu
+çağrısı, sihirli bağlantı e-postası, ve **iki oturum açma yolu**. Sonuncular en
+ağırı: `WelcomeGreeting`'in javadoc'u "bilerek transactional değil" diyordu ve
+**kendi anotasyonunu** anlatıyordu, içinde koştuğu transaction'ı değil.
+Commit sonrası olaya taşındı; geri alınan bir oturum açmanın hoş geldin
+göndermesi de böylece kapandı. **Asıl bulgu muhafızdaydı:** kural vardı ama
+yalnız `ProviderChain`'i tutuyordu, beşinin hiçbiri menzilinde değildi.
+
+**Ekleme — Faz A'nın eval süiti hiç yazılmamıştı.** § 53.5'in dokuz eşiğinden
+ikisi taban değeriyle tanımlıydı ve hiçbir şey gözlem kaydetmiyordu; CI hattı
+`prompts/` altında **herhangi bir** dosya değişince ateşleyip var olan tek
+süiti (Faz D) koşturuyordu. `job_analysis` düzenlemek başka bir prompt'u ölçüp
+yeşil dönüyordu. `JobAnalysisEvalIT` + `PromptEvalCoverageTest` indi.
+
+**Düzeltme — ulaşılamaz dört bildirim.** `email_preferences` tablosunu ayakta
+tutan tek şey iki testti (V15 düşürdü). `REWRITE_VALIDATION_FAILED`,
+`VariantAuthor`'ın iki değeri ve `atomcv.llm.call-timeout` silindi.
+`EXTRACTION_TIMEOUT` ise **silinmek yerine üretilebilir yapıldı** (karar:
+geliştirici): zincir artık "yavaş mı, kapalı mı" ayrımını taşıyor, çünkü o
+ayrımı bilen tek yer orası.
 
 ---
 
 **Tamir etmeye kalkma — bilinçli:**
+
+- **Beş prompt'un eval süiti yok ve gerekçeleri `PromptEvalCoverageTest`'te.**
+  § 53.5 yalnız Faz A, D ve F için taban koyuyor; ötekilere eşik uydurmak bir
+  ürün kararını bir test dosyasında vermek olurdu. Test üçüncü durumu —
+  hakkında karar verilmemiş bir prompt — reddediyor.
 
 - **Admin teşhis ucu yok** (§ 41.4) — çevrimdışı okuyucu var, ve 2026-09-15'te
   bir kez daha soruldu, bir kez daha hayır denildi. Lehindeki tek gerçek
@@ -64,6 +97,14 @@ her somut adı çıkarıp repoda aradı — ve bulduğu üç boşluğun ikisi
   görünen bir adres hatası.
 
 **Ölçümler:**
+
+- **Ölçek muhafızı kareselliği eşikten değil sıçramadan yakalıyor.**
+  `ScoringScalingTest`: 3 ms / 180 ms bütçe, büyüme **1.34** / tavan 3.0.
+  Ekilen `n²/25` iş büyümeyi **2.94**'e çıkardı — yani **tavanı geçmedi.**
+  Sinyal büyük ve tartışmasız, ama hafif karesel bir değişiklik tavanın altında
+  oturabilir. Aynı özellik kardeş `SelectionScalingTest`'te de var. **Tavanı
+  değiştirmek bir bütçe kararı** ve kendi PR'ını hak ediyor — testin yanında
+  sessizce düzeltilecek bir sayı değil.
 
 - **Faz D eşikleri gerçek vektörlerle ölçüldü ve kademeler değişti** (§ 21.2).
   Gömme açıkken kosinüs **0.63-0.84** arası dar bir bant, yani neredeyse sabit:
@@ -128,7 +169,10 @@ takip eden bir şey yoksa tam kalmıyor** · **bir profil bir niyetin adıdır, 
 niyetin değil** · **kendi eklediğin sahteyi, onu istemeyen hattı koşturmadan
 yazdım sayma** · **bir eşik, ayırmayı bilmediği iki şeyi topluyorsa, doğru
 değeri yoktur — ekseni değiştir** · **ulaşılamaz bir eşik, kapalı bir özelliği
-yapılmış gibi gösterir**.
+yapılmış gibi gösterir** · **bir sınıfın transaction açmaması onu transaction dışında
+koşturmaz — çağıranına bak** · **bir muhafızı bulduğun örneğe göre değil kusur
+sınıfına göre yaz: `ProviderChain`'i adlandıran kural aynı kusurun beş
+kopyasını görmedi**.
 
 ---
 

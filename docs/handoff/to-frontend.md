@@ -12,14 +12,15 @@
 
 ## OPEN
 
-**Hepsi iki denetimden (2026-09-15 ve 2026-09-16):** spec baştan sona kodla
-karşılaştırıldı; "dokümanda var, kodda yok" olan her şey ya yazıldı ya sapma
-olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç ve üç
-şema, ikinci turda `SelectionLine` değişti (`B-108`).
+**Hepsi denetimlerden (2026-09-15, 2026-09-16 ve beşinci tur):** spec baştan
+sona kodla karşılaştırıldı; "dokümanda var, kodda yok" olan her şey ya yazıldı
+ya sapma olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç
+ve üç şema, ikincide `SelectionLine` (`B-108`), beşincide iki sözlük
+(`B-112`).
 
 > **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
-> (kanal kuralı): `B-100`-`B-111`'in hiçbiri `ACK` almadı, yani taşınabilecek
-> madde yok. On ikisi de denetimlerden; okunup ACK'lendiklerinde hepsi birden
+> (kanal kuralı): `B-100`-`B-113`'ün hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. On dördü de denetimlerden; okunup ACK'lendiklerinde hepsi birden
 > `resolved/`'a iner.
 
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
@@ -210,6 +211,43 @@ silin). Bunların bir kısmı zaten yazılmış olabilir; madde "eksik" demiyor,
 
 Bu `B-110`'un ta kendisi değil ama onunla aynı zinciri kapatıyor: `B-110`
 testi bağlamayı öneriyor, bu madde **bugünkü** dosyaların durumunu soruyor.
+
+### B-112 · İki şema sözlüğü daraldı — `gen:api` üçüncü kez
+
+**Since:** `2975584` · beşinci denetim · `04-data-model.md` § 13.2, `error-catalogue.md`
+
+**Neden:** ikisi de **hiçbir şeyin üretemediği** değerler taşıyordu, yani
+sizin tarafta hiç girilmeyecek bir dalın tipi vardı.
+
+- `ApiError.code`'dan **`REWRITE_VALIDATION_FAILED` kalktı.** Doğrulayıcının
+  reddettiği bir madde kullanılmıyor ve kişinin kendi cümlesi basılıyor —
+  yani bu kodu hiçbir yol üretemiyordu. Ürün ömrü boyunca da üretmedi.
+- `Variant.createdBy` **dört değerden ikiye indi**: `user`, `llm_translate`.
+  `llm_extract` yazılmadı çünkü içe aktarım kişinin kendi cümlelerini tutuyor
+  ve bilerek `user` işaretliyor; `llm_rewrite` yazılmadı çünkü Faz D'nin
+  yeniden yazımı varyant değil, `generations.rewritten_content` (V11).
+  V16 kolona bu iki değeri zorlayan CHECK'i verdi.
+
+**Aksiyon:** `npm run gen:api`. Sonra `REWRITE_VALIDATION_FAILED` için bir
+çeviriniz varsa silin (`B-111`'in listesini okurken denk gelirsiniz), ve
+`createdBy`'ın dört değerini ayıran bir arayüz varsa ikiye indirin.
+
+### B-113 · `EXTRACTION_TIMEOUT` artık gerçekten dönüyor — cümlesi lazım
+
+**Since:** `2975584` · beşinci denetim · `08b-api-contract.md` § 177
+
+**Neden:** kod katalogda duruyordu, 504'ü seçilmişti, ve **hiçbir yol onu
+üretemiyordu.** Sağlayıcı zinciri tükendiğinde çıkarım her durumda
+`ALL_PROVIDERS_UNAVAILABLE` (503) diyordu — vendorlar gerçekten kapalı olsa da,
+uzun bir CV sadece yavaş kaldığı için zaman aşımına uğrasa da. Zincir artık
+hangisi olduğunu taşıyor: **her başarısızlık bir zaman aşımıysa** 504
+`EXTRACTION_TIMEOUT`, değilse eskisi gibi 503.
+
+**Aksiyon:** `errors.EXTRACTION_TIMEOUT` için bir mesaj yazın, ve 503'ünkinden
+**farklı** olsun — bu ikisi kullanıcıdan zıt şeyler istiyor. 504: *aynı
+dosyayla tekrar deneyin, belge uzun olabilir.* 503: *tekrar denemek şu an
+yardımcı olmaz.* Parametresiz (mutlak kural 4: hangi belgenin yavaş kaldığı
+bir log satırı değil).
 
 ---
 
