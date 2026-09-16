@@ -74,6 +74,15 @@ Bu tasarım, alternatif metin özelliğini "özel durum" olmaktan çıkarıp mod
 > Migration uygulandığı için artık değiştirilemez; farkı buradan değil EK D'den
 > oku.
 
+> **Ve aşağıdaki blok V1'dir, bugünkü şema değil** (düzeltme, denetim
+> 2026-09-16). On üç migration daha uygulandı ve hiçbiri buraya işlenmedi;
+> blokta duran altı satır bugünkü veritabanı hakkında yanlış: `profiles.user_id`
+> nullable, `profiles` iki kolon daha taşıyor, `generations` bir tane,
+> `sections.layout` beş değer alıyor, `jobs`'un idempotency indeksi başka bir
+> indeks, ve `template_capacities` diye bir tablo var. **Delta § 13.2'de**, ve
+> bölüm kendine "tam" dediği için orası bu bölümün parçası — blokta durup okuyan
+> biri şemayı bildiğini sanarak çıkıyordu.
+
 ```sql
 -- ══════════════════════════════════════════════════════════
 -- V1__initial_schema.sql
@@ -440,6 +449,64 @@ CREATE TABLE feature_flags (
 | `version` kolonları | JPA `@Version` → optimistic locking → ETag desteği |
 | Ebeveynlerde `UNIQUE (id, profile_id)` + kompozit FK | Denormalize edilen `profile_id`'nin ebeveyn satırınkiyle aynı olduğunu hiçbir şey garanti etmiyordu; uyuşmazlık sessiz bir kiracılar-arası sızıntı olurdu. `atoms.entry_id IS NULL` durumunda uygulanmaz — bölüm düzeyi atomlar kasıtlı olarak öyle |
 
+### 13.2 V1'den sonra uygulananlar
+
+Yukarıdaki blok `V1__initial_schema.sql`'i anlatıyor. Uygulanmış bir migration
+değiştirilemediği için (mutlak kural 2) şema ondan sonra yalnız yeni dosyalarla
+ilerledi. **Bu bölüm deltadır ve bloğa geri işlenmez:** birebir kopyası olduğu
+dosya duruyorken bloğu düzenlemek, onu ne V1 ne bugün yapardı — iki sürümün
+ortasında, hangisini anlattığı belirsiz bir metin kalırdı.
+
+**Kural: yeni bir migration buraya bir satır ekler, aynı commit'te.**
+
+| Migration | Şemaya ne oldu |
+|---|---|
+| `V2__narrow_oauth_providers` | `oauth_identities.provider` CHECK'i `('google','github')` — LinkedIn çıktı. Blokta işli olan tek delta |
+| `V3__job_idempotency_covers_anonymous` | `jobs (user_id, idempotency_key)` unique indeksi **düştü**; yerine `jobs_owner_idempotency_key_idx`, `(COALESCE(user_id::text, anon_session_id), idempotency_key)` üzerinde. Anonim işte `user_id` NULL'dır ve NULL hiçbir unique kısıtı çiğnemez — eski indeks anonim tarafta hiçbir şey korumuyordu |
+| `V4__one_feedback_per_generation` | `generation_feedback_one_per_user`, `(generation_id, user_id)` üzerinde unique indeks |
+| `V5`, `V6`, `V7`, `V8` | **Yalnız veri.** İçe aktarımın yazdığı ulaşılamaz `min_atoms` değerlerini, `layout`'ları ve uydurulmuş bir bölüm başlığını mevcut satırlarda onarır; kolon yok, kısıt yok |
+| `V9__a_summary_is_a_paragraph` | `sections_layout_check` artık **beş** değer alıyor: `bullet_list`, `entry_list`, `inline_list`, `two_column`, **`paragraph`**. Düzyazı madde imi almaz, ve `paragraph` `inline_list`'in yeniden kullanımı değil |
+| `V10__an_anonymous_profile_is_a_row_with_an_expiry` | `profiles.user_id` **nullable**; `profiles.expires_at TIMESTAMPTZ`; `profiles_owner_xor_expiry` CHECK'i `((user_id IS NULL) <> (expires_at IS NULL))`; `expires_at IS NOT NULL` üzerinde kısmi indeks. Kısıt bir konvansiyon değil, **değişmez**: bir profilin ya sahibi vardır ya son kullanma tarihi — ikisi birden de, hiçbiri de olamaz. Kayıt olmayı da atomik yapar, çünkü `user_id`'yi yazan UPDATE `expires_at`'i aynı ifadede temizlemek zorunda |
+| `V11__a_rewrite_outlives_the_generation_that_made_it` | `generations.rewritten_content JSONB`, atom id'siyle anahtarlı. `content_snapshot` bunu taşıyor **gibi görünür ve taşımaz** — `RenderRequest` id, skor ve kilit taşımıyor, yalnız basılanı, yani oradaki metin ait olduğu atoma geri eşlenemez (§ 24.2) |
+| `V12__a_measured_capacity_outlives_the_request_that_paid_for_it` | Yeni tablo: `template_capacities` — aşağıda |
+| `V13__a_header_is_as_tall_as_its_own_text` | `profiles.header_costs JSONB NOT NULL DEFAULT '{}'`, geometri **ve** dile göre anahtarlı: aynı başlık başka bir kenar boşluğunda başka türlü sarıyor, ve "E-posta" ile "Email" aynı genişlikte değil |
+| `V14__a_person_can_stop_the_post` | `users.lifecycle_emails BOOLEAN NOT NULL DEFAULT true` ve `users.unsubscribe_token UUID NOT NULL DEFAULT gen_random_uuid()`; ikincisi UNIQUE, çünkü bağlantıya tıklayanın elinde yalnız o token var (§ 57.7) |
+
+```sql
+-- ══════════════════════════════════════════════════════════
+-- V12__a_measured_capacity_outlives_the_request_that_paid_for_it.sql
+-- ══════════════════════════════════════════════════════════
+
+-- Katman B: font, kenar boşluğu, satır aralığı — verili bir geometrinin
+-- sayfasının ne tuttuğu, bir kez ölçülür.
+--
+-- Kapasite kişiye değil özelleştirmeye aittir: 9.5pt'de 0.6in kenar
+-- boşluğundaki iki kişi aynı soruyu soruyor ve cevap aynı on yedi sayı. Bu
+-- yüzden tabloda ne `user_id` ne `profile_id` var ve kapsamlı bir
+-- repository'den geçmiyor — mutlak kural 3 kullanıcı verisi hakkındadır, bu
+-- ise bir sayfa hakkında aritmetik.
+CREATE TABLE template_capacities (
+    cost_key                TEXT PRIMARY KEY,
+    page_text_height_pt     DOUBLE PRECISION NOT NULL,
+    text_width_pt           DOUBLE PRECISION NOT NULL,
+    baseline_skip_pt        DOUBLE PRECISION NOT NULL,
+    item_baseline_skip_pt   DOUBLE PRECISION NOT NULL,
+    fixed_costs             JSONB NOT NULL,
+    measured_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+`fixed_costs` tek JSONB kolon, parça başına bir kolon değil: mobilya
+renderer'ın işi ve iki kez büyüdü (`SECTION_LIST_CLOSE`, `INLINE_ROW`),
+kolonlaştırmak her seferinde bir migration demekti — ve satır ya bütün olarak
+okunuyor ya hiç.
+
+**Hiçbir satır seed edilmiyor.** Klasik ve kompakt ölçülmüş sayılarını
+`TemplateRegistry`'de tutuyor: anlattıkları preamble'ın yanında okunabildikleri
+ve `LatexCalibrationIT`'in her koşuda yeniden türetebildiği yerde. Buraya
+kopyalamak tek bir doğruya iki kaynak verirdi, ve veritabanındaki kimsenin
+kontrol etmediği olurdu.
+
 ---
 
 ## 14. JSONB Yapıları
@@ -634,9 +701,28 @@ onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
 ```
 src/main/resources/db/migration/
 ├── V1__initial_schema.sql
-├── V2__add_template_customizations.sql
-└── V3__add_content_version.sql
+├── V2__narrow_oauth_providers.sql
+├── V3__job_idempotency_covers_anonymous.sql
+├── V4__one_feedback_per_generation.sql
+├── V5__clamp_unreachable_entry_minimums.sql
+├── V6__languages_are_an_inline_list.sql
+├── V7__an_about_entry_is_one_paragraph.sql
+├── V8__a_summary_hangs_off_its_section.sql
+├── V9__a_summary_is_a_paragraph.sql
+├── V10__an_anonymous_profile_is_a_row_with_an_expiry.sql
+├── V11__a_rewrite_outlives_the_generation_that_made_it.sql
+├── V12__a_measured_capacity_outlives_the_request_that_paid_for_it.sql
+├── V13__a_header_is_as_tall_as_its_own_text.sql
+└── V14__a_person_can_stop_the_post.sql
 ```
+
+> **Ağaç uydurmaydı** (düzeltme, denetim 2026-09-16): `V2__add_template_customizations`
+> ile `V3__add_content_version` diye dosyalar hiç olmadı — `template_customizations`
+> V1'in içinde, içerik sürümü ise § 16.2'nin JSONB damgası, bir kolon değil.
+> **Ad bir migration'da yorum değil kayıttır:** dosya adı `V<n>__` ile
+> sıralanıyor, checksum'la korunuyor ve bir daha değişmiyor, yani yanlış
+> yazılmış bir ad bir sonraki okuyucuyu var olmayan bir dosyayı aramaya
+> gönderir. Ne yaptıkları § 13.2'de.
 
 **Kurallar:**
 - Uygulanmış migration dosyası **asla değiştirilmez** (checksum korumalı)

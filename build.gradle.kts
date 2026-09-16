@@ -283,6 +283,14 @@ tasks.withType<Test> {
     inputs.files(rootProject.file("error-catalogue.md"))
         .withPropertyName("errorCatalogue")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And the data model chapter, for the fifth time for the same reason:
+    // SchemaDocumentationTest is what keeps section 13.2 following the
+    // migrations, and a migration added while this task stayed UP-TO-DATE is
+    // exactly the drift it exists to catch -- six of them accumulated before
+    // anything checked.
+    inputs.file(rootProject.file("docs/spec/04-data-model.md"))
+        .withPropertyName("dataModelChapter")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and
