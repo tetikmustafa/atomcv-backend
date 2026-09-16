@@ -40,12 +40,14 @@ public final class PerformanceBudgets {
         }
     }
 
+    /**
+     * <p>There is no {@code p50} companion, and there was one that nothing
+     * called (denetim, beşinci tur). The scaling tests take the fastest of
+     * fifteen samples, because noise only ever inflates a timing — a median
+     * over those same samples would be a number with no method behind it.
+     */
     public static long backendP95Millis(String operation) {
         return required("backend", operation, "p95_ms").asLong();
-    }
-
-    public static long backendP50Millis(String operation) {
-        return required("backend", operation, "p50_ms").asLong();
     }
 
     public static int maxQueriesForProfileLoad() {

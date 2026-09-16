@@ -11,20 +11,38 @@
 # for the N+1 that is the most likely performance bug here, and a
 # scaling ratio for the pure phases, which is immune to how fast the machine is
 # because it compares one run to another on the same one.
+# Every number below is read by a test. Three were not, until an audit
+# looked (denetim, beşinci tur): phase_scoring had no test at all,
+# profile_load had none either, and a `p50_ms` on each of the three was
+# read by nothing anywhere. A figure in this file that nothing asserts is
+# the thing it was written to prevent -- a limit somebody believes is
+# being held.
+#
+# There is no p50 here any more, and that is a consequence of how these are
+# measured rather than an omission. The scaling tests take the *fastest* of
+# fifteen samples on purpose, because noise only ever inflates a timing and
+# the fastest run is the one nothing interrupted. A median over the same
+# samples measures the machine's mood, so it was a number with no method
+# behind it.
 backend:
-  # The budget is 30/60ms. Faz B is pure arithmetic over atoms in memory
-  # once the vectors are there.
-  phase_scoring: { p50_ms: 90, p95_ms: 180 }
-  # 15/40ms. Faz C is bin packing over the same atoms.
-  phase_selection: { p50_ms: 45, p95_ms: 120 }
-  # 80/200ms for a 200-atom profile, and the four queries below matter more
-  # than the milliseconds.
-  profile_load: { p50_ms: 240, p95_ms: 600 }
+  # Chapter 52.1 asks for 30/60ms. Faz B is pure arithmetic over atoms in
+  # memory once the vectors are there; held by ScoringScalingTest.
+  phase_scoring: { p95_ms: 180 }
+  # 15/40ms. Faz C is bin packing over the same atoms; held by
+  # SelectionScalingTest.
+  phase_selection: { p95_ms: 120 }
 
-# The real budget: flat queries and an in-memory join, never a walk
-# that asks per row. Six is the ceiling a profile load is designed around --
-# four flat queries and room for two -- and it is a count rather than a
-# duration, so it means the same thing on every machine.
+# The real budget, and the whole budget for a profile load: flat queries and
+# an in-memory join, never a walk that asks per row. Six is the ceiling a
+# profile load is designed around -- four flat queries and room for two -- and
+# it is a count rather than a duration, so it means the same thing on every
+# machine.
+#
+# The milliseconds that used to sit above for profile_load are gone rather
+# than given a test. A load goes to a database, so timing it measures
+# Testcontainers starting up and the disk underneath it; this count is what
+# actually catches the N+1, which is the performance bug this design is most
+# likely to grow. Held by ProfileAssemblerIT.
 queries:
   profile_load_max: 6
 
