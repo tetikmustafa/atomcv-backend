@@ -62,7 +62,15 @@ cp docs/*.md ../atomcv-frontend/docs/
 cd ../atomcv-frontend && git add docs/ && git commit -m "docs: sync architecture docs from backend"
 ```
 
-Bunu bir script'e bağla: `atomcv-backend/scripts/sync-docs.sh`
+Bunu bir script'e bağla: `atomcv-backend/scripts/sync-spec.sh`
+
+> **`sync-docs.sh` diye bir script hiç olmadı** (düzeltme, denetim
+> 2026-09-16), ve yukarıdaki `cp docs/*.md` de inen şey değil: **iki yön iki
+> script**, çünkü iki dosya sınıfının sahipliği farklı. `sync-spec.sh`
+> `spec/` ile `INDEX.md`'yi tek yönde frontend'e kopyalar (bu repo sahibi);
+> `sync-handoff.sh` `handoff/` ile `STATUS.md`'yi **iki yönde** taşır (ikisi de
+> yazar). Hepsini tek `cp`'ye vermek, frontend'in yazdığı bir handoff maddesini
+> bir sonraki senkronda silerdi.
 
 ---
 
@@ -89,9 +97,17 @@ atomcv-backend/
 │
 ├── scripts/
 │   ├── deploy.sh                            # sunucuda çalışır: pull + migrate + up + healthcheck
-│   ├── backup.sh                            # pg_dump + age + rclone → R2
-│   ├── restore-test.sh                      # aylık restore doğrulaması
-│   ├── sync-docs.sh                         # dokümanları frontend repo'ya kopyala
+│   ├── backup.sh                            # gecelik pg_dump + age + rclone
+│   ├── archive-wal.sh                       # WAL arşivi: dump'ı PITR'a çeviren yarı
+│   ├── restore.sh                           # geri yükleme, ve restore testinin kendisi
+│   ├── sync-spec.sh                         # spec + INDEX → frontend (tek yön)
+│   ├── sync-handoff.sh                      # handoff + STATUS (iki yön)
+│   ├── handoff-status.sh                    # açık maddeleri sayar; elle çalıştırılır, sıfır token
+│   ├── check-doc-sizes.sh                   # rolling dosyaların satır sınırı
+│   ├── dev-signin.sh                        # sihirli bağlantıyla giriş, tarayıcısız
+│   ├── dev-record.sh                        # her prompt'u bir kez koşturur (`make record` için)
+│   ├── replay.sh                            # bir export'tan Faz E'yi yeniden koşar
+│   ├── support-read.sh                      # bir üretimi sahibinin verdiği izinle okur
 │   └── measure-template.sh                  # yeni şablonun sabit maliyetlerini ölç
 │
 ├── src/
