@@ -175,13 +175,13 @@ True here and nowhere in the architecture documents; each cost a debugging round
 - **`gradlew` must stay mode 100755**, or every Linux runner fails. Directly:
   `sh ./gradlew test` (fast, no Docker), `sh ./gradlew integrationTest` (needs
   Docker Desktop); `--tests '*SomeTest'` narrows either.
-- **`make dev-full` rebuilds the LaTeX image on purpose (`--build`)** and runs
-  the containers only, not the backend: compose reuses the last image, and a
-  stale one answers without `X-Page-Count`.
-- **`gradlew latexTest` compiles through a real LaTeX image**, is excluded from
-  `integrationTest` (minutes), and is the only lane with a real compiler and a
-  real profile round trip — three bugs the others could not see. `latex.yml`
-  runs it on the paths it exercises.
+- **LaTeX locally:** `make dev-full` rebuilds the image (`--build`) and starts
+  containers only; a stale one answers without `X-Page-Count`. `make dev` needs
+  none: `FakeLatexCompiler` (`local-fake`) reports **1 page always** and never
+  calibrates, so a page claim needs `dev-full` or `gradlew latexTest`.
+- **`gradlew latexTest` compiles through a real image**, is excluded from
+  `integrationTest` (minutes), and is the only lane with a real compiler and
+  round trip — three bugs the others missed. `latex.yml` runs it on its paths.
 - A `pre-commit` gitleaks hook runs on every commit; one that printed nothing about secrets did not run it.
 - **`spotlessCheck` fails locally on CRLF where CI passes** — the editor tool
   and python's text mode write CRLF, git normalises on commit, so the runner

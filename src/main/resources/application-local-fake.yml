@@ -4,6 +4,12 @@
 # and ignored the second half silently, so `make dev` looked like it was
 # running in fake mode while adding nothing at all.
 atomcv:
+  # No LaTeX container under `make dev`: the image belongs to `make dev-full`.
+  # A switch rather than the profile alone, because the latex test lane runs
+  # under this very profile -- it wants the fake model and the real compiler --
+  # and AbstractLatexTest turns this back off.
+  latex:
+    fake: true
   llm:
     # Both chains point at the fake, and nothing else. The base configuration
     # names openrouter, which has no key here — a chain that found nothing
