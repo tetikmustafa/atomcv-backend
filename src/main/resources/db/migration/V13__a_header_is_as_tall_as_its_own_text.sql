@@ -1,4 +1,4 @@
--- Bolum 26.4. The header block was one measured number for every profile,
+-- The header block was one measured number for every profile,
 -- calibrated for a name and two centred lines. A real header wraps: a contact
 -- line with six fields and a headline that runs long take three lines, and the
 -- page was charged for two. Measured against the compiler on 2026-09-10 that

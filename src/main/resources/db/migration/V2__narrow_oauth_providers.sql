@@ -1,7 +1,7 @@
 -- ══════════════════════════════════════════════════════════
 -- V2__narrow_oauth_providers.sql
 --
--- LinkedIn is no longer a sign-in provider (Bolum 40.6). It was the only one
+-- LinkedIn is no longer a sign-in provider. It was the only one
 -- of the three that cannot be registered at all without a verified company
 -- page, and the sign-in it buys is the one Google and GitHub already give.
 --
@@ -12,7 +12,7 @@
 -- it, and reads later as "we support LinkedIn, where is the adapter".
 --
 -- No data to move: nothing writes this table yet. OAuth lands in the next
--- slice of Adim 3.3.
+-- slice of the identity work.
 -- ══════════════════════════════════════════════════════════
 
 ALTER TABLE oauth_identities

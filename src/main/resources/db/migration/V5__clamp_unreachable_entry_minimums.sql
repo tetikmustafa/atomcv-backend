@@ -1,4 +1,4 @@
--- Bolum 20.2, constraint 4: an entry shows `min_atoms` bullets or none of
+-- The selection constraint: an entry shows `min_atoms` bullets or none of
 -- itself. The column defaults to 2 and the importer left the default in place,
 -- so every entry extraction gave a single bullet -- a language, a degree, a
 -- Tech Stack category -- carried a minimum it could never reach. Faz C did

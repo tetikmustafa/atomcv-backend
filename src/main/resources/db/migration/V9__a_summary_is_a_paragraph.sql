@@ -1,4 +1,4 @@
--- Bolum 33.4: a summary is prose, and prose does not take a bullet.
+-- A summary is prose, and prose does not take a bullet.
 --
 -- `layout` has allowed four values since the first migration and none of them
 -- described a paragraph, so an About section carried the column's default and

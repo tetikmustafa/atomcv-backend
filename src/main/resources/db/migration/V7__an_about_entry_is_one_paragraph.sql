@@ -1,4 +1,4 @@
--- Bolum 20.3: an entry prints `min_atoms` of itself or none of itself. The
+-- An entry prints `min_atoms` of itself or none of itself. The
 -- column default is two, which is a bullet-list number, and a summary is not a
 -- bullet list.
 --

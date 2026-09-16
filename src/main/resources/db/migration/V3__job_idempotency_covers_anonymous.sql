@@ -1,11 +1,11 @@
--- Adim 3.6: the idempotency index did not cover anonymous requests.
+-- The idempotency index did not cover anonymous requests.
 --
--- V1 wrote it as (user_id, idempotency_key), which does exactly what Bolum
--- 30.7 asks for as long as there is a user. An anonymous job has user_id NULL,
+-- V1 wrote it as (user_id, idempotency_key), which absorbs a double click as
+-- long as there is a user. An anonymous job has user_id NULL,
 -- and Postgres counts NULLs as distinct from each other -- so two requests
--- carrying the same key produced two rows, and the double click Bolum 30.7
--- exists to absorb went through twice. The defect was written down in EK D.6.5
--- when the anonymous flow was still a maybe; it is now a caller.
+-- carrying the same key produced two rows, and the double click the key
+-- exists to absorb went through twice. The defect was noted while the
+-- anonymous flow was still a maybe; it is now a caller.
 --
 -- COALESCE over the two owner columns is the fix, and the cast is what makes
 -- them comparable: user_id is a uuid and anon_session_id is text. One of the

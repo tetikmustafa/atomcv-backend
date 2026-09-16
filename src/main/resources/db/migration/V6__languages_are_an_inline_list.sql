@@ -1,4 +1,4 @@
--- Bolum 33.4: a language is a label and a level -- "Turkish: Native" -- which
+-- A language is a label and a level -- "Turkish: Native" -- which
 -- is the row a skills matrix is made of, not an entry with a heading.
 --
 -- The importer wrote BULLET_LIST over every section but skills, so a real
