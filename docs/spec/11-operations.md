@@ -264,12 +264,30 @@ jobs:
 > `::warning::` basıp geçiyor: koşmamış bir değerlendirmenin yeşil raporlaması
 > § 51.7'nin üçüncü kuralının tam olarak yasakladığı şey.
 >
-> **Aşama 1'den kalan.** Repoda `ci.yml` var, `ci-cd.yml` yok: sunucu Çalışan işler `build` (derleme + test +
-> integrationTest + her koşulda rapor yükleme), `codeql` ve `scan`; sırlar ayrı
-> bir `secrets-scan.yml` dosyasında, tüm geçmişi tarayacak şekilde
-> (`fetch-depth: 0`). Action sürümleri yukarıdakilerden yeni — Dependabot
-> yükseltiyor, elle sabitlenmiş bir liste tutulmuyor. CodeQL dili
-> `java-kotlin`'dir; `java` artık geçerli bir tanımlayıcı değil.
+> **Aşama 1'den kalan.** Repoda `ci.yml` var, `ci-cd.yml` yok: **sunucu
+> henüz olmadığı için dağıtım ayrı bir dosyada duruyor** (`deploy.yml`) ve
+> `push` tetikleyicisi yorumlu — el ile koşturuluyor.
+>
+> *(Bu paragrafın ortası bir düzenlemede yenmişti ve cümle "sunucu Çalışan
+> işler `build`…" diye devam ediyordu; denetim, 2026-09-16.)*
+>
+> **Dört workflow dosyası var:** `ci.yml` (`build` — derleme + test +
+> integrationTest + her koşulda rapor yükleme —, `codeql`, `scan` ve
+> **`llm-eval`**), `secrets-scan.yml` (gitleaks, tüm geçmiş,
+> `fetch-depth: 0`), `deploy.yml` (elle) ve **`latex.yml`** — yalnız
+> `gradlew latexTest`'in dokunduğu yollar değiştiğinde koşuyor, çünkü gerçek
+> bir derleyiciyle dakikalar sürüyor (§ 29, § 51.1).
+>
+> Action sürümleri yukarıdakilerden yeni — Dependabot yükseltiyor, elle
+> sabitlenmiş bir liste tutulmuyor. CodeQL dili `java-kotlin`'dir; `java`
+> artık geçerli bir tanımlayıcı değil.
+>
+> **Yerel taraf ayrı ve bir kez sessizce düştü:** `pre-commit` hook'unu
+> `.git/hooks`'a kuruyor, `core.hooksPath` ayarlanınca git o dizine hiç
+> bakmıyor, ve `.githooks/` yalnız `post-commit` taşıyordu — yani gitleaks
+> bir süre hiç koşmadı, hatasız ve çıktısız. Hook artık `.githooks/pre-commit`
+> olarak commit'li ve `pre-commit` yoksa **commit'i durduruyor**: taranmamış
+> bir commit'i geçirmek, düzeltilen kusurun ta kendisi.
 
 #### `atomcv-frontend/.github/workflows/ci-cd.yml`
 

@@ -114,9 +114,14 @@ cevaplanacak bir istek değil, hatadır.
 **Ekleme — admin'in ekstra erişimi yoktur.** Bölüm 41.4 destek erişimini role
 değil `support_grant`'e bağlıyor; bu iki temel sınıfta rol hiç okunmaz.
 
-**Ekleme — `Scope.EPHEMERAL` henüz yok.** Bölüm 41.3 iki kapsam tanımlıyor, ama
-denetimli bir üretim yolu olmadan eklenen ikinci sabit, kontrolü atlamanın yolu
-olurdu. Anonim akışla birlikte Aşama 3'te gelir.
+**Ekleme — `Scope.EPHEMERAL` Aşama 1'de yoktu.** Bölüm 41.3 iki kapsam
+tanımlıyor, ama denetimli bir üretim yolu olmadan eklenen ikinci sabit,
+kontrolü atlamanın yolu olurdu.
+
+> **Aşama 3'te indi ve bu kayıt geride kaldı** (denetim, 2026-09-16). Sabit
+> `ProfileRef`'te duruyor; denetimli üretim yolu § 41.3.1'in anlattığı
+> **`AnonymousSessionId`** — yalnız oturumu sorabilen modülün üretebildiği bir
+> değer, yani elinde düz bir String olan kazara anonim kapsama ulaşamıyor.
 
 **Ekleme — ArchUnit.** Bölüm 51.4'teki `..api..` kuralı `..service..`'i de
 kapsayacak şekilde genişletildi (mutlak kural 3 ikisini de söylüyor). Ayrıca:
@@ -169,41 +174,24 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 yalnız render eder ve isterse resolution satırının dışına düz bir "kapat"
 kontrolü koyar.
 
-**Hata kodları — tam katalog.** Bölüm 35.5 on pipeline hatasını sayıyor,
-Bölüm 31.10'daki ingestion durumları düzyazıyla anlatılıp kodsuz bırakılmış.
-Her kodun `params` anahtarları **ve tipleri** burada: ICU mesajı bunlarsız
-yazılamaz, çünkü `{pinnedPages, number}` biçimlendirir, `{pinnedPages}`
-yalnızca yerine koyar.
+**Hata kodları — katalog burada değil: `error-catalogue.md`.**
 
-| Kod | HTTP | `params` |
-|---|---|---|
-| `INSUFFICIENT_PROFILE` | 422 | `completeness: integer`, `missing: string[]` |
-| `UNPARSEABLE_JOB_DESCRIPTION` | 422 | `confidence: number`, `skillsFound: integer` |
-| `CONFLICTING_PREFERENCES` | 409 | `pinnedPages: number`, `maxPages: integer` |
-| `FEATURE_REQUIRES_ACCOUNT` | 403 | `feature: string` |
-| `QUOTA_EXCEEDED` | 429 | `metric: string`, `resetsAt: timestamp` |
-| `ALL_PROVIDERS_UNAVAILABLE` | 503 | `tried: string[]` |
-| `COMPILATION_FAILED` | 502 | `detail: string`, `rawSourceAvailable: boolean` |
-| `PAGE_LIMIT_EXCEEDED` | 422 | `actual: integer`, `limit: integer` |
-| `REWRITE_VALIDATION_FAILED` | 500 | `atomId: uuid`, `issues: string[]` |
-| `EMBEDDING_UNAVAILABLE` | 503 | — |
-| `PDF_NOT_TEXT_BASED` | 422 | — |
-| `PDF_ENCRYPTED` | 422 | — |
-| `EXTRACTION_EMPTY` | 422 | — |
-| `EXTRACTION_TIMEOUT` | 504 | — |
-| `LANGUAGE_UNDETECTED` | 422 | `detectedCandidates: string[]` |
-| `PROFILE_QUOTA_EXCEEDED` | 429 | `limit: integer`, `resetsAt: timestamp` |
-| `ANONYMOUS_SESSION_EXPIRED` | 401 | — |
-| `ATOM_LIMIT_EXCEEDED` | 422 | `limit: integer`, `current: integer` |
-| `NO_ANONYMOUS_PROFILE` | 404 | — |
-| `PROFILE_ALREADY_EXISTS` | 409 | — |
-| `GENERATION_ARTIFACT_EXPIRED` | 410 | — |
-| `CSRF_TOKEN_INVALID` | 403 | — |
-| `RESOURCE_NOT_FOUND` | 404 | — |
-| `VERSION_CONFLICT` | 412 | — |
-| `PRECONDITION_REQUIRED` | 428 | — |
-| `VALIDATION_FAILED` | 400 | `fields: string[]` |
-| `INTERNAL_ERROR` | 500 | — |
+> **Düzeltme (denetim, 2026-09-16).** Burada elle yazılmış tam bir tablo
+> duruyordu ve **ikinci bir otoriteydi.** Tablo repo kökündeki
+> `error-catalogue.md`'ye taşındı, orada `ErrorCode` enum'undan **üretiliyor**
+> ve `ErrorCatalogueDocumentTest` ikisi ayrıştığı an düşüyor (§ 08b); buradaki
+> kopya taşınmanın ardında kaldı, kimse onu enum'a karşı okumadı, ve ayrıldı.
+>
+> Ayrılık ölçüldü: burada **27 kod** vardı, enum'da **41**. Fazlası bir yana,
+> **üretilmesi imkânsız bir kod listeliyordu** — `NO_ANONYMOUS_PROFILE`, 09-15
+> denetiminde kaldırılmıştı (gerekçe § 08b) — ve
+> `UNPARSEABLE_JOB_DESCRIPTION`'ın `params.reason`'ı hiç yoktu, ki § 18.1 ile
+> § 18.4'ün sekiz değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı ekrana
+> gönderiyor. § 35.4 okuyucuyu hâlâ buraya yolluyordu: buradan yazılan bir
+> `en.json` hiç görünmeyecek bir cümle yazar, gereken dördünü yazmazdı.
+>
+> **Ders, ve tanıdık olanı:** bir tabloyu üretilen bir dosyaya taşımak, eski
+> kopyayı silmiyor — ve onu gösteren satırı da kendiliğinden düzeltmiyor.
 
 **Adım 1.2'de eklenen dört kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
 adlandırmadığı durumlar: bulunamayan kaynak, `If-Match` uyuşmazlığı (Bölüm 35.6
@@ -382,7 +370,7 @@ Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
 | Süre dolduğunda | `401` + `ANONYMOUS_SESSION_EXPIRED` + `sign_up` resolution'ı. |
 | TTL davranışı (Bölüm 9 "2 saat sonra silinir" diyor) | **TTL kayar: etkinlikte tazelenir.** Mutlak iki saat, inceleme ekranında çalışmakta olan kullanıcıyı keserdi — P8'in önlemek için var olduğu emek kaybı. Kullanıcıya gösterilen metin "son etkinliğinden iki saat sonra" demeli. |
 | CSRF (Bölüm 40.1 adını koyup tanımlamıyor) | Spring Security'nin double-submit varsayılanı: sunucu okunabilir (HttpOnly olmayan) `XSRF-TOKEN` çerezi verir, istemci güvensiz metotlarda (POST/PUT/PATCH/DELETE) `X-XSRF-TOKEN` başlığında yankılar, uyuşmazlıkta `403` + `CSRF_TOKEN_INVALID`. Oturum çerezi zaten `SameSite=Strict` olduğu için asıl vektör kapalı; bu derinlemesine savunmadır, o yüzden kimlikle birlikte gelir, öne çekilmez. |
-| Profil devralma | `POST /api/v1/profile/claim` → `200`, `404 NO_ANONYMOUS_PROFILE`, `409 PROFILE_ALREADY_EXISTS`. 409 yalnız **değiştir veya koru** sunar, **birleştir sunmaz**: birleştirme atom düzeyinde tekilleştirme demek (Bölüm 7, Jaro-Winkler + embedding) ve o Aşama 4 işi. Erken sunmak ya endpoint'i alakasız bir işe bağlar ya da içeriği sessizce çoğaltan bir birleştirme gönderir — P8 ikincisini yasaklar. API, yerine getiremeyeceği bir resolution'ı adlandırmamalı. |
+| Profil devralma | **Böyle bir uç yok, ve olamaz** (düzeltme, denetim 2026-09-16 — § 41.3.3 ve § 08b bunu zaten yazıyor). Devralma girişin *içinde* koşuyor: giriş yeni bir oturum ve yeni bir çerez yazıyor, anonim oturum id'si yalnız o tek istek boyunca okunabiliyor, ve anonim profilin id'si ondan tek yönlü türüyor — sonradan çağrılan bir uç, tarayıcının çoktan attığı bir tanımlayıcıyı isterdi. Sonuç `POST /auth/verify`'ın **`profileUpgrade`** alanında dönüyor, dört değerli: `upgraded`, `none`, `kept_existing`, `unavailable`. `NO_ANONYMOUS_PROFILE` bu yüzden katalogdan kaldırıldı. **Birleştirme hâlâ sunulmuyor** ve gerekçesi değişmedi: atom düzeyinde tekilleştirme (Bölüm 7) ayrı bir iş, ve içeriği sessizce çoğaltan bir birleştirme P8'i çiğner. |
 
 #### D.6.7 — Kapsam dışı bırakılanlar
 

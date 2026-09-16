@@ -112,13 +112,15 @@ void locksAndStructuralConstraintsRespected() {
 > derleyiciye karşı doğrulanıyor: **EK D.8.9**.
 
 ```
-src/test/resources/golden/
-├── profiles/
+src/main/resources/golden/           # test değil main: seeder üretim kodu
+├── profiles/                        # yedi profil
 │   ├── senior_backend_tr.json       # TR, 3 deneyim, 8 proje
 │   ├── junior_frontend_en.json      # zayıf, 2 okul projesi
 │   ├── career_changer.json          # alakasız geçmiş
 │   ├── academic_long.json           # 15 yıl, 20+ yayın
 │   ├── minimal_edge.json            # sınırda: 1 deneyim, 3 beceri
+│   ├── master_cv_en.json            # referans belgenin kendisi
+│   ├── stress_long_career.json      # sayfa garantisini zorlayan
 │   └── *.costs.json                 # önceden ölçülmüş render_costs
 ├── jobs/
 │   ├── backend_go_k8s_en.txt
@@ -143,12 +145,14 @@ src/test/resources/golden/
 > söylüyor) ve `..profile..` için repository paketinin dışına çıkma yasağı
 > eklenmiştir.
 
-> **Boş kural sessizce geçer.** `src/test/resources/archunit.properties`
-> `archRule.failOnEmptyShould=false` taşıyordu, çünkü modül paketlerinde yalnız
-> `package-info.java` varken kurallar "failed to check any classes" ile
-> düşüyordu. Ayar açıkken bir paketi yeniden adlandırmak, o kuralın hiçbir şeyle
-> eşleşmeyip **geçmesine** yol açar. Modüller gerçek sınıf taşımaya başladığında
-> kaldırılır.
+> **Boş kural sessizce geçer, ve o kapı kapandı.**
+> `src/test/resources/archunit.properties` `archRule.failOnEmptyShould=false`
+> taşıyordu, çünkü modül paketlerinde yalnız `package-info.java` varken
+> kurallar "failed to check any classes" ile düşüyordu. Ayar açıkken bir
+> paketi yeniden adlandırmak, o kuralın hiçbir şeyle eşleşmeyip **geçmesine**
+> yol açar — yani muhafız susarak başarı raporlar. Modüller gerçek sınıf
+> taşıdığı için **dosya tamamen kaldırıldı** (doğrulandı: denetim,
+> 2026-09-16).
 
 ```java
 @ArchTest static final ArchRule noCycles = slices()
@@ -169,9 +173,18 @@ src/test/resources/golden/
 @ArchTest static final ArchRule renderersAreDeterministic = noClasses()
     .that().resideInAPackage("..rendering..")
     .should().dependOnClassesThat().resideInAPackage("..llm..");
+
+// Bölüm 10.2, kural 3 — generation hangi formatların olduğunu bilmez.
+@ArchTest static final ArchRule generationDoesNotKnowTheFormats = noClasses()
+    .that().resideInAPackage("..generation..")
+    .and().haveSimpleNameNotEndingWith("ReplayRun")
+    .should().dependOnClassesThat().resideInAnyPackage(
+        "..rendering.latex..", "..rendering.html..", "..rendering.docx..");
 ```
 
-Son kural önemli: **renderer'ın LLM'e bağımlı olması derleme zamanında engelleniyor.**
+Sondan ikinci kural önemli: **renderer'ın LLM'e bağımlı olması derleme
+zamanında engelleniyor.** Sonuncusu 2026-09-16'da eklendi — § 10.2'nin 3.
+kuralı bir aşama boyunca çiğnenmişti ve onu kontrol eden hiçbir şey yoktu.
 
 ### 51.5 Dev endpoint güvenliği
 
@@ -408,17 +421,29 @@ JVM CDS (`-XX:ArchiveClassesAtExit`) ile başlangıç ~%30 düşer.
 ### 52.6 Bütçe dosyası
 
 ```yaml
-# performance-budgets.yaml
-backend:
-  profile_load:     { p50: 80ms,  p95: 200ms }
-  phase_scoring:    { p50: 30ms,  p95: 60ms }
-  phase_selection:  { p50: 15ms,  p95: 40ms }
-  pipeline_total:   { p50: 8s,    p95: 14s }
-frontend:
-  lcp_editor: 2500ms
-  inp: 200ms
-  bundle_initial_kb: 200
+# performance-budgets.yaml  (inen hali)
+backend:                       # degerler 52.1'in 2-3 kati, bilerek
+  phase_scoring:   { p50_ms: 90,  p95_ms: 180 }
+  phase_selection: { p50_ms: 45,  p95_ms: 120 }
+  profile_load:    { p50_ms: 240, p95_ms: 600 }
+queries:
+  profile_load_max: 6          # 52.2'nin N+1 muhafizi
+scaling:
+  max_growth_when_input_doubles: 3.0
 ```
+
+> **İnen dosya yukarıdakinden iki yerde ayrılıyor** (denetim, 2026-09-16).
+> **`pipeline_total` yok:** içinde bir LLM çağrısı ve gerçek bir derleyici
+> olan bir süreyi CI makinesinde ölçmek, havayı ölçmek olurdu — o sayı
+> § 52.1'de bir hedef olarak duruyor, bir kapı olarak değil. **`frontend:`
+> bloğu da yok** ve olmamalı: zorlayan kopya frontend reposundaki
+> `bundle-budget.json` (§ 52.3), ve bütçeyi iki repoda tutmak ikisinin
+> ayrışmasını beklemektir.
+>
+> Karşılığında iki gerçek muhafız var ve ikisi de **süre değil**:
+> `queries.profile_load_max` (§ 52.2'nin N+1'i — makineden bağımsız bir
+> sayı) ve `scaling` (girdi iki katına çıkınca işin kaç katına çıkabileceği;
+> doğrusal iki, kuadratik dört, tavan üç).
 
 Testler bu dosyayı okur. Bütçe değiştirmek bilinçli bir karar olur (PR'da görünür).
 
@@ -434,12 +459,28 @@ CI makineleri değişken hızda olduğu için eşiği **2-3 kat cömert** tut �
 src/main/resources/prompts/
 ├── job_analysis/       { v1.md, v2.md, schema.json }
 ├── profile_extraction/ { v1.md, schema.json }
-├── atom_rewrite/       { v1.md }
-├── about_synthesis/    { v1.md }
-├── cover_letter/       { v1.md }
-├── edit_intent/        { v1.md }
-└── translation/        { v1.md }
+├── bullet_rewrite/     { v1.md, v2.md, schema.json }
+├── about_synthesis/    { v1.md, schema.json }
+├── cover_letter/       { v1.md, v2.md, schema.json }
+├── selection_edit/     { v1.md, schema.json }
+└── translation/        { v1.md, schema.json }
 ```
+
+> **İki prompt farklı adla indi ve spec eski adları taşımaya devam etti**
+> (denetim, 2026-09-16): `atom_rewrite` → **`bullet_rewrite`**, `edit_intent`
+> → **`selection_edit`**. İkisi de § 21.2 ile § 24.2'nin gerçekte yaptığı işin
+> adı — biri *bir maddeyi* yeniden yazıyor (atomun tamamını değil: beceri, dil
+> ve About satırları bu prompt'a hiç gönderilmiyor), öteki *seçimi* düzenliyor
+> (bir niyeti yorumlamıyor, numaralanmış satırlardan numara döndürüyor).
+>
+> Eski adlar altı yerde duruyordu ve ikisi zararsız değildi: § 53.2'nin
+> `prompts.active` bloğu **kopyalanabilir bir yapılandırma**, ve
+> `atom_rewrite` diye bir anahtar hiçbir şeyi yapılandırmıyor;
+> § 14.7'nin `engine_version.promptVersions` örneği ise **kalıcı bir JSONB
+> kolonunun şekli**, yani hiçbir zaman yazılmamış bir anahtarı belgeliyordu —
+> § 48.5'in replay'i ve "hangi prompt koştu" sorusu tam olarak o kolonu
+> okuyor. Her şema dosyasının da yanında `schema.json` var; ağaç onu da
+> yalnız ikisinde gösteriyordu.
 
 **Neden DB değil:** Prompt ile onu tüketen kod (şema, parse mantığı, doğrulayıcı) birlikte değişir. DB'de tutarsan ayrışırlar.
 
@@ -458,9 +499,9 @@ src/main/resources/prompts/
 prompts:
   active:
     job_analysis: v2
-    atom_rewrite: v1
+    bullet_rewrite: v2
   experiments:
-    atom_rewrite: { enabled: true, variant: v2, trafficPct: 10 }
+    bullet_rewrite: { enabled: true, variant: v2, trafficPct: 10 }
 ```
 
 Deploy etmeden geri alma imkânı verir.
@@ -518,7 +559,7 @@ void rewritePreservesFactualContent() {
 ### 53.6 Karşılaştırma raporu
 
 ```
-PROMPT EVAL — atom_rewrite: v1 → v2
+PROMPT EVAL — bullet_rewrite: v1 → v2
 ════════════════════════════════════════════
 Örneklem: 40 atom × 5 ilan = 200 çağrı
 

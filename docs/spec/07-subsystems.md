@@ -21,9 +21,15 @@
 
 **Katman 1 — Font metrik tahmini (derleme yok):**
 
+> **İnen sınıfın adı `RenderCostEstimator`** (`rendering/measurement/`),
+> `FontMetricEstimator` değil — ve aşağıdaki parçacık gibi de çalışmıyor.
+> § 26.5'in notu katmanın **FontBox'sız** yazıldığını kaydediyor; bu yüzden
+> `loadedFonts` diye bir tablo yok, ve tek sözü gerçek derleyiciden **asla az
+> yazmaması**. Parçacık niyeti anlatıyor, imzayı değil (denetim, 2026-09-16).
+
 ```java
 @Component
-public class FontMetricEstimator {
+public class FontMetricEstimator {   // inen adı: RenderCostEstimator
 
     // FontBox (PDFBox içinde) ile TTF/OTF metrikleri
     private final Map<String, FontMetrics> loadedFonts;
@@ -1254,11 +1260,13 @@ embedding'siz çalışmaya düşüyor (§ 28.4), seçim ölçülmemiş için tah
 düşüyor ve bunu söylüyor (§ 20.4). İkisi de tekrar edilebilir ve başarana
 kadar görünmez.
 
-**Açık — `local-fake` için kayıtlı fixture hâlâ yok.** `make record` gerçek
-bir anahtar ve gerçek bir CV istiyor; fixture anahtarı istek metninin
-özetinden türediği için elle yazılan bir fixture yalnız tek bir girdide
-ateşlenir, yani uydurulamaz. Yerelde çıkan profil şema şeklinde ve anlamsız —
-**ucun sözleşmesi doğru, içeriği değil.**
+**Kapandı — `local-fake` için fixture kaydedildi** (denetim, 2026-09-16).
+Bu madde bir aşama boyunca "hâlâ yok" dedi; `src/test/resources/fixtures/llm/`
+bugün yedi prompt'un fixture'larını taşıyor ve `profile_extraction` onların
+on ikisine sahip. `make record` hâlâ gerçek bir anahtar ve gerçek bir CV
+istiyor — fixture anahtarı istek metninin özetinden türediği için elle
+yazılan bir fixture yalnız tek bir girdide ateşlenir, yani **uydurulamaz**;
+kaydedilmesi gerekiyordu ve kaydedildi.
 
 #### 31.6.3 Kararlar (Adım 3.6, dilim 5 — anonim yükleme)
 

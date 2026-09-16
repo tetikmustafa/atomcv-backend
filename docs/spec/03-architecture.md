@@ -93,11 +93,15 @@ src/main/java/com/mustafatetik/atomcv/
 │   ├── normalization/           #   Beceri, tarih, run dönüşümü
 │   └── github/                  #   GitHub entegrasyonu
 ├── generation/                  # Üretim hattı
-│   ├── pipeline/                #   Orkestratör, PipelineContext, ErrorPresenter
-│   ├── phases/                  #   A, B, C, D, F, G
-│   ├── scoring/                 #   Skorlama algoritması
-│   ├── selection/               #   Bin-packing optimizasyon
-│   └── validation/              #   Yeniden yazım doğrulayıcıları
+│   ├── pipeline/                #   GenerationPipeline, ErrorPresenter
+│   │                            #   (PipelineContext yok — § 17.1)
+│   ├── phases/                  #   analysis (A), edit (G)
+│   ├── scoring/                 #   Faz B — skorlama algoritması
+│   ├── selection/               #   Faz C — bin-packing optimizasyon
+│   ├── rewrite/                 #   Faz D — yeniden yazım + doğrulayıcılar
+│   ├── render/                  #   Faz E — RenderRequest kurulumu
+│   ├── coverletter/             #   Bölüm 34
+│   └── validation/              #   FitReport, AtsCheck (Faz F)
 ├── rendering/                   # Render katmanı
 │   ├── model/                   #   RenderRequest, RenderableSection
 │   ├── latex/                   #   LatexRenderer, InlineRenderer, escape
@@ -118,6 +122,8 @@ src/main/java/com/mustafatetik/atomcv/
 │   └── sse/                     #   İlerleme bildirimi
 ├── tracking/                    # Başvuru takibi
 ├── billing/                     # Kota, maliyet, anomali
+├── email/                       # Gönderici, şablonlar, webhook (§ 57.7)
+├── retention/                   # Saklama süpürmeleri (§ 57.4)
 └── shared/                      # Ortak
     ├── security/                #   User-scoped repository base, CSRF
     ├── error/                   #   Result, PipelineError, ErrorCode, Resolution

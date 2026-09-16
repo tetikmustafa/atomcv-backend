@@ -543,6 +543,22 @@ boolean hasAbnormalFieldLength(JobAnalysis a) {
 > yazan bir kullanıcıyı reddetmek, güvenlik denetimini yanlış bir şey yapmamış
 > insanlara dayatılan bir yazım kuralına çevirirdi. CV, sistemde bir saldırganın
 > uçtan uca kontrol ettiği **tek** belge, o yüzden üç katman da orada.
+>
+> **Ekleme — dördüncü bir tavan var ve kaydı yalnız javadoc'taydı**
+> (denetim, 2026-09-16): **About paragrafı için 1500 karakter**
+> (`MAX_ABOUT_TEXT`), atom metninin 600'ü yerine.
+>
+> Bedeli ölçülerek öğrenildi ve cümlesi buraya ait: **84 atomu temiz
+> çıkarılmış dört sayfalık bir CV, özeti 607 karakter olduğu için bütünüyle
+> çöpe gitti** — tavanın yedi karakter üstünde. O profilin en uzun dört alanı
+> 607, 541, 519 ve 506'ydı ve **dördü de About**; yani bu bir tuhaflık değil,
+> gerçek yazıya sistematik olarak değen bir sınırdı.
+>
+> **Gerekçe § 21.2'nin gerekçesiyle aynı:** bir paragraf bir madde değil.
+> 600, "bir insanın tek maddede yazdığı" üzerine kurulmuş bir sayı ve bir
+> özete taşınmıyor. 1500 yaklaşık 250 kelime, yani yirmi basılı satır — ve
+> testin aslını koruyor: **bir CV alanı olamayacak** bir değeri hâlâ
+> reddediyor.
 
 ### 43.2 Kullanıcı mesajı
 

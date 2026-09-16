@@ -510,7 +510,7 @@ private String preamble(TemplateCustomization c) {
         %s
         """.formatted(
             c.fontSizePt(),
-            FontRegistry.resolve(c.fontFamily()),   // enum → whitelist
+            c.fontFamily().latexName(),   // enum'un kendisi whitelist (EK D.6)
             c.marginInches(),
             c.lineSpacing(),
             c.accentColor().hex(),                  // regex doğrulanmış
@@ -817,11 +817,22 @@ Kütüphaneye (Vavr) gerek yok — dilin kendisi yeterli.
 
 ### 25.2 Hata hiyerarşisi
 
-> **Not (Aşama 1).** `PipelineError` yalnız hattın bugün üretebildiği dört
-> durumu taşıyor: `InsufficientProfile`, `ConflictingPreferences`,
-> `PageLimitExceeded`, `CompilationFailed`. Gerisi kendi fazlarıyla gelecek —
+> **Not (Aşama 1).** `PipelineError` o gün yalnız hattın üretebildiği dört
+> durumu taşıyordu: `InsufficientProfile`, `ConflictingPreferences`,
+> `PageLimitExceeded`, `CompilationFailed`. Gerisi kendi fazlarıyla gelecekti —
 > erken eklemek `params` alanlarını tahmin etmek olurdu, ve frontend'in
 > mesajlarının ihtiyacı tam olarak o alanlar (EK D.8.6, D.8.8).
+>
+> **Bugün on beş durum var, ve aşağıdaki listenin ikisi hiç gelmedi**
+> (denetim, 2026-09-16). `RewriteValidationFailed` ile `EmbeddingUnavailable`
+> **bilerek yok**: § 21.6.1 yeniden yazım katmanının çağırana
+> bildirebileceği bir başarısızlık olmadığını kaydediyor (reddedilen bir
+> yeniden yazım kişinin kendi cümlesini bastırıyor), ve ölçülemeyen benzerlik
+> kontrolü atlanıyor — yani ikisi de bir hata değil, bir geri çekilme. Kalan
+> on üçünün tamamı `JobRetryPolicy`'nin exhaustive switch'inde.
+>
+> **Kanonik liste artık burası değil**, `ErrorCode` enum'undan üretilen
+> `error-catalogue.md`.
 
 ```java
 public sealed interface PipelineError {
