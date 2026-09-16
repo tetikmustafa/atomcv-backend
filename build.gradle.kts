@@ -304,7 +304,7 @@ tasks.register<Test>("integrationTest") {
     // The LaTeX image is a couple of gigabytes and takes minutes to build.
     // Paying that on every run would push the suite from half a minute to
     // several, and the thing it guards changes rarely.
-    useJUnitPlatform { excludeTags("latex", "llm-eval") }
+    useJUnitPlatform { excludeTags("latex", "llm-eval", "embedding") }
     // Lets `-Dopenapi.record=true` reach the test JVM, which is how
     // openapi.json is rewritten after an endpoint changes.
     systemProperty("openapi.record", System.getProperty("openapi.record", "false"))
@@ -332,6 +332,19 @@ tasks.register<Test>("llmEval") {
     timeout.set(Duration.ofMinutes(30))
     // The suite prints its table through the report renderer, and a person
     // reading it is the point of running it at all.
+    testLogging { showStandardStreams = true }
+}
+
+tasks.register<Test>("embeddingTest") {
+    group = "verification"
+    description = "Measures relevance scores against the real embedding service. "
+        .plus("Needs `docker compose --profile full up -d embeddings`.")
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform { includeTags("embedding") }
+    timeout.set(Duration.ofMinutes(10))
+    // The lane exists to be read: it prints a table of components per atom,
+    // and a measurement nobody sees is a test that asserts nothing.
     testLogging { showStandardStreams = true }
 }
 
