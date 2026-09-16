@@ -280,6 +280,7 @@ Hepsi bugün **yapılamıyor**, ve hepsi bir dağıtım bekliyor. Sıra önemli:
 | 8 | **Analitik + huni ölçümü** | § 55 Aşama 4 · frontend'in "ölçümü alacak bir dağıtım istiyor" dediği şey | `--profile analytics` ile `umami`'yi kaldır |
 | 9 | **`NEXT_PUBLIC_SITE_URL`** | Frontend SEO'su — `robots.txt`, `sitemap.xml`, canonical | **Frontend reposunda** ayarlanır |
 | 10 | **Fiyat tablosu / anomali alarmı** | EK C.1 | Açılışta `LlmPricingAudit` sessiz mi, `llm.unpriced_calls` artmıyor mu; anomali e-postası geliyor mu |
+| 11 | **`ADAPT` barajının gözden geçirilmesi** | § 21.2 · kapandı ama **tetikleyicisi burada**: karar tek analiz edilmiş ilana dayanıyor ve gerçek üretimler onu değiştirebilir | İlk birkaç yüz üretimden sonra `generations`'daki kanıt dağılımına bak: `ADAPT` hiç ateşlenmiyorsa baraj yüksek, her maddede ateşleniyorsa düşük. Tam 4'te hiçbir şey yok, yani bir sonraki değer **3** ve kümeyi altı katına çıkarır |
 
 ---
 

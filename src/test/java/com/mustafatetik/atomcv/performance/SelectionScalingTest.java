@@ -110,6 +110,20 @@ class SelectionScalingTest {
      * <p><strong>Widening the ceiling was the other option and it is still the
      * wrong one</strong> — the ceiling is what separates linear work from
      * quadratic, and there is no room to give away between 2 and 4.
+     *
+     * <p><strong>The third fault, and it was the test again</strong> (denetim,
+     * beşinci tur). The minimum is taken from {@code i = 2}, skipping the
+     * first doubling, because that is where the fixed cost of a call lives:
+     * at the smallest size it is a real share of the measurement and it
+     * deflates the ratio. Since the minimum is what the assertion reads, the
+     * whole guard was being decided by its least trustworthy sample.
+     *
+     * <p>Measured here on 2026-09-16, with the first doubling excluded:
+     * <strong>2.02 linear, 3.63 with a planted {@code n²/25} loop</strong>,
+     * against a ceiling of 3.0. Both sides clear it by half. With the first
+     * doubling included the same planted fault read 3.76 here but only
+     * <strong>2.94</strong> in the sibling — which passed, and is what sent
+     * somebody looking.
      */
     private static double smallestGrowthAcrossTheCurve() {
         var requests = new ArrayList<SelectionRequest>();
@@ -130,8 +144,9 @@ class SelectionScalingTest {
             }
         }
 
+        // From 2, not 1: the first doubling is where the fixed cost lives.
         double smallest = Double.MAX_VALUE;
-        for (int i = 1; i < CURVE.length; i++) {
+        for (int i = 2; i < CURVE.length; i++) {
             smallest = Math.min(smallest,
                     (double) fastest[i] / Math.max(1, fastest[i - 1]));
         }

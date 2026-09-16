@@ -49,5 +49,21 @@ queries:
 # What a doubling of the input is allowed to cost. Linear work doubles;
 # anything quadratic is four times, so a ceiling between the two catches the
 # loop without caring about the machine.
+#
+# 3.0 was questioned and kept, with measurements (2026-09-16). A planted
+# quadratic loop had read 2.94 in the scoring test -- under the ceiling, so
+# the guard passed the fault it exists to catch -- and the question was
+# whether to lower this number. It was the wrong question: the same plant
+# read 3.76 in the selection test, and the difference was the measurement,
+# not the threshold. Both tests now start their curve past the fixed cost of
+# a call and take the minimum from the second doubling rather than the first.
+#
+#            linear      planted quadratic
+#   scoring    1.94            3.86
+#   selection  2.02            3.63
+#
+# Half the range on either side of 3.0, on both. Lowering it to 2.5 would
+# have put selection's own linear figure within twenty percent of a failure,
+# which is how a guard starts failing for the weather and stops being read.
 scaling:
   max_growth_when_input_doubles: 3.0

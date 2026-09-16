@@ -47,11 +47,9 @@
 
 ## Açık kararlar
 
-| Soru | Bekleyen taraf |
-|---|---|
-| Faz D'nin `ADAPT` barajı (4 terim) | **veri** · golden sette hiçbir madde geçmiyor; gerçek üretim biriktiğinde |
+**Açık karar yok** (2026-09-16). Son ikisi de ölçümle kapandı: **`ADAPT` barajı 4'te kaldı** — 7 profil 218 atoma karşı dağılım `{0→206, 1→4, 2→2, 3→5, 5→1}`, yani baraj *ulaşılabilir* (0.65'in aritmetik kapalılığı yok) ve tam 4'te hiçbir şey olmadığı için 3'e inmek kümeyi 1'den 6'ya çıkarırdı; tek analiz edilmiş ilanla ayar yapılmadı, muhafızı `AdaptBarReachTest`, kayıt § 21.2. **Ölçek tavanı 3.0'da kaldı** — bozuk olan tahmin ediciydi, düzeltildikten sonra doğrusal 1.94/2.02'ye karşı ekili karesel 3.86/3.63 (`performance-budgets.yaml`). Ayrıca **VPS'in beş kararı** verildi ve **doküman çevirisi kapsam dışı** bırakıldı: `docs/vps-dagitim-plani.md` § 0.
 
-_Kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; anonim çalışma **profiliyle üretimleriyle** taşınıyor (hesabın profili varsa `kept_existing`, ikisi de sönüyor)._
+_Daha önce kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; anonim çalışma **profiliyle üretimleriyle** taşınıyor (hesabın profili varsa `kept_existing`, ikisi de sönüyor)._
 
 ## Sonraki senkronizasyon noktası
 

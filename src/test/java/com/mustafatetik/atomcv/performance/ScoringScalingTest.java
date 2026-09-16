@@ -35,20 +35,30 @@ import org.junit.jupiter.api.Test;
  * embedding call that fetches them is a network round trip and is not part of
  * what this measures.
  *
- * <p><strong>Measured on this machine, 2026-09-16:</strong> 3 ms for four
- * hundred atoms against a budget of 180, and a growth of 1.34. Below two
- * because the smallest doubling is the one where per-call overhead still
- * counts, and the minimum is deliberately the conservative end of the curve.
+ * <p><strong>This class read 1.34 when it was written and a planted
+ * quadratic loop read 2.94 — under the ceiling, so the guard passed a fault
+ * it was built to catch.</strong> The ceiling was not the problem. Two things
+ * about the measurement were, and both are fixed here:
  *
- * <p><strong>What a planted fault reads, and the part worth knowing:</strong>
- * wrapping the call in a loop that makes the work n²/25 moved the growth from
- * 1.34 to <strong>2.94</strong> — a large, unmistakable signal, and still
- * under the ceiling of 3.0. So this guard catches quadratic work by the size
- * of the jump rather than by the threshold being crossed, and a mildly
- * quadratic change could sit just under it. Raising the ceiling's sensitivity
- * is a budget decision and belongs in a pull request that says so, not in a
- * number quietly edited next to the test it governs; the same is true of the
- * sibling, whose method this is.
+ * <ol>
+ * <li><strong>The curve started too small.</strong> Building a
+ * {@code PostingTarget} is fixed work every call pays whatever the profile
+ * size, and at a hundred atoms it was a real share of the measurement — which
+ * deflates a ratio. The curve now starts at four hundred, and the same code
+ * that read 1.34 reads <strong>1.97</strong>.</li>
+ * <li><strong>The minimum came from the worst sample.</strong> It is taken
+ * from {@code i = 2} now, skipping the first doubling, for the reason above:
+ * the assertion reads the minimum, so the whole guard was being decided by
+ * the one ratio fixed cost had most distorted. The sibling had the same
+ * bug and the same fix.</li>
+ * </ol>
+ *
+ * <p><strong>Measured after both, 2026-09-16:</strong> 3 ms for four hundred
+ * atoms against a budget of 180; growth <strong>1.94 linear</strong> and
+ * <strong>3.86 with a planted {@code n²/400} loop</strong>, against a ceiling
+ * of 3.0. The sibling reads 2.02 and 3.63. Half the range on either side, on
+ * both tests — so 3.0 stands, and it was never the number that needed
+ * changing.
  */
 class ScoringScalingTest {
 
@@ -104,7 +114,7 @@ class ScoringScalingTest {
                 .isGreaterThan(ranked.get(ranked.size() - 1).score());
     }
 
-    private static final int[] CURVE = {100, 200, 400, 800, 1600};
+    private static final int[] CURVE = {400, 800, 1600, 3200, 6400};
 
     /**
      * The smallest growth across the curve, every size timed in one rotation.
@@ -136,8 +146,9 @@ class ScoringScalingTest {
             }
         }
 
+        // From 2, not 1: the first doubling is where the fixed cost lives.
         double smallest = Double.MAX_VALUE;
-        for (int i = 1; i < CURVE.length; i++) {
+        for (int i = 2; i < CURVE.length; i++) {
             smallest = Math.min(smallest,
                     (double) fastest[i] / Math.max(1, fastest[i - 1]));
         }
