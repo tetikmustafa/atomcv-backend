@@ -348,13 +348,43 @@ DocumentRenderer    → preamble + bloklar + customization
 
 ### 22.2 Arayüzler
 
+> **Düzeltme (2026-09-16) — burada iki arayüz var, ve biri uzun süre
+> ötekinin işini yaptığını iddia etti.** Yukarıdaki `formatId()` ve
+> `supportedTemplates()` **kaldırıldı**: javadoc'ları `latex`, `html`, `docx`
+> diyordu, üç format ilan eden tek bir implementasyon vardı, ve **repoda
+> ikisinin de tek bir çağıranı yoktu.** İlan edilen soyutlama hiçbir yerde
+> yaşamıyordu — `generation` öteki iki formata somut sınıflarıyla uzanıyordu,
+> ki § 10.2'nin 3. kuralının ve § 1.2'nin dördüncü iddiasının yasakladığı şey
+> tam olarak o.
+>
+> **Format soyutlaması `DocumentWriter`'a taşındı** (`OutputFormat format()`,
+> `Result<byte[]> bytesFor(RenderRequest)`) ve dördü de — PDF, DOCX, HTML,
+> kaynak — onu gerçekten karşılıyor. `DocumentWriters` § 6'nın adını verip
+> yazılmamış olan Factory'si; açılışta her formatın bir yazıcısı olduğunu
+> doğruluyor. İndirme yolu artık bir ad çözüp bayt alıyor.
+>
+> **`DocumentRenderer` genişletilmedi, daraltıldı.** Bir derleyiciye kaynak
+> veriyor ve **ölçülmüş** bir kapasite taşıyor, çünkü bir LaTeX sayfası seçim
+> ona söz vermeden önce ölçülmek zorunda. HTML'in sayfası yok, DOCX'i POI'nin
+> kendisi yazıyor ve kimse ölçmüyor — üçünü bu sözleşmenin arkasına almak, iki
+> implementasyona cevaplayamayacakları soruları sordurmak olurdu.
+> `DocxDocumentWriter`'ın javadoc'u bunu zaten yazmıştı ve haklıydı.
+>
+> `capacity` ayrıca **`Optional<CapacityModel>`** döndürüyor: kimsenin
+> kalibre etmediği bir özelleştirme için tahmin edilmiş bir kapasite, sayfa
+> garantisini sessizce bozar.
+
 ```java
 public interface DocumentRenderer {
-    String formatId();
-    Set<String> supportedTemplates();
     RenderedSource renderFinal(RenderRequest req);
     RenderedSource renderMeasurement(MeasurementRequest req);
-    CapacityModel capacity(TemplateCustomization c);
+    Optional<CapacityModel> capacity(TemplateCustomization c);
+}
+
+// Indirilebilir her format, ve yalnizca bir indirmenin sordugu iki soru.
+public interface DocumentWriter {
+    OutputFormat format();                          // PDF | DOCX | HTML | SOURCE
+    Result<byte[]> bytesFor(RenderRequest req);     // yalniz PDF hata dondurebilir
 }
 
 public record RenderRequest(

@@ -411,6 +411,31 @@ public record ContentShape(
 
 `{ charCount: 187, runCount: 5, hasSpecialLatex: true, renderCostPt: 41.2 }` — içeriği bilmeden "bu atom anormal uzun ve özel karakter içeriyor" teşhisi mümkün.
 
+> **Bu bölüm bir kaydı tanımlıyordu ve kayıt yoktu** (denetim, 2026-09-16).
+> On alanın hiçbiri hiçbir yerde yazılı değildi; buna rağmen EK A onu
+> sözlükte listeliyor, § XI-B.9 "içerik yerine `ContentShape` logla" diyor,
+> `CLAUDE.md`'nin mutlak kural 4'ü adını veriyor, ve **`noContentInLogs`
+> muhafızının kendi javadoc'u** okuyanı ona yönlendiriyordu — yani kuralı
+> çiğnemek üzere olan geliştirici, import edemeyeceği bir tipe gönderiliyordu.
+>
+> Fiilen olan şey aynı kuralın kaçış şıkkıydı ("*or a stage's own*"), ve
+> `ExtractedText.shape()` o davayı iyi savunuyor: onun alanları bir
+> **dosyanın**, buradakiler bir **atomun**, ve paylaşılan bir kayıt iki
+> çağıranda da yarı yarıya sıfır olurdu. İtiraz geçerli ve kaydın javadoc'unda
+> cevaplanıyor — çıkarım aşaması hakkında, atomlar hakkında değil.
+>
+> **`profile.domain.content.ContentShape` olarak indi, ve bağlı olarak indi**
+> — çağıranı olmayan bir kayıt aynı boşluğun başka bir şeklidir. Üç yer:
+> reddedilen bir yeniden yazım (`TOO_LONG`, 190 tavanına karşı, orijinal 186
+> karakterken bir şey söyler, 60 karakterken başka bir şey), derleyicinin
+> ölçüm döndürmediği bir sözcükleme (sessizdi; ters eğik çizgi ya da ASCII
+> dışı karakter ilk şüphelidir), ve ölçülmüş bir sözcüklemenin yüksekliğinin
+> yanındaki şekli (`debug`).
+>
+> `renderCostPt` **0 iken "ölçüm yok" demektir** ve satırdan düşer;
+> `properNounCount` atomun altındaki bir çağıran için 0'dır. İkisi de kaydın
+> javadoc'unda yazılı.
+
 ### 48.3 İzlenecek metrikler
 
 | Kategori | Metrik |
