@@ -291,6 +291,17 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("docs/spec/04-data-model.md"))
         .withPropertyName("dataModelChapter")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And for the sixth time. PromptEvalCoverageTest reads both of these
+    // directories as directories -- the prompt ids it checks are folder names,
+    // and a new folder changes nothing on any classpath. A prompt added while
+    // this task stayed UP-TO-DATE is precisely the unscored prompt that test
+    // exists to refuse.
+    inputs.dir(rootProject.file("src/main/resources/prompts"))
+        .withPropertyName("promptFiles")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(rootProject.file("src/integrationTest/java/com/mustafatetik/atomcv/llm/eval"))
+        .withPropertyName("evalSuites")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Deliberately not wired into `check`: integration tests need Docker, and
