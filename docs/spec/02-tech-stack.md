@@ -158,7 +158,7 @@ Model adları **env değişkeni**dir, koda gömülmez — model isimlendirmeleri
 | **Ports & Adapters (Hexagonal)** | Tüm dış servisler, anonim/kalıcı store | Dış servisler arayüz arkasında; testte mock'lanabilir; anonim mod pipeline'a dokunmadan çalışır |
 | **Repository (user-scoped)** | Tüm veri erişimi | IDOR'u **yapısal olarak** engeller — kritik güvenlik kararı |
 | **Pipeline / Chain of Responsibility** | Faz A→G | Her faz bağımsız, test edilebilir, sıra konfigüre edilebilir |
-| **Factory** | Renderer seçimi | Şablon adı → renderer örneği |
+| **Factory** | Yazıcı seçimi (`DocumentWriters`) | Format adı → `DocumentWriter`. **Satır "şablon adı → renderer örneği" diyordu ve öyle bir şey hiç yazılmadı** (denetim, 2026-09-16): şablonu `TemplateRegistry` çözüyor, seçilecek renderer ise tekti. Gerçekten eksik olan fabrika formatınkiydi, ve yokluğunda listeyi `generation` tutuyordu (§ 10.2, kural 3) |
 | **Result / Either** | Pipeline hata yönetimi | Exception yerine tipli hata; "kullanıcıya ne söyleyeceğiz" kararı akışta kalır |
 | **Value Object** | Atom, Score, RenderCost, ProfileRef | Primitive obsession'dan kaçınma; `ProfileRef` tipi yanlış store'a gitmeyi derleme zamanında yakalar |
 | **Specification** | Skorlama kriterleri | Kriterler kompozit olarak birleştirilebilir |

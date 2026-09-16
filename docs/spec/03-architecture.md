@@ -129,8 +129,27 @@ src/main/java/com/mustafatetik/atomcv/
 
 1. **Modüller yalnızca public arayüzler üzerinden haberleşir.** İç sınıflar package-private.
 2. **Döngüsel bağımlılık yasak.** ArchUnit ile denetlenir.
-3. **`generation` modülü `rendering`'i yalnızca `CapacityModel` üzerinden tanır** — hangi formatların desteklendiğini bilmez.
+3. **`generation` modülü `rendering`'i yalnızca `CapacityModel` üzerinden tanır** — hangi formatların desteklendiğini bilmez. **ArchUnit ile denetlenir** (`generationDoesNotKnowTheFormats`).
 4. **`shared` hiçbir iş modülüne bağımlı olamaz.**
+
+> **Kural 3 bir aşama boyunca çiğnendi, ve kimse kontrol etmiyordu**
+> (denetim, 2026-09-16). `GenerationDownloadService` `DocxDocumentWriter` ve
+> `HtmlDocumentWriter`'ı alan olarak tutuyordu, üstündeki controller format
+> adlarını dört dallı bir dizge karşılaştırmasıyla çözüyordu: ürünün çıktı
+> formatlarının listesi, onu tutmaya en az hakkı olan iki yerde yazılıydı, ve
+> dördüncü bir format eklemek `generation`'ı düzenlemek demekti — § 1.2'nin
+> "bağımsız eklentiler" iddiasının tam tersi.
+>
+> Çözüm § 22.2'de: format soyutlaması `DocumentWriter`'a taşındı,
+> `DocumentWriters` § 6'nın Factory'si oldu. **Sınır artık somut format
+> paketleri**; `..rendering..`'in kökü açık kalmak zorunda, çünkü boru hattı
+> `DocumentRenderer`'ı sürüyor ve bir indirme `DocumentWriter` çözüyor —
+> ikisi de hiçbir format adı anmıyor.
+>
+> **Tek istisna `ReplayRun`**, ve gerekçesi javadoc'unda: § 48.5'in
+> çevrimdışı aracı, Spring bağlamı olmayan bir `main`, ve Faz E tanımı gereği
+> LaTeX. Orada renderer'ı adlandırmak formatlar arasından seçmek değil,
+> replay edilen şeyi adlandırmak.
 
 ```java
 @ArchTest
