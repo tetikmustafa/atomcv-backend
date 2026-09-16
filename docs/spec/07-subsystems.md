@@ -1663,7 +1663,38 @@ bölümün sahip olduğu bir şekil değil.
 | **Modern** | Hafif renkli başlıklar, teknoloji sektörü | ~50 satır/sayfa |
 | **Kompakt** | Yüksek yoğunluk, çok deneyimli profiller | ~64 satır/sayfa |
 
-Her şablonun kapasitesi **bir kez ölçülür**, config'de saklanır.
+Tablodaki sayılar **katalog içindir** — bir seçim ekranında "bu şablon ne
+tutar" sorusuna verilen yaklaşık cevap. Sayfa garantisi onlarla çalışmıyor.
+
+> **"Config'de saklanır" Katman B'den beri doğru değil** (düzeltme, denetim
+> 2026-09-16). Kapasite şablona değil **özelleştirmeye** ait: punto kaydıran
+> bir kişi kimsenin derlemediği bir geometri soruyor ve cevabı bir LaTeX
+> koşusu üretiyor. Cevap `template_capacities`'e yazılıyor (§ 13.2), anahtarı
+> geometrinin kendisi.
+>
+> **`Capacities` üç kaynağı bu sırayla soruyor, ve sıra tasarımın kendisi:**
+>
+> 1. **`TemplateRegistry`'nin gömülü sabitleri** — klasik ve kompakt, kendi
+>    ayarlarında. Anlattıkları preamble'ın yanında duruyorlar, kalibrasyon
+>    testleri her koşuda yeniden türetiyor, ve değiştiklerinde bir insan
+>    bakıyor. Bir veritabanı satırı bunların hiçbiri değil, o yüzden ikisi aynı
+>    anahtar için değer taşıyorsa **sabit kazanıyor**: sapmış bir ölçüm —
+>    başka bir TeX Live, yarım kalmış bir kalibrasyon — test hattının kontrol
+>    ettiği bir sayının yerine sessizce geçemiyor.
+> 2. **Ölçülmüş satır**, ve yalnız **eksiksizse**. Model bir mobilya parçası
+>    kazandıktan önce ölçülmüş bir satırda o parça yok; sıfır saymak sayfayı
+>    sessizce taşırır, o yüzden hiç ölçülmemiş sayılıyor.
+> 3. **Tahmin** (`CapacityEstimator`), ve yalnız `resolve` çağrısında. Boş
+>    "kimse ölçmedi" demektir ve sıfır kapasite değildir — ama az önce kaydırıcıyı
+>    oynatmış bir kişi bekliyorken doğru cevap spinner değil, **sayfanın daha
+>    azını harcayan** bir CV: tahmin `estimated` bayrağıyla taşınıyor, trace'e
+>    öyle yazılıyor ve aynı anda bir ölçüm işi tetikleniyor, yani bir sonraki
+>    koşu tam oluyor. Kendi ölçülmüş varsayılanı olmayan bir şablonda tahmin de
+>    yok: hiçlikten tahmin etmek olurdu, ve üretim orada duruyor.
+>
+> Faz C'nin **atom** maliyeti için kullandığı tahmin (§ 26.4,
+> `trace.C.estimatedAtoms`) bundan ayrı bir şey — biri bir satırın yüksekliğini
+> bilmiyor, bu ise sayfanın ne tuttuğunu.
 
 ---
 
