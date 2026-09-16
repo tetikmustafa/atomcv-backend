@@ -186,7 +186,7 @@ kontrolü koyar.
 > **üretilmesi imkânsız bir kod listeliyordu** — `NO_ANONYMOUS_PROFILE`, 09-15
 > denetiminde kaldırılmıştı (gerekçe § 08b) — ve
 > `UNPARSEABLE_JOB_DESCRIPTION`'ın `params.reason`'ı hiç yoktu, ki § 18.1 ile
-> § 18.4'ün sekiz değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı ekrana
+> § 18.4'ün yedi değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı ekrana
 > gönderiyor. § 35.4 okuyucuyu hâlâ buraya yolluyordu: buradan yazılan bir
 > `en.json` hiç görünmeyecek bir cümle yazar, gereken dördünü yazmazdı.
 >

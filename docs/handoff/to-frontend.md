@@ -190,8 +190,10 @@ katalog `ErrorCode`'dan üretilen `error-catalogue.md`'ye taşındığında geri
 kaldı. Ölçüldü: **27 koda karşı enum'da 41**, ve iki somut yanlış —
 `NO_ANONYMOUS_PROFILE` **hiçbir şeyin üretemediği** bir kod (09-15 denetiminde
 kaldırıldı), ve `UNPARSEABLE_JOB_DESCRIPTION`'da **`params.reason` yok**, ki
-§ 18.1 ile § 18.4'ün sekiz değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı
+§ 18.1 ile § 18.4'ün **yedi** değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı
 ekrana gönderiyor (metni düzelt / tam ilanı yapıştır / genel CV / tekrar dene).
+Yedi, sekiz değil: `no_responsibilities` `B-072`'de sizden de kalkmıştı,
+spec bunu 2026-09-16'ya kadar sekiz saymaya devam etti — sizde aksiyon yok.
 
 Tablo kaldırıldı, § 35.4'ün işaretçisi `error-catalogue.md`'yi gösteriyor.
 Backend tarafında kod değişmedi — **kodlar hep 41'di**, yanlış olan tabloydu.
