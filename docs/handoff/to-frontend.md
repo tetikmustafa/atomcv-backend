@@ -18,8 +18,8 @@ olarak kaydedildi. **Önce `npm run gen:api` koş** — ilk turda altı uç ve �
 şema, ikinci turda `SelectionLine` değişti (`B-108`).
 
 > **Dosya 100 satırı geçti ve bu bir arşivleme değil koordinasyon meselesi**
-> (kanal kuralı): `B-100`-`B-110`'un hiçbiri `ACK` almadı, yani taşınabilecek
-> madde yok. On biri de denetimlerden; okunup ACK'lendiklerinde hepsi birden
+> (kanal kuralı): `B-100`-`B-111`'in hiçbiri `ACK` almadı, yani taşınabilecek
+> madde yok. On ikisi de denetimlerden; okunup ACK'lendiklerinde hepsi birden
 > `resolved/`'a iner.
 
 ### B-100 · CSP Turnstile'ı blokluyordu, düzeldi
@@ -180,6 +180,34 @@ karşılaştırmıyordu**.
 3. İstemezseniz de olur — `openapi.json` tipleri zaten tutuyor. Bu yalnız
    `params` adlarını ve ICU tiplerini kapsardı, ki `openapi.json` onları
    taşımıyor.
+
+
+### B-111 · `en.json`/`tr.json` yanlış tablodan yazılmış olabilir
+**Since:** denetim 2026-09-16 · `docs/spec/08-api.md` § 35.4, `18-appendix-d.md` EK D.6.1
+**Neden:** § 35.4 size **"tam katalog EK D.6.1'de: 27 kod… `en.json` ve
+`tr.json` artık buradan yazılabilir"** diyordu. O tablo elle yazılmıştı ve
+katalog `ErrorCode`'dan üretilen `error-catalogue.md`'ye taşındığında geride
+kaldı. Ölçüldü: **27 koda karşı enum'da 41**, ve iki somut yanlış —
+`NO_ANONYMOUS_PROFILE` **hiçbir şeyin üretemediği** bir kod (09-15 denetiminde
+kaldırıldı), ve `UNPARSEABLE_JOB_DESCRIPTION`'da **`params.reason` yok**, ki
+§ 18.1 ile § 18.4'ün sekiz değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı
+ekrana gönderiyor (metni düzelt / tam ilanı yapıştır / genel CV / tekrar dene).
+
+Tablo kaldırıldı, § 35.4'ün işaretçisi `error-catalogue.md`'yi gösteriyor.
+Backend tarafında kod değişmedi — **kodlar hep 41'di**, yanlış olan tabloydu.
+
+**Aksiyon:** çeviri dosyalarınızı `error-catalogue.md`'ye karşı okuyun.
+Muhtemel bulgular: **on beş kod için mesaj yok** (`AUTHENTICATION_REQUIRED`,
+`RATE_LIMITED`, `MAGIC_LINK_INVALID`, `OAUTH_FAILED`, `EDIT_NOT_UNDERSTOOD`,
+`COVER_LETTER_REJECTED`, `GENERATION_SUPERSEDED`, `GENERATION_PAUSED`,
+`CHALLENGE_FAILED`, `TRANSLATION_FAILED`, `UNSUPPORTED_DOCUMENT`,
+`DOCUMENT_TOO_LARGE`, `UNSUPPORTED_MEDIA_TYPE`, `METHOD_NOT_ALLOWED`,
+`NOT_ACCEPTABLE`) ve **bir mesaj hiç görünmeyecek** (`NO_ANONYMOUS_PROFILE` —
+silin). Bunların bir kısmı zaten yazılmış olabilir; madde "eksik" demiyor,
+**"kaynağınız yanlıştı, kontrol edin"** diyor.
+
+Bu `B-110`'un ta kendisi değil ama onunla aynı zinciri kapatıyor: `B-110`
+testi bağlamayı öneriyor, bu madde **bugünkü** dosyaların durumunu soruyor.
 
 ---
 

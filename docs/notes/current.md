@@ -10,70 +10,72 @@ aşağıda.
 
 ---
 
-## Denetim — ikinci tur, spec'in tamamı koda karşı (2026-09-16)
+## Denetim — üçüncü tur, spec'in tamamı koda karşı (2026-09-16)
 
-Birincisi (2026-09-15) `archive/denetim-2026-09-15.md`'de. Bu tur aynı işi
-**bağımsız olarak** tekrarladı ve **sekiz madde buldu** — altısı kodda, ikisi
-dokümanda. Hepsi kapandı.
+Birinci ve ikinci tur `archive/denetim-2026-09-15.md` ile
+`denetim-2026-09-16.md`'de. Bu turu ikincinin kendi dersi istedi — *"bir
+denetim kapanmış bir denetimi tekrarlamaya değer: ikincisi sekiz madde
+buldu"* — ve haklı çıktı: **üç gerçek boşluk, bir kayıtsız karar, on iki
+doküman sapması.** Öncekilerden farkı şekli: ilk ikisi çoğunlukla *yazılmamış
+kod* buldu, bu tur *yazılmamış olduğu hâlde yazılmış sayılan tasarım* buldu.
 
-**En ağırı, ve ürünün manşet iddialarından biri: İlke 7 telde yoktu.** "Her
-seçimin gerekçesi gösterilir — skor, eşleşen keyword'ler, red nedeni" diyor;
-üçü de hesaplanıyordu, hiçbiri yayımlanmıyordu. `SelectionLine` `atomId`,
-`text`, `onPage` taşıyordu: **gerekçesi bildirilmemiş bir sıralama**, ki İlke 7
-tam olarak o şekli dışlamak için var.
+**En ağırı, ve mutlak kural 4'ün yarısıydı: `ContentShape` hiç yazılmamıştı.**
+§ 48.2 onu on alanlı bir kayıt olarak tanımlıyor, EK A sözlükte listeliyor,
+§ XI-B.9 "içerik yerine bunu logla" diyor, `CLAUDE.md`'nin kural 4'ü adını
+veriyor — ve **`noContentInLogs` muhafızının kendi javadoc'u** okuyanı ona
+yönlendiriyordu. `src/` içinde yoktu; on alanının hiçbiri yoktu. Yani kuralı
+çiğnemek üzere olan geliştirici, import edemeyeceği bir tipe gönderiliyordu.
 
-> **`matchedKeywords` yayımlanabilmek için önce hesaplanmak zorundaydı**, ve
-> bu bir kolon değil bir *terim* meselesiydi: Faz B'nin iki karşılaştırması
-> eşleşmeyi zaten buluyor ve yalnız **sayısını** tutuyordu. § 14.5 ve § 20.5
-> alanı ikisi de listeliyor. Sıralı yazılıyor — okunduğu kümeler `Set.copyOf`
-> sonucu, yani sırasız bir liste runner'da düşer ve flake gibi okunurdu.
+> Fiilen olan şey kuralın kaçış şıkkıydı ("*or a stage's own*") ve
+> `ExtractedText.shape()` o davayı iyi savunuyor: alanları bir **dosyanın**,
+> ötekininkiler bir **atomun**. İtiraz geçerli, ve kaydın javadoc'unda
+> cevaplanıyor — çıkarım aşaması hakkında, atomlar hakkında değil.
 >
-> **Skor bilerek inmedi.** `SelectionViewResponse`'ın javadoc'u § 23.3'e
-> dayanan gerekçeyi zaten yazmıştı ve gerekçe sağlam; denetimin işi onu ezmek
-> değil, karşı argümanı olmayan öteki ikisini kapatmaktı. Ayrım § 35.3.1'de.
+> **Bağlı olarak indi**, çünkü çağıranı olmayan bir kayıt aynı boşluğun başka
+> bir şekli: reddedilen yeniden yazım (`TOO_LONG`, 190 tavanına karşı,
+> orijinal 186 karakterken bir şey söyler, 60 karakterken başka), ölçüm
+> dönmeyen sözcükleme (sessizdi), ve ölçülmüş bir sözcüklemenin yüksekliğinin
+> yanındaki şekli (`debug`).
 
-**Yedeklemenin üç bacağı da eksikti, ve üçü tek bir cümleyi yalanlıyordu.**
-§ 49.5 "~5 dakika veri kaybı" yayımlıyor; gerçekte 03:00'a kadardı.
-`wal_level=replica` yerindeydi ve **arşivleme yoktu** — yapılandırılmış
-görünen, açılan, hiçbir şey arşivlemeyen bir veritabanı. İkinci sağlayıcı
-(§ 49.1) yoktu, saklama tek `7d` idi.
+**Sapma — § 17'nin faz sözleşmesi hiç kurulmamıştı, ve iki tur bunu geçti.**
+`PipelinePhase<I, O>`, `PipelineContext` ve § 17.2'nin yedi girdi/çıktı tipi;
+hiçbiri yok. Kayıtlı da değildi. Ortak arayüz yazılmadı çünkü fazlar gerçekten
+heterojen — tek ortak şey `Result`, yani arayüz `execute`'un adını birleştirir
+imzasını değil; ve somut kazancı "sırayı konfigüre etmek" olurdu, ki sıra bir
+konfigürasyon değil bir veri bağımlılığı. § 17.1 ile § 6 bunu artık yazıyor.
 
-> **Ve WAL tek başına yetmezdi.** `pg_dump` mantıksal, WAL fiziksel bir temele
-> oynanır: ikisini yan yana koymak hiçbir prosedürün uygulayamayacağı
-> segmentler göndermek olurdu — *logda var olan, gerçekte olmayan* bir
-> kurtarma penceresi. Haftalık `pg_basebackup` eklendi, ve haftalık-yedi-güne
-> bir tesadüf değil kısıt.
->
-> **`restore.sh` § 49.4'ün anonim satır silmesini hiç yapmıyordu.** Bir restore,
-> iki saat vaat edilmiş CV'leri altı ayla geri getiriyordu — scratch
-> veritabanında da, ki orası kimsenin izlemediği bir yer.
+**Format bağımsızlığı sınırın yanlış tarafındaydı.** `DocumentRenderer`
+`formatId()` ve `supportedTemplates()` taşıyordu, javadoc'u üç format
+adlandırıyordu, **ve repoda ikisinin de tek çağıranı yoktu** — ilan edilen
+soyutlama hiçbir yerde yaşamıyordu, `generation` öteki iki formata somut
+sınıflarıyla uzanıyordu. § 10.2 kural 3, § 9.2 ve § 1.2'nin dördüncü iddiası
+birlikte çiğneniyordu, ve kontrol eden hiçbir şey yoktu.
 
-**Circuit breaker yoktu, ve yokluğu bir kesinti değil bir vergiydi.** § 5.1
-Resilience4j'i üç iş için adlandırıyor; kütüphane hiçbir yerde yoktu. Retry ve
-timeout bu arada başka türlü cevaplanmıştı — kesici cevaplanmamıştı, ve
-zincirin başındaki karanlık bir sağlayıcıya **her üretim** 30 saniyenin
-tamamını ödüyordu. Şema uyumsuzluğu devreyi açmıyor: o prompt'un kusuru.
+> **Arayüz genişletilmedi, daraltıldı** — `DocxDocumentWriter`'ın javadoc'u
+> neden `DocumentRenderer` olamayacağını zaten yazmıştı ve haklıydı: o
+> sözleşme derleyiciye kaynak ve **ölçülmüş** bir kapasite istiyor, HTML'in
+> sayfası yok, DOCX'i POI yazıyor. Format soyutlaması `DocumentWriter`'a
+> taşındı, `DocumentWriters` § 6'nın hiç yazılmamış Factory'si oldu.
 
-**Beş sağlayıcı adaptöründen ikisi vardı** (§ 27.2 ve dört yer daha). Üçü
-yazıldı. **Dağıtımda hiçbir şey değişmiyor** — anahtarsız adaptör
-`isAvailable()` false ve zincir onu sessizce atlıyor, ki yazmanın bedelsiz
-olmasının sebebi o. § 46.5'in örnek `.env`'i bu arada
-`LLM_CHAIN_MID=openai,anthropic,openrouter` diyordu: kopyalansaydı iki uyarı
-basıp o kademeyi tek çalışan halkaya indirirdi.
+**Ekleme — `MAX_ABOUT_TEXT = 1500` kaydı yalnız javadoc'taydı.** § 43.1
+tavanları sayıyor ve dördüncüsü yoktu. Bedeli ölçülmüş: **84 atomu temiz
+çıkarılmış dört sayfalık bir CV, özeti 607 karakter olduğu için bütünüyle
+çöpe gitti** — tavanın yedi karakter üstünde, ve o profilin en uzun dört alanı
+da About'tu. § 43.1'e işlendi.
 
-**JSON ayrıştırıcı limitleri (§ 42.4) hiç kurulmamıştı** — Jackson'ın kendi
-varsayılanları ~20 kat gevşek. **Ve `.env.example`'da `AGE_PUBLIC_KEY` hiç
-yoktu**, yani `backup.sh` kopyalanan dosyayla hiç çalışmıyordu; `EnvExampleTest`
-artık `scripts/*.sh`'ı da okuyucu sayıyor.
+**Ve bir kusur denetimin konusu bile değildi: gitleaks bir süredir
+koşmuyordu.** `pre-commit` hook'unu `.git/hooks`'a kurar; `core.hooksPath`
+ayarlanınca git o dizine hiç bakmaz; `.githooks/` yalnız `post-commit`
+taşıyordu. Hatasız, çıktısız, ve commit'ler korunmuş olanlarla birebir aynı
+görünüyordu. **Yalnız `CLAUDE.md` bir koşunun neye benzediğini yazdığı için
+fark edildi.** Hook artık commit'li ve `pre-commit` yoksa commit'i durduruyor.
 
-**İki döküman bulgusu:** § 35.2.1 beş ucun "yok ve olmamalı" olduğunu
-savunuyordu, uçlar bir aşamadır varken — blok kendi çıkış koşulunu yazmış,
-koşulu kontrol eden hiçbir şey olmamıştı. Ve **EK D monolitte kalmıştı**: spec
-ona 75 kez atıf yapıyor, `INDEX.md` rotalamıyordu, `sync-spec.sh` yalnız
-`docs/spec/**` kopyaladığı için **frontend'in okuduğu kopyada 75 atfın hepsi
-boşa düşüyordu.** `spec/18-appendix-d.md`'ye taşındı.
-
-**Test:** 1869 birim · 580 entegrasyon · 0 hata. Frontend'e `B-108`.
+**Bilinçli istisna — migration yorumları düzenlendi (mutlak kural 2).**
+Checksum'ı koruyan kural, dosyayı çoktan uygulamış bir veritabanını korur;
+öyle tek bir veritabanı var (yerel dev), çünkü VPS yok. Testcontainers her
+koşuda sıfırdan kuruyor, yani entegrasyon paketi karşılaştırma bile yapmıyor.
+**Bedeli bir daha bu kadar düşük olmayacak.** Yerelde `make db-reset`
+gerekiyor.
 
 ---
 
@@ -166,8 +168,12 @@ motora sor** · **kendi eklediğin fan-out'un neyi tuttuğuna bak** ·
 koşulunu yazması onu silmiyor — koşulu kontrol eden bir şey yoksa** ·
 **hesaplanıp atılan bir değer, yayımlanmış sayılmaz** · **yarım bir ayar
 (`wal_level` ama `archive_mode` yok) hiç ayar olmamasından daha görünmez** ·
-**bir denetim kapanmış bir denetimi tekrarlamaya değer: ikincisi sekiz madde
-buldu**.
+**bir denetim kapanmış bir denetimi tekrarlamaya değer: ikincisi sekiz,
+üçüncüsü üç boşluk daha buldu** · **tanımlanmış bir tip, var olan bir tip
+değil — muhafızın gösterdiğini import etmeyi dene** · **çağıranı olmayan bir
+arayüz metodu, olmayan bir soyutlamanın ilanıdır** · **bir aracın hook'u ile
+`core.hooksPath` birbirini sessizce iptal eder: koşunun neye benzediğini
+yazmamış olsaydık görülmezdi**.
 
 ---
 
