@@ -144,7 +144,7 @@ dependencies {
 
     // The published schema is the API contract: the frontend generates its
     // types from it, so enums and headers have to reach it, not only payloads.
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.9.1")
     // PDFBox reads the text out of a PDF and, unlike the
     // alternatives, executes nothing while doing it -- no
     // JavaScript, no embedded action. Versions pinned because Spring Boot's
@@ -159,7 +159,7 @@ dependencies {
     // every profile but prod -- so nothing is shipped from a developer's
     // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
     // request body, no headers, no address reaches the vendor.
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.55.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.56.0")
     // The resilience library, and taken for ONE of the three things
     // that table names. Retry and timeout are already answered and differently:
     // The retry is a chain walk whose rule is which *kind* of failure
@@ -180,7 +180,7 @@ dependencies {
     // family of series would arrive undocumented and leave the same way. The
     // one number worth watching is published by hand instead, where the
     // catalogue can hold it.
-    implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.3.0")
+    implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.4.0")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     // Compiled against as well as shipped, for one class: LISTEN/NOTIFY is
