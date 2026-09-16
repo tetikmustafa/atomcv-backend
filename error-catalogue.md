@@ -24,7 +24,6 @@ sayılar, sınırlar, tanımlayıcılar ve alan adları taşırlar.
 | `ALL_PROVIDERS_UNAVAILABLE` | 503 | `tried: string[]` |
 | `COMPILATION_FAILED` | 502 | `detail: string`, `rawSourceAvailable: boolean` |
 | `PAGE_LIMIT_EXCEEDED` | 422 | `actual: integer`, `limit: integer` |
-| `REWRITE_VALIDATION_FAILED` | 500 | `atomId: uuid`, `issues: string[]` |
 | `COVER_LETTER_REJECTED` | 422 | `issues: string[]` |
 | `EMBEDDING_UNAVAILABLE` | 503 | — |
 | `GENERATION_PAUSED` | 503 | — |

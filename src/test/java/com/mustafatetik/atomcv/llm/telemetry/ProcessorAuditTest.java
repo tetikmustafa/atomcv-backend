@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mustafatetik.atomcv.llm.gateway.LlmProperties;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -69,6 +68,6 @@ class ProcessorAuditTest {
             Map<ModelTier, List<String>> chain, Map<String, String> models) {
 
         return new ProcessorAudit(
-                new LlmProperties(chain, models, Duration.ofSeconds(30), 0));
+                new LlmProperties(chain, models, 0));
     }
 }

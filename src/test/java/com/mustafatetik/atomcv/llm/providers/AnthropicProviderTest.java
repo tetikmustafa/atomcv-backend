@@ -237,7 +237,7 @@ class AnthropicProviderTest {
         return new AnthropicProvider(
                 new AnthropicProperties(key, baseUrl, null, 0),
                 new LlmProperties(Map.of(ModelTier.MID, List.of("anthropic")),
-                        Map.of("anthropic", model), Duration.ofSeconds(5), 0),
+                        Map.of("anthropic", model), 0),
                 JSON);
     }
 

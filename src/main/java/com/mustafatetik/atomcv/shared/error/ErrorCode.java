@@ -6,7 +6,6 @@ import static com.mustafatetik.atomcv.shared.error.ParamType.NUMBER;
 import static com.mustafatetik.atomcv.shared.error.ParamType.STRING;
 import static com.mustafatetik.atomcv.shared.error.ParamType.STRING_ARRAY;
 import static com.mustafatetik.atomcv.shared.error.ParamType.TIMESTAMP;
-import static com.mustafatetik.atomcv.shared.error.ParamType.UUID_VALUE;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,16 +49,18 @@ public enum ErrorCode {
     ALL_PROVIDERS_UNAVAILABLE(503, param("tried", STRING_ARRAY)),
     COMPILATION_FAILED(502, param("detail", STRING), param("rawSourceAvailable", BOOLEAN)),
     PAGE_LIMIT_EXCEEDED(422, param("actual", INTEGER), param("limit", INTEGER)),
-    REWRITE_VALIDATION_FAILED(500, param("atomId", UUID_VALUE), param("issues", STRING_ARRAY)),
-
     /**
      * The validator refused a covering letter twice.
      *
-     * <p>Its own code rather than {@code REWRITE_VALIDATION_FAILED}, which is
-     * about one atom and reports a server fault. This is neither: the letter
-     * is the only thing Faz D writes that has no original to fall back on, so
-     * the failure reaches the user — and it is a 422, because what could not
-     * be done was asked of this profile against this posting, not broken.
+     * <p><strong>The only rewrite failure a user is ever told about.</strong>
+     * A bullet the validator refuses is simply not used and the person's own
+     * sentence is printed instead, which is why {@code
+     * REWRITE_VALIDATION_FAILED} sat in this enum for the whole life of the
+     * product with nothing able to raise it, and why it is gone (denetim,
+     * beşinci tur). The letter is the one thing Faz D writes with no original
+     * to fall back on, so this failure has to reach the user — and it is a 422
+     * because what could not be done was asked of this profile against this
+     * posting, not broken.
      *
      * <p>{@code issues} carries the kinds and never a line of the letter
      * (absolute rule 4). They are what the screen builds a sentence from:

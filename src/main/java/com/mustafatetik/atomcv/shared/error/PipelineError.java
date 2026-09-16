@@ -121,10 +121,26 @@ public sealed interface PipelineError {
      *              27.3 skips it silently, and naming it would report an
      *              outage for a vendor this deployment never configured.
      */
-    record AllProvidersUnavailable(List<String> tried) implements PipelineError {
+    /**
+     * @param everyFailureTimedOut whether the walk ran out because every
+     *                             vendor it asked was too slow, rather than
+     *                             refusing, erroring or being unreachable.
+     *                             The distinction is the difference between
+     *                             "try again" and "we are down", and only the
+     *                             chain can tell them apart — by the time this
+     *                             record reaches a handler the kinds are gone.
+     *                             A walk that tried nothing is not a timeout
+     */
+    record AllProvidersUnavailable(List<String> tried, boolean everyFailureTimedOut)
+            implements PipelineError {
 
         public AllProvidersUnavailable {
             tried = List.copyOf(tried);
+        }
+
+        /** An outage that was not simply slow, which is the usual one. */
+        public AllProvidersUnavailable(List<String> tried) {
+            this(tried, false);
         }
     }
 

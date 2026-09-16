@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.mustafatetik.atomcv.llm.gateway.LlmProperties;
 import com.mustafatetik.atomcv.llm.gateway.ModelTier;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -75,7 +74,7 @@ class LlmPricingAuditTest {
 
         return new LlmPricingAudit(
                 new LlmProperties(Map.of(ModelTier.CHEAP, List.of("openrouter")),
-                        models, Duration.ofSeconds(30), 1),
+                        models, 1),
                 new LlmPricing(prices));
     }
 

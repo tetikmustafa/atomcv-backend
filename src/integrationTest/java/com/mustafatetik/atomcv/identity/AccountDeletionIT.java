@@ -362,10 +362,6 @@ class AccountDeletionIT extends AbstractIntegrationTest {
                 ON CONFLICT DO NOTHING
                 """, userId.toString());
         jdbc.update("""
-                INSERT INTO email_preferences (user_id) VALUES (?)
-                ON CONFLICT DO NOTHING
-                """, userId);
-        jdbc.update("""
                 INSERT INTO template_customizations
                     (profile_id, name, base_template_id, template_version, params)
                 VALUES (?, 'mine', 'classic', 1, '{}'::jsonb)
