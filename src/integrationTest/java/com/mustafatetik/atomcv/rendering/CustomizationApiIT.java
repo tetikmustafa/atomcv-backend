@@ -112,7 +112,7 @@ class CustomizationApiIT extends AbstractIntegrationTest {
      * impossible; a value outside one must not reach a preamble.
      */
     @Test
-    void avalueOutsideBolum33sRangeIsRefused() throws Exception {
+    void avalueOutsideTheAllowedRangeIsRefused() throws Exception {
         mvc.perform(post("/api/v1/customizations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

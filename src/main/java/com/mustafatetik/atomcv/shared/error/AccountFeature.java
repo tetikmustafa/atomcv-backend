@@ -25,9 +25,9 @@ import java.util.Locale;
 public enum AccountFeature {
 
     /**
-     * The four fields {@code spec/04-data-model.md} labels
-     * {@code -- kullanıcı kontrolleri}: {@code importance}, {@code active},
-     * {@code always_include}, {@code verbatim}. Paired with
+     * The four control columns on {@code atoms}: {@code importance},
+     * {@code active}, {@code always_include}, {@code verbatim} — the ones a
+     * person sets, as opposed to the scoring inputs beside them. Paired with
      * {@code canEditAtomControls}.
      */
     ATOM_CONTROLS,

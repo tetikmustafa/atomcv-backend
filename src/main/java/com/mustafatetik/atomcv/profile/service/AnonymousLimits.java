@@ -24,10 +24,10 @@ import com.mustafatetik.atomcv.shared.security.ProfileRef;
  * rather than at four endpoints that each have to remember — and a fifth
  * endpoint added later inherits it by taking the same argument.
  *
- * <p><strong>Which fields are "atom controls" is not a guess.</strong>
- * {@code spec/04-data-model.md} labels them in the schema itself, under
- * {@code -- kullanıcı kontrolleri}: {@code importance}, {@code active},
- * {@code always_include}, {@code verbatim}. Not the scoring inputs beside them
+ * <p><strong>Which fields are "atom controls" is not a guess.</strong> The
+ * schema groups them under their own heading on {@code atoms}:
+ * {@code importance}, {@code active}, {@code always_include},
+ * {@code verbatim}. Not the scoring inputs beside them
  * — skills, metrics and proper nouns are what the CV <em>says</em>, and refusing
  * those would stop an anonymous person correcting their own sentence.
  */

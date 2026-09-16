@@ -74,9 +74,10 @@ class RewritePhaseTest {
     }
 
     /**
-     * One bullet failing costs that bullet its rewrite and nothing else. The
-     * scope in the spec cancels its siblings on a failure, which would throw
-     * away seven answers that were already paid for.
+     * One bullet failing costs that bullet its rewrite and nothing else. A
+     * shutdown-on-failure scope -- the obvious way to fan these out -- cancels
+     * a failing task's siblings, which would throw away seven answers that
+     * were already paid for.
      */
     @Test
     void abulletThatThrowsDoesNotTakeTheOthersWithIt() {

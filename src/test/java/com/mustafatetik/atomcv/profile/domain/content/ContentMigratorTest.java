@@ -22,7 +22,7 @@ class ContentMigratorTest {
     }
 
     @Test
-    void readsTheStructureFromBolum14() {
+    void readsTheStoredRunStructure() {
         var content = migrator.read(json("""
                 {
                   "v": 1,

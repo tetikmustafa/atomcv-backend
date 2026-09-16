@@ -201,8 +201,8 @@ class SelectionRequestBuilderTest {
     /**
      * <strong>the choice, and it is made here.</strong>
      *
-     * <p>The spec puts the tone in Faz D, after selection has run. It cannot
-     * live there: this is where a wording is charged to the budget, and a Faz D
+     * <p>Reading the tone looks like Faz D's job, after selection has run. It
+     * cannot live there: this is where a wording is charged to the budget, and a Faz D
      * that swapped in the other one afterwards would print a line whose height
      * nothing had measured — the page limit is only a guarantee because every
      * line on the page was costed.
