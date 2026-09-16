@@ -10,72 +10,64 @@ aşağıda.
 
 ---
 
-## Denetim — üçüncü tur, spec'in tamamı koda karşı (2026-09-16)
+## Denetim — dördüncü tur, mekanik (2026-09-16)
 
-Birinci ve ikinci tur `archive/denetim-2026-09-15.md` ile
-`denetim-2026-09-16.md`'de. Bu turu ikincinin kendi dersi istedi — *"bir
-denetim kapanmış bir denetimi tekrarlamaya değer: ikincisi sekiz madde
-buldu"* — ve haklı çıktı: **üç gerçek boşluk, bir kayıtsız karar, on iki
-doküman sapması.** Öncekilerden farkı şekli: ilk ikisi çoğunlukla *yazılmamış
-kod* buldu, bu tur *yazılmamış olduğu hâlde yazılmış sayılan tasarım* buldu.
+Üçüncü turun kaydı `archive/denetim-2026-09-16-ucuncu.md`'de; ilk ikisi
+`denetim-2026-09-15.md` ile `denetim-2026-09-16.md`'de. **Bu tur düzyazı
+okumadı** — üç kez okunmuş bir metni dördüncü kez okumak aynı gözle bakmaktı.
+Yerine spec'ten çıkarılabilen her somut ad çıkarıldı ve repoda arandı: 1659 kod
+parçacığı (tip, sabit, property, uç, tablo), 61 ucun tamamı, 35 enum'un kapalı
+sözlükleri, 14 migration'a karşı veri modeli, 91 sayısal sabit, spec'in kendi
+`§` atıfları. **Üç gerçek boşluk, ikisi kümelerde — bir adın repoda geçmesi
+kümenin tam olduğunu göstermiyor.**
 
-**En ağırı, ve mutlak kural 4'ün yarısıydı: `ContentShape` hiç yazılmamıştı.**
-§ 48.2 onu on alanlı bir kayıt olarak tanımlıyor, EK A sözlükte listeliyor,
-§ XI-B.9 "içerik yerine bunu logla" diyor, `CLAUDE.md`'nin kural 4'ü adını
-veriyor — ve **`noContentInLogs` muhafızının kendi javadoc'u** okuyanı ona
-yönlendiriyordu. `src/` içinde yoktu; on alanının hiçbiri yoktu. Yani kuralı
-çiğnemek üzere olan geliştirici, import edemeyeceği bir tipe gönderiliyordu.
+**Sapma — `§ 13` "Tam Veritabanı Şeması" on üç migration geriden geliyordu.**
+Bloğu `V1__initial_schema.sql` başlığını taşıyor ve V2-V14 hiçbir yere
+işlenmemişti: `profiles.user_id` nullable (anonim profil), `expires_at` ve XOR
+kısıtı, `header_costs`, `rewritten_content`, `users`'ın iki kolonu,
+`sections.layout`'un beşinci değeri, V3'ün anonim idempotency indeksi, V4'ün
+unique indeksi, ve **`template_capacities` — bütün `docs/` ağacında hiç
+geçmiyordu.** `§ 16.1`'in ağacı da üç dosya sayıyordu, ikisinin adı uydurma.
 
-> Fiilen olan şey kuralın kaçış şıkkıydı ("*or a stage's own*") ve
-> `ExtractedText.shape()` o davayı iyi savunuyor: alanları bir **dosyanın**,
-> ötekininkiler bir **atomun**. İtiraz geçerli, ve kaydın javadoc'unda
-> cevaplanıyor — çıkarım aşaması hakkında, atomlar hakkında değil.
+> **Blok düzenlenmedi, delta yazıldı** (`§ 13.2`). Birebir kopyası olduğu dosya
+> duruyorken bloğu güncellemek onu ne V1 ne bugün yapardı — iki sürümün
+> ortasında, hangisini anlattığı belirsiz bir metin kalırdı.
 >
-> **Bağlı olarak indi**, çünkü çağıranı olmayan bir kayıt aynı boşluğun başka
-> bir şekli: reddedilen yeniden yazım (`TOO_LONG`, 190 tavanına karşı,
-> orijinal 186 karakterken bir şey söyler, 60 karakterken başka), ölçüm
-> dönmeyen sözcükleme (sessizdi), ve ölçülmüş bir sözcüklemenin yüksekliğinin
-> yanındaki şekli (`debug`).
+> **Ve kural bir teste bağlandı**, çünkü bu turun bulduğu şey tam olarak
+> "düzyazıdaki bir kuralı kontrol eden bir şey yoktu"ydu:
+> `SchemaDocumentationTest` her migration adının bölümde geçmesini **ve**
+> bölümün olmayan bir dosya adı uydurmamasını zorluyor. Alıntı blokları muaf —
+> bir düzeltme, düzelttiği adı yazabilmeli, yoksa bulunabilir olmaktan çıkar.
 
-**Sapma — § 17'nin faz sözleşmesi hiç kurulmamıştı, ve iki tur bunu geçti.**
-`PipelinePhase<I, O>`, `PipelineContext` ve § 17.2'nin yedi girdi/çıktı tipi;
-hiçbiri yok. Kayıtlı da değildi. Ortak arayüz yazılmadı çünkü fazlar gerçekten
-heterojen — tek ortak şey `Result`, yani arayüz `execute`'un adını birleştirir
-imzasını değil; ve somut kazancı "sırayı konfigüre etmek" olurdu, ki sıra bir
-konfigürasyon değil bir veri bağımlılığı. § 17.1 ile § 6 bunu artık yazıyor.
+**Düzeltme — `no_responsibilities` altı yerde yayımlanıyordu, tel üretemiyor.**
+`PlausibilityGate` dördüncü verdict'i Aşama 3'te düşürmüştü (nitelik sayıp
+görev saymayan ilan olağan şekildir; düşüren ilan 0.92 güvenle, yirmi beceri
+okunmuşken reddedilmişti) ve gerekçe javadoc'ta duruyordu. Spec sözlüğü
+**sekiz** saymaya devam etti: § 18.1'in sayım cümlesi, § 18.4'ün kod
+parçacığı, iki tablo, § 08b ve EK D.
 
-**Format bağımsızlığı sınırın yanlış tarafındaydı.** `DocumentRenderer`
-`formatId()` ve `supportedTemplates()` taşıyordu, javadoc'u üç format
-adlandırıyordu, **ve repoda ikisinin de tek çağıranı yoktu** — ilan edilen
-soyutlama hiçbir yerde yaşamıyordu, `generation` öteki iki formata somut
-sınıflarıyla uzanıyordu. § 10.2 kural 3, § 9.2 ve § 1.2'nin dördüncü iddiası
-birlikte çiğneniyordu, ve kontrol eden hiçbir şey yoktu.
+> **`B-nnn` açılmadı ve sebebi kayda değer:** frontend dalı `B-072`'nin
+> cevabında zaten silmiş, neden listeleri orada yediye inmişti. **Geride kalan
+> tek kopya spec'ti** — yani bu bir frontend aksiyonu değil, kendi
+> gecikmemizdi. Açık `B-111`'in yanlış sayımı düzeltildi, çünkü çeviri
+> dosyaları ona bakılarak yazılacak.
 
-> **Arayüz genişletilmedi, daraltıldı** — `DocxDocumentWriter`'ın javadoc'u
-> neden `DocumentRenderer` olamayacağını zaten yazmıştı ve haklıydı: o
-> sözleşme derleyiciye kaynak ve **ölçülmüş** bir kapasite istiyor, HTML'in
-> sayfası yok, DOCX'i POI yazıyor. Format soyutlaması `DocumentWriter`'a
-> taşındı, `DocumentWriters` § 6'nın hiç yazılmamış Factory'si oldu.
+**Ekleme — `FakeLatexCompiler` yazıldı; § 54.2 onu bir aşamadır listeliyordu.**
+Tek yol `LatexCompilerClient`'tı ve `make dev` latex konteynerini kaldırmıyor,
+yani sahte LLM'le çalışan bir klon Faz E'de dinleyen kimsenin olmadığı bir
+adrese gidiyordu. Sayfa sayısı sabit 1 (hareket eden bir sayı, kimsenin
+ölçmediği ikinci bir sayfa modeli olurdu); ölçüm probları kutudaki
+karakterlerden aritmetikle cevaplanıyor; **kalibrasyon bilerek cevapsız**,
+çünkü uydurulmuş bir kapasite `template_capacities`'e yazılır ve onu uyduran
+oturumdan sonra da yaşardı.
 
-**Ekleme — `MAX_ABOUT_TEXT = 1500` kaydı yalnız javadoc'taydı.** § 43.1
-tavanları sayıyor ve dördüncüsü yoktu. Bedeli ölçülmüş: **84 atomu temiz
-çıkarılmış dört sayfalık bir CV, özeti 607 karakter olduğu için bütünüyle
-çöpe gitti** — tavanın yedi karakter üstünde, ve o profilin en uzun dört alanı
-da About'tu. § 43.1'e işlendi.
-
-**Ve bir kusur denetimin konusu bile değildi: gitleaks bir süredir
-koşmuyordu.** `pre-commit` hook'unu `.git/hooks`'a kurar; `core.hooksPath`
-ayarlanınca git o dizine hiç bakmaz; `.githooks/` yalnız `post-commit`
-taşıyordu. Hatasız, çıktısız, ve commit'ler korunmuş olanlarla birebir aynı
-görünüyordu. **Yalnız `CLAUDE.md` bir koşunun neye benzediğini yazdığı için
-fark edildi.** Hook artık commit'li ve `pre-commit` yoksa commit'i durduruyor.
-
-**Bilinçli istisna — migration yorumları düzenlendi (mutlak kural 2).**
-Checksum'ı koruyan kural, dosyayı çoktan uygulamış bir veritabanını korur;
-öyle tek bir veritabanı var (yerel dev), çünkü VPS yok. Testcontainers her
-koşuda sıfırdan kuruyor, yani entegrasyon paketi karşılaştırma bile yapmıyor.
-**Bedeli bir daha bu kadar düşük olmayacak.** Yerelde `make db-reset`
-gerekiyor.
+> **İlk hâli `latexTest` hattını kırdı, ve bunu yalnız hattı koşturmak
+> gösterdi.** `@Profile("!local-fake")` idi; dört IT o profil altında koşuyor
+> çünkü **sahte modeli** istiyor ve **gerçek derleyiciyi** ölçüyor. "Gerçek bir
+> tek sayfalık PDF iki bin bayttan büyüktür" diyen beş iddia 669 baytlık yer
+> tutucuyla karşılaştı. Ayrım `atomcv.latex.fake` anahtarına taşındı;
+> `AbstractLatexTest` tek yerden kapatıyor, ki beşinci bir sınıf onsuz
+> yazılamasın.
 
 ---
 
@@ -109,8 +101,8 @@ gerekiyor.
 
 - **Bir dosyayı çalışma anında okuyan test, o dosyayı Gradle girdisi olarak
   ilan etmezse koşmaz.** Listede artık `performance-budgets.yaml`,
-  `.env.example`, `nginx.conf`, `docker-compose.prod.yml`, `openapi.json` ve
-  `docker/latex/*` var.
+  `.env.example`, `nginx.conf`, `docker-compose.prod.yml`, `openapi.json`,
+  `docker/latex/*` ve **`docs/spec/04-data-model.md`** var.
 - **Bean'i override eden her test sınıfı kendi context'i ve kendi havuzu
   demek.** Havuz context başına dörde çekildi.
 - **Bir metriği kaybetmek hiçbir şeyi kırmaz.** Yeniden adlandırmak build'i
@@ -173,7 +165,11 @@ koşulunu yazması onu silmiyor — koşulu kontrol eden bir şey yoksa** ·
 değil — muhafızın gösterdiğini import etmeyi dene** · **çağıranı olmayan bir
 arayüz metodu, olmayan bir soyutlamanın ilanıdır** · **bir aracın hook'u ile
 `core.hooksPath` birbirini sessizce iptal eder: koşunun neye benzediğini
-yazmamış olsaydık görülmezdi**.
+yazmamış olsaydık görülmezdi** · **bir adın repoda geçmesi kümenin tam olduğu
+anlamına gelmiyor — kümeleri karşılaştır** · **kendine "tam" diyen bir bölüm
+takip eden bir şey yoksa tam kalmıyor** · **bir profil bir niyetin adıdır, iki
+niyetin değil** · **kendi eklediğin sahteyi, onu istemeyen hattı koşturmadan
+yazdım sayma**.
 
 ---
 
@@ -190,6 +186,7 @@ yazmamış olsaydık görülmezdi**.
 | dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
+| denetim · üçüncü tur | `denetim-2026-09-16-ucuncu.md` | § 17.1, § 6, § 43.1, § 48.2, § 9.2, § 10.2 |
 | denetim · birinci tur | `denetim-2026-09-15.md` | § 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1, § 48.5, § 51.3, § 52.4, § 52.5, § 5.1 |
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2, § 24.2.1 |
 | Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
