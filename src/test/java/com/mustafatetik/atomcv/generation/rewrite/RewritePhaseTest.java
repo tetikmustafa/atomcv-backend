@@ -382,7 +382,11 @@ class RewritePhaseTest {
                     RichContent.plain("Built the ingest path number " + i));
             wording.setPrimary(true);
             nodes.add(new AtomNode(row, List.of(wording)));
-            selected.add(new SelectedAtom(row.getId(), wording.getId(), score, 12.0, false));
+            // The terms the posting asked for and this bullet names. Faz C
+            // records them, and Faz D will not rewrite a sentence without
+            // them -- a fixture that left them out would plan nothing.
+            selected.add(new SelectedAtom(row.getId(), wording.getId(), score, 12.0, false,
+                    List.of("java", "kafka", "postgres", "spring")));
         }
         return new Fixture(nodes, selected);
     }

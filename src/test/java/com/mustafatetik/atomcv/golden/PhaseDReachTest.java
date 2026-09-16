@@ -71,6 +71,17 @@ import org.junit.jupiter.api.Test;
  * normalisation, or start sending real vectors, and this fails with the new
  * numbers in the message — which is the point at which somebody has to look at
  * whether Faz D now fires on the right sentences.
+ *
+ * <p><strong>Somebody did, and the vectors were the half that moved.</strong>
+ * {@code ScoreReachIT} put a real BGE-M3 behind the same pair: the embedding
+ * term comes back between 0.63 and 0.84 rather than the neutral 0.5, which
+ * lifts the best atom from 0.276 to 0.413 and over the old floor. It also
+ * lifted an academic CV's best bullet to 0.387 against this same software
+ * posting, with nothing matched at all — so the floor was never the thing
+ * keeping unrelated sentences out, and a gate on the terms the posting asked
+ * for took that job. The floor is 0.35 now and answers a cost question.
+ * Nothing in this class changed answer: without vectors the whole
+ * distribution still sits under 0.28.
  */
 class PhaseDReachTest {
 
@@ -80,7 +91,7 @@ class PhaseDReachTest {
             TemplateRegistry.capacityOf(TemplateCustomization.CLASSIC).orElseThrow();
 
     /** {@code RewritePlanner.FLOOR_SCORE}, which is package-private there. */
-    private static final double FLOOR_SCORE = 0.40;
+    private static final double FLOOR_SCORE = 0.35;
 
     private static final GoldenProfile PROFILE = GoldenProfileReader.read("master_cv_en", OWNER);
     private static final JobAnalysis POSTING = analysis();
@@ -106,6 +117,10 @@ class PhaseDReachTest {
                 .as("Faz D plans nothing at all for the pair it should have the most to say "
                         + "about")
                 .isEmpty();
+        // Twice over now, and the second reason is the one that survives a
+        // change to the first: nothing here clears 0.35 either, and a
+        // selection built without vectors carries no matched terms for the
+        // evidence gate to read.
     }
 
     /**
