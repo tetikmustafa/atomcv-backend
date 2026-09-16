@@ -108,7 +108,7 @@ Girdiğin metin bir iş ilanına benzemiyor.
 
 **Redde götüren kontrol telde de ayrışır**, `params.reason` ile: `too_short`, `too_long`, `low_entropy`, `not_job_like`. Katalog hâlâ **tek kod** yayımlıyor — API açısından sonuç aynı ve dört kardeş kod hiçbir şey kazandırmazdı — ama tek kod tek cümle demek değil. Ayrım zaten metrik ve log için gerekiyordu ("ilan reddedildi" hiçbir şey söylemez, "düşük entropiden reddedildi" sezgisel kuralın gözden geçirilmesi gerektiğini söyler); telde de gerekiyor, çünkü dört ret kullanıcıyı dört ayrı yere gönderiyor.
 
-`reason`'ın kapalı sözlüğü **sekiz** değer taşıyor: buradaki dördü ve § 18.4'ün dördü. İkisi çakışmaz, ve `reason` hangi kapının reddettiğini söyler — bu ayrım kullanıcıya görünür, çünkü ön kontrol **kullanıcının metnini** reddetmiştir ve kullanıcı sezgiselden iyi bilebilir, § 18.4 ise **modelin cevabını** reddetmiştir ve metinde düzeltilecek bir şey yoktur.
+`reason`'ın kapalı sözlüğü **yedi** değer taşıyor: buradaki dördü ve § 18.4'ün üçü (sekizinciydi, § 18.4'ün düzeltmesine bak). İkisi çakışmaz, ve `reason` hangi kapının reddettiğini söyler — bu ayrım kullanıcıya görünür, çünkü ön kontrol **kullanıcının metnini** reddetmiştir ve kullanıcı sezgiselden iyi bilebilir, § 18.4 ise **modelin cevabını** reddetmiştir ve metinde düzeltilecek bir şey yoktur.
 
 Sıra önemlidir: uzunluk entropiden **önce** bakılır, yoksa 40.000 karakterlik tekrarlı bir yapıştırma "tekrarlı olduğu için" reddedilir, gerçekte olduğu şey için değil.
 
@@ -173,7 +173,6 @@ yaz, ilan hangi dilde olursa olsun. Orijinal anlamı koru.
 Result<JobAnalysis> gate(JobAnalysis a) {
     if (a.confidence() < 0.55)          return err(JD_LOW_CONFIDENCE);
     if (a.requiredSkills().size() < 2)  return err(JD_TOO_FEW_SKILLS);
-    if (a.responsibilities().isEmpty()) return err(JD_NO_RESPONSIBILITIES);
     if (hasAbnormalFieldLength(a))      return err(JD_SUSPICIOUS_OUTPUT);
     return ok(a);
 }
@@ -188,15 +187,37 @@ boolean hasAbnormalFieldLength(JobAnalysis a) {
 
 Kapıdan geçemezse **Faz B'ye hiç geçilmez** — maliyet oluşmaz.
 
-Sıra önemlidir: incelik (güven, beceri sayısı, sorumluluk) **şekilden önce** bakılır, yani zayıf bir ilan zayıf olduğu için reddedilir, "şüpheli çıktı" diye değil.
+Sıra önemlidir: incelik (güven, beceri sayısı) **şekilden önce** bakılır, yani zayıf bir ilan zayıf olduğu için reddedilir, "şüpheli çıktı" diye değil.
 
-**Dört verdict telde `params.reason` olarak çıkar** (`low_confidence`, `too_few_skills`, `no_responsibilities`, `suspicious_output`), § 18.1'in dördüyle aynı kapalı sözlükte. Zorunluydu: `confidence` ve `skillsFound` yalnız ilk ikisini anlatıyor, ve `SUSPICIOUS_OUTPUT` ile reddedilen bir analiz `confidence: 0.95` taşıyabiliyor — ekranda "ilanı okuyamadık, güven %95" diye okunan bir çelişki.
+**Üç verdict telde `params.reason` olarak çıkar** (`low_confidence`, `too_few_skills`, `suspicious_output`), § 18.1'in dördüyle aynı kapalı sözlükte. Zorunluydu: `confidence` ve `skillsFound` yalnız ilk ikisini anlatıyor, ve `SUSPICIOUS_OUTPUT` ile reddedilen bir analiz `confidence: 0.95` taşıyabiliyor — ekranda "ilanı okuyamadık, güven %95" diye okunan bir çelişki.
+
+> **Düzeltme — dördüncü bir verdict vardı ve indi: `NO_RESPONSIBILITIES`**
+> (denetim, 2026-09-16; kapının kendisi bunu Aşama 3'te kaybetmişti, spec altı
+> yerde taşımaya devam etti). `responsibilities` boş dönen analizi reddediyordu
+> ve gerekçesi sağlamdı — Faz B maddeleri görevlerle eşliyor, görev yoksa
+> eşleyecek bir şey yok.
+>
+> **Kural dünya hakkında yanlıştı.** Gerçek ilanların çoğu hiçbir başlık
+> altında görev saymayan nitelik listeleridir; bunu düşüren ilan *"At least 5
+> years of hands-on software development experience in Java, Java EE"* diyordu
+> ve iş hakkında başka bir şey demiyordu. **0.92 güvenle, içinden yirmi beceri
+> okunmuşken reddedildi** — model ilanı anlamıştı, kapı cevabı çöpe attı.
+>
+> `job_analysis` **v2** görevleri metnin taşıdığı şeyden türetiyor, yani boş
+> liste artık "metin hiçbir iş tarif etmiyor" demek. Onu ölçen şey
+> `confidence`, ve o zaten burada ölçülüyor: aynı olguya ikinci bir kontrol
+> aynı ilanı iki kez reddediyordu.
+>
+> **Değer telden kalktı** ve bunu okuyan hiçbir şey yok, yani saklanmış hiçbir
+> ret bozulmuyor. Frontend `B-072`'nin cevabında dalı `en.json` ve `tr.json`'dan
+> çoktan kaldırdı ve neden listesi orada da yediye indi — **geride kalan tek
+> kopya buydu**, yani bu bir frontend aksiyonu değil, spec'in kendi gecikmesi.
 
 **Çıkış yolları sebebe göre değişir**, ve § 18.1'in üçlüsü buraya olduğu gibi gelmez:
 
 | `reason` | resolutions |
 |---|---|
-| `low_confidence`, `too_few_skills`, `no_responsibilities` | `paste_full_posting`, `continue_as_general_cv` |
+| `low_confidence`, `too_few_skills` | `paste_full_posting`, `continue_as_general_cv` |
 | `suspicious_output` | `retry`, `continue_as_general_cv` |
 
 **`continue_anyway` bu kapıda yoktur.** Onay yalnız ön kontrolü atlar, ve ön kontrol zaten geçilmiştir — yeniden gönderim aynı çağrıyı yapıp aynı kapıya çarpar. İki isim altında tek buton demekti, ve doğruyu söyleyen isim sunulan değildi.

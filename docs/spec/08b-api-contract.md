@@ -90,10 +90,15 @@ yayımlanıyor** (`F-023`), alanın tipi `String` kalsa bile: `ImportWarning.cod
 JSONB'den geri okunduğu için `String` duruyor, şeması yine de enum.
 
 **`params.reason`** (`UNPARSEABLE_JOB_DESCRIPTION`) — bir ilanın neden analize
-dönüşemediği. Sekiz değer, tek kod: kod API sonucunu adlandırıyor, `reason`
-kullanıcıya söylenecek cümleyi. `confidence` ve `skillsFound` sekizden yalnız
+dönüşemediği. Yedi değer, tek kod: kod API sonucunu adlandırıyor, `reason`
+kullanıcıya söylenecek cümleyi. `confidence` ve `skillsFound` yediden yalnız
 ikisini ölçer ve ön kontrolden sıfır gelir, dolayısıyla **mesaj önce `reason`'a
 göre seçilir**.
+
+> **Sekizinci bir değer vardı ve kalktı: `no_responsibilities`** (düzeltme,
+> denetim 2026-09-16). Kapı onu Aşama 3'te kaybetti, bu tablo taşımaya devam
+> etti — gerekçesi ve ölçülmüş bedeli § 18.4'te. Frontend dalı `B-072`'nin
+> cevabında zaten kaldırmıştı; **sözlüğü sekiz sayan son yer burasıydı.**
 
 | `reason` | Nereden | Anlamı |
 |---|---|---|
@@ -103,7 +108,6 @@ göre seçilir**.
 | `not_job_like` | ön kontrol | Düzyazı, ama iş ilanına benzemiyor |
 | `low_confidence` | kapı (§ 18.4) | Model tahmin ettiğini bildirdi |
 | `too_few_skills` | kapı | İkiden az aranan beceri |
-| `no_responsibilities` | kapı | Sorumluluk yok; Faz B'nin eşleyeceği bir şey yok |
 | `suspicious_output` | kapı | Bir alan o alanın olabileceğinden çok uzun — cevap analiz şeklinde değil |
 
 Ayrım kullanıcıya görünür: ön kontrol **kullanıcının metnini** reddetti ve
