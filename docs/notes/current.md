@@ -10,64 +10,12 @@ aşağıda.
 
 ---
 
-## Denetim — dördüncü tur, mekanik (2026-09-16)
+## Denetim turları — hepsi kapalı
 
-Üçüncü turun kaydı `archive/denetim-2026-09-16-ucuncu.md`'de; ilk ikisi
-`denetim-2026-09-15.md` ile `denetim-2026-09-16.md`'de. **Bu tur düzyazı
-okumadı** — üç kez okunmuş bir metni dördüncü kez okumak aynı gözle bakmaktı.
-Yerine spec'ten çıkarılabilen her somut ad çıkarıldı ve repoda arandı: 1659 kod
-parçacığı (tip, sabit, property, uç, tablo), 61 ucun tamamı, 35 enum'un kapalı
-sözlükleri, 14 migration'a karşı veri modeli, 91 sayısal sabit, spec'in kendi
-`§` atıfları. **Üç gerçek boşluk, ikisi kümelerde — bir adın repoda geçmesi
-kümenin tam olduğunu göstermiyor.**
-
-**Sapma — `§ 13` "Tam Veritabanı Şeması" on üç migration geriden geliyordu.**
-Bloğu `V1__initial_schema.sql` başlığını taşıyor ve V2-V14 hiçbir yere
-işlenmemişti: `profiles.user_id` nullable (anonim profil), `expires_at` ve XOR
-kısıtı, `header_costs`, `rewritten_content`, `users`'ın iki kolonu,
-`sections.layout`'un beşinci değeri, V3'ün anonim idempotency indeksi, V4'ün
-unique indeksi, ve **`template_capacities` — bütün `docs/` ağacında hiç
-geçmiyordu.** `§ 16.1`'in ağacı da üç dosya sayıyordu, ikisinin adı uydurma.
-
-> **Blok düzenlenmedi, delta yazıldı** (`§ 13.2`). Birebir kopyası olduğu dosya
-> duruyorken bloğu güncellemek onu ne V1 ne bugün yapardı — iki sürümün
-> ortasında, hangisini anlattığı belirsiz bir metin kalırdı.
->
-> **Ve kural bir teste bağlandı**, çünkü bu turun bulduğu şey tam olarak
-> "düzyazıdaki bir kuralı kontrol eden bir şey yoktu"ydu:
-> `SchemaDocumentationTest` her migration adının bölümde geçmesini **ve**
-> bölümün olmayan bir dosya adı uydurmamasını zorluyor. Alıntı blokları muaf —
-> bir düzeltme, düzelttiği adı yazabilmeli, yoksa bulunabilir olmaktan çıkar.
-
-**Düzeltme — `no_responsibilities` altı yerde yayımlanıyordu, tel üretemiyor.**
-`PlausibilityGate` dördüncü verdict'i Aşama 3'te düşürmüştü (nitelik sayıp
-görev saymayan ilan olağan şekildir; düşüren ilan 0.92 güvenle, yirmi beceri
-okunmuşken reddedilmişti) ve gerekçe javadoc'ta duruyordu. Spec sözlüğü
-**sekiz** saymaya devam etti: § 18.1'in sayım cümlesi, § 18.4'ün kod
-parçacığı, iki tablo, § 08b ve EK D.
-
-> **`B-nnn` açılmadı ve sebebi kayda değer:** frontend dalı `B-072`'nin
-> cevabında zaten silmiş, neden listeleri orada yediye inmişti. **Geride kalan
-> tek kopya spec'ti** — yani bu bir frontend aksiyonu değil, kendi
-> gecikmemizdi. Açık `B-111`'in yanlış sayımı düzeltildi, çünkü çeviri
-> dosyaları ona bakılarak yazılacak.
-
-**Ekleme — `FakeLatexCompiler` yazıldı; § 54.2 onu bir aşamadır listeliyordu.**
-Tek yol `LatexCompilerClient`'tı ve `make dev` latex konteynerini kaldırmıyor,
-yani sahte LLM'le çalışan bir klon Faz E'de dinleyen kimsenin olmadığı bir
-adrese gidiyordu. Sayfa sayısı sabit 1 (hareket eden bir sayı, kimsenin
-ölçmediği ikinci bir sayfa modeli olurdu); ölçüm probları kutudaki
-karakterlerden aritmetikle cevaplanıyor; **kalibrasyon bilerek cevapsız**,
-çünkü uydurulmuş bir kapasite `template_capacities`'e yazılır ve onu uyduran
-oturumdan sonra da yaşardı.
-
-> **İlk hâli `latexTest` hattını kırdı, ve bunu yalnız hattı koşturmak
-> gösterdi.** `@Profile("!local-fake")` idi; dört IT o profil altında koşuyor
-> çünkü **sahte modeli** istiyor ve **gerçek derleyiciyi** ölçüyor. "Gerçek bir
-> tek sayfalık PDF iki bin bayttan büyüktür" diyen beş iddia 669 baytlık yer
-> tutucuyla karşılaştı. Ayrım `atomcv.latex.fake` anahtarına taşındı;
-> `AbstractLatexTest` tek yerden kapatıyor, ki beşinci bir sınıf onsuz
-> yazılamasın.
+Dört tur, anlatıları `archive/denetim-2026-09-1*.md`'de; kalıcı kararlar
+`spec/`'te. Sonuncusu **mekanikti** — düzyazı okumak yerine spec'in andığı
+her somut adı çıkarıp repoda aradı — ve bulduğu üç boşluğun ikisi
+**kümelerdeydi**: bir adın repoda geçmesi kümenin tam olduğunu göstermiyor.
 
 ---
 
@@ -117,9 +65,18 @@ oturumdan sonra da yaşardı.
 
 **Ölçümler:**
 
-- **Faz D eşikleri yeniden ölçüldü** — gömme olmadan en güçlü atom **0.1259**,
-  varsayılan ağırlıklarla **0.2756**, taban 0.40. Faz D hâlâ hiçbir şey
-  planlamıyor: sonuç değişmedi, sebebi artık tam.
+- **Faz D eşikleri gerçek vektörlerle ölçüldü ve kademeler değişti** (§ 21.2).
+  Gömme açıkken kosinüs **0.63-0.84** arası dar bir bant, yani neredeyse sabit:
+  en iyi eşleşen çiftin en iyi atomu 0.2756'dan **0.4133**'e çıkıyor — ama aynı
+  ilana karşı bir **akademik CV** hiçbir terim adlandırmadan **0.3870** alıyor.
+  Arada 0.026, yani hiçbir mutlak taban "alakalı"yı "alakasız"dan ayıramıyordu.
+  Ayıran şey **kanıt**: kapı `matchedTerms`'e taşındı, taban 0.35'e indi (maliyet
+  sorusu oldu), `ADAPT` ulaşılamaz 0.65 skorundan **4 terim**e geçti. Sonuç:
+  eşleşen profilde **2 aday**, ötekilerin altısında **0**. Ölçümün kendisi
+  `ScoreReachIT`, kendi hattında: `gradlew embeddingTest` (gerçek TEI ister —
+  `docker compose --profile full up -d embeddings`).
+  **Açık kalan:** `ADAPT` bu fixture'da hâlâ ateşlenmiyor — barajı geçen tek
+  atom About paragrafı ve o zaten Faz D'ye gelmiyor.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
 - **XeTeX format dökümü imkânsız** (§ 29.2): motor `Can't \dump a format with
   native fonts or font-mappings` diyor. Asgari bir belgenin **tam** derlemesi
@@ -169,7 +126,9 @@ yazmamış olsaydık görülmezdi** · **bir adın repoda geçmesi kümenin tam 
 anlamına gelmiyor — kümeleri karşılaştır** · **kendine "tam" diyen bir bölüm
 takip eden bir şey yoksa tam kalmıyor** · **bir profil bir niyetin adıdır, iki
 niyetin değil** · **kendi eklediğin sahteyi, onu istemeyen hattı koşturmadan
-yazdım sayma**.
+yazdım sayma** · **bir eşik, ayırmayı bilmediği iki şeyi topluyorsa, doğru
+değeri yoktur — ekseni değiştir** · **ulaşılamaz bir eşik, kapalı bir özelliği
+yapılmış gibi gösterir**.
 
 ---
 
@@ -186,6 +145,7 @@ yazdım sayma**.
 | dilim 9-14 · `F-017`-`F-027` | `stage-3-handoff-answers.md`, `stage-3-slice-14.md` | — |
 | kapanış sonrası A-M | `stage-3-post-closure-e2e.md`, `stage-3-post-closure-shape.md` | § 18.4, § 20, § 31.3.1, § 33.4.1, § 21.2, § 22.4.1 |
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
+| denetim · dördüncü tur (mekanik) | `denetim-2026-09-16-dorduncu.md` | § 13.2, § 16.1, § 18.4, § 08b, § 33.5, § 54.2 |
 | denetim · üçüncü tur | `denetim-2026-09-16-ucuncu.md` | § 17.1, § 6, § 43.1, § 48.2, § 9.2, § 10.2 |
 | denetim · birinci tur | `denetim-2026-09-15.md` | § 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1, § 48.5, § 51.3, § 52.4, § 52.5, § 5.1 |
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2, § 24.2.1 |
