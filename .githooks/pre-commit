@@ -1,0 +1,31 @@
+#!/bin/sh
+# Secret scanning, before anything reaches a commit.
+#
+# Why this file exists rather than pre-commit's own generated hook: setting
+# core.hooksPath (which this repo does, so .githooks/post-commit runs) makes git
+# ignore .git/hooks entirely. The generated hook lives there, so installing
+# pre-commit and then pointing hooksPath at .githooks disables it silently --
+# no error, no output, and commits that look exactly like protected ones.
+# That is what happened here, and the only reason it surfaced is that CLAUDE.md
+# writes down what a run looks like: a commit that printed nothing about
+# secrets did not scan for any.
+#
+# It delegates rather than hard-coding gitleaks so that .pre-commit-config.yaml
+# stays the single place the scanners are named, and it refuses to be silent:
+# a missing pre-commit is reported and the commit is stopped. CI scans the full
+# history as well (secrets-scan.yml), but a secret caught there has already
+# been pushed.
+
+set -e
+
+if command -v pre-commit >/dev/null 2>&1; then
+    exec pre-commit hook-impl \
+        --config=.pre-commit-config.yaml \
+        --hook-type=pre-commit \
+        --hook-dir "$(cd "$(dirname "$0")" && pwd)" -- "$@"
+fi
+
+echo "pre-commit is not on PATH, so nothing scanned this commit for secrets." >&2
+echo "Install it (pipx install pre-commit) or commit with --no-verify and" >&2
+echo "know that only CI is looking." >&2
+exit 1
