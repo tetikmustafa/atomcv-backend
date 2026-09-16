@@ -428,7 +428,7 @@ Yeni makinede kurulum: `make dev`
 └── Diğer diller (pivot)
 
 [B+F] Açık kaynak hazırlığı
-├── Mimari dokümanlarının İngilizceye çevrilmesi
+├── ~~Mimari dokümanlarının İngilizceye çevrilmesi~~  ← YAPILMAYACAK (2026-09-16)
 ├── README (İngilizce, mimari özet + kurulum)
 ├── CONTRIBUTING.md + SECURITY.md
 └── Örnek .env.example doğrulaması
@@ -439,6 +439,13 @@ Gelecek
 ├── Kullanıcı tanımlı şablonlar
 └── LinkedIn About / bio çıktıları
 ```
+
+> **Doküman çevirisi kapsam dışı (karar: 2026-09-16).** `docs/spec/**` Türkçe
+> kalıyor. Kod, yorum, commit mesajı, `README`, `CONTRIBUTING`, `SECURITY` ve
+> `CLAUDE.md` zaten İngilizce ve öyle kalacak — yani açık kaynak bir okuyucunun
+> **kodu okumak** için Türkçeye ihtiyacı yok. Çeviri ~9.400 satırlık bir iş ve
+> iki kopyayı ayrı ayrı güncel tutma yükümlülüğü getiriyordu; getirisi
+> mimariyi okumak isteyen bir yabancıydı, ki henüz yok.
 
 ### 55.1 Zaman tahmini
 
