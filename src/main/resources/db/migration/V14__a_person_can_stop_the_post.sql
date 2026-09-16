@@ -1,8 +1,8 @@
--- Bolum 57.7. Two columns, one for the answer and one for the way back to it.
+-- Two columns, one for the answer and one for the way back to it.
 --
 -- lifecycle_emails is the preference itself: true until somebody says
 -- otherwise, and read by every email the section marks as optional. The
--- deletion confirmation ignores it on purpose -- Bolum 57.4 requires telling a
+-- deletion confirmation ignores it on purpose -- the law requires telling a
 -- person their data is gone, and a switch that suppressed that would be a way
 -- of not telling them.
 --

@@ -1,8 +1,8 @@
--- Bolum 24: Faz D's wording has to survive its own generation, because Faz G
+-- Faz D's wording has to survive its own generation, because Faz G
 -- re-runs the pipeline and must not pay for the same sentences twice.
 --
--- `content_snapshot` looks like it already holds this and does not. Bolum 22.2
--- built `RenderRequest` to carry no ids, no scores and no locks -- only what
+-- `content_snapshot` looks like it already holds this and does not.
+-- `RenderRequest` carries no ids, no scores and no locks -- only what
 -- prints -- so the text in that column cannot be mapped back to the atom it
 -- belongs to. Re-running selection with one bullet switched off would leave
 -- every surviving atom without its rewrite: the edit the person asked for is
@@ -22,5 +22,5 @@
 --
 -- No new class of data. The same sentences are already in `content_snapshot`
 -- and in `atom_variants`, so account deletion, the retention sweep and the
--- anonymous sweep reach this by reaching the row (Bolum 57.4, § 51.6.1).
+-- anonymous sweep reach this by reaching the row.
 ALTER TABLE generations ADD COLUMN rewritten_content JSONB;

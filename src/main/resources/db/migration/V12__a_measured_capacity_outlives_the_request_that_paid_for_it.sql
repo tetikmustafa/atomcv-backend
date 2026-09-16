@@ -1,4 +1,5 @@
--- Bolum 33.1's layer B: what a page of a given geometry holds, measured once.
+-- Layer B -- font, margin, leading: what a page of a given geometry holds,
+-- measured once.
 --
 -- Until now there were two capacities and both were constants in
 -- `TemplateRegistry`, because there were two templates at two fixed settings

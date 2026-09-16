@@ -1,4 +1,4 @@
--- Bolum 20.2: a summary sits straight under its section heading, the way every
+-- A summary sits straight under its section heading, the way every
 -- CV's does. Extraction has to put every atom somewhere and the shape it is
 -- given has only entries, so it invented a title for the one it made -- a real
 -- import produced `Professional Summary`, and the renderer printed it as a

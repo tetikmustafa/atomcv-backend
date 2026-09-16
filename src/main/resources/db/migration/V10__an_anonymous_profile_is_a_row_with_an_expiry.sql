@@ -1,4 +1,4 @@
--- Bolum 9: an anonymous person's profile becomes a row like anybody else's,
+-- An anonymous person's profile becomes a row like anybody else's,
 -- and is deleted when their session ends.
 --
 -- It was a Redis document, and the reason to move it is not storage: it is that
@@ -19,7 +19,7 @@
 ALTER TABLE profiles ALTER COLUMN user_id DROP NOT NULL;
 
 -- When the session ends, so does this. NULL for an account's profile, which is
--- kept until the account is deleted (Bolum 57.4).
+-- kept until the account is deleted.
 ALTER TABLE profiles ADD COLUMN expires_at TIMESTAMPTZ;
 
 -- The invariant, and it is worth a constraint rather than a convention: a

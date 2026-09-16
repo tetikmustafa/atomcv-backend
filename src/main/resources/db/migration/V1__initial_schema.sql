@@ -1,7 +1,7 @@
 -- ══════════════════════════════════════════════════════════
 -- V1__initial_schema.sql
 --
--- Full baseline schema (teknik-mimari-dokumani.md, Bolum 13).
+-- Full baseline schema: every table the product is designed around.
 -- Tables for later stages (jobs, llm_invocations, ...) are created now and
 -- stay empty until their stage arrives; splitting them across migrations
 -- would mean revisiting the same tables under a rule that forbids editing
