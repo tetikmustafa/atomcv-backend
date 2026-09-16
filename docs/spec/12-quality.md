@@ -362,6 +362,18 @@ inanmaz.
 Zorlayan kopya frontend reposundaki `bundle-budget.json`; buradaki sayılar
 tavandır ve **karar olmadan yükseltilmez** (EK D.10 · 13, 14).
 
+> **Backend tarafında bu tablonun sekiz satırından ikisi zorlanıyor**
+> (denetim, beşinci tur). `performance-budgets.yaml` bilerek bir alt küme
+> taşıyor — dosyanın kendi gerekçesi: bir CI makinesinin hızı bu farklardan
+> çok oynuyor, o yüzden zamanlama gevşek bir muhafız, ve keskin olanlar sayı
+> değil — profil okumada **sorgu sayısı**, saf fazlarda **ölçek oranı**.
+> Alt kümenin kendisi de üç sayı boyunca tutulmuyordu: `phase_scoring`'in
+> testi hiç yazılmamıştı, `profile_load`'ın milisaniyeleri de öyle, ve her
+> birinin `p50`'sini hiçbir şey okumuyordu. Şimdi dosyadaki her sayının bir
+> okuyucusu var ve `BudgetsAreHeldTest` bunu her koşuda kontrol ediyor.
+> `p50` kalmadı: ölçüm on beş örneğin **en hızlısını** alıyor, medyan o
+> yöntemin altında anlamsız.
+
 ### 52.4 LaTeX optimizasyonu
 
 ```dockerfile
@@ -542,6 +554,22 @@ void rewritePreservesFactualContent() {
 }
 ```
 
+> **Faz A'nın süiti yoktu ve tablo varmış gibi okunuyordu** (denetim, beşinci
+> tur). Yukarıdaki örnek Faz D'nindir ve **telde yalnız o vardı**;
+> `SCHEMA_CONFORMS` ile `REQUIRED_SKILLS_FOUND` § 53.5'te satır, `EvalThresholds`'ta
+> taban değeri taşıyordu ve hiçbir yerde bir gözlem kaydedilmiyordu. Dahası CI
+> hattı `prompts/` altında **herhangi bir** dosya değişince ateşleniyor ve var
+> olan bütün süitleri koşturuyordu: `job_analysis/v2.md`'yi düzenlemek Faz D'yi
+> ölçüp yeşil dönüyordu. Şimdi `JobAnalysisEvalIT` üç metriği de kaydediyor
+> (üçüncüsü aşağıdaki "anlamsız ilan tespiti"), hat **hangi** prompt'un
+> değiştiğini söylüyor ve süiti olmayanı adıyla uyarıyor.
+>
+> **Süiti olmayan beş prompt bilerek öyle**, ve gerekçeleri
+> `PromptEvalCoverageTest`'te yazılı — o test üçüncü durumu, yani hakkında
+> karar verilmemiş bir prompt'u reddediyor. § 53.5 yalnız Faz A, D ve F için
+> taban koyuyor; ötekilere eşik uydurmak bir ürün kararını bir test dosyasında
+> vermek olurdu.
+
 ### 53.5 Eşikler
 
 | Metrik | Faz | Eşik |
@@ -555,6 +583,17 @@ void rewritePreservesFactualContent() {
 | Uzunluk artışı | D | <%25 |
 | Doğrulama red oranı | D | <%5 |
 | Sayfa sapma oranı | F | <%2 |
+
+> **Dokuz satırın kaçı gerçekten ölçülüyor** (denetim, beşinci tur): Faz A'nın
+> üçü `JobAnalysisEvalIT`'te, Faz D'nin beşi `BulletRewriteEvalIT`'te —
+> ikisi de `gradlew llmEval`, yani **para harcayan ve elle koşulan** hat.
+> **Faz F'nin sayfa sapması burada değil**, ve olmamalı: model içermiyor,
+> `MeasurementDriftIT` ile golden setin ölçümleri onu gerçek derleyiciye karşı
+> tutuyor ve o hat bedava.
+>
+> **Performans bütçeleri de aynı soruyu sordurdu** ve orada üç sayı gerçekten
+> tutulmuyordu; `performance-budgets.yaml` artık yalnız bir testin okuduğu
+> sayıları taşıyor ve `BudgetsAreHeldTest` bunu kontrol ediyor (§ 52).
 
 ### 53.6 Karşılaştırma raporu
 

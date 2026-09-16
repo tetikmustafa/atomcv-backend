@@ -186,10 +186,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { java-version: '21', distribution: 'temurin', cache: gradle }
+      - run: sh ./gradlew spotlessCheck       # biçim kapısı, ÖNCE
       - run: sh ./gradlew build -x test
       - run: sh ./gradlew test                # unit + ArchUnit
       - run: sh ./gradlew integrationTest     # Testcontainers
-      # - run: sh ./gradlew spotlessCheck     # formatter yapılandırılınca aç
 
   security:
     runs-on: ubuntu-latest
