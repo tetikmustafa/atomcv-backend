@@ -27,6 +27,8 @@ import com.mustafatetik.atomcv.generation.service.GenerationEnqueueService;
 import com.mustafatetik.atomcv.generation.service.SelectionEditService;
 import com.mustafatetik.atomcv.generation.service.SelectionViewService;
 import com.mustafatetik.atomcv.jobs.queue.Job;
+import com.mustafatetik.atomcv.rendering.DocumentWriter;
+import com.mustafatetik.atomcv.rendering.DocumentWriters;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
 import com.mustafatetik.atomcv.shared.error.AccountFeature;
@@ -54,7 +56,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -100,6 +101,7 @@ public class GenerationController {
     private final AnonymousGenerations anonymousRecords;
     private final GenerationEnqueueService enqueue;
     private final GenerationDownloadService downloads;
+    private final DocumentWriters writers;
     private final GenerationRepository generations;
     private final CoverLetterRegenerationService coverLetters;
     private final RateLimiter rateLimiter;
@@ -130,10 +132,6 @@ public class GenerationController {
     /** The ceiling a caller may ask for. Beyond it the request is clamped, not refused. */
     private static final int MAX_PAGE_SIZE = 100;
 
-    /** What a .docx is, spelled out because MediaType has no constant for it. */
-    private static final MediaType DOCX_MEDIA_TYPE = MediaType.parseMediaType(
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-
     /**
      * Published on every 429 here, because a header nobody documented is a
      * header nobody reads (F-021).
@@ -153,6 +151,7 @@ public class GenerationController {
             CallerChallenge challenge,
             AnonymousGenerations anonymousRecords,
             GenerationEnqueueService enqueue, GenerationDownloadService downloads,
+            DocumentWriters writers,
             GenerationRepository generations, CoverLetterRegenerationService coverLetters,
             SelectionEditService edits, SelectionViewService selectionView,
             RateLimiter rateLimiter, FeedbackService feedback,
@@ -165,6 +164,7 @@ public class GenerationController {
         this.anonymousRecords = anonymousRecords;
         this.enqueue = enqueue;
         this.downloads = downloads;
+        this.writers = writers;
         this.generations = generations;
         this.coverLetters = coverLetters;
         this.edits = edits;
@@ -441,45 +441,29 @@ public class GenerationController {
                     new Resolution(ResolutionAction.RETRY, null));
         }
 
-        if ("docx".equalsIgnoreCase(format)) {
-            // No compilation and so no failure to present: POI writes the
-            // package itself. The page guarantee does not travel with it
-            // either -- the atoms are the ones that fit a LaTeX page, and Word
-            // may set them in a little more or less room.
-            return attachment(downloads.renderDocx(generation), DOCX_MEDIA_TYPE, "docx");
-        }
-        if ("html".equalsIgnoreCase(format)) {
-            // No compiler and no page: HTML does not have one, so the
-            // guarantee does not become approximate here the way it does for
-            // Word -- it does not apply.
-            return attachment(downloads.renderHtml(generation).getBytes(StandardCharsets.UTF_8),
-                    MediaType.valueOf("text/html;charset=UTF-8"), "html");
-        }
-        if ("source".equalsIgnoreCase(format)) {
-            // The resource map has listed this from the start and nothing
-            // served it. The charset matters as much as it does on the
-            // Markdown export: a response without one is read as ISO-8859-1
-            // and a Turkish name arrives broken.
-            return attachment(
-                    downloads.renderSource(generation).getBytes(StandardCharsets.UTF_8),
-                    MediaType.valueOf("application/x-tex;charset=UTF-8"), "tex");
-        }
-        if (!"pdf".equalsIgnoreCase(format)) {
-            // Named rather than ignored: a client asking for one and silently
-            // getting a PDF would ship a .tex button that downloads a PDF.
-            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
-                    .param("fields", List.of("format"))
-                    .build());
-        }
+        // One resolution and no chain of format names. This used to be four
+        // branches, which is how the controller came to hold the list of
+        // formats the product supports -- a list the rendering module owns.
+        // Unknown names are named rather than ignored: a client asking for one
+        // and silently getting a PDF would ship a .tex button that downloads a
+        // PDF.
+        DocumentWriter writer = writers.forWireName(format)
+                .orElseThrow(() -> new ApiException(
+                        UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                                .param("fields", List.of("format"))
+                                .build()));
 
-        Result<byte[]> pdf = downloads.render(generation);
-        byte[] bytes = switch (pdf) {
+        // Only the PDF can fail, because only the PDF goes through a compiler.
+        // The other three answer with bytes or not at all.
+        byte[] bytes = switch (downloads.write(generation, writer)) {
             case Result.Ok<byte[]> ok -> ok.value();
             case Result.Err<byte[]> failed -> throw new ApiException(
                     errors.present(failed.error(), pageHeightPt()));
         };
 
-        return attachment(bytes, MediaType.APPLICATION_PDF, "pdf");
+        return attachment(bytes,
+                MediaType.valueOf(writer.format().mediaType()),
+                writer.format().fileExtension());
     }
 
     /**

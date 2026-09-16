@@ -183,6 +183,37 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAPackage("..llm..");
 
     /**
+     * Module rule 3: the generation module does not know which formats exist.
+     *
+     * <p>It did. {@code GenerationDownloadService} held a {@code
+     * DocxDocumentWriter} and an {@code HtmlDocumentWriter} as fields and the
+     * controller above it matched format names in a chain of string
+     * comparisons, so the list of the product's output formats was written
+     * down in the two places with no business holding it. That is also the
+     * fourth product claim — formats as independent plug-ins — and it was not
+     * true: adding one meant editing the generation module.
+     *
+     * <p>The boundary is the concrete format packages. {@code
+     * ..rendering..}'s root is fine and has to be: the pipeline drives {@code
+     * DocumentRenderer} and a download resolves a {@code DocumentWriter}, and
+     * neither names a format.
+     *
+     * <p><strong>{@code ReplayRun} is the one exemption and it is not a
+     * loophole.</strong> It is the offline tool from the observability section,
+     * a {@code main} with no Spring context whose entire purpose is to re-run
+     * Faz E from an exported file and print the source the compiler was given.
+     * Faz E is LaTeX by definition, so naming the renderer there is naming the
+     * thing being replayed rather than choosing among formats — and being
+     * outside the container, it has nothing to resolve a writer with.
+     */
+    @ArchTest
+    static final ArchRule generationDoesNotKnowTheFormats = noClasses()
+            .that().resideInAPackage("..generation..")
+            .and().haveSimpleNameNotEndingWith("ReplayRun")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..rendering.latex..", "..rendering.html..", "..rendering.docx..");
+
+    /**
      * User content is never logged; log {@code ContentShape} instead.
      *
      * <p>Scope limit worth knowing: this catches any method named
