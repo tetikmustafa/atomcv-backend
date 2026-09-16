@@ -9,7 +9,6 @@ import com.mustafatetik.atomcv.email.EmailProperties;
 import com.mustafatetik.atomcv.email.EmailSender;
 import com.mustafatetik.atomcv.email.EmailSuppressions;
 import com.mustafatetik.atomcv.identity.domain.UserAccount;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,8 +19,15 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The dangerous reading is "when the account is created". A {@code users}
  * row is written the moment anybody types an address into the sign-in box, so
- * that trigger would have mailed every address anyone cared to enter. The case
- * below that matters most is therefore the one that asserts an absence.
+ * that trigger would have mailed every address anyone cared to enter.
+ *
+ * <p><strong>That case is no longer here.</strong> "Has this person signed in
+ * before" is answerable only before {@code seen(...)} runs, which is inside
+ * the transaction this class now deliberately sits outside of, so the two
+ * sign-in routes ask it and publish {@link FirstSignIn} only when the answer
+ * is yes. The assertion moved with the decision: see
+ * {@code MagicLinkServiceTest} and {@code OAuthLoginServiceTest}. What is left
+ * here is the other half — whether an address may be written to at all.
  */
 class WelcomeGreetingTest {
 
@@ -43,27 +49,11 @@ class WelcomeGreetingTest {
         greeting = new WelcomeGreeting(sender, suppressions, PROPERTIES);
     }
 
-    /**
-     * <strong>The case the first spec draft would have failed.</strong> An
-     * account that exists because somebody typed the address has never signed
-     * in — and this asks about signing in, not about existing, so the
-     * distinction has to come from somewhere else than the row's presence.
-     */
-    @Test
-    void anaccountThatHasSignedInBeforeIsNotGreetedAgain() {
-        UserAccount returning = UserAccount.signingUp("ada@example.com", "Ada");
-        returning.seenAt(Instant.parse("2026-09-01T10:00:00Z"));
-
-        greeting.greetIfFirstSignIn(returning);
-
-        assertThat(sent).isEmpty();
-    }
-
     @Test
     void thefirstSignInIsGreetedOnce() {
         UserAccount arriving = UserAccount.signingUp("ada@example.com", "Ada");
 
-        greeting.greetIfFirstSignIn(arriving);
+        greeting.greet(arriving);
 
         assertThat(sent).hasSize(1);
         assertThat(sent.get(0).to()).isEqualTo("ada@example.com");
@@ -77,7 +67,7 @@ class WelcomeGreetingTest {
     void itcarriesTheWayToStopIt() {
         UserAccount arriving = UserAccount.signingUp("ada@example.com", "Ada");
 
-        greeting.greetIfFirstSignIn(arriving);
+        greeting.greet(arriving);
 
         String expected = "https://app.test/unsubscribe?t=" + arriving.getUnsubscribeToken();
         assertThat(sent.get(0).text()).contains(expected);
@@ -89,7 +79,7 @@ class WelcomeGreetingTest {
         UserAccount arriving = UserAccount.signingUp("ada@example.com", "Ada");
         arriving.setLifecycleEmails(false);
 
-        greeting.greetIfFirstSignIn(arriving);
+        greeting.greet(arriving);
 
         assertThat(sent).isEmpty();
     }
@@ -100,7 +90,7 @@ class WelcomeGreetingTest {
         when(suppressions.isSuppressed("ada@example.com")).thenReturn(true);
         UserAccount arriving = UserAccount.signingUp("ada@example.com", "Ada");
 
-        greeting.greetIfFirstSignIn(arriving);
+        greeting.greet(arriving);
 
         assertThat(sent).isEmpty();
     }
@@ -110,6 +100,6 @@ class WelcomeGreetingTest {
     void asenderThatFailsIsNotAnexception() {
         var refusing = new WelcomeGreeting(message -> false, suppressions, PROPERTIES);
 
-        refusing.greetIfFirstSignIn(UserAccount.signingUp("ada@example.com", "Ada"));
+        refusing.greet(UserAccount.signingUp("ada@example.com", "Ada"));
     }
 }

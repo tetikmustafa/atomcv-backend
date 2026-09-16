@@ -19,6 +19,8 @@ import com.mustafatetik.atomcv.shared.security.UserRole;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +33,14 @@ class OAuthLoginServiceTest {
     private final SignInAccounts accounts = mock(SignInAccounts.class);
     private final SessionStore sessions = mock(SessionStore.class);
 
+    /** What the sign-in published, which is how the welcome is reached now. */
+    private final List<Object> published = new ArrayList<>();
+
     private OAuthLoginService service;
 
     @BeforeEach
     void setUp() {
-        service = new OAuthLoginService(accounts, sessions, mock(WelcomeGreeting.class),
+        service = new OAuthLoginService(accounts, sessions, published::add,
                 Clock.fixed(NOW, ZoneOffset.UTC));
         when(sessions.create(any(), any(), any())).thenAnswer(call -> Session.beginning(
                 "a-session-id", call.getArgument(0), call.getArgument(1),
@@ -59,6 +64,33 @@ class OAuthLoginServiceTest {
         verify(accounts, never()).byEmail(any());
         verify(accounts, never()).create(any(), any());
         verify(sessions).create(existing.getId(), UserRole.USER, AuthMethod.OAUTH_GITHUB);
+    }
+
+    /**
+     * <strong>The welcome is decided here and sent after the commit.</strong>
+     * A subject that has signed in before announces nothing; the assertion
+     * lives here rather than in {@code WelcomeGreetingTest} because
+     * {@code seen(...)} below is what makes the question unanswerable
+     * afterwards, and the greeting now runs afterwards.
+     */
+    @Test
+    void areturningSubjectAnnouncesNothingAndafirstOneDoes() {
+        UserAccount returning = UserAccount.signingUp("old@example.com", "Ada");
+        returning.seenAt(NOW.minusSeconds(86_400));
+        when(accounts.byProviderIdentity(OAuthProvider.GITHUB, "42"))
+                .thenReturn(Optional.of(returning));
+
+        service.signIn(account(OAuthProvider.GITHUB, "42", "old@example.com", true));
+
+        assertThat(published).isEmpty();
+
+        UserAccount arriving = UserAccount.signingUp("new@example.com", "Grace");
+        when(accounts.byProviderIdentity(OAuthProvider.GITHUB, "43"))
+                .thenReturn(Optional.of(arriving));
+
+        service.signIn(account(OAuthProvider.GITHUB, "43", "new@example.com", true));
+
+        assertThat(published).containsExactly(new FirstSignIn(arriving));
     }
 
     /**

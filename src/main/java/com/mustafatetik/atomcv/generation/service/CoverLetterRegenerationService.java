@@ -13,7 +13,6 @@ import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The three buttons, and the first press of any of them.
@@ -50,10 +49,23 @@ public class CoverLetterRegenerationService {
     }
 
     /**
+     * <p><strong>Not transactional, and that is the point.</strong> This
+     * method held one across {@link CoverLetterWriter#write} until it did not:
+     * the letter is a model call with a forty-five second ceiling, made on the
+     * request thread, and a transaction around it keeps a connection out of a
+     * pool of ten for as long as the model takes to answer. The same reasoning
+     * {@code TranslationWriter} carries, and the same fix — except that the
+     * write here is a single {@code save}, which is already atomic on its own,
+     * so it needs no bean of its own to hold a transaction.
+     *
+     * <p>The reads are two short ones ({@code owned} carries its own), and a
+     * letter written from a profile that changed between them would be a
+     * letter about a CV nobody sent — which the selection snapshot on the row,
+     * not the transaction, is what prevents.
+     *
      * @param generation the row, already read through the scoped repository —
      *                   which is where ownership was decided (absolute rule 3)
      */
-    @Transactional
     public Result<CoverLetterDraft> rewrite(
             UserContext user, Generation generation, CoverLetterStyle style, String companyNote) {
 
