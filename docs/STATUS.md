@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-20** · **her iki kanal da boşaldı ve yeniden doldu** — `B-100`…`B-116` ACK'lendi ve arşivlendi, `F-037`…`F-040` geldikleri gün karşılandı, sırada `B-117`…`B-119` var
+**2026-09-21** · **`B-117`…`B-119` karşılandı ve arşivlendi** — iki kanal da boş; açık madde yok. Kapı sırası ve şema **gerçek uca karşı ölçüldü** (413 → `400` → 409 → 415; `gen:api` backend'in commit'li şemasıyla birebir)
 
 ## Backend — `atomcv-backend`
 
@@ -33,7 +33,7 @@
 | Aşama 3 — **bütün dilimler** | ✅ |
 | Aşama 4 — `B-071`-`B-074`, `B-085`-`B-087`, `B-088`-`B-094`, `B-096` | ✅ |
 | Aşama 4 — SEO, a11y denetimi, tema, `canAddAlternatives`, bağımlılıklar | ✅ |
-| Aşama 4 — kapanış sırası D1…D14, `B-100`…`B-116` dahil | ✅ tamamı |
+| Aşama 4 — kapanış sırası D1…D14, `B-100`…`B-116`, `B-117`…`B-119` | ✅ tamamı |
 
 **Aşama 4'ün sekizi karşılandı (2026-09-11).** Faz G'nin cümle kutusu, üç şablon + Katman B, `/applications`, DOCX, `/unsubscribe` — satır satır `handoff/resolved/to-frontend-2026-09.md`'de. **Tek eksik bilerek:** `B-088`'in elle aç/kapa arayüzü çizilmedi, çünkü hangi atomların tartıldığını söyleyen uç yok (`F-031`); istemci fonksiyonu ve `GENERATION_SUPERSEDED` indi. **`gen:api` bir sessiz kusur açığa çıkardı:** springdoc `DELETE /account`'u `delete_2`'ye kaydırdı ve `delete_1` başvuru silmeye geçti; ikisi de 204 döndüğü için typecheck sustu — numaralı id'li her uç artık **yoluyla** bağlanıyor (`F-033`).
 
@@ -43,7 +43,7 @@
 
 **Güvenlik:** `next` 16.3.0 iki **kritik** RCE uyarısının aralığındaydı (Windows sunucu; AVIF/görüntü optimizasyonu). 16.3.5'e çıkıldı, kalan yedisi geliştirme zinciriydi, **sıfır açık**. CI action'ları `@v5` — yalnız push'ta doğrulanabilir.
 
-**Test:** 965 birim · 77 e2e · **bundle** profil 258.6 / ayarlar 243.8 / üretim 227.4 / onboarding 221.2 / başvurular 216.6 / geçmiş 215.5 / landing ve nasıl-çalışıyor 168.8 KB (tavan: pazarlama 200, uygulama 280) · `npm audit` sıfır açık
+**Test:** 971 birim · 77 e2e · **bundle** profil 258.6 / ayarlar 243.8 / üretim 227.5 / onboarding 221.6 / başvurular 216.6 / geçmiş 215.5 / landing ve nasıl-çalışıyor 168.8 KB (tavan: pazarlama 200, uygulama 280) · `npm audit` sıfır açık
 
 ## Açık kararlar
 
@@ -53,7 +53,7 @@ _Daha önce kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedel
 
 ## Sonraki senkronizasyon noktası
 
-**Sırada `B-117`…`B-119` var (2026-09-20)** — `F-038`'in dört şeyi, `F-039`+`F-040`'ın karşılığı, ve `F-037`'nin `language` alanı. **Üçü de `npm run gen:api` istiyor**, ve `B-119` bir ekran işi: `LANGUAGE_UNDETECTED`'da `choose_language` düğmesi artık **çizilebilir**. `B-100`…`B-116` ACK'lendi ve `resolved/to-frontend-2026-09.md`'ye indi — **on yedisi bir gün arşivsiz kaldı** (silindiler ama yazılmadılar), aynı gün `d5172d8`'den kurtarıldı.
+**Üçü de karşılandı (2026-09-21).** `B-117` kod yazdırmadı — dördü de D6/D12'de inmişti. `B-118`: sonuç ekranı ve geçmiş satırı `pageCount`'u **o üretimin** `maxPages`'ine karşı okuyor (alan yoksa not yok), bayat bir `customizationId`'nin `404`'ünde ölü seçim düşüyor ve liste tazeleniyor. `B-119`: `choose_language` artık çiziliyor, cevap bir sonraki yüklemenin `language`'ında gidiyor; seçicinin listesinin iki yarısı da sunucunun. **`gen:api` şemayı değiştirmedi — çünkü `:8080`'deki derleme bayattı**; tipler backend'in commit'li `openapi.json`'ından üretildi, CI'ın `contract-check`'inin çektiği dosyadan. Yeniden başlatılan sunucuya karşı `gen:api` **bayt bayt aynı** dosyayı verdi, ve `language`'ın kapıdaki yeri üç sondayla ölçüldü — **413 → `400` → 409 → 415**, mock düzeltildi. **Açık madde yok; sıra backend'in bir sonraki turunda.**
 
 **Açık duran tek şey `B-101`'in `contract-check`'i** ve ikimizde de yapılmadı. `F-038`'in dört boşluğunu tam olarak o yakalardı; bu tur onları elle kapattı, muhafızı değil.
 
