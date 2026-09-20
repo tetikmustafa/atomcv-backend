@@ -53,6 +53,12 @@ public record GenerationSummary(
                 + "absent while it is unfinished or failed")
         Integer pageCount,
 
+        @Schema(description = "The page limit this generation was made under, so a "
+                + "row can be read against it the same way the full response is "
+                + "(F-039). Absent for a generation written before the limit was "
+                + "recorded.")
+        Integer maxPages,
+
         @Schema(description = "The role the posting was for, as Faz A read it; "
                 + "absent in general mode and when the posting named none",
                 example = "Backend Engineer")
@@ -87,6 +93,7 @@ public record GenerationSummary(
                 generation.getStatus(),
                 generation.getCreatedAt(),
                 generation.getPageCount() == null ? null : generation.getPageCount().intValue(),
+                generation.getMaxPages(),
                 blankToNull(analysis == null ? null : analysis.role().title()),
                 blankToNull(analysis == null ? null : analysis.company().name()),
                 generation.getFitReport() == null ? null : generation.getFitReport().level(),
