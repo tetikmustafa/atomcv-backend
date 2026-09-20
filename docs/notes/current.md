@@ -48,6 +48,8 @@ satırı seri kazandı.
 
 **Düzeltme — `job_analysis`'in işveren cümlesi `v3`'te.** Erteleme "bir sonraki
 sürümde" diyordu, v2 geldi, cümle girmedi. Koşulu kontrol eden bir şey yoktu.
+**Bedeli bir merge kapısı:** sürüm fixture anahtarının parçası, `latexTest` dört
+testte düştü, düzeltmesi tek bir v3 kaydı — sıra § 53.2'de.
 
 ---
 
@@ -108,11 +110,9 @@ sürümde" diyordu, v2 geldi, cümle girmedi. Koşulu kontrol eden bir şey yokt
   (gerçek TEI ister). Baraj 4'te, muhafızı `AdaptBarReachTest`; onu ilk gözden
   geçirme tetikleyicisi `vps-dagitim-plani.md` § 4'te.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
-- **XeTeX format dökümü imkânsız** (§ 29.2): motor `Can't \dump a format with
-  native fonts or font-mappings` diyor. Asgari bir belgenin **tam** derlemesi
-  620-925 ms, yani vaat edilen "1-2 saniye" belgenin tamamından uzun.
-- **`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan
-  sayfayı sayıyor** — iki sayfalık belgede sapması anlamsız, bilerek bırakıldı.
+- **XeTeX format dökümü imkânsız ve kazancı da yoktu** — ölçüm ve motorun kendi
+  cevabı § 29.2'de, § 52.4'te tekrar.
+- **`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan sayfayı sayıyor** — iki sayfalık belgede sapması anlamsız, bilerek bırakıldı.
 
 **Aşama 1-3'ten taşınan, hâlâ canlı:**
 
@@ -138,7 +138,9 @@ sürümde" diyordu, v2 geldi, cümle girmedi. Koşulu kontrol eden bir şey yokt
 - **Geliştiricide kalan:** VPS ve restore testi (§ 49.4); OAuth, Turnstile ve
   `B-083`'ün challenge'ı gerçek uca karşı denenmedi.
 
-**Dersler:** *bir javadoc ne zaman çalıştığını söylüyorsa çağıranı da ara* ·
+**Dersler:** *bir sayıyı raporlamadan önce onu üreten koşunun bittiğini
+doğrula — dizin dolmaya devam ediyorsa sayı henüz bir sayı değil* ·
+*bir javadoc ne zaman çalıştığını söylüyorsa çağıranı da ara* ·
 *doğru davranan kod, korunan değildir* · *flake demeden önce dalına bak* ·
 **§ 51.7: bir muhafızın düştüğünü görmeden yazıldı sayma** · **yazılı bir
 kolon, yazan bir kod demek değil** · **bir fixture eklemek bir terimi ölçülür

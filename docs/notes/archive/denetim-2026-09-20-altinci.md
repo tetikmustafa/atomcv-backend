@@ -158,9 +158,29 @@ EK C.3'ün istediği eval koşuldu (`make test-llm`, gerçek çağrı):
 | `nonsense_refused` | %100.0 | %95 |
 
 `required_skills_found` tabana yakın (12 vakanın 11'i) ve bir sonraki sürümde
-ilk bakılacak sayı o. **Bedeli kaydedilsin:** sürüm numarası fixture anahtarının
-parçası, yani `job_analysis`'in kayıtlı cevapları ıskalanıyor ve `local-fake` o
-prompt için sentetik cevaba düşüyor — `make record` bir kez daha koşulana kadar.
+ilk bakılacak sayı o.
+
+**Ve bedeli bir merge kapısıydı, bunu CI öğretti.** Sürüm numarası fixture
+anahtarının parçası; `active`'i çevirmek `job_analysis`'in **bütün** kayıtlarını
+yetim bıraktı ve `latexTest` dört testte düştü. Kayıp yalnız o prompt'ta ağır,
+çünkü `.gitignore` yalnız onun cevaplarını commit'liyor — gerekçesi orada yazılı
+ve tam bu: "latexTest'in sentetik analize düşmesini engelleyen şey bunlar."
+Zinciri: Faz A sentetik cevap verdi → sentetik analiz sentetik beceriler taşıdı
+→ Faz D'nin sentetik yeniden yazımı **aynı saçmalıktan kurulmuş** bir
+doğrulayıcıyı geçti → DOCX'te maddenin yerinde `synthetic-517` çıktı. Doğrulayıcı
+kusurlu değil; girdisi olan sözlük de uydurmaydı.
+
+Düzeltmesi **tek dosya**: testlerin oynattığı ilan için bir v3 kaydı. Sıra
+§ 53.2'ye yazıldı.
+
+**Ve bu turun kendi hatası burada.** Yerel `latexTest`'in sonucunu koşu
+sürerken okudum ve "145 test, 0 hata" diye raporladım; gerçek sonuç 145 test,
+**4 hata**ydı ve o sayı STATUS'a, CHANGELOG'a ve PR gövdesine öyle girdi. Aynı
+turda "hesaplanıp atılan bir değer yayımlanmış sayılmaz" diye yazarken,
+tamamlanmamış bir koşunun sayısını tamamlanmış gibi yayımladım. Ders § 51.7'nin
+üçüncü kuralının yanına yazılmalı: **bir sayıyı raporlamadan önce onu üreten
+koşunun bittiğini doğrula** — dizin dolmaya devam ediyorsa sayı henüz bir sayı
+değil.
 
 ### 7. Gerisi: bayat bloklar
 

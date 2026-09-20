@@ -518,6 +518,22 @@ prompts:
 
 Deploy etmeden geri alma imkânı verir.
 
+> **Bir sürümü yükseltmek `latexTest`'i düşürür, ve düzeltmesi bir kayıt
+> koşusudur** (denetim, 2026-09-20 — CI'da öğrenildi). Fixture anahtarı
+> `{promptId}/{version}-{sha256[0:12]}` (§ 54.2), yani `active`'i değiştirmek o
+> prompt'un **bütün** kayıtlarını yetim bırakıyor. `job_analysis` için bedeli
+> ağır, çünkü `.gitignore` yalnız onun cevaplarını commit'liyor — ötekiler
+> kişinin CV'si — ve o dosyalar "latexTest'in sentetik analize düşmesini
+> engelleyen şey". Kayıt yokken Faz A sentetik cevap veriyor, sentetik analiz
+> sentetik beceriler taşıyor, Faz D'nin sentetik yeniden yazımı **aynı
+> saçmalıktan kurulmuş** bir doğrulayıcıyı geçiyor, ve DOCX'te maddenin yerinde
+> `synthetic-517` çıkıyor. Dört IT birden düşüyor.
+>
+> **Sırası:** yeni sürümü yaz → `make test-llm` (EK C.3) → `active`'i çevir →
+> **`./scripts/dev-record.sh <cv> src/integrationTest/resources/postings/senior-backend-go.txt`**
+> → `gradlew latexTest`. Son iki adım atlanırsa hat merge kapısında düşer;
+> `JobSpecificCvIT`'in javadoc'u komutu zaten taşıyor.
+
 ### 53.3 A/B testi
 
 ```java
