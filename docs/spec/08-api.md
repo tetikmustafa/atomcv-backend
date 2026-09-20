@@ -106,8 +106,16 @@ DELETE /api/v1/account                      unutulma hakkı
 POST   /api/v1/email/unsubscribe            oturumsuz, opak jetonla
 
 ── Webhook ─────────────────────────────────────────
-POST   /api/v1/webhooks/resend              imza doğrulamalı
+POST   /api/v1/webhooks/resend              imza doğrulamalı · şemada YOK
 ```
+
+> **Webhook `openapi.json`'da yayımlanmıyor, ve bu bir karar** (kayıt: denetim
+> 2026-09-20). Uç `@Hidden`: sözleşme Resend'in, bizim değil, ve frontend
+> tiplerini o belgeden üretiyor — bizim hiç çağırmayacağı bir şeklin tipini
+> almasının karşılığı yok. Burada listelenmesinin sebebi haritanın **var olan
+> uçların** listesi olması; kaydın olmaması, haritayı şemaya karşı okuyan her
+> mekanik denetimin bunu "eksik uç" diye işaretlemesi demekti. Şema dışında
+> tutulan öteki uç `/api/v1/warmup` (EK D.6.7).
 
 #### 35.2.1 Haritanın yazıldığı gibi inmediği beş yer (denetim, 2026-09-15)
 

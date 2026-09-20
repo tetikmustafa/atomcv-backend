@@ -496,6 +496,12 @@ ile yönlendirmedir. Katalogdaki 400, biri onu JSON olarak isterse ne olacağıd
 - **`/api/v1/warmup` public API değildir** (Bölüm 52.5). OpenAPI şemasının
   dışında tutulur, nginx üzerinden yönlendirilmez, üretilen tiplerde
   görünmemelidir.
+- **`POST /api/v1/webhooks/resend` de şemada yoktur** (kayıt: denetim
+  2026-09-20). Sözleşme Resend'in; frontend tiplerini bu belgeden üretiyor ve
+  hiç çağırmayacağı bir gövdenin tipini almasının karşılığı yok. Uç `@Hidden`,
+  gerekçe controller'ın javadoc'unda, ve § 35.2'nin kaynak haritası artık
+  satırın yanında bunu söylüyor — söylemediği sürece haritayı `openapi.json`'a
+  karşı okuyan her denetim onu eksik bir uç sanıyor.
 
 **Etkinleştirici.** springdoc-openapi ilk endpoint'le birlikte gelir. On altı
 maddenin altısı, `npm run gen:api` çalışabilir olduğu anda kendiliğinden kapanır

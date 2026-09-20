@@ -148,7 +148,12 @@ Metin değişti
 Ölçüm henüz yoksa
   → font-metrik tahmini + %8 güvenlik payı
   → trace.C.estimatedAtoms sayacı artar
+  → generation.selection.costs{source=estimated} artar
 ```
+
+> **Son iki satırın ilki bir aşama boyunca doğru değildi** (düzeltme, denetim
+> 2026-09-20): sayı hesaplanıp loglanıyor, trace'e yazılmıyordu. Gerekçe ve
+> ikinci satırın seçilme sebebi § 20.4'te.
 
 ### 26.6 Kalibrasyon geri bildirimi
 
@@ -1614,10 +1619,21 @@ enum SectionLayout {
     BULLET_LIST,    // madde listesi
     ENTRY_LIST,     // başlık + tarih + maddeler
     INLINE_LIST,    // etiketli satırlar: "Kategori: öğe, öğe, öğe"
-    TWO_COLUMN,     // yan yana iki liste
     PARAGRAPH       // başlığın altında düz nesir, madde işareti yok
 }
 ```
+
+> **`TWO_COLUMN` kalktı** (V17, denetim 2026-09-20). Beşinci bir değerdi ve
+> **hiçbir zaman bir sayfaya çıkmadı**: uç kabul ediyordu, CHECK izin
+> veriyordu, şema yayımlıyordu, ve `LatexDocumentRenderer` onu bilerek entry
+> list'e düşürüyordu — üç şablon da tek kolon, gerekçesi § 33.5'te ATS
+> çıkarımı. Yani kişi bir düzen seçiyor, hiçbir şey söylenmiyor, ve belgesi
+> başkasını basıyordu; P4'ün yasakladığı şekil.
+>
+> V17'nin kaldırdığı öteki ölü sözlük değerleri **çıktılardı** ve frontend'e
+> boş bir dala mal oluyordu; bu **girdiydi** ve kullanıcıya verdiğini sandığı
+> bir seçime mal oluyordu. İki kolonlu bir şablon inerse değer onunla birlikte
+> geri gelir — bu bir kolon kararı değil, bir şablon kararı.
 
 Kullanıcı "Sertifikalar", "Yayınlar", "Gönüllü Çalışmalar" ekler; düzen tipini seçer. Her düzen tipinin sabit maliyeti şablon config'inde bir kez ölçülür.
 

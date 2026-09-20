@@ -159,14 +159,28 @@ Deneyim maddesi
                    [ Yeniden üret ] [ Benimkini koru ]
 ```
 
-> **Frontend (EK D.9 · 24). Bu akış Aşama 2'dir.** Aşama 1'de `stale`
-> bayrağı **her zaman false**: 37.5'in zinciri (TR düzenlendi → EN bayat
-> işaretlendi → çeviri işi) çeviri işine bağlı ve o iş henüz yok. Bir varyantı
-> **yeniden üreten uç de yok**. Bu yüzden yukarıdaki iki düğme Aşama 1'de
-> çizilmemeli: çalışmayan bir kontrol, kullanıcıya zaten bir sorun olduğunu
-> söyleyen bir ekranda hiç olmamasından kötüdür. Rozet ve açıklama gösterilir,
-> elle düzenleme sunulur — işleyen tek şey odur. Şemadaki `Variant.stale`
-> açıklaması bu satıra göre okunmalı.
+> **Frontend (EK D.9 · 24). İkisi de çalışıyor** (düzeltme, denetim
+> 2026-09-20). Bu blok **"Aşama 2'dir, çizmeyin"** diyordu ve bir aşama boyunca
+> yanlıştı: `stale` bayrağı Aşama 1'de gerçekten her zaman false'tu ve yeniden
+> üreten bir uç yoktu, ikisi de Aşama 3'te indi, satır kaldı. Yani spec,
+> frontend'e **işleyen bir kontrolü çizmemesini** söylemeye devam etti.
+>
+> Bugünkü hâli:
+>
+> - **Bayatlık gerçek.** Bir sözcüklemeyi düzenlemek ondan türeyen her şeyi
+>   `is_stale` işaretliyor, düzenlemeyle **aynı transaction'da** (§ 32.2.1).
+> - **"Yeniden üret" bir uç istemiyor, bir yama.**
+>   `PATCH /profile/atoms/{id}/variants/{vid}` gövdesinde `{"userEdited": false}`
+>   — yazarlık iddiası geri veriliyor ve bayat sözcükleme **hemen** çeviri
+>   kuyruğuna giriyor, çünkü kaynağı aylarca düzenlenmeyebilir ve çeviri
+>   şimdi bayat (§ 32.3.1).
+> - **"Benim halimi koru" hiçbir şey göndermemek.** `userEdited: true`
+>   **reddediliyor**: birinin adına yazarlık iddia etmek, makine çevirisini
+>   insan adının arkasına saklayabilecek tek yön.
+> - **Anonim oturumda çeviri kuyruğa girmiyor** ve bu bozulma değil, kısa yol:
+>   o oturumun ne işi sahiplenecek bir id'si var ne ikinci bir dili (§ 35.7.2).
+>
+> Aksiyon `B-115`.
 
 ### 37.7 Performans
 
@@ -241,10 +255,17 @@ static final ArchRule noLocaleSensitiveCase = noClasses()
 
 | Font | Latin Ext (TR) |
 |---|---|
-| Latin Modern | ✅ |
-| TeX Gyre Pagella/Termes/Heros | ✅ |
-| Fira Sans | ✅ |
-| Source Sans 3 | ✅ |
+| Latin Modern (`modern`) | ✅ |
+| TeX Gyre Termes (`serif`) | ✅ |
+| TeX Gyre Heros (`sans`) | ✅ |
+| TeX Gyre Pagella (`book`) | ✅ |
+
+> **İnen dört yazı tipi bunlar** (düzeltme, denetim 2026-09-20). Tablo Fira Sans
+> ile Source Sans 3'ü de sayıyordu ve **ikisi de inmedi**: § 5.5 gerekçeyi
+> ölçerek kaydediyor — ikisi de Debian'da ayrı paket değil, TeX tarafı
+> `texlive-fonts-extra` ve onun kurulu boyutu **1.38 GB**, § 46.3'ün LaTeX
+> imajına ayırdığı 2.0 GB'ı üçe katlardı. Kapsama iddiası ikisi için de
+> doğruydu, varlık iddiası değildi.
 
 **Test fixture:** Türkçe karakterli atom kümesiyle her şablonu derle, PDF'ten metin çıkarımı yapıp `ş ğ ı İ ö ü ç` doğru çıktığını doğrula.
 
