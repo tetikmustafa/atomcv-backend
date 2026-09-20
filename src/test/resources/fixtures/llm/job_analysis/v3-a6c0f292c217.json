@@ -1,0 +1,46 @@
+{
+  "role" : {
+    "title" : "Senior Backend Engineer",
+    "seniority" : "senior",
+    "domain" : "backend engineering for payments",
+    "employmentType" : null,
+    "workMode" : null
+  },
+  "company" : {
+    "name" : "",
+    "sizeHint" : null
+  },
+  "requiredSkills" : [ {
+    "name" : "Go",
+    "canonical" : "go",
+    "importance" : "critical"
+  }, {
+    "name" : "PostgreSQL",
+    "canonical" : "postgres",
+    "importance" : "high"
+  }, {
+    "name" : "observability tooling",
+    "canonical" : "observability",
+    "importance" : "high"
+  } ],
+  "preferredSkills" : [ {
+    "name" : "Kubernetes",
+    "canonical" : "kubernetes",
+    "importance" : null
+  }, {
+    "name" : "Terraform",
+    "canonical" : "terraform",
+    "importance" : null
+  } ],
+  "responsibilities" : [ "Design and operate distributed services in Go.", "Own the reliability of a high-throughput ledger.", "Mentor other engineers as the team grows.", "Ship production systems." ],
+  "keywords" : [ "senior backend engineer", "payments", "distributed services", "go", "postgres", "observability", "high-throughput ledger", "reliability", "mentoring", "production systems", "kubernetes", "terraform" ],
+  "experienceYears" : {
+    "min" : null,
+    "max" : null
+  },
+  "languageRequirements" : [ ],
+  "companyTone" : "Direct, concise, and engineering-focused.",
+  "jdLanguage" : "en",
+  "confidence" : 0.98,
+  "extractionNotes" : [ "The employer is not named in the posting.", "The posting asks for several years of production experience but gives no numeric minimum.", "Employment type and work mode are not specified." ]
+}
