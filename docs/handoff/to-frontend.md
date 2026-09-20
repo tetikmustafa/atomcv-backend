@@ -89,11 +89,16 @@ sonraki her üretim var olmayan bir dilde yapılırdı, kişiye söylenmeden.
 
 `B-100`…`B-116` **ACK'lendi ve indi** (2026-09-20). On yedisi de altı denetim
 turundan çıkmıştı ve hepsi tek bir kapanış sırasında karşılandı —
-`resolved/to-frontend-2026-09.md` satır satır ne yapıldığını söylüyor, niçin
-öyle yapıldığı `notes/archive/stage-4.md`'de.
+**maddelerin tamamı** `resolved/to-frontend-2026-09.md`'de, indikleri haliyle.
 
 **Dosya 347 satıra çıkmıştı ve bu bir arşivleme değil koordinasyon meselesiydi:**
 taşınabilecek madde yoktu, çünkü hiçbiri karşılanmamıştı. Şimdi karşılandılar.
+
+> **On yedisi bir gün arşivsiz kaldı.** `to-frontend.md`'den silindiler ama
+> `resolved/`'a yazılmadılar; bu satır okuyucuyu `B-099`'da biten bir dosyaya
+> yolluyordu. Aynı gün `d5172d8`'den kurtarılıp eklendiler. `stage-4.md`
+> işaretçisi de kaldırıldı — **Aşama 4 açık, o dosya henüz yok**; on yedinin
+> gerekçesi `notes/archive/denetim-*.md`'de.
 
 ---
 
