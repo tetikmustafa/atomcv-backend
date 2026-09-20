@@ -14,10 +14,17 @@ import java.util.Locale;
  * enqueued it. A lower number is taken first, which is the order the claim
  * query sorts by.
  *
- * <p>The whole vocabulary of {@code jobs.type} is here, including the kinds
- * nothing enqueues yet. A queue that could not name a type would take a row it
- * has no handler for and fail it as unknown; naming them costs nothing and the
- * column already lists all six.
+ * <p>The whole vocabulary of {@code jobs.type} is here, and since V17 the
+ * column carries a constraint saying so — it had a comment naming six and a
+ * constraint naming none.
+ *
+ * <p><strong>{@code EMAIL} was the sixth and is gone.</strong> It sat here with
+ * a priority and a sentence about late magic links, and nothing enqueued one:
+ * mail goes out on a post-commit event, which the fifth audit moved it to. The
+ * paragraph above used to argue that naming a type nothing enqueues costs
+ * nothing, and it was half right — it costs nothing to the queue, and it tells
+ * the next reader that mail is queued work when it is not. A type comes back
+ * the day something enqueues it (the sixth audit).
  */
 public enum JobType {
 
@@ -26,9 +33,6 @@ public enum JobType {
 
     /** Likewise, and it is the first thing they ever do. */
     PROFILE_EXTRACT(50),
-
-    /** A magic link that arrives late is a login that failed. */
-    EMAIL(80),
 
     TRANSLATION(100),
 

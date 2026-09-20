@@ -74,11 +74,11 @@ public record RenderRequest(
     /**
      * One heading with what hangs off it, already in the order it prints.
      *
-     * @param layout how this section is set. It was missing
-     *               here entirely, so the renderer set every section as a
-     *               bullet list whatever the column said — {@code INLINE_LIST}
-     *               and {@code TWO_COLUMN} existed in the enum, in the schema
-     *               and in the CHECK constraint, and could not reach the page.
+     * @param layout how this section is set. It was missing here entirely, so
+     *               the renderer set every section as a bullet list whatever
+     *               the column said — {@code INLINE_LIST} and the since-removed
+     *               {@code TWO_COLUMN} existed in the enum, in the schema and in
+     *               the CHECK constraint, and could not reach the page.
      */
     public record RenderableSection(
             String title,

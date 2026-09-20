@@ -45,10 +45,13 @@ public class RetentionSweeper {
      * on, and a running job's is what it is running on now — an age test alone
      * would clear the input from under a worker that had been retrying for a
      * week.
+     *
+     * <p>Two of them, since V17: {@code cancelled} was in this list and in the
+     * column's constraint and nothing could ever write it.
      */
     private static final String CLEAR_PAYLOADS = """
             UPDATE jobs SET payload = '{}'::jsonb
-            WHERE status IN ('completed', 'failed', 'cancelled')
+            WHERE status IN ('completed', 'failed')
               AND payload <> '{}'::jsonb
               AND coalesce(completed_at, created_at) < ?
             """;

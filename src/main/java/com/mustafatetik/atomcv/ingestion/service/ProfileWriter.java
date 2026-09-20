@@ -269,9 +269,10 @@ public class ProfileWriter {
      * one thing that is true of it: prose, no marker.
      *
      * <p>Experience, projects and education stay bullets and entries, which is
-     * what the default already says. {@code TWO_COLUMN} stays unused here —
-     * Classic is single-column for ATS extraction, and choosing it at import
-     * would decide that question in the wrong place.
+     * what the default already says. There is no two-column layout to choose
+     * any more: Classic is single-column for ATS extraction and the renderer
+     * always printed it as an entry list, so V17 took the value out rather than
+     * leave a choice that changed nothing.
      */
     static SectionLayout layoutFor(SectionKind kind) {
         return switch (kind) {

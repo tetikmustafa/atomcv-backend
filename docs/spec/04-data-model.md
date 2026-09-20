@@ -75,13 +75,16 @@ Bu tasarım, alternatif metin özelliğini "özel durum" olmaktan çıkarıp mod
 > oku.
 
 > **Ve aşağıdaki blok V1'dir, bugünkü şema değil** (düzeltme, denetim
-> 2026-09-16). On üç migration daha uygulandı ve hiçbiri buraya işlenmedi;
-> blokta duran altı satır bugünkü veritabanı hakkında yanlış: `profiles.user_id`
-> nullable, `profiles` iki kolon daha taşıyor, `generations` bir tane,
-> `sections.layout` beş değer alıyor, `jobs`'un idempotency indeksi başka bir
-> indeks, ve `template_capacities` diye bir tablo var. **Delta § 13.2'de**, ve
-> bölüm kendine "tam" dediği için orası bu bölümün parçası — blokta durup okuyan
-> biri şemayı bildiğini sanarak çıkıyordu.
+> 2026-09-16). On altı migration daha uygulandı ve hiçbiri buraya işlenmedi;
+> blokta duran satırların bir kısmı bugünkü veritabanı hakkında yanlış:
+> `profiles.user_id` nullable, `profiles` iki kolon daha taşıyor, `generations`
+> bir tane, `sections.layout` **dört** değer alıyor (V9 beşinciyi ekledi, V17
+> `two_column`'u düşürdü), `jobs`'un idempotency indeksi başka bir indeks,
+> `jobs.status` dört değerli ve `jobs.type` artık bir CHECK taşıyor,
+> `generations.status` da öyle, `email_preferences` diye bir tablo yok, ve
+> `template_capacities` diye bir tablo var. **Delta § 13.2'de**, ve bölüm
+> kendine "tam" dediği için orası bu bölümün parçası — blokta durup okuyan biri
+> şemayı bildiğini sanarak çıkıyordu.
 
 ```sql
 -- ══════════════════════════════════════════════════════════
@@ -473,6 +476,7 @@ ortasında, hangisini anlattığı belirsiz bir metin kalırdı.
 | `V14__a_person_can_stop_the_post` | `users.lifecycle_emails BOOLEAN NOT NULL DEFAULT true` ve `users.unsubscribe_token UUID NOT NULL DEFAULT gen_random_uuid()`; ikincisi UNIQUE, çünkü bağlantıya tıklayanın elinde yalnız o token var (§ 57.7) |
 | `V15__a_preference_lives_on_the_account_that_holds_it` | **`email_preferences` düştü.** Bloktaki üç kolonuna (`onboarding`, `product_updates`, `unsubscribed_at`) hiçbir zaman hiçbir şey yazmadı: tercih V14'te `users`'a indi, çünkü bir gelen kutusunun oturumu yok ve bağlantının oturumsuz ulaşılabilir olması gerekiyordu. Tabloyu canlı gösteren tek şey **iki entegrasyon testiydi** — biri varlığını, öteki kaskadın sildiğini doğruluyordu. Dururken, bir e-posta tercihini uygulayacak bir sonraki kişiye iki makul yer sunuyordu ve biri yanlıştı (denetim, beşinci tur) |
 | `V16__the_column_says_what_can_actually_write_to_it` | `atom_variants_created_by_check`: `created_by IN ('user','llm_translate')`. V1'in kolon yorumu dört yazar sayıyordu, kolon iki tanesini gördü — `llm_extract` hiç yazılmadı (içe aktarım kişinin kendi cümlelerini tutuyor ve bilerek `user` işaretliyor), `llm_rewrite` de yazılmaz (Faz D'nin yeniden yazımı varyant değil, `generations.rewritten_content`; § V11). İkisi de Java enum'unda ve **yayımlanan API şemasındaydı**, yani frontend hiç gelmeyecek bir değer için dal yazabilirdi. EK D "kapalı sözlüğün sahibi migration'dır" diyor; bu kolonun kısıtı hiç yoktu (denetim, beşinci tur) |
+| `V17__four_vocabularies_narrow_to_what_can_be_written` | **Dört kapalı sözlük, üretilemeyen değerlerinden arındı** (denetim, altıncı tur). `generations.status` ilk kez bir CHECK aldı ve `('completed','superseded')` diyor — `failed`'i hiçbir şey yazmıyordu, çünkü `selection_state` `NOT NULL` ve seçimden önce düşen koşunun yazacak satırı yok; enum'un kendi javadoc'u bunu zaten söylüyor, şema ise değeri yayımlıyordu. `jobs.status` beşten dörde indi: `cancelled`'ı yalnız `Job.cancel` yazabilirdi ve onun tek çağıranı kendi testiydi. `jobs.type` **ilk kez bir CHECK aldı** (V1 altısını yorumda sayıyordu, bir yorum hiçbir şey reddetmez) ve `email` listeden çıktı — ne kuyruğa veren var ne handler'ı, posta commit sonrası olayla gidiyor. `sections.layout` dörde indi: **`two_column` bir girdiydi** — uç kabul ediyordu, CHECK izin veriyordu, renderer bilerek entry list basıyordu (§ 33.5, ATS), yani kişi bir düzen seçiyor ve belgesi başkasını basıyordu. Tek veri onarımı bu sonuncusunda: satırlar zaten basıldıkları şeye, `entry_list`'e çevriliyor |
 
 ```sql
 -- ══════════════════════════════════════════════════════════
@@ -663,6 +667,8 @@ onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
   "F": { "durationMs": 4900, "pageCount": 1, "driftPt": 2.1, "atsExtractionOk": true }
 }
 ```
+
+---
 
 ### 14.7 `generations.engine_version`
 
