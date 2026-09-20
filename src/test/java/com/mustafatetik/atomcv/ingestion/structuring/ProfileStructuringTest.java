@@ -57,7 +57,7 @@ class ProfileStructuringTest {
     @Test
     void theDocumentGoesInsideTheFenceAndNeverIntoTheSystemHalf() {
         structuring(answering(profileJson("tr", 0.95, 1)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(sent.get().systemPrompt()).containsIgnoringCase("DATA to be parsed");
         assertThat(sent.get().systemPrompt()).doesNotContain(CV);
@@ -72,7 +72,7 @@ class ProfileStructuringTest {
     @Test
     void theCallAsksForTheMidTier() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(sent.get().preferredTier()).isEqualTo(ModelTier.MID);
         assertThat(sent.get().promptRef()).isEqualTo("profile_extraction:v1");
@@ -87,7 +87,7 @@ class ProfileStructuringTest {
     @Test
     void aScrambledDocumentCarriesItsNoteInsideTheFence() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, true), "user-1", null, null);
+                .structure(document(CV, true), null, "user-1", null, null);
 
         assertThat(sent.get().userPrompt()).containsIgnoringCase("wrong order");
         assertThat(sent.get().systemPrompt()).doesNotContainIgnoringCase("wrong order");
@@ -96,7 +96,7 @@ class ProfileStructuringTest {
     @Test
     void anOrdinaryDocumentCarriesNoNote() {
         structuring(answering(profileJson("en", 0.99, 1)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(sent.get().userPrompt()).doesNotContainIgnoringCase("wrong order");
     }
@@ -106,7 +106,7 @@ class ProfileStructuringTest {
     @Test
     void aReadableCvComesBackAsAProfile() {
         var result = structuring(answering(profileJson("tr", 0.96, 2)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(result).isInstanceOf(Result.Ok.class);
         var profile = ((Result.Ok<ExtractedProfile>) result).value();
@@ -123,7 +123,7 @@ class ProfileStructuringTest {
     @Test
     void aLanguageTheModelIsUnsureOfBecomesAQuestionCarryingItsGuess() {
         var result = structuring(answering(profileJson("tr", 0.31, 2)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(errorOf(result)).isInstanceOf(PipelineError.LanguageUndetected.class);
         assertThat(((PipelineError.LanguageUndetected) errorOf(result)).candidates())
@@ -133,15 +133,71 @@ class ProfileStructuringTest {
     @Test
     void aLanguageTheModelDidNotNameBecomesAnOpenQuestion() {
         var result = structuring(answering(profileJson("", 0.9, 2)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(((PipelineError.LanguageUndetected) errorOf(result)).candidates()).isEmpty();
+    }
+
+    /**
+     * F-037. The question was asked and there was nowhere to answer it: the
+     * refusal offers `choose_language`, so a second upload carrying the answer
+     * has to be able to land. Without this it would hit the same low
+     * confidence and be refused again — the loop that made the frontend drop
+     * the button rather than draw one that could not work.
+     */
+    @Test
+    void adeclaredLanguageSettlesWhatTheModelCouldNot() {
+        var result = structuring(answering(profileJson("tr", 0.31, 2)))
+                .structure(document(CV, false), "de", "user-1", null, null);
+
+        assertThat(result).isInstanceOf(Result.Ok.class);
+        var profile = ((Result.Ok<ExtractedProfile>) result).value();
+        assertThat(profile.detectedLanguage()).isEqualTo("de");
+        assertThat(profile.languageConfidence()).isEqualTo(1.0);
+    }
+
+    /**
+     * And it replaces a confident guess too, rather than only rescuing an
+     * unsure one. The person is answering a question about their own CV, and a
+     * field that silently loses to the model on disagreement is a field that
+     * does nothing in the case somebody actually notices.
+     */
+    @Test
+    void adeclaredLanguageOutranksAConfidentDetection() {
+        var result = structuring(answering(profileJson("en", 0.99, 2)))
+                .structure(document(CV, false), "tr", "user-1", null, null);
+
+        assertThat(((Result.Ok<ExtractedProfile>) result).value().detectedLanguage())
+                .isEqualTo("tr");
+    }
+
+    /**
+     * What the declared language does <em>not</em> buy. A document the model
+     * found nothing in is still nothing extracted — naming its language does
+     * not put atoms in it, and skipping that refusal would write an empty
+     * profile.
+     */
+    @Test
+    void adeclaredLanguageDoesNotRescueAnEmptyDocument() {
+        var result = structuring(answering(profileJson("", 0.1, 0)))
+                .structure(document(CV, false), "tr", "user-1", null, null);
+
+        assertThat(errorOf(result)).isInstanceOf(PipelineError.NothingExtracted.class);
+    }
+
+    /** A blank one is no answer at all, and the gate runs as it always did. */
+    @Test
+    void ablankDeclaredLanguageChangesNothing() {
+        var result = structuring(answering(profileJson("tr", 0.31, 2)))
+                .structure(document(CV, false), "  ", "user-1", null, null);
+
+        assertThat(errorOf(result)).isInstanceOf(PipelineError.LanguageUndetected.class);
     }
 
     @Test
     void aDocumentWithNoAtomsInItIsNothingExtracted() {
         var result = structuring(answering(profileJson("en", 0.99, 0)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(errorOf(result)).isInstanceOf(PipelineError.NothingExtracted.class);
     }
@@ -155,9 +211,9 @@ class ProfileStructuringTest {
     @Test
     void anAnswerRefusedByTheAuditIsIndistinguishableFromAnEmptyOne() {
         var injected = structuring(answering(profileJsonWithAtomText("x".repeat(2000))))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
         var empty = structuring(answering(profileJson("en", 0.99, 0)))
-                .structure(document(CV, false), "user-1", null, null);
+                .structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(errorOf(injected)).isInstanceOf(PipelineError.NothingExtracted.class);
         assertThat(errorOf(injected)).isEqualTo(errorOf(empty));
@@ -170,7 +226,7 @@ class ProfileStructuringTest {
      */
     @Test
     void aProviderOutageTravelsAsItselfAndNotAsAnUnreadableCv() {
-        var result = structuring(answering(null)).structure(document(CV, false), "user-1", null, null);
+        var result = structuring(answering(null)).structure(document(CV, false), null, "user-1", null, null);
 
         assertThat(errorOf(result))
                 .isInstanceOf(PipelineError.AllProvidersUnavailable.class);
