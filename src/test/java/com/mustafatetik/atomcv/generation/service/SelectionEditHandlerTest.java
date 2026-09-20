@@ -83,7 +83,8 @@ class SelectionEditHandlerTest {
                 mock(com.mustafatetik.atomcv.generation.repository.AnonymousGenerations.class),
                 mock(com.mustafatetik.atomcv.profile.repository.AnonymousProfiles.class),
                 profiles, mock(com.mustafatetik.atomcv.billing.QuotaService.class),
-                reruns, mock(NaturalLanguageEditService.class), new ErrorPresenter());
+                reruns, mock(NaturalLanguageEditService.class), new ErrorPresenter(),
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
 
         parent = parentGeneration();
         when(records.findById(any(), any())).thenReturn(Optional.of(parent));
@@ -241,6 +242,6 @@ class SelectionEditHandlerTest {
                                 new RenderRequest.ProfileHeader("Ada", "", List.of()),
                                 List.of(), TemplateCustomization.CLASSIC, Locale.ENGLISH),
                         1, 1.0, RewrittenContent.none()),
-                null, null);
+                null, null, GeneratedGeneration.SelectionCosts.none());
     }
 }

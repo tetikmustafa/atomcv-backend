@@ -472,6 +472,27 @@ public record ContentShape(
 | **Sistem** | CPU, RAM, disk, kuyruk bekleme süresi |
 | **E-posta** | Teslimat oranı, bounce oranı |
 
+> **Bu tablonun üç satırı yıllarca bir seriye sahip değildi** (düzeltme,
+> denetim 2026-09-20). `MetricCatalogueTest` kodla katalogu **birbirine** karşı
+> tutuyordu — var olan her ölçerin yazılı olduğunu ve yazılı her ölçerin hâlâ
+> var olduğunu — ve **istenenin verilip verilmediğini** hiç sormuyordu. Üç
+> satır sessizce cevapsızdı: *bütçe doluluk oranı*, *tahmin kullanım oranı* ve
+> *geri bildirim oranı*. Sonuncusunun kodda bir izi bile vardı: bir log
+> satırının üstünde "this is the feedback rate" yazıyordu, ki bir oran değil bir
+> cümledir — o dakika bakan kişiye bir kez cevap verir, çizilemez.
+>
+> Üçünün karşılığı indi: `generation.budget.fill` (serbest bütçenin ne kadarı
+> kullanıldı — bir sayfa sınırın altında kalıp yarı boş çıkarsa garanti tutar,
+> maksat kaçar, ve `overshoot` bunu göremez), `generation.selection.costs`
+> (`source` etiketi ölçülmüş/tahmini oranı), `generation.feedback` (`verdict`
+> etiketi, paydası `job.run{type=generation}`).
+>
+> **Ve yön artık tutuluyor:** aynı test bu tablonun satırlarını dosyadan
+> okuyup her birine bir seri eşliyor. Tabloya eklenen bir satır, onu cevaplayan
+> bir ölçer çıkana kadar CI'yı düşürüyor — `build.gradle.kts` bu bölümü test
+> girdisi olarak ilan ediyor, yoksa dosyayı düzenlemek görevi UP-TO-DATE
+> bırakırdı.
+
 ### 48.4 Kullanıcı onaylı teşhis
 
 ```sql

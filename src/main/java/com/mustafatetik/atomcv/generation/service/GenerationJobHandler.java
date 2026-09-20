@@ -29,6 +29,7 @@ import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -67,12 +68,31 @@ public class GenerationJobHandler implements JobHandler {
     private final GenerationRerunService reruns;
     private final NaturalLanguageEditService language;
     private final ErrorPresenter errors;
+    private final MeterRegistry meters;
+
+    /** 48.3's "estimate usage rate": the source tag is the ratio. */
+    static final String SELECTION_COSTS = "generation.selection.costs";
+
+    /**
+     * 48.3's "budget fill rate", and the closest thing to a direct reading of
+     * what this product promises.
+     *
+     * <p>A page under a limit is the guarantee; a page half empty under it is
+     * the guarantee kept and the point missed, and nothing published the
+     * difference. {@code generation.budget.overshoot} answers the opposite
+     * question — a selection that did not fit — and a deployment where every
+     * CV fills sixty percent of its page looks identical to a healthy one
+     * through it.
+     */
+    static final String BUDGET_FILL = "generation.budget.fill";
 
     GenerationJobHandler(JobSpecificGenerationService generations, CvGenerationService general,
             GenerationRepository records, AnonymousGenerations anonymousRecords,
             AnonymousProfiles anonymous, ProfileResolver profiles, QuotaService quotas,
             GenerationRerunService reruns, NaturalLanguageEditService language,
-            ErrorPresenter errors) {
+            ErrorPresenter errors, MeterRegistry meters) {
+
+        this.meters = meters;
 
         this.anonymousRecords = anonymousRecords;
         this.anonymous = anonymous;
@@ -278,6 +298,7 @@ public class GenerationJobHandler implements JobHandler {
         record.setRewrittenContent(document.rewritten());
         record.setCoverLetter(generated.coverLetter());
         record.setTrace(trace(generated));
+        priced(generated);
 
         Generation saved = subject.isAnonymous()
                 ? anonymousRecords.save(subject.profile(), record)
@@ -387,6 +408,7 @@ public class GenerationJobHandler implements JobHandler {
         // the CV is what the person came for.
         record.setCoverLetter(generated.coverLetter());
         record.setTrace(trace(generated));
+        priced(generated);
 
         // The one write that differs, and only in which door it goes through: a
         // generation with no owner cannot pass a user-scoped save, and the row
@@ -445,6 +467,13 @@ public class GenerationJobHandler implements JobHandler {
         phaseC.put("rejectionReasons", rejectionReasons(selection));
         phaseC.put("pinnedCostPt", pinnedCostPt(selection));
         phaseC.put("budget", budget(selection.budget()));
+        // Sections 20.4 and 26.5 both promise this counter and neither was
+        // writing it: the number was computed, logged once at INFO and
+        // dropped. It matters here of all places -- a page that came out
+        // under-filled is read months later out of this column, and "the
+        // measurement job had not reached this profile" and "selection is
+        // wrong" look identical without it.
+        phaseC.put("estimatedAtoms", generated.selectionCosts().estimated());
 
         // Faz D. Always written, general mode included, because zero is a fact
         // there too and omitting it would put "no posting to write towards" and
@@ -478,6 +507,39 @@ public class GenerationJobHandler implements JobHandler {
         trace.put("D", phaseD);
         trace.put("F", phaseF);
         return trace;
+    }
+
+    /**
+     * The estimate usage rate, as two series rather than one.
+     *
+     * <p>Section 48.3 asks for it by name and nothing published it. A single
+     * counter of estimates would not answer the question either: eleven
+     * estimates is a lot on a small profile and nothing on a large one, so the
+     * tag carries both halves and the ratio is the reading.
+     *
+     * <p>Here rather than in the builder because this is the one place every
+     * persisted generation passes through, whichever of the three services
+     * made it — and a meter incremented in three places is a meter that
+     * eventually gets incremented in two.
+     */
+    private void priced(GeneratedGeneration generated) {
+        var costs = generated.selectionCosts();
+        int measured = costs.costed() - costs.estimated();
+        if (costs.estimated() > 0) {
+            meters.counter(SELECTION_COSTS, "source", "estimated").increment(costs.estimated());
+        }
+        if (measured > 0) {
+            meters.counter(SELECTION_COSTS, "source", "measured").increment(measured);
+        }
+
+        var budget = generated.document().selection().budget();
+        if (budget.freePt() > 0) {
+            // Of the free budget rather than of the page: the fixed cost is
+            // the heading and the section furniture, which no selection
+            // decides and every CV pays. A share of the whole page would move
+            // when somebody shortened their name.
+            meters.summary(BUDGET_FILL).record(budget.usedPt() / budget.freePt());
+        }
     }
 
     /**
