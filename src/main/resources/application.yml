@@ -392,3 +392,12 @@ atomcv:
       # which endpoints qualify is not in the model's metadata, so this is
       # measured against the account before it ships, never assumed.
       zero-data-retention: ${OPENROUTER_ZDR:false}
+      # Which of OpenRouter's two ways of being held to a schema to use.
+      # Section 27.2 settled this as configuration rather than detection --
+      # guessing from an error string downgrades every failure into the weaker
+      # mode silently -- and then the knob lived only as a default inside the
+      # record, so the answer the chapter names could not be given without
+      # knowing the property's name (the sixth audit). `json_schema` goes out
+      # with `strict: true`; without it the provider treats the schema as a
+      # suggestion and 53.5's 99% conformance for Faz A does not hold.
+      structured-output: ${OPENROUTER_STRUCTURED_OUTPUT:json_schema}
