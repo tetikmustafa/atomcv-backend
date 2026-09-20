@@ -20,7 +20,7 @@ endif
 # fails. Naming sh keeps one spelling that works on Windows and on Linux.
 GRADLE := sh ./gradlew
 
-.PHONY: dev dev-full db-reset record test test-int golden-costs openapi catalogue measure-template
+.PHONY: dev dev-full db-reset record test test-int test-llm golden-costs openapi catalogue measure-template
 
 ## core services (postgres, redis, mailpit) + backend with the fake LLM
 dev:
@@ -53,6 +53,15 @@ test:
 ## integration tests (Testcontainers, needs Docker)
 test-int:
 	$(GRADLE) integrationTest
+
+## score a prompt against 53.5's thresholds. COSTS MONEY (~$0.30) and needs a
+## real provider key, which is the reason it is a target rather than a bare
+## gradlew call: this file includes and exports `.env`, and `gradlew llmEval`
+## run by hand sees no key, skips every provider and fails as an outage
+## instead of a score. EK C.3 wants this before an active prompt version
+## changes. Needs Docker.
+test-llm:
+	$(GRADLE) llmEval
 
 ## re-measure the golden set's render costs (needs Docker; builds the LaTeX image)
 golden-costs:

@@ -29,11 +29,15 @@ import java.util.regex.Pattern;
  * company still says what the job was, and a row naming the wrong one is a
  * lie the reader has no way to spot.
  *
- * <p>The prompt should say this too, and it does not yet. Saying it means a
- * new prompt version, which invalidates every recorded fixture and a week of
- * cache — worth doing when {@code job_analysis} is next versioned for the
- * model that is still being chosen, and not worth doing for a defect that can
- * be closed here deterministically.
+ * <p><strong>The prompt says it too, since v3.</strong> It did not for a long
+ * time, and the note here said so: saying it meant a new prompt version, which
+ * invalidates every recorded fixture and a week of cache, and the plan was to
+ * fold it into the next version of {@code job_analysis}. That version came —
+ * v2, for the responsibilities rule — and the sentence did not go into it. A
+ * deferral whose trigger nobody was watching is a deferral that does not
+ * happen, which is what the sixth audit found here. v3 carries the rule; this
+ * check stays, because a rule in a prompt is a request and this is the part
+ * that holds.
  */
 final class EmployerName {
 
