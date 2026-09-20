@@ -74,6 +74,12 @@ public class ProfileImportService {
      *                       most easily, and the second one would spend a
      *                       second unit of the smallest allowance in the
      *                       product.
+     * @param declaredLanguage what the caller says the CV is written in, ISO
+     *                       639-1, or null. It is the answer to
+     *                       {@code choose_language}: the refusal that names
+     *                       that action comes out of the worker, so there is
+     *                       no half-written profile to put the answer on and
+     *                       nowhere for it to go but the next upload (F-037)
      * @return the queued job
      * @throws ApiException for every refusal — the allowance is spent, or the
      *         extraction ladder turned the file away. Presented here rather
@@ -83,7 +89,8 @@ public class ProfileImportService {
      *         be a second place for the catalogue to drift from.
      */
     public Job importCv(JobOwner owner, QuotaSubject allowance, String filename,
-            String contentType, byte[] bytes, String idempotencyKey, boolean replace) {
+            String contentType, byte[] bytes, String idempotencyKey, boolean replace,
+            String declaredLanguage) {
 
         Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
         if (already.isPresent()) {
@@ -110,7 +117,8 @@ public class ProfileImportService {
         }
 
         var job = new Job(JobType.PROFILE_EXTRACT, owner.userId(),
-                ProfileExtractionPayload.of(document, allowance, replace).asMap(),
+                ProfileExtractionPayload.of(document, allowance, replace, declaredLanguage)
+                        .asMap(),
                 clock.instant());
         job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);

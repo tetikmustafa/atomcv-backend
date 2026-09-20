@@ -59,6 +59,17 @@ public record ExtractedProfile(
     }
 
     /**
+     * The same extraction, in the language the caller named (F-037).
+     *
+     * <p>Confidence becomes {@code 1.0}, and that is a statement about where
+     * the language came from rather than about the model: it was not guessed
+     * at, so nothing downstream should weigh it as a guess.
+     */
+    public ExtractedProfile inLanguage(String language) {
+        return new ExtractedProfile(language, 1.0, contact, sections, warnings);
+    }
+
+    /**
      * Every atom in the document, which is what the zero-atom refusal counts.
      */
     public List<ExtractedAtom> atoms() {

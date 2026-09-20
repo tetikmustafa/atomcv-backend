@@ -98,6 +98,41 @@ class ProfileImportApiIT extends AbstractIntegrationTest {
         assertThat(unitsSpent()).isEqualTo(1);
     }
 
+    /**
+     * F-037. The answer to {@code choose_language} had nowhere to go: the
+     * refusal that offers the action comes out of the worker, so there is no
+     * half-written profile to put it on and the next upload is the only place
+     * left. This is the assertion that the field reaches the worker at all --
+     * accepted at the door and dropped on the way would look identical from
+     * here otherwise.
+     */
+    @Test
+    void adeclaredLanguageIsCarriedToTheWorker() throws Exception {
+        mvc.perform(upload("cv.pdf", "application/pdf", pdf()).param("language", "tr"))
+                .andExpect(status().isAccepted());
+
+        String payload = jdbc.queryForObject(
+                "SELECT payload::text FROM jobs WHERE type = 'profile_extract'", String.class);
+
+        assertThat(payload).contains("\"language\": \"tr\"");
+    }
+
+    /**
+     * And a code we do not know is refused rather than believed. Left alone it
+     * would be written into the profile as its language, and every generation
+     * after it would be made in a language that does not exist -- without one
+     * screen saying so.
+     */
+    @Test
+    void alanguageThatIsNotAcodeIsTheClientsFault() throws Exception {
+        mvc.perform(upload("cv.pdf", "application/pdf", pdf()).param("language", "klingon"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields[0]").value("language"));
+
+        assertThat(queuedJobs()).isZero();
+    }
+
     // -- what does not ---------------------------
 
     @Test

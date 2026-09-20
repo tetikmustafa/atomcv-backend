@@ -8,6 +8,9 @@ import com.mustafatetik.atomcv.jobs.queue.Job;
 import com.mustafatetik.atomcv.identity.challenge.CallerChallenge;
 import com.mustafatetik.atomcv.jobs.queue.JobOwner;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
+import com.mustafatetik.atomcv.shared.error.ApiException;
+import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.CurrentUser;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +26,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +60,16 @@ public class ProfileImportController {
     /** The only value `mode` takes; anything else reads as absent. */
     private static final String REPLACE = "replace";
 
+    /**
+     * Every ISO 639-1 code the JDK knows, which is what `language` is checked
+     * against.
+     *
+     * <p>Held rather than recomputed: {@code Locale.getISOLanguages()} builds
+     * and copies an array of some 180 strings on every call, and this runs on
+     * the most expensive request the product takes.
+     */
+    private static final Set<String> ISO_639_1 = Set.of(Locale.getISOLanguages());
+
     private final ProfileImportService imports;
     private final CurrentUser currentUser;
     private final CallerChallenge challenge;
@@ -83,11 +99,19 @@ public class ProfileImportController {
 
                     Send `Idempotency-Key`. An upload is the request a flaky \
                     connection repeats most easily, and profile extraction has \
-                    the smallest daily allowance in the product.""")
+                    the smallest daily allowance in the product.
+
+                    `language` is where a `choose_language` answer goes \
+                    (F-037). The refusal that offers that action comes out of \
+                    the worker, so there is no half-written profile to put the \
+                    answer on — the next upload carries it instead, and \
+                    carrying it skips detection, so a second attempt cannot \
+                    fail the same way.""")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
             @ApiResponse(responseCode = "400",
-                    description = "VALIDATION_FAILED - the body carried no `file` part",
+                    description = "VALIDATION_FAILED - the body carried no `file` part, "
+                            + "or `language` was not an ISO 639-1 code",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
                             schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "413", description = "Over ten megabytes",
@@ -128,6 +152,20 @@ public class ProfileImportController {
                             description = "The CV. PDF, DOCX, TEX, TXT or MD, "
                                     + "up to ten megabytes.",
                             requiredMode = Schema.RequiredMode.REQUIRED)),
+                    @SchemaProperty(name = "language", schema = @Schema(
+                            type = "string",
+                            description = "What the CV is written in, ISO 639-1. "
+                                    + "Send it to answer a `choose_language` "
+                                    + "resolution from a previous upload's "
+                                    + "`422 LANGUAGE_UNDETECTED`: detection is "
+                                    + "then skipped and this is the language the "
+                                    + "profile gets, so the second upload cannot "
+                                    + "land on the same refusal. Omit it and the "
+                                    + "language is detected, which is the "
+                                    + "ordinary case. Not a code we know is "
+                                    + "`400 VALIDATION_FAILED`.",
+                            example = "tr",
+                            requiredMode = Schema.RequiredMode.NOT_REQUIRED)),
                     @SchemaProperty(name = "challengeToken", schema = @Schema(
                             type = "string",
                             description = "What the challenge widget produced. "
@@ -151,6 +189,11 @@ public class ProfileImportController {
             // "form field", and this annotation would say "query parameter".
             @Parameter(hidden = true)
             @RequestParam(value = "challengeToken", required = false) String challengeToken,
+            // Hidden for the same reason challengeToken is: declared on the
+            // body above so the schema says "form field" rather than "query
+            // parameter".
+            @Parameter(hidden = true)
+            @RequestParam(value = "language", required = false) String language,
             HttpServletRequest request) {
 
         // Ahead of the quota and the file: a request that cannot show a person
@@ -160,11 +203,38 @@ public class ProfileImportController {
         JobOwner owner = JobOwner.of(currentUser);
         Job job = imports.importCv(owner, allowanceFor(owner, request),
                 file.getOriginalFilename(), file.getContentType(), bytesOf(file),
-                idempotencyKey, REPLACE.equalsIgnoreCase(mode));
+                idempotencyKey, REPLACE.equalsIgnoreCase(mode), isoLanguage(language));
 
         return ResponseEntity.accepted()
                 .location(URI.create("/api/v1/jobs/" + job.getId()))
                 .body(AcceptedJobResponse.of(job));
+    }
+
+    /**
+     * The caller's answer to {@code choose_language}, checked before it is
+     * believed (F-037).
+     *
+     * <p>Refused rather than ignored. A code the server does not know would
+     * otherwise be written into the profile as its language and every
+     * generation after it would be made in a language that does not exist —
+     * and the person who typed it would never be told.
+     *
+     * <p>{@code Locale.ROOT}, and not decoratively: the Turkish locale turns
+     * {@code "I"} into {@code "ı"}, so a default-locale lowercase would refuse
+     * the Indonesian {@code "ID"} on a Turkish machine and accept it on the
+     * runner (absolute rule 7).
+     */
+    private static String isoLanguage(String language) {
+        if (language == null || language.isBlank()) {
+            return null;
+        }
+        String normalised = language.strip().toLowerCase(Locale.ROOT);
+        if (!ISO_639_1.contains(normalised)) {
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("language"))
+                    .build());
+        }
+        return normalised;
     }
 
     /**

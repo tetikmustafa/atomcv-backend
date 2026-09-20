@@ -25,7 +25,7 @@ import java.util.Map;
  */
 record ProfileExtractionPayload(
         String text, DocumentFormat format, boolean looksScrambled, QuotaSubject allowance,
-        boolean replace) {
+        boolean replace, String declaredLanguage) {
 
     private static final String TEXT = "text";
     private static final String FORMAT = "format";
@@ -33,11 +33,12 @@ record ProfileExtractionPayload(
     private static final String ALLOWANCE_TYPE = "allowanceType";
     private static final String ALLOWANCE_ID = "allowanceId";
     private static final String REPLACE = "replace";
+    private static final String LANGUAGE = "language";
 
-    static ProfileExtractionPayload of(
-            ExtractedText extracted, QuotaSubject allowance, boolean replace) {
+    static ProfileExtractionPayload of(ExtractedText extracted, QuotaSubject allowance,
+            boolean replace, String declaredLanguage) {
         return new ProfileExtractionPayload(extracted.text(), extracted.format(),
-                extracted.looksScrambled(), allowance, replace);
+                extracted.looksScrambled(), allowance, replace, declaredLanguage);
     }
 
     /**
@@ -62,6 +63,10 @@ record ProfileExtractionPayload(
         // that acts on it. Asking again at write time would mean asking
         // somebody who is no longer on the other end of a request.
         payload.put(REPLACE, replace);
+        // What the caller said the CV is written in, when they said anything
+        // (F-037). Null is the ordinary case and the worker treats it as "ask
+        // the model"; a value skips the language gate outright.
+        payload.put(LANGUAGE, declaredLanguage);
         return payload;
     }
 
@@ -77,7 +82,8 @@ record ProfileExtractionPayload(
                                 payload.getOrDefault(ALLOWANCE_TYPE, "user"))
                                 .toUpperCase(Locale.ROOT)),
                         String.valueOf(payload.getOrDefault(ALLOWANCE_ID, ""))),
-                Boolean.TRUE.equals(payload.get(REPLACE)));
+                Boolean.TRUE.equals(payload.get(REPLACE)),
+                payload.get(LANGUAGE) == null ? null : String.valueOf(payload.get(LANGUAGE)));
     }
 
     ExtractedText asExtractedText() {

@@ -30,7 +30,8 @@ import org.springframework.stereotype.Component;
  *
  * <p>Three refusals, and none of them says which one it was to anybody but the
  * operator. A language that could not be settled is asked about rather than
- * guessed at; a document that yielded no atoms and one whose answer failed the
+ * guessed at — and since F-037 the answer comes back on the next upload as
+ * {@code declaredLanguage}, which skips the question entirely; a document that yielded no atoms and one whose answer failed the
  * field-length audit are the same answer, because no message may tell an
  * attacker their injection was noticed.
  */
@@ -90,9 +91,20 @@ public class ProfileStructuring {
      *               why {@code bucketKey} is a session id for it and why the
      *               two are separate arguments
      */
+    /**
+     * @param declaredLanguage what the caller said the CV is written in, ISO
+     *                         639-1, or null — and null is the ordinary case.
+     *                         When one is given the language gate is not run
+     *                         and this is the language the profile gets
+     *                         (F-037): the field exists so somebody who was
+     *                         asked {@code choose_language} has somewhere to
+     *                         put the answer, and a second upload that could
+     *                         land on the same low confidence would be the
+     *                         loop the question was meant to end
+     */
     public Result<ExtractedProfile> structure(
-            ExtractedText document, String bucketKey, java.util.UUID userId,
-            java.util.UUID jobId) {
+            ExtractedText document, String declaredLanguage, String bucketKey,
+            java.util.UUID userId, java.util.UUID jobId) {
         String version = prompts.selectVersion(PROMPT_ID, bucketKey);
         var prompt = prompts.load(PROMPT_ID, version);
         var fenced = FencedPrompt.of(prompt, FENCE_TAG);
@@ -108,7 +120,8 @@ public class ProfileStructuring {
             // An outage is an outage. Restating it as an unreadable CV would
             // send the user to the manual form over a provider being down.
             case Result.Err<LlmResponse<ExtractedProfile>> failed -> Result.err(failed.error());
-            case Result.Ok<LlmResponse<ExtractedProfile>> ok -> gate(ok.value().data());
+            case Result.Ok<LlmResponse<ExtractedProfile>> ok ->
+                    gate(ok.value().data(), declaredLanguage);
         };
     }
 
@@ -128,13 +141,29 @@ public class ProfileStructuring {
                 + "Reconstruct the reading order where you can.\n\n" + document.text();
     }
 
-    private Result<ExtractedProfile> gate(ExtractedProfile profile) {
+    private Result<ExtractedProfile> gate(ExtractedProfile profile, String declaredLanguage) {
         var abnormal = StructuringAudit.abnormalField(profile);
         if (abnormal.isPresent()) {
             // The third layer. The field's name, never its value: the suspect
             // string is the thing whoever wrote it wants echoed.
             log.warn("Extraction refused by the field-length audit: {}", abnormal.get());
             return Result.err(new PipelineError.NothingExtracted());
+        }
+        if (declaredLanguage != null && !declaredLanguage.isBlank()) {
+            // The person answered the question, so there is nothing left to
+            // detect. Their answer replaces the model's guess rather than
+            // sitting beside it: the profile stores one language, and keeping
+            // a low-confidence guess in it would mean the answer changed
+            // nothing the CV is written from.
+            //
+            // Confidence goes to 1.0 for the same reason. It is not a claim
+            // about the model -- it is the record that this language was not
+            // guessed at.
+            profile = profile.inLanguage(declaredLanguage);
+            log.info("Extraction took the caller's language: {}", profile.shape());
+            return profile.atoms().isEmpty()
+                    ? Result.err(new PipelineError.NothingExtracted())
+                    : Result.ok(profile);
         }
         if (profile.detectedLanguage().isBlank()
                 || profile.languageConfidence() < MIN_LANGUAGE_CONFIDENCE) {

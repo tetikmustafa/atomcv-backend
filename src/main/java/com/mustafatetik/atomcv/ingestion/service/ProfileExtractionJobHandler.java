@@ -110,8 +110,8 @@ public class ProfileExtractionJobHandler implements JobHandler {
 
         progress.report(READING);
         Result<ExtractedProfile> structured = structuring.structure(
-                payload.asExtractedText(), bucketKeyFor(userId, anonSession), userId,
-                job.getId());
+                payload.asExtractedText(), payload.declaredLanguage(),
+                bucketKeyFor(userId, anonSession), userId, job.getId());
 
         return switch (structured) {
             case Result.Err<ExtractedProfile> failed -> {
