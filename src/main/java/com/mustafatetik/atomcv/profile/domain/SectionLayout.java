@@ -9,12 +9,22 @@ import java.util.Locale;
 /**
  * How a section is laid out. Stored in {@code sections.layout}, which carries
  * a matching CHECK constraint.
+ *
+ * <p><strong>{@code TWO_COLUMN} was a fifth value and it never reached a
+ * page.</strong> It was accepted by {@code PATCH /profile/sections}, allowed by
+ * the constraint, published in the schema — and {@code LatexDocumentRenderer}
+ * fell through to the entry list on purpose, because all three templates are
+ * single-column and 33.5 records the reason as ATS extraction. So the one value
+ * here a person could choose was the one the document ignored, and nothing told
+ * them. The other dead vocabulary entries V17 removed were outputs, which cost
+ * the frontend a branch; this one cost a user a choice they thought they had
+ * made (the sixth audit). It comes back if a two-column template ever does, and
+ * that is a template decision rather than a column one.
  */
 public enum SectionLayout {
     BULLET_LIST,
     ENTRY_LIST,
     INLINE_LIST,
-    TWO_COLUMN,
 
     /**
      * Prose, set straight under the section heading with no bullet in front of

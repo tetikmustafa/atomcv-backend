@@ -263,12 +263,6 @@ public class Job implements UserOwned {
         releaseLock();
     }
 
-    public void cancel(Instant now) {
-        this.status = JobStatus.CANCELLED;
-        this.completedAt = now;
-        releaseLock();
-    }
-
     /**
      * A defensive copy that keeps the caller's order.
      *

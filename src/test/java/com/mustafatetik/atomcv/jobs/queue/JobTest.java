@@ -41,8 +41,7 @@ class JobTest {
         for (var transition : java.util.List.<java.util.function.Consumer<Job>>of(
                 job -> job.succeed(Map.of("generationId", "x"), NOW),
                 job -> job.fail(Map.of("code", "INTERNAL_ERROR"), NOW),
-                job -> job.retryAfter(NOW.plusSeconds(4)),
-                job -> job.cancel(NOW))) {
+                job -> job.retryAfter(NOW.plusSeconds(4)))) {
 
             var job = job(JobType.GENERATION);
             transition.accept(job);
@@ -110,13 +109,39 @@ class JobTest {
         assertThat(job.getError()).isNull();
     }
 
+    /**
+     * Two, since V17. {@code CANCELLED} was a third and nothing could write it:
+     * {@code Job.cancel} had no caller outside this file, and the value was
+     * published in {@code JobStatusResponse} for a client to branch on and
+     * never reach.
+     */
     @Test
-    void onlyTheThreeTerminalStatusesSayTheyAre() {
+    void onlyTheTwoTerminalStatusesSayTheyAre() {
         assertThat(JobStatus.COMPLETED.isTerminal()).isTrue();
         assertThat(JobStatus.FAILED.isTerminal()).isTrue();
-        assertThat(JobStatus.CANCELLED.isTerminal()).isTrue();
         assertThat(JobStatus.QUEUED.isTerminal()).isFalse();
         assertThat(JobStatus.RUNNING.isTerminal()).isFalse();
+    }
+
+    /**
+     * And the vocabulary is the four the column allows.
+     *
+     * <p>Spelled out rather than counted: a value added to this enum without
+     * the migration that lets the column hold it fails on the first insert, in
+     * production, on a row somebody was waiting for.
+     */
+    @Test
+    void thestatusVocabularyIsTheFourTheColumnHolds() {
+        assertThat(java.util.Arrays.stream(JobStatus.values()).map(JobStatus::wireValue))
+                .containsExactlyInAnyOrder("queued", "running", "completed", "failed");
+    }
+
+    /** Likewise for the types, where V17 gave the column its first constraint. */
+    @Test
+    void thetypeVocabularyIsTheFiveThatHaveHandlers() {
+        assertThat(java.util.Arrays.stream(JobType.values()).map(JobType::wireValue))
+                .containsExactlyInAnyOrder("generation", "profile_extract",
+                        "measurement", "translation", "embedding");
     }
 
     @Test

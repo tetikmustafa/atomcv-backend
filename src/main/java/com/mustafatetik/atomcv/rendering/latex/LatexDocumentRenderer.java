@@ -305,11 +305,13 @@ public class LatexDocumentRenderer implements DocumentRenderer {
      * INLINE_LIST} printed as bullets — or, once selection had dropped it, not
      * at all.
      *
-     * <p>{@code TWO_COLUMN} is deliberately absent and falls through to the
-     * entry list. Classic is single-column on purpose: "an ATS extracts text,
-     * and a layout that reads well to a person but scrambles under extraction
-     * is a CV that never reaches one." Honouring it here would be this file
-     * overruling that decision quietly.
+     * <p>There used to be a fourth to fall through: {@code TWO_COLUMN} was
+     * accepted everywhere and printed as an entry list here, on the grounds
+     * that Classic is single-column on purpose — "an ATS extracts text, and a
+     * layout that reads well to a person but scrambles under extraction is a CV
+     * that never reaches one" — and that honouring it would be this file
+     * overruling that decision quietly. The reasoning held; the silence did
+     * not, because the person had chosen it. V17 removed the value instead.
      */
     private static void section(StringBuilder out, RenderRequest.RenderableSection section) {
         if (section.layout() == SectionLayout.INLINE_LIST) {
