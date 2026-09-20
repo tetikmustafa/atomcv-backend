@@ -165,6 +165,13 @@ korunan şey onsuz da sınırlı: IP ve global sayaçlar bu çağrının önünd
 yani bir kesintinin saldırgana aldığı en fazla şey global penceredir. Kesin bir
 `success: false` başka bir şeydir — o, Cloudflare'in cevap vermesidir.
 
+**`POST /auth/verify` uygulama katmanında sınırsız, ve bu bir karar**
+(2026-08-28; kaydı notlarda kalmıştı, kalıcı olduğu için buraya taşındı —
+denetim 2026-09-20). Verifier 32 rastgele bayt, yani tahmin edilemez, ve uç
+Nginx'in `auth` zone'unun (1r/s) arkasında. Bir kova daha eklemek bugün
+koruduğu bir şey olmadan sayılacak bir şey daha eklerdi. Tahmin edilebilir bir
+jeton üretilmeye başlandığı gün yeniden açılır.
+
 **Secret yoksa yerelde uyarı, `prod` profilinde açılışta hata.**
 `EmailSenderConfig`'in ihtiyaç duymadığı bir kapı: göndericisi olmayan bir
 dağıtım, bağlantısını hiç alamayan ilk kişiyle anlaşılır; **challenge'ı olmayan
@@ -573,6 +580,13 @@ Aynı jenerik mesaj, "anlamsız metin" durumuyla aynı.
 
 Tekrarlanan geçersiz denemeler → hesap/IP bazlı geçici kota kısıtlaması.
 
+> **Bu cümlenin karşılığı `TightenedSubjects`**, ve § 44.3'ün ağır kullanıcı
+> dalı onu çağırıyor: özne Redis'te altı saatliğine işaretleniyor, `QuotaService`
+> işareti okuyup o özneye saatlik bir tavan uyguluyor. TTL kaydın kendisi —
+> bir kolon olsaydı süpürülmesi gerekirdi ve bayat bir satır sebep geçtikten
+> sonra da birini kısık tutardı. **Redis'e ulaşılamıyorsa kısılmıyor:** bir
+> önbellek kesintisi herkesi ağır kullanıcı ilan etmemeli.
+
 ---
 
 ## 44. Maliyet Tabanlı Kötüye Kullanım Koruması
@@ -667,10 +681,16 @@ public void detectAnomalies() {
 }
 ```
 
-**Uygulanan hâli (Adım 2.7): iki sinyal var, bütçe freni yok.** Kullanıcı
-baselineʼı ve kayıt patlaması indi; ikisi de **raporluyor, davranmıyor** —
-sıkılaştırılacak bir rate limiter yok ve freni tek yoğun kullanıcı için çekmek
-herkesi durdurur, o karar alarmı okuyana ait. Baseline kullanıcının **kendi**
+**Uygulanan hâli: üç sinyal, ikisi davranıyor.** Bütçe freni bayrağı
+düşürüyor; **ağır kullanıcı dalı o özneyi kısıyor** (`TightenedSubjects`,
+§ 43.3). Kayıt patlaması hâlâ yalnız raporluyor — bir patlamanın ne olduğu
+anlaşılmadan ne yapılacağı da belli değil.
+
+> **Bu paragraf bir aşama boyunca "sıkılaştırılacak bir rate limiter yok"
+> diyordu** (düzeltme, denetim 2026-09-20). Limiter inmişti ve bu bölüm ile
+> `AnomalyDetector`'ın javadoc'u ikisi birden eski hâli anlatmaya devam etti —
+> javadoc'ta üstelik **iki blok** vardı, biri ölü ve öteki ile çelişen. Boşluğu
+> anlatan paragraf boşluktan uzun yaşamıştı. Baseline kullanıcının **kendi**
 son yedi günü: sabit bir sayı ağır kullanıcıda işe yaramaz, hafif kullanıcıda
 her gün alarm çalar. Geçmişi olmayan kullanıcı join'le eleniyor — ilk gün
 anomali değil, onu günlük kota sınırlıyor.

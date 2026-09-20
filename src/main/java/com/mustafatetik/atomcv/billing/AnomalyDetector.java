@@ -16,15 +16,22 @@ import org.springframework.stereotype.Component;
 /**
  * Looking for the shapes that cost money.
  *
- * <p>Two signals, and a third that is deliberately absent.
+ * <p>Three signals, and two of them act. <strong>The budget brake</strong>
+ * disables {@link FeatureFlags#NEW_GENERATIONS}; <strong>the heavy-user
+ * branch</strong> narrows that one subject through {@link TightenedSubjects},
+ * which {@code QuotaService} reads. The asymmetry between them is deliberate: a
+ * day's bill above the ceiling is about the deployment and stopping everybody
+ * is the correct response, while one busy user is about one person and stopping
+ * everybody is not.
  *
- * <p>Three signals now. <strong>The budget brake is the only one that
- * acts</strong> — it disables {@link FeatureFlags#NEW_GENERATIONS} — and that
- * asymmetry is deliberate: a day's bill above the ceiling is about the
- * deployment and stopping everybody is the correct response, while one busy
- * user is about one person and stopping everybody is not. What is asked for
- * instead is tightening a rate limit on that user; there is no rate limiter
- * yet, so those two signals report and an operator decides.
+ * <p>Both of those sentences were false in this javadoc for a stage. It said
+ * there was no rate limiter to tighten and that two signals only reported,
+ * after the limiter had landed and this class had started calling it — the
+ * paragraph describing the gap outlived the gap, which is the failure the sixth
+ * audit was looking for.
+ *
+ * <p>The third signal, the sign-up burst, still only reports: what to do about
+ * a burst depends on what it turns out to be.
  *
  * <p>The brake is one-way. Nothing here turns generation back on, because
  * nothing here knows whether the cause was dealt with — the budget resets at
@@ -150,20 +157,18 @@ public class AnomalyDetector {
     }
 
     /**
-     * The subject and the numbers, never anything they wrote (absolute rule 4).
-     *
-     * <p>A log line and a counter, not an action. There is no rate limiter to
-     * tighten, and pulling the brake over one busy user would stop everybody —
-     * that is a decision for whoever reads this.
-     */
-    /**
      * The heavy-user branch, both halves of it.
      *
-     * <p>It reported and did nothing until now, and the section said so. The
-     * snippet's second line is {@code rateLimiter.tighten(userId, 6h)} — a
-     * narrowing of the one subject the numbers were about, which is a
-     * different act from the brake beside it. The brake stops everybody and
-     * stays a person's decision; six hours of an hourly cap for one heavy
+     * <p>The subject and the numbers, never anything they wrote (absolute rule
+     * 4). A second javadoc block sat above this one saying there was no rate
+     * limiter to tighten — dead text, ignored by the tool and read by people,
+     * contradicting the block below it (the sixth audit).
+     *
+     * <p>Section 44.3's snippet has a second line — {@code
+     * rateLimiter.tighten(userId, 6h)} — and this branch reported without it
+     * for a stage. Narrowing the one subject the numbers were about is a
+     * different act from the brake beside it: the brake stops everybody and
+     * stays a person's decision, while six hours of an hourly cap for one heavy
      * subject does not need one.
      *
      * <p>The alarm still fires. Tightening is not a substitute for somebody
