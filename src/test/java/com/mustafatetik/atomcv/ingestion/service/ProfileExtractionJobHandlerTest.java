@@ -33,6 +33,8 @@ import com.mustafatetik.atomcv.profile.domain.SectionKind;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
@@ -209,6 +211,11 @@ class ProfileExtractionJobHandlerTest {
         // The same document goes back to the same model; three failures
         // instead of one buys nothing.
         assertThat(failed.retryable()).isFalse();
+        // And the person is not left holding a sentence with no button: the
+        // way out of a CV nothing could be read from is typing it in.
+        assertThat(failed.error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.SWITCH_TO_MANUAL_FORM);
     }
 
     @Test
@@ -220,6 +227,11 @@ class ProfileExtractionJobHandlerTest {
 
         assertThat(failed.error().code()).isEqualTo(ErrorCode.LANGUAGE_UNDETECTED);
         assertThat(failed.error().params()).containsEntry("detectedCandidates", List.of("tr"));
+        // A question needs somewhere to answer it. The candidates were
+        // published for a whole stage with no action that could read them.
+        assertThat(failed.error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.CHOOSE_LANGUAGE);
     }
 
     /**
@@ -258,6 +270,11 @@ class ProfileExtractionJobHandlerTest {
         // Still worth repeating: a slower moment is the most retryable failure
         // there is.
         assertThat(failed.retryable()).isTrue();
+        // And the person is told so. Splitting 504 from 503 bought nothing
+        // while both published the same empty list of ways out.
+        assertThat(failed.error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.RETRY);
     }
 
     /**

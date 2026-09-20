@@ -3543,7 +3543,7 @@
         "properties" : {
           "action" : {
             "type" : "string",
-            "enum" : [ "increase_page_limit", "replace_profile", "keep_existing_profile", "review_pins", "keep_top_pinned", "sign_up", "paste_full_posting", "continue_as_general_cv", "continue_anyway", "switch_to_manual_form", "complete_profile", "retry" ]
+            "enum" : [ "increase_page_limit", "replace_profile", "keep_existing_profile", "review_pins", "keep_top_pinned", "sign_up", "paste_full_posting", "continue_as_general_cv", "continue_anyway", "switch_to_manual_form", "upload_another_file", "choose_language", "complete_profile", "retry" ]
           },
           "params" : {
             "type" : "object",

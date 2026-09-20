@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -224,6 +226,35 @@ class DocumentExtractionTest {
     void aTextFileWithAlmostNothingInItIsCalledEmptyRatherThanAScan() {
         assertThat(refusalOf("cv.txt", "text/plain", bytesOf("Ada")).error().code())
                 .isEqualTo(ErrorCode.EXTRACTION_EMPTY);
+    }
+
+    /**
+     * Every refusal a person can act on says what to do, and they do not all
+     * say the same thing.
+     *
+     * <p>All three shipped with an empty {@code resolutions} array until the
+     * sixth audit, which is the silently bad result principle 4 exists to stop:
+     * the screen had a sentence and no button. Section 31.10 had named the way
+     * out for each of them the whole time, and they are genuinely different —
+     * an encrypted PDF is solved by sending an open copy, a scan by typing it
+     * in. Offering the manual form to somebody whose only problem is a password
+     * is telling them to redo work they already have in a file.
+     */
+    @Test
+    void aScanAndAnEmptyFileSendThePersonToTheManualForm() throws IOException {
+        assertThat(refusalOf("cv.pdf", "application/pdf", blankPdf()).error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.SWITCH_TO_MANUAL_FORM);
+        assertThat(refusalOf("cv.txt", "text/plain", bytesOf("Ada")).error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.SWITCH_TO_MANUAL_FORM);
+    }
+
+    @Test
+    void anEncryptedPdfAsksForAnotherFileRatherThanTheManualForm() throws IOException {
+        assertThat(refusalOf("cv.pdf", "application/pdf", encryptedPdf()).error().resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.UPLOAD_ANOTHER_FILE);
     }
 
     @Test

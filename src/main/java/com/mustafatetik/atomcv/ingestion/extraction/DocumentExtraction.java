@@ -2,6 +2,8 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +101,14 @@ public class DocumentExtraction {
             // with no text is almost always a scan, and the sentence that says
             // so is the one that saves the user from trying the same file
             // again. A short TXT is just short.
+            // And both carry the way out, which they did not until the sixth
+            // audit: a refusal with an empty `resolutions` array is the silently
+            // bad result principle 4 forbids, and 31.10 names the way out for
+            // each of these two -- the manual form.
             throw ApiException.of(format == DocumentFormat.PDF
                     ? ErrorCode.PDF_NOT_TEXT_BASED
-                    : ErrorCode.EXTRACTION_EMPTY);
+                    : ErrorCode.EXTRACTION_EMPTY,
+                    Resolution.of(ResolutionAction.SWITCH_TO_MANUAL_FORM));
         }
 
         log.info("Extracted a document: {}", extracted.shape());

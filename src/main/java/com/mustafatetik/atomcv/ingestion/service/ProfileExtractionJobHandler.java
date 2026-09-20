@@ -19,6 +19,8 @@ import com.mustafatetik.atomcv.jobs.queue.ProgressSink;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.error.UserFacingError;
 import com.mustafatetik.atomcv.shared.security.AnonymousSessionId;
@@ -271,19 +273,24 @@ public class ProfileExtractionJobHandler implements JobHandler {
      * decides.
      *
      * <p>Presented here rather than by {@code ErrorPresenter}: that class takes
-     * a page height it would have nothing to do with, and the three failures
-     * this handler can meet carry no resolutions to compute. What it must not
-     * do is invent one — an outage says retry, and the other two say the CV is
-     * the problem.
+     * a page height it would have nothing to do with. What this must not do is
+     * invent a way out — but it had the opposite fault until the sixth audit
+     * and offered none at all, which is the silently bad result principle 4
+     * forbids. Each refusal now carries the one thing the person can actually
+     * do, and they are four different things: name the language, fill the form
+     * by hand, send the same file again, or wait.
      */
     private static JobOutcome refused(PipelineError error) {
         UserFacingError presented = switch (error) {
             case PipelineError.LanguageUndetected torn -> UserFacingError
                     .with(ErrorCode.LANGUAGE_UNDETECTED)
                     .param("detectedCandidates", torn.candidates())
+                    // The candidates were published with no way to act on them.
+                    .resolution(ResolutionAction.CHOOSE_LANGUAGE)
                     .build();
             case PipelineError.NothingExtracted ignored ->
-                    UserFacingError.of(ErrorCode.EXTRACTION_EMPTY);
+                    UserFacingError.of(ErrorCode.EXTRACTION_EMPTY,
+                            Resolution.of(ResolutionAction.SWITCH_TO_MANUAL_FORM));
             // Slow and down are two different sentences, and until this line
             // they were one. EXTRACTION_TIMEOUT was in the catalogue with a
             // status chosen for it (§ 08b) and nothing could produce it, so a
@@ -292,7 +299,13 @@ public class ProfileExtractionJobHandler implements JobHandler {
             // for one and not the other (denetim, beşinci tur).
             case PipelineError.AllProvidersUnavailable outage ->
                     outage.everyFailureTimedOut()
-                            ? UserFacingError.of(ErrorCode.EXTRACTION_TIMEOUT)
+                            // And the 504 carries the retry the 503 must not.
+                            // B-113 split these two so they could ask opposite
+                            // things of the person; publishing the same empty
+                            // resolution list for both left them asking the
+                            // same nothing (the sixth audit).
+                            ? UserFacingError.of(ErrorCode.EXTRACTION_TIMEOUT,
+                                    Resolution.of(ResolutionAction.RETRY))
                             : UserFacingError
                                     .with(ErrorCode.ALL_PROVIDERS_UNAVAILABLE)
                                     .param("tried", outage.tried())

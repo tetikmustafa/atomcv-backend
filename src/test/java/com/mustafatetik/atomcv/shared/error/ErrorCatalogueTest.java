@@ -4,12 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -172,8 +178,51 @@ class ErrorCatalogueTest {
 
     // ─── the action vocabulary ───
 
+    /**
+     * An action nothing offers is a branch the frontend wrote for nothing.
+     *
+     * <p>This is the guard the sixth audit was written for.
+     * {@code switch_to_manual_form} was declared, published in the schema and
+     * offered by nobody for the life of the product — and the one place that
+     * should have offered it carried a comment saying the vocabulary had no
+     * action for the manual form. Nothing failed, because the value was
+     * reachable in every sense except the one that matters.
+     *
+     * <p>Read out of the source rather than by calling anything: an action is
+     * attached at a dozen scattered sites and the question here is whether a
+     * name appears at any of them, which is what a grep answers. The same
+     * reasoning as {@code MetricCatalogueTest}, and the same failure mode it
+     * prevents — a vocabulary entry nobody can reach and nothing reports.
+     */
     @Test
-    void theActionVocabularyIsTheAgreedTwelve() {
+    void everyActionIsOfferedSomewhere() throws IOException {
+        String sources;
+        try (var files = Files.walk(Path.of("src", "main", "java"))) {
+            sources = files.filter(file -> file.toString().endsWith(".java"))
+                    .filter(file -> !file.endsWith("ResolutionAction.java"))
+                    .map(ErrorCatalogueTest::read)
+                    .collect(Collectors.joining("\n"));
+        }
+
+        assertThat(Arrays.stream(ResolutionAction.values())
+                .filter(action -> !sources.contains("ResolutionAction." + action.name()))
+                .map(Enum::name))
+                .as("A resolution nothing produces. Either attach it to the refusal it was"
+                        + " written for, or take it out of the vocabulary -- a published"
+                        + " action with no producer is a button the frontend never draws.")
+                .isEmpty();
+    }
+
+    private static String read(Path file) {
+        try {
+            return Files.readString(file, StandardCharsets.UTF_8);
+        } catch (IOException unreadable) {
+            throw new UncheckedIOException(unreadable);
+        }
+    }
+
+    @Test
+    void theActionVocabularyIsTheAgreedFourteen() {
         // The closed set. It is closed against the frontend, which writes one
         // ICU message per action: a value added here without a handoff item
         // renders as a raw key to a user.
@@ -189,7 +238,11 @@ class ErrorCatalogueTest {
                         // A second CV is refused and the answer is replace or
                         // keep. Never a merge -- that is atom-level
                         // de-duplication and Stage 4 work (handoff B-060).
-                        "replace_profile", "keep_existing_profile");
+                        "replace_profile", "keep_existing_profile",
+                        // An encrypted PDF and an undetected language: two
+                        // refusals that shipped with no way out at all, while
+                        // the manual form sat in this list unused (sixth audit).
+                        "upload_another_file", "choose_language");
     }
 
     @Test

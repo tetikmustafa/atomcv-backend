@@ -122,12 +122,17 @@ public class ErrorPresenter {
                     // Language codes, not a line of the CV: the client renders
                     // them as names in the user's own locale.
                     .param("detectedCandidates", torn.candidates())
-                    // Nothing to retry and nothing to fix; the way out is the
-                    // manual form, which the vocabulary has no action for.
+                    // 31.10 answers this one with "ask the user", and this line
+                    // used to say the vocabulary had no action for it. It has
+                    // one now: the candidates were already published and there
+                    // was no way to act on them, which is a published parameter
+                    // doing nothing (the sixth audit).
+                    .resolution(ResolutionAction.CHOOSE_LANGUAGE)
                     .build();
 
             case PipelineError.NothingExtracted ignored -> UserFacingError.of(
-                    ErrorCode.EXTRACTION_EMPTY);
+                    ErrorCode.EXTRACTION_EMPTY,
+                    Resolution.of(ResolutionAction.SWITCH_TO_MANUAL_FORM));
 
             case PipelineError.TranslationRejected ignored -> UserFacingError.of(
                     ErrorCode.TRANSLATION_FAILED, new Resolution(ResolutionAction.RETRY, null));
