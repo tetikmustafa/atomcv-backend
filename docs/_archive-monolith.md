@@ -1,3 +1,15 @@
+> # ⛔ BU DOSYA ARŞİV — OTORİTE DEĞİL
+>
+> Spec `docs/spec/**` altındaki on dokuz dosyaya bölündü ve **yalnız orası
+> güncel tutuluyor**. Bu dosya bölünmeden önceki hâli; yüzlerce yerde bayat, ve
+> bayat olduğu yerleri işaretleyen bir şey yok. Bir soruyu buradan cevaplamak,
+> kapanmış kararları açık, inmiş işleri yapılmamış gösterir — `docs/INDEX.md`
+> soruyu doğru dosyaya yollar.
+>
+> Duruyor olmasının tek sebebi tarih: bölünmeden önceki metnin kendisi, ve
+> `EK D` buradan `spec/18-appendix-d.md`'ye taşınırken bıraktığı işaretçi.
+> (Not: denetim, 2026-09-20.)
+
 # AtomCV
 ## Kapsamlı Teknik Mimari ve Uygulama Dokümanı
 
