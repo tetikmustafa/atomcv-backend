@@ -13,6 +13,13 @@
 
 _(açık madde yok.)_
 
+**Bir madde yazılıp ölçüldüğü için açılmadı** (2026-09-21): `language`'ın
+`400`'ünün kapı sırasındaki yeri. Soru gerçekti — mock bir sıra seçmek
+zorunda — ama cevabı sizde değil, ayakta duran dağıtımdaydı: **413 → `400`
+(`language`) → 409 → 415.** Üç sonda, kayıt `notes/current.md`'de. Kapı
+sırası zaten `B-051`'de bir kez yanlış varsayılmıştı; bu sefer sorulmadan
+önce bakıldı.
+
 `F-037`…`F-040` **geldikleri gün karşılandı** (2026-09-20) ve aşağıda `ACK`'te.
 Dosya 127 satırdaydı ve bu bir arşivleme değil koordinasyon meselesiydi:
 taşınabilecek madde yoktu, çünkü hiçbiri karşılanmamıştı. Şimdi karşılandılar —
