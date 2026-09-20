@@ -129,14 +129,29 @@ public void devLogin(@PathVariable String email) { ... }
 
 ```make
 dev:        docker compose --profile core up -d && ./gradlew bootRun --args='--spring.profiles.active=local,local-fake'
-dev-full:   docker compose --profile core --profile full up -d
+dev-full:   docker compose --profile core --profile full up -d --build
 db-reset:   docker compose --profile core down -v && docker compose --profile core up -d postgres && $(GRADLE) bootRun ...
 record:     ./gradlew bootRun --args='--spring.profiles.active=local,local-record'
 test:       ./gradlew test
 test-int:   ./gradlew integrationTest
-test-llm:   ./gradlew llmEval
-lint:       ./gradlew spotlessApply
+test-llm:   ./gradlew llmEval                     # para harcar
+golden-costs:    ./gradlew latexTest --tests '*GoldenCostsIT' -Dgolden.record=true
+openapi:         ./gradlew integrationTest --tests '*OpenApiDocumentIT' -Dopenapi.record=true
+catalogue:       ./gradlew test --tests '*ErrorCatalogueDocumentTest' -Dcatalogue.record=true
+measure-template: ./gradlew latexTest --tests '*TemplateMeasurementIT' ...
 ```
+
+> **`lint` yok, ve üç kayıt hedefi var** (düzeltme, denetim 2026-09-20).
+> Biçimlendirme ayrı bir hedef değil: `gradlew spotlessApply` doğrudan
+> koşuluyor ve CI'nın ilk adımı `spotlessCheck` (EK D.1). Buna karşılık
+> **yeniden üreten** üç hedef var — ölçülmüş maliyetler, yayımlanan şema, hata
+> kataloğu — ve üçü de commit'li bir dosyayı yeniden yazıyor; ilgili test
+> ayrışmada düşüyor, kayıt modu onu yeniden kaydediyor.
+>
+> **`test-llm`'in hedef olması bir zorunluluk.** Bu Makefile `.env`'i
+> `include` + `export` ediyor; `gradlew llmEval`'i elle koşturan onu almıyor,
+> her sağlayıcı anahtarsız atlanıyor, ve eval bir skor değil bir **kesinti**
+> olarak düşüyor. Hedef bir aşama boyunca yoktu ve bu bölüm onu sayıyordu.
 
 `front`, `e2e` ve `npm` hedefleri frontend reposunun Makefile'ındadır.
 `db-reset` Flyway'i uygulamayı açarak çalıştırır: Flyway Gradle eklentisi

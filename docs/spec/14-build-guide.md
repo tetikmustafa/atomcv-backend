@@ -873,11 +873,14 @@ sed -i "/^$VAR=/d" .env.deploy && echo "$VAR=$NEW_SHA" >> .env.deploy
 
 docker compose --env-file .env.deploy -f docker-compose.prod.yml pull
 
-# Migration (deploy'dan ÖNCE)
-# ⚠️ AÇIK KARAR: `--spring.flyway.migrate-only=true` diye bir Spring Boot
-# özelliği yoktur (EK D.1). İki gerçek seçenek: (a) Flyway CLI imajı ile
-# migration'ı ayrı bir adımda çalıştırmak, (b) migration'ı uygulama
-# açılışında bırakıp tek örnekle deploy etmek. Şu an (b) geçerli.
+# Migration: ayrı bir adım YOK, ve bu bir karar (2026-08-28, kapandı).
+# `--spring.flyway.migrate-only=true` diye bir Spring Boot özelliği yoktur
+# (EK D.1). İki gerçek seçenek vardı -- Flyway CLI imajıyla ayrı bir adım, ya
+# da açılışta bırakıp tek örnekle deploy etmek -- ve ikincisi seçildi: Flyway
+# kendi kilidini alıyor, `up -d --no-deps` bir anda tek sürüm çalıştırıyor,
+# ve tek sunucuda ayrı bir adımın getirdiği parça karşılığını vermiyor.
+# Koşulu yazılı: aynı anda tek backend örneği. Ölçeklenme günü yeniden açılır.
+# § 16.1, § 47.1 ve `docs/vps-dagitim-plani.md` § 0 aynı şeyi söylüyor.
 
 docker compose --env-file .env.deploy -f docker-compose.prod.yml up -d
 

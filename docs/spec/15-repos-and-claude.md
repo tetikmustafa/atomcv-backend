@@ -76,170 +76,83 @@ Bunu bir script'e bağla: `atomcv-backend/scripts/sync-spec.sh`
 
 ## XI-B.2 — Backend Repo Klasör Yapısı
 
+> **Paket ağacı burada değil, [`03-architecture.md` § 10.1](03-architecture.md)'de**
+> (düzeltme, denetim 2026-09-20). Bu bölüm `src/main/java/**`'ın tamamını ikinci
+> kez çiziyordu ve ikisi ayrıştı: burada yedi faz sınıfı, bir `PipelineContext`
+> ve bir `FontMetricEstimator` vardı — üçü de hiç yazılmadı ya da başka adla
+> indi — `golden/` test kaynaklarında gösteriliyordu (`src/main/resources`'ta),
+> `email/` Thymeleaf şablonları sayıyordu (düz Java, § 5.1), ve `retention/`
+> hiç yoktu. INDEX "klasör ağacı" sorusunu buraya yolluyor, yani okuyanın
+> gördüğü yanlış olandı. **Paketler tek yerde; burada yalnız paket ağacının
+> dışındaki şeyler var.**
+
 ```
 atomcv-backend/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml                          # build + test + security
-│       ├── deploy.yml                       # main'e merge → GHCR → SSH deploy
-│       └── secrets-scan.yml                 # gitleaks
+├── .github/workflows/
+│   ├── ci.yml                               # format + build + test + integrationTest,
+│   │                                        #   CodeQL, misconfig taraması, llm-eval
+│   ├── latex.yml                            # yalnız latexTest'in dokunduğu yollar değişince
+│   ├── deploy.yml                           # elle koşuluyor; push tetikleyicisi yorumda
+│   └── secrets-scan.yml                     # gitleaks, tüm geçmiş
 │
 ├── docs/                                    # mimari dokümanları (ana kaynak)
-│   ├── urun-konsept-dokumani-v2.md
-│   └── teknik-mimari-dokumani.md
+│   ├── INDEX.md                             #   göreve göre rotalama
+│   ├── STATUS.md                            #   iki repo nerede (ortak, iki yönlü)
+│   ├── spec/                                #   on dokuz dosya — spec'in kendisi
+│   ├── handoff/                             #   B-nnn / F-nnn kanalı (ortak)
+│   ├── notes/                               #   bu reponun inşa notları (senkronlanmaz)
+│   ├── vps-dagitim-plani.md                 #   sunucu planı (senkronlanmaz)
+│   └── _archive-monolith.md                 #   bölünmeden önceki hâli; otorite değil
 │
 ├── docker/
-│   └── latex/
-│       ├── Dockerfile                       # texlive-xetex + fontlar + format cache
-│       ├── preamble.tex                     # önceden derlenen format dosyası
-│       ├── fonts/                           # whitelist fontları
-│       └── server/                          # HTTP wrapper (küçük Java/Go servis)
+│   ├── latex/                               # texlive-xetex + TeX Gyre + tek dosyalık
+│   │                                        #   HTTP sarmalayıcı (server/CompileServer.java)
+│   ├── nginx/                               # nginx.conf + proxy_params.conf
+│   └── postgres/                            # init-umami.sql
 │
 ├── scripts/
-│   ├── deploy.sh                            # sunucuda çalışır: pull + migrate + up + healthcheck
-│   ├── backup.sh                            # gecelik pg_dump + age + rclone
+│   ├── deploy.sh                            # sunucuda: pull + up --no-deps + health + rollback
+│   ├── backup.sh                            # gecelik pg_dump + age + rclone, pazar basebackup
 │   ├── archive-wal.sh                       # WAL arşivi: dump'ı PITR'a çeviren yarı
 │   ├── restore.sh                           # geri yükleme, ve restore testinin kendisi
-│   ├── sync-spec.sh                         # spec + INDEX → frontend (tek yön)
+│   ├── sync-spec.sh                         # spec + INDEX + error-catalogue → frontend
 │   ├── sync-handoff.sh                      # handoff + STATUS (iki yön)
-│   ├── handoff-status.sh                    # açık maddeleri sayar; elle çalıştırılır, sıfır token
+│   ├── handoff-status.sh                    # açık maddeleri sayar; sıfır token
 │   ├── check-doc-sizes.sh                   # rolling dosyaların satır sınırı
 │   ├── dev-signin.sh                        # sihirli bağlantıyla giriş, tarayıcısız
-│   ├── dev-record.sh                        # her prompt'u bir kez koşturur (`make record` için)
+│   ├── dev-record.sh                        # her prompt'u bir kez koşturur (`make record`)
 │   ├── replay.sh                            # bir export'tan Faz E'yi yeniden koşar
 │   ├── support-read.sh                      # bir üretimi sahibinin verdiği izinle okur
 │   └── measure-template.sh                  # yeni şablonun sabit maliyetlerini ölç
 │
 ├── src/
 │   ├── main/
-│   │   ├── java/com/mustafatetik/atomcv/
-│   │   │   ├── AtomCvApplication.java
-│   │   │   │
-│   │   │   ├── identity/                    # kimlik, oturum, hesap
-│   │   │   │   ├── api/                     #   IdentityController, dto/
-│   │   │   │   ├── domain/                  #   User, OAuthIdentity, MagicLinkToken
-│   │   │   │   ├── service/                 #   AuthService, SessionService, OAuthService
-│   │   │   │   └── repository/
-│   │   │   │
-│   │   │   ├── profile/                     # Master Profil
-│   │   │   │   ├── api/
-│   │   │   │   ├── domain/                  #   Profile, Section, Entry, Atom, AtomVariant
-│   │   │   │   │   └── content/             #   RichContent, Run, Mark, ContentMigrator
-│   │   │   │   ├── service/                 #   ProfileService, ProfileAssembler
-│   │   │   │   └── repository/
-│   │   │   │
-│   │   │   ├── ingestion/                   # profil oluşturma
-│   │   │   │   ├── extraction/              #   PdfExtractor, DocxExtractor, TexExtractor
-│   │   │   │   ├── structuring/             #   LlmStructuringService
-│   │   │   │   ├── normalization/           #   SkillNormalizer, DateParser, RunBuilder
-│   │   │   │   └── github/                  #   GitHubImportService
-│   │   │   │
-│   │   │   ├── generation/                  # üretim hattı
-│   │   │   │   ├── api/
-│   │   │   │   ├── pipeline/                #   GenerationOrchestrator, PipelineContext,
-│   │   │   │   │                            #   Result, PipelineError, PreflightGuard
-│   │   │   │   ├── phases/
-│   │   │   │   │   ├── JobAnalysisPhase.java        # Faz A
-│   │   │   │   │   ├── ScoringPhase.java            # Faz B
-│   │   │   │   │   ├── SelectionPhase.java          # Faz C
-│   │   │   │   │   ├── RewritePhase.java            # Faz D
-│   │   │   │   │   ├── RenderPhase.java             # Faz E
-│   │   │   │   │   ├── VerificationPhase.java       # Faz F
-│   │   │   │   │   └── EditPhase.java               # Faz G
-│   │   │   │   ├── scoring/                 #   ScoringWeights, RelevanceScorer
-│   │   │   │   ├── selection/               #   BinPacker, BudgetCalculator, SelectionBuilder
-│   │   │   │   └── validation/              #   RewriteValidator, CoverLetterValidator
-│   │   │   │
-│   │   │   ├── rendering/
-│   │   │   │   ├── model/                   #   RenderRequest, RenderableSection
-│   │   │   │   ├── latex/                   #   LatexDocumentRenderer, LatexInlineRenderer,
-│   │   │   │   │                            #   LatexEscaper, PreambleBuilder
-│   │   │   │   ├── html/
-│   │   │   │   ├── docx/
-│   │   │   │   ├── measurement/             #   MeasurementDocumentBuilder, TexLogParser,
-│   │   │   │   │                            #   FontMetricEstimator, CalibrationService
-│   │   │   │   └── template/                #   TemplateRegistry, CapacityModel,
-│   │   │   │                                #   TemplateCustomization, FontFamily
-│   │   │   │
-│   │   │   ├── llm/
-│   │   │   │   ├── gateway/                 #   LlmProvider, ProviderChain, StructuredRequest
-│   │   │   │   ├── providers/               #   OpenRouter, Gemini, OpenAI, Anthropic, DeepSeek
-│   │   │   │   ├── prompts/                 #   PromptRegistry, PromptTemplate
-│   │   │   │   ├── fake/                    #   FakeLlmProvider (local-fake/record)
-│   │   │   │   └── telemetry/               #   LlmInvocationRecorder
-│   │   │   │
-│   │   │   ├── embedding/                   #   EmbeddingProvider, TeiClient, FakeEmbedding
-│   │   │   ├── compilation/                 #   LatexCompilerClient, CompilationSemaphore
-│   │   │   │
-│   │   │   ├── jobs/
-│   │   │   │   ├── queue/                   #   JobRepository, JobClaimer, StaleReclaimer
-│   │   │   │   ├── workers/                 #   GenerationWorker, MeasurementWorker,
-│   │   │   │   │                            #   TranslationWorker, EmbeddingWorker, EmailWorker
-│   │   │   │   └── sse/                     #   SseRegistry, ProgressPublisher
-│   │   │   │
-│   │   │   ├── tracking/                    # başvuru takibi
-│   │   │   ├── billing/                     #   QuotaService, CostTracker, AnomalyDetector,
-│   │   │   │                                #   KillSwitch
-│   │   │   ├── email/                       #   ResendClient, EmailTemplateRenderer, Suppression
-│   │   │   │
-│   │   │   └── shared/
-│   │   │       ├── security/                #   UserContext, UserRole, UserOwned, ProfileOwned,
-│   │   │       │                            #   ProfileRef, UserScopedRepository,
-│   │   │       │                            #   ProfileScopedRepository, CsrfConfig
-│   │   │       ├── error/                   #   ErrorPresenter, ProblemDetailAdvice
-│   │   │       ├── config/
-│   │   │       └── util/
-│   │   │
+│   │   ├── java/com/mustafatetik/atomcv/    # → § 10.1
 │   │   └── resources/
-│   │       ├── application.yml
-│   │       ├── application-local.yml
-│   │       ├── application-prod.yml
-│   │       ├── db/migration/                #   V1__initial_schema.sql, V2__...
-│   │       ├── prompts/                     #   versiyonlu prompt dosyaları
-│   │       │   ├── job_analysis/{v1.md, schema.json}
-│   │       │   ├── profile_extraction/{v1.md, schema.json}
-│   │       │   ├── bullet_rewrite/v1.md
-│   │       │   ├── about_synthesis/v1.md
-│   │       │   ├── cover_letter/v1.md
-│   │       │   ├── selection_edit/v1.md
-│   │       │   └── translation/v1.md
-│   │       ├── templates/                   #   şablon config + preamble parçaları
-│   │       │   ├── templates.yaml           #   kapasite + sabit maliyetler
-│   │       │   ├── classic/
-│   │       │   ├── modern/
-│   │       │   └── compact/
-│   │       ├── email/                       #   Thymeleaf şablonları
-│   │       ├── skills/aliases.json          #   beceri normalizasyon sözlüğü
-│   │       └── seeds/                       #   dev seed profilleri + ölçüm cache'leri
+│   │       ├── application.yml              #   + local, local-fake, local-record,
+│   │       │                                #     local-real, prod, support
+│   │       ├── db/migration/                #   V1 … V17
+│   │       ├── prompts/                     #   {promptId}/{vN.md, schema.json}
+│   │       ├── golden/                      #   profiles/, jobs/, analyses/,
+│   │       │                                #     content-formats/ — main, çünkü
+│   │       │                                #     seeder üretim kodu (EK D.8.9)
+│   │       └── skills/aliases.json          #   beceri normalizasyon sözlüğü
 │   │
-│   └── test/
-│       ├── java/com/mustafatetik/atomcv/
-│       │   ├── architecture/                #   ArchUnit kuralları
-│       │   ├── pipeline/                    #   faz testleri
-│       │   ├── security/                    #   multi-tenant izolasyon testleri
-│       │   └── ...
-│       └── resources/
-│           ├── golden/                      #   profiles/, jobs/, analyses/, content-formats/
-│           └── fixtures/llm/                #   local-record ile üretilen yanıtlar
+│   ├── test/                                # birim + mimari (ArchUnit), Docker'sız
+│   │   └── resources/fixtures/llm/          #   local-record ile üretilen yanıtlar
+│   └── integrationTest/                     # Testcontainers; `latex` ve `llm-eval`
+│                                            #   etiketleri kendi hatlarına ayrılıyor
 │
-├── .env.example
-├── .gitignore
+├── .env.example                             # her anahtar bir testle bağlı (EnvExampleTest)
 ├── CLAUDE.md                                # ← Claude Code kalıcı bağlamı
-├── README.md
-├── CHANGELOG.md
-├── SECURITY.md
-├── LICENSE                                  # MIT
-├── Makefile
-├── build.gradle.kts
-├── settings.gradle.kts
-├── docker-compose.yml                       # lokal (core/full profilleri)
-├── docker-compose.prod.yml                  # üretim (frontend imajını da içerir)
-└── nginx/
-    ├── nginx.conf
-    └── proxy_params.conf
+├── README.md · CHANGELOG.md · SECURITY.md · CONTRIBUTING.md · LICENSE
+├── Makefile · build.gradle.kts · settings.gradle.kts
+├── openapi.json                             # commit'li; OpenApiDocumentIT tutuyor
+├── error-catalogue.md                       # ErrorCode'dan üretiliyor
+├── performance-budgets.yaml                 # testlerin okuduğu sayılar (§ 52.6)
+├── docker-compose.yml                       # lokal (core/full/analytics profilleri)
+└── docker-compose.prod.yml                  # üretim (frontend imajını da çeker)
 ```
-
----
 
 ## XI-B.3 — Frontend Repo Klasör Yapısı
 

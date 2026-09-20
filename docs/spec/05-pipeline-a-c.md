@@ -255,10 +255,25 @@ hâlâ söylüyor, yanlış şirketi adlandıran satırı okuyanın ayırt etme 
 başka türlü yazıyor ("Senior Backend Engineer" ↔ "Backend Engineer (Senior)"),
 ve aynı kural orada gerçek başlıkları düşürürdü.
 
-**Prompt'ta da yazmalı, ve yazılmadı.** Yazmak yeni bir prompt sürümü demek
-(§ 53.2): üç fixture ve bir haftalık önbellek geçersiz olur, `local-fake`
-sentetik cevaba döner. `job_analysis` model seçimiyle birlikte `v2`'ye
-çıkacak; cümle o değişikliğe ait, ve kusuru kapatmak için gerekmiyor.
+**Prompt'ta da yazıyor, `v3`'ten beri** (düzeltme, denetim 2026-09-20). Bu
+paragraf uzun süre *"yazılmadı; `job_analysis` model seçimiyle birlikte `v2`'ye
+çıkacak, cümle o değişikliğe ait"* diyordu. **v2 çıktı ve cümle girmedi** —
+erteleme bir koşula bağlanmıştı, koşulu kontrol eden hiçbir şey yoktu, ve
+gerçekleştiğinde iş sessizce düştü.
+
+`v3` şunu söylüyor: `company.name` ilanın içerdiği bir addır ve **harfi harfine**
+kopyalanır — çevrilmez, kısaltması açılmaz, hukuki eki eklenip çıkarılmaz; ilan
+bir işveren adlandırmıyorsa **boş dize**, asla "Unknown" ya da "not specified".
+`role.title` bilerek dışarıda: model onu meşru biçimde başka türlü yazıyor ve
+hiçbir şey onu metne karşı denetlemiyor.
+
+**Ölçüldü** (EK C.3'ün istediği koşu, `make test-llm`): `schema_conforms`
+%100 (taban %99), `required_skills_found` %91.7 (taban %90),
+`nonsense_refused` %100 (taban %95). İkincisi tabana yakın — on iki vakanın
+on biri — ve bir sonraki sürümde ilk bakılacak sayı o.
+
+**Kontrol yine de duruyor.** Bir prompt kuralı bir ricadır; `EmployerName`
+karşılaştırması tutan yarıdır (§ 57.6).
 
 ### 18.5 Embedding hedefi sentezi
 
@@ -631,6 +646,15 @@ double renderCostPt(Atom atom, String lang, UUID customizationId) {
 ```
 
 Tahmin kullanıldığında `trace.C.estimatedAtoms` sayacı artar — teşhis için.
+
+> **Ve bir aşama boyunca artmıyordu** (düzeltme, denetim 2026-09-20). Sayı
+> hesaplanıyor (`SelectionRequestBuilder`), bir INFO satırına basılıyor ve
+> **atılıyordu**; bu bölüm ve § 26.5 onu iki ayrı yerde vaat ediyordu. Bir log
+> satırı kayıt değil: az dolu çıkmış bir sayfanın sebebi aylar sonra bu
+> kolondan okunuyor, ve "ölçüm işi bu profile yetişmemiş" ile "seçim yanlış"
+> onsuz aynı görünüyor. Artık `trace.C`'de, ve yanında bir seri var:
+> `generation.selection.costs`, `source` etiketi ölçülmüş ile tahmini ayırıyor
+> (§ 48.3'ün "tahmin kullanım oranı").
 
 ### 20.5 Çıktı
 

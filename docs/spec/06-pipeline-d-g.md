@@ -665,16 +665,39 @@ Sapma oranı metrik olarak izlenir (`selection.budget.overshoot.rate`). Yükseli
 ### 23.2 ATS uyumluluk kontrolü
 
 ```java
-public AtsReport checkAts(byte[] pdf) {
-    String extracted = pdfTextStripper.extract(pdf);
+public static AtsReport of(byte[] pdf, RenderRequest printed) {
+    String extracted = new PDFTextStripper().getText(load(pdf));
     return new AtsReport(
-        containsAllSectionHeaders(extracted),
-        contactInfoParseable(extracted),
-        textOrderCorrect(extracted),        // beklenen sırayla mı çıkıyor
-        noTableArtifacts(extracted)
+        headingsFound, headingsMissing,      // bölüm başlıkları geri çıktı mı
+        bulletsFound, bulletsExpected,       // basılan maddelerin kaçı okunabildi
+        contactReadable(printed, extracted),
+        orderPreserved(printed, extracted)   // beklenen sırayla mı çıkıyor
     );
 }
 ```
+
+> **Dört kontrol sayılıyordu, inen üç tanesi ve bir dördüncüsü başka**
+> (düzeltme, denetim 2026-09-20).
+>
+> **`noTableArtifacts` yazılmadı, ve yazılmayacak.** Üç şablon da bilerek tek
+> kolon (§ 33.5'in ATS gerekçesi) ve `two_column` V17'de sözlükten kalktı —
+> yani renderer'ın üretemediği bir kusuru arayan bir kontrol, **hiç
+> düşemeyecek bir test** olurdu (§ 51.7'nin birinci kuralı). Aradığı gerçek
+> risk sıranın bozulması ve onu `orderPreserved` ölçüyor; `AtsReport`'un
+> javadoc'u iki kolonlu bir şablonun öteki her kontrolü geçip ikisini birbirine
+> karıştırabileceğini zaten yazıyor. İki kolonlu bir şablon inerse bu satır
+> yeniden açılır.
+>
+> **Madde kapsaması burada yazılı değildi ve inen en değerli yarısı o.** Başlık
+> geri okunuyor ama maddeler okunmuyorsa metin katmanı bozuk demektir; sayım
+> `bulletsFound / bulletsExpected`, eşleşme ilk 80 karakter üzerinden
+> (kırpılma ve tireleme bir karakter düşürebiliyor, tamamını isteyen bir
+> kontrol mükemmel basılmış bir sayfayı kusurlu raporlardı).
+>
+> **Raporluyor, hiç reddetmiyor.** Sayfa sınırına uyan ve parası ödenmiş bir
+> belge kişinindir; buradaki her bulgu **bizim** şablonumuzun ya da
+> fontumuzun kusuru, ve belgeyi elinden almak kendi hatamızı ona ödetmek
+> olurdu. Sayaçlar `generation.ats.clean` / `.defect`.
 
 ### 23.3 Uygunluk raporu
 

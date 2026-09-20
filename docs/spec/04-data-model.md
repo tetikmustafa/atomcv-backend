@@ -654,21 +654,49 @@ onlara join edebilir; bu alan **ne çalıştığının** kaydı olarak kalır.
 
 ```json
 {
-  "A": { "durationMs": 1840, "provider": "gemini", "promptVersion": "v2",
-         "confidence": 0.91, "requiredSkillsFound": 4, "cacheHit": false },
-  "B": { "durationMs": 47, "atomsScored": 63,
-         "scoreDistribution": { "p10": 0.11, "p50": 0.44, "p90": 0.87 } },
-  "C": { "durationMs": 12, "selected": 16, "rejected": 47,
+  "B": { "weights": "DEFAULT" },
+  "C": { "selected": 16, "rejected": 47,
          "rejectionReasons": { "BUDGET": 31, "EXCLUDED_BY_DIRECTIVE": 9, "INACTIVE": 7 },
-         "pinnedCostPt": 84.2, "estimatedAtoms": 2 },
-  "D": { "durationMs": 3120, "attempts": 6, "accepted": 5, "rejected": 1,
-         "rejectReasons": ["NUMBER_LOST"], "translationsUsed": 4, "translationsGenerated": 2 },
-  "E": { "durationMs": 210, "sourceBytes": 8420 },
-  "F": { "durationMs": 4900, "pageCount": 1, "driftPt": 2.1, "atsExtractionOk": true }
+         "pinnedCostPt": 84.2,
+         "budget": { "totalPt": 648.0, "fixedPt": 142.0, "freePt": 506.0,
+                     "usedPt": 498.3, "remainingPt": 7.7 },
+         "estimatedAtoms": 2 },
+  "D": { "rewritten": 5,
+         "calls": { "bullet_rewrite": 6, "about_synthesis": 1 },
+         "rejectReasons": { "NUMBER_LOST": 1 },
+         "unreachable": 0 },
+  "F": { "pageCount": 1, "attempts": 1, "budgetFactor": 1.0 }
 }
 ```
 
----
+> **Blok yazıldığı gibi inmedi, ve kalıcı bir JSONB kolonunu anlatıyor**
+> (düzeltme, denetim 2026-09-20). § 13 ve § 14.5 dördüncü turda gerçeğe
+> çevrilmişti; bu blok atlandı ve iki tur daha bugün yazılmayan alanları
+> belgelemeye devam etti — § 48.5'in replay'i ve "hangi prompt koştu" sorusu
+> tam olarak bu kolonu okuyor.
+>
+> - **A ve E yok, ve bu bir karar:** ikisini zamanlayan bir şey yok, ve sıfır
+>   taşıyan bir trace "anlık" diye okunur, "ölçülmedi" diye değil. Kayıtlı
+>   olan `engine_version.promptVersions`.
+> - **Süreler hiçbir fazda yok**, aynı sebeple; faz gecikmesi `job.phase`
+>   metriğinde (§ 48.3).
+> - **B bir ağırlık seti adı taşıyor**, skor dağılımı değil: genel modda ilan
+>   yok ve `weights` orada "general-mode" diyor — "hiç koşmadı" ile "koştu ve
+>   hiçbir şey bulamadı"yı ayıran tek şey o.
+> - **C bütçeyi taşıyor** ve § 14.5'in aksine bu bir tekrar değil: bir sayfa
+>   az dolu çıktığında `"rejected": 13`'ün yanında ne kadar yerden
+>   döndürüldüğü yazmıyorsa, seçim kusuru ile bütçe kusuru ayırt edilemiyor.
+> - **`estimatedAtoms` altıncı turda yazılmaya başladı.** § 20.4 ve § 26.5
+>   sayacı iki kez vaat ediyordu; hesaplanıyor, INFO'ya basılıyor ve atılıyordu.
+> - **D'nin şekli değişti:** `rewritten: 0`'ın dört ayrı sebebi var (aday
+>   yoktu, cevap gelmedi, geldi ve reddedildi, faz hiç koşmadı) ve sayfa
+>   dördünde de aynı görünüyor — `calls` ilk ikisini son ikisinden,
+>   `rejectReasons` onları birbirinden, `unreachable` sağlayıcının payını
+>   ayırıyor.
+> - **F'te `driftPt` ve `atsExtractionOk` yok.** Ölçülen sapma sayfa
+>   cinsinden ve `generation.pages.drift` metriğinde (§ 26.6); ATS sonucu
+>   `generation.ats.clean` / `.defect` sayaçlarında, çünkü rapor bölüm
+>   başlıklarını taşıyor ve onlar kullanıcının kendi metni (mutlak kural 4).
 
 ### 14.7 `generations.engine_version`
 
@@ -721,7 +749,10 @@ src/main/resources/db/migration/
 ├── V11__a_rewrite_outlives_the_generation_that_made_it.sql
 ├── V12__a_measured_capacity_outlives_the_request_that_paid_for_it.sql
 ├── V13__a_header_is_as_tall_as_its_own_text.sql
-└── V14__a_person_can_stop_the_post.sql
+├── V14__a_person_can_stop_the_post.sql
+├── V15__a_preference_lives_on_the_account_that_holds_it.sql
+├── V16__the_column_says_what_can_actually_write_to_it.sql
+└── V17__four_vocabularies_narrow_to_what_can_be_written.sql
 ```
 
 > **Ağaç uydurmaydı** (düzeltme, denetim 2026-09-16): `V2__add_template_customizations`
@@ -735,8 +766,23 @@ src/main/resources/db/migration/
 **Kurallar:**
 - Uygulanmış migration dosyası **asla değiştirilmez** (checksum korumalı)
 - `flyway.validateOnMigrate=true`
-- Migration **deploy'dan önce** çalışır (CI adımı), uygulama başlangıcında değil (üretimde)
-- Lokalde uygulama başlangıcında çalışabilir
+- Migration **uygulama açılışında** çalışır, üretimde de — ve **tek örnekle**
+- Yeni bir migration § 13.2'ye aynı commit'te bir satır ekler
+
+> **Üçüncü kural tersini söylüyordu** (düzeltme, denetim 2026-09-20).
+> "Deploy'dan önce çalışır (CI adımı), uygulama başlangıcında değil" satırı
+> 2026-08-28'de verilen kararın tam tersi: § 47'nin önerdiği
+> `--spring.flyway.migrate-only=true` diye bir Spring Boot özelliği yok
+> (EK D.1), ve iki gerçek seçenekten — ayrı bir Flyway CLI adımı, ya da açılışta
+> bırakıp tek örnekle deploy etmek — ikincisi seçildi.
+>
+> **Güvenli kılan şey tek örnek, kilit değil.** Flyway kendi kilidini zaten
+> alıyor; risk iki migrator değil, **tek şemaya karşı iki uygulama sürümü**.
+> `scripts/deploy.sh` bileşeni `--no-deps` ile yerinde değiştiriyor. Yatay
+> ölçeklemeye geçilirse karar yeniden açılır. Pratik sonucu geri almada
+> görünür: deploy imajı geri alır, **migration'ı geri almaz** — yani her
+> migration geriye dönük uyumlu olmak zorunda. § 47.1 ve
+> `docs/vps-dagitim-plani.md` § 0 aynı kararı taşıyor.
 
 **Expand-contract deseni** (rollback mümkün kalsın):
 ```

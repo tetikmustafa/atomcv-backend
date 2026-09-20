@@ -385,7 +385,7 @@ jobs:
 |---|---|
 | **İmaj tag'i = git SHA** | `latest` kullanma — hangi sürümün canlıda olduğunu bilemezsin, rollback imkânsızlaşır |
 | **Bir kere build, her yerde aynı imaj** | Deploy sırasında yeniden build etme |
-| **Migration deploy'dan ÖNCE** | Expand-contract deseniyle geriye uyumlu |
+| **Migration açılışta, tek örnekle** | Ayrı bir adım yok (§ 47.1'in kutusu). Geri alma imajı geri alır, şemayı değil — her migration geriye dönük uyumlu olmak zorunda, expand-contract deseniyle |
 | **Health check + otomatik rollback** | Bozuk deploy canlıda kalmasın |
 | **Build sunucuda yapılmaz** | RAM tükenir |
 
