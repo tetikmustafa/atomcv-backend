@@ -55,10 +55,9 @@ Run freely, without asking: local build, test, lint, typecheck, and any
 
 ### Read on demand — never in full
 
-`docs/spec/**` is 19 files, ~9,400 lines. **Never read one end to end.** Route
+`docs/spec/**` is 19 files, ~13,100 lines. **Never read one end to end.** Route
 with `docs/INDEX.md`, `rg -n "<term>" docs/spec/<file>.md`, read the matching
-range: a file is 200-1,100 lines, so reading it whole costs 15-40x the tokens
-and buries the part you needed. **Never routinely:** `docs/notes/archive/**`
+range: a file is 170-1,900 lines, so reading it whole costs 15-40x the tokens. **Never routinely:** `docs/notes/archive/**`
 and `docs/handoff/resolved/**` — both are closed by definition.
 
 ### Ownership
@@ -133,8 +132,12 @@ make db-reset   # wipe database and re-run migrations (LOCAL ONLY)
 make record     # local-record profile, to capture LLM fixtures
 make test       # unit + architecture tests
 make test-int   # integration tests (Testcontainers)
+make test-llm   # score a prompt against 53.5's thresholds — SPENDS MONEY, Docker
 make golden-costs # re-measure the golden set's render costs, after a fixture changes
 ```
+Also `make openapi` / `make catalogue`, which rewrite committed files. **Never
+`gradlew llmEval` by hand** — only the Makefile exports `.env`; a bare call has
+no key and fails as an outage instead of scoring.
 
 Spring profiles: `local,local-fake` (daily work, no real LLM calls),
 `local,local-record` (real calls saved as fixtures), `local,local-real` (real
@@ -149,8 +152,7 @@ True here and nowhere in the architecture documents; each cost a debugging round
   to `CreateProcess`, and `./gradlew` is not a Windows executable).
   **PowerShell's `curl` is `Invoke-WebRequest`** and takes none of curl's flags,
   so `notes/manual-test-*.md` is Git Bash too; no `jq` here, `python` yes.
-- **`scripts/dev-signin.sh` and `scripts/dev-record.sh`** drive the sign-in and
-  fixture-recording tours end to end; neither has to be typed by hand.
+- **`scripts/dev-signin.sh` and `dev-record.sh`** drive the sign-in and fixture-recording tours end to end.
 - **The Makefile includes and `export`s `.env`, so Spring sees it too** — not
   only compose. Without it a changed `POSTGRES_PASSWORD` reads as a code bug;
   with it, a production key in `.env` changes local behaviour silently.
@@ -158,12 +160,12 @@ True here and nowhere in the architecture documents; each cost a debugging round
   `TURNSTILE_SECRET_KEY` made every `POST /auth/magic-link` a 403;
   `application-local.yml` reads both from `LOCAL_*` names now, and **add any new
   production secret there the same way.**
-- **`.env`'s `LLM_CHAIN_*` does *not* make `make dev` spend money** — this file
-  claimed it did, wrongly twice over. `LLM_CHAIN_CHEAP` binds to
-  `llm.chain.cheap`, the property is `atomcv.llm.chain.cheap`, so it only feeds
-  the base document's placeholder, which `application-local-fake.yml` outranks.
-  Measured, and pinned by `LocalProfileConfigTest`. **The profile is what spends
-  money**, and `local-record`/`local-real` are supposed to.
+- **`.env`'s `LLM_CHAIN_*` does *not* make `make dev` spend money** (this file
+  claimed it did, twice): `LLM_CHAIN_CHEAP` binds to `llm.chain.cheap` and the
+  property is `atomcv.llm.chain.cheap`, which `application-local-fake.yml`
+  outranks. **The profile is what spends money** — `LocalProfileConfigTest`.
+- **An `UnknownHostException` after `BUILD SUCCESSFUL` is not a failure:** `.env`
+  points OTLP at a placeholder host. Read the exit code, not the tail.
 - **`native.encoding` is `Cp1254` here and UTF-8 on the runner**; the source
   encoding is pinned in `build.gradle.kts`, do not remove it. The same console
   makes **`print()` of a non-ASCII string raise `UnicodeEncodeError`** — a
@@ -173,8 +175,7 @@ True here and nowhere in the architecture documents; each cost a debugging round
   a response or an assertion needs `Collections.unmodifiable*` over a `Linked*`.
   Passed here, failed on the runner; reads as a flake, is not one.
 - **`gradlew` must stay mode 100755**, or every Linux runner fails. Directly:
-  `sh ./gradlew test` (fast, no Docker), `sh ./gradlew integrationTest` (needs
-  Docker Desktop); `--tests '*SomeTest'` narrows either.
+  `sh ./gradlew test` (no Docker) or `integrationTest`; `--tests '*X'` narrows.
 - **LaTeX locally:** `make dev-full` rebuilds the image (`--build`) and starts
   containers only; a stale one answers without `X-Page-Count`. `make dev` needs
   none: `FakeLatexCompiler` (`local-fake`) reports **1 page always** and never
@@ -182,10 +183,9 @@ True here and nowhere in the architecture documents; each cost a debugging round
 - **`gradlew latexTest` compiles through a real image**, is excluded from
   `integrationTest` (minutes), and is the only lane with a real compiler and
   round trip — three bugs the others missed. `latex.yml` runs it on its paths.
-- A `pre-commit` gitleaks hook runs on every commit; one that printed nothing about secrets did not run it.
-- **`spotlessCheck` fails locally on CRLF where CI passes** — the editor tool
-  and python's text mode write CRLF, git normalises on commit, so the runner
-  sees LF. **Run `sh ./gradlew spotlessApply` after writing a new file.**
+- A `pre-commit` gitleaks hook runs on every commit; one that printed nothing did not run.
+- **`spotlessCheck` fails locally on CRLF where CI passes** (the editor and
+  python write CRLF; git normalises). **Run `spotlessApply` after writing a file.**
 - **The tests run on a JDK and the product ships on a JRE, and that gap hides
   faults.** `RandomGenerator.getDefault()` needs `jdk.random`, absent from every
   JRE image: the application started locally and died on the first container

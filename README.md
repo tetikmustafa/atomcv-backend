@@ -101,6 +101,7 @@ src/main/java/com/mustafatetik/atomcv/
 ├── tracking/     application tracking
 ├── billing/      quota, cost tracking, anomaly detection
 ├── email/        transactional email
+├── retention/    scheduled sweeps: anonymous profiles, job payloads
 └── shared/       user-scoped repository base, errors, config
 ```
 
@@ -110,8 +111,8 @@ rendering may never reach for an LLM.
 
 ## Architecture documents
 
-The full specification lives in [`docs/spec/`](docs/spec/) — eighteen files,
-around 8,500 lines, **written in Turkish**. Start at
+The full specification lives in [`docs/spec/`](docs/spec/) — nineteen files,
+around 13,100 lines, **written in Turkish**. Start at
 [`docs/INDEX.md`](docs/INDEX.md), which routes a question to the section that
 answers it; reading a file end to end is rarely the fastest way in.
 [`docs/STATUS.md`](docs/STATUS.md) says where both repositories stand today,
