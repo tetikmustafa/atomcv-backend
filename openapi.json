@@ -437,7 +437,7 @@
       "post" : {
         "tags" : [ "Profile" ],
         "summary" : "Build a profile from an uploaded CV",
-        "description" : "Accepts PDF, DOCX, TEX, TXT and MD, up to ten megabytes. The published list is `accepted` on a `415` — read it from there rather than hardcoding one, so a format added later reaches the file picker without a release.\n\nAnswers 202 with a job to follow. Everything that can be decided about the file itself is decided before that: an unreadable format, an oversized file, an encrypted PDF, a scan with no text in it, and a document that yielded nothing are all refused synchronously, because each of them is something the person acts on at once.\n\nSend `Idempotency-Key`. An upload is the request a flaky connection repeats most easily, and profile extraction has the smallest daily allowance in the product.",
+        "description" : "Accepts PDF, DOCX, TEX, TXT and MD, up to ten megabytes. The published list is `accepted` on a `415` — read it from there rather than hardcoding one, so a format added later reaches the file picker without a release.\n\nAnswers 202 with a job to follow. Everything that can be decided about the file itself is decided before that: an unreadable format, an oversized file, an encrypted PDF, a scan with no text in it, and a document that yielded nothing are all refused synchronously, because each of them is something the person acts on at once.\n\nSend `Idempotency-Key`. An upload is the request a flaky connection repeats most easily, and profile extraction has the smallest daily allowance in the product.\n\n`language` is where a `choose_language` answer goes (F-037). The refusal that offers that action comes out of the worker, so there is no half-written profile to put the answer on — the next upload carries it instead, and carrying it skips detection, so a second attempt cannot fail the same way.",
         "operationId" : "importCv",
         "parameters" : [ {
           "name" : "Idempotency-Key",
@@ -466,6 +466,11 @@
                     "format" : "binary",
                     "description" : "The CV. PDF, DOCX, TEX, TXT or MD, up to ten megabytes."
                   },
+                  "language" : {
+                    "type" : "string",
+                    "description" : "What the CV is written in, ISO 639-1. Send it to answer a `choose_language` resolution from a previous upload's `422 LANGUAGE_UNDETECTED`: detection is then skipped and this is the language the profile gets, so the second upload cannot land on the same refusal. Omit it and the language is detected, which is the ordinary case. Not a code we know is `400 VALIDATION_FAILED`.",
+                    "example" : "tr"
+                  },
                   "challengeToken" : {
                     "type" : "string",
                     "description" : "What the challenge widget produced. Required for a caller with no account and ignored for one with an account: this is the most expensive single call the product makes. Absent or blank is refused with `403 CHALLENGE_FAILED`."
@@ -488,7 +493,7 @@
             }
           },
           "400" : {
-            "description" : "VALIDATION_FAILED - the body carried no `file` part",
+            "description" : "VALIDATION_FAILED - the body carried no `file` part, or `language` was not an ISO 639-1 code",
             "content" : {
               "application/problem+json" : {
                 "schema" : {
@@ -1248,7 +1253,7 @@
       "post" : {
         "tags" : [ "Generation" ],
         "summary" : "Generate a CV against a job posting",
-        "description" : "Answers 202 with a job to follow. A generation reads the                     posting with an LLM, scores the whole profile against it,                     then renders and compiles — half a minute is ordinary, and                     a request held open for that long is a request that times                     out somewhere in between.\n\nThe preflights are synchronous. A posting that does not                     read as one and a profile with nothing in it are both                     refused here, on the spot, rather than accepted and failed                     thirty seconds later.\n\n`Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.",
+        "description" : "Answers 202 with a job to follow. A generation reads the                     posting with an LLM, scores the whole profile against it,                     then renders and compiles — half a minute is ordinary, and                     a request held open for that long is a request that times                     out somewhere in between.\n\nThe preflights are synchronous. A posting that does not                     read as one and a profile with nothing in it are both                     refused here, on the spot, rather than accepted and failed                     thirty seconds later.\n\n`Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.\n\nA `customizationId` is checked here too, and a stale one                     is a `404` rather than a document rendered with something                     else. A set deleted in another tab is the ordinary way to                     hold one (F-040).",
         "operationId" : "generate",
         "parameters" : [ {
           "name" : "Idempotency-Key",
@@ -1275,6 +1280,16 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AcceptedJobResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "RESOURCE_NOT_FOUND - the `customizationId` is not one of this profile's saved sets",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
                 }
               }
             }
@@ -4590,6 +4605,11 @@
             "format" : "int32",
             "description" : "How many pages the compiled document came to"
           },
+          "maxPages" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The page limit this generation was made under -- the number the\nrequest asked for, or the profile's default when it asked for\nnone. Read it against `pageCount`: a document that came out\nunder its limit is shorter than it was allowed to be, which is\na fact worth a note rather than a reason to pad.\n\nNot the profile's preference of today. That is what is set now,\nand `increase_page_limit` changes it; this is what *this*\ndocument was built to. Absent for a generation written before\nthe limit was recorded, and absent rather than guessed."
+          },
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -5331,6 +5351,11 @@
             "type" : "integer",
             "format" : "int32",
             "description" : "How many pages the compiled document came to; absent while it is unfinished or failed"
+          },
+          "maxPages" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The page limit this generation was made under, so a row can be read against it the same way the full response is (F-039). Absent for a generation written before the limit was recorded."
           },
           "roleTitle" : {
             "type" : "string",
