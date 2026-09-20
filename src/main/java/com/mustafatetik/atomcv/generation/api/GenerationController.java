@@ -184,9 +184,16 @@ public class GenerationController {
 
                     The preflights are synchronous. A posting that does not                     read as one and a profile with nothing in it are both                     refused here, on the spot, rather than accepted and failed                     thirty seconds later.
 
-                    `Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.""")
+                    `Idempotency-Key` is honoured: the same key from the same                     user answers with the job it already made, so a double                     click produces one CV and not two.
+
+                    A `customizationId` is checked here too, and a stale one                     is a `404` rather than a document rendered with something                     else. A set deleted in another tab is the ordinary way to                     hold one (F-040).""")
     @ApiResponses({
             @ApiResponse(responseCode = "202", description = "Queued; follow the Location"),
+            @ApiResponse(responseCode = "404",
+                    description = "RESOURCE_NOT_FOUND - the `customizationId` is not "
+                            + "one of this profile's saved sets",
+                    content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "422",
                     description = "UNPARSEABLE_JOB_DESCRIPTION or INSUFFICIENT_PROFILE",
                     content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,

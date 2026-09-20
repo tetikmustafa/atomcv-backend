@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -60,6 +61,7 @@ class GenerationEnqueueServiceTest {
     private JobRepository jobs;
     private com.mustafatetik.atomcv.billing.QuotaService quotas;
     private com.mustafatetik.atomcv.billing.FeatureFlags flags;
+    private com.mustafatetik.atomcv.rendering.service.CustomizationService customizations;
     private GenerationEnqueueService service;
 
     private ProfileRef profile;
@@ -73,7 +75,11 @@ class GenerationEnqueueServiceTest {
         when(quotas.consume(any(), any())).thenReturn(Result.ok(null));
         flags = mock(com.mustafatetik.atomcv.billing.FeatureFlags.class);
         when(flags.isEnabled(any())).thenReturn(true);
+        customizations =
+                mock(com.mustafatetik.atomcv.rendering.service.CustomizationService.class);
+        when(customizations.settingsOf(any(), any())).thenReturn(Optional.empty());
         service = new GenerationEnqueueService(assembler, queue, jobs, quotas, flags,
+                customizations,
                 Clock.fixed(Instant.parse("2026-08-24T09:00:00Z"), ZoneOffset.UTC));
 
         head = new Profile(USER);
@@ -200,6 +206,61 @@ class GenerationEnqueueServiceTest {
         service.enqueue(owner(), allowance(), owned(), "hire me plz", false, null, null, false, List.of(), null, null, null);
 
         verify(quotas).refund(any(), eq(com.mustafatetik.atomcv.billing.QuotaMetric.GENERATION));
+    }
+
+    /**
+     * F-040. The set was checked inside the worker, so a stale id answered 202
+     * and the person got a document rendered with settings they had not
+     * chosen — the same shape as the dead `two_column` of B-116, except that
+     * this one cost a generation.
+     */
+    @Test
+    void astaleCustomizationIsRefusedBeforeTheQueue() {
+        when(assembler.load(profile)).thenReturn(profileWithOneAtom());
+        UUID deletedInAnotherTab = UUID.randomUUID();
+        when(customizations.settingsOf(profile, deletedInAnotherTab))
+                .thenThrow(com.mustafatetik.atomcv.shared.error.ApiException.of(
+                        com.mustafatetik.atomcv.shared.error.ErrorCode.RESOURCE_NOT_FOUND));
+
+        assertThatThrownBy(() -> service.enqueue(owner(), allowance(), owned(), POSTING,
+                false, null, null, false, List.of(), deletedInAnotherTab, null, null))
+                .isInstanceOf(com.mustafatetik.atomcv.shared.error.ApiException.class);
+
+        verify(queue, never()).enqueue(any());
+    }
+
+    /**
+     * And it costs nothing, which is the half that would otherwise be silent:
+     * a refusal that spent a generation would be worse than the bug it fixes.
+     */
+    @Test
+    void astaleCustomizationSpendsNoAllowance() {
+        UUID deletedInAnotherTab = UUID.randomUUID();
+        when(customizations.settingsOf(profile, deletedInAnotherTab))
+                .thenThrow(com.mustafatetik.atomcv.shared.error.ApiException.of(
+                        com.mustafatetik.atomcv.shared.error.ErrorCode.RESOURCE_NOT_FOUND));
+
+        assertThatThrownBy(() -> service.enqueue(owner(), allowance(), owned(), POSTING,
+                false, null, null, false, List.of(), deletedInAnotherTab, null, null))
+                .isInstanceOf(com.mustafatetik.atomcv.shared.error.ApiException.class);
+
+        verify(quotas, never()).consume(any(), any());
+        verify(assembler, never()).load(any());
+    }
+
+    /**
+     * The guard has to let the ordinary request through, and the ordinary
+     * request names no set at all. Without this the test above would pass on a
+     * gate that refused everything.
+     */
+    @Test
+    void arequestNamingNoSetIsQueued() {
+        when(assembler.load(profile)).thenReturn(profileWithOneAtom());
+
+        service.enqueue(owner(), allowance(), owned(), POSTING, false, null, null, false,
+                List.of(), null, null, null);
+
+        verify(queue).enqueue(any());
     }
 
     /** Answering with a job that already exists must not cost a second unit. */
