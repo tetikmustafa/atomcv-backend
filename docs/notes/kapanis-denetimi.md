@@ -60,7 +60,7 @@ olmayan altı şey var:**
 | **Güvenlik header'ları açıkça ayarlanmamış.** `SecurityConfig`'de `headers(...)` çağrısı yok; Spring varsayılanı **CSP vermez** | **Dilim 2** |
 | **Dev bean'lerinin prod'da olmadığını tutan test yok.** `DevSeeder`, `LocalDevUser`, `LocalDevSessions`, `FakeLlmProvider` doğru `@Profile` taşıyor — ama silen biri olsa sessiz geçer | **Dilim 2** |
 | **Saklama süresi politikası yok.** `jobs.payload` CV ve ilan metnini, `generation` ilan metnini taşıyor; hiçbir şey budamıyor | **Dilim 3** (karar 5) |
-| **`support_grants.accessed_at` hiç yazılmıyor.** Operatör arayüzü bu repoda yok; § 48.4'ün sözü bugün boş | Açık kalıyor — **erişim aracı gelirse ilk işi bu** |
+| **`support_grants.accessed_at` hiç yazılmıyor.** Operatör arayüzü bu repoda yok; § 48.4'ün sözü bugün boş | ✅ **kapandı** — § 48.5'in çevrimdışı okuyucusu indi (`scripts/support-read.sh`), `SupportRead` izni okurken damgayı basıyor ve `GET /generations/{id}` onu geri yayımlıyor (`F-019`) |
 
 **Daha küçük, hâlâ canlı olanlar:**
 
