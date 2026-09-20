@@ -2,6 +2,8 @@ package com.mustafatetik.atomcv.ingestion.extraction;
 
 import com.mustafatetik.atomcv.shared.error.ApiException;
 import com.mustafatetik.atomcv.shared.error.ErrorCode;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
 import java.io.IOException;
 import java.util.List;
 import org.apache.pdfbox.Loader;
@@ -42,8 +44,12 @@ class PdfTextExtractor implements TextExtractor {
             return stripper.getText(document);
         } catch (InvalidPasswordException encrypted) {
             // Refuse and ask for an open copy. There is nothing to try — we
-            // have no password and would not want one.
-            throw ApiException.of(ErrorCode.PDF_ENCRYPTED);
+            // have no password and would not want one — and that is exactly why
+            // the way out is a different file rather than RETRY, which would
+            // send the same locked bytes to the same refusal, or the manual
+            // form, which asks the person to retype what they already have.
+            throw ApiException.of(ErrorCode.PDF_ENCRYPTED,
+                    Resolution.of(ResolutionAction.UPLOAD_ANOTHER_FILE));
         } catch (IOException unreadable) {
             // A file that starts with %PDF- and is not a PDF, or one that is
             // damaged. The user cannot tell those apart either, and the answer

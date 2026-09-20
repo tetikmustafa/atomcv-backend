@@ -81,7 +81,15 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                                 // three ways past it and the vocabulary named
                                 // only two of them.
                                 "continue_anyway", "retry",
-                        "replace_profile", "keep_existing_profile")));
+                                "replace_profile", "keep_existing_profile",
+                                // B-114: an encrypted PDF and an undetected
+                                // language are refusals a person can act on,
+                                // and both shipped offering nothing. Neither
+                                // wants the manual form -- one wants the same
+                                // CV sent as an open file, the other wants an
+                                // answer to a question whose candidates were
+                                // already on the wire.
+                                "upload_another_file", "choose_language")));
     }
 
     /**

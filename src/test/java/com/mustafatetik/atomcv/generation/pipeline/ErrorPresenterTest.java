@@ -201,6 +201,32 @@ class ErrorPresenterTest {
         assertThat(presented.params()).containsEntry("tried", List.of());
     }
 
+    /**
+     * The two ingestion refusals this presenter answers for, and the fact that
+     * they answer differently.
+     *
+     * <p>Both published an empty {@code resolutions} array until the sixth
+     * audit while {@code switch_to_manual_form} sat unused in the vocabulary —
+     * the comment here said the vocabulary had no action for it, and it had had
+     * one all along. An undetected language is a question and gets somewhere to
+     * answer it; a document nothing could be read from is a dead end and gets
+     * the form.
+     */
+    @Test
+    void theTwoIngestionRefusalsCarryTheirOwnWayOut() {
+        var torn = presenter.present(
+                new PipelineError.LanguageUndetected(List.of("tr")), PAGE_HEIGHT_PT);
+        assertThat(torn.resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.CHOOSE_LANGUAGE);
+        assertThat(torn.params()).containsEntry("detectedCandidates", List.of("tr"));
+
+        var empty = presenter.present(new PipelineError.NothingExtracted(), PAGE_HEIGHT_PT);
+        assertThat(empty.resolutions())
+                .extracting(Resolution::action)
+                .containsExactly(ResolutionAction.SWITCH_TO_MANUAL_FORM);
+    }
+
     /** Absolute rule 4: the log is the user's own content and never a parameter. */
     @Test
     void theTexLogNeverReachesTheBody() {

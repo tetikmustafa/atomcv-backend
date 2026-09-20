@@ -62,6 +62,31 @@ public enum ResolutionAction {
     /** Extraction failed; go to the manual profile form. */
     SWITCH_TO_MANUAL_FORM,
 
+    /**
+     * Pick the file again. The one that was sent cannot be read as it stands.
+     *
+     * <p>Distinct from {@link #RETRY} and from {@link #SWITCH_TO_MANUAL_FORM},
+     * and both distinctions cost the user something when they are lost. An
+     * encrypted PDF fails identically every time it is sent, so {@code RETRY}
+     * is a button that cannot work; and the person is not out of options the
+     * way {@code SWITCH_TO_MANUAL_FORM} says they are — an open copy of the
+     * same document reads perfectly. Section 31.10 says exactly this: refuse,
+     * and ask for an open version.
+     */
+    UPLOAD_ANOTHER_FILE,
+
+    /**
+     * Say which language the document is in, from {@code params.detectedCandidates}.
+     *
+     * <p>Section 31.10 answers an undetected language with "ask the user", and
+     * until this existed there was nothing to ask with: the refusal published
+     * its candidates and offered no way to act on them. The choice matters
+     * more than it looks — the selected language decides which wording of every
+     * atom is written, so a wrong guess produces a whole profile in the wrong
+     * language with no screen saying so.
+     */
+    CHOOSE_LANGUAGE,
+
     /** There is too little profile to generate from; open the profile editor. */
     COMPLETE_PROFILE,
 
