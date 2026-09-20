@@ -291,6 +291,14 @@ tasks.withType<Test> {
     inputs.file(rootProject.file("docs/spec/04-data-model.md"))
         .withPropertyName("dataModelChapter")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // And the operations chapter, for the same reason one step further out:
+    // MetricCatalogueTest now holds 48.3's rows to the meters that answer
+    // them, and three of those rows were answered by nothing at all. A row
+    // added to the table while this task stayed UP-TO-DATE would be a promise
+    // nobody checked -- which is the state the sixth audit found it in.
+    inputs.file(rootProject.file("docs/spec/11-operations.md"))
+        .withPropertyName("operationsChapter")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     // And for the sixth time. PromptEvalCoverageTest reads both of these
     // directories as directories -- the prompt ids it checks are folder names,
     // and a new folder changes nothing on any classpath. A prompt added while

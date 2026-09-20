@@ -59,6 +59,7 @@ class GenerationJobHandlerTest {
     private GenerationRepository records;
     private com.mustafatetik.atomcv.billing.QuotaService quotas;
     private GenerationJobHandler handler;
+    private io.micrometer.core.instrument.simple.SimpleMeterRegistry meters;
 
     @BeforeEach
     void wireTheMocks() {
@@ -80,12 +81,13 @@ class GenerationJobHandlerTest {
                     com.mustafatetik.atomcv.shared.security.ProfileRef.persistent(
                             acting, profile.getId(), acting.userId()));
         });
+        meters = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
         handler = new GenerationJobHandler(
                 generations, general, records,
                 mock(com.mustafatetik.atomcv.generation.repository.AnonymousGenerations.class),
                 mock(com.mustafatetik.atomcv.profile.repository.AnonymousProfiles.class),
                 profiles, quotas, mock(GenerationRerunService.class),
-                mock(NaturalLanguageEditService.class), new ErrorPresenter());
+                mock(NaturalLanguageEditService.class), new ErrorPresenter(), meters);
         when(records.save(any(), any())).thenAnswer(call -> call.getArgument(1));
     }
 
@@ -197,6 +199,40 @@ class GenerationJobHandlerTest {
         assertThat(saved.getValue().getTrace()).extracting("D")
                 .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
                 .containsEntry("rewritten", 0);
+    }
+
+    /**
+     * <strong>The counter two chapters promised and nothing wrote.</strong>
+     * Sections 20.4 and 26.5 both say the estimate count reaches
+     * {@code trace.C}; it was counted in the builder, printed at INFO once and
+     * dropped. A page that came out under-filled is read back out of this
+     * column months later, and "the measurement job never reached this
+     * profile" and "selection is wrong" look identical without it.
+     *
+     * <p>The pair of meters beside it is the same fact as a series: a
+     * numerator with no denominator is not a rate, and eleven estimates means
+     * something different on a profile of nineteen atoms than on one of two
+     * hundred.
+     */
+    @Test
+    void thetraceCarriesWhatSelectionHadToGuessAt() {
+        when(generations.generateForJob(any(), anyString(), anyBoolean(), any(), any(), anyBoolean(),
+                any(), any(), any(), any()))
+                .thenReturn(Result.ok(generatedWith(
+                        ScoringWeights.DEFAULT, "v1", RewriteTally.none())));
+
+        handler.handle(job(), ProgressSink.NONE);
+
+        var saved = ArgumentCaptor.forClass(Generation.class);
+        verify(records).save(any(), saved.capture());
+        assertThat(saved.getValue().getTrace()).extracting("C")
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .containsEntry("estimatedAtoms", 11);
+
+        assertThat(meters.get(GenerationJobHandler.SELECTION_COSTS)
+                .tag("source", "estimated").counter().count()).isEqualTo(11.0);
+        assertThat(meters.get(GenerationJobHandler.SELECTION_COSTS)
+                .tag("source", "measured").counter().count()).isEqualTo(8.0);
     }
 
     /**
@@ -386,7 +422,10 @@ class GenerationJobHandlerTest {
                                 List.of(), TemplateCustomization.CLASSIC,
                                 java.util.Locale.ENGLISH),
                         1, 1.0, RewrittenContent.none()),
-                null, null);
+                null, null,
+                // Eleven of nineteen atoms priced by estimate: the shape a
+                // profile has before the measurement job reaches it.
+                new GeneratedGeneration.SelectionCosts(11, 19));
     }
 
     /** One each, in the order given rather than the enum's. */

@@ -161,7 +161,9 @@ public class GenerationRerunService {
                         // it is a model call the toggle promised not to make
                         // -- the letter is carried, and the own button is how
                         // it is refreshed.
-                        parent.getCoverLetter()));
+                        parent.getCoverLetter(),
+                        new GeneratedGeneration.SelectionCosts(
+                                built.estimatedAtoms(), built.costedAtoms())));
     }
 
     private static int maxPagesOf(Generation parent) {

@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.generation.repository.FeedbackRepository;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.repository.SupportGrantRepository;
 import com.mustafatetik.atomcv.shared.security.UserContext;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Locale;
@@ -36,17 +37,30 @@ public class FeedbackService {
 
     private static final Logger log = LoggerFactory.getLogger(FeedbackService.class);
 
+    /**
+     * 48.3's "feedback rate": the verdict tag is the ratio, against
+     * {@code job.run{type=generation}} as the denominator.
+     *
+     * <p>The line below used to say "this is the feedback rate" over a log
+     * statement. A rate is a series — a log line answers the question once, to
+     * whoever happens to be reading that minute, and cannot be plotted against
+     * anything (the sixth audit).
+     */
+    static final String FEEDBACK = "generation.feedback";
+
     private final GenerationRepository generations;
     private final FeedbackRepository feedback;
     private final SupportGrantRepository grants;
+    private final MeterRegistry meters;
     private final Clock clock;
 
     FeedbackService(GenerationRepository generations, FeedbackRepository feedback,
-            SupportGrantRepository grants, Clock clock) {
+            SupportGrantRepository grants, MeterRegistry meters, Clock clock) {
 
         this.generations = generations;
         this.feedback = feedback;
         this.grants = grants;
+        this.meters = meters;
         this.clock = clock;
     }
 
@@ -116,8 +130,15 @@ public class FeedbackService {
         SupportGrant grant = grantFor(user, generationId, contentGranted, now);
 
         // The verdict and whether a door was opened; never the comment
-        // (absolute rule 4). This is the feedback rate.
+        // (absolute rule 4).
         log.info("Feedback on generation {}: {}", generationId, verdict);
+        // Counted only when it is new. A person changing their mind is one
+        // opinion still, and counting the second press would make the rate
+        // measure clicking rather than feedback -- the same reasoning V4's
+        // unique index applies to the row.
+        if (verdict.getCreatedAt().equals(now)) {
+            meters.counter(FEEDBACK, "verdict", rating > 0 ? "up" : "down").increment();
+        }
         return new Recorded(verdict, grant);
     }
 

@@ -42,14 +42,19 @@ public final class SelectionRequestBuilder {
 
     /**
      * @param estimatedAtoms how many atoms were charged an estimate rather
-     *  than a measurement. Worth watching:
-     *                       a generation full of estimates is one the
-     *                       measurement job did not reach in time.
+     *                       than a measurement. Worth watching: a generation
+     *                       full of estimates is one the measurement job did
+     *                       not reach in time
+     * @param costedAtoms    how many were charged anything at all, measured or
+     *                       estimated. The denominator, and it has to be
+     *                       counted here rather than derived later: 26.5's
+     *                       "estimate usage rate" is a share, and a numerator
+     *                       published without one is a number nobody can read
      * @param withoutWording atoms that have no wording in any language and so
      *                       cannot be rendered at all
      */
     public record BuiltRequest(
-            SelectionRequest request, int estimatedAtoms, int withoutWording) {
+            SelectionRequest request, int estimatedAtoms, int costedAtoms, int withoutWording) {
     }
 
     /**
@@ -199,7 +204,7 @@ public final class SelectionRequestBuilder {
         return new BuiltRequest(
                 new SelectionRequest(sections, maxPages, capacity, 1.0,
                         GenerationDirectives.none(), measuredHeaderPt),
-                run.estimated, run.withoutWording);
+                run.estimated, run.costed, run.withoutWording);
     }
 
     /**
@@ -242,6 +247,7 @@ public final class SelectionRequestBuilder {
         private final AtomScoreSource scores;
 
         private int estimated;
+        private int costed;
         private int withoutWording;
 
         Run(TemplateCustomization customization, CapacityModel capacity,
@@ -355,6 +361,7 @@ public final class SelectionRequestBuilder {
         }
 
         private double costOf(AtomVariant variant) {
+            costed++;
             Double measured = variant.getRenderCosts().get(costKey);
             if (measured != null) {
                 return measured;

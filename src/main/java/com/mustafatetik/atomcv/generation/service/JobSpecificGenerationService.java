@@ -315,7 +315,9 @@ public class JobSpecificGenerationService {
                         // made it onto the document.
                         FitReport.of(posting,
                                 SelectedSkills.onThePage(rendered, document.selection())),
-                        null))
+                        null,
+                        new GeneratedGeneration.SelectionCosts(
+                                built.estimatedAtoms(), built.costedAtoms())))
                 // And it comes last on purpose: the CV is what the person
                 // asked for, and a letter that could not be written honestly
                 // must not take the document down with it.

@@ -52,7 +52,29 @@ public record GeneratedGeneration(
         RewriteTally rewriteTally,
         GeneratedDocument document,
         FitReport fitReport,
-        String coverLetter) {
+        String coverLetter,
+        SelectionCosts selectionCosts) {
+
+    /**
+     * How the page was priced: measured heights, or estimates standing in for
+     * them.
+     *
+     * <p>Carried out of selection because {@code trace.C.estimatedAtoms} is
+     * promised in two sections (20.4 and 26.5) and was written in neither. The
+     * number was counted, logged at INFO, and thrown away — and a log line is
+     * not a record: the trace is what a person reads months later when a page
+     * came out under-filled, and 48.3's "estimate usage rate" is a series
+     * nobody could plot.
+     *
+     * @param estimated how many atoms were charged an estimate
+     * @param costed    how many were charged anything at all
+     */
+    public record SelectionCosts(int estimated, int costed) {
+
+        public static SelectionCosts none() {
+            return new SelectionCosts(0, 0);
+        }
+    }
 
     /**
      * General mode: no posting, no report, no letter — and no Faz D, which is
@@ -65,16 +87,23 @@ public record GeneratedGeneration(
             GeneratedDocument document) {
 
         this(profileId, posting, options, weights, promptVersions,
-                RewriteTally.none(), document, null, null);
+                RewriteTally.none(), document, null, null, SelectionCosts.none());
+    }
+
+    /** The same generation, with what selection paid to price the page. */
+    public GeneratedGeneration withSelectionCosts(SelectionCosts costs) {
+        return new GeneratedGeneration(profileId, posting, options, weights,
+                promptVersions, rewriteTally, document, fitReport, coverLetter, costs);
     }
 
     /** The same generation, with the letter that was written for it. */
     public GeneratedGeneration withCoverLetter(String letter) {
         return new GeneratedGeneration(profileId, posting, options, weights,
-                promptVersions, rewriteTally, document, fitReport, letter);
+                promptVersions, rewriteTally, document, fitReport, letter, selectionCosts);
     }
 
     public GeneratedGeneration {
+        selectionCosts = selectionCosts == null ? SelectionCosts.none() : selectionCosts;
         promptVersions = promptVersions == null
                 ? Map.of()
                 : Collections.unmodifiableMap(new LinkedHashMap<>(promptVersions));

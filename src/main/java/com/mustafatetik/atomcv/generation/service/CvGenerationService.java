@@ -146,7 +146,9 @@ public class CvGenerationService {
                 // No posting and no Faz B: both are null, and the record says
                 // so rather than pretending a comparison happened.
                 .map(document -> new GeneratedGeneration(
-                        profile.id(), null, options, null, Map.of(), document));
+                        profile.id(), null, options, null, Map.of(), document)
+                        .withSelectionCosts(new GeneratedGeneration.SelectionCosts(
+                                built.estimatedAtoms(), built.costedAtoms())));
     }
 
     /**

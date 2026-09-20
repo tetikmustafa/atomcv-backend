@@ -58,6 +58,15 @@ class MetricCatalogueTest {
 
             // Secim -- "Butce doluluk orani, sayfa sapma orani, tahmin kullanim orani"
             Map.entry("generation.budget.overshoot", "a selection that did not fit the page"),
+            Map.entry("generation.budget.fill",
+                    "how much of the free budget the page actually used -- the row's"
+                            + " \"butce doluluk orani\", which nothing published until the"
+                            + " sixth audit: a CV filling half its page keeps the guarantee"
+                            + " and misses the point, and overshoot cannot see it"),
+            Map.entry("generation.selection.costs",
+                    "the estimate usage rate: the source tag is the ratio. The number was"
+                            + " counted and logged at INFO for three stages while 20.4, 26.5"
+                            + " and this row all promised it"),
             Map.entry("generation.pages.drift",
                     "predicted pages against printed pages"),
             Map.entry("generation.scoring.weights", "which weight set Faz B ran with"),
@@ -83,9 +92,14 @@ class MetricCatalogueTest {
             Map.entry("rewrite.unreachable",
                     "attempts that never reached a model, counted apart from the refusals"),
 
-            // Kullanici -- "Manuel duzenleme orani"
+            // Kullanici -- "Manuel duzenleme orani, geri bildirim orani"
             Map.entry("selection.manual_include", "an atom the person put back"),
             Map.entry("selection.manual_exclude", "and one they took out"),
+            Map.entry("generation.feedback",
+                    "the feedback rate: the verdict tag is the ratio, against"
+                            + " job.run{type=generation} as the denominator. The code said"
+                            + " \"this is the feedback rate\" over a log line, which answers"
+                            + " the question once to whoever is reading that minute"),
 
             // Sistem -- "kuyruk bekleme suresi". CPU, RAM and disk come from
             // Micrometer's own binders and are not declared here.
@@ -101,6 +115,25 @@ class MetricCatalogueTest {
             Map.entry("anomaly.budget_exceeded", "the daily budget went over"),
             Map.entry("anomaly.heavy_user", "one account ran away with it"),
             Map.entry("anomaly.signup_burst", "sign-ups arriving too fast")));
+
+    /**
+     * 48.3's rows, and the series that answer each.
+     *
+     * <p>Sistem's CPU, RAM and disk come from Micrometer's own binders and are
+     * not declared in the catalogue; the queue wait is ours and is the one this
+     * row is checked by.
+     */
+    private static final Map<String, List<String>> ANSWERS = Map.of(
+            "Pipeline", List.of("job.phase", "job.run", "generation.compile.attempts"),
+            "Seçim", List.of("generation.budget.fill", "generation.budget.overshoot",
+                    "generation.pages.drift", "generation.selection.costs"),
+            "LLM", List.of("llm.chain.answers", "llm.chain.exhausted", "llm.calls",
+                    "llm.provider.breaker.open", "llm.unpriced_calls"),
+            "Doğrulama", List.of("rewrite.attempts", "rewrite.refusals", "rewrite.unreachable"),
+            "Kullanıcı", List.of("selection.manual_include", "selection.manual_exclude",
+                    "generation.feedback"),
+            "Sistem", List.of("job.queue.wait"),
+            "E-posta", List.of("email.sent", "email.events"));
 
     /** Where an argument list starts. Unqualified too: a private helper is one. */
     private static final Pattern CALL =
@@ -137,6 +170,58 @@ class MetricCatalogueTest {
                         line out on purpose.\
                         """)
                 .isSubsetOf(published());
+    }
+
+    /**
+     * Which meter answers which row of 48.3, and the fact that every row has
+     * one.
+     *
+     * <p><strong>The direction the two tests above cannot see.</strong> They
+     * hold the code and this catalogue to each other, which keeps the list
+     * honest about what exists and says nothing about what was asked for. Three
+     * of the table's named metrics had no series at all — the budget fill rate,
+     * the estimate usage rate and the feedback rate — and every test here was
+     * green the whole time, because a row nobody answers looks exactly like a
+     * row nobody added a meter to yet.
+     *
+     * <p>The row labels are read out of the chapter rather than copied, so a
+     * row added to the specification fails here until something answers it.
+     * {@code build.gradle.kts} declares the file as an input for the same
+     * reason it declares the data model chapter: an edit that left this task
+     * UP-TO-DATE would be a promise nobody checked.
+     */
+    @Test
+    void everyRowOf48Point3HasAMeter() {
+        var rows = new TreeMap<String, List<String>>(ANSWERS);
+
+        assertThat(rows.keySet())
+                .as("A row of 48.3 nobody answers, or a row that no longer exists. "
+                        + "Either publish a series for it or take the row out of the chapter.")
+                .containsExactlyInAnyOrderElementsOf(rowsOfTheChapter());
+
+        assertThat(rows).allSatisfy((row, meters) -> {
+            assertThat(meters).as(row + " is answered by nothing").isNotEmpty();
+            assertThat(meters).as(row + " names a meter the catalogue does not")
+                    .isSubsetOf(CATALOGUE.keySet());
+        });
+    }
+
+    /**
+     * The first column of the table in 48.3, in the order it is written.
+     *
+     * <p>Parsed rather than listed: the point of the test is that the chapter
+     * and the meters cannot drift, and a copied list drifts.
+     */
+    private static Set<String> rowsOfTheChapter() {
+        String chapter = read(Path.of("docs", "spec", "11-operations.md"));
+        String table = chapter.split("### 48\\.3")[1].split("### 48\\.4")[0];
+        var rows = new TreeSet<String>();
+        Matcher row = Pattern.compile("^\\| \\*\\*([^*]+)\\*\\* \\|", Pattern.MULTILINE)
+                .matcher(table);
+        while (row.find()) {
+            rows.add(row.group(1).strip());
+        }
+        return rows;
     }
 
     /** No two names may differ only in how they were spelled. */
