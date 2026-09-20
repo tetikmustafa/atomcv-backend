@@ -12,36 +12,42 @@ aşağıda.
 
 ## Denetim turları — hepsi kapalı
 
-Beş tur, anlatıları `archive/denetim-2026-09-1*.md`'de; kalıcı kararlar
-`spec/`'te.
+Altı tur, anlatıları `archive/denetim-*.md`'de; kalıcı kararlar `spec/`'te.
+Ekseni her tur değişti, ve değişmesi bulduğu şeyi belirledi:
 
-**Beşinci tur (2026-09-16) ekseni değiştirdi: canlılık.** Dört tur adların
-*varlığını* sordu; bu tur telde bir *ucu* olup olmadığını — yazılmayan kolon,
-üretilemeyen enum değeri, okunmayan ayar, tutulmayan bütçe. Sekiz madde, hepsi
-düzeltildi (`fix/besinci-denetim`).
+| Tur | Sorduğu | Bulduğu |
+|---|---|---|
+| 1-2 (09-15, 09-16) | Ad kodda var mı | 24 eksik, üç sessiz kusur |
+| 3 (09-16) | Yazılmış sayılan tasarım | `ContentShape`, § 17'nin faz sözleşmesi, format bağımsızlığının sınırı |
+| 4 (09-16) | Kümeler tam mı (mekanik) | § 13 on üç migration geriden, `no_responsibilities`, `FakeLatexCompiler` |
+| 5 (09-16) | Telde bir ucu var mı | `@Transactional` içinde ağ çağrısı ×5, Faz A'nın eval süiti, dört ulaşılamaz bildirim |
+| 6 (09-20) | İki belge aynı şeyi mi anlatıyor; ertelemenin koşulu geçti mi | Aşağıda |
 
-**Sapma — `@Transactional` içinde ağ çağrısı, beş yerde.** Birinci tur bunu
-çeviri fan-out'unda bulup `TranslationWriter`'ı ayırmıştı; aynı şekil beş yerde
-duruyordu. Cover letter yeniden yazımı (45 sn, istek ipliğinde), gömme toplu
-çağrısı, sihirli bağlantı e-postası, ve **iki oturum açma yolu**. Sonuncular en
-ağırı: `WelcomeGreeting`'in javadoc'u "bilerek transactional değil" diyordu ve
-**kendi anotasyonunu** anlatıyordu, içinde koştuğu transaction'ı değil.
-Commit sonrası olaya taşındı; geri alınan bir oturum açmanın hoş geldin
-göndermesi de böylece kapandı. **Asıl bulgu muhafızdaydı:** kural vardı ama
-yalnız `ProviderChain`'i tutuyordu, beşinin hiçbiri menzilinde değildi.
+**Altıncı tur (2026-09-20) dokümanın kendisini sordu.** Yedi bulgu, hepsi
+kapandı (`fix/altinci-denetim`); anlatı `archive/denetim-2026-09-20-altinci.md`.
 
-**Ekleme — Faz A'nın eval süiti hiç yazılmamıştı.** § 53.5'in dokuz eşiğinden
-ikisi taban değeriyle tanımlıydı ve hiçbir şey gözlem kaydetmiyordu; CI hattı
-`prompts/` altında **herhangi bir** dosya değişince ateşleyip var olan tek
-süiti (Faz D) koşturuyordu. `job_analysis` düzenlemek başka bir prompt'u ölçüp
-yeşil dönüyordu. `JobAnalysisEvalIT` + `PromptEvalCoverageTest` indi.
+**Sapma — EK D.6'nın iki kopyası vardı, ikisi de "tek kaynak burasıdır"
+diyordu.** Canlısı `08b`'de 600 satır, `18-appendix-d.md`'deki 328; eskisi
+**kapanmış bir soruyu açık** gösteriyordu (kota zaman dilimi, `F-007` UTC diye
+cevaplamıştı) ve ölü bir yol anıyordu. EK D.7 de Aşama 1'de donmuştu ve
+"frontend için tek adres burasıdır" diyordu — üç satırı kapanmış kararı açık
+gösteriyordu. İkisi de emekliye ayrıldı, işaretçi bırakıldı.
 
-**Düzeltme — ulaşılamaz dört bildirim.** `email_preferences` tablosunu ayakta
-tutan tek şey iki testti (V15 düşürdü). `REWRITE_VALIDATION_FAILED`,
-`VariantAuthor`'ın iki değeri ve `atomcv.llm.call-timeout` silindi.
-`EXTRACTION_TIMEOUT` ise **silinmek yerine üretilebilir yapıldı** (karar:
-geliştirici): zincir artık "yavaş mı, kapalı mı" ayrımını taşıyor, çünkü o
-ayrımı bilen tek yer orası.
+**Düzeltme — dört çıkarım reddi çözümsüz geliyordu**, ve `switch_to_manual_form`
+sözlükte kullanılmadan duruyordu. `ErrorPresenter`'ın yorumu *"sözlükte böyle
+bir eylem yok"* diyordu; vardı. İki yeni eylem gerekti
+(`upload_another_file`, `choose_language`), çünkü dördü aynı şeyi istemiyor.
+
+**Düzeltme — dört sözlük değeri daha üretilemiyordu** (`V17`): `failed`,
+`cancelled`, `email`, ve **`two_column`**. Sonuncusu ötekilerden farklı, çünkü
+bir **girdi**: kişi seçiyor, kabul ediliyor, belge başkasını basıyordu.
+
+**Ekleme — `trace.C.estimatedAtoms` yazılmaya başladı** (§ 20.4 ve § 26.5 iki
+kez vaat ediyordu; hesaplanıp loglanıp atılıyordu), ve § 48.3'ün üç cevapsız
+satırı seri kazandı.
+
+**Düzeltme — `job_analysis`'in işveren cümlesi `v3`'te.** Erteleme "bir sonraki
+sürümde" diyordu, v2 geldi, cümle girmedi. Koşulu kontrol eden bir şey yoktu.
 
 ---
 
@@ -96,18 +102,11 @@ ayrımı bilen tek yer orası.
 
 **Ölçümler:**
 
-- **Faz D eşikleri gerçek vektörlerle ölçüldü ve kademeler değişti** (§ 21.2).
-  Gömme açıkken kosinüs **0.63-0.84** arası dar bir bant, yani neredeyse sabit:
-  en iyi eşleşen çiftin en iyi atomu 0.2756'dan **0.4133**'e çıkıyor — ama aynı
-  ilana karşı bir **akademik CV** hiçbir terim adlandırmadan **0.3870** alıyor.
-  Arada 0.026, yani hiçbir mutlak taban "alakalı"yı "alakasız"dan ayıramıyordu.
-  Ayıran şey **kanıt**: kapı `matchedTerms`'e taşındı, taban 0.35'e indi (maliyet
-  sorusu oldu), `ADAPT` ulaşılamaz 0.65 skorundan **4 terim**e geçti. Sonuç:
-  eşleşen profilde **2 aday**, ötekilerin altısında **0**. Ölçümün kendisi
-  `ScoreReachIT`, kendi hattında: `gradlew embeddingTest` (gerçek TEI ister —
-  `docker compose --profile full up -d embeddings`).
-  **Baraj 2026-09-16'da bütün korpusa karşı ölçüldü ve 4'te kaldı; kayıt
-  § 21.2'de**, muhafızı `AdaptBarReachTest`.
+- **Faz D eşikleri gerçek vektörlerle ölçüldü ve kademe skordan kanıta taşındı.**
+  Ölçüm, sayılar ve gerekçe **§ 21.2'de** — kalıcı olduğu için oraya işlendi ve
+  burada yalnız nerede koşacağı kaldı: `ScoreReachIT`, `gradlew embeddingTest`
+  (gerçek TEI ister). Baraj 4'te, muhafızı `AdaptBarReachTest`; onu ilk gözden
+  geçirme tetikleyicisi `vps-dagitim-plani.md` § 4'te.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
 - **XeTeX format dökümü imkânsız** (§ 29.2): motor `Can't \dump a format with
   native fonts or font-mappings` diyor. Asgari bir belgenin **tam** derlemesi
@@ -122,7 +121,8 @@ ayrımı bilen tek yer orası.
 - `SectionFloor` bir tavandır talep değil; `PARAGRAPH` `INLINE_LIST`'e
   katlanmadı; `suspicious_output` telde hiç görülmedi.
 - **"Kritik uyarı" diye bir şey yok.** `ImportWarning.code` `String`, şeması
-  enum; `OpenApiSchemaIT`'in okuduğu altı değer elle yazılı.
+  enum; `OpenApiSchemaIT`'in okuduğu **yedi** değer elle yazılı — altı tanesini
+  model bildiriyor, `unsupported_by_source`'u normalizasyon.
 - **Hata kataloğu tablosunun `params` sütunu düzyazı kabul etmiyor** —
   `ErrorCatalogueSpecTest` birebir ayrıştırıyor.
 - **`local` profilinde LLM sağlayıcısı yok**; `AccountDeletionIT` tablo
@@ -162,7 +162,14 @@ değeri yoktur — ekseni değiştir** · **ulaşılamaz bir eşik, kapalı bir 
 yapılmış gibi gösterir** · **bir sınıfın transaction açmaması onu transaction dışında
 koşturmaz — çağıranına bak** · **bir muhafızı bulduğun örneğe göre değil kusur
 sınıfına göre yaz: `ProviderChain`'i adlandıran kural aynı kusurun beş
-kopyasını görmedi**.
+kopyasını görmedi** · **bir belgeyi taşımak eski kopyayı silmiyor, ve iki kopya
+"tek kaynak burasıdır" diyorsa ikisi de yanlış** · **kendine "tek adres" diyen
+bir kayıt, güncellenmediğini söyleyemez** · **bir muhafız bakmadığı yönde
+kördür: katalog ile kodu birbirine tutan test, istenenin verilip verilmediğini
+hiç sormuyordu** · **koşulu kontrol eden bir şey yoksa erteleme
+gerçekleşmez** · **üretilemeyen bir değerin bedeli çıktı mı girdi mi olduğuna
+bağlı: çıktı bir dal, girdi bir yalan** · **bir yorumun "böyle bir şey yok"
+demesi olmadığı anlamına gelmiyor**.
 
 ---
 
@@ -181,6 +188,7 @@ kopyasını görmedi**.
 | kapanış denetimi + yuvarlanan özetler | `kapanis-denetimi.md`, `stage-3-closeout.md` | § 47, § 57.4, § 3.2, § 51.7, § 20.2 |
 | denetim · dördüncü tur (mekanik) | `denetim-2026-09-16-dorduncu.md` | § 13.2, § 16.1, § 18.4, § 08b, § 33.5, § 54.2 |
 | denetim · üçüncü tur | `denetim-2026-09-16-ucuncu.md` | § 17.1, § 6, § 43.1, § 48.2, § 9.2, § 10.2 |
+| denetim · altıncı tur (doküman) | `denetim-2026-09-20-altinci.md` | § 10.1, § 11.2, § 14.6, § 16.1, § 20.4, § 23.2, § 26.5, § 33.4, § 35.2, § 38.5, § 40.5.1, § 43.3, § 44.3, § 47.2, § 48.3, XI-B.2 |
 | denetim · birinci tur | `denetim-2026-09-15.md` | § 18.7.1, § 22.6.1, § 26.6, § 29.2, § 31.8.1, § 35.2.1, § 41.4, § 47.1, § 48.5, § 51.3, § 52.4, § 52.5, § 5.1 |
 | Aşama 4 · Faz G | `stage-4-faz-g.md` | § 24.2, § 24.2.1 |
 | Aşama 4 · sayfa garantisi | `stage-4-page-guarantee.md` | § 26.4, § 33.1 (sabitler) |
