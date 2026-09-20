@@ -21,35 +21,37 @@ Ekseni her tur değişti, ve değişmesi bulduğu şeyi belirledi:
 | 3 (09-16) | Yazılmış sayılan tasarım | `ContentShape`, § 17'nin faz sözleşmesi, format bağımsızlığının sınırı |
 | 4 (09-16) | Kümeler tam mı (mekanik) | § 13 on üç migration geriden, `no_responsibilities`, `FakeLatexCompiler` |
 | 5 (09-16) | Telde bir ucu var mı | `@Transactional` içinde ağ çağrısı ×5, Faz A'nın eval süiti, dört ulaşılamaz bildirim |
-| 6 (09-20) | İki belge aynı şeyi mi anlatıyor; ertelemenin koşulu geçti mi | Aşağıda |
+| 6 (09-20) | İki belge aynı şeyi mi anlatıyor; ertelemenin koşulu geçti mi | 7 bulgu, `denetim-2026-09-20-altinci.md` |
 
-**Altıncı tur (2026-09-20) dokümanın kendisini sordu.** Yedi bulgu, hepsi
-kapandı (`fix/altinci-denetim`); anlatı `archive/denetim-2026-09-20-altinci.md`.
+**Altıncı turun beş kaydı buradan indi (2026-09-20)** — tamamı
+`archive/denetim-2026-09-20-altinci.md`'de. **İkisinin kuyruğu aşağıda:**
+`choose_language`'ın alanı (`F-037`), `two_column`'un şekli (`F-040`).
 
-**Sapma — EK D.6'nın iki kopyası vardı, ikisi de "tek kaynak burasıdır"
-diyordu.** Canlısı `08b`'de 600 satır, `18-appendix-d.md`'deki 328; eskisi
-**kapanmış bir soruyu açık** gösteriyordu (kota zaman dilimi, `F-007` UTC diye
-cevaplamıştı) ve ölü bir yol anıyordu. EK D.7 de Aşama 1'de donmuştu ve
-"frontend için tek adres burasıdır" diyordu — üç satırı kapanmış kararı açık
-gösteriyordu. İkisi de emekliye ayrıldı, işaretçi bırakıldı.
+## Frontend'in dört maddesi — `F-037`…`F-040` (2026-09-20)
 
-**Düzeltme — dört çıkarım reddi çözümsüz geliyordu**, ve `switch_to_manual_form`
-sözlükte kullanılmadan duruyordu. `ErrorPresenter`'ın yorumu *"sözlükte böyle
-bir eylem yok"* diyordu; vardı. İki yeni eylem gerekti
-(`upload_another_file`, `choose_language`), çünkü dördü aynı şeyi istemiyor.
+**Ekleme — beyan edilen bir dil, tespiti tamamen atlıyor.** Spec sessizdi
+(§ 08b Adım 3.4 alanı adlandırmıyor). `F-037`'nin üç seçeneğinden birincisi:
+`POST /profile/import` `language` alıyor. **Dokunmadan önce iki gerekçeyi oku,
+ikisi de "daha ihtiyatlı" görünen şeye karşı:** (1) *eşik düşükse kullan*
+işe yaramaz — redd worker'dan gelir, cevap ancak bir sonraki yüklemede
+gönderilir, ve o yükleme aynı düşük skora düşüp yine reddedilebilirdi, ki
+`F-037`'nin şikayeti o döngü; (2) beyan **güvenli bir tespiti de geçer** —
+anlaşmazlıkta modele sessizce yenilen bir alan, birinin fark ettiği tek
+durumda hiçbir şey yapmaz. Satın almadığı: atomsuz belge hâlâ
+`NothingExtracted` (`adeclaredLanguageDoesNotRescueAnEmptyDocument`).
 
-**Düzeltme — dört sözlük değeri daha üretilemiyordu** (`V17`): `failed`,
-`cancelled`, `email`, ve **`two_column`**. Sonuncusu ötekilerden farklı, çünkü
-bir **girdi**: kişi seçiyor, kabul ediliyor, belge başkasını basıyordu.
+**Ekleme — `maxPages` yayımlanıyor** (`F-039`), çünkü "kısa CV pad edilmez, not
+gösterilir" (konsept § 11.2) sinyalsizdi. Sinyal **doluluk olmak zorunda
+değil**: sınırın altındaki `pageCount` sayılabilir bir olgu, § 23.3'ün
+yasakladığı yüzde değil. Kolon gerekmedi — `options`'a hep yazılıyormuş.
+Eski satırlarda varsayılan **değil** `null`: makul bir sayı uydurma olurdu.
 
-**Ekleme — `trace.C.estimatedAtoms` yazılmaya başladı** (§ 20.4 ve § 26.5 iki
-kez vaat ediyordu; hesaplanıp loglanıp atılıyordu), ve § 48.3'ün üç cevapsız
-satırı seri kazandı.
-
-**Düzeltme — `job_analysis`'in işveren cümlesi `v3`'te.** Erteleme "bir sonraki
-sürümde" diyordu, v2 geldi, cümle girmedi. Koşulu kontrol eden bir şey yoktu.
-**Bedeli bir merge kapısı:** sürüm fixture anahtarının parçası, `latexTest` dört
-testte düştü, düzeltmesi tek bir v3 kaydı — sıra § 53.2'de.
+**Düzeltme — `two_column`'un şekli ikinci kez çıktı** (`F-040`). Altıncı tur
+onu **girdi** olarak ayırmıştı (seçiliyor, kabul ediliyor, belge başkasını
+basıyor); `customizationId` aynısıydı ve görülmedi — bilinmeyen id `202`
+alıyordu. **Ders: o tur bir örnek buldu, kusur sınıfını değil.** Artık kapıda,
+kotanın önünde, `404`. `B-104`'ün *"`freeformNote` gelmedi"* cümlesi de bayat
+çıktı (`F-038`); arşivde not düşüldü, `B-117`…`B-119` frontend'e gitti.
 
 ---
 
@@ -110,8 +112,6 @@ testte düştü, düzeltmesi tek bir v3 kaydı — sıra § 53.2'de.
   (gerçek TEI ister). Baraj 4'te, muhafızı `AdaptBarReachTest`; onu ilk gözden
   geçirme tetikleyicisi `vps-dagitim-plani.md` § 4'te.
 - **`cover_letter` aktif `v1`.** v2 turu 169 kelime verdi, bant 255-290.
-- **XeTeX format dökümü imkânsız ve kazancı da yoktu** — ölçüm ve motorun kendi
-  cevabı § 29.2'de, § 52.4'te tekrar.
 - **`MeasurementDriftIT.heightOnThePage`'in `\pagetotal`'ı yalnız bulunulan sayfayı sayıyor** — iki sayfalık belgede sapması anlamsız, bilerek bırakıldı.
 
 **Aşama 1-3'ten taşınan, hâlâ canlı:**
