@@ -14,6 +14,7 @@ import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
 import com.mustafatetik.atomcv.profile.service.ProfileResolver;
+import com.mustafatetik.atomcv.rendering.service.CustomizationService;
 import com.mustafatetik.atomcv.shared.error.AccountFeature;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
@@ -30,9 +31,9 @@ import org.springframework.stereotype.Service;
  * <p><strong>The preflights are synchronous and that is the whole
  * point.</strong> The reason is what a user sees: a request that was never
  * going to work should be a 4xx on the spot, not a job that is accepted,
- * watched for half a minute and then fails. Both checks here are free — one
- * reads the profile, the other counts characters — so refusing costs nothing
- * and accepting costs a worker.
+ * watched for half a minute and then fails. Every check here is free — one
+ * reads the profile, one counts characters, one reads a row by its id — so
+ * refusing costs nothing and accepting costs a worker.
  *
  * <p>The quota goes first of all. It is one statement against one row, and a
  * user over their limit should not have their profile loaded or their posting
@@ -49,14 +50,16 @@ public class GenerationEnqueueService {
     private final JobQueue queue;
     private final JobRepository jobs;
     private final QuotaService quotas;
+    private final CustomizationService customizations;
     private final FeatureFlags flags;
     private final Clock clock;
 
     GenerationEnqueueService(ProfileAssembler assembler,
             JobQueue queue, JobRepository jobs, QuotaService quotas, FeatureFlags flags,
-            Clock clock) {
+            CustomizationService customizations, Clock clock) {
 
         this.quotas = quotas;
+        this.customizations = customizations;
         this.flags = flags;
         this.assembler = assembler;
         this.queue = queue;
@@ -106,6 +109,19 @@ public class GenerationEnqueueService {
             return Result.err(
                     new PipelineError.FeatureNeedsAnAccount(AccountFeature.COVER_LETTER));
         }
+
+        // A saved set that is not this profile's is a 404 here rather than a
+        // job that quietly renders with something else (F-040). It is one
+        // indexed read, and it goes ahead of the quota for the same reason the
+        // two above it do: a request that will be refused must not spend
+        // anybody's day.
+        //
+        // Throws rather than returning a Result, because there is no
+        // PipelineError for a missing row and inventing one would mean a
+        // second place the catalogue can drift from. CustomizationService
+        // already answers RESOURCE_NOT_FOUND for exactly this; all that
+        // changes is that it is asked before the worker instead of inside it.
+        customizations.settingsOf(owned.ref(), customizationId);
 
         Result<Void> spent = quotas.consume(allowance, QuotaMetric.GENERATION);
         if (spent.isErr()) {
