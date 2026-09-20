@@ -424,7 +424,7 @@ public class GenerationJobHandler implements JobHandler {
         stored.put("templateId", options.customization().baseTemplateId());
         stored.put("templateVersion",
                 TemplateRegistry.versionOf(options.customization().baseTemplateId()));
-        stored.put("maxPages", options.maxPages());
+        stored.put(Generation.MAX_PAGES, options.maxPages());
         stored.put("cvLanguage", options.language());
         stored.put("formats", java.util.List.of("pdf"));
         return stored;

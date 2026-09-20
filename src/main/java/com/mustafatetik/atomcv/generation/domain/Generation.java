@@ -83,6 +83,9 @@ public class Generation implements UserOwned {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> directives;
 
+    /** The one spelling of the options key {@link #getMaxPages()} reads. */
+    public static final String MAX_PAGES = "maxPages";
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
     private Map<String, Object> options = Map.of();
@@ -244,6 +247,24 @@ public class Generation implements UserOwned {
 
     public Map<String, Object> getOptions() {
         return ordered(options);
+    }
+
+    /**
+     * The page limit <em>this</em> generation was made under (F-039).
+     *
+     * <p>Read off the options rather than off the profile, and the difference
+     * is the whole point. {@code POST /generations} takes a {@code maxPages}
+     * and {@code increase_page_limit} changes exactly that, so the profile's
+     * preference says what is set today and not what this document was built
+     * to. Comparing a two-year-old CV against today's preference would be
+     * reporting a fact that never existed.
+     *
+     * <p>Null for a row written before the option was recorded. Absent rather
+     * than defaulted: the limit is not known for those, and a plausible number
+     * would be the server inventing one.
+     */
+    public Integer getMaxPages() {
+        return options.get(MAX_PAGES) instanceof Number limit ? limit.intValue() : null;
     }
 
     public StoredSelection getSelectionState() {

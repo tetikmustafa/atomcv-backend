@@ -24,6 +24,13 @@ import java.util.UUID;
  *
  * <p>No ETag — generations are written once and not edited.
  *
+ * <p><strong>Two numbers, and the client compares them too</strong> (F-039).
+ * {@code pageCount} against {@code maxPages} is how a screen learns that a CV
+ * came out shorter than it was allowed to be. A short CV is correct and is
+ * never padded, but the person is told — and the server had published no
+ * signal to tell them with, so the note could not be written without
+ * appearing on every CV ever made.
+ *
  * <p><strong>Two languages, and the client compares them</strong> (F-013).
  * {@code contentLanguage} is what the document was actually written in;
  * {@code postingLanguage} is what the posting was read as. They differ when
@@ -55,6 +62,19 @@ public record GenerationResponse(
 
         @Schema(description = "How many pages the compiled document came to")
         Integer pageCount,
+
+        @Schema(description = """
+                The page limit this generation was made under -- the number the
+                request asked for, or the profile's default when it asked for
+                none. Read it against `pageCount`: a document that came out
+                under its limit is shorter than it was allowed to be, which is
+                a fact worth a note rather than a reason to pad.
+
+                Not the profile's preference of today. That is what is set now,
+                and `increase_page_limit` changes it; this is what *this*
+                document was built to. Absent for a generation written before
+                the limit was recorded, and absent rather than guessed.""")
+        Integer maxPages,
 
         Instant createdAt,
         FitReport fitReport,
@@ -126,6 +146,7 @@ public record GenerationResponse(
                 generation.getId(),
                 generation.getStatus(),
                 generation.getPageCount() == null ? null : generation.getPageCount().intValue(),
+                generation.getMaxPages(),
                 generation.getCreatedAt(),
                 generation.getFitReport(),
                 blankToNull(generation.getSelectionState() == null
