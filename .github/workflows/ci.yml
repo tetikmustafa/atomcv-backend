@@ -98,10 +98,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Scaffolding for now: Trivy's misconfiguration checks cover Dockerfiles,
-      # Kubernetes, Terraform and CloudFormation, none of which exist yet, so
-      # this currently finds nothing to scan. It starts earning its place with
-      # the LaTeX container in Stage 1, and gains an image scan alongside it.
+      # Two Dockerfiles to read now -- the application's and the LaTeX
+      # container's -- plus the production compose file. This comment used to
+      # say none of them existed yet and that an image scan would arrive
+      # beside them; both happened, and the comment did not move (the sixth
+      # audit). The image scan lives in `deploy.yml`, on the image the
+      # Dockerfile produced, because that is where a base-image CVE is and
+      # building a few gigabytes on every push would buy nothing.
       # Secrets are deliberately left to gitleaks so a single leak does not
       # turn two jobs red.
       - uses: aquasecurity/trivy-action@v0.36.0

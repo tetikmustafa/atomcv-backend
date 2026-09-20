@@ -89,8 +89,10 @@ branch rebased on `main`; the history is linear, and a branch carrying a merge
 commit cannot be rebase-merged.
 
 A pull request runs format, build, integration, CodeQL, misconfiguration and
-secret checks — plus the LaTeX lane when it touches rendering. All of them have
-to pass.
+secret checks — plus the LaTeX lane when it touches rendering, and the prompt
+evaluation lane when it touches a prompt. All of them have to pass. The
+evaluation lane is the only one that costs money, which is why it fires on the
+prompt that changed rather than on every push.
 
 ## Security
 

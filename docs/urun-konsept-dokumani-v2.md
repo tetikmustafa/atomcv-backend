@@ -224,11 +224,19 @@ Her atomun her şablondaki gerçek yüksekliği **punto cinsinden ölçülür** 
 
 ### 7.3 Faz D — Üç kademeli müdahale
 
-| Skor | Müdahale | Gerekçe |
+| Kanıt (ilandan adlandırılan terim) | Müdahale | Gerekçe |
 |---|---|---|
-| ≥ 0.65 | Tam uyarlama | Gerçek bağlantı var, vurgulamak dürüst |
-| 0.40-0.65 | Sadece sıkıştırma | Alakalı ama zorlamaya değmez |
-| < 0.40 | Dokunma | Bağlantı yok; uyarlama = uydurma |
+| **≥ 4**, ve skor ≥ 0.35 | Tam uyarlama | Bağ gösterilmiş, vurgulamak dürüst |
+| **1-3**, skor ≥ 0.35, metin uzunsa | Sadece sıkıştırma | Alakalı ama zorlamaya değmez |
+| **0** — ya da skor < 0.35 | Dokunma | Gösterilmiş bağ yok; uyarlama = uydurma |
+
+> **Kademeler skordan kanıta taşındı** (ölçüm, 2026-09-16 — teknik doküman
+> § 21.2). Eski eşikler (0.65 / 0.40) gerçek vektörlerle **ulaşılamazdı**: en
+> iyi eşleşen çiftte en yüksek ham skor 0.4133 ve importance çarpanının tavanı
+> 1.5, yani ölçeğin tavanı ~0.62. Taban da ayırt edemiyordu — aynı ilana karşı
+> alakasız bir akademik CV hiçbir terim adlandırmadan 0.3870 alıyordu. Ayıran
+> şey skor değil **kanıt**: maddenin ilandan gerçekten adlandırdığı terim
+> sayısı.
 
 **Doğrulama katmanı** her yeniden yazımı kontrol eder: sayılar korundu mu, özel isimler korundu mu, olmayan bir teknoloji eklendi mi (**sıfır tolerans**), uzunluk arttı mı, anlam kaydı mı. Başarısızsa orijinal metin kullanılır.
 
@@ -262,7 +270,21 @@ Kullanıcı düzenlemesi, render edilmiş metne değil **seçim durumuna** uygul
 Kullanıcı hesap açmadan tam işlevsel deneyebilir:
 - Geçici profil oluşturur (CV yükleme veya manuel form)
 - İlan girip CV üretir
-- **Hiçbir veri saklanmaz** — **son etkinlikten** 2 saat sonra otomatik silinir
+- **Kalıcı hiçbir şey saklanmaz** — **son etkinlikten** 2 saat sonra silinir
+
+> **"Hiçbir veri saklanmaz" bir aşama boyunca yazıldığı gibi doğru değildi**
+> (düzeltme, denetim 2026-09-20). İlk tasarımda anonim profil Redis'te tek bir
+> belgeydi; 2026-09-09'da `profiles` tablosunda **sahibi olmayan ve
+> `expires_at` taşıyan bir satıra** taşındı, çünkü anonim kişinin yapabildikleri
+> genişledi (CV'den profil, profil düzenleme, ilana göre üretim) ve ikinci bir
+> depo her adımın ikinci bir uygulaması demekti — teknik doküman § 51.6.1.
+>
+> Vaadin tuttuğu yer: satırın sahibi yok, süresi var, `profiles_owner_xor_expiry`
+> ikisinden tam birini şart koşuyor, hiçbir kullanıcı-kapsamlı okuma ona
+> ulaşamıyor, süpürme beş dakikada bir siliyor. **Tutmadığı yer yedekler:**
+> şifreli arşiv saklaması 7 gün + 4 hafta + 6 ay, yani bir yedeğe yakalanan
+> anonim CV altı aya kadar yaşayabiliyor. Gizlilik Politikası bunu söylemek
+> zorunda (§ 57.1) ve söylüyor; bu cümle söylemiyordu.
 
 **Kısıtlar (kalite düşürülmez, kapsam daraltılır):**
 
