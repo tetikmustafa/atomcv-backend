@@ -32,9 +32,9 @@ okuması gereken yerler bunlar ve D.7'deki ilerleme kaydıdır.
 | İlk migration'ın kapsamı (XI-A.2 "identity + profile core", Bölüm 13 tek dosya) | Düzeltme | `V1__initial_schema.sql` **Bölüm 13'ün tamamını** içerir. Boş tablo maliyetsizdir; bölmek, uygulanmış migration'ı değiştirme yasağı altında aynı tabloları V2/V3'te tekrar açmak demekti. |
 | Denormalize `profile_id` ile ebeveynin profili arasında hiçbir garanti yok | Ekleme | **Bileşik yabancı anahtar** (`UNIQUE (id, profile_id)` + `FOREIGN KEY (parent_id, profile_id)`). Uyuşmazlık aksi halde sessiz bir çapraz-kiracı sızıntısı olurdu. `atoms.entry_id IS NULL` durumunda uygulanmaz — bölüm seviyesindeki atomlar için kasıtlı. |
 | `llm_invocations.user_id` FK'siz; Bölüm 13.1'in "tek DELETE her şeyi siler" sözüyle çelişiyor | Ekleme | `user_id` ve `job_id` için **`ON DELETE SET NULL`**. Toplam maliyet geçmişi hesap silinince yaşar, kişisel bağ yaşamaz. |
-| Bölüm 51.6'nın anonim testi "hiçbir tabloda satır sayısı değişmez" diyor, ama kuyruk (`jobs.anon_session_id`) ve `llm_invocations` Postgres'te | Düzeltme | Test **kullanıcı verisi tablolarına** daralır. Anonim akışın kuyruğu hiç kullanıp kullanmayacağı Aşama 3'te karara bağlanacak. |
+| Bölüm 51.6'nın anonim testi "hiçbir tabloda satır sayısı değişmez" diyor, ama kuyruk (`jobs.anon_session_id`) ve `llm_invocations` Postgres'te | Düzeltme | Test **kullanıcı verisi tablolarına** daralır. **Kuyruğu kullanıyor** (karar: Adım 3.6) ve `V3` idempotency indeksini anonim satırları kapsayacak şekilde yeniden yazdı; testin kendisi § 51.6.1'de tersine döndü — anonim profil artık `profiles`'ta sahipsiz bir satır ve test satırların yazıldığını doğruluyor. |
 | ArchUnit kuralları, modül paketleri yalnız `package-info.java` taşırken "failed to check any classes" ile düşüyor | Ekleme | Geçici olarak `archunit.properties` içinde `archRule.failOnEmptyShould=false`. **Adım 1.1 sonunda kaldırıldı:** artık yalnız `renderersAreDeterministic` kuralı boş kümede çalışıyor ve izni tek başına taşıyor (`allowEmptyShould(true)`). Global ayar açıkken bir paket adı değişirse ilgili kural hiçbir şeyle eşleşmeyip sessizce geçerdi. |
-| Bölüm 47.1'deki `--spring.flyway.migrate-only=true` | Düzeltme | **Böyle bir Spring Boot özelliği yok.** Üretimde migration'ı deploy öncesi çalıştırmanın yolu ayrıca kararlaştırılacak; şu an Flyway üretimde de uygulama açılışında çalışıyor. |
+| Bölüm 47.1'deki `--spring.flyway.migrate-only=true` | Düzeltme | **Böyle bir Spring Boot özelliği yok.** Karara bağlandı (2026-09-16): migration **açılışta, tek örnekle** koşuyor ve ayrı bir adım yok. Koşulu yazılı — aynı anda tek backend örneği — ve ölçeklenme günü yeniden açılır; rollback kodu geri alır şemayı değil. Kayıt § 47.1 ve `docs/vps-dagitim-plani.md` § 0. |
 | OWASP dependency-check (Bölüm 47.1) | Sapma | Kullanılmıyor: NVD API anahtarı istiyor, anahtarsız taraması yavaş ve oran-sınırlı. Aynı kapsamı **Dependabot** derleme maliyeti olmadan veriyor. |
 | Lombok (XI-A.2 Adım 0.1'in bağımlılık listesinde var, örnek `build.gradle.kts`'te yok) | Düzeltme | **Kullanılmıyor.** Değer nesneleri record, gerisi düz constructor. |
 | Satır sonları ve dosya izinleri | Ekleme | `.gitattributes` (`* text=auto eol=lf`, `.bat`/`.cmd` için CRLF) ve `gradlew`'in 100755 kalması. Windows'ta geliştirilip Linux runner'da çalışan bir repo, bu ikisi olmadan sessizce kırılır: CRLF'li ya da 100644 modlu `gradlew` her CI koşusunu düşürür. |
@@ -142,390 +142,35 @@ kendi paket düzenini taşıyor, şimdiden bağlanmadı.
 
 ### D.6 — API sözleşmesi (Bölüm 35)
 
-Frontend, Aşama 0'ın sonunda on altı sözleşme boşluğu çıkardı: dokümanın
-adlandırmadığı enum'lar, tanımlamadığı başlıklar, örneklemediği yanıt şekilleri.
-Sorular ve cevaplar iki ayrı dosyada duruyordu (`BACKEND-CONTRACT-GAPS.md`,
-`docs/backend-contract-response.md`); ikisi de buraya taşınıp silindi. **Tek
-kaynak burasıdır.**
+**Taşındı → [`08b-api-contract.md`](08b-api-contract.md).**
 
-Aşağıdaki kararların altısı ilk endpoint'ten önce, springdoc şeması yazılırken
-uygulanır; gerisi ait olduğu aşamada. **Otorite yayınlanan OpenAPI şemasıdır**,
-buradaki düzyazı değil — bu yüzden enum'lar ve başlıklar şemaya girer, yalnız
-mutlu yol gövdelerine değil.
+Ve bir süre iki kopya vardı. EK D monolitten bu dosyaya taşınırken içindeki
+D.6 de geldi; canlı olanı `08b`'ye çoktan çıkmıştı, yani **ikisi de "tek kaynak
+burasıdır" diyen iki tablo** kaldı ve ayrıştılar (denetim, altıncı tur).
+Buradaki kopya 328 satırdı, `08b`'ninki 600; eksik olanlar arasında
+`FEATURE_REQUIRES_ACCOUNT`'ın kapalı kümesi, `params.reason`'ın yedi değeri,
+`COVER_LETTER_REJECTED`'ın sözlüğü ve D.6.9'un tamamı vardı. Dahası burada
+**kapanmış bir soru açık duruyordu** — kota gününün zaman dilimi, `F-007`'nin
+UTC diye cevapladığı — ve ölü bir yol anılıyordu (`/ingestion/cv`).
 
-#### D.6.1 — Kapalı sözlükler
-
-**`resolutions[].action`** — Bölüm 35.4 üçünü, 35.5 bir tanesini adlandırıyor,
-Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
-
-| action | Anlamı | İstemci davranışı |
-|---|---|---|
-| `increase_page_limit` | `maxPages`'i `params.maxPages`'e yükselt | Yeni seçenekle yeniden gönder |
-| `review_pins` | Sabitlenmiş içerik incelemesini aç | Profile git, sabitlere filtrele |
-| `keep_top_pinned` | En iyi `params.keep` sabiti tut | Daraltılmış kümeyle yeniden gönder |
-| `sign_up` | Özellik hesap gerektiriyor | Kayda git, durumu koru |
-| `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
-| `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |
-| `switch_to_manual_form` | Çıkarım başarısız | Manuel profil formuna git |
-| `complete_profile` | Üretecek kadar profil yok | Profil düzenleyiciyi aç (Adım 1.8'de eklendi; Bölüm 25.3 bu adı kullanıyordu, sözlükte yoktu) |
-| `retry` | Geçici hata | Değiştirmeden yeniden gönder |
-
-**Frontend kendi resolution'ını uydurmaz.** Listeyi sunucu sahiplenir; istemci
-yalnız render eder ve isterse resolution satırının dışına düz bir "kapat"
-kontrolü koyar.
-
-**Hata kodları — katalog burada değil: `error-catalogue.md`.**
-
-> **Düzeltme (denetim, 2026-09-16).** Burada elle yazılmış tam bir tablo
-> duruyordu ve **ikinci bir otoriteydi.** Tablo repo kökündeki
-> `error-catalogue.md`'ye taşındı, orada `ErrorCode` enum'undan **üretiliyor**
-> ve `ErrorCatalogueDocumentTest` ikisi ayrıştığı an düşüyor (§ 08b); buradaki
-> kopya taşınmanın ardında kaldı, kimse onu enum'a karşı okumadı, ve ayrıldı.
->
-> Ayrılık ölçüldü: burada **27 kod** vardı, enum'da **41**. Fazlası bir yana,
-> **üretilmesi imkânsız bir kod listeliyordu** — `NO_ANONYMOUS_PROFILE`, 09-15
-> denetiminde kaldırılmıştı (gerekçe § 08b) — ve
-> `UNPARSEABLE_JOB_DESCRIPTION`'ın `params.reason`'ı hiç yoktu, ki § 18.1 ile
-> § 18.4'ün yedi değerli kapalı sözlüğü kullanıcıyı onunla dört ayrı ekrana
-> gönderiyor. § 35.4 okuyucuyu hâlâ buraya yolluyordu: buradan yazılan bir
-> `en.json` hiç görünmeyecek bir cümle yazar, gereken dördünü yazmazdı.
->
-> **Ders, ve tanıdık olanı:** bir tabloyu üretilen bir dosyaya taşımak, eski
-> kopyayı silmiyor — ve onu gösteren satırı da kendiliğinden düzeltmiyor.
-
-**Adım 1.2'de eklenen dört kod.** CRUD'un ihtiyacı olan ve dokümanın hiç
-adlandırmadığı durumlar: bulunamayan kaynak, `If-Match` uyuşmazlığı (Bölüm 35.6
-durumu veriyor, kodu vermiyor), girdi doğrulama, ve beklenmeyen hata için bir
-son çare. `RESOURCE_NOT_FOUND` ile `VERSION_CONFLICT` **parametresizdir**: hangi
-kaynağın kastedildiğini istemci zaten bilir (isteği o attı), ve advice
-katmanının elinde o bilgi olmadığı için tek alternatif uydurmaktı.
-
-**`EXTRACTION_TIMEOUT` için 504 seçildi**; doküman bir durum vermiyordu.
-
-**Katalog kodda zorlanıyor, yalnız belgelenmiyor.** `params`, hata nesnesi
-kurulurken bildirime karşı doğrulanır: eksik anahtar, fazladan anahtar ve yanlış
-tip kurulumda patlar. Eksik bir parametre küçük bir kusur değildir — frontend'in
-ICU mesajı onu yerine koyar ve kullanıcı "Sabitlediğin içerik {pinnedPages}
-sayfa tutuyor" okur. P4'ün önlemek için var olduğu şey tam olarak budur ve
-burada patlaması, ekran görüntüsünde keşfedilmesinden ucuzdur.
-
-**`params` asla kullanıcı içeriği taşımaz** (mutlak kural 4): sayı, sınır,
-tanımlayıcı ve alan adı taşır — sorunun şeklini, ona sebep olan metni değil.
-
-#### D.6.2 — Hata gövdesi, ETag, sayfalama (Aşama 1)
-
-| Konu | Tür | Karar |
-|---|---|---|
-| Hata gövdesindeki `title` (Bölüm 35.4'ün Türkçe örneği yanıltıyor) | Düzeltme | **Geliştiriciye yöneliktir, sabit İngilizcedir, kullanıcıya hiç gösterilmez.** RFC 7807 `title`'ın oluşumlar arası sabit olmasını ister; Bölüm 35.4'ün kendi kuralı da sunucunun metin değil çeviri anahtarı gönderdiğini söylüyor. Frontend'in `title`'ı yalnız log'a yazması doğru davranıştır. |
-| ETag kapsamı | Ekleme | Yalnız V1'in `version` kolonu verdiği altı tablo: `profiles`, `sections`, `entries`, `atoms`, `atom_variants`, `applications`. **`generations`'ın `version`'ı yok**, dolayısıyla üretim kaynakları ETag ve `If-Match` taşımaz. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliğidir, geç fark edilen bir eksik değil. |
-| ETag biçimi | Ekleme | Tekil kaynak GET'inde `ETag: "7"`; koleksiyon yanıtlarında **her öğede `version` alanı**. Editör N sürümü öğrenmek için N istek atmak zorunda kalmaz. |
-| Atom bazlı GET | Ekleme | **Yok.** Editör zaten tüm profili yüklüyor ve koleksiyon her öğenin `version`'ını taşıyor; alan bazlı PATCH için gereken her şey elde. `GET /profile/atoms/{id}` somut bir çağıran çıkınca eklenir — ilk aday Bölüm 37.5'teki bayatlama akışı. |
-| Sayfalama | Ekleme | `GET /profile/atoms` **sayfalanmaz**. `/generations` ve `/applications` Aşama 2'de gelirken cursor tabanlı: `{ items, nextCursor }`. Offset sayfalama, üstten büyüyen listelerde satır atlar. |
-
-**Gövdeyi üreten katman (Adım 1.2).** `ProblemDetailAdvice`, her hatayı aynı
-şekle çeviriyor:
-
-| Konu | Tür | Karar |
-|---|---|---|
-| `type` alanı | Sapma | **Göreli**: `/errors/conflicting-preferences`. Bölüm 35.4'ün örneği üretim alan adını kullanıyor, ama ürün dokümanı ne ismin ne alan adının koda gömülmesine izin veriyor (EK C.5) — RFC 7807 göreli referansa izin verir. |
-| `title` alanı | Ekleme | Koddan **türetilir** (`CONFLICTING_PREFERENCES` → "Conflicting preferences"), ayrı bir listede tutulmaz. RFC 7807 başlığın oluşumlar arası sabit olmasını ister; bakımı ayrı bir liste, kayan bir listedir. |
-| Yanıt durumu | Ekleme | Handler'lar `ResponseEntity` döner. Çıplak bir `ProblemDetail` dönmek yanıtın durumunu belirlemiyor — gövde 409 derken yanıt 500 gidiyordu. |
-| Bilinmeyen yol | Ekleme | `NoResourceFoundException` → **404 `RESOURCE_NOT_FOUND`**, son çareye düşmez. Eski bir yer imi ya da bir tarayıcı botu, 500 üretip log'u yığınla dolduracak kadar sıradan. |
-| Çapraz kiracı yazma denemesi | Ekleme | **500 `INTERNAL_ERROR`** + kimliksiz bir log satırı. 403 dönmek satırın varlığını doğrulardı; 404 dönmek de yanlış olurdu, çünkü okumalar zaten boş dönüyor — buraya ulaşan bir istek meşru bir istemciden gelemez, koddaki bir kusurdur. |
-| Doğrulama hatası | Ekleme | Yalnız **alan adları** yayınlanır, reddedilen değer değil: değer kullanıcı içeriğidir ve log'lanan, ekran görüntüsü alınan bir gövdede yeri yoktur (mutlak kural 4). |
-| `params` sıralaması | Düzeltme | `Map.copyOf` **kullanılmaz**. JDK'nın değişmez map'leri her JVM çalışmasında farklı tuzlanan bir sırayla dolaşılır; aynı hata iki koşuda farklı serileşiyordu. `LinkedHashMap` ile ekleme sırası korunuyor. |
-
-**Yazma işlemleri (Adım 1.2).**
-
-| Konu | Tür | Karar |
-|---|---|---|
-| `If-Match` zorunlu | Ekleme | Bölüm 35.6 başlığı gösteriyor ama zorunlu olduğunu söylemiyor. **Zorunlu.** Önkoşulsuz bir yazma, P8'in yasakladığı şeyin ta kendisi: iki sekme açık, ikinci kayıt kazanıyor, ilk düzenleme kimseye söylenmeden gidiyor. İstemcide sürüm zaten var (tekilde ETag, koleksiyonda öğe başına `version`), yani istemek bedava. Başlık yoksa **428 `PRECONDITION_REQUIRED`**. |
-| Önkoşulun kontrol yeri | Ekleme | Yazan transaction'ın **içinde**. Kontrolle kayıt arasına bir şey giremiyor; girerse de `version` kolonu yakalıyor. |
-| Zayıf etiket | Ekleme | `W/"7"` kabul edilir — bir vekil sunucu etiketi yolda zayıflatabilir, satırı tanımlayan içindeki sürümdür. Tırnaksız `7` kabul edilmez. |
-| `PUT /profile` semantiği | Ekleme | **Değiştirir, yamalamaz**: gönderilmeyen alan temizlenir. `preferences` bu gövdenin parçası değil — başlığını düzenleyen biri, unutarak yazım tercihlerini sıfırlamasın diye. |
-| `PATCH /profile/preferences` yerine `PUT` | Sapma | Bölüm 35.2 `PATCH` diyor. Uygulanan **`PUT /api/v1/profile/preferences`**: tercihler bir ayar formudur, istemci her zaman tüm nesneyi taşır, ve nested bir merge-patch'in belirsizliğini (bir alanı silmekle göndermemek arasındaki fark) taşımaya değmez. |
-| Ayrıştırılamayan gövde | Ekleme | `HttpMessageNotReadableException` → **400 `VALIDATION_FAILED`**, alan adıyla. Bu olmadan bozuk bir JSON ya da record constructor'ının reddettiği bir değer son çareye düşüp 500 dönerdi. |
-| Doğrulama sınırları | Ekleme | Uzunluklar API katmanında (`headline` 200, `selfDescription` 4000, `customInstructions` 1000, `maxPages` 1-10). Kolonlar `TEXT` kalıyor — Türkçe bir başlık İngilizcesinden uzun ve kimse sınırı cümlenin ortasında keşfetmemeli — ama sınırsız alan, sınırsız satır, sınırsız render ve sınırsız prompt demek. |
-
-**Koleksiyon kaynakları — bölümler (Adım 1.2).**
-
-| Konu | Tür | Karar |
-|---|---|---|
-| `PATCH` yalnız adlandırılanı değiştirir | Ekleme | Bölüm 35.6'nın kuralı. Bölümlerin **her kolonu `NOT NULL`**, yani "gönderilmedi" ile "null yapıldı" ayrımına burada hiç gerek yok. Entry'lerde tarih ya da kurum meşru biçimde temizlenebildiği için orada bir null kontrolünden fazlası gerekecek. |
-| `displayOrder` yamalanamaz | Ekleme | Bir bölümü taşımak komşularını da numaralandırır; bu tek satırdaki bir alan değil, listenin tamamı üzerinde bir işlemdir. `POST /sections/reorder` yapar. |
-| Sıralama isteği **tam liste** ister | Ekleme | Eksik liste, geri kalanın yerini sunucunun tahmin etmesi demek; iki istemci farklı tahmin ederse iki satır aynı pozisyonu iddia eder. Tam liste ayrıca çağrıyı idempotent yapıyor. |
-| Sıralamada `If-Match` yok | Ekleme | İstek zaten çağıranın sıraya dair **tüm görüşünü** taşıyor; "bunları şu sıraya koy" demenin anlamı budur. Bayat bir sıralama pozisyon kaybettirir, içerik değil. |
-| Oluşturma sona ekler | Ekleme | Yeni bölümün nereye ait olduğu listenin tamamına dair bir karar; istemci bunu reorder ile verir, başka bir sekmenin çoktan aldığı bir indeksi tahmin ederek değil. `201` + `ETag`. |
-| Silme `If-Match` ister ve **cascade eder** | Ekleme | Bölümle birlikte entry'leri, atomları ve varyantları gider (veritabanı cascade'i). Yumuşatılmadı: açık bir silme kullanıcının kararıdır, sonucu gizlemek asıl sürpriz olurdu. |
-| Bölüm yanıtında `version` **alanı var** | Sapma | Profil başında yoktu (D.6.2). Bölümler hem tek başına hem koleksiyon içinde dönüyor; alanın hangi endpoint'in döndürdüğüne göre kaybolması, `ETag`'in yanında küçük bir tekrardan daha kötü olurdu. |
-| Sözlükler artık JSON'da da küçük harf | Düzeltme | `SectionKind`, `SectionLayout`, `AtomKind`, `AtomSource`, `VariantAuthor` yalnız JPA converter'ı taşıyordu; API gövdesinde `EXPERIENCE` gidiyordu. Hepsine `@JsonValue`/`@JsonCreator` eklendi (D.9 · 6'nın sözü). |
-
-**Koleksiyon kaynakları — entry'ler (Adım 1.2).**
-
-| Konu | Tür | Karar |
-|---|---|---|
-| `GET /profile/entries` | Ekleme | Bölüm 35.2 entry'ler için **hiç `GET` listelemiyor**. Onsuz editör bir deneyim listesini render edemez. Eklendi, isteğe bağlı `?sectionId=` süzgeciyle. |
-| `POST /profile/entries/reorder` | Ekleme | Aynı boşluk sıralamada da vardı. İstek **bir bölüme** kapsanır (`sectionId` + o bölümün tam id listesi); iki bölüme yayılan bir liste, sıralama kılığında bir taşıma olurdu. |
-| "Dokunma" ile "temizle" ayrımı | Ekleme | Entry'nin kolonları nullable: iş sürerken bitiş tarihi yoktur, yanlış yazılmış bir kurum boşaltılabilmelidir. Java'nın üç durumlu bir `Optional`'ı yok — Jackson **eksik** bir `Optional` alanını da `Optional.empty()` okur, yani açık `null`'dan ayırt edilemez. `JsonNullable` (`jackson-databind-nullable`) bu ayrımı taşıyor: tanımsız → dokunma, tanımlı-null → temizle, tanımlı-değer → ata. |
-| Şemada sarmalayıcı görünmüyor | Ekleme | Üç durum **Java'nın meselesi**, sözleşmenin değil: telde alan yalnızca null olabilen bir değerdir. `@Schema(implementation = …, nullable = true)` ile öyle yayınlanıyor; aksi hâlde üretilen istemci doldurulacak bir `{ present, value }` nesnesiyle kalırdı. Bir test bunu sabitliyor. |
-| Entry `PATCH`'inde `sectionId` yok | Ekleme | Bir entry'yi başka bölüme taşımak iki listeyi birden numaralandırır; bu bir alan düzenlemesi değil, sıralama işlemidir. Taşıma ucu gerektiğinde ayrıca eklenecek. |
-| Başka profilin bölümüne entry | Ekleme | `sectionId` kapsamlı repository üzerinden çözülüyor, yani başkasının bölüm id'sini göndermek 400 `VALIDATION_FAILED` verir — satırın varlığını doğrulamayan bir cevap. |
-
-**Koleksiyon kaynakları — atomlar ve varyantlar (Adım 1.2).**
-
-| Konu | Tür | Karar |
-|---|---|---|
-| Atom **içeriğiyle birlikte** yaratılır | Ekleme | `POST /atoms` içerik ister ve birincil varyantı aynı transaction'da yazar. Varyantsız bir atom, kimsenin okuyamadığı bir olgudur: renderer basacak, ölçüm ölçecek bir şey bulamaz. O durumun hiç var olmaması, sonradan temizlenmesinden ucuz. |
-| Kontroller ve metin ayrı uçlarda | Ekleme | Bölüm 35.2 `PATCH /atoms/{id}` için zaten "kontroller" diyor. Metin varyantın; ikisi ayrı satır, ayrı sürüm. Cümleyi atom üzerinden düzenlemek, iki satırın tek bir önkoşulu paylaşması olurdu. |
-| Varyant `PATCH`'i içeriğin **tamamını** alır | Ekleme | Cümle run run değil, cümle olarak düzenlenir. Sunucu düz metni ve hash'i tek yetkili değerden türetiyor; hash değişince ölçülmüş maliyetler de düşüyor (EK D.3). |
-| Dil+ton çakışması | Ekleme | `(atom, language, tone)` tekil indeksi var. İkinci bir aynı çift, kısıt ihlalinin 500 olarak yüzeye çıkması yerine **400 `VALIDATION_FAILED`** ile reddediliyor. |
-| Birincil varyant terfisi | Ekleme | Atom başına tek birincil (kısmi tekil indeks). Terfi, eskisini **ayrı bir toplu güncellemeyle** düşürüyor: iki yazımı persistence context'e bırakmak, Hibernate'in sırayı ters kurup indekse takılmasına açık kapı bırakırdı. |
-| Son varyant ve birincil silinemez | Ekleme | Bir atom bir varyantını korumak zorunda, ve aralarında bir varsayılan. İkisi de 400 döner; istemcinin yapacağı bir şey kalır (başkasını terfi ettir, ya da atomu sil), okunamaz bir atom kalmaz. |
-| İçerik kuralları istemcinin hatasıdır | Düzeltme | `href`siz `link` run'ı ya da gelecekten bir `v` damgası, model constructor'ında `IllegalArgumentException` üretiyordu ve son çareye düşüp **500** dönüyordu. İstek gövdesinden gelen bir ihlal istemcinin hatasıdır: artık 400 `VALIDATION_FAILED` (`fields: ["content"]`). |
-| Varyantların yüklenmesi | Ekleme | Liste ucu tüm varyantları **tek sorguda** çekip atoma göre grupluyor; atom başına sorgu, Bölüm 52.2'nin yasakladığı desenin ta kendisi olurdu. |
-
-**Tamamlanma ve profil silme (Adım 1.2).**
-
-| Konu | Tür | Karar |
-|---|---|---|
-| Bölüm 31.9'un tanımsız yüklemleri | Ekleme | Formül ağırlıkları veriyor, yüklemleri metot adından okumaya bırakıyor. Karara bağlananlar: **iletişim** = ad **ve** e-posta (CV başlığı bu ikisi olmadan render edilemez; telefon iyidir ama üretimi engellemez), **beceri sayısı** = `kind = skill` atomları (nerede asılı oldukları değil, ne oldukları), **metrikli atom** = `metrics` dizisi boş olmayan atom. |
-| Ne zaman hesaplanır | Ekleme | **Okumada**, her yazımda değil. Formül profilin tamamını sayıyor; yazımda güncellemek her bölüm, entry ve atom ucuna profilin tamamını yükleme maliyeti bindirirdi. Sayı okunduğu yerde hesaplanıyor, ve `profiles.completeness` kolonu **yalnız değiştiğinde** yazılıyor — o kolon Aşama 2'deki ön kontrol kapısı için var (Bölüm 25.5). |
-| Doküman eşiği | Düzeltme | Bölüm 31.9 "iletişim + (1 eğitim VEYA 1 deneyim) + 3 beceri ≈ %45" diyor. Hesap: **eğitimle 38**, **deneyimle 48** — dokümanın tahmini ikisinin arasında. Test ikisini de sabitliyor. |
-| `DELETE /profile` | Ekleme | Profil ve altındaki her şey gider, **hesap kalır**: profili olmayan bir kullanıcı, henüz başlamamış bir kullanıcıdır ve sonraki okuma ona boş bir profil verir. `If-Match` zorunlu — geri alınamayan tek çağrı. |
-
-#### D.6.3 — İndirme ve dışa aktarma (Aşama 1)
-
-- Baytlar doğrudan API'den, `Content-Disposition: attachment` ile. Dosya adı,
-  biliniyorsa şirket ve pozisyonu taşır.
-- 14 günlük saklama dolduğunda `410 Gone` + `GENERATION_ARTIFACT_EXPIRED` +
-  `retry` resolution'ı. Bunu vermek ucuz: `generations.selection_state`
-  `pdf_expires_at`'ten bağımsız kalıcı bir anlık görüntüdür, yani PDF her zaman
-  yeniden üretilebilir — süre dolması kullanıcıya emeğine mal olmaz.
-- `GET /profile/export` biçimi `?format=json|markdown` ile seçer; indirme
-  endpoint'iyle aynı desen. Bilinmeyen biçim 400 `VALIDATION_FAILED`
-  (`fields: ["format"]`).
-
-| Konu | Tür | Karar |
-|---|---|---|
-| JSON dışa aktarımın şekli | Ekleme | **İç içe** (bölüm → entry → atom → varyant), düzenleme uçlarının aksine. Bir export ya bir insan tarafından okunur ya bütün olarak geri beslenir; ikisi de yapıyı görmek ister. Öğe şekilleri API'nin **zaten yayınladığı** şekillerdir, yani export'tan çıkan şey şemada tarif edilmiş olan şeydir. |
-| Markdown, CV render'ı değildir | Ekleme | Sayfa bütçesi, şablon ve ölçüm yok — bu veri kopyasıdır, ve profil hiçbir CV'ye sığmayacak kadar uzun olsa da okunabilir kalır. Bu yüzden `rendering` modülünde değil, `profile` içinde. |
-| Mark'lar Markdown'a çevrilmez | Ekleme | Atom metni **düz metin** olarak yazılır. Mark'lar semantiktir; onları yıldıza çevirmek, verinin bilerek taşımadığı bir sunum uydurmak olurdu (P1). |
-| Markdown kaçışı | Ekleme | Yalnız **satır içinde** anlam değiştiren karakterler kaçırılır (`` \ ` * _ [ ] < > | ``). `.` `-` `#` `+` yalnız satır başında anlamlıdır ve her satırın başını bu kod yazıyor; hepsini kaçırmak `name@example\.com` gibi, insanların okuduğu bir dosyayı ters bölü çöplüğüne çevirirdi. |
-| Yanıt karakter kümesi | Düzeltme | `text/markdown;charset=UTF-8`. Charset belirtilmezse istemci ISO-8859-1'e düşüyor ve "İstanbul" bozuk geliyor — test bunu yakaladı. |
-| Dosya adı | Ekleme | `atomcv-profile-<tarih>.md`. İsim konmuyor: indirme klasörlerine, vekil sunucu loglarına ve ekran görüntülerine kişisel veri taşımanın karşılığı yok (mutlak kural 4). |
-
-#### D.6.4 — İş durumu ve SSE (Aşama 2)
-
-Her SSE olayı bir `id` taşır ve yeniden bağlanmada `Last-Event-ID` onurlandırılır
-(o noktadan itibaren tekrar oynatma, en azından güncel durumu yeniden gönderme).
-Bunsuz ilerleme ekranının tek bir hata modu olur: iş çoktan bitmişken spinner
-sonsuza kadar döner — P4'ün yasakladığı sessiz kötü sonuç.
-
-```json
-// GET /api/v1/jobs/{id}
-{
-  "jobId": "...",
-  "status": "queued | running | completed | failed",
-  "phase": "C",
-  "pct": 60,
-  "generationId": "...",
-  "error": { "code": "...", "params": {}, "resolutions": [] }
-}
-```
-
-`generationId` yalnız `completed`'da, `error` yalnız `failed`'da bulunur; bu
-ikisi terminal durumlardır. Akış terminal olay olmadan kapanırsa bu endpoint'i
-yoklamak (polling) kabul edilebilir bir geri düşüştür.
-
-#### D.6.5 — Idempotency ve kota (Aşama 2)
-
-`Idempotency-Key`, para harcayan veya iş başlatan her POST'ta onurlandırılır:
-`/generations`, `/generations/{id}/edits`,
-`/generations/{id}/cover-letter/regenerate`, `/ingestion/cv`. Anahtarlar 24 saat
-saklanır.
-
-> **Kayda geçirilmiş kusur.** V1'deki
-> `CREATE UNIQUE INDEX ON jobs (user_id, idempotency_key) WHERE idempotency_key IS NOT NULL`
-> anonim istekleri tekilleştirmez: orada `user_id` NULL'dır ve Postgres NULL'ları
-> birbirinden farklı sayar, yani aynı anahtar ikinci bir iş açar.
-> `COALESCE(user_id::text, anon_session_id)` üzerinden bir migration gerekir.
-> Hemen düzeltilmedi, çünkü anonim akışın kuyruğu kullanıp kullanmayacağı hâlâ
-> açık.
-
-Kota: `429` ile birlikte `Retry-After` başlığı ve `params` içinde `resetsAt`.
-Sayaçlar (`generationsUsedToday`, `dailyGenerationQuota`, `quotaResetsAt`)
-`capabilities` içinde de yayınlanır — sınır, çarpılmadan önce görünür olur.
-
-> **Açık:** `usage_counters.period` bir `DATE`; günlük sayaç hiçbir yerde
-> tanımlanmayan bir gün sınırında dönüyor. UTC mi, Europe/Istanbul mu?
-> `resetsAt` gönderilmeden önce cevaplanmalı ve kullanıcıya görünür: UTC dönüşü
-> Türkiye'de saat 03:00'e denk gelir.
-
-#### D.6.6 — Anonim oturum, CSRF, profil devralma (Aşama 3)
-
-| Konu | Karar |
-|---|---|
-| Anonim oturum çerezi | Hesaplı oturumla **aynı `sid` çerezi**. Kimlik doğrulama, istemci tarafında bir `capabilities` sorusu olarak kalır. |
-| Süre bilgisi | `capabilities` içinde `anonymousExpiresAt` (ISO 8601). |
-| Süre dolduğunda | `401` + `ANONYMOUS_SESSION_EXPIRED` + `sign_up` resolution'ı. |
-| TTL davranışı (Bölüm 9 "2 saat sonra silinir" diyor) | **TTL kayar: etkinlikte tazelenir.** Mutlak iki saat, inceleme ekranında çalışmakta olan kullanıcıyı keserdi — P8'in önlemek için var olduğu emek kaybı. Kullanıcıya gösterilen metin "son etkinliğinden iki saat sonra" demeli. |
-| CSRF (Bölüm 40.1 adını koyup tanımlamıyor) | Spring Security'nin double-submit varsayılanı: sunucu okunabilir (HttpOnly olmayan) `XSRF-TOKEN` çerezi verir, istemci güvensiz metotlarda (POST/PUT/PATCH/DELETE) `X-XSRF-TOKEN` başlığında yankılar, uyuşmazlıkta `403` + `CSRF_TOKEN_INVALID`. Oturum çerezi zaten `SameSite=Strict` olduğu için asıl vektör kapalı; bu derinlemesine savunmadır, o yüzden kimlikle birlikte gelir, öne çekilmez. |
-| Profil devralma | **Böyle bir uç yok, ve olamaz** (düzeltme, denetim 2026-09-16 — § 41.3.3 ve § 08b bunu zaten yazıyor). Devralma girişin *içinde* koşuyor: giriş yeni bir oturum ve yeni bir çerez yazıyor, anonim oturum id'si yalnız o tek istek boyunca okunabiliyor, ve anonim profilin id'si ondan tek yönlü türüyor — sonradan çağrılan bir uç, tarayıcının çoktan attığı bir tanımlayıcıyı isterdi. Sonuç `POST /auth/verify`'ın **`profileUpgrade`** alanında dönüyor, dört değerli: `upgraded`, `none`, `kept_existing`, `unavailable`. `NO_ANONYMOUS_PROFILE` bu yüzden katalogdan kaldırıldı. **Birleştirme hâlâ sunulmuyor** ve gerekçesi değişmedi: atom düzeyinde tekilleştirme (Bölüm 7) ayrı bir iş, ve içeriği sessizce çoğaltan bir birleştirme P8'i çiğner. |
-
-#### D.6.7 — Kapsam dışı bırakılanlar
-
-- **Sunucu tarafı render API çağırmaz.** Kimlik doğrulamalı her fetch tarayıcıda
-  kalır; server component'ler yalnız kabuk ve statik içerik render eder.
-  Frontend'in `client.ts` dosyasındaki açıklayıcı `throw` doğru davranıştır,
-  yer tutucu değil. Bu değişirse iç ağ adresi ve çerez taşıma kararı gerekir.
-- **`/api/v1/warmup` public API değildir** (Bölüm 52.5). OpenAPI şemasının
-  dışında tutulur, nginx üzerinden yönlendirilmez, üretilen tiplerde
-  görünmemelidir.
-
-**Etkinleştirici.** springdoc-openapi ilk endpoint'le birlikte gelir. On altı
-maddenin altısı, `npm run gen:api` çalışabilir olduğu anda kendiliğinden kapanır
-— ama yalnız şema enum'ları ve başlıkları taşıyorsa.
-
-#### D.6.8 — Frontend'in ikinci senkronizasyon isteği (Aşama 1 kapanışı)
-
-Frontend, profil editörünü yayımlanan şemaya bağlarken her iddiayı **çalışan
-sunucuya karşı** denetledi ve ikinci bir `DOC-SYNC-REQUEST.md` yazdı. Sonuç
-üç kutuya ayrıldı: dokümanın yanlış olduğu yerler, şemanın eksik olduğu
-yerler, ve sunucunun bozuk olduğu yerler. **Üçüncüsü en pahalısıydı ve
-frontend onun yalnız bir yüzünü görmüştü.**
-
-**Protokol düzeyindeki reddetmeler 500 dönüyordu.** `ProblemDetailAdvice`'ın
-`Exception` yakalayıcısı Spring MVC'nin istek reddi istisnalarını da yutuyordu:
-
-| İstek | Önce | Sonra |
-|---|---|---|
-| `Content-Type: application/merge-patch+json` | 500 `INTERNAL_ERROR` | **415** `UNSUPPORTED_MEDIA_TYPE` |
-| `PUT` (yalnız `PATCH` kabul eden yolda) | 500 | **405** `METHOD_NOT_ALLOWED` + `Allow` |
-| `Accept: text/plain` | 500 | **406** `NOT_ACCEPTABLE` |
-| `?sectionId=not-a-uuid` | 500 | **400** `VALIDATION_FAILED`, `fields: ["sectionId"]` |
-
-Üçü de tam stack trace ile `ERROR` seviyesinde loglanıyordu, yani herhangi bir
-istemcinin bozuk isteği üretimin 500 oranını yükseltip logu dolduruyordu.
-İlkinin sebebi bizzat bu doküman: Bölüm 35.6 merge-patch yazıyordu, hiçbir
-controller onu kabul etmiyordu, dolayısıyla **spesifikasyonu izleyen istemciye
-sunucunun bozulduğu söyleniyordu.** Bölüm 35.6 düzeltildi (media type ve
-`If-Match` örneği), üç yeni kod katalogda: `METHOD_NOT_ALLOWED`,
-`NOT_ACCEPTABLE`, `UNSUPPORTED_MEDIA_TYPE`.
-
-**Varyant yaması taşıdığından fazlasını değiştiriyordu.** `PATCH
-…/variants/{id}` için `content` zorunluydu, yani bir sözcüklemeyi varsayılan
-yapmak metnin tamamını geri göndermeyi gerektiriyordu — metin düzenlemesi
-olmayan bir yazmada. Frontend'in bu yüzden benimsediği "metni aynen geri
-gönder" çözümü diğer iki hatayı ortaya çıkardı:
-
-- `tone` istekten koşulsuz yazılıyordu, yani o çözüm **kullanıcının seçtiği
-  tonu sessizce siliyordu** (P8). Alanı yalnız opsiyonel yapmak yetmez:
-  göndermemek ile temizlemek farklı anlamlara gelmeli, bu yüzden `tone` artık
-  bir `JsonNullable` — entry'nin null'lanabilir kolonlarındaki desenin aynısı.
-- `userEdited` her yamada set ediliyordu. Anlamı "bu cümleyi bir insan yazdı"
-  ve Aşama 2'nin çeviri işi neyi yeniden üretebileceğine ona bakarak karar
-  verecek; yani bir promote, kimsenin dokunmadığı metni kullanıcının kendi işi
-  gibi işaretliyordu. Artık yalnız sözcük taşıyan bir yazmayı izliyor.
-
-İstek tipi ikiye ayrıldı: `VariantWrite` (POST) `content` istemeye devam
-ediyor — sözcüklemesi olmayan atom kimsenin okuyamayacağı bir olgudur —
-`VariantPatch` (PATCH) hiçbir şey istemiyor.
-
-**Şema, API'nin zaten verdiği sözleri söylemiyordu.** Hepsi anotasyon, davranış
-değişikliği değil; ama ilan edilmemiş bir garanti kimsenin güvenemeyeceği ve
-iki tarafta da tek bir test kızarmadan kaldırılabilecek bir garantidir.
-
-| # | Eksik | Karar |
-|---|---|---|
-| B.1 | `ApiError.code` ve `.status` opsiyonel görünüyordu | **Zorunlu.** D.9 · 12 her hatanın bir kod taşıdığını söylüyor; opsiyonel yayımlanınca her tüketici sözleşmenin "olamaz" dediği bir dala bakmak zorunda kalıyordu. |
-| B.2 | Yazma yanıtlarında `ETag` ilan edilmemişti | **Her tekil kaynak yazmasında ilan edildi** (`POST` 201 dahil). Koleksiyon okumaları bilerek taşımıyor. |
-| B.3 | `Run.m` şemada opsiyonel, D.9 · 4 "her zaman dizi" diyor | **İkisi de doğru, yön farkı.** Şema değişmedi; D.2'ye satır eklendi. |
-| B.4 | On operasyon hiç `200` ilan etmiyordu | **Hepsine eklendi.** Aralarında her koleksiyon okuması ve her kısmi yazma var. |
-| B.5 | `EntryPatch`'in temizlenebilir alanları düz `string` | `nullable = true` bir OpenAPI **3.0** bayrağı; bu doküman 3.1 ve orada null bir *tip*. springdoc bayrağı sessizce düşürüyordu. `types = {"string", "null"}` ile düzeltildi — ama `implementation` bırakılırsa springdoc `{ present, value }` sarmalayıcısını bileşen olarak yayımlıyor, yani aynı kusurun öteki yüzü. İki yarım da teste bağlandı. |
-| B.6 | `/profile/export` yalnız JSON ilan ediyordu | **`text/markdown` de ilan edildi.** Şemaya güvenen istemci markdown'ı JSON diye ayrıştırıp ilk karakterde patlıyordu. |
-| B.7 | Operasyon id'leri konumsal (`list_2`) | **Adlandırıldı** (`listAtoms`, `patchSection`, …). Üreticiler isimleri bunlardan türetiyor. |
-
-**Golden set'e ikinci bir sözcükleme eklendi.** Sunucudaki hiçbir atomun
-birden fazla varyantı yoktu ve her sözcükleme Türkçeyken `enabledLanguages`
-`["en"]` idi — yani sekmeler, promote ve bayatlık yolu iki tarafta da yalnız
-mock'larla vardı. `senior_backend_tr` artık iki dili de açıyor ve ilk
-maddesinde İngilizce bir alternatif taşıyor. Fixture formatı iki alan
-büyüdü (`enabledLanguages`, `alternatives`); okuyucu aynı dil+ton çiftini iki
-kez talep eden fixture'ı reddediyor, yoksa seeder açılışta bir kısıt ihlaliyle
-ölüyor ve hangi dosyanın yanlış olduğunu söylemiyor. Maliyetler yeniden
-kaydedildi: bir yeni kayıt, mevcut her sayı aynı.
-
-**Frontend'in doğruladığı, değişiklik istemeyen davranışlar** (D.9 · 25-28'de
-tekrar edilir, çünkü bir sonraki oturum bunları deneyerek keşfetmesin): atom ve
-varyant sürümleri **bağımsız ilerler**; hiçbir şeyi değiştirmeyen bir yazma
-sürümü **artırmaz**; bir atom **son birincil sözcüklemesini bırakmaz** (400,
-`fields: ["primary"]`); promote **öncekini indirir ve listeyi yeniden sıralar**,
-ama yanıt yalnız yazılan sözcüklemeyi taşır.
-
-**Kanıtlanan koruyucular.** 415/405/400/406'nın hepsi düzeltmeden **önce**
-çalışan sunucuda 500 olarak gösterildi; promote-only yaması 400 olarak
-gösterildi; null'lanabilirlik testi `nullable = true` geri konularak
-kızartıldı. `OpenApiSchemaIT` 8 testten 16'ya, `AtomApiIT` 17'den 19'a,
-`ProblemDetailAdviceTest` 7'den 12'ye çıktı.
+Ders § 35.2.1'in dersiyle aynı, üçüncü kez: **bir tabloyu taşımak eski kopyayı
+silmiyor.** Silindi; gövdedeki `EK D.6.x` atıflarının tamamı `08b`'yi bulur.
 
 ### D.7 — İlerleme kaydı
 
-Her dilim bittiğinde güncellenir: ne üretildi, sırada ne var, frontend'i ne
-ilgilendiriyor. Backend deposundaki `CLAUDE.md` aynı bilgiyi oturum bağlamı
-olarak taşır, ama o dosya senkronize edilmez — **frontend için tek adres
-burasıdır.**
+**Taşındı → [`../STATUS.md`](../STATUS.md).**
 
-| Adım | Durum | Üretilen | Frontend'e etkisi |
-|---|---|---|---|
-| Aşama 0 — İskelet | ✅ Bitti | Paket ağacı, Gradle, Compose (core), Flyway V1 (Bölüm 13'ün tamamı), health endpoint, ArchUnit, Testcontainers, CI (CodeQL/Trivy/gitleaks), Makefile | — |
-| Adım 1.1 — Domain | ✅ Bitti | `RichContent`/`Run`/`Mark` + `ContentMigrator`; dört entity + altı kapalı sözlük; `UserScopedRepository` + `ProfileScopedRepository` + `ProfileRef`; dört repository; `ProfileAssembler` (dört sorguda profil) | D.9 · 1-6 |
-| Adım 1.2 — Profil CRUD | ✅ Bitti | **Bitti:** hata kataloğu (27 kod, tipli `params`, `ResolutionAction`); `ProblemDetailAdvice`; `CurrentUser` + yerel stand-in; `Profile` entity (tipli `contact`/`preferences`) + `ProfileRepository` + `ProfileResolver`; **`GET /api/v1/profile` + springdoc şeması** (ETag başlığı, iki sözlük enum olarak). **`PUT /profile`**, **`PUT /profile/preferences`**, **bölüm, entry, atom ve varyant CRUD + sıralama**. **tamamlanma yüzdesi**, **`DELETE /profile`**. **`GET /profile/export`** (JSON + Markdown). | D.9 · 7-20 |
-| Adım 1.3 — LaTeX container | ✅ Bitti | `docker/latex` imajı (xelatex + TeX Gyre + tek dosyalık HTTP sarmalayıcı), `/compile` ve `/measure`, derleme başına rlimit, salt-okunur kök, uid 1000. `-no-shell-escape`'in gerçekten reddettiği çalışan container'a sorularak doğrulandı. `make dev-full` artık gerçekten bir şey başlatıyor. Ayrıntılar ve iki doküman düzeltmesi: **EK D.8.1**. | — |
-| Adım 1.4 — Renderer | ✅ Bitti | `LatexEscaper`, `LatexInlineRenderer`, `PreambleBuilder`, `LatexDocumentRenderer`; klasik şablon, `TemplateCustomization` (enum + aralık + regex ile sınırlı). Final ve ölçüm belgeleri **aynı preamble'ı** kullanıyor (kritik test), ve üretilen belgenin gerçekten derlendiği container'a gönderilerek doğrulandı. Ayrıntılar: **EK D.8.2**. | — |
-| Adım 1.5 — Ölçüm | ✅ Bitti | **Bitti:** `TexLogParser` (ATOMCOST + CALIB), `RenderCost`, `CapacityModel`, klasik şablonun **ölçülmüş** sabit maliyetleri ve onları her koşuda derleyiciden yeniden türeten kalibrasyon testi (EK D.8.3). **`LatexCompilerClient`** ve **`RenderCostService`**: profil içeriği tek bir derlemede ölçülüp `render_costs`a punto olarak yazılıyor (EK D.8.4). Tahmin katmanı Adım 1.8'de geldi (`RenderCostEstimator`, EK D.8.7); atom maliyeti formülü Adım 1.9'da düzeltildi (EK D.8.10). | — |
-| Adım 1.6 — Seçim (Faz C) | ✅ Bitti | `SelectionRequest`/`SelectionState`, üç aşamalı algoritma (zorunlu yerleşim → etkin maliyetle greedy → swap), `Result`/`PipelineError`. Ölçülmüş kapasiteyle çalışan testler: sayfa hiç aşılmıyor, aynı girdi elli koşuda aynı çıktı, kilitler ve entry minimumları korunuyor (EK D.8.5). | — |
-| Adım 1.7 — Faz E/F | ✅ Bitti | **Bitti:** `RenderPhase` (seçim + profil → `RenderRequest`), `GenerationPipeline` (seç → render → derle → say), bütçe geri beslemesi (%5 kıs, en çok iki tekrar), `X-Page-Count`, `GeneratedDocument`, iki yeni `PipelineError`. Gerçek container'a karşı: profil → tek sayfa PDF, ve ölçüm yanılınca sessiz taşma yerine hata (EK D.8.6). **Sırada:** indirme ucu — bir profilden `SelectionRequest` üretmek skorlama ister, o da Adım 1.8; uç oraya taşındı. | D.9 · 21 |
-| Adım 1.8 — Genel mod | ✅ Bitti | `GeneralModeScorer` (Bölüm 19.4, yarılanma 5 yıl), `SelectionRequestBuilder` (pasif satırlar, kilitler, `min_atoms`, ölçülmüş maliyet ya da tahmin), `RenderCostEstimator` (Bölüm 26.5'in tahmin katmanı; gerçek derleyiciye karşı **asla az yazmadığı** doğrulanmış), `CapacityModel.textWidthPt` (EK D.8.7). `CvGenerationService` + **`POST /api/v1/generations/general`** + `ErrorPresenter` (Bölüm 25.3, dört durumun tamamı) (EK D.8.8). Veritabanındaki profil gerçek derleyiciden **tek sayfalık PDF** olarak çıkıyor. | D.9 · 22, 23 |
-| Adım 1.9 — Golden set | ✅ Bitti | Beş golden profil (Bölüm 51.3) + ölçülmüş maliyetleri, `GoldenProfileReader`, `DevSeeder`, ve **dört kritik testin tamamı** (EK D.8.9). İzolasyon testi kasıtlı bir IDOR'a karşı doğrulandı. Ayrıca **ölçüm/sayfa sapması testi** — kontrol listesinin son maddesi — yazıldı ve üç ölçüm hatası buldurdu (EK D.8.10). | — |
-| Aşama 1 kapanışı — ikinci senkronizasyon | ✅ Bitti | Frontend'in profil editörünü şemaya bağlarken bulduğu on beş madde (EK D.6.8). **Üç sunucu hatası:** protokol düzeyindeki her reddetme 500 dönüyordu (415/405/406/400 oldu); varyant yaması `content` istiyordu ve `tone`'u siliyordu; `userEdited` her yamada set ediliyordu. **Altı şema eksiği** kapatıldı (zorunlu `code`/`status`, on `200`, yazmalarda `ETag`, 3.1 null'lanabilirliği, `text/markdown`, adlandırılmış operasyon id'leri). Golden set'e ikinci bir sözcükleme eklendi. Bölüm 35.6, 37.6 ve XI-B.9.2 düzeltildi. | D.9 · 24-32 |
+Bu bölüm "her dilim bittiğinde güncellenir" ve "frontend için tek adres
+burasıdır" diyordu; **son güncellenişi Aşama 1'in kapanışıydı** (denetim,
+altıncı tur). Aşama 2, 3 ve 4 hiç işlenmedi, üç satırı çoktan kapanmış
+kararları açık gösteriyordu (kota zaman dilimi, anonim kuyruk, CI imaj
+taraması — sonuncusu `deploy.yml`'de indi), ve taşıdığı test sayıları
+312/132/44 idi.
 
-**Frontend.** Bu kayıt iki yönlü: aşağıdaki tablo `atomcv-frontend`'in
-durumunu taşır ve son sütunu backend'den ne beklendiğidir. Frontend'in inşa
-kararları **EK D.10**'da.
-
-| Adım | Durum | Üretilen | Backend'den beklenen |
-|---|---|---|---|
-| Frontend Aşama 0 — İskelet | ✅ Bitti | Next 16 + Tailwind v4 + shadcn (Radix); XI-B.3 klasör yapısı; i18n iskeleti (next-intl, ICU, en+tr, locale yönlendirmesi); MSW mock altyapısı (dev, Vitest, Playwright); RFC 7807 hata zarfı ve fetch istemcisi; app shell ve erişilebilirlik tabanı; landing ve legal sayfaları; 17 birim + 9 uçtan uca test; rota başına bundle bütçesi; Docker imajı; CI (build + test + gitleaks) yeşil. CD Aşama 1 sonrasına ertelendi (Bölüm 55). | `/v3/api-docs` yayında (✅), `npm run gen:api` çalışabilir durumda (✅). `src/mocks/contracts.ts` üretilen tiplerle değiştirilecek. |
-| Frontend Aşama 1 — Profil editörü | 🔨 Sürüyor | Şemaya bağlanma, profil editörü, varyant sekmeleri, etiket alanı; her iddia çalışan sunucuya karşı denetlendi ve ikinci `DOC-SYNC-REQUEST` yazıldı (EK D.6.8). | Bölüm/entry/atom/varyant uçları (✅ hazır, D.9 · 16-19), ETag disiplini (✅ D.9 · 15), `POST /generations/general` (✅ D.9 · 22), `complete_profile` (✅ D.9 · 23), şema tamamlığı ve varyant yaması (✅ D.9 · 24-32 — `gen:api` yeniden çalıştırılmalı) |
-
-**Aşama 1 tamamlanma kontrolü (XI-A.3), madde madde:**
-
-| Madde | Durum | Nerede kanıtlanıyor |
-|---|---|---|
-| Manuel form ile profil oluşturulabiliyor | ✅ (backend) | Bölüm/entry/atom/varyant CRUD + sıralama; form `atomcv-frontend`'de |
-| PDF indiriliyor ve gerçekten 1 sayfa | ✅ | `GeneralCvIT` — veritabanındaki profil, gerçek container, tek sayfa |
-| 5 golden profilde sayfa sınırı aşılmıyor | ✅ | `GoldenSelectionTest` (5 profil × 2 dil × {1,2} sayfa) |
-| Determinizm (50 tekrar) | ✅ | `GoldenSelectionTest` |
-| Kilitler ve yapısal kısıtlar | ✅ | `GoldenSelectionTest` |
-| Multi-tenant izolasyon | ✅ | `MultiTenantIsolationIT`, kasıtlı IDOR'a karşı doğrulanmış |
-| Türkçe karakterli doküman derleniyor | ✅ | `LatexContainerIT`; ayrıca golden set'in Türkçe profili uçtan uca |
-| Profil okuma ≤6 sorgu | ✅ | `ProfileAssemblerIT` (Hibernate sorgu sayacı, alt sınırı da var) |
-| Ölçüm ile gerçek sayfa arasında sapma <%3 | ✅ | `MeasurementDriftIT` — beş profilde %0.65-2.4, hepsi güvenli yönde (EK D.8.10) |
-
-**Test sayıları:** 312 birim, 132 entegrasyon, 44 latex-etiketli.
-
-**Aşama 1'de hâlâ açık olan kararlar:**
-
-| Soru | Neden bekliyor |
-|---|---|
-| ~~İlk `UserContext` nereden gelir?~~ | **Karara bağlandı (EK D.8):** yalnız `local` profilinde var olan sabit bir kullanıcı; üretimde yedek bean yok, endpoint kullanıcı istediği anda uygulama açılışta düşer. |
-| ~~Üretimde migration nasıl çalışır?~~ | **Karara bağlandı (2026-09-16):** açılışta, **tek örnekle**. Bölüm 47'nin önerdiği `--spring.flyway.migrate-only` diye bir özellik yok (EK D.1) ve ayrı bir Flyway CLI adımının getirdiği parça, tek sunucuda tek backend örneği koşarken karşılığını vermiyor. **Koşulu yazılı:** iki örnek aynı migration'ı yarışır, yani ölçeklenme günü yeniden açılır. Rollback **kodu** geri alır şemayı değil — her migration geriye dönük uyumlu olmalı. Ayrıntı `docs/vps-dagitim-plani.md` § 0 ve § 6. |
-| Kota gününün zaman dilimi | `usage_counters.period` bir `DATE`; `resetsAt` gönderilmeden önce cevaplanmalı (EK D.6.5). |
-| Anonim akış kuyruğu kullanacak mı? | `jobs` tekil indeksindeki NULL kusuru ve Bölüm 51.6'nın gizlilik testi buna bağlı. |
-| CI imaj taraması | Trivy şu an yalnız yapılandırmayı tarıyor; üretilen imajı taramak CI'da bir build (birkaç GB) gerektiriyor ve registry push'uyla birlikte gelmeli (Bölüm 47). |
-
-| Atomsuz entry seçilemiyor | Seçim atom üzerinden çalışıyor; yalnız derece satırı olan bir eğitim kaydı aday bile olmuyor (EK D.8.9). Çözümü Bölüm 20.2'nin modelini değiştiriyor. |
-| Beraberlik id ile çözülüyor | Aynı puan **ve** aynı maliyetteki iki atom, içerik yeniden içe aktarıldığında yer değiştirebiliyor — Aşama 3'ün profil devralması bunu yapacak (EK D.8.9). |
+Sebebi yapısal, unutkanlık değil: **iki repo arasındaki durum kanalı
+`STATUS.md`**, ve iki ilerleme kaydı tutmak ikisinin ayrışmasını beklemektir.
+Bu dosya sapmaların kaydı olarak kalıyor; nerede olunduğunu `STATUS.md`
+söylüyor.
 
 ### D.8 — Adım 1.2: profil başı ve acting user
 
@@ -633,7 +278,7 @@ yaşandı; hedef artık her seferinde inşa ediyor.
 | `RenderCostService` neden `rendering` içinde | Ekleme | Maliyet varyanta ait, ama servisi `profile`'a koymak **modül döngüsü** yaratırdı: `rendering` zaten içeriği tanıyor (`RichContent`), `profile` da rendering'e uzanırsa ikisi birbirine bağlanır ve ArchUnit'in döngü kuralı düşer. Yazma yine profilin kendi kapsamlı repository'sinden geçiyor. |
 | Ölçüm anahtarı | ~~Sapma~~ · **kapandı** | Bölüm 22.4 `{variantId}:{customizationId}:{templateVersion}` diyor ve Aşama 1'de yalnız `variantId` uygulanmıştı — özelleştirme entity'si yoktu. **Aşama 4'te geldi** (`SavedCustomization`, Katman A+B) ve anahtar da genişledi: `MeasurementRequest` üç parçayı da taşıyor, yani bölümle uygulama artık aynı şeyi söylüyor. Bu satır on bir ay boyunca kapanmış bir sapmayı açık gösteriyordu (denetim, beşinci tur). |
 | Eksik ölçüm | Ekleme | Bir varyantın maliyeti log'da yoksa **diğerleri yine yazılır**. Tek bir eksik ölçüm için tüm profili ölçümsüz bırakmak, seçimin tahmine düşeceği tek atom yerine hepsini tahmine düşürürdü (Bölüm 26.5). |
-| `FontMetricEstimator` ertelendi | Açık | Bölüm 26.2'nin 1. katmanı font dosyalarını **backend tarafında** okumayı gerektiriyor; fontlar container imajında. Tahminin tek tüketicisi henüz olmayan bir arayüz önizlemesi (Bölüm 33.3) ve ölçümsüz üretim yolu. Fontları ikinci bir yere kopyalamadan önce tüketicisi olsun. |
+| `FontMetricEstimator` ertelendi | ~~Açık~~ · **kapandı** | Bölüm 26.2'nin 1. katmanı font dosyalarını **backend tarafında** okumayı gerektiriyor ve fontlar container imajında; tüketicisi çıkana kadar bekletildi. **Adım 1.8'de indi**, ve FontBox'sız: `RenderCostEstimator`, bağımlılıksız ve kasten daha kötümser, tek sözü gerçek derleyiciden asla az yazmaması (EK D.8.7). Bu satır bir aşama boyunca inmiş bir işi açık gösterdi (denetim, altıncı tur). |
 
 ### D.8.5 — Adım 1.6: Faz C, seçim
 
@@ -717,8 +362,8 @@ madde budur.
 | Maliyetler **içerik hash'iyle** anahtarlanıyor | Ekleme | `*.costs.json` Bölüm 51.3'ün istediği dosya. Varyant id'si her okumada değişiyor, içerik hash'i içeriğin kendisi — metin değişince anahtar da değişiyor, yani bayat bir maliyet sessizce eşleşemiyor. |
 | `-Dgolden.record=true` | Ekleme | `GoldenCostsIT` normalde **doğruluyor**: saklanan her sayıyı gerçek derleyiciden yeniden ölçüyor ve 0.01 punto sapmada düşüyor. Kayıt modunda aynı test dosyaları yazıyor. Bir fixture'ın metni ya da şablonun geometrisi değişince yeniden kaydedilir. |
 | **`max_print_line`** | Düzeltme | TeX logunu 79 sütunda katlıyor. Ölçüm anahtarı 64 karakterlik bir hash olunca `ATOMCOST` satırı ikiye bölündü ve parser hiçbir şey bulamadı — beş profilin **hepsi sıfır ölçümle** döndü. Container artık xelatex'e `max_print_line=10000` veriyor. Varyant id'siyle (36 karakter) hiç görünmeyecek, ama sınıra iki karakter kalmıştı. |
-| Beraberlikler id ile çözülüyor, ve id kalıcı değil | Bulgu | Aynı puanı **ve** aynı maliyeti taşıyan iki atom arasında Bölüm 19.6'nın tie-break'i id'ye bakıyor. Veritabanındaki bir profil için id sabit, dolayısıyla çıktı sabit; ama aynı içerik yeniden içe aktarılırsa (Aşama 3'ün anonim profil devralması) ikisinden diğeri seçilebilir. Golden test bu yüzden "aynı atomlar" değil **"aynı sayıda atom ve aynı punto"** diyor. İçerikten türeyen bir tie-break Aşama 2'de bilinçli olarak kararlaştırılmalı. |
-| Atomsuz entry hiç görünmüyor | Bulgu | Seçim atom üzerinden çalışıyor; hiç atomu olmayan bir entry (yalnız derece satırı olan bir eğitim kaydı) aday bile olmuyor. Fixture'larda her eğitim kaydına bir atom verildi. Gerçek çözüm — entry'nin kendisinin aday olması — Bölüm 20.2'nin modelini değiştirir ve Aşama 2'ye ait. |
+| Beraberlikler id ile çözülüyor, ve id kalıcı değil | ~~Bulgu~~ · **cevaplandı** | Aynı puanı **ve** aynı maliyeti taşıyan iki atom arasında Bölüm 19.6'nın tie-break'i id'ye bakıyor. Veritabanındaki bir profil için id sabit, dolayısıyla çıktı sabit; ama aynı içerik yeniden içe aktarılırsa ikisinden diğeri seçilebilir. Golden test bu yüzden "aynı atomlar" değil **"aynı sayıda atom ve aynı punto"** diyor. **İçerikten türeyen bir tie-break yazılmadı, ve gerek kalmadı:** Adım 2.7 sonrası kova genişliği (§ 19.6) ikincil skoru araya soktu, yani id son çare olarak kaldı ve çok daha seyrek ulaşılıyor. Anonim devralma da satırları **kopyalamıyor, sahipleniyor** (§ 41.3.3) — id'ler değişmiyor, yani bulgunun adlandırdığı senaryo da oluşmuyor. |
+| Atomsuz entry hiç görünmüyor | ~~Bulgu~~ · **kapandı** | Seçim atom üzerinden çalışıyordu; hiç atomu olmayan bir entry (yalnız derece satırı olan bir eğitim kaydı) aday bile olmuyordu. **Gerçek çözüm indi** (2026-08-28): entry'nin kendisi **başlık-adayı** oluyor, maliyeti `ENTRY_HEADER`, skoru entry'den geliyor ve minimum kısıtı ona uygulanmıyor — Bölüm 20.2 bunu ve `headerOnlyEntries`'i kaydediyor. |
 | `DevSeeder` var olan profile dokunmuyor | Karar | `local` profiline bağlı, `@Order(100)` ile kullanıcı satırından sonra çalışıyor, ve profil zaten varsa **hiçbir şey yapmıyor**: yerel olarak denemek için girilen bir CV'nin üzerine yazmak tam olarak P8'in engellediği şey. Hangi fixture'ın ekileceği `atomcv.dev.seed-profile` ile seçiliyor. |
 
 **Dört kritik test (Bölüm 51.2), nerede.**
@@ -796,7 +441,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 27 | **Atom ve varyant sürümleri bağımsız** | `PATCH /atoms/{id}` atomun `version`'ını artırır, varyantlarınkine dokunmaz. Editör atom başına **iki** sürüm tutar; yanlışından kurulan bir `If-Match` eşzamanlılık hatası gibi görünen bir 412 verir. |
 | 26 | **Hiçbir şeyi değiştirmeyen yazma sürümü artırmaz** | Depodakiyle aynı değerlerle `PATCH` 200 ve **aynı** sürümü döner. Otomatik kaydetme için taşıyıcı: kullanıcı yazıp geri aldıktan sonra tetiklenen debounce, açık diğer editörlerin tuttuğu sürümü geçersizleştirmez. |
 | 25 | **Media type `application/json`, `If-Match: "7"`** | Bölüm 35.6'nın `application/merge-patch+json` yazması **hataydı**; öyle gönderilen istek artık **415** alıyor (önce 500 alıyordu). Şemayı izleyip `application/json` göndermeniz doğruydu, testle sabitlemeniz de. ETag'de `v` öneki yok. Ayrıca 405 (`Allow` başlığıyla), 406 ve bozuk parametrede 400 artık doğru kodla geliyor — **üç yeni ICU anahtarı**: `METHOD_NOT_ALLOWED`, `NOT_ACCEPTABLE`, `UNSUPPORTED_MEDIA_TYPE`. Hiçbiri doğru bir istemcinin göreceği hata değil; katalogda olmaları gövdenin `code`'suz kalmaması içindir. |
-| 24 | **Bölüm 37.6'nın iki düğmesi Aşama 2** | `Variant.stale` Aşama 1'de **her zaman false** ve bir varyantı yeniden üreten uç yok. `VariantTabs`'ın rozeti gösterip kontrolü çizmemesi doğru karar; Bölüm 37.6 artık bunu söylüyor. Elle düzenleme işleyen tek yol. |
+| 24 | ~~**Bölüm 37.6'nın iki düğmesi Aşama 2**~~ · **ikisi de çalışıyor** | Satır `Variant.stale`'in her zaman false olduğunu ve yeniden üreten bir uç bulunmadığını söylüyordu; ikisi de Aşama 3'te değişti ve **satır değişmedi** (denetim, altıncı tur). Bugün: bir sözcüklemeyi düzenlemek ondan türeyen her şeyi bayatlıyor (`VariantSynchronization`), ve "İngilizceyi yeniden üret" `PATCH .../variants/{id}` gövdesinde `{"userEdited": false}` — bayat olanı **hemen** çeviri kuyruğuna veriyor. "Benim halimi koru" hiçbir şey göndermemek. Aksiyon `B-115`'te. |
 | 1 | `link` run'ı `href` **zorunlu**, diğer run'larda `href` **yasak** | Editör bu ikisini üretmemeli; backend içeriği reddeder. `richContent.ts` tarafında bir invariant olarak tutulmalı. |
 | 2 | **Bilinmeyen mark'lar korunmalı** | İleri uyumluluk simetriktir: backend bilinmeyen bir mark'ı düşürmüyor, editör de düşürmemeli. Aksi halde daha yeni bir sürümün yazdığı işaretler, kullanıcı o cümleyi kaydettiği anda sessizce silinir. |
 | 3 | `v` alanı **sunucuya ait** | Frontend `runs` gönderir; `v` göndermesi gerekmez. Gönderirse **mevcut sürümden büyük olamaz** — backend daha yeni damgayı okumayı reddeder. |
@@ -806,7 +451,7 @@ dokümanı baştan sona okumayan biri de o bölüme baktığında görmeli:
 | 7 | **Sözleşme cevapları artık EK D.6'da** | `BACKEND-CONTRACT-GAPS.md` ve `backend-contract-response.md` silindi; on altı maddenin verdiktleri de, kabul edilen iki tablo da EK D.6'da. Frontend reposundaki kopyalar da silindi. Aynı desen artık iki yönlü: frontend tarafı bir doküman değişikliği gerektirdiğinde `DOC-SYNC-REQUEST.md` yazıyor, burada uygulanıyor ve dosya siliniyor (EK D.10). |
 | 8 | `generations` **ETag taşımaz** | O tabloda `version` kolonu yok. Sonuç ekranı iyimser kilit isterse bu bir şema değişikliği talebidir — sessizce `If-Match` göndermek işe yaramaz. |
 | 9 | Anonim süre metni | Kopya "iki saat sonra" değil **"son etkinliğinden iki saat sonra"** demeli; TTL kayıyor. Ürün dokümanındaki ifade düzeltildi, dizedeki karşılığı frontend'in. |
-| 10 | **Hata kataloğu tamamlandı** | D.6.1'deki tablo her kodun `params` anahtarlarını ve tiplerini veriyor; `en.json` ve `tr.json` artık yazılabilir. Üç kod yeni: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED` — ICU karşılıkları gerekiyor. |
+| 10 | **Hata kataloğu tamamlandı** | Her kodun `params` anahtarları ve tipleri yayımlanıyor; `en.json` ve `tr.json` buradan yazılır. Üç kod o gün yeniydi: `RESOURCE_NOT_FOUND`, `VERSION_CONFLICT`, `VALIDATION_FAILED`. **Tablo artık `error-catalogue.md`'de ve `ErrorCode`'dan üretiliyor** — bu satır elle yazılmış kopyayı gösteriyordu ve `B-110`/`B-111` o kopyanın ayrıştığını ölçtü. |
 | 11 | Fazladan `params` gönderilmez | Sunucu, bildirilmemiş bir anahtarı gövdeye koymayı reddediyor. Frontend bir alan eksik diye şikâyet ederse çözüm katalogda; gövdeye elle eklenmiş bir alan hiç gelmeyecek. |
 | 12 | **`type` göreli, `RESOURCE_NOT_FOUND`/`VERSION_CONFLICT` parametresiz** | `type` alanı `/errors/conflicting-preferences` biçiminde göreli gelir (alan adı koda gömülmüyor). Bilinmeyen bir yol 404 `RESOURCE_NOT_FOUND` döner, 500 değil. `INTERNAL_ERROR` (500) eklendi — beklenmeyen hatada bile gövdede `code` bulunur, yani istemcinin hata yolu her zaman çalışır. |
 | 13 | **`GET /profile` yeni kullanıcıda 404 dönmez** | Profil ilk kullanımda sunucu tarafında yaratılır (EK D.8). İstemcinin "henüz profilin yok" diye ayrı bir durum taşımasına gerek yok: boş ama gerçek bir profil gelir, `completeness: 0` ile. |
