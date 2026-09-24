@@ -159,7 +159,7 @@ dependencies {
     // every profile but prod -- so nothing is shipped from a developer's
     // machine. Absolute rule 4 still holds: send-default-pii stays off, so no
     // request body, no headers, no address reaches the vendor.
-    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.56.0")
+    implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.57.0")
     // The resilience library, and taken for ONE of the three things
     // that table names. Retry and timeout are already answered and differently:
     // The retry is a chain walk whose rule is which *kind* of failure
