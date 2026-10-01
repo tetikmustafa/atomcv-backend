@@ -198,7 +198,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     // No redis module: a GenericContainer running redis:7-alpine is the same
     // image compose uses, and one fewer dependency to keep in step.
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
