@@ -1901,6 +1901,13 @@ Bu şirket hakkında bildiğin bir şey? (opsiyonel)
 
 Tek LLM çağrısı, ucuz. Kullanıcı birkaç varyant deneyebilmeli.
 
+**Dil istek başına seçilir** (`F-045`, 2026-10-23). `CoverLetterRequest`
+`language` alıyor (ISO 639-1); yoksa `defaults.coverLetterLanguage`, onun
+`auto`'su ilanı izler. Hesabın `allowedLanguages`'i dışındaki iyi biçimli bir
+kod `400 fields:["language"]` — `GenerationRequest.language`'ın reddiyle aynı
+şekil. Konsept § 10.1'in "CV ve cover letter için ayrı seçim"i böylece
+varsayılan düzeyinde değil, istek düzeyinde karşılanıyor.
+
 ### 34.7 Sayfa bütçesi
 
 Cover letter render edilmiyor (düz metin kopyalanıyor) → punto ölçümü gereksiz. **120-400 kelime** sınırı yeterli (taban § 34.4.2'de ölçüldü). PDF isteniyorsa aynı şablon sistemi "letter" düzeniyle kullanılır.

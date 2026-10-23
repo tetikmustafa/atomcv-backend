@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.generation.coverletter.CoverLetterStyle;
 import com.mustafatetik.atomcv.generation.coverletter.CoverLetterWriter;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
+import com.mustafatetik.atomcv.identity.CapabilityProperties;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.ProfileAssembler;
@@ -33,14 +34,26 @@ public class CoverLetterRegenerationService {
     private final ProfileAssembler assembler;
     private final GenerationRepository generations;
     private final CoverLetterWriter letters;
+    private final CapabilityProperties capabilities;
 
     CoverLetterRegenerationService(ProfileResolver profiles, ProfileAssembler assembler,
-            GenerationRepository generations, CoverLetterWriter letters) {
+            GenerationRepository generations, CoverLetterWriter letters,
+            CapabilityProperties capabilities) {
 
         this.profiles = profiles;
         this.assembler = assembler;
         this.generations = generations;
         this.letters = letters;
+        this.capabilities = capabilities;
+    }
+
+    /**
+     * Whether an account may ask for a letter in this language — the same
+     * list {@code capabilities.allowedLanguages} publishes to an account, so
+     * the selector the client draws and the check here cannot disagree.
+     */
+    public boolean writesIn(String language) {
+        return capabilities.accountLanguages().contains(language);
     }
 
     /** @return empty when there is no such generation for this user */
@@ -67,7 +80,8 @@ public class CoverLetterRegenerationService {
      *                   which is where ownership was decided (absolute rule 3)
      */
     public Result<CoverLetterDraft> rewrite(
-            UserContext user, Generation generation, CoverLetterStyle style, String companyNote) {
+            UserContext user, Generation generation, CoverLetterStyle style, String companyNote,
+            String language) {
 
         var owned = profiles.owned(user);
         Profile head = owned.profile();
@@ -75,7 +89,8 @@ public class CoverLetterRegenerationService {
 
         Result<CoverLetterDraft> written = letters.write(
                 head, tree, generation.getSelectionState().toSelectionState(),
-                generation.getJdAnalysis(), companyNote, style, user.userId().toString(),
+                generation.getJdAnalysis(), companyNote, language, style,
+                user.userId().toString(),
                 // Not a queued job: the person pressed the button and is
                 // waiting on the answer, so there is no job row to attribute to.
                 user.userId(), null);
