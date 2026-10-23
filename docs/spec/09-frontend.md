@@ -267,6 +267,16 @@ static final ArchRule noLocaleSensitiveCase = noClasses()
 > imajına ayırdığı 2.0 GB'ı üçe katlardı. Kapsama iddiası ikisi için de
 > doğruydu, varlık iddiası değildi.
 
+> **Dördü de telde yayımlanıyor** (`F-041`, 2026-10-23). Alan düz `string`
+> idi, yani tablo dört derken arayüz üç sunuyordu ve hiçbir typecheck farkı
+> göremiyordu; üstelik profilin görünüşü yalnız `MODERN|SERIF|SANS`
+> kabul ediyordu — `book` adlı bir sete kaydedilebiliyor, varsayılan olarak
+> reddediliyordu. Şimdi beş yerin beşi de `enum: [modern, serif, sans, book]`:
+> özelleştirme uçları `FontFamily` enum'unu taşıyor, profil (rendering'i import
+> edemez, döngü) dört değeri yazıyor ve `FontFamilyVocabularyTest` ikisi
+> ayrıştığı gün düşüyor. **Telde tek yazım küçük harf**; girdi büyük/küçük
+> harf duyarsız, eski satırlardaki `SANS` okunurken `sans` olur.
+
 **Test fixture:** Türkçe karakterli atom kümesiyle her şablonu derle, PDF'ten metin çıkarımı yapıp `ş ğ ı İ ö ü ç` doğru çıktığını doğrula.
 
 ---

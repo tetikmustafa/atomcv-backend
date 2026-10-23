@@ -57,6 +57,15 @@ public record PreferencesUpdateRequest(
      * <p>The ranges are narrow so that a bad-looking result is physically
      * impossible. 9pt is legal and worth a word about ATS readability; it is
      * not refused.
+     *
+     * <p>{@code fontFamily} is a string here and the {@code FontFamily} enum
+     * on the customization endpoints: this module cannot import rendering
+     * (rendering already depends on it, and ArchUnit refuses the cycle). The
+     * four values are written out instead, and {@code
+     * FontFamilyVocabularyTest} fails the day they and the enum disagree. It
+     * used to accept {@code MODERN|SERIF|SANS} only, so {@code book} could be
+     * saved under a name and refused as a default (F-041). Read in any case,
+     * stored lower-case like the enum's wire value.
      */
     @Schema(name = "AppearanceUpdate", description = """
             How the CV looks. Every field is optional and omitting one leaves             the template's own setting.
@@ -66,7 +75,8 @@ public record PreferencesUpdateRequest(
             @DecimalMin("9.0") @DecimalMax("12.0") Double fontSizePt,
             @DecimalMin("0.4") @DecimalMax("1.0") Double marginInches,
             @DecimalMin("0.9") @DecimalMax("1.3") Double lineSpacing,
-            @Pattern(regexp = "MODERN|SERIF|SANS") String fontFamily,
+            @Schema(allowableValues = {"modern", "serif", "sans", "book"})
+            @Pattern(regexp = "(?i)modern|serif|sans|book") String fontFamily,
             @Pattern(regexp = "^[0-9A-Fa-f]{6}$") String accentColor) {
     }
 

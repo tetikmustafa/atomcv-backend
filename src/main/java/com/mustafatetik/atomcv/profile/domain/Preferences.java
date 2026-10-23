@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Locale;
 
 /**
  * How the user wants their CVs written and rendered, stored in {@code
@@ -106,8 +107,21 @@ public record Preferences(WritingStyle writingStyle, Defaults defaults) {
             Double fontSizePt,
             Double marginInches,
             Double lineSpacing,
+            @Schema(allowableValues = {"modern", "serif", "sans", "book"})
             String fontFamily,
             String accentColor) {
+
+        /**
+         * One spelling on the wire. Rows written before F-041 hold {@code
+         * SANS}; the customization endpoints answer {@code sans}, and a client
+         * comparing the two would see a difference that is not one. A value
+         * that is no family at all is kept as it is — {@code
+         * CustomizationFactory} falls back from it, and that is the place
+         * that decides.
+         */
+        public Appearance {
+            fontFamily = fontFamily == null ? null : fontFamily.toLowerCase(Locale.ROOT);
+        }
 
         /**
          * Hidden from both, and for two different reasons (F-033).

@@ -12,7 +12,16 @@
 
 ## OPEN
 
-_(açık madde yok.)_
+### B-120 · `fontFamily` dört değerli bir enum (`F-041`'in cevabı)
+
+**Since:** `feat/font-family-vocabulary` · § 38.5
+**Neden:** Profilin görünüşü `MODERN|SERIF|SANS` kabul ediyordu, özelleştirme
+uçları dördünü (`book` dahil). Beş alanın beşi de artık `enum: [modern, serif,
+sans, book]`; telde tek yazım **küçük harf**, girdi büyük/küçük harf duyarsız,
+eski satırlardaki `SANS` `sans` olarak okunuyor.
+**Action:** `npm run gen:api`; `FONT_FAMILIES` sabiti yerine şemanın birliği;
+dördüncü değer (`book`, Pagella) seçiciye. Eski büyük harfli değerle
+karşılaştıran bir kod varsa küçük harfe.
 
 **`B-117`, `B-118`, `B-119` ACK'lendi ve indi** (2026-09-21), geldikleri
 günün ertesi. Üçü de `resolved/to-frontend-2026-09.md`'de, ne yapıldığıyla

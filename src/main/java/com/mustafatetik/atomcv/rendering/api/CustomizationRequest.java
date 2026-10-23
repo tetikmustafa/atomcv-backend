@@ -47,8 +47,11 @@ public record CustomizationRequest(
         @DecimalMin("0.9") @DecimalMax("1.3")
         Double lineSpacing,
 
+        // The enum rather than a string so the vocabulary is published (F-041):
+        // as a plain string the schema could not tell a client there were four
+        // families, and the frontend offered three. Read case-insensitively.
         @Schema(description = "One of the whitelisted families", example = "sans")
-        String fontFamily,
+        FontFamily fontFamily,
 
         @Schema(description = "Six hex digits, no hash", example = "1D4ED8")
         @Pattern(regexp = "^[0-9A-Fa-f]{6}$")
@@ -67,7 +70,7 @@ public record CustomizationRequest(
 
         return new TemplateCustomization(
                 baseTemplateId,
-                fontFamily == null ? base.fontFamily() : FontFamily.fromWireValue(fontFamily),
+                fontFamily == null ? base.fontFamily() : fontFamily,
                 fontSizePt == null ? base.fontSizePt() : fontSizePt,
                 marginInches == null ? base.marginInches() : marginInches,
                 lineSpacing == null ? base.lineSpacing() : lineSpacing,
