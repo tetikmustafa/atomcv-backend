@@ -12,6 +12,10 @@ import com.mustafatetik.atomcv.generation.selection.SelectionState.SelectedAtom;
 import com.mustafatetik.atomcv.rendering.template.CapacityModel;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.rendering.template.TemplateRegistry;
+import com.mustafatetik.atomcv.shared.error.PipelineError;
+import com.mustafatetik.atomcv.shared.error.Resolution;
+import com.mustafatetik.atomcv.shared.error.ResolutionAction;
+import com.mustafatetik.atomcv.shared.error.Result;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -181,6 +185,90 @@ class GenerationDirectivesSelectionTest {
                 .isEqualTo(idsOf(SelectionPhase.select(new SelectionRequest(
                         List.of(new SectionPlan(SECTION_ID, false, List.of(), atoms)),
                         1, CAPACITY)).orElseThrow()));
+    }
+
+    // ── keep_top_pinned ───────────────────────────────────────────────────
+
+    /**
+     * Forty pins do not fit one page; the refusal offers a number, and that
+     * number sent back produces a CV — the resolution's whole promise.
+     */
+    @Test
+    void theOfferedPinCapProducesACv() {
+        var pins = pinned(40);
+
+        Result<SelectionState> refused = SelectionPhase.select(
+                requestOf(pins, GenerationDirectives.none()));
+        int keep = keepOffered(refused);
+
+        assertThat(keep).isPositive().isLessThan(40);
+        var state = SelectionPhase.select(requestOf(pins,
+                GenerationDirectives.steering(List.of(), null, keep))).orElseThrow();
+        assertThat(state.selected()).filteredOn(SelectedAtom::forcedByLock).hasSize(keep);
+    }
+
+    /** The most relevant pins stay forced; the others compete, they are not dropped. */
+    @Test
+    void theCapKeepsTheHighestScoringPinsAndLetsTheRestCompete() {
+        var pins = pinned(3);
+
+        var state = SelectionPhase.select(requestOf(pins,
+                GenerationDirectives.steering(List.of(), null, 1))).orElseThrow();
+
+        assertThat(state.selected()).filteredOn(SelectedAtom::forcedByLock)
+                .extracting(SelectedAtom::atomId)
+                .containsExactly(pins.get(0).atomId());
+        assertThat(idsOf(state))
+                .as("three bullets fit a page; past the cap they still get in on merit")
+                .containsAll(pins.stream().map(AtomCandidate::atomId).toList());
+    }
+
+    /**
+     * A capped run that still does not fit is offered fewer, never the same
+     * cap again — otherwise the button returns the refusal it came from.
+     */
+    @Test
+    void aStillTooLargeCapIsOfferedASmallerOne() {
+        var pins = pinned(40);
+
+        int keep = keepOffered(SelectionPhase.select(requestOf(pins,
+                GenerationDirectives.steering(List.of(), null, 39))));
+
+        assertThat(keep).isLessThan(39);
+    }
+
+    @Test
+    void aRefusalWithNoPinsOffersNoPinCap() {
+        var atoms = atoms(40, 0.9);
+        var everyone = new GenerationDirectives(
+                atoms.stream().map(AtomCandidate::atomId).toList(), List.of());
+
+        Result<SelectionState> refused = SelectionPhase.select(requestOf(atoms, everyone));
+
+        var error = (PipelineError.ConflictingPreferences)
+                ((Result.Err<SelectionState>) refused).error();
+        assertThat(error.options()).extracting(Resolution::action)
+                .doesNotContain(ResolutionAction.KEEP_TOP_PINNED);
+    }
+
+    private static List<AtomCandidate> pinned(int count) {
+        var atoms = new ArrayList<AtomCandidate>();
+        for (int index = 0; index < count; index++) {
+            atoms.add(new AtomCandidate(UUID.randomUUID(), UUID.randomUUID(), null,
+                    0.9 - index * 0.001, BULLET_PT, true, true));
+        }
+        return List.copyOf(atoms);
+    }
+
+    private static int keepOffered(Result<SelectionState> refused) {
+        assertThat(refused.isErr()).as("the pins must not fit, or nothing is tested").isTrue();
+        var error = (PipelineError.ConflictingPreferences)
+                ((Result.Err<SelectionState>) refused).error();
+        return error.options().stream()
+                .filter(option -> option.action() == ResolutionAction.KEEP_TOP_PINNED)
+                .map(option -> ((Number) option.params().get("keep")).intValue())
+                .findFirst()
+                .orElseThrow();
     }
 
     // ── helpers ───────────────────────────────────────────────────────────

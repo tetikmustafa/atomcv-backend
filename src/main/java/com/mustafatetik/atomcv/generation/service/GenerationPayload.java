@@ -27,6 +27,7 @@ public record GenerationPayload(
         java.util.List<String> emphasize,
         java.util.UUID customizationId,
         String freeformNote,
+        Integer keepPinned,
         QuotaSubject allowance) {
 
     private static final String JOB_DESCRIPTION = "jobDescription";
@@ -37,8 +38,18 @@ public record GenerationPayload(
     private static final String EMPHASIZE = "emphasize";
     private static final String CUSTOMIZATION_ID = "customizationId";
     private static final String FREEFORM_NOTE = "freeformNote";
+    private static final String KEEP_PINNED = "keepPinned";
     private static final String ALLOWANCE_TYPE = "allowanceType";
     private static final String ALLOWANCE_ID = "allowanceId";
+
+    /** Every field but the pin cap, which nearly no generation carries. */
+    public GenerationPayload(String jobDescription, boolean preflightAcknowledged,
+            Integer maxPages, String language, boolean coverLetter,
+            java.util.List<String> emphasize, java.util.UUID customizationId,
+            String freeformNote, QuotaSubject allowance) {
+        this(jobDescription, preflightAcknowledged, maxPages, language, coverLetter,
+                emphasize, customizationId, freeformNote, null, allowance);
+    }
 
     /**
      * Ordered, because the map becomes a JSONB column and the JDK's immutable
@@ -54,6 +65,7 @@ public record GenerationPayload(
         payload.put(EMPHASIZE, emphasize);
         payload.put(CUSTOMIZATION_ID, customizationId == null ? null : customizationId.toString());
         payload.put(FREEFORM_NOTE, freeformNote);
+        payload.put(KEEP_PINNED, keepPinned);
         // Whose ceiling this took, so the worker can give it back -- the shape
         // ProfileExtractionPayload already uses, for the same reason. An
         // account pays by user id and an anonymous caller by address, and the
@@ -83,6 +95,9 @@ public record GenerationPayload(
                 // profile's own working settings.
                 uuidIn(payload, CUSTOMIZATION_ID),
                 string(payload, FREEFORM_NOTE),
+                // Absent on a job queued before keep_top_pinned had a field,
+                // and absent forces every pin -- which those jobs were.
+                integer(payload, KEEP_PINNED),
                 allowanceIn(payload));
     }
 

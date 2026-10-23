@@ -367,7 +367,11 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties.generalMode")
                         .doesNotExist())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest.properties")
-                        .value(Matchers.aMapWithSize(9)))
+                        .value(Matchers.aMapWithSize(10)))
+                // Ten with keepPinned, the field keep_top_pinned answers with
+                // (B-123).
+                .andExpect(jsonPath("$.components.schemas.GenerationRequest"
+                        + ".properties.keepPinned").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"
                         + ".properties.jobDescription").exists())
                 .andExpect(jsonPath("$.components.schemas.GenerationRequest"

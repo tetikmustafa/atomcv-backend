@@ -129,6 +129,16 @@ public final class SelectionPhase {
         private final Map<UUID, SectionPlan> planOfSection = new LinkedHashMap<>();
 
         private final Map<UUID, SelectedAtom> selected = new LinkedHashMap<>();
+
+        /** The profile's pins placed by stage 1, in score order (keep_top_pinned). */
+        private final List<UUID> pinsPlaced = new ArrayList<>();
+
+        /**
+         * The page as it stood after each of those pins went in: the same sum
+         * the budget check reads, so the cap offered is the one that fits
+         * rather than an estimate that leaves out the section furniture.
+         */
+        private final List<Double> pinTotalsPt = new ArrayList<>();
         private final List<RejectedAtom> rejected = new ArrayList<>();
         private final List<RejectedEntry> rejectedEntries = new ArrayList<>();
         private final Map<UUID, AtomCandidate> pool = new LinkedHashMap<>();
@@ -244,9 +254,22 @@ public final class SelectionPhase {
          */
         private Result<Void> placeMandatory() {
             GenerationDirectives directives = request.directives();
+            Integer cap = directives.keepPinned();
             for (AtomCandidate atom : sortedByScore(pool.values())) {
-                if (atom.alwaysInclude() || directives.includes(atom.atomId())) {
+                boolean byHand = directives.includes(atom.atomId());
+                if (byHand) {
                     include(atom, true);
+                } else if (atom.alwaysInclude()) {
+                    // keep_top_pinned: past the cap a pin is an ordinary
+                    // candidate, not a dropped one. Sorted by score, so the
+                    // pins that stay forced are the most relevant ones, which
+                    // is what the resolution promised.
+                    if (cap != null && pinsPlaced.size() >= cap) {
+                        continue;
+                    }
+                    include(atom, true);
+                    pinsPlaced.add(atom.atomId());
+                    pinTotalsPt.add(structurePt + contentPt);
                 }
             }
             for (UUID entryId : List.copyOf(openEntries)) {
@@ -1109,21 +1132,42 @@ public final class SelectionPhase {
             throw new IllegalStateException("A selected atom that was never a candidate");
         }
 
+        /**
+         * The refusal, and the three ways out of it.
+         *
+         * <p>{@code keep} counts <em>pins</em>, in the order stage 1 placed
+         * them, against everything placed ahead of each: it is the number the
+         * request's {@code keepPinned} is answered with, so counting the
+         * entries' top-ups as well would offer a cap that keeps every pin.
+         * It used to add bare render costs to the header block, which left out
+         * every section heading and entry line — and offered a cap that was
+         * refused again.
+         *
+         * <p>It also strictly falls. A run that was already capped and still
+         * does not fit (the top-ups of the pins it kept) is offered one fewer,
+         * so pressing the button again can never return the same refusal; with
+         * no pin left to drop the button is not offered at all.
+         */
         private PipelineError conflict() {
             double pinnedPt = structurePt + contentPt;
             int fitting = 0;
-            double running = capacity.fixedCost(CapacityModel.HEADER_BLOCK);
-            for (SelectedAtom atom : selected.values()) {
-                running += atom.renderCostPt();
-                if (running <= totalBudgetPt) {
+            for (double total : pinTotalsPt) {
+                if (total <= totalBudgetPt) {
                     fitting++;
                 }
             }
-            return new PipelineError.ConflictingPreferences(pinnedPt, totalBudgetPt, List.of(
+            Integer cap = request.directives().keepPinned();
+            int keep = cap == null ? fitting : Math.min(fitting, cap - 1);
+
+            List<Resolution> resolutions = new ArrayList<>(List.of(
                     Resolution.of(ResolutionAction.INCREASE_PAGE_LIMIT,
                             "maxPages", request.maxPages() + 1),
-                    Resolution.of(ResolutionAction.REVIEW_PINS),
-                    Resolution.of(ResolutionAction.KEEP_TOP_PINNED, "keep", fitting)));
+                    Resolution.of(ResolutionAction.REVIEW_PINS)));
+            if (keep >= 0 && !pinsPlaced.isEmpty()) {
+                resolutions.add(Resolution.of(ResolutionAction.KEEP_TOP_PINNED, "keep", keep));
+            }
+            return new PipelineError.ConflictingPreferences(
+                    pinnedPt, totalBudgetPt, List.copyOf(resolutions));
         }
 
         private List<AtomCandidate> allAtoms() {

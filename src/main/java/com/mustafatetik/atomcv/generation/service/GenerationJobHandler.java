@@ -143,7 +143,7 @@ public class GenerationJobHandler implements JobHandler {
         // somebody asks for it, not before.
         Result<GeneratedGeneration> result = isGeneralMode(payload)
                 ? general.generateGeneralCv(UserContext.of(job.getOwnerId()),
-                        payload.maxPages(), payload.language(), progress)
+                        payload.maxPages(), payload.language(), payload.keepPinned(), progress)
                 : generations.generateForJob(
                         subject, payload.jobDescription(), payload.preflightAcknowledged(),
                         payload.maxPages(), payload.language(), payload.coverLetter(),
@@ -151,7 +151,8 @@ public class GenerationJobHandler implements JobHandler {
                         // The directive belongs to this run, never to the
                         // cached analysis the posting hash keys.
                         GenerationDirectives.steering(
-                                payload.emphasize(), payload.freeformNote()),
+                                payload.emphasize(), payload.freeformNote(),
+                                payload.keepPinned()),
                         progress, job.getId());
 
         return switch (result) {
