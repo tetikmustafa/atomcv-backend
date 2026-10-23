@@ -123,6 +123,14 @@ dependencies {
     // is the whole integration: the exporter is inert until a URL is set, and
     // the dataset it points at is created with the deployment.
     implementation("io.micrometer:micrometer-registry-otlp")
+    // And the log lines, to the same place (EK C.1 "Axiom log akışı"). Only
+    // metrics were pushed, so the checklist line could not pass as built. Boot
+    // 3.5 wires the exporter from management.otlp.logging.*; the appender is
+    // what hands logback's events to it. 2.15.0-alpha is the release built
+    // against OpenTelemetry 1.49.0, the version Boot's BOM manages -- a newer
+    // appender would pull a newer API than the SDK Boot configures.
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.15.0-alpha")
     // The job analysis is cached. Lettuce underneath, which the
     // starter brings: the cache is consulted on the hot path and a blocking
     // client there would hold a request thread through a network round trip.

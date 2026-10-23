@@ -58,6 +58,17 @@ management:
           # Axiom authenticates the push and names the dataset in headers.
           Authorization: ${OTLP_AUTHORIZATION:}
           X-Axiom-Dataset: ${OTLP_DATASET:}
+    # The log lines, under the same switch and the same credentials. Its own
+    # URL because OTLP puts logs and metrics on different paths
+    # (https://api.axiom.co/v1/logs). What is logged is already content-free
+    # (absolute rule 4); this changes where the lines go, not what they say.
+    logging:
+      export:
+        enabled: ${OTLP_ENABLED:false}
+      endpoint: ${OTLP_LOGS_URL:}
+      headers:
+        Authorization: ${OTLP_AUTHORIZATION:}
+        X-Axiom-Dataset: ${OTLP_DATASET:}
   metrics:
     distribution:
       # p50 and p95 are wanted by phase, and a Timer publishes neither
