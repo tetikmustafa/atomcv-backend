@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.rendering.api;
 
+import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
@@ -29,7 +30,7 @@ public record CustomizationPatch(
         @DecimalMin("9.0") @DecimalMax("12.0") Double fontSizePt,
         @DecimalMin("0.4") @DecimalMax("1.0") Double marginInches,
         @DecimalMin("0.9") @DecimalMax("1.3") Double lineSpacing,
-        String fontFamily,
+        FontFamily fontFamily,
         @Pattern(regexp = "^[0-9A-Fa-f]{6}$") String accentColor) {
 
     /** Null when this patch is only a rename. */

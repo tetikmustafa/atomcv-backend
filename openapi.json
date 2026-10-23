@@ -3382,7 +3382,8 @@
             "format" : "double"
           },
           "fontFamily" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "modern", "serif", "sans", "book" ]
           },
           "accentColor" : {
             "type" : "string"
@@ -3590,7 +3591,8 @@
           },
           "fontFamily" : {
             "type" : "string",
-            "pattern" : "MODERN|SERIF|SANS"
+            "enum" : [ "modern", "serif", "sans", "book" ],
+            "pattern" : "(?i)modern|serif|sans|book"
           },
           "accentColor" : {
             "type" : "string",
@@ -4701,6 +4703,7 @@
           "fontFamily" : {
             "type" : "string",
             "description" : "One of the whitelisted families",
+            "enum" : [ "modern", "serif", "sans", "book" ],
             "example" : "sans"
           },
           "accentColor" : {
@@ -4743,7 +4746,8 @@
             "format" : "double"
           },
           "fontFamily" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "modern", "serif", "sans", "book" ]
           },
           "accentColor" : {
             "type" : "string"
@@ -5070,7 +5074,8 @@
             "minimum" : 0.9
           },
           "fontFamily" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "modern", "serif", "sans", "book" ]
           },
           "accentColor" : {
             "type" : "string",

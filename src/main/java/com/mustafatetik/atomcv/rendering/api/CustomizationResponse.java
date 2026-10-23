@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.rendering.api;
 
 import com.mustafatetik.atomcv.rendering.domain.SavedCustomization;
+import com.mustafatetik.atomcv.rendering.template.FontFamily;
 import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
@@ -29,7 +30,7 @@ public record CustomizationResponse(
         double fontSizePt,
         double marginInches,
         double lineSpacing,
-        String fontFamily,
+        FontFamily fontFamily,
         String accentColor,
         Instant createdAt) {
 
@@ -43,7 +44,7 @@ public record CustomizationResponse(
                 settings.fontSizePt(),
                 settings.marginInches(),
                 settings.lineSpacing(),
-                settings.fontFamily().wireValue(),
+                settings.fontFamily(),
                 settings.accentColor().value(),
                 saved.getCreatedAt());
     }
