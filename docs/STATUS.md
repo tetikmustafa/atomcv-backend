@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-21** · **`B-117`…`B-119` karşılandı ve arşivlendi** — iki kanal da boş; açık madde yok. Kapı sırası ve şema **gerçek uca karşı ölçüldü** (413 → `400` → 409 → 415; `gen:api` backend'in commit'li şemasıyla birebir)
+**2026-09-21** · **`B-117`…`B-119` karşılandı ve arşivlendi**, sonra **bütün dokümanlar koda karşı ölçüldü**: üç ürün yüzeyi telde ve dokümanda vardı, ekranda yoktu — üçü de indi. Frontend'den **`F-041`…`F-045`** açıldı; backend'e gelen kanal boş.
 
 ## Backend — `atomcv-backend`
 
@@ -35,15 +35,15 @@
 | Aşama 4 — SEO, a11y denetimi, tema, `canAddAlternatives`, bağımlılıklar | ✅ |
 | Aşama 4 — kapanış sırası D1…D14, `B-100`…`B-116`, `B-117`…`B-119` | ✅ tamamı |
 
-**Aşama 4'ün sekizi karşılandı (2026-09-11).** Faz G'nin cümle kutusu, üç şablon + Katman B, `/applications`, DOCX, `/unsubscribe` — satır satır `handoff/resolved/to-frontend-2026-09.md`'de. **Tek eksik bilerek:** `B-088`'in elle aç/kapa arayüzü çizilmedi, çünkü hangi atomların tartıldığını söyleyen uç yok (`F-031`); istemci fonksiyonu ve `GENERATION_SUPERSEDED` indi. **`gen:api` bir sessiz kusur açığa çıkardı:** springdoc `DELETE /account`'u `delete_2`'ye kaydırdı ve `delete_1` başvuru silmeye geçti; ikisi de 204 döndüğü için typecheck sustu — numaralı id'li her uç artık **yoluyla** bağlanıyor (`F-033`).
-
-**Backend beklemeyen beş iş de indi (2026-09-12).** **SEO** (`robots.txt`, `sitemap.xml`, canonical + hreflang, `noindex`) — alan adı yok, `NEXT_PUBLIC_SITE_URL` dağıtımda ayarlanacak. **axe taraması** on bir ekranda, açık ve koyu; ilk koşuşta iki gerçek kontrast hatası buldu. **Tema** üç durumlu, flash yok, landing hâlâ 0.0 KB kendi JS'i. **`canAddAlternatives`** üç aşama sonra bir kontrole kavuştu.
+**Aşama 4'ün sekizi (09-11) ve backend beklemeyen beş iş (09-12) indi** — Faz G'nin cümle kutusu, üç şablon + Katman B, `/applications`, DOCX, `/unsubscribe`, SEO, axe taraması, tema, `canAddAlternatives`. Satır satır `handoff/resolved/to-frontend-2026-09.md` ve `notes/archive/stage-4.md`'de.
 
 **⚠ axe paleti görmüyor.** Token'lar `oklch`, Tailwind'in alfası `oklab(… / α)`'ya derleniyor, ve axe böyle bir arka planlı düğümü **ne ihlal ne `incomplete`** sayar — düşürür. Koyu temada 3.16'da duran bir düğme taramayı sessizce geçti. `palette.test.ts` artık çiftleri hesapla ölçüyor, hover dahil. Backend'in kendi a11y/kontrast denetimi varsa aynı tuzağa bakmaya değer.
 
 **Güvenlik:** `next` 16.3.0 iki **kritik** RCE uyarısının aralığındaydı (Windows sunucu; AVIF/görüntü optimizasyonu). 16.3.5'e çıkıldı, kalan yedisi geliştirme zinciriydi, **sıfır açık**. CI action'ları `@v5` — yalnız push'ta doğrulanabilir.
 
-**Test:** 971 birim · 77 e2e · **bundle** profil 258.6 / ayarlar 243.8 / üretim 227.5 / onboarding 221.6 / başvurular 216.6 / geçmiş 215.5 / landing ve nasıl-çalışıyor 168.8 KB (tavan: pazarlama 200, uygulama 280) · `npm audit` sıfır açık
+**Denetim — üç yüzey ekranda yoktu (2026-09-21).** **Veri export** (JSON + Markdown; üç kullanıcıya görünen cümle onu vaat ediyordu, § 58.2 "en önemli güvence" diyor, EK C.1'de yayın kutusu var — istemci fonksiyonları iki aşamadır çağrılmıyordu). **Çıktı dili** (§ 38.1'in üçüncü ekseni: `GenerationRequest.language` gönderilmiyor, `defaults.cvLanguage`/`coverLetterLanguage` okunmuyordu). **Yazım stili** (`writingStyle`'ın dördü de). Uygularken dördüncüsü çıktı: **`defaults.maxPages`** hiçbir yerde düzenlenemiyordu. Hepsi indi; kayıt `notes/current.md`.
+
+**Test:** 989 birim · 77 e2e · **bundle** profil 258.9 / ayarlar 245.9 / üretim 229.5 / onboarding 224.0 / başvurular 216.6 / geçmiş 215.5 / landing ve nasıl-çalışıyor 168.8 KB (tavan: pazarlama 200, uygulama 280) · `npm audit` sıfır açık
 
 ## Açık kararlar
 
@@ -53,8 +53,8 @@ _Daha önce kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedel
 
 ## Sonraki senkronizasyon noktası
 
-**Üçü de karşılandı (2026-09-21).** `B-117` kod yazdırmadı — dördü de D6/D12'de inmişti. `B-118`: sonuç ekranı ve geçmiş satırı `pageCount`'u **o üretimin** `maxPages`'ine karşı okuyor (alan yoksa not yok), bayat bir `customizationId`'nin `404`'ünde ölü seçim düşüyor ve liste tazeleniyor. `B-119`: `choose_language` artık çiziliyor, cevap bir sonraki yüklemenin `language`'ında gidiyor; seçicinin listesinin iki yarısı da sunucunun. **`gen:api` şemayı değiştirmedi — çünkü `:8080`'deki derleme bayattı**; tipler backend'in commit'li `openapi.json`'ından üretildi, CI'ın `contract-check`'inin çektiği dosyadan. Yeniden başlatılan sunucuya karşı `gen:api` **bayt bayt aynı** dosyayı verdi, ve `language`'ın kapıdaki yeri üç sondayla ölçüldü — **413 → `400` → 409 → 415**, mock düzeltildi. **Açık madde yok; sıra backend'in bir sonraki turunda.**
+**Sıra backend'de: `F-041`…`F-045`.** Dördü sizin sahip olduğunuz metin — `fontFamily`'nin sözlüğü yayımlanmıyor (§ 38.5 dört yazı tipi sayıyor, arayüz üçünü sunuyor, alan düz `string` olduğu için **hiçbir typecheck göremiyor**, `two_column`'un şekli); `INDEX.md` bu repoda olmayan `vps-dagitim-plani.md` ile `sync-spec.sh`'e yönlendiriyor; § 31.6.5 "altı uyarı kodu" diyor, şema yedi yayımlıyor; EK C.5 `app.name` anahtarı varsayıyor, inen şey tek bir `APP_NAME` sabiti. **Biri gerçek bir tel sorusu:** `CoverLetterRequest` bir `language` almıyor, oysa § 10.1 "CV ve cover letter için ayrı seçim" diyor — CV tarafı indi, cover letter yalnız varsayılandan geliyor. Alan gelmeden düğme çizilmez.
 
-**Açık duran tek şey `B-101`'in `contract-check`'i** ve ikimizde de yapılmadı. `F-038`'in dört boşluğunu tam olarak o yakalardı; bu tur onları elle kapattı, muhafızı değil.
+**`B-117`…`B-119` ve `F-031`…`F-040` arşivlendi.** `to-backend.md` 142 → 98 satır; satır satır `resolved/to-backend-2026-09.md`'de. `B-101`'in `contract-check`'i CI'da ve `main/openapi.json`'ı çekiyor — backend'in commit'li şeması bizim tiplerimizle birebir.
 
-**Frontend'den dört madde açılmıştı — `F-037`, `F-038`, `F-039`, `F-040`; dördü de aynı gün karşılandı (yukarı bak), `B-117`…`B-119` bekliyor.** Kapanış sırası D1…D14 bitti ve **`B-100`…`B-116` ACK'lendi**: `to-frontend.md` 347 → 43 satır, satır satır `resolved/to-frontend-2026-09.md`'de. `B-101`'in `contract-check`'i CI'da ve `main/openapi.json`'ı çekiyor — yerelde koşuldu, backend'in commit'li şeması bizim tiplerimizle birebir. Yeni yüzeyin hepsi **gerçek uca karşı** doğrulandı (MSW kapalı, 2026-09-20); üç fark çıktı ve üçü de mock'a ya da `F-040`'a yazıldı.
+**Sentry bir karara bağlandı, ve bağlanmamış olması bulgunun kendisiydi.** § 5.7 onu seçiyor, EK C.1'de kutusu var, frontend'de hiç yoktu ve hiçbir yerde "yapılmayacak" yazmıyordu. Analitikle aynı gerekçeyle ertelendi — gönderilecek yer yokken yazılan kod, çalıştığını hiç görmeyeceğimiz bir bakım yükü — ve dağıtım günü listesine girdi.
