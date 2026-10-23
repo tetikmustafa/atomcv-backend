@@ -60,15 +60,21 @@ public class ProfileExtractionJobHandler implements JobHandler {
 
     /**
      * A phase name a client can render, not a percentage invented per line.
+     *
+     * <p>The label is a translation key, as {@code GenerationPhase}'s is. It
+     * was an English sentence, and the frontend ignored it on purpose and
+     * drew one generic caption for the whole import: a sentence the client
+     * cannot translate is a sentence it cannot show to a Turkish reader, so
+     * the bar never said which step it was on.
      */
     private static final JobProgress READING =
-            new JobProgress("structuring", "Reading your CV", 20);
+            new JobProgress("structuring", "import.phase.STRUCTURING", 20);
 
     private static final JobProgress ORGANISING =
-            new JobProgress("normalizing", "Organising what it found", 70);
+            new JobProgress("normalizing", "import.phase.NORMALIZING", 70);
 
     private static final JobProgress SAVING =
-            new JobProgress("saving", "Saving your profile", 90);
+            new JobProgress("saving", "import.phase.SAVING", 90);
 
     private final ProfileStructuring structuring;
     private final ProfileNormalizer normalizer;

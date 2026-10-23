@@ -138,6 +138,11 @@ class ProfileExtractionJobHandlerTest {
         assertThat(reported).extracting(JobProgress::phase)
                 .containsExactly("structuring", "normalizing", "saving");
         assertThat(reported).extracting(JobProgress::pct).isSorted();
+        // Keys, not sentences — the frontend owns the words (B-122). An
+        // English sentence here is one the client cannot show a Turkish reader.
+        assertThat(reported).extracting(JobProgress::label)
+                .containsExactly("import.phase.STRUCTURING", "import.phase.NORMALIZING",
+                        "import.phase.SAVING");
     }
 
     /**

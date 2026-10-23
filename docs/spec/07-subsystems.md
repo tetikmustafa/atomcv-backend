@@ -1168,10 +1168,15 @@ frontend'in ICU mesajını kurduğu şey `code`. Hiçbir entry adlamayan bir uya
 (modelin kendi kaldırdıklarından bazıları) kodu ile ve konumsuz gidiyor —
 "bu belge hakkında bir şey" hâlâ sayılmaya değer.
 
-**Cevap — içe aktarma işi `phase`/`label` göndermiyor.** Üretimin
-`generation.phase.*` kataloğunun karşılığı yok; iş yalnız `pct` gönderiyor ve
-ekranın kendi cümlesini yazması **doğru davranış**. Uydurulmuş bir anahtar
-kümesi, çevrilecek ama hiç değişmeyecek altı satır olurdu.
+**Düzeltme — içe aktarma işi üç faz bildiriyor, ve `label`'ı bir anahtar**
+(`B-122`, 2026-10-23). Bu paragraf "iş `phase`/`label` göndermiyor, yalnız
+`pct`" diyordu; kod `structuring` → `normalizing` → `saving` bildiriyordu,
+`label`'a da **İngilizce cümleler** yazarak ("Reading your CV"…). Frontend
+cümleyi bilerek yok sayıp tek bir genel başlık çiziyordu — yani çubuk hangi
+adımda olduğunu hiç söylemedi, ve paragrafın "uydurulmuş anahtar kümesi"
+itirazı gerçek, ölçülmüş üç adım için geçerli değildi. Artık
+`import.phase.STRUCTURING` / `NORMALIZING` / `SAVING`, üretimin
+`generation.phase.*` deseniyle; muhafızı `ProfileExtractionJobHandlerTest`.
 
 #### 31.6.5 Kararlar (`F-023`) — sözlük yayımlanmadan mesaj yazılamıyor
 
