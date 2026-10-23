@@ -4391,6 +4391,14 @@
             "example" : "Lead with the platform work rather than the ML.",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "keepPinned" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The answer to a `keep_top_pinned` resolution: carry only the\nmost relevant `keepPinned` of the profile's pinned atoms on\nthis one CV. The rest are not dropped -- they compete for the\npage like any other atom. Send the `params.keep` the refusal\noffered. Absent forces every pin, which is the ordinary case.\n\nIt changes nothing on the profile: a pin outlives this\ngeneration, the cap does not.",
+            "example" : 3,
+            "maximum" : 500,
+            "minimum" : 0
           }
         }
       },
@@ -4513,6 +4521,12 @@
             "example" : "They open-sourced their scheduler last year.",
             "maxLength" : 2000,
             "minLength" : 0
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "The letter's language, as an ISO 639-1 code — one of `capabilities.allowedLanguages`. Omitted, the profile's `defaults.coverLetterLanguage` decides, and its `auto` follows the posting.",
+            "example" : "en",
+            "pattern" : "^[a-z]{2}$"
           }
         }
       },

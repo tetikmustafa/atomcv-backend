@@ -23,6 +23,38 @@ eski satırlardaki `SANS` `sans` olarak okunuyor.
 dördüncü değer (`book`, Pagella) seçiciye. Eski büyük harfli değerle
 karşılaştıran bir kod varsa küçük harfe.
 
+### B-121 · `CoverLetterRequest.language` (`F-045`'in cevabı)
+
+**Since:** `feat/cover-letter-language` · § 34.6
+**Neden:** Konsept § 10.1 "CV ve cover letter için ayrı seçim" diyor; letter'ın
+dili yalnız `defaults.coverLetterLanguage`'ten geliyordu.
+**Action:** `POST …/cover-letter/regenerate` gövdesinde opsiyonel `language`
+(ISO 639-1). Liste `capabilities.allowedLanguages` — dışındaki kod
+`400 VALIDATION_FAILED`, `fields:["language"]`. Gönderilmezse profilin
+varsayılanı. Kapı sırası: `403` (anonim) → `400` (`language`) → `404` → `429`.
+
+### B-122 · İçe aktarma fazlarının `label`'ı artık çeviri anahtarı
+
+**Since:** `feat/import-phase-keys` · § 30, § 31.6.1
+**Neden:** `PROFILE_EXTRACTION` işi `label`'a İngilizce cümle yazıyordu
+("Reading your CV"…); frontend onu bilerek yok sayıp tek bir genel başlık
+çiziyordu, yani çubuk hangi adımda olduğunu hiç söylemedi. Üretimin
+`generation.phase.*` deseni.
+**Action:** `import.phase.STRUCTURING`, `import.phase.NORMALIZING`,
+`import.phase.SAVING` — en/tr çeviriler ve `ImportScreen`'in ilerleme satırı.
+`phase` alanı değişmedi (`structuring`, `normalizing`, `saving`).
+
+### B-123 · `keep_top_pinned` artık gönderilebilir: `GenerationRequest.keepPinned`
+
+**Since:** `feat/keep-top-pinned` · § 35 (08-api, `CONFLICTING_PREFERENCES`), 08b
+**Neden:** Resolution "daraltılmış kümeyle yeniden gönder" diyordu ve şemada
+daraltılmış kümeyi taşıyacak alan yoktu — düğmeyi çizmemeniz doğruydu.
+**Action:** `keep_top_pinned` düğmesini çizin; basılınca **aynı isteği**
+`keepPinned: params.keep` ile yeniden gönderin (`maxPages`'in
+`increase_page_limit`'te gittiği gibi). Genel modda da çalışıyor. Hâlâ
+sığmazsa yeni ret daha küçük bir `keep` önerir; hiç sabit yoksa düğme gelmez.
+`GenerateScreen` ve `ErrorPanel`'deki düşürme kaldırılabilir.
+
 **`B-117`, `B-118`, `B-119` ACK'lendi ve indi** (2026-09-21), geldikleri
 günün ertesi. Üçü de `resolved/to-frontend-2026-09.md`'de, ne yapıldığıyla
 birlikte; gerekçeleri `notes/current.md`'de.
