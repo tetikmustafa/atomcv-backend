@@ -383,6 +383,19 @@ seçilenler yazılıyor, ve burada uydurmak Faz B'yi yeniden koşturmak olurdu �
 }
 ```
 
+> **`keep_top_pinned`'in gidecek bir alanı yoktu** (`B-123`, 2026-10-23). Sözlük
+> "daraltılmış kümeyle yeniden gönder" diyordu ve şema daraltılmış kümeyi
+> taşıyacak hiçbir alan yayımlamıyordu; frontend düğmeyi iki aşama boyunca
+> **bilerek çizmedi**, çünkü basılınca aynı reddi geri alırdı. Şimdi
+> `GenerationRequest.keepPinned`: en yüksek skorlu N sabit zorunlu kalır,
+> kalanı **düşmez**, sayfa için sıradan bir atom gibi yarışır. Profil
+> değişmez — sabit profilin, sınır bu tek belgenin (`GenerationDirectives`,
+> düzenlemeler onu taşır). `params.keep` artık sabitleri, Faz C'nin bütçe
+> kontrolünün okuduğu toplamla sayıyor: eski sayım bölüm başlıklarını ve
+> entry satırlarını atlıyordu, yani önerdiği sınır **yine reddediliyordu**. Zaten
+> sınırlanmış ve hâlâ sığmayan bir koşu bir eksiğini alır (aynı ret asla geri
+> dönmez); hiç sabit yoksa düğme önerilmez.
+
 **Sunucu çeviri anahtarı gönderir, metin değil.** Frontend `errors.CONFLICTING_PREFERENCES` anahtarını kendi dilinde çözer. `resolutions` dizisinden butonlar otomatik üretilir.
 
 > **Frontend (EK D.9 · 7, 10-11).** Tam katalog **repo kökündeki

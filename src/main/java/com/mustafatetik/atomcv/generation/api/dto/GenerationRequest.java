@@ -104,7 +104,20 @@ public record GenerationRequest(
                 content. At most 500 characters.""",
                 example = "Lead with the platform work rather than the ML.")
         @Size(max = 500)
-        String note) {
+        String note,
+
+        @Schema(description = """
+                The answer to a `keep_top_pinned` resolution: carry only the
+                most relevant `keepPinned` of the profile's pinned atoms on
+                this one CV. The rest are not dropped -- they compete for the
+                page like any other atom. Send the `params.keep` the refusal
+                offered. Absent forces every pin, which is the ordinary case.
+
+                It changes nothing on the profile: a pin outlives this
+                generation, the cap does not.""",
+                example = "3", minimum = "0")
+        @Min(0) @Max(500)
+        Integer keepPinned) {
 
     /** Never null downstream: absent and empty mean the same thing here. */
     @JsonIgnore

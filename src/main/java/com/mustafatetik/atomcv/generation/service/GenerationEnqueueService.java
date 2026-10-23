@@ -87,6 +87,30 @@ public class GenerationEnqueueService {
             String freeformNote,
             String idempotencyKey) {
 
+        return enqueue(owner, allowance, owned, jobDescription, preflightAcknowledged,
+                maxPages, language, coverLetter, emphasize, customizationId, freeformNote,
+                null, idempotencyKey);
+    }
+
+    /**
+     * @param keepPinned the answer to a {@code keep_top_pinned} refusal, or
+     *                   null to force every pin
+     */
+    public Result<Job> enqueue(
+            JobOwner owner,
+            QuotaSubject allowance,
+            ProfileResolver.OwnedProfile owned,
+            String jobDescription,
+            boolean preflightAcknowledged,
+            Integer maxPages,
+            String language,
+            boolean coverLetter,
+            java.util.List<String> emphasize,
+            java.util.UUID customizationId,
+            String freeformNote,
+            Integer keepPinned,
+            String idempotencyKey) {
+
         Optional<Job> already = jobs.findByIdempotencyKey(owner, idempotencyKey);
         if (already.isPresent()) {
             // Answered with the job that already exists, not with a conflict:
@@ -139,7 +163,7 @@ public class GenerationEnqueueService {
         var job = new Job(JobType.GENERATION, owner.userId(),
                 new GenerationPayload(jobDescription, preflightAcknowledged, maxPages,
                         language, coverLetter, emphasize, customizationId, freeformNote,
-                        allowance).toMap(),
+                        keepPinned, allowance).toMap(),
                 clock.instant());
         job.setAnonSessionId(owner.anonSessionId());
         job.setIdempotencyKey(idempotencyKey);

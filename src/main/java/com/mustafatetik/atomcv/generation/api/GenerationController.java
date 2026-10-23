@@ -222,7 +222,7 @@ public class GenerationController {
                 request.jobDescription(), request.acknowledged(),
                 request.maxPages(), request.language(), request.wantsCoverLetter(),
                 request.emphasizeOrEmpty(), request.customizationId(), request.note(),
-                idempotencyKey);
+                request.keepPinned(), idempotencyKey);
 
         Job job = switch (queued) {
             case Result.Ok<Job> ok -> ok.value();

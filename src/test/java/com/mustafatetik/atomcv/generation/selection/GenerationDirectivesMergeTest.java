@@ -80,9 +80,34 @@ class GenerationDirectivesMergeTest {
                 List.of(FIRST), List.of(SECOND), List.of("microservices"), "keep it short")
                 .asMap();
 
-        assertThat(stored).containsOnlyKeys("includeAtoms", "excludeAtoms", "emphasize", "freeformNote");
+        assertThat(stored).containsOnlyKeys(
+                "includeAtoms", "excludeAtoms", "emphasize", "freeformNote", "keepPinned");
         assertThat(stored.get("includeAtoms")).isEqualTo(List.of(FIRST.toString()));
         assertThat(stored.get("emphasize")).isEqualTo(List.of("microservices"));
+    }
+
+    /** The keep_top_pinned answer survives the column, and a row without it means "all". */
+    @Test
+    void thePinCapRoundTripsAndItsAbsenceMeansAllOfThem() {
+        var capped = GenerationDirectives.steering(List.of(), null, 3);
+
+        assertThat(GenerationDirectives.fromMap(capped.asMap()).keepPinned()).isEqualTo(3);
+        assertThat(GenerationDirectives.fromMap(
+                Map.of("includeAtoms", List.of(FIRST.toString()))).keepPinned()).isNull();
+    }
+
+    /**
+     * An edit on a CV made with three pins is an edit on that CV: putting
+     * every pin back would return the conflict the person already answered.
+     */
+    @Test
+    void anEditKeepsTheCapItWasMadeWith() {
+        var made = GenerationDirectives.steering(List.of(), null, 3);
+
+        var edited = made.and(new GenerationDirectives(List.of(FIRST), List.of()));
+
+        assertThat(edited.keepPinned()).isEqualTo(3);
+        assertThat(edited.includeAtoms()).containsExactly(FIRST);
     }
 
     /**

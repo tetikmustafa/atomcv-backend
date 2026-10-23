@@ -28,7 +28,7 @@ Bölüm 11.5 ve 11.8 ikisini düzyazıyla anlatıp adlandırmıyor. Tam küme:
 |---|---|---|
 | `increase_page_limit` | `maxPages`'i `params.maxPages`'e yükselt | Yeni seçenekle yeniden gönder |
 | `review_pins` | Sabitlenmiş içerik incelemesini aç | Profile git, sabitlere filtrele |
-| `keep_top_pinned` | En iyi `params.keep` sabiti tut | Daraltılmış kümeyle yeniden gönder |
+| `keep_top_pinned` | En iyi `params.keep` sabiti tut | Aynı isteği `keepPinned: params.keep` ile yeniden gönder (`B-123`) |
 | `sign_up` | Özellik hesap gerektiriyor | Kayda git, durumu koru |
 | `paste_full_posting` | İlan metni yetersizdi | İlan alanına odaklan |
 | `continue_as_general_cv` | İlansız devam | Boş `jobDescription` ile yeniden gönder |

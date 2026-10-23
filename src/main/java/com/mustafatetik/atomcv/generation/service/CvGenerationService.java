@@ -1,6 +1,7 @@
 package com.mustafatetik.atomcv.generation.service;
 
 import com.mustafatetik.atomcv.compilation.CompilationException;
+import com.mustafatetik.atomcv.generation.selection.GenerationDirectives;
 import com.mustafatetik.atomcv.generation.pipeline.ContentRewriter;
 import com.mustafatetik.atomcv.generation.pipeline.GenerationPipeline;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
@@ -75,6 +76,17 @@ public class CvGenerationService {
      */
     public Result<GeneratedGeneration> generateGeneralCv(
             UserContext user, Integer maxPages, String language, ProgressSink progress) {
+        return generateGeneralCv(user, maxPages, language, null, progress);
+    }
+
+    /**
+     * @param keepPinned the answer to a {@code keep_top_pinned} refusal, or
+     *                   null to force every pin. General mode has pins too,
+     *                   and a refusal it offered a way out of must accept it
+     */
+    public Result<GeneratedGeneration> generateGeneralCv(
+            UserContext user, Integer maxPages, String language, Integer keepPinned,
+            ProgressSink progress) {
 
         var owned = profiles.owned(user);
         Profile head = owned.profile();
@@ -140,7 +152,12 @@ public class CvGenerationService {
 
         // No posting, so no Faz D: the tiers are Faz B scores, and there is
         // nothing here to be relevant to.
-        return pipeline.run(head, tree, built.request().withBudgetFactor(resolved.budgetFactor()),
+        var request = built.request().withBudgetFactor(resolved.budgetFactor());
+        if (keepPinned != null) {
+            request = request.withDirectives(
+                    GenerationDirectives.steering(List.of(), null, keepPinned));
+        }
+        return pipeline.run(head, tree, request,
                         ContentRewriter.none(),
                         options.customization(), options.locale())
                 // No posting and no Faz B: both are null, and the record says

@@ -30,15 +30,26 @@ import java.util.UUID;
  */
 public record GenerationDirectives(
         List<UUID> includeAtoms, List<UUID> excludeAtoms, List<String> emphasize,
-        String freeformNote) {
+        String freeformNote,
+        /*
+         * How many of the profile's pins this document must carry, or null for
+         * all of them: the answer to keep_top_pinned (the concept's 11.4,
+         * "continue with the most relevant N"). The highest-scoring pins stay
+         * forced; the rest compete for the page like any atom. A pin is a
+         * property of the profile and outlives this run; the cap is a
+         * statement about one document, which is why it lives here and does
+         * not touch always_include.
+         */
+        Integer keepPinned) {
 
     private static final GenerationDirectives NONE =
-            new GenerationDirectives(List.of(), List.of(), List.of(), null);
+            new GenerationDirectives(List.of(), List.of(), List.of(), null, null);
 
     private static final String INCLUDE = "includeAtoms";
     private static final String EXCLUDE = "excludeAtoms";
     private static final String EMPHASIZE = "emphasize";
     private static final String NOTE = "freeformNote";
+    private static final String KEEP_PINNED = "keepPinned";
 
     /**
      * Long enough for a sentence or three, short enough that it is not a
@@ -62,6 +73,9 @@ public record GenerationDirectives(
         excludeAtoms = distinct(excludeAtoms);
         emphasize = terms(emphasize);
         freeformNote = note(freeformNote);
+        if (keepPinned != null && keepPinned < 0) {
+            throw new IllegalArgumentException("keepPinned is a count, was " + keepPinned);
+        }
 
         // An atom cannot be both asked for and refused. The parse in Faz G and
         // the toggle endpoint both have to answer this before it gets here --
@@ -80,19 +94,31 @@ public record GenerationDirectives(
         return NONE;
     }
 
+    /** Every directive but the pin cap, which nearly no run carries. */
+    public GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAtoms,
+            List<String> emphasize, String freeformNote) {
+        this(includeAtoms, excludeAtoms, emphasize, freeformNote, null);
+    }
+
     /** The two-id form, for the callers that only move atoms (Faz G, the toggle). */
     public GenerationDirectives(List<UUID> includeAtoms, List<UUID> excludeAtoms) {
-        this(includeAtoms, excludeAtoms, List.of(), null);
+        this(includeAtoms, excludeAtoms, List.of(), null, null);
     }
 
     /** What a person asked for about this one generation. */
     public static GenerationDirectives steering(List<String> terms, String note) {
-        return new GenerationDirectives(List.of(), List.of(), terms, note);
+        return steering(terms, note, null);
+    }
+
+    /** The same, and the pin cap a {@code keep_top_pinned} answer carries. */
+    public static GenerationDirectives steering(
+            List<String> terms, String note, Integer keepPinned) {
+        return new GenerationDirectives(List.of(), List.of(), terms, note, keepPinned);
     }
 
     public boolean isEmpty() {
         return includeAtoms.isEmpty() && excludeAtoms.isEmpty() && emphasize.isEmpty()
-                && freeformNote == null;
+                && freeformNote == null && keepPinned == null;
     }
 
     /**
@@ -129,6 +155,7 @@ public record GenerationDirectives(
         stored.put(EXCLUDE, excludeAtoms.stream().map(UUID::toString).toList());
         stored.put(EMPHASIZE, emphasize);
         stored.put(NOTE, freeformNote);
+        stored.put(KEEP_PINNED, keepPinned);
         return stored;
     }
 
@@ -137,9 +164,12 @@ public record GenerationDirectives(
         if (stored == null || stored.isEmpty()) {
             return NONE;
         }
+        // Absent on every row written before the cap existed, and absent is
+        // "all of them", which is what those rows were made with.
         return new GenerationDirectives(
                 idsIn(stored, INCLUDE), idsIn(stored, EXCLUDE), termsIn(stored),
-                stored.get(NOTE) == null ? null : String.valueOf(stored.get(NOTE)));
+                stored.get(NOTE) == null ? null : String.valueOf(stored.get(NOTE)),
+                stored.get(KEEP_PINNED) instanceof Number kept ? kept.intValue() : null);
     }
 
     /** This, plus one more edit. An edit is the sum of the edits before it. */
@@ -167,9 +197,13 @@ public record GenerationDirectives(
         // The later note wins when there is one, and silence keeps the
         // standing one: an edit that says nothing about wording has not
         // withdrawn what the person asked for when they made this CV.
+        // The cap the same way: an edit on a CV made with three pins is an
+        // edit on that CV, and silently putting every pin back would bring
+        // back the conflict the person already answered.
         return new GenerationDirectives(
                 List.copyOf(included), List.copyOf(excluded), List.copyOf(emphasised),
-                later.freeformNote == null ? freeformNote : later.freeformNote);
+                later.freeformNote == null ? freeformNote : later.freeformNote,
+                later.keepPinned == null ? keepPinned : later.keepPinned);
     }
 
     /**
