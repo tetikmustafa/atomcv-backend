@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Boot's own console output, unchanged, plus one appender that hands each event
+  to OpenTelemetry (EK C.1 "Axiom log akışı").
+
+  The appender is inert until OpenTelemetryLogsConfig installs the SDK, and the
+  SDK exports nothing until management.otlp.logging is enabled with a URL, so
+  locally and in every test this is the console and nothing else.
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="OTEL"
+              class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <!-- MDC carries the request id and job id, never content (absolute rule 4). -->
+        <captureMdcAttributes>*</captureMdcAttributes>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="OTEL"/>
+    </root>
+</configuration>
