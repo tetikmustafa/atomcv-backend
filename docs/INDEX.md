@@ -1,6 +1,6 @@
 # AtomCV — Spec Index
 
-**Ürün:** AtomCV *(ad hâlâ geçici)* · **Domain:** `atomcv.mustafatetik.com` — **ilk yayın bu alt alan adında** (karar: 2026-09-16, `vps-dagitim-plani.md` § 0)
+**Ürün:** AtomCV *(ad hâlâ geçici)* · **Domain:** `atomcv.mustafatetik.com` — **ilk yayın bu alt alan adında** (karar: 2026-09-16, `vps-dagitim-plani.md` § 0 — `atomcv-backend`'de)
 **Repolar:** `atomcv-backend` (Java/Spring) · `atomcv-frontend` (Next.js)
 
 ---
@@ -133,7 +133,7 @@ Toplam ~740 satır sabit maliyet. Gerisi göreve göre.
 | Aşama 3 — Hesap ve MVP (adımlar) | `spec/14-build-guide.md` § XI-A.6 |
 | Aşama içerikleri, süre tahmini, gerekçe | `spec/13-development.md` § 55 |
 | Günlük geliştirme akışı | `spec/14-build-guide.md` § XI-A.8 |
-| **VPS: kararlar, adım adım kurulum, sunucu bekleyen işler** | **`docs/vps-dagitim-plani.md`** |
+| **VPS: kararlar, adım adım kurulum, sunucu bekleyen işler** | **`docs/vps-dagitim-plani.md`** — yalnız `atomcv-backend`'de, senkronize edilmez |
 | VPS adımlarının ilk taslağı (gerekçe) | `spec/14-build-guide.md` § XI-A.4 |
 | Sık karşılaşılan sorunlar | `spec/14-build-guide.md` § XI-A.9 |
 | Repo yapısı, klasör ağacı | `spec/15-repos-and-claude.md` § XI-B.2, XI-B.3 |
@@ -157,8 +157,8 @@ Toplam ~740 satır sabit maliyet. Gerisi göreve göre.
 | `docs/STATUS.md` | ortak | ✅ iki yönlü |
 | `docs/handoff/**` | ortak | ✅ **gerçek iletişim kanalı** |
 | `docs/notes/**` | her repo kendi | ❌ repo-yerel |
-| `docs/vps-dagitim-plani.md` | backend repo | ❌ **senkronize değil** — sunucu bu repoya ait |
+| `docs/vps-dagitim-plani.md` | backend repo | ❌ **senkronize değil** — sunucu backend reposuna ait; frontend'den okuyan `../atomcv-backend/docs/`'a bakar |
 
-**Spec'i yalnız backend reposunda düzenle.** Frontend'deki kopya `scripts/sync-spec.sh` ile güncellenir; orada yapılan düzenleme bir sonraki senkronda kaybolur.
+**Spec'i yalnız backend reposunda düzenle.** Frontend'deki kopya `atomcv-backend`'deki `scripts/sync-spec.sh` ile güncellenir (betik frontend'de yok); orada yapılan düzenleme bir sonraki senkronda kaybolur.
 
 Frontend bir spec değişikliği gerekiyorsa `handoff/to-backend.md`'ye madde yazar.

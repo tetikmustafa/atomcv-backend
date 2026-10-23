@@ -36,9 +36,10 @@ public class GenerationRepository extends UserScopedRepository<Generation> {
      *
      * <p>Two generations of the same profile a second apart is ordinary — Faz
      * G's edit loop does exactly that — and {@code created_at} alone leaves
-     * their order to the database. The cursor pagination arrives with the
-     * listing endpoint; the limit is here so nothing accidentally loads a year
-     * of history to show ten rows.
+     * their order to the database. The listing endpoint pages with a cursor
+     * of its own ({@code GenerationPage}); this unpaged read is what the
+     * record's own tests ask, and the limit is here so nothing accidentally
+     * loads a year of history to show ten rows.
      */
     public List<Generation> findRecent(UserContext user, int limit) {
         return jpa.findByUserIdAndStatusNotOrderByCreatedAtDescIdDesc(
