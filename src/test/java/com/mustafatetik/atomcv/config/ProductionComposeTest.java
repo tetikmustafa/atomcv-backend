@@ -127,6 +127,35 @@ class ProductionComposeTest {
                 .contains("resolver 127.0.0.11");
     }
 
+    /**
+     * EK C.1's "log rotation is set". Docker's json-file driver keeps a log
+     * forever unless told otherwise, so a service added without this line is
+     * a disk filling slowly on a machine nobody is watching. SnakeYAML
+     * resolves the anchor, so this reads what compose will.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void everyServicesLogIsRotated() {
+        services().forEach((name, definition) -> {
+            var logging = (Map<String, Object>) ((Map<String, Object>) definition).get("logging");
+            assertThat(logging).as("%s keeps its log forever", name).isNotNull();
+            assertThat((Map<String, Object>) logging.get("options"))
+                    .as("%s's log has no size cap", name)
+                    .containsKeys("max-size", "max-file");
+        });
+    }
+
+    /**
+     * NEXT_PUBLIC_* is inlined when the frontend image is built; set at run
+     * time it changes nothing, and the name this file used to set was one the
+     * frontend never read.
+     */
+    @Test
+    void theFrontendIsNotGivenBuildTimeValuesAtRunTime() {
+        assertThat(String.valueOf(service("frontend").get("environment")))
+                .doesNotContain("NEXT_PUBLIC_");
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Object> services() {
         return (Map<String, Object>) document().get("services");
