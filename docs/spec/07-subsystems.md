@@ -1203,11 +1203,19 @@ düşen bir uyarı `warningCount == warnings.length` iddiasını bozardı. Kod t
 gidiyor; kapalı bir sözlüğü **kapalı olduğunu bilerek açık okuyan** istemci
 kendi genel cümlesine düşüyor.
 
-**Muhafızın okuduğu altı değer elle yazılı.** `ExtractionWarningCode.values()`
-üzerinden türetilmiş bir test, kimseye söylenmeden eklenmiş yedinci bir değere
-de "evet" derdi — oysa yedinci değer, karşı reponun mesajını yazmadan önce
+**Muhafızın okuduğu değerler elle yazılı — bugün yedi.** `ExtractionWarningCode.values()`
+üzerinden türetilmiş bir test, kimseye söylenmeden eklenmiş yeni bir değere de
+"evet" derdi — oysa yeni bir değer, karşı reponun mesajını yazmadan önce
 duyması gereken bir tel değişikliği. Testin düşmesi, handoff maddesinin
 hatırlatıcısı.
+
+> **Yedincisi `unsupported_by_source`** (`F-043`, 2026-10-23). Bölüm "altı
+> değer" diye yazılmıştı ve yedinci indiğinde güncellenmedi; sayıyı tutmayan
+> bir gerekçe bayat görünüyordu. Altısını model bildiriyor, yedincisini
+> normalizasyon (`ExtractionFidelity`): bir madde, yüklenen belgede geçmeyen
+> bir şeyi adlandırıyor — "SQL" yazan CV'den "SQL Server" çıkaran çıkarım.
+> Ret değil uyarı, çünkü gözden geçirme ekranı tam bunu düzeltmek için var.
+> `OpenApiSchemaIT` yedisini sayıyor ve frontend yedisini de karşılıyor.
 
 #### 31.6.1 Kararlar (Adım 3.4, dilim 4)
 

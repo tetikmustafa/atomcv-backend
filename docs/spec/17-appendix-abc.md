@@ -152,7 +152,8 @@ OPERASYON
 ```
 KOD
 □ Java paket adı: com.mustafatetik.atomcv → yeni ad (IDE refactor)
-□ frontend i18n: messages/*.json → app.name anahtarı
+□ frontend: src/lib/seo.ts → APP_NAME sabiti (çevrilmiyor; adı anan
+  cümleler {appName} ICU argümanı alıyor — F-044, 2026-10-23)
 □ package.json → name alanı
 □ README.md, CHANGELOG.md başlıkları
 

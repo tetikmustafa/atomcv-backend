@@ -84,11 +84,11 @@ import org.springframework.web.bind.annotation.RestController;
  * /generations/general} is gone — it existed because there was no queue and no
  * generation record, and both now exist.
  *
- * <p><strong>Stage 1 only, and synchronous.</strong> {@code POST /generations}
- * answers 202 with a job to follow, because a generation with an LLM in it
- * takes half a minute. General mode has no LLM and no queue yet: this returns
- * the document itself, and nothing is stored. The queued contract arrives with
- * the generation record in Stage 2.
+ * <p><strong>Both modes are queued.</strong> {@code POST /generations}
+ * answers 202 with a job to follow, posting or not: a generation with an LLM
+ * in it takes half a minute, and general mode — which has none — still
+ * compiles, measures and is recorded like any other, so it takes the same
+ * path rather than a synchronous one of its own.
  */
 @RestController
 @RequestMapping("/api/v1/generations")

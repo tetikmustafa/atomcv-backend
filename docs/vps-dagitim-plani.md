@@ -162,14 +162,14 @@ her birinin ne olduğu yazılı):
 
 | Grup | Anahtarlar |
 |---|---|
-| Temel | `APP_BASE_URL=https://atomcv.mustafatetik.com`, `DEPLOY_ENV=prod` |
+| Temel | `APP_BASE_URL=https://atomcv.mustafatetik.com` (**zorunlu**: yoksa ya da `https` değilse uygulama başlamaz — `PublicBaseUrlCheck`), `DEPLOY_ENV=prod` |
 | Veritabanı | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` |
 | Oturum | `SESSION_COOKIE_DOMAIN`, `SESSION_COOKIE_SECURE=true`, `FORWARD_HEADERS_STRATEGY` |
 | LLM | `OPENROUTER_API_KEY` + `OPENROUTER_MODEL`, ve zincirde kullanılacak diğer sağlayıcılar; `LLM_CHAIN_CHEAP`, `LLM_CHAIN_MID` |
 | Kimlik | `OAUTH_GOOGLE_*`, `OAUTH_GITHUB_*`, `TURNSTILE_SECRET_KEY` |
 | E-posta | `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `EMAIL_FROM`, `EMAIL_FROM_NAME`, `EMAIL_REPLY_TO` |
 | Yedek | `AGE_PUBLIC_KEY`, `BACKUP_REMOTE`, `BACKUP_ARCHIVE_REMOTE`, `BACKUP_KEEP_*` |
-| Gözlem | `SENTRY_DSN`, `OTLP_*` (Axiom), `UMAMI_APP_SECRET` |
+| Gözlem | `SENTRY_DSN`, `OTLP_*` (Axiom — metrikler `OTLP_URL`, loglar `OTLP_LOGS_URL=https://api.axiom.co/v1/logs`), `UMAMI_APP_SECRET` |
 | Maliyet | `ANOMALY_DAILY_BUDGET_USD` |
 
 > **`.env` hem compose'un hem Spring'in okuduğu dosya.** Yerelde bu bir kez
@@ -211,6 +211,34 @@ crontab -e
 > `walarchive` volume'ünde birikiyor ve onları alıp şifreleyip gönderen tek
 > şey bu script. Kurulumun **aynı gününde** ilk koşuyu elle yap ve R2'de
 > dosyaları gör.
+
+**Cron loglarının rotasyonu** (EK C.1 "Log rotasyonu ayarlı"). Konteyner
+logları `docker-compose.prod.yml`'nin `x-logging` bloğuyla döndürülüyor
+(servis başına 5 × 10 MB, `ProductionComposeTest` muhafız); yukarıdaki iki
+cron'un `/var/log/atomcv-*.log` dosyalarını ise yalnız logrotate döndürür:
+
+```bash
+sudo tee /etc/logrotate.d/atomcv > /dev/null <<'ROTATE'
+/var/log/atomcv-*.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
+ROTATE
+sudo logrotate --debug /etc/logrotate.d/atomcv
+```
+
+`copytruncate`: cron her koşuda dosyayı `>>` ile yeniden açıyor, yani sinyal
+gerekmiyor — ama açık tanıtıcıyı tutan bir süreç olsaydı o şart olurdu.
+
+> **Script'lerin çalıştırılabilir biti** (2026-10-23). `backup.sh`,
+> `deploy.sh`, `restore.sh` ve altısı daha git'te `100644` idi; cron ve
+> deploy hattı onları doğrudan çağırıyor, yani ilk gece yedeği ve ilk deploy
+> "Permission denied" alırdı. Hepsi `100755`, muhafızı `ScriptModeTest`.
 
 ### S.7 — Deploy hattı
 
