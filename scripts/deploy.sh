@@ -16,6 +16,9 @@ COMPOSE="docker compose --env-file .env.deploy -f docker-compose.prod.yml"
 HEALTH_URL="http://localhost:8080/actuator/health"
 WARMUP_URL="http://localhost:8080/api/v1/warmup"
 HEALTH_ATTEMPTS=45          # 90 seconds; a cold JVM with Flyway takes ~40
+# Any answer below 500 from the landing page: a redirect to the locale is the
+# ordinary one, and a server that renders at all is a release that started.
+FRONTEND_PROBE="fetch('http://127.0.0.1:3000/',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1),()=>process.exit(1))"
 
 COMPONENT=${1:-}
 NEW_SHA=${2:-}
@@ -39,9 +42,22 @@ write_tag() {
     mv "$tmp" .env.deploy
 }
 
+# Each component is asked about itself. This polled the backend's health for
+# both, so a frontend image that could not start was reported healthy -- the
+# backend was -- and was never rolled back. The frontend publishes no port
+# (nginx reaches it on the compose network), so it is asked from inside its
+# own container, with the node binary the image already runs on.
+probe() {
+    if [ "$COMPONENT" = backend ]; then
+        curl -sf --max-time 3 "$HEALTH_URL" > /dev/null
+    else
+        $COMPOSE exec -T frontend node -e "$FRONTEND_PROBE" > /dev/null 2>&1
+    fi
+}
+
 healthy() {
     for _ in $(seq 1 "$HEALTH_ATTEMPTS"); do
-        if curl -sf --max-time 3 "$HEALTH_URL" > /dev/null; then
+        if probe; then
             return 0
         fi
         sleep 2
