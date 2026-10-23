@@ -169,6 +169,44 @@ class CoverLetterApiIT extends AbstractIntegrationTest {
                 .andExpect(status().isServiceUnavailable());
     }
 
+    /**
+     * F-045: the letter takes a language of its own. A well-formed code the
+     * account cannot write in is refused by name, not written in another
+     * language — the person chose it, and a letter in a different one would
+     * be a silent substitution.
+     */
+    @Test
+    void alanguageTheAccountCannotWriteInIsRefusedByName() throws Exception {
+        mvc.perform(post("/api/v1/generations/" + generationId + "/cover-letter/regenerate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"language\":\"de\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.params.fields[0]").value("language"));
+
+        assertThat(jdbc.queryForObject(
+                "SELECT cover_letter FROM generations WHERE id = ?", String.class, generationId))
+                .isNull();
+    }
+
+    @Test
+    void amalformedLanguageIsRefusedByName() throws Exception {
+        mvc.perform(post("/api/v1/generations/" + generationId + "/cover-letter/regenerate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"language\":\"EN\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.params.fields[0]").value("language"));
+    }
+
+    /** One of the account's languages reaches the writer — here, a provider that is down. */
+    @Test
+    void anaccountLanguageGetsPastTheRequestShape() throws Exception {
+        mvc.perform(post("/api/v1/generations/" + generationId + "/cover-letter/regenerate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"language\":\"tr\"}"))
+                .andExpect(status().isServiceUnavailable());
+    }
+
     private UserContext user() {
         return UserContext.of(LocalDevUser.DEV_USER_ID);
     }

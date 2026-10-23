@@ -694,13 +694,22 @@ public class GenerationController {
             @Valid @RequestBody(required = false) CoverLetterRequest request) {
 
         CoverLetterRequest asked = request == null
-                ? new CoverLetterRequest(null, null)
+                ? CoverLetterRequest.EMPTY
                 : request;
 
         // Ahead of the lookup: a letter is what an account gets, and an
         // anonymous session asking for one is a closed control, not a
         // generation it cannot find (F-030).
         UserContext user = accountFor(AccountFeature.COVER_LETTER);
+
+        // A well-formed code the account cannot write in is the request's
+        // mistake, named the way GenerationRequest.language's is — not a
+        // letter quietly written in another language (F-045).
+        if (asked.language() != null && !coverLetters.writesIn(asked.language())) {
+            throw new ApiException(UserFacingError.with(ErrorCode.VALIDATION_FAILED)
+                    .param("fields", List.of("language"))
+                    .build());
+        }
 
         // Scoped, and it is the IDOR defense on this endpoint too: someone
         // else's generation answers 404, because that an id exists is itself
@@ -719,7 +728,7 @@ public class GenerationController {
 
         Result<CoverLetterDraft> written = coverLetters.rewrite(
                 user, generation, asked.styleOrDefault(),
-                asked.companyNoteOrBlank());
+                asked.companyNoteOrBlank(), asked.language());
 
         CoverLetterDraft draft = switch (written) {
             case Result.Ok<CoverLetterDraft> ok -> ok.value();

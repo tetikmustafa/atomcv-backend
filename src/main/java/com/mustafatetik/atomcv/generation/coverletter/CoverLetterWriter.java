@@ -58,9 +58,33 @@ public class CoverLetterWriter {
             java.util.UUID userId,
             java.util.UUID jobId) {
 
+        return write(profile, tree, selection, posting, companyNote, null, style,
+                bucketKey, userId, jobId);
+    }
+
+    /**
+     * @param language the language this one letter was asked for in (F-045),
+     *                 already checked against the account's languages; null
+     *                 leaves it to the profile's default
+     */
+    public Result<CoverLetterDraft> write(
+            Profile profile,
+            ProfileTree tree,
+            SelectionState selection,
+            JobAnalysis posting,
+            String companyNote,
+            String language,
+            CoverLetterStyle style,
+            String bucketKey,
+            java.util.UUID userId,
+            java.util.UUID jobId) {
+
+        String written = language == null || language.isBlank()
+                ? languageFor(profile, posting)
+                : language;
         CoverLetterInput input = CoverLetterPlanner.plan(
                 profile, tree, selection, posting, companyNote,
-                languageFor(profile, posting), toneOf(profile), LocalDate.now(clock));
+                written, toneOf(profile), LocalDate.now(clock));
         return letters.write(input, style, bucketKey, userId, jobId);
     }
 
