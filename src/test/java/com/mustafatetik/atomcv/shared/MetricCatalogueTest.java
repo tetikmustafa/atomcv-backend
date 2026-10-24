@@ -117,7 +117,8 @@ class MetricCatalogueTest {
             Map.entry("anomaly.signup_burst", "sign-ups arriving too fast")));
 
     /**
-     * 48.3's rows, and the series that answer each.
+     * The operations questions (once the table in the operations chapter, § 48.3),
+     * and the series that answer each.
      *
      * <p>Sistem's CPU, RAM and disk come from Micrometer's own binders and are
      * not declared in the catalogue; the queue wait is ours and is the one this
@@ -173,55 +174,27 @@ class MetricCatalogueTest {
     }
 
     /**
-     * Which meter answers which row of 48.3, and the fact that every row has
-     * one.
+     * Which meter answers which question an operator asks, and the fact that
+     * every question has one.
      *
      * <p><strong>The direction the two tests above cannot see.</strong> They
      * hold the code and this catalogue to each other, which keeps the list
      * honest about what exists and says nothing about what was asked for. Three
-     * of the table's named metrics had no series at all — the budget fill rate,
+     * of the operations questions had no series at all — the budget fill rate,
      * the estimate usage rate and the feedback rate — and every test here was
-     * green the whole time, because a row nobody answers looks exactly like a
-     * row nobody added a meter to yet.
+     * green the whole time, because a question nobody answers looks exactly
+     * like a question nobody added a meter to yet.
      *
-     * <p>The row labels are read out of the chapter rather than copied, so a
-     * row added to the specification fails here until something answers it.
-     * {@code build.gradle.kts} declares the file as an input for the same
-     * reason it declares the data model chapter: an edit that left this task
-     * UP-TO-DATE would be a promise nobody checked.
+     * <p>The questions used to be read out of the operations chapter of the
+     * specification; it was retired, and {@link #ANSWERS} is the list now.
      */
     @Test
-    void everyRowOf48Point3HasAMeter() {
-        var rows = new TreeMap<String, List<String>>(ANSWERS);
-
-        assertThat(rows.keySet())
-                .as("A row of 48.3 nobody answers, or a row that no longer exists. "
-                        + "Either publish a series for it or take the row out of the chapter.")
-                .containsExactlyInAnyOrderElementsOf(rowsOfTheChapter());
-
-        assertThat(rows).allSatisfy((row, meters) -> {
+    void everyOperationsQuestionHasAMeter() {
+        assertThat(ANSWERS).allSatisfy((row, meters) -> {
             assertThat(meters).as(row + " is answered by nothing").isNotEmpty();
             assertThat(meters).as(row + " names a meter the catalogue does not")
                     .isSubsetOf(CATALOGUE.keySet());
         });
-    }
-
-    /**
-     * The first column of the table in 48.3, in the order it is written.
-     *
-     * <p>Parsed rather than listed: the point of the test is that the chapter
-     * and the meters cannot drift, and a copied list drifts.
-     */
-    private static Set<String> rowsOfTheChapter() {
-        String chapter = read(Path.of("docs", "spec", "11-operations.md"));
-        String table = chapter.split("### 48\\.3")[1].split("### 48\\.4")[0];
-        var rows = new TreeSet<String>();
-        Matcher row = Pattern.compile("^\\| \\*\\*([^*]+)\\*\\* \\|", Pattern.MULTILINE)
-                .matcher(table);
-        while (row.find()) {
-            rows.add(row.group(1).strip());
-        }
-        return rows;
     }
 
     /** No two names may differ only in how they were spelled. */

@@ -13,11 +13,11 @@ This repository is **the backend only**; the frontend lives in
 
 ### Documentation Access — Manual Only
 
-Do NOT read anything under `docs/` — `INDEX.md`, `STATUS.md`, `spec/**`,
-`notes/**`, `handoff/**` — at the start of a session or a task, or proactively
+Do NOT read anything under `docs/` — `STATUS.md`, `notes/**`, `handoff/**`,
+the concept and deployment documents — at the start of a session or a task, or proactively
 while working, **unless the user's current message explicitly asks you to.**
 
-Explicit means one of: "check the spec for X" / "read INDEX.md" / "what's in
+Explicit means one of: "check the concept document for X" / "what's in
 STATUS.md"; "check if there's anything from backend/frontend" (→ the handoff
 file only); "update the notes" / "record this as a deviation"; or a section
 named by number ("per Bölüm 20"). "Where are we / what's left" is **not** one —
@@ -34,8 +34,8 @@ We Ship* is something you offer, not something you do quietly.
 ## Propose, Don't Run
 
 **Never run these, and do not retry when they are blocked** — print the command
-instead: `scripts/sync-spec.sh`, `scripts/sync-handoff.sh` or any repo-to-repo
-sync; `docker-compose.prod.yml` and the deploy pipeline; a migration against
+instead: `scripts/sync-error-catalogue.sh`, `scripts/sync-handoff.sh` or any
+repo-to-repo sync; `docker-compose.prod.yml` and the deploy pipeline; a migration against
 anything but the local dev database; anything that deletes data
 (`git clean -fdx`, `docker volume rm`). `.claude/settings.json` denies them and
 the PreToolUse hook checks the command string a second time.
@@ -53,36 +53,40 @@ and stops there: landing them is automatic, committing them is that repo's call.
 Run freely, without asking: local build, test, lint, typecheck, and any
 `gradlew` script that only touches this repo's own working tree.
 
-### Read on demand — never in full
+### There is no specification any more
 
-`docs/spec/**` is 19 files, ~13,100 lines. **Never read one end to end.** Route
-with `docs/INDEX.md`, `rg -n "<term>" docs/spec/<file>.md`, read the matching
-range: a file is 170-1,900 lines, so reading it whole costs 15-40x the tokens. **Never routinely:** `docs/notes/archive/**`
-and `docs/handoff/resolved/**` — both are closed by definition.
+`docs/spec/**` and `INDEX.md` were retired on 2026-10-24, once the product was
+finished: the code, its tests and the committed `openapi.json` are the
+authority. A `§ nn` or `Bölüm nn` left in a comment points at the retired text
+and is history — `git show 9fa9e05:docs/spec/<file>` still reads it.
 
 ### Ownership
 
-`docs/spec/**` and `docs/INDEX.md` belong to this repo and go to the frontend
-through `scripts/sync-spec.sh`. `docs/STATUS.md` and `docs/handoff/**` are
-shared both ways — handoff is the real channel. `docs/notes/**` is this repo's
-and is never synced.
+`docs/STATUS.md` and `docs/handoff/**` are shared both ways — handoff is the
+real channel. `error-catalogue.md` is generated here and reaches the frontend
+through `scripts/sync-error-catalogue.sh`. `docs/notes/**` is this repo's and
+is never synced. Deployment is `docs/vps-dagitim-plani.md`; the launch,
+template, prompt, language and rename checklists are
+`docs/kontrol-listeleri.md`.
 
 ## Recording Deviations
 
-When implementation departs from the spec, record it in `docs/notes/current.md`
-as **Sapma** (spec says X, we do Y — with the reason), **Ekleme** (spec was
-silent, we decided) or **Düzeltme** (spec is wrong, here is the correct one).
+A decision a later session will ask "why" about goes in `docs/notes/current.md`
+as **Sapma** (the obvious way is X, we do Y — with the reason), **Ekleme**
+(nothing decided it, we did) or **Düzeltme** (an earlier record is wrong, here
+is the correct one).
 
 - **Under 200 lines.** When a stage closes, move it to
   `notes/archive/stage-<n>.md` and start empty. Making room means checking a
   record closed, not trimming by eye.
-- **A permanent deviation goes into `docs/spec/` and is deleted from notes** —
-  a rolling log, not a second specification. Frontend-visible: `B-nnn` too.
+- **A record that stays true belongs in the code** — the comment at the place
+  it governs, or a test — and is then deleted from notes. Frontend-visible:
+  `B-nnn` too.
 
 ## Cross-Repo Communication
 
 `docs/handoff/to-frontend.md` is the channel; an item is a `### B-nnn · title`
-with **Since:** (commit, step, spec section) and **Action:** (what the frontend
+with **Since:** (commit or branch) and **Action:** (what the frontend
 must do). IDs are never reused. Items move to `## ACK` when the other side
 confirms and to `handoff/resolved/` from there — **so an unACKed backlog cannot
 be archived, and a file over its limit for that reason is a coordination
@@ -91,10 +95,9 @@ problem rather than a filing one.** The OpenAPI schema is authoritative for API
 
 ## Where the Standing Answers Live
 
-Specified, not summarised here — a second copy would drift. The eight design
-principles are `spec/01-foundations.md` § 4; technology choices
-`spec/02-tech-stack.md`; module boundaries `spec/03-architecture.md` § 10; test
-strategy `spec/12-quality.md` § 51. **Anything else: `docs/INDEX.md` routes it.**
+The code, its tests and `openapi.json`. Module boundaries are what ArchUnit
+enforces; the reasons are in the comments at the place they govern, then in
+`git log`.
 
 Java 21, Spring Boot 3.x, PostgreSQL 17 + pgvector, Flyway, Redis, XeLaTeX in an
 isolated container, BGE-M3 self-hosted. **No Lombok** — records for value
@@ -206,11 +209,10 @@ True here and nowhere in the architecture documents; each cost a debugging round
 
 ## Testing Requirements
 
-`spec/12-quality.md` § 51 lists what to write and § 51.2 names the four tests
-worth the most. **§ 51.7 holds the four rules about testing itself** — a guard
-is not known to work until it has been seen to fail; a component the whole
-suite switches off has unverified wiring; report counts, not "green"; nothing
-on `AbstractIntegrationTest`'s `MockMvc` proves anything about CSRF.
+Four rules about testing itself: a guard is not known to work until it has
+been seen to fail; a component the whole suite switches off has unverified
+wiring; report counts, not "green"; nothing on `AbstractIntegrationTest`'s
+`MockMvc` proves anything about CSRF.
 
 ## How We Ship
 
@@ -270,11 +272,9 @@ a second copy here would drift from it. **When the user asks you to catch up**
 2. **`docs/handoff/to-backend.md`** — open `F-nnn` items. **Handle first.**
 3. **`docs/notes/current.md`** — deliberate gaps that must not be "fixed"
    without asking, and the carry-overs.
-4. **The step's plan** — `docs/INDEX.md` routes it; the build guide is
-   `spec/14-build-guide.md`, its reasoning `spec/13-development.md` § 55.
-   **A build-guide step is not a slice**, so split it before starting.
+4. **The next step** is the developer's call — there is no build guide left
+   to look it up in.
 
-**When a stage closes** (or a rolling file outgrows its limit —
-`scripts/check-doc-sizes.sh`): move the closed step's records to
-`docs/notes/archive/`, keep the live indexes, and write the permanent decisions
-into `docs/spec/`.
+**When a rolling file outgrows its limit** (`scripts/check-doc-sizes.sh`):
+move the closed records to `docs/notes/archive/` and keep the live indexes.
+

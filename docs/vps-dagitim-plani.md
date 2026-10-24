@@ -3,15 +3,13 @@
 > **Bu dosya ne:** sunucu alınmasından ilk canlı sürüme kadar adım adım plan,
 > ve **sunucu olmadığı için yapılamayan her işin** tek listesi.
 >
-> **Ne değil:** mimari doküman. Neden öyle kurulduğunun gerekçesi
-> `spec/11-operations.md` § 46-49'da, adımların ilk taslağı
-> `spec/14-build-guide.md` § XI-A.4'te. **Çelişirlerse bu dosya geçerlidir** —
-> buradaki komutlar repodaki gerçek script'lere ve dosya yollarına göre
-> yazıldı, kılavuzun taslağı bazı yerlerde onlardan ayrışıyor.
+> **Ne değil:** mimari doküman. Gerekçeler kodda, script'lerin ve
+> yapılandırma dosyalarının kendi yorumlarında; spec 2026-10-24'te emekliye
+> ayrıldı ve bu dosyanın ondan aldığı her şey (sunucu kurulum komutları,
+> yayın kontrol listesi) artık burada ya da `kontrol-listeleri.md`'de.
 >
-> **Sahibi:** `atomcv-backend`. Frontend'e senkronlanmıyor (yalnız
-> `docs/spec/**` senkronlanıyor). Frontend'i ilgilendiren tek şey § 4'teki
-> `NEXT_PUBLIC_SITE_URL` satırı.
+> **Sahibi:** `atomcv-backend`. Frontend'e senkronlanmıyor. Frontend'i
+> ilgilendiren tek şey § 4'teki `NEXT_PUBLIC_SITE_URL` satırı.
 
 ---
 
@@ -27,9 +25,6 @@ artık durmuyor.
 | TLS | **Cloudflare Origin Certificate** | 15 yıl, yenileme yok, cron yok, izlenecek bir yenileme işi yok. **Bedeli:** turuncu bulut kapatılamaz — proxy kapanırsa sertifika geçersizdir | S.4 |
 | Üretimde migration | **Açılışta, tek örnekle** (bugünkü davranış) | Hiçbir ek parça yok. **Koşulu:** aynı anda tek backend örneği. Tek sunucuda zaten öyle; ölçeklenince yeniden açılacak bir karar. EK D'deki "açık karar" satırı bununla kapandı | `deploy.sh`, § 6 |
 | Deploy tetikleyicisi | **Önce elle, sonra otomatik** | `deploy.yml`'ın `push` tetikleyicisi yorumda ve öyle kalacak — **ilk elle koşu ve rollback tatbikatı başarılı olana kadar**. Sonra secrets'ı ekleyen değişiklikle birlikte açılır | S.7 |
-
-**Kapsam dışı bırakılan:** `docs/spec/`'in İngilizceye çevrilmesi (§ 55'in açık
-kaynak hazırlığı kalemi). Yapılmayacak — karar 2026-09-16.
 
 ---
 
@@ -91,10 +86,56 @@ Host atomcv
 `ssh deploy@<IP>` çalıştığını doğrula** — çalışmıyorsa root oturumunu kapatma,
 yoksa makineye giremezsin.
 
-Komutların tamamı `spec/14-build-guide.md` § XI-A.4 Adım V.3'te: sistem
-güncellemesi, Docker, `deploy` kullanıcısı (docker grubunda), **4 GB swap**
-(`vm.swappiness=10`), UFW (yalnız 22/80/443), şifreyle girişin ve root
-girişinin kapatılması, `unattended-upgrades`.
+Sistem güncellemesi, Docker, `deploy` kullanıcısı (docker grubunda), **4 GB
+swap** (`vm.swappiness=10`), UFW (yalnız 22/80/443), şifreyle girişin ve root
+girişinin kapatılması, `unattended-upgrades`:
+
+```bash
+ssh root@<SUNUCU_IP>
+
+# ── Sistem güncellemesi ──
+apt update && apt upgrade -y
+apt install -y ca-certificates curl gnupg ufw fail2ban unattended-upgrades
+
+# ── Docker kurulumu ──
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+  > /etc/apt/sources.list.d/docker.list
+apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# ── Deploy kullanıcısı ──
+useradd -m -s /bin/bash deploy
+usermod -aG docker deploy
+mkdir -p /home/deploy/.ssh
+cp /root/.ssh/authorized_keys /home/deploy/.ssh/
+chown -R deploy:deploy /home/deploy/.ssh
+chmod 700 /home/deploy/.ssh && chmod 600 /home/deploy/.ssh/authorized_keys
+
+# ── Swap (OOM koruması) ──
+fallocate -l 4G /swapfile
+chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+sysctl vm.swappiness=10
+echo 'vm.swappiness=10' >> /etc/sysctl.conf
+
+# ── Güvenlik duvarı ──
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
+
+# ── SSH sertleştirme ──
+sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+systemctl restart ssh
+
+# ── Otomatik güvenlik güncellemeleri ──
+dpkg-reconfigure -plow unattended-upgrades
+```
 
 > **Swap bu planda opsiyonel değil.** CPX31'de 8 GB var ve § 3'ün bütçesi
 > sınıra yakın; swap OOM killer ile yavaşlama arasındaki fark.
@@ -314,8 +355,8 @@ Hepsi bugün **yapılamıyor**, ve hepsi bir dağıtım bekliyor. Sıra önemli:
 
 ## 5. Yayın kontrol listesi
 
-EK C.1 (`spec/17-appendix-abc.md`) otoritedir ve buraya kopyalanmıyor — iki
-kopya ayrışır. **Bugünkü durumu:** güvenlik, veri, maliyet ve hukuk
+Liste `kontrol-listeleri.md` § C.1'de (eskiden EK C.1) ve buraya
+kopyalanmıyor — iki kopya ayrışır. **Bugünkü durumu:** güvenlik, veri, maliyet ve hukuk
 başlıklarının kod tarafı yazılmış ve testli; işaretlenemeyen maddelerin
 tamamı § 4'ün tablosunda, çünkü hepsi sunucu bekliyor.
 
@@ -367,5 +408,5 @@ Her biri bir hata ayıklama turu tuttu; ikisi doğrudan deploy'a ait.
   işaretlenmez, yapılanlar kısaltılıp gerçeğe çevrilir.
 - Sunucu ayağa kalktığında `STATUS.md`'nin "Geliştiricide" satırı ve
   `handoff/to-frontend.md`'nin "Dağıtım bekleyen doğrulamalar" bölümü kısalır.
-- Bir adım burada söylenenden başka türlü sonuçlanırsa: **kalıcıysa
-  `spec/`'e**, geçiciyse `notes/current.md`'ye.
+- Bir adım burada söylenenden başka türlü sonuçlanırsa: **kalıcıysa bu
+  dosyaya**, geçiciyse `notes/current.md`'ye.

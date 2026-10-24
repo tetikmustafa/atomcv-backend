@@ -7,11 +7,11 @@ declined than reshaped for you. Nothing here is a service level agreement.
 
 ## Before you write code
 
-**Open an issue for anything larger than a fix.** The specification in
-[`docs/spec/`](docs/spec/) records decisions and the reasons behind them, and a
-pull request that contradicts one is not a bug report — it is a disagreement
-worth having in words first. Say what you want to change and why; if the
-specification is wrong, that is a valid answer and the section gets corrected.
+**Open an issue for anything larger than a fix.** The comments in the code
+record decisions and the reasons behind them, and a pull request that
+contradicts one is not a bug report — it is a disagreement worth having in
+words first. Say what you want to change and why; if the reason is wrong,
+that is a valid answer and the comment gets corrected.
 
 **Small fixes need no ceremony.** A typo, a broken link, a wrong constant, a
 test that does not test what it claims: open the pull request.

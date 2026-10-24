@@ -1,70 +1,9 @@
-# EK A-B-C — Sözlük, Kapsam Dışı, Kontrol Listeleri
+# AtomCV — Kontrol Listeleri
 
-> AtomCV spec · [INDEX](../INDEX.md) · bu dosya yalnız aşağıdaki bölümleri içerir.
+> Spec emekliye ayrılırken (2026-10-24) EK C buraya taşındı; içerik aynı.
+> Yayın listesinin (C.1) bugünkü durumu `vps-dagitim-plani.md` § 4-5'te.
 
----
-
-## EK A — Terimler Sözlüğü
-
-| Terim | Anlamı |
-|---|---|
-| **Atom** | Profildeki en küçük bağımsız seçilebilir bilgi birimi (bir madde, bir beceri) |
-| **Varyant (AtomVariant)** | Aynı atomun farklı dil/ton/uzunluk versiyonu; metin burada saklanır |
-| **Run** | Aynı vurgu özelliklerine sahip ardışık metin parçası |
-| **Mark** | Bir run'a uygulanan semantik etiket (`technology`, `metric`, `emphasis`) |
-| **Master Profil** | Kullanıcının tüm profesyonel verisinin format-bağımsız, yapılandırılmış hali |
-| **Selection State** | Belirli bir üretimde hangi atomların seçildiğini tutan durum nesnesi |
-| **Render Cost** | Bir atomun belirli bir şablonda kapladığı dikey alan (punto) |
-| **Alaka Skoru** | Bir atomun ilanla örtüşmesini gösteren 0-1 arası değer |
-| **Uygunluk Raporu** | CV'nin ilan gereksinimlerini karşılama durumu (sayılabilir kapsama) |
-| **alwaysInclude** | Skoru ne olursa olsun dahil edilme kilidi |
-| **verbatim** | Yeniden yazıma gönderilmeme kilidi |
-| **Genel CV Modu** | İlan girilmediğinde ikincil kriterlerle üretim |
-| **Faz A-G** | Üretim hattının yedi aşaması |
-| **ContentShape** | İçerik yerine loglanan istatistiksel özet (PII'siz teşhis) |
-| **ATS** | Applicant Tracking System — CV'leri otomatik tarayan işe alım yazılımı |
-| **IDOR** | Insecure Direct Object Reference — yetkisiz veri erişimi açığı |
-| **SSRF** | Server-Side Request Forgery — sunucuyu iç kaynaklara istek atmaya zorlama |
-| **Expand-Contract** | Geriye uyumlu şema migration deseni |
-| **Bin-packing** | Sınırlı kapasiteye maksimum değerli öğe yerleştirme problemi |
-
-## EK B — Kapsam Dışı Bırakılanlar
-
-```
-❌ Geri bildirim döngüsüyle öğrenen kalibrasyon
-   → İstatistiksel anlamlılık için çok veri/zaman; orantısız karmaşıklık
-
-❌ LinkedIn veri export entegrasyonu
-   → Yüksek kullanıcı sürtünmesi; GitHub daha iyi sinyal veriyor
-
-❌ Ücretli katmanlar / gelir modeli
-   → Ürün konumu gereği
-
-❌ Kubernetes / mikroservis
-   → Tek geliştirici, öngörülebilir yük
-
-❌ Self-host log altyapısı (ELK, Loki)
-   → RAM maliyeti; Axiom seçildi
-
-❌ Ham LaTeX düzenleme izni
-   → Doğrudan RCE yüzeyi
-
-❌ OCR (taranmış PDF)
-   → Ek bağımlılık, kalite riski
-
-❌ Tagged PDF (a11y)
-   → XeLaTeX'te zahmetli; ATS temizliği çoğunu karşılıyor
-
-❌ Session replay / davranış kaydı
-   → Gizlilik konumlandırmasıyla çelişir
-
-❌ İlan URL'den otomatik çekme (Aşama 4+)
-   → Site bazlı kural gerektirir, sürekli bakım
-```
-
-## EK C — Kontrol Listeleri
-
-### C.1 Yayına almadan önce
+## C.1 Yayına almadan önce
 
 ```
 GÜVENLİK
@@ -109,7 +48,7 @@ OPERASYON
 □ Log rotasyonu ayarlı (disk dolmasın)
 ```
 
-### C.2 Yeni şablon eklerken
+## C.2 Yeni şablon eklerken
 
 ```
 □ Renderer sınıfı yazıldı (final + ölçüm modu, AYNI preamble)
@@ -121,7 +60,7 @@ OPERASYON
 □ Golden test set'te sayfa sınırı testi geçti
 ```
 
-### C.3 Prompt değiştirirken
+## C.3 Prompt değiştirirken
 
 ```
 □ Yeni sürüm dosyası oluşturuldu (vN.md), eskisi silinmedi
@@ -133,7 +72,7 @@ OPERASYON
 □ Rollback planı: config değişikliğiyle eski sürüme dönülebilir
 ```
 
-### C.4 Yeni dil eklerken
+## C.4 Yeni dil eklerken
 
 ```
 □ Font whitelist'i o dilin karakterlerini kapsıyor mu
@@ -145,7 +84,7 @@ OPERASYON
 □ Kullanıcıya "otomatik üretildi, gözden geçir" uyarısı
 ```
 
-### C.5 İsim veya domain değişikliğinde
+## C.5 İsim veya domain değişikliğinde
 
 "AtomCV" adı ve `atomcv.mustafatetik.com` domaini geçicidir. Değişirse dokunulacak yerler:
 
@@ -183,5 +122,3 @@ GEÇİŞ
 ```
 
 **Sırayı bozma:** Önce yeni domaini çalışır hale getir, sonra eskisini yönlendirmeye çevir, en son kaldır.
-
----

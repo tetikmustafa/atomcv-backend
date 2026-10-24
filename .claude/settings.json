@@ -2,7 +2,7 @@
   "permissions": {
     "defaultMode": "default",
     "deny": [
-      "Bash(*sync-spec.sh*)",
+      "Bash(*sync-error-catalogue.sh*)",
       "Bash(*sync-handoff.sh*)",
       "Bash(docker compose -f docker-compose.prod.yml*)",
       "Bash(*docker-compose.prod.yml*)",
@@ -18,8 +18,7 @@
       "Bash(gh pr merge:*)",
       "Bash(gh pr review:*)",
       "Write(docs/notes/**)",
-      "Write(docs/STATUS.md)",
-      "Write(docs/spec/**)"
+      "Write(docs/STATUS.md)"
     ],
     "allow": [
       "Bash(git commit:*)",
