@@ -78,7 +78,10 @@ class EntryFurnitureIT {
      */
     private static final Map<String, Double> FIRST_BULLET_PREMIUM_PT = Map.of(
             "classic", 3.50,
-            "compact", -2.46,
+            // -2.46 until 2026-10-24, and the minus was the defect: compact's
+            // entry heading pulled its first bullet up over the employer line.
+            // With the heading's negative spaces gone the list opens below it.
+            "compact", 4.54,
             "modern", 5.50);
 
     private static final Offset<Double> A_TENTH = Offset.offset(0.1);

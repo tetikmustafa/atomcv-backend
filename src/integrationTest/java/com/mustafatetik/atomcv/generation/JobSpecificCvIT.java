@@ -190,7 +190,7 @@ class JobSpecificCvIT extends AbstractLatexTest {
         // to classic would look identical here without this.
         assertThat(jdbc.queryForObject(
                 "SELECT engine_version->>'template' FROM generations WHERE id = ?::uuid",
-                String.class, generationId)).isEqualTo("compact:v2");
+                String.class, generationId)).isEqualTo("compact:v3");
         assertThat(atsDefects()).as("the compiled PDF read back cleanly").isZero();
         assertThat(atsChecks()).as("the check actually ran").isPositive();
     }

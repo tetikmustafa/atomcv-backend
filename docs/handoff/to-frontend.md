@@ -18,8 +18,8 @@ _(açık madde yok.)_
 
 ## ACK — frontend karşıladı (2026-10-23 / 10-24)
 
-`B-120`…`B-125` geldikleri gün indi; gövdeleri, ne yapıldığıyla birlikte,
-`resolved/to-frontend-2026-10.md`'de.
+`B-120`…`B-127` geldikleri gün indi; `B-120`…`B-125`'in gövdeleri, ne
+yapıldığıyla birlikte, `resolved/to-frontend-2026-10.md`'de.
 
 - **`B-120`** — `FONT_FAMILIES` şemanın birliğinden türetiliyor (`satisfies` +
   kapsamlılık kontrolü: beşinci bir değer typecheck hatası olur); `book`
@@ -37,6 +37,17 @@ _(açık madde yok.)_
   okunabilirliği" kartı: temizse tek cümle, değilse kusuru **şablonun** sayan
   cümle; sayılar çift olarak, yüzde yok; alan yoksa kart yok. Mock temiz döner,
   testler kusuru ve yokluğu ayrıca çiziyor.
+
+- **`B-126`** (2026-10-24, gerçek yığına karşı uçtan uca turda) —
+  `GenerationResponse.requestedLanguage`: isteğin adını koyduğu dil.
+  `contentLanguage`'dan farklıysa çeviri tamamlanamamış ve belge profilin
+  dilinde yazılmış demektir. Sonuç ekranının dil notu artık önce bunu,
+  yoksa ilanın dilini karşılaştırıyor; mock alanı üretiyor.
+- **`B-127`** (aynı tur) — `GET/PUT/DELETE /profile` ve `/profile/preferences`
+  artık misafir oturumuna da hizmet ediyor (yalnız hesap istiyordu; inceleme
+  ekranı misafire "giriş yap" diyordu). Misafirin profil ETag'i her istekte
+  değişmiyor (`expires_at` iyimser kilidin dışında). Frontend'de kod değişikliği
+  gerekmedi; istemci zaten çağırıyordu.
 
 `B-100`…`B-119` önceki turlarda indi; kayıtları `resolved/to-frontend-2026-09.md`'de.
 

@@ -28,7 +28,7 @@ public final class TemplateRegistry {
     // measured -- and only where it is the last of its list, which is why it
     // took a fixture of sixty such bullets to show.
     private static final Map<String, Integer> VERSIONS =
-            Map.of("classic", 6, "compact", 2, "modern", 3);
+            Map.of("classic", 6, "compact", 3, "modern", 3);
 
     /**
      * Classic: plain, ATS-safe, academic or corporate.
@@ -169,18 +169,26 @@ public final class TemplateRegistry {
             \\newcommand{\\resumeItem}[1]{%
               \\item\\small{{#1}}%
             }
+            % And none around an entry heading either, for the same reason one
+            % level up. Classic's -2 above and -4/-3 below are spent against
+            % the separation its lists set; under `nosep` they came out of the
+            % text, and a printed compact CV had its employer line written over
+            % its first bullet and its last bullet over the next job's title --
+            % 2026-10-24, the first real document in this template. The
+            % calibration measured the overlap as a cheaper heading and stored
+            % it, and nothing that reads text back can see two lines touching.
             \\newcommand{\\resumeSubheading}[4]{%
-              \\vspace{-2pt}\\item
+              \\item
                 \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
                   \\textbf{#1} & #2 \\\\
                   \\textit{\\small#3} & \\textit{\\small #4} \\\\
-                \\end{tabular*}\\vspace{-4pt}%
+                \\end{tabular*}%
             }
             \\newcommand{\\resumeProjectHeading}[2]{%
                 \\item
                 \\begin{tabularx}{0.97\\textwidth}{X r}
                   \\textbf{#1} & #2 \\\\
-                \\end{tabularx}\\vspace{-3pt}%
+                \\end{tabularx}%
             }
             \\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
             % `nosep` is most of the difference between these lists and
@@ -191,7 +199,7 @@ public final class TemplateRegistry {
               {\\begin{itemize}[leftmargin=0.15in, label={}, nosep]}
             \\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
             \\newcommand{\\resumeItemListStart}{\\begin{itemize}[nosep]}
-            \\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-2pt}}
+            \\newcommand{\\resumeItemListEnd}{\\end{itemize}}
             \\newcommand{\\resumeParagraphListStart}%
               {\\begin{itemize}[leftmargin=0.15in, label={}, nosep]}
             \\newcommand{\\resumeParagraphListEnd}{\\end{itemize}}
@@ -372,16 +380,16 @@ public final class TemplateRegistry {
                     // the heading's negative space to be spent against, so the
                     // pull-up that classic gets for free is paid here.
                     Map.entry(CapacityModel.SECTION_HEADER_AFTER_LIST, 29.58897),
-                    Map.entry(CapacityModel.ENTRY_HEADER, 16.79989),
-                    Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 20.12094),
-                    Map.entry(CapacityModel.PROJECT_HEADING, 8.40395),
-                    Map.entry(CapacityModel.PROJECT_HEADING_AFTER_LIST, 11.50493),
-                    Map.entry(CapacityModel.ITEMIZE_OVERHEAD, -5.10497),
+                    Map.entry(CapacityModel.ENTRY_HEADER, 22.79989),
+                    Map.entry(CapacityModel.ENTRY_HEADER_AFTER_LIST, 26.12094),
+                    Map.entry(CapacityModel.PROJECT_HEADING, 11.40395),
+                    Map.entry(CapacityModel.PROJECT_HEADING_AFTER_LIST, 14.50493),
+                    Map.entry(CapacityModel.ITEMIZE_OVERHEAD, -3.10497),
                     Map.entry(CapacityModel.ITEM_LINE, 10.44996),
                     // Equal to the line above, and classic's are five points
                     // apart. `nosep` is the whole of the difference.
                     Map.entry(CapacityModel.SECTION_ITEM_LINE, 10.44997),
-                    Map.entry(CapacityModel.SECTION_LIST_OVERHEAD, -6.10499),
+                    Map.entry(CapacityModel.SECTION_LIST_OVERHEAD, -4.10499),
                     // Nothing, and that is the measurement rather than a
                     // rounding: compact's leftover after a section list is the
                     // ten points its next heading is already charged, and
