@@ -83,13 +83,56 @@ class GenerationTranslationTest {
     @Test
     void onefailureMeansTheWholeDocumentFallsBack() {
         ProfileTree tree = treeOf(3, "tr");
-        var refused = new java.util.concurrent.atomic.AtomicInteger();
+        // The same atom refused every time it is asked, the second pass
+        // included: a refusal that a retry does not cure.
+        UUID stubborn = rankedLowestFirst(tree).get(1).atomId();
         when(translations.translateInto(any(), any(), any(), anyString(), anyString(), any()))
-                .thenAnswer(call -> refused.getAndIncrement() == 1
+                .thenAnswer(call -> ((Atom) call.getArgument(1)).getId().equals(stubborn)
                         ? Result.err(new PipelineError.TranslationRejected())
                         : Result.ok(null));
 
         assertThat(carry(tree, "en")).isFalse();
+    }
+
+    /**
+     * A rate limit is the commonest reason a wording does not come back, and a
+     * short wait is what cures it — so what the first pass could not do gets
+     * one more. Without it a Turkish CV came out in English over a 429.
+     */
+    @Test
+    void afailureTheSecondPassCuresDoesNotDecideTheDocument() {
+        ProfileTree tree = treeOf(3, "tr");
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        when(translations.translateInto(any(), any(), any(), anyString(), anyString(), any()))
+                .thenAnswer(call -> calls.getAndIncrement() == 0
+                        ? Result.err(new PipelineError.TranslationRejected())
+                        : Result.ok(null));
+
+        assertThat(carry(tree, "en")).isTrue();
+        verify(translations, org.mockito.Mockito.times(4))
+                .translateInto(any(), any(), any(), anyString(), anyString(), any());
+    }
+
+    /**
+     * Every missing wording at once was up to sixty calls in one burst, and
+     * the provider answered it with 429s. The pool is wider than the bound, so
+     * this would see more than {@code CONCURRENCY} if the bound were gone.
+     */
+    @Test
+    void nomoreThanTheBoundAreInFlightAtOnce() {
+        ProfileTree tree = treeOf(30, "tr");
+        var inFlight = new java.util.concurrent.atomic.AtomicInteger();
+        var widest = new java.util.concurrent.atomic.AtomicInteger();
+        when(translations.translateInto(any(), any(), any(), anyString(), anyString(), any()))
+                .thenAnswer(call -> {
+                    widest.accumulateAndGet(inFlight.incrementAndGet(), Math::max);
+                    Thread.sleep(20);
+                    inFlight.decrementAndGet();
+                    return Result.ok(null);
+                });
+
+        assertThat(carry(tree, "en")).isTrue();
+        assertThat(widest.get()).isBetween(2, GenerationTranslation.CONCURRENCY);
     }
 
     /**

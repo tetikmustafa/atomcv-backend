@@ -63,8 +63,7 @@ public class ProfileResolver {
      */
     @Transactional
     public Profile own(UserContext user) {
-        return profiles.findOwn(user)
-                .orElseGet(() -> profiles.save(user, new Profile(user.userId())));
+        return profiles.findOrCreateOwn(user);
     }
 
     /** The same profile, as the scope everything below it is read within. */

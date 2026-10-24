@@ -388,7 +388,7 @@ public class GenerationJobHandler implements JobHandler {
         var record = new Generation(
                 subject.userId(),
                 generated.profileId(),
-                storedOptions(options),
+                storedOptions(options, payload.language()),
                 StoredSelection.of(selection, options.language(), options.customization()),
                 engineVersion(options, generated));
 
@@ -422,13 +422,17 @@ public class GenerationJobHandler implements JobHandler {
     }
 
     /** Minus the fields whose features have not arrived. */
-    private static Map<String, Object> storedOptions(GenerationOptions options) {
+    private static Map<String, Object> storedOptions(
+            GenerationOptions options, String requestedLanguage) {
         Map<String, Object> stored = new LinkedHashMap<>();
         stored.put("templateId", options.customization().baseTemplateId());
         stored.put("templateVersion",
                 TemplateRegistry.versionOf(options.customization().baseTemplateId()));
         stored.put(Generation.MAX_PAGES, options.maxPages());
         stored.put("cvLanguage", options.language());
+        if (requestedLanguage != null && !requestedLanguage.isBlank()) {
+            stored.put(Generation.REQUESTED_LANGUAGE, requestedLanguage.strip());
+        }
         stored.put("formats", java.util.List.of("pdf"));
         return stored;
     }

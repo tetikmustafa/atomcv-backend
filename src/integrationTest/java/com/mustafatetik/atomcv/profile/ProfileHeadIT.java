@@ -45,6 +45,37 @@ class ProfileHeadIT extends AbstractIntegrationTest {
         jdbc.update("DELETE FROM users");
     }
 
+    /**
+     * A screen sends several reads at once, and the first ones after a profile
+     * is deleted — or after an account is made — each find nothing and insert.
+     * One of them won and the rest answered 500 on
+     * {@code profiles_user_id_key}, live on 2026-10-24. Every racer has to
+     * come back with the one row that exists.
+     */
+    @Test
+    void manyFirstUsesAtOnceAllGetTheSameProfile() throws Exception {
+        int racers = 8;
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var pool = java.util.concurrent.Executors.newFixedThreadPool(racers)) {
+            var answers = new java.util.ArrayList<java.util.concurrent.Future<UUID>>();
+            for (int i = 0; i < racers; i++) {
+                answers.add(pool.submit(() -> {
+                    start.await();
+                    return resolver.own(user).getId();
+                }));
+            }
+            start.countDown();
+
+            var ids = new java.util.HashSet<UUID>();
+            for (var answer : answers) {
+                ids.add(answer.get(30, java.util.concurrent.TimeUnit.SECONDS));
+            }
+            assertThat(ids).hasSize(1);
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM profiles WHERE user_id = ?",
+                Integer.class, user.userId())).isEqualTo(1);
+    }
+
     @Test
     void resolvingCreatesTheProfileOnFirstUse() {
         assertThat(profiles.findOwn(user)).isEmpty();

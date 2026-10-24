@@ -87,6 +87,9 @@ public class Generation implements UserOwned {
     /** The one spelling of the options key {@link #getMaxPages()} reads. */
     public static final String MAX_PAGES = "maxPages";
 
+    /** The options key {@link #getRequestedLanguage()} reads. */
+    public static final String REQUESTED_LANGUAGE = "requestedLanguage";
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
     private Map<String, Object> options = Map.of();
@@ -273,6 +276,20 @@ public class Generation implements UserOwned {
      */
     public Integer getMaxPages() {
         return options.get(MAX_PAGES) instanceof Number limit ? limit.intValue() : null;
+    }
+
+    /**
+     * The language the request named, when it named one — beside
+     * {@code cvLanguage}, which is what the document was written in.
+     *
+     * <p>The two differ when the translation a language needs could not be
+     * completed: one document is written in one language, so it falls back to
+     * the profile's own. Without the asked-for one stored, nothing could tell
+     * the person that the Turkish CV they asked for came out in English, and
+     * nothing did — measured on 2026-10-24.
+     */
+    public String getRequestedLanguage() {
+        return options.get(REQUESTED_LANGUAGE) instanceof String language ? language : null;
     }
 
     public StoredSelection getSelectionState() {

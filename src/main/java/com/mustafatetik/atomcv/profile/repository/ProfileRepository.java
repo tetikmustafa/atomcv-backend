@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.repository;
 
+
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.shared.security.UserContext;
 import com.mustafatetik.atomcv.shared.security.UserScopedRepository;
@@ -32,5 +33,17 @@ public class ProfileRepository extends UserScopedRepository<Profile> {
      */
     public Optional<Profile> findOwn(UserContext user) {
         return jpa.findByUserId(user.userId());
+    }
+
+    /**
+     * The user's profile, created if they have none — safely when several
+     * requests ask at once ({@link ProfileJpaRepository#insertIfAbsent}).
+     */
+    public Profile findOrCreateOwn(UserContext user) {
+        return findOwn(user).orElseGet(() -> {
+            jpa.insertIfAbsent(user.userId());
+            return findOwn(user).orElseThrow(() -> new IllegalStateException(
+                    "A profile was inserted for this user and cannot be read back"));
+        });
     }
 }

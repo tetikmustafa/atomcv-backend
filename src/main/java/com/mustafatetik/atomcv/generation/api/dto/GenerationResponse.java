@@ -51,6 +51,9 @@ import java.util.UUID;
  * @param contentLanguage the BCP 47 tag the document was written in
  * @param postingLanguage absent in general mode, and absent when Faz A did not
  *                        name a language for the posting
+ * @param requestedLanguage the language the request named, or absent; differs
+ *                        from contentLanguage when its translation could not
+ *                        be finished
  * @param coverLetter the letter when one was written, and absent
  *                        otherwise — it is opt-in, and a letter that could not
  *                        be written honestly is not written at all. Plain
@@ -107,6 +110,16 @@ public record GenerationResponse(
                 The language Faz A read the posting as. When it differs from                 contentLanguage the CV was written in the profile's language                 instead: the profile has no wording for every atom in the                 posting's language, and one document is written in one                 language.""",
                 example = "en")
         String postingLanguage,
+
+        @Schema(description = """
+                The language the request asked for, absent when it named none.
+                When it differs from `contentLanguage` the translation that
+                language needed could not be finished, and the CV was written
+                in the profile's own language instead -- one document is
+                written in one language. Asking again usually completes it:
+                the wordings already translated were kept.""",
+                example = "tr")
+        String requestedLanguage,
 
         @Schema(description = "The covering letter, as plain text with blank lines "
                 + "between its parts")
@@ -178,6 +191,7 @@ public record GenerationResponse(
                         ? null : generation.getSelectionState().language()),
                 blankToNull(generation.getJdAnalysis() == null
                         ? null : generation.getJdAnalysis().jdLanguage()),
+                blankToNull(generation.getRequestedLanguage()),
                 blankToNull(generation.getCoverLetter()),
                 feedback,
                 supersededBy,

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * Turns a provider account into a session: find, or link, or create.
@@ -41,42 +41,55 @@ public class OAuthLoginService {
     private final SessionStore sessions;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final TransactionOperations transactions;
 
     OAuthLoginService(SignInAccounts accounts, SessionStore sessions,
-            ApplicationEventPublisher events, Clock clock) {
+            ApplicationEventPublisher events, Clock clock, TransactionOperations transactions) {
         this.accounts = accounts;
         this.sessions = sessions;
         this.events = events;
         this.clock = clock;
+        this.transactions = transactions;
     }
 
-    @Transactional
+    /**
+     * <strong>Two transactions, not one, and the reason is the race.</strong>
+     * Two first sign-ins for one address — or one subject bound twice — are
+     * settled by a UNIQUE constraint, and the loser should read what the
+     * winner wrote. That used to be a catch inside one {@code @Transactional}
+     * method, and it could never work: the insert is not flushed until commit,
+     * so the violation surfaced after the catch had been left behind, and had
+     * it surfaced inside, the transaction would already have been marked
+     * rollback-only. Resolving in a transaction of its own makes the violation
+     * arrive at that transaction's commit, where it is caught, and the second
+     * attempt starts clean.
+     */
     public SignInOutcome signIn(OAuthAccount account) {
         if (!account.emailVerified()) {
             return new SignInOutcome.Refused(OAuthFailure.EMAIL_UNVERIFIED);
         }
-        UserAccount user;
+        UserAccount resolved;
         try {
-            user = resolve(account);
+            resolved = transactions.execute(status -> resolve(account));
         } catch (DataIntegrityViolationException raced) {
-            // Two first sign-ins for one address, or one subject bound twice.
-            // UNIQUE settled it; the loser reads what the winner wrote rather
-            // than answering an error for a race the person cannot see.
             log.info("Concurrent first sign-in settled by the database, re-reading");
-            user = resolve(account);
+            resolved = transactions.execute(status -> resolve(account));
         }
+        UserAccount user = resolved;
         if (user.isDeleted()) {
             return new SignInOutcome.Refused(OAuthFailure.ACCOUNT_DISABLED);
         }
-        // Before seen(...), which is what makes "has never signed in"
-        // answerable. The welcome itself waits for the commit: it is a network
-        // call, and this method holds a transaction.
-        if (user.hasNeverSignedIn()) {
-            events.publishEvent(new FirstSignIn(user));
-        }
-        accounts.seen(user, clock.instant());
-        return new SignInOutcome.SignedIn(sessions.create(
-                user.getId(), user.getRole(), account.provider().authMethod()));
+        return transactions.execute(status -> {
+            // Before seen(...), which is what makes "has never signed in"
+            // answerable. The welcome itself waits for the commit: it is a
+            // network call, and this holds a transaction.
+            if (user.hasNeverSignedIn()) {
+                events.publishEvent(new FirstSignIn(user));
+            }
+            accounts.seen(user, clock.instant());
+            return new SignInOutcome.SignedIn(sessions.create(
+                    user.getId(), user.getRole(), account.provider().authMethod()));
+        });
     }
 
     private UserAccount resolve(OAuthAccount account) {
