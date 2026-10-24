@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.profile.api.dto.EntryPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.EntryReorderRequest;
 import com.mustafatetik.atomcv.profile.api.dto.EntryResponse;
 import com.mustafatetik.atomcv.profile.domain.Entry;
+import com.mustafatetik.atomcv.profile.service.SelectionControls;
 import com.mustafatetik.atomcv.profile.service.EntryDraft;
 import com.mustafatetik.atomcv.profile.service.EntryPatch;
 import com.mustafatetik.atomcv.profile.service.EntryService;
@@ -85,6 +86,9 @@ public class EntryController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntryResponse> create(@Valid @RequestBody EntryCreateRequest request) {
+        SelectionControls.requireAccountIfAsked(profile(), request.importance() != null
+                || request.alwaysInclude() != null || request.verbatim() != null
+                || request.minAtoms() != null);
         Entry created = entries.create(profile(), new EntryDraft(
                 request.sectionId(),
                 request.title(),
@@ -118,6 +122,9 @@ public class EntryController {
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
             @Valid @RequestBody EntryPatchRequest request) {
 
+        SelectionControls.requireAccountIfAsked(profile(), request.importance() != null
+                || request.active() != null || request.alwaysInclude() != null
+                || request.verbatim() != null || request.minAtoms() != null);
         Entry patched = entries.patch(profile(), id, ifMatch, new EntryPatch(
                 request.title(),
                 request.organization(),

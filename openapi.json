@@ -3903,7 +3903,9 @@
           "minAtoms" : {
             "type" : "integer",
             "format" : "int32",
-            "description" : "Defaults to 2"
+            "description" : "Defaults to 2",
+            "maximum" : 50,
+            "minimum" : 0
           }
         },
         "required" : [ "sectionId", "title" ]
@@ -4629,6 +4631,15 @@
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "roleTitle" : {
+            "type" : "string",
+            "description" : "The role the posting was for, as Faz A read it; absent in general mode and when the posting named none",
+            "example" : "Backend Engineer"
+          },
+          "companyName" : {
+            "type" : "string",
+            "description" : "The company the posting was for, as Faz A read it; absent in general mode and when the posting named none"
           },
           "fitReport" : {
             "$ref" : "#/components/schemas/FitReport"

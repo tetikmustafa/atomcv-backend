@@ -169,7 +169,7 @@ her birinin ne olduğu yazılı):
 | Kimlik | `OAUTH_GOOGLE_*`, `OAUTH_GITHUB_*`, `TURNSTILE_SECRET_KEY` |
 | E-posta | `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `EMAIL_FROM`, `EMAIL_FROM_NAME`, `EMAIL_REPLY_TO` |
 | Yedek | `AGE_PUBLIC_KEY`, `BACKUP_REMOTE`, `BACKUP_ARCHIVE_REMOTE`, `BACKUP_KEEP_*` |
-| Gözlem | `SENTRY_DSN`, `OTLP_*` (Axiom — metrikler `OTLP_URL`, loglar `OTLP_LOGS_URL=https://api.axiom.co/v1/logs`), `UMAMI_APP_SECRET` |
+| Gözlem | `SENTRY_DSN`, `OTLP_*` (Axiom — metrikler `OTLP_URL`, loglar `OTLP_LOGS_ENABLED=true` + `OTLP_LOGS_URL=https://api.axiom.co/v1/logs` — **ikisi birlikte**: boş URL ile açılan log ihracı uygulamayı başlatmaz), `UMAMI_APP_SECRET` |
 | Maliyet | `ANOMALY_DAILY_BUDGET_USD` |
 
 > **`.env` hem compose'un hem Spring'in okuduğu dosya.** Yerelde bu bir kez
