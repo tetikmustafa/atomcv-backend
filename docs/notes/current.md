@@ -27,33 +27,27 @@ Ekseni her tur değişti, ve değişmesi bulduğu şeyi belirledi:
 `archive/denetim-2026-09-20-altinci.md`'de. **İkisinin kuyruğu aşağıda:**
 `choose_language`'ın alanı (`F-037`), `two_column`'un şekli (`F-040`).
 
-## Frontend'in dört maddesi — `F-037`…`F-040` (2026-09-20)
+## Kapanış turu — `F-041`…`F-045`, `B-120`…`B-124` (2026-10-23 / 10-24)
 
-**Ekleme — beyan edilen bir dil, tespiti tamamen atlıyor.** Spec sessizdi
-(§ 08b Adım 3.4 alanı adlandırmıyor). `F-037`'nin üç seçeneğinden birincisi:
-`POST /profile/import` `language` alıyor. **Dokunmadan önce iki gerekçeyi oku,
-ikisi de "daha ihtiyatlı" görünen şeye karşı:** (1) *eşik düşükse kullan*
-işe yaramaz — redd worker'dan gelir, cevap ancak bir sonraki yüklemede
-gönderilir, ve o yükleme aynı düşük skora düşüp yine reddedilebilirdi, ki
-`F-037`'nin şikayeti o döngü; (2) beyan **güvenli bir tespiti de geçer** —
-anlaşmazlıkta modele sessizce yenilen bir alan, birinin fark ettiği tek
-durumda hiçbir şey yapmaz. Satın almadığı: atomsuz belge hâlâ
-`NothingExtracted` (`adeclaredLanguageDoesNotRescueAnEmptyDocument`).
+Üç paralel denetim iki repoyu dokümana karşı taradı; backend'in çekirdeği tam
+çıktı, kusurlar kenarlardaydı. Kalıcı olanlar `spec/`'te (§ 38.5, § 34.6,
+§ 31.6.4-5, § 35.7.2, 08-api `keep_top_pinned`, EK C.5, INDEX); burada yalnız
+sonradan "neden" diye sorulacaklar.
 
-**Ekleme — `maxPages` yayımlanıyor** (`F-039`), çünkü "kısa CV pad edilmez, not
-gösterilir" (konsept § 11.2) sinyalsizdi. Sinyal **doluluk olmak zorunda
-değil**: sınırın altındaki `pageCount` sayılabilir bir olgu, § 23.3'ün
-yasakladığı yüzde değil. Kolon gerekmedi — `options`'a hep yazılıyormuş.
-Eski satırlarda varsayılan **değil** `null`: makul bir sayı uydurma olurdu.
-
-**Düzeltme — `two_column`'un şekli ikinci kez çıktı** (`F-040`). Altıncı tur
-onu **girdi** olarak ayırmıştı (seçiliyor, kabul ediliyor, belge başkasını
-basıyor); `customizationId` aynısıydı ve görülmedi — bilinmeyen id `202`
-alıyordu. **Ders: o tur bir örnek buldu, kusur sınıfını değil.** Artık kapıda,
-kotanın önünde, `404`. `B-104`'ün *"`freeformNote` gelmedi"* cümlesi de bayat
-çıktı (`F-038`); arşivde not düşüldü, `B-117`…`B-119` frontend'e gitti.
-
----
+- **`keepPinned` bir yönerge**, profil alanı değil: sabit profilin, sınır bu
+  belgenin. **Önerilen `keep` yanlıştı** — başlık bloğuna çıplak maliyet ekleyip
+  bölüm başlıklarını ve entry satırlarını atlıyordu, yani önerdiği sınır yine
+  reddediliyordu. Artık bütçe kontrolünün okuduğu toplam; sınırlanmış ve hâlâ
+  sığmayan koşu bir eksik alır (döngü yok).
+- **Misafir kapısı denetleyicide** (`SelectionControls`): GitHub içe aktarması
+  misafir için `minAtoms = 1`'i aynı servisten yazıyor.
+- **OTLP logları kendi anahtarıyla** (`OTLP_LOGS_ENABLED`): ihracatçı boş URL'de
+  açılışta patlıyor; `OTLP_ENABLED`'ı paylaşınca bu makinenin `.env`'i
+  `make openapi`'yi düşürdü. Muhafız `OpenTelemetryLogsConfigTest`.
+- **Betik modları, log rotasyonu, frontend health-check, `APP_BASE_URL`, CSP
+  `blob:`** — hepsi sunucuda ilk gün patlayacak, yerelde hiçbir şeyin
+  göremediği şeylerdi. Ders: *Windows'ta çalıştırılabilir bit yok ve her şerit
+  betiği `sh` ile çağırıyor — bir betiğin modunu ancak git dizini söyler.*
 
 **Tamir etmeye kalkma — bilinçli:**
 

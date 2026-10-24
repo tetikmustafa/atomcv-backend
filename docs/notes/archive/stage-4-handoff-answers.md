@@ -30,3 +30,33 @@ geçti; ikisi de 204 döndüğü için istemci sessizce yanlış operasyona bağ
 33 ucun hepsi adlandırıldı, ama **muhafız isimler değil test**: şemada `_<sayı>`
 ile biten `operationId` olamaz. `isX()` de bir alandır — `Appearance` kolona
 `"empty"` yazmış satırlar bıraktığı için `ignoreUnknown` de gerekti.
+
+---
+
+_`notes/current.md`'den 2026-10-24'te taşındı._
+
+## Frontend'in dört maddesi — `F-037`…`F-040` (2026-09-20)
+
+**Ekleme — beyan edilen bir dil, tespiti tamamen atlıyor.** Spec sessizdi
+(§ 08b Adım 3.4 alanı adlandırmıyor). `F-037`'nin üç seçeneğinden birincisi:
+`POST /profile/import` `language` alıyor. **Dokunmadan önce iki gerekçeyi oku,
+ikisi de "daha ihtiyatlı" görünen şeye karşı:** (1) *eşik düşükse kullan*
+işe yaramaz — redd worker'dan gelir, cevap ancak bir sonraki yüklemede
+gönderilir, ve o yükleme aynı düşük skora düşüp yine reddedilebilirdi, ki
+`F-037`'nin şikayeti o döngü; (2) beyan **güvenli bir tespiti de geçer** —
+anlaşmazlıkta modele sessizce yenilen bir alan, birinin fark ettiği tek
+durumda hiçbir şey yapmaz. Satın almadığı: atomsuz belge hâlâ
+`NothingExtracted` (`adeclaredLanguageDoesNotRescueAnEmptyDocument`).
+
+**Ekleme — `maxPages` yayımlanıyor** (`F-039`), çünkü "kısa CV pad edilmez, not
+gösterilir" (konsept § 11.2) sinyalsizdi. Sinyal **doluluk olmak zorunda
+değil**: sınırın altındaki `pageCount` sayılabilir bir olgu, § 23.3'ün
+yasakladığı yüzde değil. Kolon gerekmedi — `options`'a hep yazılıyormuş.
+Eski satırlarda varsayılan **değil** `null`: makul bir sayı uydurma olurdu.
+
+**Düzeltme — `two_column`'un şekli ikinci kez çıktı** (`F-040`). Altıncı tur
+onu **girdi** olarak ayırmıştı (seçiliyor, kabul ediliyor, belge başkasını
+basıyor); `customizationId` aynısıydı ve görülmedi — bilinmeyen id `202`
+alıyordu. **Ders: o tur bir örnek buldu, kusur sınıfını değil.** Artık kapıda,
+kotanın önünde, `404`. `B-104`'ün *"`freeformNote` gelmedi"* cümlesi de bayat
+çıktı (`F-038`); arşivde not düşüldü, `B-117`…`B-119` frontend'e gitti.
