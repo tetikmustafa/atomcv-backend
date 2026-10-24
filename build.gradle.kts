@@ -139,9 +139,15 @@ dependencies {
     // it on its own. This module adds SqlTypes.VECTOR with a pgvector dialect
     // contribution, so the column is mapped rather than read through a
     // hand-written converter that ddl-auto=validate could not check.
-    // Version pinned to hibernate-core's: Spring Boot's BOM manages the
-    // core but not this module, so an unpinned coordinate does not resolve.
-    implementation("org.hibernate.orm:hibernate-vector:6.6.58.Final")
+    // Spring Boot's BOM manages the core but not this module, so an
+    // unversioned coordinate does not resolve -- and a literal version drifts:
+    // Dependabot walked it to 6.6.58 while the BOM held the core at 6.6.53,
+    // and the module then asked for a core it was not running against. The
+    // BOM's own property keeps the two in step and moves with Boot.
+    implementation(
+        "org.hibernate.orm:hibernate-vector:" +
+            dependencyManagement.importedProperties["hibernate.version"]
+    )
     // JSON merge-patch needs three states — absent, null, value — and Java has
     // no tri-state Optional: Jackson deserializes an absent Optional field as
     // Optional.empty(), the same as an explicit null. This library owns that
