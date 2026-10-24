@@ -3,58 +3,38 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-09-21** · **`B-117`…`B-119` karşılandı ve arşivlendi**, sonra **bütün dokümanlar koda karşı ölçüldü**: üç ürün yüzeyi telde ve dokümanda vardı, ekranda yoktu — üçü de indi. Frontend'den **`F-041`…`F-045`** açıldı; backend'e gelen kanal boş.
+**2026-10-24** · **Kapanış turu bitti.** Üç paralel denetim (spec↔kod, tel kapsaması, arayüz) iki repoyu baştan taradı; `F-041`…`F-045` ve `B-120`…`B-124` aynı gün karşılandı, iki kanal da boş. **Kod tarafında yapılacak iş kalmadı; kalan her şey sunucu ister** (aşağıda).
 
 ## Backend — `atomcv-backend`
 
 | Aşama / Adım | Durum |
 |---|---|
-| Aşama 0-3 — hesap, MVP, anonim akış (kapanış denetimi 08-28) | ✅ |
-| Aşama 4 — buradan yapılabilecek maddelerin hepsi | ✅ |
-| Frontend'in dört maddesi — `F-037`…`F-040` | ✅ geldikleri gün |
+| Aşama 0-4 ve altı denetim | ✅ |
+| Kapanış turu — `B-120`…`B-124`, operasyon sertleştirmesi | ✅ (PR #217-#220) |
 
-**Aşama 4 + altı denetim.** **Faz G** (`B-088`, `B-089`), **üç şablon** (`B-090`, `B-092`), **Katman B** (`B-091`), **başvuru takibi** (`B-093`), **DOCX** (`B-094`), **yaşam döngüsü e-postaları** (`B-096`). Sonra spec **altı kez** koda karşı denetlendi (09-15 → 09-20) ve her turun ekseni değişti: ad kodda var mı (1-2) · yazılmış sayılan tasarım (3) · kümeler tam mı (4) · telde bir ucu var mı (5) · **iki belge aynı şeyi mi anlatıyor, ve ertelenmiş bir işin koşulu geçti mi (6)**. Altısının da bulduğu her şey ya yazıldı ya gerekçesiyle `spec/`'e kaydedildi; anlatılar `notes/archive/denetim-*.md`'de, özet tablo `notes/current.md`'de.
+**Bu tur.** `fontFamily` beş alanda dört değerli enum (profil `book`'u reddediyordu); `CoverLetterRequest.language`; içe aktarma fazları `import.phase.*` anahtarı; `keep_top_pinned`'in cevabı `GenerationRequest.keepPinned` (önerilen `keep` bölüm başlıklarını saymadığı için **yine reddediliyordu** — düzeldi); sonuçta `roleTitle`/`companyName`; misafire giriş/bölüm kontrolleri kapalı (yalnız atomda zorlanıyordu). F-042/43/44 spec metni.
 
-**Altıncı turun yedi bulgusu:** **EK D.6'nın iki kopyası vardı** ve ikisi de "tek kaynak burasıdır" diyordu (eskisi kapanmış bir soruyu açık gösteriyordu); **EK D.7** Aşama 1'de donmuşken "frontend için tek adres" diyordu — ikisi emekliye ayrıldı. **Dört çıkarım reddi çözümsüz geliyordu** ve `switch_to_manual_form` sözlükte kullanılmadan duruyordu (`B-114`). **Dört sözlük değeri daha üretilemiyordu** ve biri **girdiydi**: `two_column` kabul edilip sessizce başka basılıyordu — `V17` dördünü de kolonlardan düşürdü (`B-116`). `trace.C.estimatedAtoms` iki bölümde vaat edilip atılıyordu, § 48.3'ün üç satırının hiç serisi yoktu. `job_analysis`'in işveren cümlesi "bir sonraki sürümde" diye ertelenmişti, v2 geldi ve cümle girmedi — **v3** yazıldı, eval'den geçti (%100 / %91.7 / %100). § 37.6 frontend'e **çalışan bir kontrolü çizmemesini** söylüyordu (`B-115`). Artı on dört bayat blok.
+**Operasyon — bulunan gerçek kusurlar.** 13 betiğin 9'u `100644`'tü: cron'un `backup.sh`'i ve deploy'un `./scripts/deploy.sh`'i sunucuda "Permission denied" alırdı (`ScriptModeTest`). Prod compose'da log rotasyonu yoktu; `deploy.sh` frontend'i hiç health-check etmiyordu; `APP_BASE_URL` yoksa her e-posta localhost'a bağlanıyordu (`PublicBaseUrlCheck`); CSP `frame-src` PDF önizlemeyi engellerdi. Axiom'a log akışı OTLP ile eklendi — **kendi anahtarıyla** (`OTLP_LOGS_ENABLED`): metrikle paylaşınca boş log URL'li her ortam açılmıyordu.
 
-**Ölçümler.** **Faz D artık çalışıyor** — eşikler gerçek BGE-M3 vektörleriyle ölçülüp skordan **kanıta** taşındı (§ 21.2): kosinüs her profilde 0.63-0.84 arası dar bir bant, yani alakasız bir akademik CV hiçbir terim adlandırmadan 0.3870 alırken eşleşen CV 0.4133 alıyordu — hiçbir mutlak taban ikisini ayıramaz. Kapı `matchedTerms`, taban 0.35, `ADAPT` 4 terim; eşleşen profilde 2 aday, ötekilerin altısında 0. Ölçüm `ScoreReachIT`, `gradlew embeddingTest` (gerçek TEI ister). `cover_letter` **v1**. Sayfa garantisi üç şablonda gerçek derleyiciye karşı %3 içinde. **§ 29.2'nin format dökümü XeTeX'te imkânsız** (motor sınırı, ölçüldü).
-
-**Geliştiricide:** VPS ve restore testi (§ 49.4); OAuth, Turnstile, `B-083`'ün challenge'ı gerçek uca karşı denenmedi. **Admin teşhis ucu** (§ 41.4) ve **R2** (§ 57.4) bilerek yok; ikincisini bir tuzak tel tutuyor. **Yerelde iki şey bekliyor:** `make db-reset` (migration yorumları düzenlendi, checksum'lar değişti; üstelik `V17` indi) ve **`make record`** — `job_analysis` v3'e çıktığı için o prompt'un fixture'ları ıskalanıyor ve `local-fake` sentetik cevaba düşüyor. `scripts/dev-record.sh` ilanı kendi taşıyor; senden istediği tek şey bir CV dosyası.
-
-**`F-037`…`F-040` karşılandı (2026-09-20, PR #208).** Bayat bir `customizationId` worker'ın içinde çözülüyordu, yani `202` alıp farklı geometriyle basıyordu — artık kapıda ve **kotanın önünde** `404` (`F-040`). `GenerationResponse` ve `GenerationSummary` `maxPages` yayımlıyor; **kolon gerekmedi**, `storedOptions` onu `options`'a hep yazıyormuş (`F-039`). `POST /profile/import` `language` alıyor ve gönderildiğinde **tespiti tamamen atlıyor** — "eşik düşükse kullan" ikinci yüklemenin aynı reddi almasına izin verirdi (`F-037`). `F-038`'in dört şeyi zaten koddaydı: bayat olan `B-104`'tü, `note` Faz D'ye gerçekten ulaşıyor. Frontend'e `B-117`…`B-119`, **üçü de `npm run gen:api` istiyor.**
-
-**Test:** 1928 birim · 582 entegrasyon · latex 145 — 0 hata; artı elle koşulan `embeddingTest` ve `llmEval` (para harcar). PR #208'in yedi kontrolü de geçti, `latexTest` dahil. Beş yeni muhafız **düşerken görüldü** (§ 51.7).
+**Test:** 1951 birim · 586 entegrasyon · 0 hata; CI'ın sekiz kontrolü her PR'da geçti. İmaj JRE ile kurulup koşuldu.
 
 ## Frontend — `atomcv-frontend`
 
 | Aşama / Adım | Durum |
 |---|---|
-| Aşama 0-2 — iskelet, profil editörü, üretim akışı + SSE | ✅ |
-| Aşama 3 — **bütün dilimler** | ✅ |
-| Aşama 4 — `B-071`-`B-074`, `B-085`-`B-087`, `B-088`-`B-094`, `B-096` | ✅ |
-| Aşama 4 — SEO, a11y denetimi, tema, `canAddAlternatives`, bağımlılıklar | ✅ |
-| Aşama 4 — kapanış sırası D1…D14, `B-100`…`B-116`, `B-117`…`B-119` | ✅ tamamı |
+| Aşama 0-4 | ✅ |
+| Kapanış turu — tasarım sistemi, her ekranın yeniden tasarımı, telde kalan alanlar | ✅ |
 
-**Aşama 4'ün sekizi (09-11) ve backend beklemeyen beş iş (09-12) indi** — Faz G'nin cümle kutusu, üç şablon + Katman B, `/applications`, DOCX, `/unsubscribe`, SEO, axe taraması, tema, `canAddAlternatives`. Satır satır `handoff/resolved/to-frontend-2026-09.md` ve `notes/archive/stage-4.md`'de.
+**Arayüz.** Görsel yön **monokrom ve cilalı**: kırık beyaz sayfa, beyaz kartlar, tek renk yıkıcı kırmızı. Yedi yeni primitive (`Card`, `Badge`, `NativeSelect`, `Sheet`, `Tabs`, `Skeleton`, `Separator`), `Page`/`PageHeader`/`EmptyState`. Kabuk: `lg`'den yukarı kenar çubuğu, altında tembel yüklenen bir menü; arayüz dili seçici; çevrili 404, hata ve yükleme sayfaları. Landing, nasıl-çalışır ve yasal sayfalar yeniden çizildi (hâlâ **0 KB kendi JS'i**).
 
-**⚠ axe paleti görmüyor.** Token'lar `oklch`, Tailwind'in alfası `oklab(… / α)`'ya derleniyor, ve axe böyle bir arka planlı düğümü **ne ihlal ne `incomplete`** sayar — düşürür. Koyu temada 3.16'da duran bir düğme taramayı sessizce geçti. `palette.test.ts` artık çiftleri hesapla ölçüyor, hover dahil. Backend'in kendi a11y/kontrast denetimi varsa aynı tuzağa bakmaya değer.
+**Telde olup ekranda olmayanlar indi.** Sonuçta **PDF önizleme** (iframe, 0 KB; isteğe bağlı çünkü her indirme derliyor), **başvuruya bağlama** (`generationId` hiçbir ekrandan gönderilmiyordu), misafire indirme sonrası hesap teklifi; üretimde **sayfa sınırı**; giriş `url`/kontrolleri, bölüm anahtarları, ifade **üslubu**; kayıtlı görünüşleri yeniden adlandırma/güncelleme; **profili silme**; başvurularda filtre, düzenleme ve silme onayı; içe aktarmada sürükle-bırak, adım göstergesi, sonuç özeti. `RunEditor` artık gerçekten tembel (kural 4).
 
-**Güvenlik:** `next` 16.3.0 iki **kritik** RCE uyarısının aralığındaydı (Windows sunucu; AVIF/görüntü optimizasyonu). 16.3.5'e çıkıldı, kalan yedisi geliştirme zinciriydi, **sıfır açık**. CI action'ları `@v5` — yalnız push'ta doğrulanabilir.
-
-**Denetim — üç yüzey ekranda yoktu (2026-09-21).** **Veri export** (JSON + Markdown; üç kullanıcıya görünen cümle onu vaat ediyordu, § 58.2 "en önemli güvence" diyor, EK C.1'de yayın kutusu var — istemci fonksiyonları iki aşamadır çağrılmıyordu). **Çıktı dili** (§ 38.1'in üçüncü ekseni: `GenerationRequest.language` gönderilmiyor, `defaults.cvLanguage`/`coverLetterLanguage` okunmuyordu). **Yazım stili** (`writingStyle`'ın dördü de). Uygularken dördüncüsü çıktı: **`defaults.maxPages`** hiçbir yerde düzenlenemiyordu. Hepsi indi; kayıt `notes/current.md`.
-
-**Test:** 989 birim · 77 e2e · **bundle** profil 258.9 / ayarlar 245.9 / üretim 229.5 / onboarding 224.0 / başvurular 216.6 / geçmiş 215.5 / landing ve nasıl-çalışıyor 168.8 KB (tavan: pazarlama 200, uygulama 280) · `npm audit` sıfır açık
+**Test:** 1007 birim · 84 e2e (yeni: 375px'te menü ve taşma) · axe iki temada temiz · **bundle** profil 265.6 / ayarlar 253.5 / üretim 236.1 / başvurular 238.4 / geçmiş 235.2 / pazarlama 169.6 KB (tavan 280 / 200) · `npm audit` sıfır.
 
 ## Açık kararlar
 
-**Açık karar yok** (2026-09-20). Altıncı denetimin gerektirdiği sekiz karar verildi ve aynı gün uygulandı (kayıt: `notes/current.md`). Ondan önceki ikisi ölçümle kapanmıştı: **`ADAPT` barajı 4'te kaldı** — 7 profil 218 atoma karşı dağılım `{0→206, 1→4, 2→2, 3→5, 5→1}`, yani baraj *ulaşılabilir* (0.65'in aritmetik kapalılığı yok) ve tam 4'te hiçbir şey olmadığı için 3'e inmek kümeyi 1'den 6'ya çıkarırdı; tek analiz edilmiş ilanla ayar yapılmadı, muhafızı `AdaptBarReachTest`, kayıt § 21.2. **Ölçek tavanı 3.0'da kaldı** — bozuk olan tahmin ediciydi, düzeltildikten sonra doğrusal 1.94/2.02'ye karşı ekili karesel 3.86/3.63 (`performance-budgets.yaml`). Ayrıca **VPS'in beş kararı** verildi ve **doküman çevirisi kapsam dışı** bırakıldı: `docs/vps-dagitim-plani.md` § 0.
+**Açık karar yok.** Bu turun iki sapması kayıtlı (`notes/current.md`): başvuru takibi "varsayılan açık" değil, ön dolu **tek basış**; PDF önizleme kendiliğinden değil **basınca** yükleniyor. Bilinçli olarak yapılmayanlar gerekçeleriyle aynı yerde: atom başına skor (§ 35.3.1), "yeniden hesaplanıyor" göstergesi, sürüm banner'ı, R2, admin teşhis ucu.
 
-_Daha önce kapandı 09-09: model `openai/gpt-5.6-sol`; `emphasis` kalın, bedeli sıfır; anonim çalışma **profiliyle üretimleriyle** taşınıyor (hesabın profili varsa `kept_existing`, ikisi de sönüyor)._
+## Sonraki adım — yalnız sunucu ister
 
-## Sonraki senkronizasyon noktası
-
-**Sıra backend'de: `F-041`…`F-045`.** Dördü sizin sahip olduğunuz metin — `fontFamily`'nin sözlüğü yayımlanmıyor (§ 38.5 dört yazı tipi sayıyor, arayüz üçünü sunuyor, alan düz `string` olduğu için **hiçbir typecheck göremiyor**, `two_column`'un şekli); `INDEX.md` bu repoda olmayan `vps-dagitim-plani.md` ile `sync-spec.sh`'e yönlendiriyor; § 31.6.5 "altı uyarı kodu" diyor, şema yedi yayımlıyor; EK C.5 `app.name` anahtarı varsayıyor, inen şey tek bir `APP_NAME` sabiti. **Biri gerçek bir tel sorusu:** `CoverLetterRequest` bir `language` almıyor, oysa § 10.1 "CV ve cover letter için ayrı seçim" diyor — CV tarafı indi, cover letter yalnız varsayılandan geliyor. Alan gelmeden düğme çizilmez.
-
-**`B-117`…`B-119` ve `F-031`…`F-040` arşivlendi.** `to-backend.md` 142 → 98 satır; satır satır `resolved/to-backend-2026-09.md`'de. `B-101`'in `contract-check`'i CI'da ve `main/openapi.json`'ı çekiyor — backend'in commit'li şeması bizim tiplerimizle birebir.
-
-**Sentry bir karara bağlandı, ve bağlanmamış olması bulgunun kendisiydi.** § 5.7 onu seçiyor, EK C.1'de kutusu var, frontend'de hiç yoktu ve hiçbir yerde "yapılmayacak" yazmıyordu. Analitikle aynı gerekçeyle ertelendi — gönderilecek yer yokken yazılan kod, çalıştığını hiç görmeyeceğimiz bir bakım yükü — ve dağıtım günü listesine girdi.
+Sırası `vps-dagitim-plani.md` (backend) § 2-4 ve frontend `notes/current.md` § *Dağıtım günü*'nde: VPS + DNS + Origin sertifikası, `.env` (`APP_BASE_URL`, `OTLP_LOGS_*` dahil), iki cron + logrotate, GitHub secret'ları ve `deploy.yml`'ın elle ilk koşusu, restore ve rollback tatbikatı; sonra gerçek uca karşı OAuth, Turnstile, sihirli bağlantı, SPF/DKIM/DMARC, `NEXT_PUBLIC_SITE_URL`, Umami ve Sentry kararları. Frontend imajı `NEXT_PUBLIC_*`'ı **derlemede** gömüyor: `NEXT_PUBLIC_SITE_URL` ve `NEXT_PUBLIC_TURNSTILE_SITE_KEY` `--build-arg` olarak verilmeli — Dockerfile bunları almıyordu, eklendi.

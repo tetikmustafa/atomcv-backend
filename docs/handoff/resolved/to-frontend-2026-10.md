@@ -53,3 +53,20 @@ sığmazsa yeni ret daha küçük bir `keep` önerir; hiç sabit yoksa düğme g
 `GenerateScreen` ve `ErrorPanel`'deki düşürme kaldırılabilir.
 
 **Frontend (2026-10-23):** `GenerateScreen` `keep_top_pinned`'i çiziyor, `keepPinned` ile yeniden gönderiyor.
+
+### B-124 · Sonucun rolü ve şirketi; giriş/bölüm kontrolleri hesap ister
+
+**Since:** `feat/result-names-and-guest-gates` · § 35.7.2, `B-070`
+**Neden:** (1) `GenerationResponse` geçmiş satırının taşıdığı `roleTitle` ile
+`companyName`'i taşımıyordu; sonuç ekranı ilanın ne için olduğunu söyleyemiyor,
+bir başvuruyu onunla dolduramıyordu. (2) § 9 misafire içeriği verir, kontrolleri
+değil; sunucu bunu yalnız atomda zorluyordu — bir girişin `importance`,
+`active`, `alwaysInclude`, `verbatim`, `minAtoms`'u ve bir bölümün üç anahtarı
+herkese yazılabiliyordu.
+**Action:** `gen:api`; sonuç ekranında başlık ve "başvurulara ekle" ön
+dolgusu `roleTitle`/`companyName`'den. Misafir bu alanlardan birini gönderirse
+`403 FEATURE_REQUIRES_ACCOUNT`, `params.feature: atom_controls` — arayüz onları
+zaten `canEditAtomControls` arkasında çiziyor. `EntryCreate.minAtoms` artık
+`0…50` (yama ile aynı).
+
+**Frontend (2026-10-24):** `GenerationResult` başlığı ve `TrackApplication` ön dolgusu; mock `roleTitle`/`companyName`'i sonuçta da veriyor.

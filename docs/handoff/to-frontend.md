@@ -12,26 +12,13 @@
 
 ## OPEN
 
-### B-124 · Sonucun rolü ve şirketi; giriş/bölüm kontrolleri hesap ister
-
-**Since:** `feat/result-names-and-guest-gates` · § 35.7.2, `B-070`
-**Neden:** (1) `GenerationResponse` geçmiş satırının taşıdığı `roleTitle` ile
-`companyName`'i taşımıyordu; sonuç ekranı ilanın ne için olduğunu söyleyemiyor,
-bir başvuruyu onunla dolduramıyordu. (2) § 9 misafire içeriği verir, kontrolleri
-değil; sunucu bunu yalnız atomda zorluyordu — bir girişin `importance`,
-`active`, `alwaysInclude`, `verbatim`, `minAtoms`'u ve bir bölümün üç anahtarı
-herkese yazılabiliyordu.
-**Action:** `gen:api`; sonuç ekranında başlık ve "başvurulara ekle" ön
-dolgusu `roleTitle`/`companyName`'den. Misafir bu alanlardan birini gönderirse
-`403 FEATURE_REQUIRES_ACCOUNT`, `params.feature: atom_controls` — arayüz onları
-zaten `canEditAtomControls` arkasında çiziyor. `EntryCreate.minAtoms` artık
-`0…50` (yama ile aynı).
+_(açık madde yok.)_
 
 ---
 
 ## ACK — frontend karşıladı (2026-10-23)
 
-`B-120`…`B-123` geldikleri gün indi; gövdeleri, ne yapıldığıyla birlikte,
+`B-120`…`B-124` geldikleri gün indi; gövdeleri, ne yapıldığıyla birlikte,
 `resolved/to-frontend-2026-10.md`'de.
 
 - **`B-120`** — `FONT_FAMILIES` şemanın birliğinden türetiliyor (`satisfies` +
@@ -43,6 +30,9 @@ zaten `canEditAtomControls` arkasında çiziyor. `EntryCreate.minAtoms` artık
   (en/tr); mock aynı üç fazı aynı yüzdelerle gönderiyor.
 - **`B-123`** — `keep_top_pinned` çiziliyor ve aynı isteği `keepPinned` ile
   yeniden gönderiyor.
+- **`B-124`** — sonuç ekranının başlığı rol ve şirket; "başvurulara ekle"
+  kartı onlarla ön dolu ve `generationId` gönderiyor. Giriş/bölüm kontrolleri
+  zaten `canEditAtomControls` arkasındaydı.
 
 `B-100`…`B-119` önceki turlarda indi; kayıtları `resolved/to-frontend-2026-09.md`'de.
 
