@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-10-24** · **Kapanış turu bitti.** Üç paralel denetim (spec↔kod, tel kapsaması, arayüz) iki repoyu baştan taradı; `F-041`…`F-045` ve `B-120`…`B-124` aynı gün karşılandı, iki kanal da boş. **Kod tarafında yapılacak iş kalmadı; kalan her şey sunucu ister** (aşağıda).
+**2026-10-24** · **Kapanış turu bitti, ikinci denetim turu da.** Üç paralel denetim (spec↔kod, tel kapsaması, arayüz) iki repoyu baştan taradı; `F-041`…`F-045` ve `B-120`…`B-125` aynı gün karşılandı, iki kanal da boş. **Kod tarafında yapılacak iş kalmadı; kalan her şey sunucu ister** (aşağıda).
 
 ## Backend — `atomcv-backend`
 
@@ -11,12 +11,15 @@
 |---|---|
 | Aşama 0-4 ve altı denetim | ✅ |
 | Kapanış turu — `B-120`…`B-124`, operasyon sertleştirmesi | ✅ (PR #217-#220) |
+| İkinci tur — ATS sonucunun saklanması (V18, `B-125`) | ✅ (PR #222) |
 
 **Bu tur.** `fontFamily` beş alanda dört değerli enum (profil `book`'u reddediyordu); `CoverLetterRequest.language`; içe aktarma fazları `import.phase.*` anahtarı; `keep_top_pinned`'in cevabı `GenerationRequest.keepPinned` (önerilen `keep` bölüm başlıklarını saymadığı için **yine reddediliyordu** — düzeldi); sonuçta `roleTitle`/`companyName`; misafire giriş/bölüm kontrolleri kapalı (yalnız atomda zorlanıyordu). F-042/43/44 spec metni.
 
 **Operasyon — bulunan gerçek kusurlar.** 13 betiğin 9'u `100644`'tü: cron'un `backup.sh`'i ve deploy'un `./scripts/deploy.sh`'i sunucuda "Permission denied" alırdı (`ScriptModeTest`). Prod compose'da log rotasyonu yoktu; `deploy.sh` frontend'i hiç health-check etmiyordu; `APP_BASE_URL` yoksa her e-posta localhost'a bağlanıyordu (`PublicBaseUrlCheck`); CSP `frame-src` PDF önizlemeyi engellerdi. Axiom'a log akışı OTLP ile eklendi — **kendi anahtarıyla** (`OTLP_LOGS_ENABLED`): metrikle paylaşınca boş log URL'li her ortam açılmıyordu.
 
-**Test:** 1951 birim · 586 entegrasyon · 0 hata; CI'ın sekiz kontrolü her PR'da geçti. İmaj JRE ile kurulup koşuldu.
+**İkinci tur.** `AtsCheck` her PDF'i geri okuyordu ama sonuç yalnız sayaca gidiyordu (konsept § 10.1 görünmüyordu): V18 `generations.ats_check` — yalnız sayılar ve bayraklar — ve `GenerationResponse.atsCheck`. Gerçek derleyiciyle `JobSpecificCvIT` 12/12, hiçbir PDF kusur bildirmedi.
+
+**Test:** 1953 birim · 587 entegrasyon · 0 hata; CI'ın kontrolleri (gerçek derleyici turu dahil) her PR'da geçti. İmaj JRE ile kurulup koşuldu.
 
 ## Frontend — `atomcv-frontend`
 
@@ -25,11 +28,13 @@
 | Aşama 0-4 | ✅ |
 | Kapanış turu — tasarım sistemi, her ekranın yeniden tasarımı, telde kalan alanlar | ✅ |
 
-**Arayüz.** Görsel yön **monokrom ve cilalı**: kırık beyaz sayfa, beyaz kartlar, tek renk yıkıcı kırmızı. Yedi yeni primitive (`Card`, `Badge`, `NativeSelect`, `Sheet`, `Tabs`, `Skeleton`, `Separator`), `Page`/`PageHeader`/`EmptyState`. Kabuk: `lg`'den yukarı kenar çubuğu, altında tembel yüklenen bir menü; arayüz dili seçici; çevrili 404, hata ve yükleme sayfaları. Landing, nasıl-çalışır ve yasal sayfalar yeniden çizildi (hâlâ **0 KB kendi JS'i**).
+**Arayüz.** Görsel yön **monokrom ve cilalı**: kırık beyaz sayfa, beyaz kartlar, tek renk yıkıcı kırmızı. Beş yeni primitive (`Card`, `Badge`, `NativeSelect`, `Sheet`, `Skeleton`), `Page`/`PageHeader`/`EmptyState`. Kabuk: `lg`'den yukarı kenar çubuğu, altında tembel yüklenen bir menü; arayüz dili seçici; çevrili 404, hata ve yükleme sayfaları. Landing, nasıl-çalışır ve yasal sayfalar yeniden çizildi (hâlâ **0 KB kendi JS'i**).
 
 **Telde olup ekranda olmayanlar indi.** Sonuçta **PDF önizleme** (iframe, 0 KB; isteğe bağlı çünkü her indirme derliyor), **başvuruya bağlama** (`generationId` hiçbir ekrandan gönderilmiyordu), misafire indirme sonrası hesap teklifi; üretimde **sayfa sınırı**; giriş `url`/kontrolleri, bölüm anahtarları, ifade **üslubu**; kayıtlı görünüşleri yeniden adlandırma/güncelleme; **profili silme**; başvurularda filtre, düzenleme ve silme onayı; içe aktarmada sürükle-bırak, adım göstergesi, sonuç özeti. `RunEditor` artık gerçekten tembel (kural 4).
 
-**Test:** 1007 birim · 84 e2e (yeni: 375px'te menü ve taşma) · axe iki temada temiz · **bundle** profil 265.6 / ayarlar 253.5 / üretim 236.1 / başvurular 238.4 / geçmiş 235.2 / pazarlama 169.6 KB (tavan 280 / 200) · `npm audit` sıfır.
+**İkinci tur.** Sonuçta **makine okunabilirliği** kartı (`B-125`; kusuru şablona yazar, CV'ye değil); atomda **"Bunu kontrol ettim"** (`verified`, misafire de açık); başvuruyu sonradan **CV'ye bağlama**; içe aktarmada **metni yapıştırma** (`.txt` olarak aynı yükleme); mektubu **`.txt` indirme**; GitHub önerilerinde yıldız/bağlantı/diller. Form id'leri örnek başına (`useId`), başlık hiyerarşisi, dokuz ölü çeviri anahtarı ve iki kullanılmayan primitive silindi.
+
+**Test:** 1015 birim · 84 e2e (375px dahil) · axe iki temada temiz · **bundle** profil 266.2 / ayarlar 253.6 / üretim 236.0 / onboarding 232.4 / başvurular 227.1 / geçmiş 223.2 / pazarlama 169.6 KB (tavan 280 / 200) · `npm audit` sıfır.
 
 ## Açık kararlar
 
