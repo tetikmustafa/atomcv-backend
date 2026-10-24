@@ -469,6 +469,11 @@ class OpenApiSchemaIT extends AbstractIntegrationTest {
                         + ".properties.fitReport.$ref").value("#/components/schemas/FitReport"))
                 .andExpect(jsonPath("$.components.schemas.GenerationResponse"
                         + ".properties.pageCount").exists())
+                .andExpect(jsonPath("$.components.schemas.GenerationResponse"
+                        + ".properties.atsCheck.$ref")
+                        .value("#/components/schemas/AtsCheckResult"))
+                .andExpect(jsonPath("$.components.schemas.AtsCheckResult.properties"
+                        + ".headingsExpected").exists())
                 .andExpect(jsonPath("$.components.schemas.FitReport.properties.requiredCovered")
                         .exists())
                 .andExpect(jsonPath("$.components.schemas.FitReport.properties.missingRequired")

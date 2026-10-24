@@ -16,6 +16,7 @@ import com.mustafatetik.atomcv.rendering.template.TemplateCustomization;
 import com.mustafatetik.atomcv.shared.error.PipelineError;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.generation.validation.AtsCheck;
+import com.mustafatetik.atomcv.generation.validation.AtsCheckResult;
 import com.mustafatetik.atomcv.generation.validation.AtsReport;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Locale;
@@ -113,10 +114,10 @@ public class GenerationPipeline {
             recordDrift(state, request, customization, document.pageCount());
 
             if (document.pageCount() <= maxPages) {
-                reportAts(document.pdf(), renderRequest);
+                AtsReport ats = reportAts(document.pdf(), renderRequest);
                 return Result.ok(new GeneratedDocument(
                         document.pdf(), document.pageCount(), state, renderRequest,
-                        attempt, factor, rewritten));
+                        attempt, factor, rewritten, AtsCheckResult.of(ats)));
             }
 
             // A rising rate here means the measurement layer is wrong, not
@@ -183,13 +184,18 @@ public class GenerationPipeline {
      *
      * <p>Counts only in the log line. A section heading is the user's own
      * wording (absolute rule 4).
+     *
+     * <p>And since V18 the person sees it too: the counts go onto the
+     * generation row and the result screen, where it was the one feature the
+     * concept names (§ 10.1) that nobody could see run.
      */
-    private void reportAts(byte[] pdf, RenderRequest rendered) {
+    private AtsReport reportAts(byte[] pdf, RenderRequest rendered) {
         AtsReport ats = AtsCheck.of(pdf, rendered);
         meters.counter(ats.clean() ? "generation.ats.clean" : "generation.ats.defect")
                 .increment();
         if (!ats.clean()) {
             log.warn("The generated PDF does not read back cleanly: {}", ats);
         }
+        return ats;
     }
 }

@@ -295,6 +295,7 @@ public class GenerationJobHandler implements JobHandler {
         record.supersede(parent.getId());
         record.setPageCount(document.pageCount());
         record.setFitReport(generated.fitReport());
+        record.setAtsCheck(document.atsCheck());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
         record.setRewrittenContent(document.rewritten());
         record.setCoverLetter(generated.coverLetter());
@@ -399,6 +400,7 @@ public class GenerationJobHandler implements JobHandler {
         }
         record.setPageCount(document.pageCount());
         record.setFitReport(generated.fitReport());
+        record.setAtsCheck(document.atsCheck());
         record.setContentSnapshot(RenderedContent.of(document.rendered()));
         // V11. The snapshot above cannot stand in for it: it is the render,
         // and the render carries no atom ids. Faz G reads this one back so an

@@ -4561,6 +4561,37 @@
           }
         }
       },
+      "AtsCheckResult" : {
+        "type" : "object",
+        "description" : "The generated PDF read back as text, the way an applicant tracking\nsystem reads it. Counts and flags only. Absent on a generation made\nbefore the check was kept.",
+        "properties" : {
+          "readable" : {
+            "type" : "boolean"
+          },
+          "headingsFound" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "headingsExpected" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bulletsFound" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bulletsExpected" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "contactReadable" : {
+            "type" : "boolean"
+          },
+          "orderPreserved" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "FitReport" : {
         "type" : "object",
         "description" : "How much of the posting's vocabulary the CV actually says. Counts, never a percentage.",
@@ -4643,6 +4674,9 @@
           },
           "fitReport" : {
             "$ref" : "#/components/schemas/FitReport"
+          },
+          "atsCheck" : {
+            "$ref" : "#/components/schemas/AtsCheckResult"
           },
           "contentLanguage" : {
             "type" : "string",

@@ -12,6 +12,8 @@ import com.mustafatetik.atomcv.generation.phases.analysis.JobDescriptionDigest;
 import com.mustafatetik.atomcv.generation.repository.GenerationRepository;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
+import com.mustafatetik.atomcv.generation.validation.AtsCheckResult;
+import com.mustafatetik.atomcv.generation.validation.AtsReport;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import com.mustafatetik.atomcv.shared.wire.MatchLevel;
 import com.mustafatetik.atomcv.profile.domain.content.RichContent;
@@ -183,6 +185,30 @@ class GenerationRecordIT extends AbstractIntegrationTest {
         assertThat(reloaded.getFitReport()).isEqualTo(report);
         assertThat(reloaded.getFitReport().level()).isEqualTo(MatchLevel.MODERATE);
         assertThat(reloaded.getFitReport().missingRequired()).containsExactly("Kubernetes");
+    }
+
+    /**
+     * The ATS read-back is an eighth JSONB column (V18): counts and flags,
+     * and the column holds no heading text — the headings are the person's
+     * wording and this row is read by support (absolute rule 4).
+     */
+    @Test
+    void theatsCheckSurvivesTheRoundTripAsCountsOnly() {
+        var check = AtsCheckResult.of(new AtsReport(
+                List.of("Experience", "Education"), List.of("Projekte"),
+                7, 8, true, false));
+        var generation = record(snapshot());
+        generation.setAtsCheck(check);
+
+        var saved = generations.save(user(), generation);
+        var reloaded = generations.findById(user(), saved.getId()).orElseThrow();
+
+        assertThat(reloaded.getAtsCheck()).isEqualTo(check);
+        assertThat(reloaded.getAtsCheck().headingsExpected()).isEqualTo(3);
+        assertThat(reloaded.getAtsCheck().readable()).isFalse();
+        assertThat(jdbc.queryForObject(
+                "SELECT ats_check::text FROM generations WHERE id = ?", String.class, saved.getId()))
+                .doesNotContain("Experience", "Projekte");
     }
 
     /**

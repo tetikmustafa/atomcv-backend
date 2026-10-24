@@ -444,6 +444,12 @@ class JobSpecificCvIT extends AbstractLatexTest {
         // quietly appear.
         assertThat(body).doesNotContain("percent").doesNotContain("score");
 
+        // The read-back reaches the screen too (V18): the same hops, counts
+        // and flags only.
+        assertThat((Boolean) JsonPath.read(body, "$.atsCheck.readable")).isNotNull();
+        assertThat(((Number) JsonPath.read(body, "$.atsCheck.bulletsExpected")).intValue())
+                .isNotNegative();
+
         // The heading rides the terminal event so the result screen can print
         // it without a second round trip.
         String status = mvc.perform(get("/api/v1/jobs/" + jobId))
