@@ -57,6 +57,15 @@ class ContentSecurityPolicyTest {
     }
 
     /**
+     * The result screen shows the PDF in an iframe on an object URL; a
+     * `frame-src` naming only the challenge's host refuses it without a word.
+     */
+    @Test
+    void thePdfPreviewFrameIsAllowed() {
+        assertThat(frontendPolicy().get("frame-src")).contains("blob:");
+    }
+
+    /**
      * The rest of the policy is still the specification's. Naming one host is
      * a hole the size of that host; naming it by widening {@code default-src}
      * would be a hole the size of the web.
