@@ -7,6 +7,7 @@ import com.mustafatetik.atomcv.profile.domain.ProfileTree;
 import com.mustafatetik.atomcv.profile.service.VariantTranslationService;
 import com.mustafatetik.atomcv.shared.error.Result;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,18 @@ public class GenerationTranslation {
      */
     static final int TRANSLATION_BUDGET = 60;
 
+    /**
+     * Calls in flight at once. It was every missing wording at once — up to
+     * sixty — and on 2026-10-24 that burst met 429s and 503s from the provider
+     * behind it: nine of twenty-two came back, the all-or-nothing rule below
+     * wrote the CV in English, and the Turkish one asked for was lost to a
+     * rate limit rather than to anything about the content.
+     */
+    static final int CONCURRENCY = 6;
+
+    /** The wait before the one second pass over what the first could not do. */
+    static final Duration RETRY_AFTER = Duration.ofSeconds(2);
+
     private final VariantTranslationService translations;
 
     GenerationTranslation(VariantTranslationService translations) {
@@ -89,25 +103,63 @@ public class GenerationTranslation {
         // A virtual thread per task, as Faz D does and for the same reason:
         // one failure is one failure, not a reason to cancel the answers
         // already paid for.
-        int translated = 0;
-        try (var workers = Executors.newVirtualThreadPerTaskExecutor()) {
-            var running = new LinkedHashMap<UUID, Future<Boolean>>();
-            for (Map.Entry<UUID, ProfileTree.AtomNode> entry : missing.entrySet()) {
-                running.put(entry.getKey(), workers.submit(
-                        translateOne(profile, entry.getValue(), language, bucketKey, userId)));
-            }
-            for (Future<Boolean> answer : running.values()) {
-                translated += Boolean.TRUE.equals(get(answer)) ? 1 : 0;
-            }
+        //
+        // Bounded, and given one second pass: a rate limit is the commonest
+        // reason a wording does not come back, and it is the one a short wait
+        // fixes. Anything still missing after that is a real failure.
+        Map<UUID, ProfileTree.AtomNode> failed =
+                translateAll(profile, missing, language, bucketKey, userId);
+        if (!failed.isEmpty()) {
+            pause(RETRY_AFTER);
+            failed = translateAll(profile, failed, language, bucketKey, userId);
         }
+        int translated = missing.size() - failed.size();
 
-        boolean complete = translated == missing.size();
+        boolean complete = failed.isEmpty();
         // Counts, never content (absolute rule 4). Which language and how many
         // is the whole of what a diagnosis needs here.
         log.info("Translated {} of {} wordings into {}; document language {}",
                 translated, missing.size(), language,
                 complete ? "follows the posting" : "falls back to the profile");
         return complete;
+    }
+
+    /** One pass, at most {@link #CONCURRENCY} at a time; answers what failed. */
+    private Map<UUID, ProfileTree.AtomNode> translateAll(ProfileRef profile,
+            Map<UUID, ProfileTree.AtomNode> wanted, String language, String bucketKey,
+            UUID userId) {
+
+        var permits = new Semaphore(CONCURRENCY);
+        var failed = new LinkedHashMap<UUID, ProfileTree.AtomNode>();
+        try (var workers = Executors.newVirtualThreadPerTaskExecutor()) {
+            var running = new LinkedHashMap<UUID, Future<Boolean>>();
+            for (Map.Entry<UUID, ProfileTree.AtomNode> entry : wanted.entrySet()) {
+                Callable<Boolean> one =
+                        translateOne(profile, entry.getValue(), language, bucketKey, userId);
+                running.put(entry.getKey(), workers.submit(() -> {
+                    permits.acquire();
+                    try {
+                        return one.call();
+                    } finally {
+                        permits.release();
+                    }
+                }));
+            }
+            running.forEach((id, answer) -> {
+                if (!Boolean.TRUE.equals(get(answer))) {
+                    failed.put(id, wanted.get(id));
+                }
+            });
+        }
+        return failed;
+    }
+
+    private static void pause(Duration wait) {
+        try {
+            Thread.sleep(wait);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private Callable<Boolean> translateOne(ProfileRef profile, ProfileTree.AtomNode node,

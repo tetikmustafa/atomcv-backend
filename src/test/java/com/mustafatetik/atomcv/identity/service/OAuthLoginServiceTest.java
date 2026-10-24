@@ -41,7 +41,9 @@ class OAuthLoginServiceTest {
     @BeforeEach
     void setUp() {
         service = new OAuthLoginService(accounts, sessions, published::add,
-                Clock.fixed(NOW, ZoneOffset.UTC));
+                Clock.fixed(NOW, ZoneOffset.UTC),
+                org.springframework.transaction.support.TransactionOperations
+                        .withoutTransaction());
         when(sessions.create(any(), any(), any())).thenAnswer(call -> Session.beginning(
                 "a-session-id", call.getArgument(0), call.getArgument(1),
                 call.getArgument(2), NOW));

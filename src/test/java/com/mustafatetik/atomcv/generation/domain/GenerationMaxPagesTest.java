@@ -84,6 +84,29 @@ class GenerationMaxPagesTest {
         assertThat(generationWith(options).getMaxPages()).isEqualTo(3);
     }
 
+    /**
+     * The language asked for sits beside the one the document came out in.
+     * Without it a Turkish CV that fell back to English agreed with an English
+     * posting, and nothing could say the request had not been met.
+     */
+    @Test
+    void thelanguageAskedForReachesTheResponseBesideTheOneWritten() {
+        var options = optionsWithLimit(1);
+        options.put(Generation.REQUESTED_LANGUAGE, "tr");
+
+        var response = GenerationResponse.of(generationWith(options));
+
+        assertThat(response.requestedLanguage()).isEqualTo("tr");
+        assertThat(response.contentLanguage()).isEqualTo("en");
+    }
+
+    /** A request that named no language has nothing to report. */
+    @Test
+    void norequestedLanguageWhenTheRequestNamedNone() {
+        assertThat(GenerationResponse.of(generationWith(optionsWithLimit(1))).requestedLanguage())
+                .isNull();
+    }
+
     private static Generation generationWith(Map<String, Object> options) {
         return new Generation(USER, PROFILE, options, selection(), engine());
     }

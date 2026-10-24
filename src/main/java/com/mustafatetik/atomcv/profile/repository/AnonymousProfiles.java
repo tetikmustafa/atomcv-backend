@@ -1,5 +1,6 @@
 package com.mustafatetik.atomcv.profile.repository;
 
+
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.shared.security.ProfileRef;
 import java.time.Instant;
@@ -72,8 +73,13 @@ public class AnonymousProfiles {
                     existing.renewUntil(expiresAt);
                     return jpa.save(existing);
                 })
-                .orElseGet(() -> jpa.save(
-                        Profile.forAnonymousSession(profile.id(), expiresAt)));
+                .orElseGet(() -> {
+                    // Two first requests race on the primary key; the loser
+                    // inserts nothing and reads the winner's row.
+                    jpa.insertAnonymousIfAbsent(profile.id(), expiresAt);
+                    return find(profile).orElseThrow(() -> new IllegalStateException(
+                            "An anonymous profile was inserted and cannot be read back"));
+                });
     }
 
     /**
