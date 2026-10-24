@@ -70,3 +70,23 @@ zaten `canEditAtomControls` arkasında çiziyor. `EntryCreate.minAtoms` artık
 `0…50` (yama ile aynı).
 
 **Frontend (2026-10-24):** `GenerationResult` başlığı ve `TrackApplication` ön dolgusu; mock `roleTitle`/`companyName`'i sonuçta da veriyor.
+
+### B-125 · `GenerationResponse.atsCheck` — PDF'in geri okunuşu artık görünür
+
+**Since:** `feat/ats-check-visible`, V18 · konsept § 10.1 ("ATS uyumluluk doğrulaması") · spec 04 § 13.2
+
+`AtsCheck` Aşama 2'den beri her PDF'i metin olarak geri okuyordu (başlıklar,
+maddeler, iletişim satırı, sıra); sonuç yalnız bir sayaca gidiyordu. Artık
+generation satırında saklanıyor ve `GET /generations/{id}` yanıtında
+`atsCheck: AtsCheckResult` olarak geliyor: `readable` (hepsi temiz),
+`headingsFound/headingsExpected`, `bulletsFound/bulletsExpected`,
+`contactReadable`, `orderPreserved`. **Yalnız sayılar ve bayraklar** — başlık
+metni yok. V18'den önceki üretimlerde alan **yok** (tahmin edilmez).
+
+**Action:** `gen:api`; sonuç ekranında uygunluk raporunun yanında küçük bir
+"ATS okunabilirliği" kartı (temiz → tek satır onay; değilse hangi sayının
+eksik kaldığı, yüzde değil). `readable: false` kişinin CV'sinin kusuru değil,
+**bizim şablonumuzun**: metin suçlamasın, belgeyi geri almasın. Alan yoksa
+kart çizilmez. Mock `atsCheck` döndürsün.
+
+**Frontend (2026-10-24):** `AtsCheck` kartı `GenerationResult`'ta; mock `ATS_CLEAN`, üç birim testi (temiz, kusur, yokluk).

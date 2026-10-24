@@ -12,29 +12,13 @@
 
 ## OPEN
 
-### B-125 · `GenerationResponse.atsCheck` — PDF'in geri okunuşu artık görünür
-
-**Since:** `feat/ats-check-visible`, V18 · konsept § 10.1 ("ATS uyumluluk doğrulaması") · spec 04 § 13.2
-
-`AtsCheck` Aşama 2'den beri her PDF'i metin olarak geri okuyordu (başlıklar,
-maddeler, iletişim satırı, sıra); sonuç yalnız bir sayaca gidiyordu. Artık
-generation satırında saklanıyor ve `GET /generations/{id}` yanıtında
-`atsCheck: AtsCheckResult` olarak geliyor: `readable` (hepsi temiz),
-`headingsFound/headingsExpected`, `bulletsFound/bulletsExpected`,
-`contactReadable`, `orderPreserved`. **Yalnız sayılar ve bayraklar** — başlık
-metni yok. V18'den önceki üretimlerde alan **yok** (tahmin edilmez).
-
-**Action:** `gen:api`; sonuç ekranında uygunluk raporunun yanında küçük bir
-"ATS okunabilirliği" kartı (temiz → tek satır onay; değilse hangi sayının
-eksik kaldığı, yüzde değil). `readable: false` kişinin CV'sinin kusuru değil,
-**bizim şablonumuzun**: metin suçlamasın, belgeyi geri almasın. Alan yoksa
-kart çizilmez. Mock `atsCheck` döndürsün.
+_(açık madde yok.)_
 
 ---
 
-## ACK — frontend karşıladı (2026-10-23)
+## ACK — frontend karşıladı (2026-10-23 / 10-24)
 
-`B-120`…`B-124` geldikleri gün indi; gövdeleri, ne yapıldığıyla birlikte,
+`B-120`…`B-125` geldikleri gün indi; gövdeleri, ne yapıldığıyla birlikte,
 `resolved/to-frontend-2026-10.md`'de.
 
 - **`B-120`** — `FONT_FAMILIES` şemanın birliğinden türetiliyor (`satisfies` +
@@ -49,6 +33,10 @@ kart çizilmez. Mock `atsCheck` döndürsün.
 - **`B-124`** — sonuç ekranının başlığı rol ve şirket; "başvurulara ekle"
   kartı onlarla ön dolu ve `generationId` gönderiyor. Giriş/bölüm kontrolleri
   zaten `canEditAtomControls` arkasındaydı.
+- **`B-125`** — sonuç ekranında uygunluk raporunun altında "Makine
+  okunabilirliği" kartı: temizse tek cümle, değilse kusuru **şablonun** sayan
+  cümle; sayılar çift olarak, yüzde yok; alan yoksa kart yok. Mock temiz döner,
+  testler kusuru ve yokluğu ayrıca çiziyor.
 
 `B-100`…`B-119` önceki turlarda indi; kayıtları `resolved/to-frontend-2026-09.md`'de.
 
