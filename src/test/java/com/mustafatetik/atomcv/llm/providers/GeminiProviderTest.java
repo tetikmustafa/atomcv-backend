@@ -218,7 +218,31 @@ class GeminiProviderTest {
 
         var failure = failed(provider("k", "m").callStructured(request()));
 
-        assertThat(failure.kind()).isEqualTo(LlmFailure.Kind.REQUEST_REJECTED);
+        assertThat(failure.kind()).isEqualTo(LlmFailure.Kind.PROVIDER_REFUSED);
+        assertThat(failure.kind().tryNextProvider()).isTrue();
+    }
+
+    /**
+     * A type union is JSON Schema's "may be null", and Gemini's subset refuses
+     * it with a 400 — every import did, live, until this narrowing existed.
+     */
+    @Test
+    void aNullableUnionGoesOnTheWireAsOneTypeAndAFlag() throws Exception {
+        answerWith(candidate("{\"title\":null,\"skills\":[]}"));
+        var schema = JSON.readTree("""
+                {"type":"object","properties":{
+                  "title":{"type":["string","null"]},
+                  "skills":{"type":"array","items":{"type":"string"}}}}
+                """);
+
+        provider("k", "m").callStructured(new StructuredRequest<>("job_analysis", "v1", "",
+                "a posting", new JsonSchema("job_analysis", schema), Analysis.class,
+                ModelTier.CHEAP, Duration.ofSeconds(5)));
+
+        var title = JSON.readTree(lastBody.get()).path("generationConfig")
+                .path("responseSchema").path("properties").path("title");
+        assertThat(title.path("type").asText()).isEqualTo("string");
+        assertThat(title.path("nullable").asBoolean()).isTrue();
     }
 
     // ── fixtures ──────────────────────────────────────────────────────────

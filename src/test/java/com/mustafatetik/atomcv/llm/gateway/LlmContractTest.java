@@ -24,6 +24,7 @@ class LlmContractTest {
         assertThat(LlmFailure.Kind.SERVER_ERROR.tryNextProvider()).isTrue();
         assertThat(LlmFailure.Kind.TIMEOUT.tryNextProvider()).isTrue();
         assertThat(LlmFailure.Kind.UNREACHABLE.tryNextProvider()).isTrue();
+        assertThat(LlmFailure.Kind.PROVIDER_REFUSED.tryNextProvider()).isTrue();
     }
 
     /**
@@ -43,8 +44,8 @@ class LlmContractTest {
         // silently; this fails the moment the enum grows past what is asserted
         // above.
         assertThat(Arrays.stream(LlmFailure.Kind.values())
-                .filter(LlmFailure.Kind::tryNextProvider).count()).isEqualTo(4);
-        assertThat(LlmFailure.Kind.values()).hasSize(6);
+                .filter(LlmFailure.Kind::tryNextProvider).count()).isEqualTo(5);
+        assertThat(LlmFailure.Kind.values()).hasSize(7);
     }
 
     // ── The cached subset is priced apart ────────────────────────────────

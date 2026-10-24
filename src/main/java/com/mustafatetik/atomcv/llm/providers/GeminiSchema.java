@@ -48,10 +48,46 @@ final class GeminiSchema {
     private static JsonNode narrow(JsonNode node) {
         if (node instanceof ObjectNode object) {
             UNSUPPORTED.forEach(object::remove);
+            nullableInsteadOfUnion(object);
             object.properties().forEach(field -> narrow(field.getValue()));
         } else if (node instanceof ArrayNode array) {
             array.forEach(GeminiSchema::narrow);
         }
         return node;
+    }
+
+    /**
+     * {@code "type": ["string", "null"]} becomes {@code "type": "string",
+     * "nullable": true}.
+     *
+     * <p>JSON Schema says "may be null" with a type union; Gemini's subset has
+     * one type per node and a flag beside it, and a list where it expects one
+     * value is a 400 ("Proto field is not repeating"). The vocabulary survey
+     * above missed this because a union is a value of {@code type}, not a
+     * keyword of its own — and {@code profile_extraction} has ten of them, so
+     * every import that reached this provider was refused, measured against the
+     * live API on 2026-10-24.
+     */
+    private static void nullableInsteadOfUnion(ObjectNode object) {
+        if (!(object.get("type") instanceof ArrayNode union)) {
+            return;
+        }
+        String single = null;
+        boolean nullable = false;
+        for (JsonNode member : union) {
+            if ("null".equals(member.asText())) {
+                nullable = true;
+            } else if (single == null) {
+                single = member.asText();
+            }
+        }
+        if (single != null) {
+            object.put("type", single);
+        } else {
+            object.remove("type");
+        }
+        if (nullable) {
+            object.put("nullable", true);
+        }
     }
 }

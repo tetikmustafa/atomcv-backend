@@ -54,7 +54,24 @@ public record LlmFailure(Kind kind, String provider, String detail) {
          */
         SCHEMA_MISMATCH(false),
 
-        /** The provider rejected the request itself — bad key, bad model id. */
+        /**
+         * This provider refused, for a reason that is its own: a key it does
+         * not accept (401/403), an account out of credit (402), a model id it
+         * does not serve (404), or — at Gemini — a schema outside its subset.
+         *
+         * <p>Another vendor is a different key, a different balance and a
+         * different schema dialect, so the chain walks on. Measured on
+         * 2026-10-24: OpenRouter answered 402 to every call and Gemini 400, the
+         * two were configured as each other's fallback, and each stopped the
+         * chain where it stood — the second link existed and was never asked.
+         */
+        PROVIDER_REFUSED(true),
+
+        /**
+         * The request itself is malformed — a 400 or 422 from a vendor whose
+         * dialect is plain JSON Schema, where the next vendor would read the
+         * same body the same way.
+         */
         REQUEST_REJECTED(false);
 
         private final boolean tryNextProvider;

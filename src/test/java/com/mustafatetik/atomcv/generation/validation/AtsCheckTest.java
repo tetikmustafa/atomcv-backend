@@ -89,6 +89,32 @@ class AtsCheckTest {
         assertThat(report.clean()).isFalse();
     }
 
+    /**
+     * A heading's word inside an earlier line is not the heading. "Experience"
+     * matched "Experienced in…" in a summary printed above Education, and a
+     * page that read in order was reported as scrambled.
+     */
+    @Test
+    void aHeadingsWordInsideAnEarlierLineIsNotTheHeading() {
+        var request = request(List.of("About", "Education", "Experience"), List.of());
+        byte[] pdf = pdf("ben@example.com", "About", "Experienced in shipping Java services",
+                "Education", "Experience");
+
+        AtsReport report = AtsCheck.of(pdf, request);
+
+        assertThat(report.orderPreserved()).isTrue();
+        assertThat(report.clean()).isTrue();
+    }
+
+    /** Two columns read across share a line, and the order still has to fail. */
+    @Test
+    void interleavedColumnsStillFailTheOrder() {
+        var request = request(List.of("Experience", "Education"), List.of());
+        byte[] pdf = pdf("ben@example.com", "Education    Experience");
+
+        assertThat(AtsCheck.of(pdf, request).orderPreserved()).isFalse();
+    }
+
     /** An ATS with a CV it cannot reply to has a CV it cannot use. */
     @Test
     void aLostContactLineIsReported() {

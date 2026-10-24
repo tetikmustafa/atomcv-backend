@@ -199,6 +199,11 @@ class ChatCompletionsProviderTest {
         assertThat(kindFrom(openAi("sk-test", "some-model")))
                 .as("another vendor would not fix a request this model cannot serve")
                 .isEqualTo(LlmFailure.Kind.REQUEST_REJECTED);
+
+        respond(402, "{}");
+        assertThat(kindFrom(openAi("sk-test", "some-model")))
+                .as("an empty balance is this account's, not the next vendor's")
+                .isEqualTo(LlmFailure.Kind.PROVIDER_REFUSED);
     }
 
     /**

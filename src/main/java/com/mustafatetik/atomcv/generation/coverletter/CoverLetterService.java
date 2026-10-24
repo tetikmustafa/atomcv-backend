@@ -13,6 +13,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -75,8 +77,10 @@ public class CoverLetterService {
             java.util.UUID jobId) {
 
         List<CoverLetterIssue> lastIssues = List.of();
+        int lastWords = 0;
         for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-            Attempt made = attempt(input, style, bucketKey, userId, jobId);
+            Attempt made = attempt(input, style, correctionFor(lastIssues, lastWords),
+                    bucketKey, userId, jobId);
             if (made.outage()) {
                 return Result.err(new PipelineError.AllProvidersUnavailable(List.of()));
             }
@@ -84,11 +88,18 @@ public class CoverLetterService {
                 return Result.ok(made.draft());
             }
             lastIssues = made.issues();
+            lastWords = CoverLetterValidator.wordCount(made.draft().plainText());
         }
         // Kinds, never the letter (absolute rule 4). These do travel to the
         // user, because there is nothing to print instead and "it did not
         // work" without a reason is not an answer a person can act on.
-        log.info("A cover letter was refused twice: {}", lastIssues);
+        //
+        // The word count goes with them: a length refusal alone could not
+        // say which side of the band a model fell off, and that decides
+        // whether the prompt or the model is the thing to change. A count is
+        // not content.
+        log.info("A cover letter was refused twice: {} ({} words, band {}-{})", lastIssues,
+                lastWords, CoverLetterValidator.MIN_WORDS, CoverLetterValidator.MAX_WORDS);
         return Result.err(new PipelineError.CoverLetterRejected(names(lastIssues)));
     }
 
@@ -100,8 +111,33 @@ public class CoverLetterService {
         }
     }
 
+    /**
+     * What the second attempt is told about the first, when the first missed
+     * the length band.
+     *
+     * <p>Asking twice with the same words bought the same letter twice: on
+     * 2026-10-24 the fallback model wrote 119 words both times against a floor
+     * of 120, and the person who asked for a letter got none. The count is
+     * ours rather than the user's, so it goes above the fence with the style
+     * instruction, and only the length is reported back — the other refusals
+     * are about what the letter claims, and naming them would invite the model
+     * to argue with the check rather than write a different letter.
+     */
+    static String correctionFor(List<CoverLetterIssue> issues, int words) {
+        if (!issues.contains(CoverLetterIssue.LENGTH_OUT_OF_RANGE)) {
+            return "";
+        }
+        return words < CoverLetterValidator.MIN_WORDS
+                ? "The previous draft was " + words + " words, under the "
+                        + CoverLetterValidator.MIN_WORDS + "-word minimum. Write each piece of "
+                        + "evidence out in full, two or three sentences each."
+                : "The previous draft was " + words + " words, over the "
+                        + CoverLetterValidator.MAX_WORDS + "-word maximum. Keep the shape and "
+                        + "say each piece of evidence once.";
+    }
+
     private Attempt attempt(
-            CoverLetterInput input, CoverLetterStyle style, String bucketKey,
+            CoverLetterInput input, CoverLetterStyle style, String correction, String bucketKey,
             java.util.UUID userId,
             java.util.UUID jobId) {
 
@@ -111,7 +147,7 @@ public class CoverLetterService {
         String system = fenced.system()
                 .replace(LANGUAGE, input.language())
                 .replace(TONE, input.tone())
-                .replace(STYLE, instructionFor(style));
+                .replace(STYLE, (instructionFor(style) + " " + correction).strip());
 
         var answer = providers.call(new StructuredRequest<>(
                 PROMPT_ID, prompt.version(), system,
@@ -153,7 +189,7 @@ public class CoverLetterService {
                 .append("applicant: ").append(input.applicantName())
                 .append("\nrole: ").append(input.roleTitle())
                 .append("\ncompany: ").append(input.companyName())
-                .append("\nskills: ").append(String.join(", ", input.allowedSkills()))
+                .append("\nskills: ").append(String.join(", ", displayed(input)))
                 .append("\nmetrics: ").append(String.join(", ", input.allowedMetrics()))
                 .append("\nyearsWorking: ").append(input.profileYears())
                 .append("\ncompanyNote: ").append(input.companyNote())
@@ -162,6 +198,34 @@ public class CoverLetterService {
             data.append("\n- ").append(evidence.text());
         }
         return data.toString();
+    }
+
+    /**
+     * The skills as the person writes them, where their own sentences say.
+     *
+     * <p>{@code allowedSkills} holds the matching keys — {@code spring-boot},
+     * {@code restful-apis} — and the model copied them into the letter as they
+     * came: "utilizing java, spring-boot, and spring-core", measured on
+     * 2026-10-24. The sentences on the page carry the real spelling ("Spring
+     * Boot", "RESTful APIs"), so that spelling is looked up there and the key
+     * is the fallback, with its hyphens read as spaces. The validator compares
+     * canonical forms on both sides, so the spelling changes nothing it checks.
+     */
+    static List<String> displayed(CoverLetterInput input) {
+        StringBuilder sentences = new StringBuilder(input.companyNote());
+        input.evidence().forEach(evidence -> sentences.append('\n').append(evidence.text()));
+        List<String> shown = new ArrayList<>(input.allowedSkills().size());
+        for (String skill : input.allowedSkills()) {
+            List<String> parts = new ArrayList<>();
+            for (String part : skill.split("-")) {
+                parts.add(Pattern.quote(part));
+            }
+            Matcher written = Pattern.compile(
+                    "(?<![\\p{L}\\p{N}])" + String.join("[\\s._-]*", parts) + "(?![\\p{L}\\p{N}])",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(sentences);
+            shown.add(written.find() ? written.group() : skill.replace('-', ' '));
+        }
+        return shown;
     }
 
     private static List<String> names(List<CoverLetterIssue> issues) {
