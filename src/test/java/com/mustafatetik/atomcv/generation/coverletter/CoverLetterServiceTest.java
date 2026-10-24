@@ -115,6 +115,45 @@ class CoverLetterServiceTest {
     }
 
     /**
+     * The matching keys are not how anybody writes. Given {@code spring-boot}
+     * the model wrote "spring-boot" into the letter; the person's own sentence
+     * says "Spring Boot", and that is the spelling the model is handed.
+     */
+    @Test
+    void skillsAreHandedOverAsThePersonSpellsThem() {
+        var input = new CoverLetterInput("Ada Lovelace", "Backend Engineer", "Acme",
+                List.of(new CoverLetterInput.Evidence(
+                        "Built RESTful APIs with Spring Boot", List.of(), List.of())),
+                List.of("spring-boot", "restful-apis", "kafka"), List.of(), List.of(), 6, "",
+                "en", "formal");
+
+        assertThat(CoverLetterService.displayed(input))
+                .containsExactly("Spring Boot", "RESTful APIs", "kafka");
+    }
+
+    /**
+     * A letter one word under the floor, asked for again in the same words,
+     * came back one word under the floor again — live, on 2026-10-24. The
+     * second request says how far off the first was; the first says nothing.
+     */
+    @Test
+    void asecondAttemptIsToldHowLongTheFirstWas() {
+        when(providers.call(request()))
+                .thenReturn(answer(draft("Dear Acme,", "Ran Postgres in production.")))
+                .thenReturn(answer(draft("Dear Acme,", padded("Ran Postgres in production."))));
+
+        assertThat(service.write(input(), CoverLetterStyle.DEFAULT, "a-user", null, null).isErr())
+                .isFalse();
+
+        var requests = ArgumentCaptor.forClass(StructuredRequest.class);
+        verify(providers, times(2)).call(requests.capture());
+        assertThat(requests.getAllValues().get(0).systemPrompt())
+                .doesNotContain("previous draft");
+        assertThat(requests.getAllValues().get(1).systemPrompt())
+                .contains("The previous draft was 14 words, under the 120-word minimum");
+    }
+
+    /**
      * <strong>The fence.</strong> The sentences, the lists, the years and what
      * the person knows about the employer are all their content, and a copy of
      * any of it above the fence is the injection surface the boundary exists
@@ -131,7 +170,7 @@ class CoverLetterServiceTest {
         assertThat(request.getValue().userPrompt())
                 .contains("applicant: Ada Lovelace")
                 .contains("company: Acme")
-                .contains("skills: postgres")
+                .contains("skills: Postgres")
                 .contains("yearsWorking: 6")
                 .contains("companyNote: They open-sourced their scheduler.")
                 .contains("- Ran the Postgres fleet");

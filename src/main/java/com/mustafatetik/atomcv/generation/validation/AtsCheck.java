@@ -77,7 +77,7 @@ public final class AtsCheck {
         }
 
         return new AtsReport(found, missing, matched, bullets.size(),
-                contactReadable(printed, haystack), inOrder(printed, haystack));
+                contactReadable(printed, haystack), inOrder(printed, lines(text)));
     }
 
     /**
@@ -85,18 +85,27 @@ public final class AtsCheck {
      * the text layer. A two-column template passes every other check here and
      * still interleaves the columns into nonsense; this is what notices.
      */
-    private static boolean inOrder(RenderRequest printed, String haystack) {
+    private static boolean inOrder(RenderRequest printed, String lines) {
         // Each heading's own first position, then a check that the positions
         // rise. Searching forward from the previous match instead would report
         // a heading that came back *too early* as missing rather than as out
         // of order — which is the one thing this method exists to notice.
+        //
+        // A heading is looked for as a line of its own first. As a bare
+        // substring, "Experience" was found inside "Experienced in…" in the
+        // summary above Education, and a page that read perfectly was reported
+        // to the person as scrambled — measured on 2026-10-24, on the first
+        // real generation. The substring is the fallback only, for a heading
+        // that shares its line with something else, which is exactly what two
+        // interleaved columns produce.
         int previous = -1;
         for (var section : printed.sections()) {
             String heading = normalise(section.title());
             if (heading.isBlank()) {
                 continue;
             }
-            int at = haystack.indexOf(heading);
+            int line = lines.indexOf("\n" + heading + "\n");
+            int at = line >= 0 ? line + 1 : lines.indexOf(heading);
             if (at < 0) {
                 // Already counted as missing; not also an ordering failure.
                 continue;
@@ -127,6 +136,18 @@ public final class AtsCheck {
                 .map(AtsCheck::normalise)
                 .filter(line -> !line.isBlank())
                 .anyMatch(haystack::contains);
+    }
+
+    /**
+     * The extracted text with each line normalised on its own, joined by
+     * newlines and fenced by one at each end, so a whole-line match is a
+     * search for the heading with a newline either side.
+     */
+    private static String lines(String text) {
+        StringBuilder joined = new StringBuilder("\n");
+        text.lines().map(AtsCheck::normalise).filter(line -> !line.isBlank())
+                .forEach(line -> joined.append(line).append('\n'));
+        return joined.toString();
     }
 
     private static List<String> bulletsOf(RenderRequest printed) {

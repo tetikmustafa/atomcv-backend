@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -98,6 +101,63 @@ class AnonymousEditorIT extends AbstractIntegrationTest {
         assertThat(created.path("id").asText()).isNotBlank();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM atoms WHERE profile_id = ?",
                 Integer.class, profileId())).isEqualTo(1);
+    }
+
+    /**
+     * The head, which every editor screen reads first. It was the one profile
+     * endpoint left on {@code CurrentUser.require()}, so a guest who had just
+     * imported a CV was told to sign in on the review screen that cannot be
+     * skipped.
+     */
+    @Test
+    void theHeadCanBeReadReplacedAndDeleted() throws Exception {
+        String etag = mvc.perform(get("/api/v1/profile").cookie(cookie()))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("ETag"))
+                .andReturn().getResponse().getHeader("ETag");
+
+        etag = mvc.perform(put("/api/v1/profile")
+                        .cookie(cookie())
+                        .header("If-Match", etag)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"headline\":\"Backend Engineer\",\"sourceLanguage\":\"en\","
+                                + "\"enabledLanguages\":[\"en\"]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.headline").value("Backend Engineer"))
+                .andReturn().getResponse().getHeader("ETag");
+
+        assertThat(jdbc.queryForObject("SELECT headline FROM profiles WHERE id = ?",
+                String.class, profileId())).isEqualTo("Backend Engineer");
+
+        createSection();
+        etag = mvc.perform(get("/api/v1/profile").cookie(cookie()))
+                .andReturn().getResponse().getHeader("ETag");
+        mvc.perform(delete("/api/v1/profile").cookie(cookie()).header("If-Match", etag))
+                .andExpect(status().isNoContent());
+
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM sections WHERE profile_id = ?",
+                Integer.class, profileId())).isZero();
+        mvc.perform(get("/api/v1/profile").cookie(cookie()))
+                .andExpect(status().isOk());
+        assertThat(jdbc.queryForObject("SELECT headline FROM profiles WHERE id = ?",
+                String.class, profileId())).isNull();
+    }
+
+    /**
+     * Every request renews a guest's profile, and the renewal is not an edit:
+     * it moved the version once, so the ETag the editor held was stale after
+     * any other request and parallel reads refused each other with a 412.
+     */
+    @Test
+    void renewingTheSessionDoesNotMoveTheVersion() throws Exception {
+        String before = mvc.perform(get("/api/v1/profile").cookie(cookie()))
+                .andReturn().getResponse().getHeader("ETag");
+
+        mvc.perform(get("/api/v1/profile/sections").cookie(cookie()))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/profile").cookie(cookie()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("ETag", before));
     }
 
     // -- and the capability limits bite -------------------------------------

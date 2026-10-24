@@ -6,7 +6,6 @@ import com.mustafatetik.atomcv.profile.api.dto.ProfileResponse;
 import com.mustafatetik.atomcv.profile.api.dto.ProfileUpdateRequest;
 import com.mustafatetik.atomcv.profile.domain.Profile;
 import com.mustafatetik.atomcv.profile.service.ProfileHeadUpdate;
-import com.mustafatetik.atomcv.profile.service.ProfileResolver;
 import com.mustafatetik.atomcv.profile.service.ProfileExporter;
 import com.mustafatetik.atomcv.profile.service.ProfileService;
 import com.mustafatetik.atomcv.shared.error.ApiErrorResponse;
@@ -46,14 +45,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileController {
 
     private final CurrentUser currentUser;
-    private final ProfileResolver profiles;
     private final ProfileService service;
     private final ProfileExporter exporter;
 
-    ProfileController(CurrentUser currentUser, ProfileResolver profiles, ProfileService service,
+    ProfileController(CurrentUser currentUser, ProfileService service,
             ProfileExporter exporter) {
         this.currentUser = currentUser;
-        this.profiles = profiles;
         this.service = service;
         this.exporter = exporter;
     }
@@ -82,7 +79,7 @@ public class ProfileController {
     })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ProfileResponse> own() {
-        return respond(service.readOwn(currentUser.require()));
+        return respond(service.readOwn());
     }
 
     @Operation(operationId = "exportProfile", summary = "Export the whole profile",
@@ -145,7 +142,7 @@ public class ProfileController {
     public ResponseEntity<Void> delete(
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
 
-        service.delete(currentUser.require(), ifMatch);
+        service.delete(ifMatch);
         return ResponseEntity.noContent().build();
     }
 
@@ -179,7 +176,7 @@ public class ProfileController {
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
             @Valid @RequestBody ProfileUpdateRequest request) {
 
-        return respond(service.replace(currentUser.require(), ifMatch, new ProfileHeadUpdate(
+        return respond(service.replace(ifMatch, new ProfileHeadUpdate(
                 request.headline(),
                 request.contactOrEmpty(),
                 request.selfDescription(),
@@ -206,8 +203,7 @@ public class ProfileController {
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
             @Valid @RequestBody PreferencesUpdateRequest request) {
 
-        return respond(service.replacePreferences(
-                currentUser.require(), ifMatch, request.toPreferences()));
+        return respond(service.replacePreferences(ifMatch, request.toPreferences()));
     }
 
     private static ResponseEntity<ProfileResponse> respond(Profile profile) {

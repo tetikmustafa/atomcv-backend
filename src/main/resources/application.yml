@@ -335,6 +335,14 @@ atomcv:
           input: 0
           output: 0
           cached: 0
+        # The Gemini fallback, called directly rather than through the broker.
+        # From ai.google.dev/gemini-api/docs/pricing, paid tier, 2026-10-24.
+        # gemini-2.5-flash-lite, the model the developer's .env named, is
+        # closed to new keys (404 "no longer available to new users").
+        "[gemini-3.5-flash-lite]":
+          input: 0.30
+          output: 2.50
+          cached: 0.03
     chain:
       # Comma-separated, so the order is deployable without a release
       # (an env-driven fallback). Naming an adapter that does not

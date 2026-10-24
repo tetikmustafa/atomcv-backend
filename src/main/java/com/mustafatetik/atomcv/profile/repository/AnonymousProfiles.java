@@ -114,6 +114,16 @@ public class AnonymousProfiles {
         });
     }
 
+    /**
+     * Deletes the session's profile and, by cascade, everything under it. The
+     * same two filters as {@link #find}: nothing an account owns can be named
+     * here.
+     */
+    @Transactional
+    public void delete(ProfileRef profile) {
+        find(profile).ifPresent(jpa::delete);
+    }
+
     private static void requireEphemeral(ProfileRef profile) {
         if (profile == null || profile.scope() != ProfileRef.Scope.EPHEMERAL) {
             throw new IllegalArgumentException(

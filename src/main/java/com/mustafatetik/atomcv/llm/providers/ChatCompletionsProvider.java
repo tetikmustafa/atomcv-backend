@@ -204,8 +204,12 @@ abstract class ChatCompletionsProvider implements LlmProvider {
         if (status >= 500) {
             return LlmFailure.Kind.SERVER_ERROR;
         }
-        // 400, 401, 403, 404: a bad key, a model that does not exist, or a
-        // request this model cannot serve. Another vendor would not fix it.
+        // 401, 402, 403, 404: this account or this model id, which another
+        // vendor does not share.
+        if (status == 401 || status == 402 || status == 403 || status == 404) {
+            return LlmFailure.Kind.PROVIDER_REFUSED;
+        }
+        // 400, 422: a request this body cannot make anywhere.
         return LlmFailure.Kind.REQUEST_REJECTED;
     }
 

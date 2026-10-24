@@ -71,3 +71,25 @@ atomcv:
   # signing in works either way.
   local-dev-session:
     enabled: ${LOCAL_DEV_SESSION:true}
+
+# The telemetry, re-read from local-only names for the reason the two keys
+# above are: `make dev` exports .env, and a .env that holds the deployment's
+# SENTRY_DSN, OTLP_ENABLED and DEPLOY_ENV=prod would post a developer's stack
+# traces and request counts into production's error tracker and dashboards,
+# tagged as production. Measured on 2026-10-24 against a .env that held all
+# three. The comment on `sentry:` in application.yml promised this already.
+sentry:
+  dsn: ${LOCAL_SENTRY_DSN:}
+  environment: local
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: ${LOCAL_OTLP_ENABLED:false}
+    logging:
+      export:
+        enabled: ${LOCAL_OTLP_LOGS_ENABLED:false}
+  metrics:
+    tags:
+      environment: local

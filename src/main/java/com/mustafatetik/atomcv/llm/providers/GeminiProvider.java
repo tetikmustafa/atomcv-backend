@@ -178,8 +178,9 @@ public class GeminiProvider implements LlmProvider {
         }
         // 400 here is usually a schema this vendor will not take, and asking
         // it again would buy the same refusal — but another vendor might well
-        // accept it, so this stays a reason to move on rather than to stop.
-        return LlmFailure.Kind.REQUEST_REJECTED;
+        // accept it, so this is a reason to move on rather than to stop. It
+        // said so for months while returning REQUEST_REJECTED, which stops.
+        return LlmFailure.Kind.PROVIDER_REFUSED;
     }
 
     private static <T> LlmOutcome<T> failed(

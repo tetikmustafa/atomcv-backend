@@ -328,13 +328,17 @@ class OpenRouterProviderTest {
     }
 
     /**
-     * A bad key or a model that does not exist is not fixed by asking someone
-     * else, so it must not advance the chain.
+     * A key, a balance or a model id belongs to this account and no other, so
+     * another vendor is the fix. A malformed body is malformed everywhere.
      */
     @Test
-    void aRejectedRequestDoesNotAdvanceTheChain() {
-        assertThat(failure(401).kind()).isEqualTo(LlmFailure.Kind.REQUEST_REJECTED);
-        assertThat(failure(404).kind()).isEqualTo(LlmFailure.Kind.REQUEST_REJECTED);
+    void anAccountRefusalAdvancesTheChainAndABadRequestDoesNot() {
+        for (int status : new int[] {401, 402, 403, 404}) {
+            assertThat(failure(status).kind()).as("http %d", status)
+                    .isEqualTo(LlmFailure.Kind.PROVIDER_REFUSED);
+            assertThat(failure(status).kind().tryNextProvider()).isTrue();
+        }
+        assertThat(failure(400).kind()).isEqualTo(LlmFailure.Kind.REQUEST_REJECTED);
         assertThat(failure(400).kind().tryNextProvider()).isFalse();
     }
 
@@ -418,7 +422,7 @@ class OpenRouterProviderTest {
         provider("sk-test", "some-model").callStructured(request());
 
         assertThat(warnings()).singleElement(as(STRING))
-                .contains("REQUEST_REJECTED")
+                .contains("PROVIDER_REFUSED")
                 .contains("http 401");
     }
 

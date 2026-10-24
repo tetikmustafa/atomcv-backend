@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OptimisticLock;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
@@ -53,8 +54,17 @@ public class Profile implements UserOwned {
      * {@code profiles_owner_xor_expiry}: a row with neither could not be
      * reached and would never be removed, and a row with both would be an
      * account's profile with a deletion date on it.
+     *
+     * <p><strong>Outside the optimistic lock.</strong> Every request a guest
+     * makes renews this, so with it inside, every read moved the version: the
+     * {@code ETag} a guest's editor held went stale the moment any other
+     * request touched the profile, and two reads in parallel — the review
+     * screen sends several — failed each other with {@code 412
+     * VERSION_CONFLICT}. Measured on 2026-10-24. An expiry is the session's
+     * clock rather than the person's content, and the version guards content.
      */
     @Column(name = "expires_at")
+    @OptimisticLock(excluded = true)
     private Instant expiresAt;
 
     /** One line under the name. User content. */
