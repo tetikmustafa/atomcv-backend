@@ -34,7 +34,7 @@ except Exception:
 # copy-paste round trip. Everything left is denied outright and belongs to no
 # prompt — a repo-to-repo sync, production, or data that does not come back.
 PATTERNS=(
-  'sync-spec\.sh'
+  'sync-error-catalogue\.sh'
   'sync-handoff\.sh'
   'docker-compose\.prod\.yml'
   'git clean -fdx'

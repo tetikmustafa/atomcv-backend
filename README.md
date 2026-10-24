@@ -111,17 +111,14 @@ rendering may never reach for an LLM.
 
 ## Architecture documents
 
-The full specification lives in [`docs/spec/`](docs/spec/) — nineteen files,
-around 13,100 lines, **written in Turkish**. Start at
-[`docs/INDEX.md`](docs/INDEX.md), which routes a question to the section that
-answers it; reading a file end to end is rarely the fastest way in.
+The architecture specification that guided the build was retired once the
+product was finished: the code, its tests and the committed `openapi.json` are
+the authority, and git history keeps the old text. The product concept
+([`docs/urun-konsept-dokumani-v2.md`](docs/urun-konsept-dokumani-v2.md)), the
+deployment plan and the checklists are in `docs/`, in Turkish.
 [`docs/STATUS.md`](docs/STATUS.md) says where both repositories stand today,
 and [CLAUDE.md](CLAUDE.md) carries the working rules — including the ones this
 machine taught us the hard way.
-
-Nothing in the specification is a summary of the code. Where the two disagree
-the code wins and the section is corrected, which has happened often enough
-that the corrections are part of the record rather than an embarrassment.
 
 ## Security
 

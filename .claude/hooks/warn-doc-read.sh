@@ -25,11 +25,7 @@ except Exception:
 [ -z "$FILE_PATH" ] && exit 0
 
 case "$FILE_PATH" in
-  */docs/_archive-monolith.md)
-    echo "BLOCKED: _archive-monolith.md is retired. If you need something from it, ask the user which docs/spec/ file replaced that section." >&2
-    exit 2
-    ;;
-  */docs/spec/*|*/docs/notes/*|*/docs/handoff/*|*/docs/INDEX.md|*/docs/STATUS.md)
+  */docs/notes/*|*/docs/handoff/*|*/docs/STATUS.md)
     LOGDIR="${CLAUDE_PROJECT_DIR:-.}/.claude"
     mkdir -p "$LOGDIR" 2>/dev/null || true
     echo "$(date -u +%FT%TZ)  READ  $FILE_PATH" >> "$LOGDIR/doc-read-log.txt" 2>/dev/null || true
