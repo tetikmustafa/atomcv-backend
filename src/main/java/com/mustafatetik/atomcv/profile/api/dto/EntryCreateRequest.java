@@ -3,6 +3,8 @@ package com.mustafatetik.atomcv.profile.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,5 +24,5 @@ public record EntryCreateRequest(
         @DecimalMin("0.0") @DecimalMax("1.0") Float importance,
         Boolean alwaysInclude,
         Boolean verbatim,
-        @Schema(description = "Defaults to 2") Short minAtoms) {
+        @Schema(description = "Defaults to 2") @Min(0) @Max(50) Short minAtoms) {
 }

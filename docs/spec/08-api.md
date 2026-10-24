@@ -631,6 +631,16 @@ içinde etiketliyor (`-- kullanıcı kontrolleri`): `importance`, `active`,
 kişinin kendi cümlesini düzeltmesini engellerdi — düzenlemenin tamamı bunun için
 açıldı.
 
+> **Bir seviye yukarısı da aynı küme** (`B-124`, 2026-10-24). Bir girişin
+> `importance`, `active`, `always_include`, `verbatim` ve `min_atoms`'u, bir
+> bölümün `active`, `always_include` ve `verbatim`'i aynı etiketin altında ve
+> aynı özellik — ama yalnız atomda zorlanıyordu; frontend gizliyor, sunucu
+> reddetmiyordu. Ret **denetleyicide**, serviste değil: yalnız denetleyici
+> isteğin *ne istediğini* bilir — taslak varsayılanlarla dolmuş gelir, ve GitHub
+> içe aktarması misafir için `min_atoms = 1` yazan girişleri aynı servisten
+> geçirir. Sunucunun seçtiği bir değer, çağıranın istediği bir kontrol değil
+> (`SelectionControls`, `AnonymousEditorIT`).
+
 **Yama bütün olarak reddediliyor**, alan alan değil: bir kontrolü sessizce düşüren
 kısmi yazma, ekranda sunucunun tutmadığı bir değer bırakırdı.
 

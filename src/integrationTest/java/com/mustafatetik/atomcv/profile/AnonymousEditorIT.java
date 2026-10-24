@@ -120,6 +120,44 @@ class AnonymousEditorIT extends AbstractIntegrationTest {
     }
 
     /**
+     * B-124: an entry's and a section's own controls are the same feature one
+     * level up, and were writable by anybody. Refused the same way; the
+     * content of an entry is still theirs to write.
+     */
+    @Test
+    void entryAndSectionControlsAreRefusedAndTheirContentIsNot() throws Exception {
+        UUID section = createSection();
+
+        mvc.perform(post("/api/v1/profile/entries")
+                        .cookie(cookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sectionId\":\"" + section + "\",\"title\":\"Engineer\","
+                                + "\"alwaysInclude\":true}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.params.feature").value("atom_controls"));
+
+        mvc.perform(post("/api/v1/profile/entries")
+                        .cookie(cookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sectionId\":\"" + section + "\",\"title\":\"Engineer\","
+                                + "\"url\":\"https://example.com\"}"))
+                .andExpect(status().isCreated());
+
+        mvc.perform(patch("/api/v1/profile/sections/" + section)
+                        .cookie(cookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"active\":false}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.params.feature").value("atom_controls"));
+
+        mvc.perform(post("/api/v1/profile/sections")
+                        .cookie(cookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"kind\":\"projects\",\"title\":\"Projects\",\"verbatim\":true}"))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
      * And what the CV says is not a control: the same patch shape goes through.
      *
      * <p>This one carries {@code If-Match} and the refusal above does not, which

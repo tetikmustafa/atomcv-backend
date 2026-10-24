@@ -5,6 +5,7 @@ import com.mustafatetik.atomcv.profile.api.dto.SectionCreateRequest;
 import com.mustafatetik.atomcv.profile.api.dto.SectionPatchRequest;
 import com.mustafatetik.atomcv.profile.api.dto.SectionResponse;
 import com.mustafatetik.atomcv.profile.domain.Section;
+import com.mustafatetik.atomcv.profile.service.SelectionControls;
 import com.mustafatetik.atomcv.profile.service.CallerProfiles;
 import com.mustafatetik.atomcv.profile.service.SectionDraft;
 import com.mustafatetik.atomcv.profile.service.SectionPatch;
@@ -84,6 +85,8 @@ public class SectionController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SectionResponse> create(@Valid @RequestBody SectionCreateRequest request) {
+        SelectionControls.requireAccountIfAsked(profile(),
+                request.alwaysInclude() != null || request.verbatim() != null);
         Section created = sections.create(profile(), new SectionDraft(
                 request.kind(),
                 request.title(),
@@ -110,6 +113,8 @@ public class SectionController {
             @RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
             @Valid @RequestBody SectionPatchRequest request) {
 
+        SelectionControls.requireAccountIfAsked(profile(), request.alwaysInclude() != null
+                || request.verbatim() != null || request.active() != null);
         Section patched = sections.patch(profile(), id, ifMatch, new SectionPatch(
                 request.kind(),
                 request.title(),

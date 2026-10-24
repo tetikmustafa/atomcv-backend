@@ -77,6 +77,21 @@ public record GenerationResponse(
         Integer maxPages,
 
         Instant createdAt,
+
+        // The two the history row already carried (B-070). The result screen
+        // had to say "a resume" where the list said "Backend Engineer at
+        // Acme", and it could not prefill an application with what the
+        // posting was for — the frontend's "track this application" asks for
+        // exactly these (B-124).
+        @Schema(description = "The role the posting was for, as Faz A read it; "
+                + "absent in general mode and when the posting named none",
+                example = "Backend Engineer")
+        String roleTitle,
+
+        @Schema(description = "The company the posting was for, as Faz A read it; "
+                + "absent in general mode and when the posting named none")
+        String companyName,
+
         FitReport fitReport,
 
         @Schema(description = "The language the document was written in, as a BCP 47 tag",
@@ -148,6 +163,10 @@ public record GenerationResponse(
                 generation.getPageCount() == null ? null : generation.getPageCount().intValue(),
                 generation.getMaxPages(),
                 generation.getCreatedAt(),
+                blankToNull(generation.getJdAnalysis() == null
+                        ? null : generation.getJdAnalysis().role().title()),
+                blankToNull(generation.getJdAnalysis() == null
+                        ? null : generation.getJdAnalysis().company().name()),
                 generation.getFitReport(),
                 blankToNull(generation.getSelectionState() == null
                         ? null : generation.getSelectionState().language()),
