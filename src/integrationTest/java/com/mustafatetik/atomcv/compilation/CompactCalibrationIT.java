@@ -207,6 +207,28 @@ class CompactCalibrationIT {
     }
 
     /**
+     * <strong>A heading is at least as tall as the lines it prints.</strong>
+     *
+     * <p>The bullet check above caught one negative space; this is the one it
+     * could not. An entry heading prints a title line and an italic line under
+     * it, and compact stored it at 16.8pt — less than the two baselines it
+     * sets — because classic's -2/-4pt around it, spent under {@code nosep},
+     * pulled the first bullet up over the employer's name. Every number here
+     * agreed with the compiler; the compiler was measuring two lines drawn on
+     * top of each other. A real CV showed it on 2026-10-24.
+     */
+    @Test
+    void noHeadingIsShorterThanTheLinesItPrints() {
+        double twoLines = capacity().baselineSkipPt() + capacity().itemBaselineSkipPt();
+        assertThat(cost(CapacityModel.ENTRY_HEADER))
+                .as("a title line and the italic line under it")
+                .isGreaterThanOrEqualTo(twoLines);
+        assertThat(cost(CapacityModel.PROJECT_HEADING))
+                .as("one title line")
+                .isGreaterThanOrEqualTo(capacity().baselineSkipPt());
+    }
+
+    /**
      * And a bullet costs the same wherever it is set, which is the one
      * invariant compact does not share with classic.
      *

@@ -22,7 +22,7 @@ class TemplateCustomizationCostKeyTest {
     @Test
     void atemplateAtItsOwnDefaultsKeepsTheBareKey() {
         assertThat(TemplateCustomization.CLASSIC.costKey()).isEqualTo("classic:v6");
-        assertThat(TemplateCustomization.COMPACT.costKey()).isEqualTo("compact:v2");
+        assertThat(TemplateCustomization.COMPACT.costKey()).isEqualTo("compact:v3");
     }
 
     /**
