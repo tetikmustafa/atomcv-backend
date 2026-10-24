@@ -319,6 +319,7 @@ CREATE TABLE generations (
     cover_letter          TEXT,
 
     fit_report            JSONB,                -- kapsama sayıları
+    ats_check             JSONB,                -- PDF'in geri okunuşu: yalnız sayılar ve bayraklar (V18)
     page_count            SMALLINT,
     engine_version        JSONB NOT NULL,       -- pipeline, scoringWeights, template, promptVersions
     trace                 JSONB,                -- faz bazında telemetri (PII yok)
@@ -477,6 +478,7 @@ ortasında, hangisini anlattığı belirsiz bir metin kalırdı.
 | `V15__a_preference_lives_on_the_account_that_holds_it` | **`email_preferences` düştü.** Bloktaki üç kolonuna (`onboarding`, `product_updates`, `unsubscribed_at`) hiçbir zaman hiçbir şey yazmadı: tercih V14'te `users`'a indi, çünkü bir gelen kutusunun oturumu yok ve bağlantının oturumsuz ulaşılabilir olması gerekiyordu. Tabloyu canlı gösteren tek şey **iki entegrasyon testiydi** — biri varlığını, öteki kaskadın sildiğini doğruluyordu. Dururken, bir e-posta tercihini uygulayacak bir sonraki kişiye iki makul yer sunuyordu ve biri yanlıştı (denetim, beşinci tur) |
 | `V16__the_column_says_what_can_actually_write_to_it` | `atom_variants_created_by_check`: `created_by IN ('user','llm_translate')`. V1'in kolon yorumu dört yazar sayıyordu, kolon iki tanesini gördü — `llm_extract` hiç yazılmadı (içe aktarım kişinin kendi cümlelerini tutuyor ve bilerek `user` işaretliyor), `llm_rewrite` de yazılmaz (Faz D'nin yeniden yazımı varyant değil, `generations.rewritten_content`; § V11). İkisi de Java enum'unda ve **yayımlanan API şemasındaydı**, yani frontend hiç gelmeyecek bir değer için dal yazabilirdi. EK D "kapalı sözlüğün sahibi migration'dır" diyor; bu kolonun kısıtı hiç yoktu (denetim, beşinci tur) |
 | `V17__four_vocabularies_narrow_to_what_can_be_written` | **Dört kapalı sözlük, üretilemeyen değerlerinden arındı** (denetim, altıncı tur). `generations.status` ilk kez bir CHECK aldı ve `('completed','superseded')` diyor — `failed`'i hiçbir şey yazmıyordu, çünkü `selection_state` `NOT NULL` ve seçimden önce düşen koşunun yazacak satırı yok; enum'un kendi javadoc'u bunu zaten söylüyor, şema ise değeri yayımlıyordu. `jobs.status` beşten dörde indi: `cancelled`'ı yalnız `Job.cancel` yazabilirdi ve onun tek çağıranı kendi testiydi. `jobs.type` **ilk kez bir CHECK aldı** (V1 altısını yorumda sayıyordu, bir yorum hiçbir şey reddetmez) ve `email` listeden çıktı — ne kuyruğa veren var ne handler'ı, posta commit sonrası olayla gidiyor. `sections.layout` dörde indi: **`two_column` bir girdiydi** — uç kabul ediyordu, CHECK izin veriyordu, renderer bilerek entry list basıyordu (§ 33.5, ATS), yani kişi bir düzen seçiyor ve belgesi başkasını basıyordu. Tek veri onarımı bu sonuncusunda: satırlar zaten basıldıkları şeye, `entry_list`'e çevriliyor |
+| `V18__a_generation_keeps_what_its_pdf_read_back` | `generations.ats_check JSONB` (nullable). `AtsCheck` Aşama 2'den beri her PDF'i geri okuyor — başlıklar, maddeler, iletişim satırı, sıra — ve cevap yalnız bir sayaca ve bir log satırına gidiyordu; konsept § 10.1'in "ATS uyumluluk doğrulaması" kişiye hiç görünmüyordu. Sütun **yalnız sayıları ve bayrakları** tutar, başlığın metnini değil (mutlak kural 4); API sahibine `atsCheck` olarak yayımlar. Bu sürümden önceki satırlarda `null`, yanıtta alan yok — tahmin değil |
 
 ```sql
 -- ══════════════════════════════════════════════════════════
@@ -752,7 +754,8 @@ src/main/resources/db/migration/
 ├── V14__a_person_can_stop_the_post.sql
 ├── V15__a_preference_lives_on_the_account_that_holds_it.sql
 ├── V16__the_column_says_what_can_actually_write_to_it.sql
-└── V17__four_vocabularies_narrow_to_what_can_be_written.sql
+├── V17__four_vocabularies_narrow_to_what_can_be_written.sql
+└── V18__a_generation_keeps_what_its_pdf_read_back.sql
 ```
 
 > **Ağaç uydurmaydı** (düzeltme, denetim 2026-09-16): `V2__add_template_customizations`

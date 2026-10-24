@@ -73,6 +73,24 @@ class GenerationPipelineTest {
         verify(compiler, times(1)).compile(anyString());
     }
 
+    /**
+     * The read-back travels with the document, so the generation row can keep
+     * it (V18) — the same verdict the counter recorded, not a second reading.
+     * The stub's bytes are no PDF a reader can open, so the verdict here is
+     * "unreadable", which is also what the counter says.
+     */
+    @Test
+    void theAtsReadBackTravelsWithTheDocument() {
+        var fixture = profileOf(40);
+        when(compiler.compile(anyString())).thenReturn(pdf(1));
+
+        var document = run(fixture).orElseThrow();
+
+        assertThat(document.atsCheck()).isNotNull();
+        assertThat(document.atsCheck().readable()).isFalse();
+        assertThat(meters.counter("generation.ats.defect").count()).isEqualTo(1.0);
+    }
+
     /** A long document costs content, never a call to an LLM. */
     @Test
     void aDocumentThatRanLongIsSelectedAgainWithLessRoom() {

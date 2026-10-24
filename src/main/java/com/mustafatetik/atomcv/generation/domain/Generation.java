@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.domain;
 
 import com.mustafatetik.atomcv.generation.phases.analysis.JobAnalysis;
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
+import com.mustafatetik.atomcv.generation.validation.AtsCheckResult;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import com.mustafatetik.atomcv.shared.security.UserOwned;
 import jakarta.persistence.Column;
@@ -128,6 +129,13 @@ public class Generation implements UserOwned {
      */
     @JdbcTypeCode(SqlTypes.JSON)
     private FitReport fitReport;
+
+    /**
+     * What the PDF read back as (V18). Counts and flags, never a heading's
+     * text. Null on every row written before the column existed.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private AtsCheckResult atsCheck;
 
     private Short pageCount;
 
@@ -307,6 +315,14 @@ public class Generation implements UserOwned {
 
     public void setFitReport(FitReport fitReport) {
         this.fitReport = fitReport;
+    }
+
+    public AtsCheckResult getAtsCheck() {
+        return atsCheck;
+    }
+
+    public void setAtsCheck(AtsCheckResult atsCheck) {
+        this.atsCheck = atsCheck;
     }
 
     public Short getPageCount() {

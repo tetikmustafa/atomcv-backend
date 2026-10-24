@@ -1,0 +1,13 @@
+-- What the generated PDF read back as, kept with the generation.
+--
+-- AtsCheck has read every PDF back since Stage 2 -- every heading, every
+-- bullet, the contact line, the order -- and the answer went to a counter and
+-- a log line. The concept lists "ATS compatibility check" among the product's
+-- features (§ 10.1), and the person whose CV it is never saw it.
+--
+-- Counts and flags only, never a heading's text: the column is read back by
+-- the API for the owner, but it is also the kind of value that ends up in a
+-- support read, and the headings are the person's own wording (absolute
+-- rule 4). Null on every row written before this, which the API publishes as
+-- absent rather than as a guess.
+ALTER TABLE generations ADD COLUMN ats_check JSONB;

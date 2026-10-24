@@ -3,6 +3,7 @@ package com.mustafatetik.atomcv.generation.api.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mustafatetik.atomcv.generation.domain.Generation;
 import com.mustafatetik.atomcv.generation.domain.GenerationStatus;
+import com.mustafatetik.atomcv.generation.validation.AtsCheckResult;
 import com.mustafatetik.atomcv.generation.validation.FitReport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
@@ -43,6 +44,8 @@ import java.util.UUID;
  * a screen holding a retired id could say "there is a newer one" and had
  * nowhere to send the reader; {@code supersededByGenerationId} is that link.
  *
+ * @param atsCheck        the PDF read back as text (concept § 10.1). Absent on
+ *                        a generation made before V18 kept it
  * @param fitReport       absent in general mode, where there was no posting to
  *                        be relevant to
  * @param contentLanguage the BCP 47 tag the document was written in
@@ -93,6 +96,8 @@ public record GenerationResponse(
         String companyName,
 
         FitReport fitReport,
+
+        AtsCheckResult atsCheck,
 
         @Schema(description = "The language the document was written in, as a BCP 47 tag",
                 example = "tr")
@@ -168,6 +173,7 @@ public record GenerationResponse(
                 blankToNull(generation.getJdAnalysis() == null
                         ? null : generation.getJdAnalysis().company().name()),
                 generation.getFitReport(),
+                generation.getAtsCheck(),
                 blankToNull(generation.getSelectionState() == null
                         ? null : generation.getSelectionState().language()),
                 blankToNull(generation.getJdAnalysis() == null

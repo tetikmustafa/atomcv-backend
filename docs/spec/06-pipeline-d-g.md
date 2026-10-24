@@ -698,6 +698,15 @@ public static AtsReport of(byte[] pdf, RenderRequest printed) {
 > belge kişinindir; buradaki her bulgu **bizim** şablonumuzun ya da
 > fontumuzun kusuru, ve belgeyi elinden almak kendi hatamızı ona ödetmek
 > olurdu. Sayaçlar `generation.ats.clean` / `.defect`.
+>
+> **Ve kişi de görüyor** (ekleme, kapanış turu 2026-10-24, V18). Konsept
+> § 10.1 bu kontrolü ürünün özellikleri arasında sayıyor, ama sonucu yalnız
+> sayaca gidiyordu. `AtsCheckResult.of(report)` sayıları ve bayrakları
+> (`readable` = `clean()`, başlık ve madde sayıları, iletişim, sıra)
+> `generations.ats_check`'e yazar ve `GenerationResponse.atsCheck` olarak
+> yayımlar; **başlıkların adları ne sütuna ne yanıta girer** (mutlak kural 4).
+> Ekran `readable: false`'u kişinin kusuru gibi değil, şablonun kusuru gibi
+> anlatır — aynı gerekçe. V18'den önceki üretimlerde alan yok.
 
 ### 23.3 Uygunluk raporu
 

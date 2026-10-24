@@ -2,6 +2,7 @@ package com.mustafatetik.atomcv.generation.pipeline;
 
 import com.mustafatetik.atomcv.generation.rewrite.RewrittenContent;
 import com.mustafatetik.atomcv.generation.selection.SelectionState;
+import com.mustafatetik.atomcv.generation.validation.AtsCheckResult;
 import com.mustafatetik.atomcv.rendering.model.RenderRequest;
 
 /**
@@ -25,6 +26,8 @@ import com.mustafatetik.atomcv.rendering.model.RenderRequest;
  *                   stores it and Faz G's re-run reads it back: an edit that
  *                   moved one bullet must not pay for every other bullet's
  *                   sentences a second time (V11)
+ * @param atsCheck   what the PDF read back as. Null only where no reader ran
+ *                   — the test doubles that build a document by hand (V18)
  */
 public record GeneratedDocument(
         byte[] pdf,
@@ -33,7 +36,15 @@ public record GeneratedDocument(
         RenderRequest rendered,
         int attempts,
         double budgetFactor,
-        RewrittenContent rewritten) {
+        RewrittenContent rewritten,
+        AtsCheckResult atsCheck) {
+
+    /** A document nothing read back — test doubles only. */
+    public GeneratedDocument(byte[] pdf, int pageCount, SelectionState selection,
+            RenderRequest rendered, int attempts, double budgetFactor,
+            RewrittenContent rewritten) {
+        this(pdf, pageCount, selection, rendered, attempts, budgetFactor, rewritten, null);
+    }
 
     /**
      * How many atoms Faz D actually replaced.
