@@ -3,7 +3,7 @@
 > İki repo da okur ve kendi satırlarını günceller. **Kural: 60 satırı geçmez.**
 > Ayrıntı repo-yerel `notes/current.md`'de.
 
-**2026-10-24** · **Kapanış turu bitti, ikinci denetim turu da.** Üç paralel denetim (spec↔kod, tel kapsaması, arayüz) iki repoyu baştan taradı; `F-041`…`F-045` ve `B-120`…`B-125` aynı gün karşılandı, iki kanal da boş. **Kod tarafında yapılacak iş kalmadı; kalan her şey sunucu ister** (aşağıda).
+**2026-10-27** · **Gerçek yığına karşı uçtan uca tur bitti** (gerçek LLM, gerçek LaTeX, production build, deployment'ın kendi `nginx.conf`'u). Mock'ların göremediği on dört kusur bulundu ve düzeltildi; aşağıda. Öncesi: **kapanış turu ve ikinci denetim turu bitti.** Üç paralel denetim (spec↔kod, tel kapsaması, arayüz) iki repoyu baştan taradı; `F-041`…`F-045` ve `B-120`…`B-125` aynı gün karşılandı, iki kanal da boş. **Kod tarafında yapılacak iş kalmadı; kalan her şey sunucu ister** (aşağıda).
 
 ## Backend — `atomcv-backend`
 
@@ -19,7 +19,9 @@
 
 **İkinci tur.** `AtsCheck` her PDF'i geri okuyordu ama sonuç yalnız sayaca gidiyordu (konsept § 10.1 görünmüyordu): V18 `generations.ats_check` — yalnız sayılar ve bayraklar — ve `GenerationResponse.atsCheck`. Gerçek derleyiciyle `JobSpecificCvIT` 12/12, hiçbir PDF kusur bildirmedi.
 
-**Test:** 1953 birim · 587 entegrasyon · 0 hata; CI'ın kontrolleri (gerçek derleyici turu dahil) her PR'da geçti. İmaj JRE ile kurulup koşuldu.
+**Canlı tur.** Misafir profil başlığına erişemiyordu (inceleme ekranı "giriş yap" diyordu, `B-127`); misafirin süre yenilemesi sürümü artırıp paralel okumaları 412'yle düşürüyordu; ilk kullanımda eşzamanlı istekler `profiles_user_id_key`'e çarpıp 500 veriyordu (artık `ON CONFLICT`), OAuth'un aynı yarış için yazdığı kurtarma hiç çalışamazdı. Sağlayıcı zinciri 402/401/400'de duruyordu — OpenRouter kredisi bitince Gemini hiç sorulmadı; Gemini de şemadaki `["string","null"]` yüzünden her çıkarımı reddediyordu. ATS sırası "Experienced" içindeki "Experience"ı başlık sanıp temiz PDF'e "karıştı" diyordu. Mektup 119 kelimeyle iki kez reddediliyordu (ikinci deneme artık uzunluğu biliyor). İstenen dil sessizce düşüyordu (`requestedLanguage`, `B-126`; çeviri 60 eşzamanlı çağrı yerine 6). **Kompakt şablon metni metnin üstüne basıyordu** (v3, yeniden kalibre). nginx `/auth/session`'ı giriş bölgesine koyup hızlı gezinmede 503 veriyordu.
+
+**Test:** 1959 birim · 591 entegrasyon · 146 LaTeX · 0 hata; CI'ın kontrolleri (gerçek derleyici turu dahil) her PR'da geçti. İmaj JRE ile kurulup koşuldu.
 
 ## Frontend — `atomcv-frontend`
 
@@ -34,7 +36,9 @@
 
 **İkinci tur.** Sonuçta **makine okunabilirliği** kartı (`B-125`; kusuru şablona yazar, CV'ye değil); atomda **"Bunu kontrol ettim"** (`verified`, misafire de açık); başvuruyu sonradan **CV'ye bağlama**; içe aktarmada **metni yapıştırma** (`.txt` olarak aynı yükleme); mektubu **`.txt` indirme**; GitHub önerilerinde yıldız/bağlantı/diller. Form id'leri örnek başına (`useId`), başlık hiyerarşisi, dokuz ölü çeviri anahtarı ve iki kullanılmayan primitive silindi.
 
-**Test:** 1015 birim · 84 e2e (375px dahil) · axe iki temada temiz · **bundle** profil 266.2 / ayarlar 253.6 / üretim 236.0 / onboarding 232.4 / başvurular 227.1 / geçmiş 223.2 / pazarlama 169.6 KB (tavan 280 / 200) · `npm audit` sıfır.
+**Canlı tur.** nginx gzip ETag'i `W/"2"`'ye çeviriyor, istemci de zayıf etiketi reddediyordu: **production'da ayarlar ve profil başlığı hiç kaydedilmiyordu** (istek bile gitmiyordu). Sayfa çizilir çizilmez yapılan yükleme oturum çerezinden önce gidip 401/403 alıyordu (tek seferlik kurtarma); tarih biçimi her "tarih saat" mesajını iki kez basıyordu; editör her işaretli maddeyi 25 onay kutusuyla açıyordu (artık cümle + "Metni düzenle"); Android'de PDF önizleme boş çerçeveydi (`pdfViewerEnabled`); başvuru tarihi saat basıyordu; telefonda giriş bağlantısı yoktu.
+
+**Test:** 1026 birim · 84 e2e (375px dahil) · axe iki temada temiz · **bundle** profil 266.2 / ayarlar 253.6 / üretim 236.0 / onboarding 232.4 / başvurular 227.1 / geçmiş 223.2 / pazarlama 169.6 KB (tavan 280 / 200) · `npm audit` sıfır.
 
 ## Açık kararlar
 
