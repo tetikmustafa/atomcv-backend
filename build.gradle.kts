@@ -130,7 +130,7 @@ dependencies {
     // against OpenTelemetry 1.49.0, the version Boot's BOM manages -- a newer
     // appender would pull a newer API than the SDK Boot configures.
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.15.0-alpha")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.33.0-alpha")
     // The job analysis is cached. Lettuce underneath, which the
     // starter brings: the cache is consulted on the hot path and a blocking
     // client there would hold a request thread through a network round trip.
